@@ -1,0 +1,2242 @@
+[
+  {
+    "nomor": 1,
+    "materi": "Usaha, Energi, & Pesawat Sederhana",
+    "paket": "Bab III: Usaha, Energi, & Pesawat Sederhana - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Perhatikan gambar pengungkit (tuas) yang digunakan untuk mengungkit batu berikut! Jika berat batu w = 1.200 N, panjang lengan beban dari batu ke titik tumpu T adalah 0,5 m, dan panjang lengan kuasa dari titik tumpu T ke tangan adalah 2,0 m, maka besar gaya kuasa F minimal untuk mengungkit batu tersebut adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch3_usaha_energi_pesawat.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "200 N"
+      },
+      {
+        "label": "B",
+        "teks": "300 N"
+      },
+      {
+        "label": "C",
+        "teks": "400 N"
+      },
+      {
+        "label": "D",
+        "teks": "600 N"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Prinsip kesetimbangan tuas: $w \\cdot L_b = F \\cdot L_k \\Rightarrow 1.200 \\text{ N} \\times 0,5 \\text{ m} = F \\times 2,0 \\text{ m} \\Rightarrow 600 = 2F \\Rightarrow F = \\frac{600}{2} = 300 \\text{ N}$.",
+    "valid": true
+  },
+  {
+    "nomor": 2,
+    "materi": "Usaha, Energi, & Pesawat Sederhana",
+    "paket": "Bab III: Usaha, Energi, & Pesawat Sederhana - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Dua orang pekerja mendorong sebuah mobil mogok di jalan datar: Pekerja A mendorong ke depan dengan gaya 250 N dan Pekerja B mendorong ke depan dengan gaya 200 N. Pada saat yang sama terdapat gaya gesek roda mobil sebesar 100 N yang berlawanan arah. Jika mobil tersebut berhasil berpindah sejauh 8 meter, total usaha bersih yang dilakukan adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch3_usaha_energi_pesawat.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "2.000 Joule"
+      },
+      {
+        "label": "B",
+        "teks": "2.800 Joule"
+      },
+      {
+        "label": "C",
+        "teks": "3.600 Joule"
+      },
+      {
+        "label": "D",
+        "teks": "4.400 Joule"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Resultan gaya searah perpindahan: $\\Sigma F = F_A + F_B - f_{gesek} = 250 + 200 - 100 = 350 \\text{ N}$. Usaha total: $W = \\Sigma F \\cdot s = 350 \\text{ N} \\times 8 \\text{ m} = 2.800 \\text{ Joule}$.",
+    "valid": true
+  },
+  {
+    "nomor": 3,
+    "materi": "Usaha, Energi, & Pesawat Sederhana",
+    "paket": "Bab III: Usaha, Energi, & Pesawat Sederhana - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Sebuah mesin derek (crane) mengangkat peti kemas bermassa 500 kg ($g = 10 \\text{ m/s}^2$) setinggi 12 meter dari tanah dalam waktu 20 detik. Daya mekanik yang dikerahkan oleh mesin derek tersebut adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch3_usaha_energi_pesawat.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "3.000 Watt"
+      },
+      {
+        "label": "B",
+        "teks": "4.500 Watt"
+      },
+      {
+        "label": "C",
+        "teks": "6.000 Watt"
+      },
+      {
+        "label": "D",
+        "teks": "12.000 Watt"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Usaha pengangkatan: $W = m \\cdot g \\cdot h = 500 \\times 10 \\times 12 = 60.000 \\text{ Joule}$. Daya: $P = \\frac{W}{t} = \\frac{60.000}{20} = 3.000 \\text{ Watt} = 3 \\text{ kW}$.",
+    "valid": true
+  },
+  {
+    "nomor": 4,
+    "materi": "Usaha, Energi, & Pesawat Sederhana",
+    "paket": "Bab III: Usaha, Energi, & Pesawat Sederhana - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Sebuah sepeda beserta pengendaranya memiliki massa total 60 kg dan melaju dengan kelajuan konstan 10 m/s. Energi kinetik yang dimiliki sepeda tersebut adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch3_usaha_energi_pesawat.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "600 Joule"
+      },
+      {
+        "label": "B",
+        "teks": "1.200 Joule"
+      },
+      {
+        "label": "C",
+        "teks": "2.400 Joule"
+      },
+      {
+        "label": "D",
+        "teks": "3.000 Joule"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Rumus energi kinetik: $E_k = \\frac{1}{2} m v^2 = \\frac{1}{2} \\times 60 \\times 10^2 = 30 \\times 100 = 3.000 \\text{ Joule}$.",
+    "valid": true
+  },
+  {
+    "nomor": 5,
+    "materi": "Usaha, Energi, & Pesawat Sederhana",
+    "paket": "Bab III: Usaha, Energi, & Pesawat Sederhana - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Apabila kelajuan sebuah mobil diperbesar menjadi 3 kali kelajuan semula ($v_2 = 3v_1$), maka energi kinetik mobil tersebut akan menjadi ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch3_usaha_energi_pesawat.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "3 kali energi kinetik semula"
+      },
+      {
+        "label": "B",
+        "teks": "6 kali energi kinetik semula"
+      },
+      {
+        "label": "C",
+        "teks": "9 kali energi kinetik semula"
+      },
+      {
+        "label": "D",
+        "teks": "27 kali energi kinetik semula"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Energi kinetik berbanding lurus dengan kuadrat kelajuan ($E_k \\propto v^2$). Jika kelajuan dijadikan $3\\times$, maka $E_{k2} = (3)^2 E_{k1} = 9 E_{k1}$.",
+    "valid": true
+  },
+  {
+    "nomor": 6,
+    "materi": "Usaha, Energi, & Pesawat Sederhana",
+    "paket": "Bab III: Usaha, Energi, & Pesawat Sederhana - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Sebuah buah kelapa bermassa 2 kg jatuh bebas dari tangkai pohon pada ketinggian 10 m ($g = 10 \\text{ m/s}^2$). Besar energi potensial dan energi kinetik buah kelapa pada saat mencapai ketinggian 4 m dari tanah adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch3_usaha_energi_pesawat.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Ep = 200 J dan Ek = 0 J"
+      },
+      {
+        "label": "B",
+        "teks": "Ep = 80 J dan Ek = 120 J"
+      },
+      {
+        "label": "C",
+        "teks": "Ep = 120 J dan Ek = 80 J"
+      },
+      {
+        "label": "D",
+        "teks": "Ep = 100 J dan Ek = 100 J"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Energi mekanik total: $E_M = mgh_1 = 2 \\times 10 \\times 10 = 200 \\text{ J}$. Pada $h_2 = 4 \\text{ m}$: $E_{p2} = mgh_2 = 2 \\times 10 \\times 4 = 80 \\text{ J}$. Sesuai hukum kekekalan energi mekanik: $E_{k2} = E_M - E_{p2} = 200 - 80 = 120 \\text{ J}$.",
+    "valid": true
+  },
+  {
+    "nomor": 7,
+    "materi": "Usaha, Energi, & Pesawat Sederhana",
+    "paket": "Bab III: Usaha, Energi, & Pesawat Sederhana - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Berdasarkan soal nomor 6 di atas, kelajuan buah kelapa tepat saat menyentuh permukaan tanah adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch3_usaha_energi_pesawat.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "10 m/s"
+      },
+      {
+        "label": "B",
+        "teks": "14,1 m/s (10 akar 2 m/s)"
+      },
+      {
+        "label": "C",
+        "teks": "20 m/s"
+      },
+      {
+        "label": "D",
+        "teks": "100 m/s"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Saat menyentuh tanah ($h = 0$), seluruh energi potensial berubah menjadi energi kinetik: $E_k = E_M = 200 \\text{ J} \\Rightarrow \\frac{1}{2} m v^2 = 200 \\Rightarrow \\frac{1}{2}(2)v^2 = 200 \\Rightarrow v^2 = 200 \\Rightarrow v = \\sqrt{200} = 10\\sqrt{2} \\approx 14,14 \\text{ m/s}$.",
+    "valid": true
+  },
+  {
+    "nomor": 8,
+    "materi": "Usaha, Energi, & Pesawat Sederhana",
+    "paket": "Bab III: Usaha, Energi, & Pesawat Sederhana - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Pada pembangkit listrik tenaga air (PLTA), urutan perubahan energi yang terjadi sejak air berada di waduk penampungan hingga menghasilkan listrik yang disalurkan ke rumah-rumah adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch3_usaha_energi_pesawat.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Energi Kimia -> Energi Listrik -> Energi Kinetik"
+      },
+      {
+        "label": "B",
+        "teks": "Energi Panas -> Energi Kinetik -> Energi Potensial"
+      },
+      {
+        "label": "C",
+        "teks": "Energi Potensial Gravitasi (air waduk) -> Energi Kinetik (aliran air memutar turbin) -> Energi Listrik (generator) -> Energi Listrik transmisi"
+      },
+      {
+        "label": "D",
+        "teks": "Energi Nuklir -> Energi Cahaya -> Energi Listrik"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Air pada ketinggian menyimpan energi potensial gravitasi. Saat dialirkan melalui pipa pesat, energi potensial berubah menjadi energi kinetik aliran air berkecepatan tinggi yang memutar turbin air. Putaran turbin menggerakkan rotor generator elektromagnetik untuk menghasilkan energi listrik.",
+    "valid": true
+  },
+  {
+    "nomor": 9,
+    "materi": "Usaha, Energi, & Pesawat Sederhana",
+    "paket": "Bab III: Usaha, Energi, & Pesawat Sederhana - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Seorang atlet angkat besi menahan barbel seberat 1.200 N tepat diam di atas kepalanya selama 5 detik. Besar usaha fisika yang dilakukan oleh atlet tersebut selama 5 detik menahan barbel diam adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch3_usaha_energi_pesawat.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "6.000 Joule"
+      },
+      {
+        "label": "B",
+        "teks": "1.200 Joule"
+      },
+      {
+        "label": "C",
+        "teks": "240 Joule"
+      },
+      {
+        "label": "D",
+        "teks": "0 Joule"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Definisi usaha dalam fisika: $W = F \\cdot s$. Meskipun atlet mengerahkan gaya otot sebesar 1.200 N, barbel dalam kondisi diam di tempat sehingga perpindahannya $s = 0$. Maka $W = 1.200 \\times 0 = 0 \\text{ Joule}$.",
+    "valid": true
+  },
+  {
+    "nomor": 10,
+    "materi": "Usaha, Energi, & Pesawat Sederhana",
+    "paket": "Bab III: Usaha, Energi, & Pesawat Sederhana - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Agar gaya kuasa (F) yang dikeluarkan untuk mengungkit batu dengan tuas menjadi sekecil mungkin, perlakuan yang paling tepat adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch3_usaha_energi_pesawat.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Memperpendek lengan kuasa dan memperpanjang lengan beban"
+      },
+      {
+        "label": "B",
+        "teks": "Menggeser titik tumpu sedekat mungkin ke batu (lengan beban diperpendek) dan memegang ujung tuas sejauh mungkin dari titik tumpu (lengan kuasa diperpanjang)"
+      },
+      {
+        "label": "C",
+        "teks": "Memperberat batu yang diungkit"
+      },
+      {
+        "label": "D",
+        "teks": "Menempatkan titik tumpu tepat di bawah tangan kuasa"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Keuntungan mekanis tuas adalah $KM = \\frac{w}{F} = \\frac{L_k}{L_b} \\Rightarrow F = w \\cdot \\frac{L_b}{L_k}$. Agar gaya $F$ sekecil mungkin, rasio $\\frac{L_k}{L_b}$ harus sebesar mungkin, yaitu dengan memperpanjang $L_k$ dan memperpendek $L_b$ (titik tumpu didekatkan ke beban).",
+    "valid": true
+  },
+  {
+    "nomor": 11,
+    "materi": "Usaha, Energi, & Pesawat Sederhana",
+    "paket": "Bab III: Usaha, Energi, & Pesawat Sederhana - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Perhatikan beberapa alat berikut:\n(1) Gunting kuku\n(2) Gerobak dorong beroda satu\n(3) Linggis pencabut paku\n(4) Pemecah kemiri\n(5) Pembuka tutup botol\nAlat-alat yang bekerja berdasarkan prinsip Tuas Golongan II (titik beban berada di antara titik tumpu dan titik kuasa) adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch3_usaha_energi_pesawat.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(1) dan (3)"
+      },
+      {
+        "label": "B",
+        "teks": "(2), (4), dan (5)"
+      },
+      {
+        "label": "C",
+        "teks": "(1), (2), dan (4)"
+      },
+      {
+        "label": "D",
+        "teks": "(3) dan (5)"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Pada tuas golongan II, posisi beban berada di tengah-tengah antara tumpu dan kuasa. Contohnya adalah gerobak roda satu (tumpu di roda, beban di bak, kuasa di gagang pegangan), pemecah kemiri, dan pembuka tutup botol.",
+    "valid": true
+  },
+  {
+    "nomor": 12,
+    "materi": "Usaha, Energi, & Pesawat Sederhana",
+    "paket": "Bab III: Usaha, Energi, & Pesawat Sederhana - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Alat-alat seperti sekop pasir, stapler kertas, pinset, dan joran pancing bekerja berdasarkan prinsip Tuas Golongan III karena ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch3_usaha_energi_pesawat.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Titik tumpunya berada tepat di tengah"
+      },
+      {
+        "label": "B",
+        "teks": "Bebannya berada di tengah"
+      },
+      {
+        "label": "C",
+        "teks": "Keuntungan mekanisnya selalu lebih besar dari 2"
+      },
+      {
+        "label": "D",
+        "teks": "Posisi titik kuasa (tangan yang menekan/menarik) berada di antara titik tumpu dan titik beban"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Ciri khas Tuas Golongan III adalah titik kuasa terletak di antara titik tumpu dan beban ($T - K - B$). Karena $L_k < L_b$, maka $KM < 1$, tujuannya bukan melipatgandakan gaya melainkan memperbesar jangkauan dan kecepatan gerak.",
+    "valid": true
+  },
+  {
+    "nomor": 13,
+    "materi": "Usaha, Energi, & Pesawat Sederhana",
+    "paket": "Bab III: Usaha, Energi, & Pesawat Sederhana - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Ketika seseorang mengangkat barbel menggunakan telapak tangannya sambil menekuk siku, sistem anatomis tubuh manusia ini bekerja menyerupai tuas. Hubungan titik tumpu, kuasa, dan beban yang tepat adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch3_usaha_energi_pesawat.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Sendi siku sebagai beban, telapak tangan sebagai tumpu"
+      },
+      {
+        "label": "B",
+        "teks": "Bahu sebagai beban, siku sebagai kuasa"
+      },
+      {
+        "label": "C",
+        "teks": "Sendi siku sebagai titik tumpu, tarikan otot bisep pada tulang pengumpil sebagai kuasa, dan barbel di telapak tangan sebagai beban (Tuas Golongan III)"
+      },
+      {
+        "label": "D",
+        "teks": "Bekerja sebagai tuas golongan II"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Sendi siku adalah titik tumpu. Insersi tendon otot bisep brachii berada di antara sendi siku dan telapak tangan yang memegang barbel (kuasa di tengah). Maka gerak fleksi siku mengaplikasikan sistem Tuas Golongan III.",
+    "valid": true
+  },
+  {
+    "nomor": 14,
+    "materi": "Usaha, Energi, & Pesawat Sederhana",
+    "paket": "Bab III: Usaha, Energi, & Pesawat Sederhana - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Seorang pekerja bangunan menimba seember adukan semen seberat 240 N menggunakan katrol tetap tunggal di lantai dua. Besar gaya tarik minimal yang harus dikerahkan pekerja dan keuntungan mekanis katrol tetap berturut-turut adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch3_usaha_energi_pesawat.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "120 N dan KM = 2"
+      },
+      {
+        "label": "B",
+        "teks": "240 N dan KM = 1"
+      },
+      {
+        "label": "C",
+        "teks": "480 N dan KM = 0,5"
+      },
+      {
+        "label": "D",
+        "teks": "24 N dan KM = 10"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Katrol tetap memiliki $KM = 1$ sehingga $F = w = 240 \\text{ N}$. Katrol tetap tidak melipatgandakan gaya (tidak memperkecil gaya kuasa), tetapi memberi keuntungan ergonomis dengan mengubah arah gaya tarik menjadi ke arah bawah sejajar gravitasi.",
+    "valid": true
+  },
+  {
+    "nomor": 15,
+    "materi": "Usaha, Energi, & Pesawat Sederhana",
+    "paket": "Bab III: Usaha, Energi, & Pesawat Sederhana - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Sebuah beban seberat 240 N diangkat menggunakan katrol bebas (katrol bergerak tunggal). Besar gaya kuasa F minimal yang diperlukan untuk mengangkat beban tersebut adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch3_usaha_energi_pesawat.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "60 N"
+      },
+      {
+        "label": "B",
+        "teks": "80 N"
+      },
+      {
+        "label": "C",
+        "teks": "120 N"
+      },
+      {
+        "label": "D",
+        "teks": "240 N"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Katrol bergerak ditopang oleh dua penggal tali yang menanggung beban sama rata, sehingga keuntungan mekanisnya $KM = 2$. Gaya kuasa minimal yang dibutuhkan: $F = \\frac{w}{KM} = \\frac{240}{2} = 120 \\text{ N}$.",
+    "valid": true
+  },
+  {
+    "nomor": 16,
+    "materi": "Usaha, Energi, & Pesawat Sederhana",
+    "paket": "Bab III: Usaha, Energi, & Pesawat Sederhana - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Sebuah sistem katrol majemuk (takal) terdiri atas 4 buah roda katrol dengan 4 penggal tali yang menopang beban. Jika beban yang diangkat memiliki berat 1.600 N, gaya tarik F minimal yang diperlukan adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch3_usaha_energi_pesawat.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "200 N"
+      },
+      {
+        "label": "B",
+        "teks": "300 N"
+      },
+      {
+        "label": "C",
+        "teks": "400 N"
+      },
+      {
+        "label": "D",
+        "teks": "800 N"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Keuntungan mekanis sistem katrol majemuk sama dengan jumlah tali ($n$) yang menopang beban: $KM = 4$. Maka $F = \\frac{w}{KM} = \\frac{1.600}{4} = 400 \\text{ N}$.",
+    "valid": true
+  },
+  {
+    "nomor": 17,
+    "materi": "Usaha, Energi, & Pesawat Sederhana",
+    "paket": "Bab III: Usaha, Energi, & Pesawat Sederhana - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Sebuah peti barang seberat 600 N akan dinaikkan ke atas bak truk yang tingginya 1,5 meter menggunakan papan bidang miring sepanjang 4,5 meter. Keuntungan mekanis bidang miring dan gaya dorong minimal F yang diperlukan berturut-turut adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch3_usaha_energi_pesawat.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "KM = 2 dan F = 300 N"
+      },
+      {
+        "label": "B",
+        "teks": "KM = 4,5 dan F = 150 N"
+      },
+      {
+        "label": "C",
+        "teks": "KM = 1,5 dan F = 400 N"
+      },
+      {
+        "label": "D",
+        "teks": "KM = 3 dan F = 200 N"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Keuntungan mekanis bidang miring: $KM = \\frac{s}{h} = \\frac{4,5 \\text{ m}}{1,5 \\text{ m}} = 3$. Gaya dorong: $F = \\frac{w}{KM} = \\frac{600 \\text{ N}}{3} = 200 \\text{ N}$.",
+    "valid": true
+  },
+  {
+    "nomor": 18,
+    "materi": "Usaha, Energi, & Pesawat Sederhana",
+    "paket": "Bab III: Usaha, Energi, & Pesawat Sederhana - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Baik mengangkat peti 600 N secara vertikal langsung setinggi 1,5 m maupun mendorongnya melalui papan bidang miring sepanjang 4,5 m tanpa gesekan, besar usaha total yang dilakukan adalah sama (900 Joule). Pernyataan yang benar mengenai fungsi pesawat sederhana adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch3_usaha_energi_pesawat.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Pesawat sederhana dapat melipatgandakan energi dan memperkecil total usaha"
+      },
+      {
+        "label": "B",
+        "teks": "Pesawat sederhana memperkecil gaya kuasa (F) yang harus dikerahkan manusia, tetapi total usaha yang dilakukan tetap sama karena lintasan tempuh (s) menjadi lebih panjang"
+      },
+      {
+        "label": "C",
+        "teks": "Pesawat sederhana menghilangkan gaya gravitasi bumi"
+      },
+      {
+        "label": "D",
+        "teks": "Pesawat sederhana menghasilkan daya tanpa batas"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Sesuai hukum kekekalan energi, pesawat sederhana TIDAK PERNAH mengurangi total usaha ($W = F \\cdot s = \\text{konstan}$). Pengurangan gaya kuasa ($F$) selalu dikompensasi oleh bertambahnya jarak perpindahan ($s$) yang harus ditempuh.",
+    "valid": true
+  },
+  {
+    "nomor": 19,
+    "materi": "Usaha, Energi, & Pesawat Sederhana",
+    "paket": "Bab III: Usaha, Energi, & Pesawat Sederhana - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Jalan raya yang dibangun melintasi lereng pegunungan curam selalu dibuat berkelok-kelok (berliku-liku). Alasan teknik fisika di balik desain jalan berkelok tersebut adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch3_usaha_energi_pesawat.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Memperpanjang lintasan (s) agar kemiringan lebih landai dan keuntungan mekanis besar sehingga mesin kendaraan memerlukan gaya dorong yang lebih kecil untuk menanjak"
+      },
+      {
+        "label": "B",
+        "teks": "Agar mobil melaju lebih kencang tanpa hambatan"
+      },
+      {
+        "label": "C",
+        "teks": "Untuk memperbesar gaya gesek ban mobil"
+      },
+      {
+        "label": "D",
+        "teks": "Memperpendek jarak tempuh kendaraan"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Jalan berkelok mengaplikasikan prinsip bidang miring. Dengan memperbesar panjang lintasan $s$ untuk tinggi vertikal $h$ yang sama, rasio $KM = \\frac{s}{h}$ membesar sehingga gaya yang dibutuhkan mesin kendaraan untuk mendaki tanjakan menjadi jauh lebih ringan.",
+    "valid": true
+  },
+  {
+    "nomor": 20,
+    "materi": "Usaha, Energi, & Pesawat Sederhana",
+    "paket": "Bab III: Usaha, Energi, & Pesawat Sederhana - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Dua buah sekrup baja memiliki panjang batang yang sama, tetapi Sekrup P memiliki ulir yang sangat rapat sedangkan Sekrup Q memiliki ulir yang lebih renggang. Pernyataan yang benar mengenai kedua sekrup adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch3_usaha_energi_pesawat.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Sekrup Q lebih mudah diputar masuk daripada Sekrup P"
+      },
+      {
+        "label": "B",
+        "teks": "Kedua sekrup memiliki keuntungan mekanis yang persis sama"
+      },
+      {
+        "label": "C",
+        "teks": "Sekrup P tidak memiliki keuntungan mekanis"
+      },
+      {
+        "label": "D",
+        "teks": "Sekrup P yang berulir lebih rapat memiliki keuntungan mekanis lebih besar sehingga gaya putar yang dibutuhkan tangan terasa lebih ringan, namun memerlukan jumlah putaran lebih banyak"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Ulir sekrup adalah bidang miring yang dililitkan mengelilingi silinder. Semakin rapat ulirnya, lintasan spiral bidang miring semakin panjang ($s$ besar) dan sudut kemiringan semakin landai, sehingga $KM$ lebih besar dan memutar sekrup terasa lebih enteng.",
+    "valid": true
+  },
+  {
+    "nomor": 21,
+    "materi": "Usaha, Energi, & Pesawat Sederhana",
+    "paket": "Bab III: Usaha, Energi, & Pesawat Sederhana - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Roda berporos (gandar) diterapkan pada setir kemudi mobil, obeng baut, dan gerigi pemutar keran air. Hubungan antara jari-jari roda luar (R) dan jari-jari poros dalam (r) terhadap keuntungan mekanis adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch3_usaha_energi_pesawat.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "KM = r / R"
+      },
+      {
+        "label": "B",
+        "teks": "KM = R x r"
+      },
+      {
+        "label": "C",
+        "teks": "KM = R / r (makin besar diameter roda kemudi, gaya putar tangan semakin ringan)"
+      },
+      {
+        "label": "D",
+        "teks": "KM selalu bernilai 1"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Pada roda berporos, gaya kuasa dikerahkan pada keliling roda berjari-jari $R$ untuk memutar poros beban berjari-jari $r$. Keuntungan mekanisnya adalah $KM = \\frac{R}{r}$. Semakin besar rasio $R$ terhadap $r$, semakin kecil gaya kuasa yang dibutuhkan.",
+    "valid": true
+  },
+  {
+    "nomor": 22,
+    "materi": "Usaha, Energi, & Pesawat Sederhana",
+    "paket": "Bab III: Usaha, Energi, & Pesawat Sederhana - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Pada sepeda balap multi-gir, ketika pengendara memindahkan rantai ke gir depan berdiameter kecil dan gir belakang berdiameter paling besar saat mendaki tanjakan terjal, efek fisik yang dirasakan pengendara adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch3_usaha_energi_pesawat.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Kayuhan pedal menjadi sangat berat"
+      },
+      {
+        "label": "B",
+        "teks": "Kayuhan pedal terasa sangat ringan dan gaya dorong roda meningkat, meskipun laju sepeda menjadi lambat"
+      },
+      {
+        "label": "C",
+        "teks": "Sepeda melaju kencang seketika"
+      },
+      {
+        "label": "D",
+        "teks": "Kecepatan sudut roda belakang berlipat ganda"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Memilih gir depan kecil dan gir belakang besar menghasilkan rasio reduksi roda gigi yang memperbesar torsi putar pada roda belakang. Keuntungan mekanis meningkat sehingga kayuhan terasa sangat ringan untuk menaklukkan tanjakan curam.",
+    "valid": true
+  },
+  {
+    "nomor": 23,
+    "materi": "Usaha, Energi, & Pesawat Sederhana",
+    "paket": "Bab III: Usaha, Energi, & Pesawat Sederhana - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Sebuah motor listrik berdaya 250 Watt menyala dan bekerja selama 10 menit. Total energi listrik yang diubah menjadi usaha oleh motor listrik tersebut adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch3_usaha_energi_pesawat.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "150.000 Joule (150 kJ)"
+      },
+      {
+        "label": "B",
+        "teks": "25.000 Joule"
+      },
+      {
+        "label": "C",
+        "teks": "2.500 Joule"
+      },
+      {
+        "label": "D",
+        "teks": "1.500 Joule"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Waktu dalam detik: $t = 10 \\text{ menit} = 10 \\times 60 = 600 \\text{ s}$. Energi yang digunakan: $W = P \\times t = 250 \\text{ W} \\times 600 \\text{ s} = 150.000 \\text{ Joule} = 150 \\text{ kJ}$.",
+    "valid": true
+  },
+  {
+    "nomor": 24,
+    "materi": "Usaha, Energi, & Pesawat Sederhana",
+    "paket": "Bab III: Usaha, Energi, & Pesawat Sederhana - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Perhatikan tabel panjang lintasan (s) dan tinggi vertikal (h) empat bidang miring:\n- P: s = 6 m, h = 2 m\n- Q: s = 8 m, h = 2 m\n- R: s = 10 m, h = 2,5 m\n- S: s = 12 m, h = 4 m\nBidang miring yang memiliki Keuntungan Mekanis (KM) paling besar adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch3_usaha_energi_pesawat.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "P (KM = 3)"
+      },
+      {
+        "label": "B",
+        "teks": "Q dan R (keduanya memiliki KM = 4)"
+      },
+      {
+        "label": "C",
+        "teks": "S (KM = 3)"
+      },
+      {
+        "label": "D",
+        "teks": "Semua memiliki keuntungan mekanis sama"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Perhitungan KM = $s/h$:\n- $KM_P = 6/2 = 3$\n- $KM_Q = 8/2 = 4$\n- $KM_R = 10/2,5 = 4$\n- $KM_S = 12/4 = 3$.\nMaka bidang miring Q dan R memiliki keuntungan mekanis tertinggi yang sama yaitu 4.",
+    "valid": true
+  },
+  {
+    "nomor": 25,
+    "materi": "Usaha, Energi, & Pesawat Sederhana",
+    "paket": "Bab III: Usaha, Energi, & Pesawat Sederhana - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Dua anak bermain jungkat-jungkit (tuas golongan I). Anak pertama memiliki berat 400 N duduk pada jarak 1,5 meter dari titik tumpu. Di manakah anak kedua yang memiliki berat 300 N harus duduk agar jungkat-jungkit berada dalam posisi setimbang mendatar?",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch3_usaha_energi_pesawat.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "1,0 meter dari titik tumpu"
+      },
+      {
+        "label": "B",
+        "teks": "1,5 meter dari titik tumpu"
+      },
+      {
+        "label": "C",
+        "teks": "1,8 meter dari titik tumpu"
+      },
+      {
+        "label": "D",
+        "teks": "2,0 meter dari titik tumpu"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Syarat kesetimbangan momen gaya: $w_1 \\cdot L_1 = w_2 \\cdot L_2 \\Rightarrow 400 \\times 1,5 = 300 \\times L_2 \\Rightarrow 600 = 300 L_2 \\Rightarrow L_2 = \\frac{600}{300} = 2,0 \\text{ meter}$.",
+    "valid": true
+  },
+  {
+    "nomor": 26,
+    "materi": "Usaha, Energi, & Pesawat Sederhana",
+    "paket": "Bab III: Usaha, Energi, & Pesawat Sederhana - Bagian B: Contoh Soal Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Sebuah benda bermassa 4 kg ditarik dengan gaya 50 N ke kanan di atas lantai licin tanpa gesekan sejauh 6 meter. Besar usaha yang dilakukan gaya tersebut adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch3_usaha_energi_pesawat.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "200 Joule"
+      },
+      {
+        "label": "B",
+        "teks": "300 Joule"
+      },
+      {
+        "label": "C",
+        "teks": "400 Joule"
+      },
+      {
+        "label": "D",
+        "teks": "500 Joule"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Usaha: $W = F \\cdot s = 50 \\text{ N} \\times 6 \\text{ m} = 300 \\text{ Joule}$.",
+    "valid": true
+  },
+  {
+    "nomor": 27,
+    "materi": "Usaha, Energi, & Pesawat Sederhana",
+    "paket": "Bab III: Usaha, Energi, & Pesawat Sederhana - Bagian B: Contoh Soal Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Sebuah mobil mainan bermassa 0,5 kg bergerak dengan kecepatan 4 m/s. Besar energi kinetik mobil mainan tersebut adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch3_usaha_energi_pesawat.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "2 Joule"
+      },
+      {
+        "label": "B",
+        "teks": "4 Joule"
+      },
+      {
+        "label": "C",
+        "teks": "8 Joule"
+      },
+      {
+        "label": "D",
+        "teks": "16 Joule"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "$E_k = \\frac{1}{2} m v^2 = \\frac{1}{2} \\times 0,5 \\times 4^2 = 0,25 \\times 16 = 4 \\text{ Joule}$.",
+    "valid": true
+  },
+  {
+    "nomor": 28,
+    "materi": "Usaha, Energi, & Pesawat Sederhana",
+    "paket": "Bab III: Usaha, Energi, & Pesawat Sederhana - Bagian B: Contoh Soal Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Batu bermassa 5 kg berada di tepi jurang setinggi 20 meter di atas tanah ($g = 10 \\text{ m/s}^2$). Energi potensial gravitasi batu relatif terhadap dasar jurang adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch3_usaha_energi_pesawat.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "100 Joule"
+      },
+      {
+        "label": "B",
+        "teks": "500 Joule"
+      },
+      {
+        "label": "C",
+        "teks": "1.000 Joule"
+      },
+      {
+        "label": "D",
+        "teks": "2.000 Joule"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "$E_p = m \\cdot g \\cdot h = 5 \\times 10 \\times 20 = 1.000 \\text{ Joule}$.",
+    "valid": true
+  },
+  {
+    "nomor": 29,
+    "materi": "Usaha, Energi, & Pesawat Sederhana",
+    "paket": "Bab III: Usaha, Energi, & Pesawat Sederhana - Bagian B: Contoh Soal Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Lampu pijar menyerap energi listrik sebesar 3.600 Joule dalam waktu 1 menit. Daya listrik lampu pijar tersebut adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch3_usaha_energi_pesawat.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "60 Watt"
+      },
+      {
+        "label": "B",
+        "teks": "120 Watt"
+      },
+      {
+        "label": "C",
+        "teks": "180 Watt"
+      },
+      {
+        "label": "D",
+        "teks": "360 Watt"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "$P = \\frac{W}{t} = \\frac{3.600 \\text{ J}}{60 \\text{ s}} = 60 \\text{ Watt}$.",
+    "valid": true
+  },
+  {
+    "nomor": 30,
+    "materi": "Usaha, Energi, & Pesawat Sederhana",
+    "paket": "Bab III: Usaha, Energi, & Pesawat Sederhana - Bagian B: Contoh Soal Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Tuas yang memiliki panjang lengan beban 20 cm dan lengan kuasa 80 cm memiliki keuntungan mekanis sebesar ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch3_usaha_energi_pesawat.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "2"
+      },
+      {
+        "label": "B",
+        "teks": "4"
+      },
+      {
+        "label": "C",
+        "teks": "6"
+      },
+      {
+        "label": "D",
+        "teks": "8"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "$KM = \\frac{L_k}{L_b} = \\frac{80 \\text{ cm}}{20 \\text{ cm}} = 4$.",
+    "valid": true
+  },
+  {
+    "nomor": 31,
+    "materi": "Usaha, Energi, & Pesawat Sederhana",
+    "paket": "Bab III: Usaha, Energi, & Pesawat Sederhana - Bagian B: Contoh Soal Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Gunting kertas bekerja berdasarkan prinsip pengungkit di mana posisi titik tumpu berada di antara beban dan kuasa. Gunting termasuk ke dalam tuas golongan ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch3_usaha_energi_pesawat.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Golongan I"
+      },
+      {
+        "label": "B",
+        "teks": "Golongan II"
+      },
+      {
+        "label": "C",
+        "teks": "Golongan III"
+      },
+      {
+        "label": "D",
+        "teks": "Golongan IV"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Tuas jenis I menempatkan titik tumpu di antara titik beban dan titik kuasa ($B - T - K$). Contohnya gunting, tang, dan jungkat-jungkit.",
+    "valid": true
+  },
+  {
+    "nomor": 32,
+    "materi": "Usaha, Energi, & Pesawat Sederhana",
+    "paket": "Bab III: Usaha, Energi, & Pesawat Sederhana - Bagian B: Contoh Soal Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Alat pembuka tutup botol dan gerobak dorong roda satu merupakan contoh penerapan tuas golongan ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch3_usaha_energi_pesawat.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Golongan I"
+      },
+      {
+        "label": "B",
+        "teks": "Golongan II"
+      },
+      {
+        "label": "C",
+        "teks": "Golongan III"
+      },
+      {
+        "label": "D",
+        "teks": "Golongan tak beraturan"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Tuas jenis II menempatkan titik beban di antara titik tumpu dan titik kuasa ($T - B - K$).",
+    "valid": true
+  },
+  {
+    "nomor": 33,
+    "materi": "Usaha, Energi, & Pesawat Sederhana",
+    "paket": "Bab III: Usaha, Energi, & Pesawat Sederhana - Bagian B: Contoh Soal Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Pada katrol tetap tunggal, keuntungan mekanisnya adalah 1. Fungsi utama penggunaan katrol tetap adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch3_usaha_energi_pesawat.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Melipatgandakan gaya kuasa menjadi dua kali lipat"
+      },
+      {
+        "label": "B",
+        "teks": "Mengurangi beban benda"
+      },
+      {
+        "label": "C",
+        "teks": "Mengubah arah gaya tarik sehingga searah dengan gaya gravitasi bumi"
+      },
+      {
+        "label": "D",
+        "teks": "Menghilangkan gaya gesekan"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Katrol tetap tidak mengubah besar gaya yang diperlukan ($KM = 1$), namun mempermudah pekerjaan dengan mengubah arah gaya tarik menjadi ke bawah.",
+    "valid": true
+  },
+  {
+    "nomor": 34,
+    "materi": "Usaha, Energi, & Pesawat Sederhana",
+    "paket": "Bab III: Usaha, Energi, & Pesawat Sederhana - Bagian B: Contoh Soal Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Sebuah papan miring yang panjangnya 5 m disandarkan pada bak truk setinggi 1 m. Keuntungan mekanis papan miring tersebut adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch3_usaha_energi_pesawat.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "1"
+      },
+      {
+        "label": "B",
+        "teks": "4"
+      },
+      {
+        "label": "C",
+        "teks": "5"
+      },
+      {
+        "label": "D",
+        "teks": "6"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "$KM = \\frac{s}{h} = \\frac{5 \\text{ m}}{1 \\text{ m}} = 5$.",
+    "valid": true
+  },
+  {
+    "nomor": 35,
+    "materi": "Usaha, Energi, & Pesawat Sederhana",
+    "paket": "Bab III: Usaha, Energi, & Pesawat Sederhana - Bagian B: Contoh Soal Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Baji adalah bidang miring ganda yang digunakan untuk membelah kayu atau memotong benda. Contoh alat dalam kehidupan sehari-hari yang menggunakan prinsip baji adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch3_usaha_energi_pesawat.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Kapak dan pisau"
+      },
+      {
+        "label": "B",
+        "teks": "Gerobak roda satu"
+      },
+      {
+        "label": "C",
+        "teks": "Tangga lipat"
+      },
+      {
+        "label": "D",
+        "teks": "Katrol sumur"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Kapak, pisau, dan paku memiliki ujung runcing yang merupakan penerapan dari baji (bidang miring ganda) untuk memfokuskan gaya dorong ke samping.",
+    "valid": true
+  },
+  {
+    "nomor": 36,
+    "materi": "Usaha, Energi, & Pesawat Sederhana",
+    "paket": "Bab III: Usaha, Energi, & Pesawat Sederhana - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Satuan usaha dalam Sistem Internasional (SI) adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch3_usaha_energi_pesawat.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Joule (Newton meter)"
+      },
+      {
+        "label": "B",
+        "teks": "Watt"
+      },
+      {
+        "label": "C",
+        "teks": "Pascal"
+      },
+      {
+        "label": "D",
+        "teks": "Newton"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Satuan SI untuk usaha dan energi adalah Joule ($1 \\text{ Joule} = 1 \\text{ Newton} \\times 1 \\text{ meter}$).",
+    "valid": true
+  },
+  {
+    "nomor": 37,
+    "materi": "Usaha, Energi, & Pesawat Sederhana",
+    "paket": "Bab III: Usaha, Energi, & Pesawat Sederhana - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Dua gaya F1 = 40 N ke kanan dan F2 = 15 N ke kiri bekerja pada balok sehingga berpindah 4 m ke kanan. Usaha totalnya adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch3_usaha_energi_pesawat.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "100 Joule"
+      },
+      {
+        "label": "B",
+        "teks": "160 Joule"
+      },
+      {
+        "label": "C",
+        "teks": "220 Joule"
+      },
+      {
+        "label": "D",
+        "teks": "25 Joule"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "$\\Sigma F = 40 - 15 = 25$ N; $W = \\Sigma F \\cdot s = 25 \\times 4 = 100$ Joule.",
+    "valid": true
+  },
+  {
+    "nomor": 38,
+    "materi": "Usaha, Energi, & Pesawat Sederhana",
+    "paket": "Bab III: Usaha, Energi, & Pesawat Sederhana - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Benda bergerak dengan kelajuan 6 m/s memiliki energi kinetik 72 Joule. Massa benda tersebut adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch3_usaha_energi_pesawat.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "2 kg"
+      },
+      {
+        "label": "B",
+        "teks": "4 kg"
+      },
+      {
+        "label": "C",
+        "teks": "6 kg"
+      },
+      {
+        "label": "D",
+        "teks": "8 kg"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "$E_k = \\frac{1}{2}mv^2 \\Rightarrow 72 = \\frac{1}{2}m(36) \\Rightarrow 72 = 18m \\Rightarrow m = 4$ kg.",
+    "valid": true
+  },
+  {
+    "nomor": 39,
+    "materi": "Usaha, Energi, & Pesawat Sederhana",
+    "paket": "Bab III: Usaha, Energi, & Pesawat Sederhana - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Sebuah mangga bermassa 400 gram (0,4 kg) berada pada ketinggian 5 m dari tanah ($g = 10 \\text{ m/s}^2$). Energi potensial mangga adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch3_usaha_energi_pesawat.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "2 Joule"
+      },
+      {
+        "label": "B",
+        "teks": "20 Joule"
+      },
+      {
+        "label": "C",
+        "teks": "200 Joule"
+      },
+      {
+        "label": "D",
+        "teks": "2.000 Joule"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "$E_p = mgh = 0,4 \\times 10 \\times 5 = 20$ Joule.",
+    "valid": true
+  },
+  {
+    "nomor": 40,
+    "materi": "Usaha, Energi, & Pesawat Sederhana",
+    "paket": "Bab III: Usaha, Energi, & Pesawat Sederhana - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Saat sebuah pendulum/bandul berayun bolak-balik, titik di mana bandul memiliki energi kinetik maksimum adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch3_usaha_energi_pesawat.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Titik setimbang terendah"
+      },
+      {
+        "label": "B",
+        "teks": "Titik simpangan terjauh"
+      },
+      {
+        "label": "C",
+        "teks": "Di sembarang titik"
+      },
+      {
+        "label": "D",
+        "teks": "Saat bandul berhenti"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Pada titik setimbang terendah, ketinggian $h=0$ sehingga energi potensial minimum dan seluruh energi mekanik berupa energi kinetik maksimum.",
+    "valid": true
+  },
+  {
+    "nomor": 41,
+    "materi": "Usaha, Energi, & Pesawat Sederhana",
+    "paket": "Bab III: Usaha, Energi, & Pesawat Sederhana - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Sebuah setrika listrik melakukan usaha 12.000 Joule selama 40 detik. Daya setrika tersebut adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch3_usaha_energi_pesawat.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "300 Watt"
+      },
+      {
+        "label": "B",
+        "teks": "400 Watt"
+      },
+      {
+        "label": "C",
+        "teks": "480 Watt"
+      },
+      {
+        "label": "D",
+        "teks": "600 Watt"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "$P = W / t = 12.000 / 40 = 300$ Watt.",
+    "valid": true
+  },
+  {
+    "nomor": 42,
+    "materi": "Usaha, Energi, & Pesawat Sederhana",
+    "paket": "Bab III: Usaha, Energi, & Pesawat Sederhana - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Keuntungan mekanis sebuah tuas adalah perbandingan antara ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch3_usaha_energi_pesawat.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Berat beban terhadap gaya kuasa"
+      },
+      {
+        "label": "B",
+        "teks": "Gaya kuasa terhadap beban"
+      },
+      {
+        "label": "C",
+        "teks": "Panjang tuas terhadap berat"
+      },
+      {
+        "label": "D",
+        "teks": "Waktu terhadap daya"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Keuntungan mekanis didefinisikan sebagai rasio gaya beban terhadap gaya kuasa ($KM = w / F = L_k / L_b$).",
+    "valid": true
+  },
+  {
+    "nomor": 43,
+    "materi": "Usaha, Energi, & Pesawat Sederhana",
+    "paket": "Bab III: Usaha, Energi, & Pesawat Sederhana - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Pada jungkat-jungkit, jika lengan kuasa 3 kali lebih panjang daripada lengan beban, maka gaya kuasa F yang dibutuhkan adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch3_usaha_energi_pesawat.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "1/3 dari berat beban"
+      },
+      {
+        "label": "B",
+        "teks": "3 kali berat beban"
+      },
+      {
+        "label": "C",
+        "teks": "Sama dengan berat beban"
+      },
+      {
+        "label": "D",
+        "teks": "Nol"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "$w \\cdot L_b = F \\cdot L_k \\Rightarrow F = w (L_b / L_k) = w (1/3) = \\frac{1}{3}w$.",
+    "valid": true
+  },
+  {
+    "nomor": 44,
+    "materi": "Usaha, Energi, & Pesawat Sederhana",
+    "paket": "Bab III: Usaha, Energi, & Pesawat Sederhana - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Penjepit es dan pinset merupakan contoh tuas golongan ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch3_usaha_energi_pesawat.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Golongan I"
+      },
+      {
+        "label": "B",
+        "teks": "Golongan II"
+      },
+      {
+        "label": "C",
+        "teks": "Golongan III"
+      },
+      {
+        "label": "D",
+        "teks": "Golongan IV"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Pada pinset, titik kuasa berada di tengah di antara tumpu belakang dan beban di ujung jepit (Tuas jenis III).",
+    "valid": true
+  },
+  {
+    "nomor": 45,
+    "materi": "Usaha, Energi, & Pesawat Sederhana",
+    "paket": "Bab III: Usaha, Energi, & Pesawat Sederhana - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Alat berikut yang bekerja menggunakan prinsip katrol bebas adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch3_usaha_energi_pesawat.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Katrol penimba air sumur"
+      },
+      {
+        "label": "B",
+        "teks": "Katrol pengangkat peti kemas pelabuhan"
+      },
+      {
+        "label": "C",
+        "teks": "Tiang bendera"
+      },
+      {
+        "label": "D",
+        "teks": "Kerekan sangkar burung"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Katrol pada derek peti kemas menggunakan katrol bergerak/majemuk untuk melipatgandakan gaya angkat.",
+    "valid": true
+  },
+  {
+    "nomor": 46,
+    "materi": "Usaha, Energi, & Pesawat Sederhana",
+    "paket": "Bab III: Usaha, Energi, & Pesawat Sederhana - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Beban seberat 500 N diangkat dengan katrol bergerak. Gaya kuasa minimalnya adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch3_usaha_energi_pesawat.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "250 N"
+      },
+      {
+        "label": "B",
+        "teks": "500 N"
+      },
+      {
+        "label": "C",
+        "teks": "1.000 N"
+      },
+      {
+        "label": "D",
+        "teks": "125 N"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "$KM = 2 \\Rightarrow F = w / 2 = 500 / 2 = 250$ N.",
+    "valid": true
+  },
+  {
+    "nomor": 47,
+    "materi": "Usaha, Energi, & Pesawat Sederhana",
+    "paket": "Bab III: Usaha, Energi, & Pesawat Sederhana - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Katrol majemuk yang memiliki 3 tali penopang beban memiliki keuntungan mekanis sebesar ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch3_usaha_energi_pesawat.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "1"
+      },
+      {
+        "label": "B",
+        "teks": "2"
+      },
+      {
+        "label": "C",
+        "teks": "3"
+      },
+      {
+        "label": "D",
+        "teks": "6"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Keuntungan mekanis takal ditentukan oleh jumlah penggal tali penopang beban, yaitu $KM = 3$.",
+    "valid": true
+  },
+  {
+    "nomor": 48,
+    "materi": "Usaha, Energi, & Pesawat Sederhana",
+    "paket": "Bab III: Usaha, Energi, & Pesawat Sederhana - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Papan bidang miring sepanjang 6 m digunakan untuk menaikkan drum ke bak setinggi 2 m. Keuntungan mekanisnya adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch3_usaha_energi_pesawat.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "3"
+      },
+      {
+        "label": "B",
+        "teks": "4"
+      },
+      {
+        "label": "C",
+        "teks": "8"
+      },
+      {
+        "label": "D",
+        "teks": "12"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "$KM = s / h = 6 / 2 = 3$.",
+    "valid": true
+  },
+  {
+    "nomor": 49,
+    "materi": "Usaha, Energi, & Pesawat Sederhana",
+    "paket": "Bab III: Usaha, Energi, & Pesawat Sederhana - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Beban 800 N didorong pada bidang miring yang memiliki KM = 4. Besar gaya dorongnya adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch3_usaha_energi_pesawat.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "200 N"
+      },
+      {
+        "label": "B",
+        "teks": "400 N"
+      },
+      {
+        "label": "C",
+        "teks": "800 N"
+      },
+      {
+        "label": "D",
+        "teks": "3.200 N"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "$F = w / KM = 800 / 4 = 200$ N.",
+    "valid": true
+  },
+  {
+    "nomor": 50,
+    "materi": "Usaha, Energi, & Pesawat Sederhana",
+    "paket": "Bab III: Usaha, Energi, & Pesawat Sederhana - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Berikut ini alat yang BUKAN merupakan penerapan bidang miring adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch3_usaha_energi_pesawat.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Sekrup"
+      },
+      {
+        "label": "B",
+        "teks": "Kapak"
+      },
+      {
+        "label": "C",
+        "teks": "Tangga rumah"
+      },
+      {
+        "label": "D",
+        "teks": "Jungkat-jungkit"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Jungkat-jungkit merupakan penerapan tuas/pengungkit golongan I, bukan bidang miring.",
+    "valid": true
+  },
+  {
+    "nomor": 51,
+    "materi": "Usaha, Energi, & Pesawat Sederhana",
+    "paket": "Bab III: Usaha, Energi, & Pesawat Sederhana - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Ulir pada dongkrak ulir dan baut mur bekerja berdasarkan prinsip pesawat sederhana ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch3_usaha_energi_pesawat.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Bidang miring"
+      },
+      {
+        "label": "B",
+        "teks": "Tuas golongan III"
+      },
+      {
+        "label": "C",
+        "teks": "Katrol tetap"
+      },
+      {
+        "label": "D",
+        "teks": "Roda bergigi"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Ulir sekrup merupakan bidang miring yang melingkari silinder poros.",
+    "valid": true
+  },
+  {
+    "nomor": 52,
+    "materi": "Usaha, Energi, & Pesawat Sederhana",
+    "paket": "Bab III: Usaha, Energi, & Pesawat Sederhana - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Roda kemudi mobil dengan diameter setir 40 cm dan poros kemudi 4 cm memiliki keuntungan mekanis sebesar ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch3_usaha_energi_pesawat.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "10"
+      },
+      {
+        "label": "B",
+        "teks": "4"
+      },
+      {
+        "label": "C",
+        "teks": "0,1"
+      },
+      {
+        "label": "D",
+        "teks": "160"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "$KM = R / r = 20 \\text{ cm} / 2 \\text{ cm} = 10$ (atau $40 / 4 = 10$).",
+    "valid": true
+  },
+  {
+    "nomor": 53,
+    "materi": "Usaha, Energi, & Pesawat Sederhana",
+    "paket": "Bab III: Usaha, Energi, & Pesawat Sederhana - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Pesawat sederhana yang memanfaatkan prinsip roda bergigi untuk mengubah kelajuan dan arah putar adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch3_usaha_energi_pesawat.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Gir sepeda dan roda jam mekanis"
+      },
+      {
+        "label": "B",
+        "teks": "Baji kapak"
+      },
+      {
+        "label": "C",
+        "teks": "Paku"
+      },
+      {
+        "label": "D",
+        "teks": "Gunting"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Gir (roda bergigi) mentransmisikan daya putar dan mengatur rasio torsi-kecepatan pada transmisi mesin dan sepeda.",
+    "valid": true
+  },
+  {
+    "nomor": 54,
+    "materi": "Usaha, Energi, & Pesawat Sederhana",
+    "paket": "Bab III: Usaha, Energi, & Pesawat Sederhana - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Usaha bernilai negatif ketika ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch3_usaha_energi_pesawat.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Arah gaya berlawanan dengan arah perpindahan benda (seperti gaya gesekan)"
+      },
+      {
+        "label": "B",
+        "teks": "Benda tidak berpindah"
+      },
+      {
+        "label": "C",
+        "teks": "Gaya tegak lurus perpindahan"
+      },
+      {
+        "label": "D",
+        "teks": "Benda melaju sangat kencang"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Jika gaya $F$ membentuk sudut 180° terhadap arah gerak ($s$), $\\cos 180^\\circ = -1$, sehingga $W = -F \\cdot s$ (usaha pengereman/gesek).",
+    "valid": true
+  },
+  {
+    "nomor": 55,
+    "materi": "Usaha, Energi, & Pesawat Sederhana",
+    "paket": "Bab III: Usaha, Energi, & Pesawat Sederhana - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Seorang anak mendorong tembok beton sekuat tenaga hingga berkeringat, namun tembok tidak bergerak sama sekali. Usaha anak tersebut adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch3_usaha_energi_pesawat.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "0 Joule"
+      },
+      {
+        "label": "B",
+        "teks": "Maksimum"
+      },
+      {
+        "label": "C",
+        "teks": "Negatif"
+      },
+      {
+        "label": "D",
+        "teks": "Bergantung massa tembok"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Karena perpindahan $s = 0$, maka usaha mekanik $W = F \\cdot s = F \\times 0 = 0$ Joule.",
+    "valid": true
+  },
+  {
+    "nomor": 56,
+    "materi": "Usaha, Energi, & Pesawat Sederhana",
+    "paket": "Bab III: Usaha, Energi, & Pesawat Sederhana - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Energi mekanik adalah penjumlahan dari ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch3_usaha_energi_pesawat.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Energi potensial dan energi kinetik"
+      },
+      {
+        "label": "B",
+        "teks": "Energi kimia dan panas"
+      },
+      {
+        "label": "C",
+        "teks": "Energi listrik dan nuklir"
+      },
+      {
+        "label": "D",
+        "teks": "Massa dan kecepatan"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "$E_M = E_p + E_k$. Sesuai hukum kekekalan energi mekanik, nilai $E_M$ konstan jika tidak ada gaya disipatif luar.",
+    "valid": true
+  },
+  {
+    "nomor": 57,
+    "materi": "Usaha, Energi, & Pesawat Sederhana",
+    "paket": "Bab III: Usaha, Energi, & Pesawat Sederhana - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Benda jatuh bebas dari ketinggian tertentu. Pernyataan yang benar sepanjang gerak jatuhnya adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch3_usaha_energi_pesawat.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Energi potensial berkurang dan energi kinetik bertambah"
+      },
+      {
+        "label": "B",
+        "teks": "Energi mekanik terus membesar"
+      },
+      {
+        "label": "C",
+        "teks": "Energi kinetik berkurang"
+      },
+      {
+        "label": "D",
+        "teks": "Energi potensial konstan"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Ketinggian berkurang menyebabkan $E_p$ turun, dan kelajuan bertambah menyebabkan $E_k$ naik secara proporsional.",
+    "valid": true
+  },
+  {
+    "nomor": 58,
+    "materi": "Usaha, Energi, & Pesawat Sederhana",
+    "paket": "Bab III: Usaha, Energi, & Pesawat Sederhana - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Daya 1 Horsepower (HP / tenaga kuda) setara dengan ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch3_usaha_energi_pesawat.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "746 Watt"
+      },
+      {
+        "label": "B",
+        "teks": "1.000 Watt"
+      },
+      {
+        "label": "C",
+        "teks": "500 Watt"
+      },
+      {
+        "label": "D",
+        "teks": "100 Watt"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Secara standar internasional, $1 \\text{ HP} \\approx 745,7 \\text{ Watt} \\approx 746 \\text{ Watt}$.",
+    "valid": true
+  },
+  {
+    "nomor": 59,
+    "materi": "Usaha, Energi, & Pesawat Sederhana",
+    "paket": "Bab III: Usaha, Energi, & Pesawat Sederhana - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Pada tuas, hasil kali gaya beban dengan lengan beban sama dengan hasil kali gaya kuasa dengan ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch3_usaha_energi_pesawat.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Lengan kuasa"
+      },
+      {
+        "label": "B",
+        "teks": "Panjang tuas"
+      },
+      {
+        "label": "C",
+        "teks": "Tinggi tumpu"
+      },
+      {
+        "label": "D",
+        "teks": "Berat tuas"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Hukum kesetimbangan momen gaya: $w \\cdot L_b = F \\cdot L_k$.",
+    "valid": true
+  },
+  {
+    "nomor": 60,
+    "materi": "Usaha, Energi, & Pesawat Sederhana",
+    "paket": "Bab III: Usaha, Energi, & Pesawat Sederhana - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Titik tumpu berada di antara beban dan kuasa adalah ciri dari tuas ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch3_usaha_energi_pesawat.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Golongan I"
+      },
+      {
+        "label": "B",
+        "teks": "Golongan II"
+      },
+      {
+        "label": "C",
+        "teks": "Golongan III"
+      },
+      {
+        "label": "D",
+        "teks": "Golongan bebas"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Tuas jenis I menempatkan titik tumpu di antara titik beban dan titik kuasa ($B - T - K$).",
+    "valid": true
+  },
+  {
+    "nomor": 61,
+    "materi": "Usaha, Energi, & Pesawat Sederhana",
+    "paket": "Bab III: Usaha, Energi, & Pesawat Sederhana - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Pemotong kuku merupakan kombinasi dari tuas ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch3_usaha_energi_pesawat.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Golongan I dan III"
+      },
+      {
+        "label": "B",
+        "teks": "Golongan II dan III"
+      },
+      {
+        "label": "C",
+        "teks": "Golongan I dan II"
+      },
+      {
+        "label": "D",
+        "teks": "Hanya bidang miring"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Tangkai atas pemotong kuku adalah tuas golongan II (beban di tengah ditekan tangkai), sedangkan rahang pisau bekerja sebagai tuas jenis I.",
+    "valid": true
+  },
+  {
+    "nomor": 62,
+    "materi": "Usaha, Energi, & Pesawat Sederhana",
+    "paket": "Bab III: Usaha, Energi, & Pesawat Sederhana - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Alat pancing bekerja berdasarkan prinsip tuas golongan ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch3_usaha_energi_pesawat.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Golongan III"
+      },
+      {
+        "label": "B",
+        "teks": "Golongan II"
+      },
+      {
+        "label": "C",
+        "teks": "Golongan I"
+      },
+      {
+        "label": "D",
+        "teks": "Katrol bebas"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Tangan penopang bawah adalah tumpu, tangan atas menarik gagang (kuasa di tengah), dan kail penahan ikan di ujung adalah beban (Tuas III).",
+    "valid": true
+  },
+  {
+    "nomor": 63,
+    "materi": "Usaha, Energi, & Pesawat Sederhana",
+    "paket": "Bab III: Usaha, Energi, & Pesawat Sederhana - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Keuntungan mekanis sebuah bidang miring akan semakin besar jika ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch3_usaha_energi_pesawat.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Panjang papan diperbesar dan tinggi bidang miring diperkecil"
+      },
+      {
+        "label": "B",
+        "teks": "Tinggi bidang miring diperbesar"
+      },
+      {
+        "label": "C",
+        "teks": "Papan dibuat semakin pendek"
+      },
+      {
+        "label": "D",
+        "teks": "Beban diperkecil"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "$KM = s / h$. Memperpanjang $s$ atau memperkecil $h$ akan memperbesar nilai $KM$ sehingga gaya kuasa semakin kecil.",
+    "valid": true
+  },
+  {
+    "nomor": 64,
+    "materi": "Usaha, Energi, & Pesawat Sederhana",
+    "paket": "Bab III: Usaha, Energi, & Pesawat Sederhana - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Tangga lipat yang digunakan untuk memanjat tembok memanfaatkan prinsip ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch3_usaha_energi_pesawat.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Bidang miring"
+      },
+      {
+        "label": "B",
+        "teks": "Tuas golongan II"
+      },
+      {
+        "label": "C",
+        "teks": "Katrol majemuk"
+      },
+      {
+        "label": "D",
+        "teks": "Roda berporos"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Tangga bersandar membentuk bidang miring yang memperkecil gaya angkat vertikal saat mendaki ketinggian.",
+    "valid": true
+  },
+  {
+    "nomor": 65,
+    "materi": "Usaha, Energi, & Pesawat Sederhana",
+    "paket": "Bab III: Usaha, Energi, & Pesawat Sederhana - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Roda kemudi kapal laut merupakan contoh dari pesawat sederhana ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch3_usaha_energi_pesawat.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Roda berporos"
+      },
+      {
+        "label": "B",
+        "teks": "Tuas jenis I"
+      },
+      {
+        "label": "C",
+        "teks": "Bidang miring"
+      },
+      {
+        "label": "D",
+        "teks": "Katrol ganda"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Roda kemudi memutar poros kemudi kapal berdasarkan prinsip roda berporos ($KM = R/r$).",
+    "valid": true
+  },
+  {
+    "nomor": 66,
+    "materi": "Usaha, Energi, & Pesawat Sederhana",
+    "paket": "Bab III: Usaha, Energi, & Pesawat Sederhana - Bagian D: Pengayaan AKM Literasi Sains & TKA",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "[AKM Literasi Sains — Efisiensi Mesin Pesawat Sederhana] Sebuah motor derek listrik mengonsumsi energi 10.000 Joule untuk mengangkat peti seberat 2.000 N setinggi 4 meter. Berapakah efisiensi mekanik mesin derek tersebut?",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch3_usaha_energi_pesawat.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "60%"
+      },
+      {
+        "label": "B",
+        "teks": "70%"
+      },
+      {
+        "label": "C",
+        "teks": "80%"
+      },
+      {
+        "label": "D",
+        "teks": "90%"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Usaha berguna keluaran: $W_{out} = mgh = 2.000 \\times 4 = 8.000$ Joule. Energi masukan: $W_{in} = 10.000$ Joule. Efisiensi: $\\eta = \\frac{W_{out}}{W_{in}} \\times 100\\% = \\frac{8.000}{10.000} \\times 100\\% = 80\\%$. Sisanya 20% hilang sebagai kalor gesekan mesin.",
+    "valid": true
+  },
+  {
+    "nomor": 67,
+    "materi": "Usaha, Energi, & Pesawat Sederhana",
+    "paket": "Bab III: Usaha, Energi, & Pesawat Sederhana - Bagian D: Pengayaan AKM Literasi Sains & TKA",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "[AKM Pilihan Ganda Kompleks — Analisis Grafik Usaha F-s] Sebuah gaya F berubah terhadap posisi s pada grafik: F konstan 20 N dari s = 0 sampai 4 m, kemudian gaya turun secara linear menjadi 0 N pada s = 8 m. Total usaha yang dilakukan gaya tersebut adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch3_usaha_energi_pesawat.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "80 Joule"
+      },
+      {
+        "label": "B",
+        "teks": "120 Joule"
+      },
+      {
+        "label": "C",
+        "teks": "160 Joule"
+      },
+      {
+        "label": "D",
+        "teks": "200 Joule"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Usaha adalah luas daerah di bawah kurva grafik F-s (trapesium): Luas = $\\frac{\\text{sisi sejajar atas} + \\text{sisi sejajar bawah}}{2} \\times \\text{tinggi} = \\frac{4 + 8}{2} \\times 20 = 6 \\times 20 = 120$ Joule.",
+    "valid": true
+  },
+  {
+    "nomor": 68,
+    "materi": "Usaha, Energi, & Pesawat Sederhana",
+    "paket": "Bab III: Usaha, Energi, & Pesawat Sederhana - Bagian D: Pengayaan AKM Literasi Sains & TKA",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "[AKM Analisis Fisiologis & Mekanika Tubuh] Mengapa saat membawa ransel berat di punggung, kita secara refleks mencondongkan badan ke depan?",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch3_usaha_energi_pesawat.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Untuk mempercepat langkah kaki"
+      },
+      {
+        "label": "B",
+        "teks": "Mencondongkan badan ke depan menggeser kembali titik pusat massa (center of gravity) gabungan tubuh-ransel agar tetap berada di atas bidang tumpuan kedua kaki sehingga tubuh tetap stabil seimbang"
+      },
+      {
+        "label": "C",
+        "teks": "Untuk mengurangi massa ransel"
+      },
+      {
+        "label": "D",
+        "teks": "Agar gaya gesek sepatu menjadi nol"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Beban ransel di punggung menarik titik berat ke belakang. Dengan membungkuk ke depan, resultan garis kerja gaya gravitasi tubuh dikembalikan ke dalam poligon tumpuan kaki untuk mencegah momen gaya putar yang dapat menjatuhkan tubuh ke belakang.",
+    "valid": true
+  },
+  {
+    "nomor": 69,
+    "materi": "Usaha, Energi, & Pesawat Sederhana",
+    "paket": "Bab III: Usaha, Energi, & Pesawat Sederhana - Bagian D: Pengayaan AKM Literasi Sains & TKA",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "[AKM Rekayasa Desain — Sistem Katrol Penyelamat] Tim SAR menggunakan sistem takal dengan 5 penggal tali untuk mengangkat korban kecelakaan seberat 75 kg ($w = 750$ N) dari jurang. Jika efisiensi katrol 75%, berapakah gaya tarik tali F yang harus dikerahkan tim SAR?",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch3_usaha_energi_pesawat.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "100 N"
+      },
+      {
+        "label": "B",
+        "teks": "150 N"
+      },
+      {
+        "label": "C",
+        "teks": "200 N"
+      },
+      {
+        "label": "D",
+        "teks": "250 N"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Keuntungan mekanis ideal: $KM = 5$. Karena efisiensi $\\eta = 75\\% = 0,75$: $KM_{nyata} = \\eta \\times KM_{ideal} = 0,75 \\times 5 = 3,75$. Gaya yang dibutuhkan: $F = \\frac{w}{KM_{nyata}} = \\frac{750}{3,75} = 200$ N.",
+    "valid": true
+  },
+  {
+    "nomor": 70,
+    "materi": "Usaha, Energi, & Pesawat Sederhana",
+    "paket": "Bab III: Usaha, Energi, & Pesawat Sederhana - Bagian D: Pengayaan AKM Literasi Sains & TKA",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "[AKM Evaluasi Energi Terbarukan — Pembangkit Listrik Tenaga Mikrohidro] Sebuah pembangkit mikrohidro memanfaatkan air terjun setinggi 10 meter dengan debit aliran 0,2 m3/s (massa air 200 kg tiap detik). Jika efisiensi konversi turbin-generator adalah 60% ($g = 10 \\text{ m/s}^2$), daya listrik yang dihasilkan adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch3_usaha_energi_pesawat.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "6 kW"
+      },
+      {
+        "label": "B",
+        "teks": "12 kW"
+      },
+      {
+        "label": "C",
+        "teks": "20 kW"
+      },
+      {
+        "label": "D",
+        "teks": "30 kW"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Daya hidrolik potensial total tiap detik: $P_{in} = \\frac{mgh}{t} = 200 \\times 10 \\times 10 = 20.000 \\text{ Watt} = 20 \\text{ kW}$. Daya listrik yang dihasilkan: $P_{out} = \\eta \\times P_{in} = 60\\% \\times 20 \\text{ kW} = 12 \\text{ kW}$.",
+    "valid": true
+  }
+]

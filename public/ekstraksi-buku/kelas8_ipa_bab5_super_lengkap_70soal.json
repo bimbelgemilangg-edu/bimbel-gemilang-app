@@ -1,0 +1,2242 @@
+[
+  {
+    "nomor": 1,
+    "materi": "Unsur, Senyawa, dan Campuran",
+    "paket": "Bab V: Unsur, Senyawa, & Campuran - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Perhatikan gambar model partikel zat di dalam empat kotak berikut:\n- Kotak I: Partikel berupa atom tunggal sejenis yang terpisah\n- Kotak II: Partikel berupa molekul dwiatomik sejenis (dua atom sejenis berikatan)\n- Kotak III: Partikel berupa molekul senyawa (dua atom berbeda berikatan)\n- Kotak IV: Campuran berbagai macam atom dan molekul yang tidak berikatan kimia\nKotak yang merepresentasikan Molekul Unsur dan Molekul Senyawa berturut-turut adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch5_unsur_senyawa_atom.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Kotak I dan Kotak II"
+      },
+      {
+        "label": "B",
+        "teks": "Kotak I dan Kotak III"
+      },
+      {
+        "label": "C",
+        "teks": "Kotak II dan Kotak III"
+      },
+      {
+        "label": "D",
+        "teks": "Kotak III dan Kotak IV"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Kotak II adalah molekul unsur (tersusun dari atom-atom yang sejenis, misalnya $O_2$ atau $H_2$). Kotak III adalah molekul senyawa (tersusun dari dua atau lebih jenis atom berbeda yang terikat secara kimiawi, misalnya $H_2O$ atau $CO$).",
+    "valid": true
+  },
+  {
+    "nomor": 2,
+    "materi": "Unsur, Senyawa, dan Campuran",
+    "paket": "Bab V: Unsur, Senyawa, & Campuran - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Penulisan lambang unsur kimia menurut aturan Jons Jakob Berzelius untuk unsur Besi, Tembaga, Perak, Emas, dan Raksa berturut-turut adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch5_unsur_senyawa_atom.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Be, Te, Pe, Em, Ra"
+      },
+      {
+        "label": "B",
+        "teks": "Fe, Cu, Ag, Au, Hg"
+      },
+      {
+        "label": "C",
+        "teks": "B, T, P, E, R"
+      },
+      {
+        "label": "D",
+        "teks": "Fe, Co, Ar, Au, Pb"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Aturan Berzelius mengambil huruf pertama kapital dan huruf kedua kecil dari nama ilmiah Latinnya: Besi = Ferrum ($Fe$), Tembaga = Cuprum ($Cu$), Perak = Argentum ($Ag$), Emas = Aurum ($Au$), dan Raksa = Hydrargyrum ($Hg$).",
+    "valid": true
+  },
+  {
+    "nomor": 3,
+    "materi": "Unsur, Senyawa, dan Campuran",
+    "paket": "Bab V: Unsur, Senyawa, & Campuran - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Pada umumnya unsur logam berwujud padat pada suhu ruang (25°C) dan unsur nonlogam merupakan isolator panas/listrik. Pengecualian pada aturan umum ini terjadi pada ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch5_unsur_senyawa_atom.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Raksa (Hg) adalah logam yang berwujud cair pada suhu kamar, dan Grafit (karbon) adalah nonlogam yang dapat menghantarkan listrik"
+      },
+      {
+        "label": "B",
+        "teks": "Besi berwujud cair dan Emas adalah gas"
+      },
+      {
+        "label": "C",
+        "teks": "Aluminium tidak menghantarkan panas"
+      },
+      {
+        "label": "D",
+        "teks": "Oksigen adalah logam padat"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Raksa ($Hg$) memiliki titik leleh sangat rendah (-38,8°C) sehingga menjadi satu-satunya unsur logam berwujud cair pada suhu kamar. Grafit adalah alotrop karbon (nonlogam) dengan struktur elektron pi terdelokalisasi yang mampu menghantarkan arus listrik dengan sangat baik.",
+    "valid": true
+  },
+  {
+    "nomor": 4,
+    "materi": "Unsur, Senyawa, dan Campuran",
+    "paket": "Bab V: Unsur, Senyawa, & Campuran - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Unsur Silikon (Si) dan Germanium (Ge) memiliki sifat peralihan di antara logam dan nonlogam (metaloid). Aplikasi utama unsur metaloid dalam teknologi industri modern adalah sebagai ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch5_unsur_senyawa_atom.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Bahan bakar roket antariksa"
+      },
+      {
+        "label": "B",
+        "teks": "Pewarna alami tekstil"
+      },
+      {
+        "label": "C",
+        "teks": "Logam pelapis perhiasan anti karat"
+      },
+      {
+        "label": "D",
+        "teks": "Bahan semikonduktor pembuat mikroprosesor komputer (chip IC) dan sel surya (solar cell)"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Metaloid seperti Silikon ($Si$) dan Germanium ($Ge$) bersifat semikonduktor, yaitu isolator pada suhu rendah namun menjadi konduktor saat diberi doping atom asing atau pada suhu tinggi. Karakteristik ini mendasari pembuatan transistor dan sirkuit terpadu mikroprosesor.",
+    "valid": true
+  },
+  {
+    "nomor": 5,
+    "materi": "Unsur, Senyawa, dan Campuran",
+    "paket": "Bab V: Unsur, Senyawa, & Campuran - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Garam dapur (NaCl) yang kita konsumsi sehari-hari tersusun atas logam Natrium (Na) yang sangat reaktif dan mudah meledak jika terkena air, serta gas Klorin (Cl2) yang beracun dan mematikan. Mengapa garam dapur aman dikonsumsi dan rasanya asin tidak beracun?",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch5_unsur_senyawa_atom.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Karena kadar klorinnya sangat encer"
+      },
+      {
+        "label": "B",
+        "teks": "Karena natrium dinetralkan oleh air liur"
+      },
+      {
+        "label": "C",
+        "teks": "Ketika unsur-unsur bereaksi secara kimia membentuk senyawa baru, sifat-sifat asli unsur penyusunnya hilang total dan digantikan oleh sifat kimia dan fisika baru senyawa tersebut"
+      },
+      {
+        "label": "D",
+        "teks": "Karena garam dapur adalah campuran mekanis"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Senyawa terbentuk melalui reaksi ikatan kimia (serah terima elektron membentuk kisi kristal ionik $Na^+$ dan $Cl^-$). Akibatnya, sifat reaktivitas logam $Na$ dan toksisitas gas $Cl_2$ lenyap sama sekali, menghasilkan zat tunggal baru ($NaCl$) dengan sifat yang sama sekali baru.",
+    "valid": true
+  },
+  {
+    "nomor": 6,
+    "materi": "Unsur, Senyawa, dan Campuran",
+    "paket": "Bab V: Unsur, Senyawa, & Campuran - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Molekul glukosa memiliki rumus kimia C6H12O6, sedangkan pupuk urea memiliki rumus kimia CO(NH2)2. Jumlah total atom yang menyusun satu molekul glukosa dan satu molekul urea berturut-turut adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch5_unsur_senyawa_atom.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "12 atom dan 6 atom"
+      },
+      {
+        "label": "B",
+        "teks": "24 atom dan 8 atom"
+      },
+      {
+        "label": "C",
+        "teks": "24 atom dan 7 atom"
+      },
+      {
+        "label": "D",
+        "teks": "18 atom dan 8 atom"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Glukosa ($C_6H_{12}O_6$): $6 \\text{ atom C} + 12 \\text{ atom H} + 6 \\text{ atom O} = 24 \\text{ atom}$. Urea ($CO(NH_2)_2$): $1 \\text{ atom C} + 1 \\text{ atom O} + 2 \\times 1 \\text{ atom N} + 2 \\times 2 \\text{ atom H} = 1 + 1 + 2 + 4 = 8 \\text{ atom}$.",
+    "valid": true
+  },
+  {
+    "nomor": 7,
+    "materi": "Unsur, Senyawa, dan Campuran",
+    "paket": "Bab V: Unsur, Senyawa, & Campuran - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Air murni (H2O) selalu memiliki perbandingan massa hidrogen dan oksigen tetap, yaitu H : O = 1 : 8 sesuai Hukum Proust. Jika 4 gram gas hidrogen direaksikan dengan 40 gram gas oksigen, massa air yang terbentuk dan massa zat yang tersisa adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch5_unsur_senyawa_atom.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "36 gram air terbentuk dan tersisa 8 gram oksigen"
+      },
+      {
+        "label": "B",
+        "teks": "44 gram air terbentuk dan tidak ada zat tersisa"
+      },
+      {
+        "label": "C",
+        "teks": "32 gram air terbentuk dan tersisa 12 gram oksigen"
+      },
+      {
+        "label": "D",
+        "teks": "40 gram air terbentuk dan tersisa 4 gram hidrogen"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Rasio perbandingan $H : O = 1 : 8$. Untuk 4 gram hidrogen, dibutuhkan oksigen sebanyak $4 \\times 8 = 32 \\text{ gram}$. Oksigen yang tersedia ada 40 gram, maka oksigen berlebih dan tersisa: $40 - 32 = 8 \\text{ gram}$. Massa air yang terbentuk = massa $H$ terpakai + massa $O$ terpakai = $4 + 32 = 36 \\text{ gram}$.",
+    "valid": true
+  },
+  {
+    "nomor": 8,
+    "materi": "Unsur, Senyawa, dan Campuran",
+    "paket": "Bab V: Unsur, Senyawa, & Campuran - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Seorang siswa mengarahkan berkas sinar senter melewati tiga gelas kimia: Gelas A (air gula jernih), Gelas B (susu cair encer), dan Gelas C (air kopi pekat). Berkas sinar tampak diteruskan lurus tanpa jejak pada Gelas A, namun pada Gelas B jejak berkas sinar tampak jelas terhamburkan bercahaya. Hamburan cahaya pada sistem koloid ini disebut ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch5_unsur_senyawa_atom.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Efek Doppler"
+      },
+      {
+        "label": "B",
+        "teks": "Gerak Brown"
+      },
+      {
+        "label": "C",
+        "teks": "Efek Tyndall"
+      },
+      {
+        "label": "D",
+        "teks": "Elektroforesis"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Efek Tyndall adalah penghamburan berkas cahaya oleh partikel-partikel koloid yang memiliki ukuran (1–100 nm) sebanding dengan panjang gelombang cahaya tampak, sehingga lintasan berkas cahaya menjadi terlihat jelas.",
+    "valid": true
+  },
+  {
+    "nomor": 9,
+    "materi": "Unsur, Senyawa, dan Campuran",
+    "paket": "Bab V: Unsur, Senyawa, & Campuran - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Tiga buah gelas kimia masing-masing berisi: Gelas A (larutan garam dapur jernih), Gelas B (koloid santan kelapa), dan Gelas C (suspensi air bercampur pasir halus). Perbedaan stabilitas fisik ketiga cairan tersebut setelah didiamkan selama 1 jam adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch5_unsur_senyawa_atom.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Semua gelas mengendap"
+      },
+      {
+        "label": "B",
+        "teks": "Gelas A mengendap, Gelas B dan C jernih"
+      },
+      {
+        "label": "C",
+        "teks": "Gelas B mengendap paling cepat"
+      },
+      {
+        "label": "D",
+        "teks": "Gelas A (larutan) dan Gelas B (koloid) tetap stabil tidak mengendap, sedangkan Gelas C (suspensi) mengendap membentuk sedimen pasir di dasar gelas"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Larutan sejati bersifat homogen dan sangat stabil (tidak mengendap). Koloid relatif stabil dan tidak mengendap dalam waktu singkat karena gerak Brown partikel. Suspensi bersifat heterogen kasar sehingga partikelnya cepat mengendap di dasar wadah oleh gaya gravitasi.",
+    "valid": true
+  },
+  {
+    "nomor": 10,
+    "materi": "Unsur, Senyawa, dan Campuran",
+    "paket": "Bab V: Unsur, Senyawa, & Campuran - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Kuningan (brass) dan Perunggu (bronze) adalah campuran paduan logam (aloi / amalgam padat) yang banyak dimanfaatkan manusia. Logam penyusun kuningan dan perunggu berturut-turut adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch5_unsur_senyawa_atom.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Besi dan Nikel"
+      },
+      {
+        "label": "B",
+        "teks": "Tembaga (Cu) + Seng (Zn) untuk Kuningan, dan Tembaga (Cu) + Timah (Sn) untuk Perunggu"
+      },
+      {
+        "label": "C",
+        "teks": "Aluminium dan Tembaga"
+      },
+      {
+        "label": "D",
+        "teks": "Perak dan Emas"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Kuningan adalah paduan larutan padat antara tembaga ($Cu$) dan seng ($Zn$). Perunggu adalah paduan tembaga ($Cu$) dengan timah ($Sn$). Keduanya merupakan campuran homogen padat.",
+    "valid": true
+  },
+  {
+    "nomor": 11,
+    "materi": "Unsur, Senyawa, dan Campuran",
+    "paket": "Bab V: Unsur, Senyawa, & Campuran - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Sebuah botol alkohol antiseptik di kotak P3K bertuliskan label kadar “Alkohol 70%”. Jika volume total larutan di dalam botol adalah 200 mL, berapakah volume alkohol murni dan volume air pelarutnya?",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch5_unsur_senyawa_atom.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "140 mL alkohol murni dan 60 mL air"
+      },
+      {
+        "label": "B",
+        "teks": "70 mL alkohol murni dan 130 mL air"
+      },
+      {
+        "label": "C",
+        "teks": "100 mL alkohol murni dan 100 mL air"
+      },
+      {
+        "label": "D",
+        "teks": "160 mL alkohol murni dan 40 mL air"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Volume alkohol murni = $70\\% \\times 200 \\text{ mL} = \\frac{70}{100} \\times 200 = 140 \\text{ mL}$. Volume air pelarut = $200 \\text{ mL} - 140 \\text{ mL} = 60 \\text{ mL}$.",
+    "valid": true
+  },
+  {
+    "nomor": 12,
+    "materi": "Unsur, Senyawa, dan Campuran",
+    "paket": "Bab V: Unsur, Senyawa, & Campuran - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Jika ke dalam segelas larutan gula yang manis ditambahkan 200 mL air murni, yang terjadi pada konsentrasi kemanisan larutan tersebut adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch5_unsur_senyawa_atom.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Kemanisan meningkat karena jumlah gula bertambah"
+      },
+      {
+        "label": "B",
+        "teks": "Konsentrasi larutan gula tidak mengalami perubahan"
+      },
+      {
+        "label": "C",
+        "teks": "Gula mengendap di dasar gelas"
+      },
+      {
+        "label": "D",
+        "teks": "Konsentrasi larutan menurun (terjadi pengenceran) sehingga rasa manis berkurang, meskipun jumlah molekul gula terlarut tetap sama"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Proses pengenceran (dilution) menambah volume pelarut sehingga rasio konsentrasi $\\frac{\\text{massa zat terlarut}}{\\text{volume larutan}}$ menurun, yang secara sensorik dirasakan sebagai berkurangnya rasa manis.",
+    "valid": true
+  },
+  {
+    "nomor": 13,
+    "materi": "Unsur, Senyawa, dan Campuran",
+    "paket": "Bab V: Unsur, Senyawa, & Campuran - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Udara bersih di atmosfer bumi yang kita hirup setiap saat tergolong sebagai campuran homogen gas. Gas penyusun udara atmosfer yang memiliki persentase volume paling melimpah adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch5_unsur_senyawa_atom.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Gas Oksigen (O2)"
+      },
+      {
+        "label": "B",
+        "teks": "Gas Karbon dioksida (CO2)"
+      },
+      {
+        "label": "C",
+        "teks": "Gas Nitrogen (N2) sekitar 78%"
+      },
+      {
+        "label": "D",
+        "teks": "Gas Argon (Ar)"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Komposisi udara kering atmosfer bumi: Gas Nitrogen ($N_2$) sekitar 78%, Gas Oksigen ($O_2$) sekitar 21%, Argon ($Ar$) sekitar 0,93%, dan Karbon dioksida ($CO_2$) sekitar 0,04%.",
+    "valid": true
+  },
+  {
+    "nomor": 14,
+    "materi": "Unsur, Senyawa, dan Campuran",
+    "paket": "Bab V: Unsur, Senyawa, & Campuran - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Perhatikan beberapa karakteristik materi berikut:\n(1) Terbentuk melalui proses pencampuran fisika tanpa ikatan kimia baru\n(2) Perbandingan massa komponen-komponennya bebas (tidak tetap)\n(3) Sifat-sifat zat penyusunnya masih tetap tampak\n(4) Dapat dipisahkan kembali menjadi komponen aslinya melalui metode fisika biasa\nCiri-ciri di atas merupakan karakteristik dari ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch5_unsur_senyawa_atom.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Unsur"
+      },
+      {
+        "label": "B",
+        "teks": "Campuran"
+      },
+      {
+        "label": "C",
+        "teks": "Senyawa"
+      },
+      {
+        "label": "D",
+        "teks": "Atom monoatomik"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Keempat poin tersebut adalah ciri khas campuran (baik homogen maupun heterogen), yang membedakannya secara mutlak dari senyawa kimiawi.",
+    "valid": true
+  },
+  {
+    "nomor": 15,
+    "materi": "Unsur, Senyawa, dan Campuran",
+    "paket": "Bab V: Unsur, Senyawa, & Campuran - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Perhatikan beberapa zat di sekitar kita berikut:\n(1) Kawat tembaga murni\n(2) Air mineral pegunungan\n(3) Gas oksigen tabung rumah sakit\n(4) Belerang kuning di kawah gunung\n(5) Sirup rasa melon\nZat yang tergolong Unsur kimia adalah nomor ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch5_unsur_senyawa_atom.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(1), (3), dan (4)"
+      },
+      {
+        "label": "B",
+        "teks": "(1), (2), dan (5)"
+      },
+      {
+        "label": "C",
+        "teks": "(2) dan (5)"
+      },
+      {
+        "label": "D",
+        "teks": "(3), (4), dan (5)"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Tembaga ($Cu$), oksigen ($O_2$), dan belerang ($S_8$) adalah unsur kimia murni. Air mineral adalah larutan (campuran air dan garam mineral), dan sirup adalah campuran larutan gula dengan perisa.",
+    "valid": true
+  },
+  {
+    "nomor": 16,
+    "materi": "Unsur, Senyawa, dan Campuran",
+    "paket": "Bab V: Unsur, Senyawa, & Campuran - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Di dalam struktur atom, partikel subatomik yang bermuatan listrik positif, partikel bermuatan netral (tidak bermuatan), dan partikel bermuatan listrik negatif berturut-turut adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch5_unsur_senyawa_atom.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Elektron, proton, dan neutron"
+      },
+      {
+        "label": "B",
+        "teks": "Neutron, proton, dan elektron"
+      },
+      {
+        "label": "C",
+        "teks": "Proton, neutron, dan elektron"
+      },
+      {
+        "label": "D",
+        "teks": "Positron, foton, dan gluon"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Struktur dasar atom terdiri atas inti atom yang berisi proton (muatan +1) dan neutron (netral 0), serta awan kulit atom yang ditempati oleh elektron (muatan -1) yang mengelilingi inti.",
+    "valid": true
+  },
+  {
+    "nomor": 17,
+    "materi": "Unsur, Senyawa, dan Campuran",
+    "paket": "Bab V: Unsur, Senyawa, & Campuran - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Sebuah spesi ion Kalsium memiliki nomor atom Z = 20 dan nomor massa A = 40. Jika atom kalsium tersebut membentuk kation Ca2+, jumlah proton, elektron, dan neutron di dalam ion Ca2+ tersebut berturut-turut adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch5_unsur_senyawa_atom.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "20 proton, 18 elektron, dan 20 neutron"
+      },
+      {
+        "label": "B",
+        "teks": "20 proton, 20 elektron, dan 20 neutron"
+      },
+      {
+        "label": "C",
+        "teks": "18 proton, 20 elektron, dan 22 neutron"
+      },
+      {
+        "label": "D",
+        "teks": "20 proton, 22 elektron, dan 20 neutron"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Nomor atom $Z = 20 \\Rightarrow \\text{Proton} = 20$. Neutron = $A - Z = 40 - 20 = 20$. Karena ion bermuatan $+2$ ($Ca^{2+}$), atom telah melepaskan 2 elektron: Elektron = $20 - 2 = 18$. Maka berturut-turut adalah 20, 18, dan 20.",
+    "valid": true
+  },
+  {
+    "nomor": 18,
+    "materi": "Unsur, Senyawa, dan Campuran",
+    "paket": "Bab V: Unsur, Senyawa, & Campuran - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Atom Klorin memiliki nomor atom 17 dan nomor massa 35. Ketika atom klorin menangkap 1 elektron dari luar untuk mencapai kestabilan oktet membentuk ion klorida (Cl-), jumlah proton dan elektronnya adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch5_unsur_senyawa_atom.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Proton tetap 17 dan elektron menjadi 18"
+      },
+      {
+        "label": "B",
+        "teks": "Proton menjadi 18 dan elektron tetap 17"
+      },
+      {
+        "label": "C",
+        "teks": "Proton dan elektron sama-sama 18"
+      },
+      {
+        "label": "D",
+        "teks": "Proton dan elektron sama-sama 16"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Pembentukan anion ($Cl^-$) hanya melibatkan penangkapan elektron pada kulit valensi: elektron bertambah 1 menjadi $17 + 1 = 18$. Jumlah proton di dalam inti atom tidak berubah dan tetap 17.",
+    "valid": true
+  },
+  {
+    "nomor": 19,
+    "materi": "Unsur, Senyawa, dan Campuran",
+    "paket": "Bab V: Unsur, Senyawa, & Campuran - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Atom-atom dari unsur yang sama yang memiliki nomor atom (jumlah proton) sama persis, tetapi memiliki nomor massa (jumlah neutron) yang berbeda disebut ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch5_unsur_senyawa_atom.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Isobar"
+      },
+      {
+        "label": "B",
+        "teks": "Isoton"
+      },
+      {
+        "label": "C",
+        "teks": "Isomer"
+      },
+      {
+        "label": "D",
+        "teks": "Isotop (misalnya Karbon-12 dan Karbon-14)"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Isotop adalah atom-atom yang memiliki nomor atom sama (unsur sejenis, jumlah proton sama) namun nomor massanya berbeda akibat perbedaan jumlah neutron di inti.",
+    "valid": true
+  },
+  {
+    "nomor": 20,
+    "materi": "Unsur, Senyawa, dan Campuran",
+    "paket": "Bab V: Unsur, Senyawa, & Campuran - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Dua atom berbeda, yaitu Karbon-14 (nomor atom 6, nomor massa 14) dan Nitrogen-14 (nomor atom 7, nomor massa 14), memiliki nomor massa yang sama persis namun nomor atomnya berbeda. Pasangan atom tersebut disebut ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch5_unsur_senyawa_atom.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Isobar"
+      },
+      {
+        "label": "B",
+        "teks": "Isotop"
+      },
+      {
+        "label": "C",
+        "teks": "Isoton"
+      },
+      {
+        "label": "D",
+        "teks": "Alotrop"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Isobar adalah atom-atom dari unsur berbeda (nomor atom berlainan) yang memiliki nomor massa ($A$) yang sama persis.",
+    "valid": true
+  },
+  {
+    "nomor": 21,
+    "materi": "Unsur, Senyawa, dan Campuran",
+    "paket": "Bab V: Unsur, Senyawa, & Campuran - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Model atom yang menggambarkan elektron bergerak mengelilingi inti atom pada lintasan stasioner orbit tertentu (kulit K, L, M, N) dengan tingkat energi diskret tertentu dikemukakan oleh ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch5_unsur_senyawa_atom.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "John Dalton"
+      },
+      {
+        "label": "B",
+        "teks": "J.J. Thomson"
+      },
+      {
+        "label": "C",
+        "teks": "Niels Bohr"
+      },
+      {
+        "label": "D",
+        "teks": "Ernest Rutherford"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Niels Bohr menyempurnakan model atom Rutherford dengan memperkenalkan postulat kuantisasi lintasan elektron stasioner di mana elektron tidak memancarkan radiasi selama mengorbit pada tingkat energinya.",
+    "valid": true
+  },
+  {
+    "nomor": 22,
+    "materi": "Unsur, Senyawa, dan Campuran",
+    "paket": "Bab V: Unsur, Senyawa, & Campuran - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Atom Natrium (Na) memiliki nomor atom 11. Konfigurasi susunan elektron per kulit atom (K, L, M) menurut model atom Bohr yang benar adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch5_unsur_senyawa_atom.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "2, 8, 1"
+      },
+      {
+        "label": "B",
+        "teks": "2, 9"
+      },
+      {
+        "label": "C",
+        "teks": "2, 7, 2"
+      },
+      {
+        "label": "D",
+        "teks": "3, 8"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Kapasitas maksimum elektron pada kulit $n$ adalah $2n^2$: Kulit K ($n=1$) maks 2 elektron, Kulit L ($n=2$) maks 8 elektron, dan sisanya 1 elektron mengisi kulit M ($n=3$). Maka konfigurasinya adalah 2, 8, 1.",
+    "valid": true
+  },
+  {
+    "nomor": 23,
+    "materi": "Unsur, Senyawa, dan Campuran",
+    "paket": "Bab V: Unsur, Senyawa, & Campuran - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Ketika kita menyeduh kopi bubuk dengan air panas lalu mendiamkannya beberapa menit, terbentuk endapan ampas kopi hitam pekat di bagian dasar cangkir. Hal ini membuktikan bahwa air kopi tubruk tergolong ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch5_unsur_senyawa_atom.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Suspensi (campuran kasar heterogen)"
+      },
+      {
+        "label": "B",
+        "teks": "Larutan homogen sejati"
+      },
+      {
+        "label": "C",
+        "teks": "Senyawa murni"
+      },
+      {
+        "label": "D",
+        "teks": "Unsur tunggal"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Terbentuknya endapan (sedimen) secara spontan di dasar wadah merupakan ciri khas suspensi karena ukuran partikel ampas kopi $> 100 \\text{ nm}$ sehingga gaya gravitasi mengalahkan gaya gerak termal partikel.",
+    "valid": true
+  },
+  {
+    "nomor": 24,
+    "materi": "Unsur, Senyawa, dan Campuran",
+    "paket": "Bab V: Unsur, Senyawa, & Campuran - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Baja tahan karat (stainless steel) yang digunakan untuk pisau bedah dan sendok makan merupakan paduan logam antara Besi (Fe), Kromium (Cr), dan Nikel (Ni). Penambahan unsur kromium berfungsi untuk ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch5_unsur_senyawa_atom.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Membuat logam mudah terbakar"
+      },
+      {
+        "label": "B",
+        "teks": "Menurunkan massa jenis besi"
+      },
+      {
+        "label": "C",
+        "teks": "Membentuk lapisan pasivasi kromium oksida mikro di permukaan yang kedap oksigen sehingga besi terlindung dari korosi perkaratan"
+      },
+      {
+        "label": "D",
+        "teks": "Menjadikan baja lentur seperti karet"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Kromium bereaksi dengan oksigen membentuk lapisan oksida $Cr_2O_3$ sangat tipis namun sangat rapat dan melekat kuat (lapisan pasif) yang mencegah difusi gas oksigen dan air ke dalam atom besi.",
+    "valid": true
+  },
+  {
+    "nomor": 25,
+    "materi": "Unsur, Senyawa, dan Campuran",
+    "paket": "Bab V: Unsur, Senyawa, & Campuran - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Dalam penjernihan air keruh, penambahan tawas (alum) berfungsi menggumpalkan kotoran lumpur halus. Peran tawas dalam ilmu kimia koloid adalah sebagai ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch5_unsur_senyawa_atom.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Bahan pewarna air"
+      },
+      {
+        "label": "B",
+        "teks": "Pelarut organik"
+      },
+      {
+        "label": "C",
+        "teks": "Pemanis buatan"
+      },
+      {
+        "label": "D",
+        "teks": "Koagulan, di mana kation Al3+ menetralkan muatan negatif partikel koloid lumpur sehingga partikel bergabung menggumpal menjadi flok besar yang cepat mengendap"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Partikel koloid lumpur stabil karena bermuatan negatif yang saling tolak-menolak. Ion $Al^{3+}$ dari tawas menetralkan muatan listrik tersebut (koagulasi), sehingga partikel beraglomerasi menjadi flok-flok besar yang mudah mengendap atau disaring.",
+    "valid": true
+  },
+  {
+    "nomor": 26,
+    "materi": "Unsur, Senyawa, dan Campuran",
+    "paket": "Bab V: Unsur, Senyawa, & Campuran - Bagian B: Contoh Soal Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Zat tunggal yang tidak dapat diuraikan lagi menjadi zat lain yang lebih sederhana melalui reaksi kimia biasa disebut ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch5_unsur_senyawa_atom.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Unsur"
+      },
+      {
+        "label": "B",
+        "teks": "Senyawa"
+      },
+      {
+        "label": "C",
+        "teks": "Campuran"
+      },
+      {
+        "label": "D",
+        "teks": "Larutan"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Unsur adalah zat tunggal paling mendasar yang tersusun atas satu jenis atom dan tidak dapat didekomposisi lebih lanjut melalui reaksi kimia biasa.",
+    "valid": true
+  },
+  {
+    "nomor": 27,
+    "materi": "Unsur, Senyawa, dan Campuran",
+    "paket": "Bab V: Unsur, Senyawa, & Campuran - Bagian B: Contoh Soal Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Zat tunggal yang terbentuk dari gabungan dua atau lebih unsur berbeda melalui reaksi kimia dengan perbandingan massa tetap disebut ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch5_unsur_senyawa_atom.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Unsur"
+      },
+      {
+        "label": "B",
+        "teks": "Senyawa"
+      },
+      {
+        "label": "C",
+        "teks": "Campuran heterogen"
+      },
+      {
+        "label": "D",
+        "teks": "Koloid"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Senyawa adalah zat tunggal hasil persenyawaan kimia dari dua unsur atau lebih dengan rasio stoikiometri massa yang pasti.",
+    "valid": true
+  },
+  {
+    "nomor": 28,
+    "materi": "Unsur, Senyawa, dan Campuran",
+    "paket": "Bab V: Unsur, Senyawa, & Campuran - Bagian B: Contoh Soal Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Berikut ini yang merupakan kelompok unsur nonlogam adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch5_unsur_senyawa_atom.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Besi, tembaga, dan emas"
+      },
+      {
+        "label": "B",
+        "teks": "Oksigen, nitrogen, dan belerang"
+      },
+      {
+        "label": "C",
+        "teks": "Natrium, kalsium, dan kalium"
+      },
+      {
+        "label": "D",
+        "teks": "Aluminium, seng, dan timah"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Oksigen ($O$), Nitrogen ($N$), dan Belerang ($S$) adalah unsur-unsur nonlogam golongan utama.",
+    "valid": true
+  },
+  {
+    "nomor": 29,
+    "materi": "Unsur, Senyawa, dan Campuran",
+    "paket": "Bab V: Unsur, Senyawa, & Campuran - Bagian B: Contoh Soal Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Campuran antara dua zat atau lebih yang partikel-partikel penyusunnya menyatu sempurna dan tidak dapat dibedakan lagi batas antar-fasenya disebut ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch5_unsur_senyawa_atom.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Campuran homogen (larutan)"
+      },
+      {
+        "label": "B",
+        "teks": "Campuran heterogen (suspensi)"
+      },
+      {
+        "label": "C",
+        "teks": "Senyawa"
+      },
+      {
+        "label": "D",
+        "teks": "Endapan"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Campuran homogen adalah dispersi satu fase di mana sifat dan komposisi zat di seluruh bagian larutan serba sama.",
+    "valid": true
+  },
+  {
+    "nomor": 30,
+    "materi": "Unsur, Senyawa, dan Campuran",
+    "paket": "Bab V: Unsur, Senyawa, & Campuran - Bagian B: Contoh Soal Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Contoh campuran homogen dalam kehidupan sehari-hari adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch5_unsur_senyawa_atom.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Air sirup dan larutan garam dapur"
+      },
+      {
+        "label": "B",
+        "teks": "Campuran air dan pasir"
+      },
+      {
+        "label": "C",
+        "teks": "Campuran minyak tanah dan air"
+      },
+      {
+        "label": "D",
+        "teks": "Air selokan berlumpur"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Air sirup dan air garam terlarut sempurna membentuk campuran homogen satu fase yang transparan.",
+    "valid": true
+  },
+  {
+    "nomor": 31,
+    "materi": "Unsur, Senyawa, dan Campuran",
+    "paket": "Bab V: Unsur, Senyawa, & Campuran - Bagian B: Contoh Soal Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Bagian terkecil dari suatu unsur yang masih mempertahankan sifat-sifat kimia unsur tersebut adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch5_unsur_senyawa_atom.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Atom"
+      },
+      {
+        "label": "B",
+        "teks": "Molekul"
+      },
+      {
+        "label": "C",
+        "teks": "Senyawa"
+      },
+      {
+        "label": "D",
+        "teks": "Campuran"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Atom adalah satuan unit dasar penyusun materi yang memiliki identitas kimia unsur.",
+    "valid": true
+  },
+  {
+    "nomor": 32,
+    "materi": "Unsur, Senyawa, dan Campuran",
+    "paket": "Bab V: Unsur, Senyawa, & Campuran - Bagian B: Contoh Soal Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Gabungan dua atau lebih atom sejenis membentuk ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch5_unsur_senyawa_atom.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Molekul unsur"
+      },
+      {
+        "label": "B",
+        "teks": "Molekul senyawa"
+      },
+      {
+        "label": "C",
+        "teks": "Campuran"
+      },
+      {
+        "label": "D",
+        "teks": "Kation"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Molekul unsur tersusun atas atom-atom dari unsur yang sama, misalnya gas oksigen ($O_2$), ozon ($O_3$), dan gas hidrogen ($H_2$).",
+    "valid": true
+  },
+  {
+    "nomor": 33,
+    "materi": "Unsur, Senyawa, dan Campuran",
+    "paket": "Bab V: Unsur, Senyawa, & Campuran - Bagian B: Contoh Soal Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Gabungan dua atau lebih atom yang berbeda jenis membentuk ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch5_unsur_senyawa_atom.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Molekul senyawa"
+      },
+      {
+        "label": "B",
+        "teks": "Molekul unsur"
+      },
+      {
+        "label": "C",
+        "teks": "Atom tunggal"
+      },
+      {
+        "label": "D",
+        "teks": "Isotop"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Molekul senyawa tersusun dari ikatan atom-atom berlainan jenis, misalnya karbon dioksida ($CO_2$) dan metana ($CH_4$).",
+    "valid": true
+  },
+  {
+    "nomor": 34,
+    "materi": "Unsur, Senyawa, dan Campuran",
+    "paket": "Bab V: Unsur, Senyawa, & Campuran - Bagian B: Contoh Soal Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Atom yang bermuatan listrik karena melepaskan atau menangkap elektron disebut ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch5_unsur_senyawa_atom.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Ion"
+      },
+      {
+        "label": "B",
+        "teks": "Isotop"
+      },
+      {
+        "label": "C",
+        "teks": "Molekul"
+      },
+      {
+        "label": "D",
+        "teks": "Koloid"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Ion adalah atom atau gugus atom yang memiliki muatan listrik neto (kation jika bermuatan positif, anion jika bermuatan negatif).",
+    "valid": true
+  },
+  {
+    "nomor": 35,
+    "materi": "Unsur, Senyawa, dan Campuran",
+    "paket": "Bab V: Unsur, Senyawa, & Campuran - Bagian B: Contoh Soal Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Jumlah proton di dalam inti atom dinyatakan oleh ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch5_unsur_senyawa_atom.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Nomor atom (Z)"
+      },
+      {
+        "label": "B",
+        "teks": "Nomor massa (A)"
+      },
+      {
+        "label": "C",
+        "teks": "Jumlah elektron valensi"
+      },
+      {
+        "label": "D",
+        "teks": "Massa atom relatif"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Nomor atom ($Z$) menunjukkan jumlah proton di dalam inti atom sekaligus menentukan identitas unsur dalam tabel periodik.",
+    "valid": true
+  },
+  {
+    "nomor": 36,
+    "materi": "Unsur, Senyawa, dan Campuran",
+    "paket": "Bab V: Unsur, Senyawa, & Campuran - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Lambang kimia untuk unsur Kalsium dan Kalium berturut-turut adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch5_unsur_senyawa_atom.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Ca dan K"
+      },
+      {
+        "label": "B",
+        "teks": "K dan Ca"
+      },
+      {
+        "label": "C",
+        "teks": "Kl dan Ka"
+      },
+      {
+        "label": "D",
+        "teks": "C dan P"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Kalsium dilambangkan $Ca$ (Calcium), sedangkan Kalium dilambangkan $K$ (Kalium/Potassium).",
+    "valid": true
+  },
+  {
+    "nomor": 37,
+    "materi": "Unsur, Senyawa, dan Campuran",
+    "paket": "Bab V: Unsur, Senyawa, & Campuran - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Rumus kimia dari gas karbon dioksida dan air berturut-turut adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch5_unsur_senyawa_atom.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "CO2 dan H2O"
+      },
+      {
+        "label": "B",
+        "teks": "CO dan H2O2"
+      },
+      {
+        "label": "C",
+        "teks": "C2O dan HO"
+      },
+      {
+        "label": "D",
+        "teks": "CO2 dan H2SO4"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Karbon dioksida adalah $CO_2$ dan air adalah $H_2O$.",
+    "valid": true
+  },
+  {
+    "nomor": 38,
+    "materi": "Unsur, Senyawa, dan Campuran",
+    "paket": "Bab V: Unsur, Senyawa, & Campuran - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Asam sulfat memiliki rumus kimia H2SO4. Jumlah atom hidrogen, belerang, dan oksigen dalam satu molekul asam sulfat adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch5_unsur_senyawa_atom.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "2 hidrogen, 1 belerang, 4 oksigen"
+      },
+      {
+        "label": "B",
+        "teks": "1 hidrogen, 2 belerang, 4 oksigen"
+      },
+      {
+        "label": "C",
+        "teks": "2 hidrogen, 4 belerang, 1 oksigen"
+      },
+      {
+        "label": "D",
+        "teks": "4 hidrogen, 1 belerang, 2 oksigen"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Dalam $H_2SO_4$: 2 atom H, 1 atom S, dan 4 atom O (total 7 atom).",
+    "valid": true
+  },
+  {
+    "nomor": 39,
+    "materi": "Unsur, Senyawa, dan Campuran",
+    "paket": "Bab V: Unsur, Senyawa, & Campuran - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Berikut ini yang merupakan contoh molekul senyawa adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch5_unsur_senyawa_atom.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "H2O (air)"
+      },
+      {
+        "label": "B",
+        "teks": "O2 (oksigen)"
+      },
+      {
+        "label": "C",
+        "teks": "N2 (nitrogen)"
+      },
+      {
+        "label": "D",
+        "teks": "O3 (ozon)"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "$H_2O$ tersusun atas atom H dan O yang berbeda jenis, sehingga tergolong molekul senyawa.",
+    "valid": true
+  },
+  {
+    "nomor": 40,
+    "materi": "Unsur, Senyawa, dan Campuran",
+    "paket": "Bab V: Unsur, Senyawa, & Campuran - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Berikut ini yang merupakan contoh molekul unsur dwiatomik adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch5_unsur_senyawa_atom.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "O2 (oksigen)"
+      },
+      {
+        "label": "B",
+        "teks": "CO2"
+      },
+      {
+        "label": "C",
+        "teks": "H2O"
+      },
+      {
+        "label": "D",
+        "teks": "NH3"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "$O_2$ adalah molekul unsur yang tersusun dari 2 atom sejenis.",
+    "valid": true
+  },
+  {
+    "nomor": 41,
+    "materi": "Unsur, Senyawa, dan Campuran",
+    "paket": "Bab V: Unsur, Senyawa, & Campuran - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Air laut merupakan contoh campuran yang tersusun atas ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch5_unsur_senyawa_atom.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Air murni dan berbagai garam mineral terlarut"
+      },
+      {
+        "label": "B",
+        "teks": "Hanya natrium murni"
+      },
+      {
+        "label": "C",
+        "teks": "Hanya hidrogen dan oksigen"
+      },
+      {
+        "label": "D",
+        "teks": "Endapan batu"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Air laut adalah larutan homogen garam-garaman (NaCl, MgCl2, sulfat) di dalam pelarut air.",
+    "valid": true
+  },
+  {
+    "nomor": 42,
+    "materi": "Unsur, Senyawa, dan Campuran",
+    "paket": "Bab V: Unsur, Senyawa, & Campuran - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Campuran minyak goreng dengan air tergolong campuran heterogen karena ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch5_unsur_senyawa_atom.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Kedua cairan tidak saling melarutkan dan membentuk dua lapisan terpisah"
+      },
+      {
+        "label": "B",
+        "teks": "Minyak berubah jadi padat"
+      },
+      {
+        "label": "C",
+        "teks": "Air menguap habis"
+      },
+      {
+        "label": "D",
+        "teks": "Terbentuk senyawa baru"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Minyak bersifat nonpolar dan air bersifat polar sehingga immiscible (tidak bercampur) membentuk dua fase berbatas jelas.",
+    "valid": true
+  },
+  {
+    "nomor": 43,
+    "materi": "Unsur, Senyawa, dan Campuran",
+    "paket": "Bab V: Unsur, Senyawa, & Campuran - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Susu cair dan santan kelapa tergolong ke dalam sistem dispersi ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch5_unsur_senyawa_atom.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Koloid"
+      },
+      {
+        "label": "B",
+        "teks": "Larutan sejati"
+      },
+      {
+        "label": "C",
+        "teks": "Suspensi kasar"
+      },
+      {
+        "label": "D",
+        "teks": "Endapan murni"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Susu dan santan adalah emulsi lemak dalam air yang tergolong sistem koloid.",
+    "valid": true
+  },
+  {
+    "nomor": 44,
+    "materi": "Unsur, Senyawa, dan Campuran",
+    "paket": "Bab V: Unsur, Senyawa, & Campuran - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Ukuran partikel pada larutan sejati adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch5_unsur_senyawa_atom.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "< 1 nanometer"
+      },
+      {
+        "label": "B",
+        "teks": "1 sampai 100 nm"
+      },
+      {
+        "label": "C",
+        "teks": "> 100 nm"
+      },
+      {
+        "label": "D",
+        "teks": "> 1 mikrometer"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Partikel larutan sejati berukuran molekuler atau ionik $< 1$ nm ($< 10^{-9}$ m).",
+    "valid": true
+  },
+  {
+    "nomor": 45,
+    "materi": "Unsur, Senyawa, dan Campuran",
+    "paket": "Bab V: Unsur, Senyawa, & Campuran - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Ukuran partikel pada sistem koloid berada pada rentang ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch5_unsur_senyawa_atom.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "1 nm sampai 100 nm"
+      },
+      {
+        "label": "B",
+        "teks": "< 1 nm"
+      },
+      {
+        "label": "C",
+        "teks": "> 1.000 nm"
+      },
+      {
+        "label": "D",
+        "teks": "Tepat 1 meter"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Sistem koloid memiliki diameter partikel terdispersi antara 1 nm hingga 100 nm.",
+    "valid": true
+  },
+  {
+    "nomor": 46,
+    "materi": "Unsur, Senyawa, dan Campuran",
+    "paket": "Bab V: Unsur, Senyawa, & Campuran - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Campuran tepung terigu dengan air dingin yang keruh dan mengendap jika didiamkan tergolong ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch5_unsur_senyawa_atom.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Suspensi"
+      },
+      {
+        "label": "B",
+        "teks": "Larutan"
+      },
+      {
+        "label": "C",
+        "teks": "Senyawa"
+      },
+      {
+        "label": "D",
+        "teks": "Unsur"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Partikel tepung berukuran $> 100$ nm dan tidak larut sehingga tergolong suspensi.",
+    "valid": true
+  },
+  {
+    "nomor": 47,
+    "materi": "Unsur, Senyawa, dan Campuran",
+    "paket": "Bab V: Unsur, Senyawa, & Campuran - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Gerak patah-patah tak beraturan dari partikel koloid akibat tumbukan molekul medium pendispersi disebut gerak ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch5_unsur_senyawa_atom.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Brown"
+      },
+      {
+        "label": "B",
+        "teks": "Lurus"
+      },
+      {
+        "label": "C",
+        "teks": "Melingkar"
+      },
+      {
+        "label": "D",
+        "teks": "Parabola"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Gerak Brown adalah gerak acak zig-zag partikel koloid yang menahan partikel dari pengendapan gravitasi.",
+    "valid": true
+  },
+  {
+    "nomor": 48,
+    "materi": "Unsur, Senyawa, dan Campuran",
+    "paket": "Bab V: Unsur, Senyawa, & Campuran - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Partikel subatomik penyusun inti atom adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch5_unsur_senyawa_atom.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Proton dan neutron"
+      },
+      {
+        "label": "B",
+        "teks": "Proton dan elektron"
+      },
+      {
+        "label": "C",
+        "teks": "Neutron dan elektron"
+      },
+      {
+        "label": "D",
+        "teks": "Hanya elektron"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Nukleus (inti atom) tersusun atas nukleon, yaitu proton dan neutron.",
+    "valid": true
+  },
+  {
+    "nomor": 49,
+    "materi": "Unsur, Senyawa, dan Campuran",
+    "paket": "Bab V: Unsur, Senyawa, & Campuran - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Partikel subatomik yang bermuatan negatif dan bergerak mengitari inti atom adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch5_unsur_senyawa_atom.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Elektron"
+      },
+      {
+        "label": "B",
+        "teks": "Proton"
+      },
+      {
+        "label": "C",
+        "teks": "Neutron"
+      },
+      {
+        "label": "D",
+        "teks": "Positron"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Elektron bermuatan $-1$ mengorbit inti atom pada tingkat energi tertentu.",
+    "valid": true
+  },
+  {
+    "nomor": 50,
+    "materi": "Unsur, Senyawa, dan Campuran",
+    "paket": "Bab V: Unsur, Senyawa, & Campuran - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Nomor massa (A) suatu atom menyatakan jumlah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch5_unsur_senyawa_atom.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Proton + neutron"
+      },
+      {
+        "label": "B",
+        "teks": "Proton + elektron"
+      },
+      {
+        "label": "C",
+        "teks": "Hanya proton"
+      },
+      {
+        "label": "D",
+        "teks": "Hanya neutron"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Nomor massa $A = \\text{jumlah proton} + \\text{jumlah neutron}$ di dalam inti atom.",
+    "valid": true
+  },
+  {
+    "nomor": 51,
+    "materi": "Unsur, Senyawa, dan Campuran",
+    "paket": "Bab V: Unsur, Senyawa, & Campuran - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Atom Oksigen memiliki nomor atom 8 dan nomor massa 16. Jumlah neutron atom oksigen adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch5_unsur_senyawa_atom.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "8"
+      },
+      {
+        "label": "B",
+        "teks": "16"
+      },
+      {
+        "label": "C",
+        "teks": "24"
+      },
+      {
+        "label": "D",
+        "teks": "0"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Neutron = $A - Z = 16 - 8 = 8$ neutron.",
+    "valid": true
+  },
+  {
+    "nomor": 52,
+    "materi": "Unsur, Senyawa, dan Campuran",
+    "paket": "Bab V: Unsur, Senyawa, & Campuran - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Atom Magnesium (Mg) dengan nomor atom 12 melepaskan 2 elektron valensinya membentuk ion ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch5_unsur_senyawa_atom.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Mg2+ (kation bermuatan +2)"
+      },
+      {
+        "label": "B",
+        "teks": "Mg2- (anion bermuatan -2)"
+      },
+      {
+        "label": "C",
+        "teks": "Mg+"
+      },
+      {
+        "label": "D",
+        "teks": "Mg-"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Kehilangan 2 elektron ($e^-$) menyebabkan jumlah proton melebihi elektron sebanyak 2, membentuk kation $Mg^{2+}$. ",
+    "valid": true
+  },
+  {
+    "nomor": 53,
+    "materi": "Unsur, Senyawa, dan Campuran",
+    "paket": "Bab V: Unsur, Senyawa, & Campuran - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Atom Oksigen (O) dengan nomor atom 8 menangkap 2 elektron dari luar membentuk ion ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch5_unsur_senyawa_atom.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "O2- (anion bermuatan -2)"
+      },
+      {
+        "label": "B",
+        "teks": "O2+ (kation bermuatan +2)"
+      },
+      {
+        "label": "C",
+        "teks": "O+"
+      },
+      {
+        "label": "D",
+        "teks": "O-"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Menangkap 2 elektron menyebabkan muatan negatif bertambah 2 membentuk anion oksida $O^{2-}$. ",
+    "valid": true
+  },
+  {
+    "nomor": 54,
+    "materi": "Unsur, Senyawa, dan Campuran",
+    "paket": "Bab V: Unsur, Senyawa, & Campuran - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Kelompok unsur yang tergolong unsur logam adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch5_unsur_senyawa_atom.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Besi, tembaga, emas, dan perak"
+      },
+      {
+        "label": "B",
+        "teks": "Oksigen, hidrogen, dan nitrogen"
+      },
+      {
+        "label": "C",
+        "teks": "Belerang, fosfor, dan karbon"
+      },
+      {
+        "label": "D",
+        "teks": "Helium, neon, dan argon"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Ferrum, Cuprum, Aurum, dan Argentum adalah unsur logam mulia dan transisi.",
+    "valid": true
+  },
+  {
+    "nomor": 55,
+    "materi": "Unsur, Senyawa, dan Campuran",
+    "paket": "Bab V: Unsur, Senyawa, & Campuran - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Sifat fisik khas unsur logam yang membedakannya dari nonlogam adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch5_unsur_senyawa_atom.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Dapat ditempa menjadi lempengan dan dapat ditarik menjadi kawat (duktil dan maleabel)"
+      },
+      {
+        "label": "B",
+        "teks": "Rapuh dan mudah patah"
+      },
+      {
+        "label": "C",
+        "teks": "Isolator listrik"
+      },
+      {
+        "label": "D",
+        "teks": "Selalu berwujud gas"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Ikatan logam memungkinkan atom-atom logam bergeser tanpa pecah sehingga bersifat maleabel dan duktil.",
+    "valid": true
+  },
+  {
+    "nomor": 56,
+    "materi": "Unsur, Senyawa, dan Campuran",
+    "paket": "Bab V: Unsur, Senyawa, & Campuran - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Unsur nonlogam yang digunakan sebagai bahan pengisi balon udara karena lebih ringan dari udara dan tidak mudah terbakar adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch5_unsur_senyawa_atom.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Helium (He)"
+      },
+      {
+        "label": "B",
+        "teks": "Hidrogen (H2)"
+      },
+      {
+        "label": "C",
+        "teks": "Oksigen (O2)"
+      },
+      {
+        "label": "D",
+        "teks": "Karbon dioksida (CO2)"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Gas mulia Helium ($He$) berdensitas sangat rendah dan bersifat inert stabil (tidak reaktif/tidak terbakar).",
+    "valid": true
+  },
+  {
+    "nomor": 57,
+    "materi": "Unsur, Senyawa, dan Campuran",
+    "paket": "Bab V: Unsur, Senyawa, & Campuran - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Zat tunggal berikut yang tergolong senyawa organik adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch5_unsur_senyawa_atom.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Gula tebu (sukrosa)"
+      },
+      {
+        "label": "B",
+        "teks": "Garam dapur (NaCl)"
+      },
+      {
+        "label": "C",
+        "teks": "Air murni (H2O)"
+      },
+      {
+        "label": "D",
+        "teks": "Asam klorida (HCl)"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Sukrosa ($C_{12}H_{22}O_{11}$) memiliki rantai karbon organik.",
+    "valid": true
+  },
+  {
+    "nomor": 58,
+    "materi": "Unsur, Senyawa, dan Campuran",
+    "paket": "Bab V: Unsur, Senyawa, & Campuran - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Molekul yang tersusun atas 3 atom oksigen yang berfungsi melindungi bumi dari radiasi ultraviolet di stratosfer adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch5_unsur_senyawa_atom.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Ozon (O3)"
+      },
+      {
+        "label": "B",
+        "teks": "Oksigen (O2)"
+      },
+      {
+        "label": "C",
+        "teks": "Karbon monoksida (CO)"
+      },
+      {
+        "label": "D",
+        "teks": "Dioksida"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Ozon ($O_3$) adalah alotrop molekul unsur oksigen triatomik.",
+    "valid": true
+  },
+  {
+    "nomor": 59,
+    "materi": "Unsur, Senyawa, dan Campuran",
+    "paket": "Bab V: Unsur, Senyawa, & Campuran - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Atom netral selalu memiliki jumlah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch5_unsur_senyawa_atom.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Proton sama dengan jumlah elektron"
+      },
+      {
+        "label": "B",
+        "teks": "Proton sama dengan neutron"
+      },
+      {
+        "label": "C",
+        "teks": "Neutron sama dengan elektron"
+      },
+      {
+        "label": "D",
+        "teks": "Massa sama dengan nol"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Atom netral tidak bermuatan karena muatan positif proton ($+1$) diimbangi sempurna oleh muatan negatif elektron ($-1$).",
+    "valid": true
+  },
+  {
+    "nomor": 60,
+    "materi": "Unsur, Senyawa, dan Campuran",
+    "paket": "Bab V: Unsur, Senyawa, & Campuran - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Kulit pertama (kulit K) pada model atom Bohr dapat menampung elektron maksimum sebanyak ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch5_unsur_senyawa_atom.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "2 elektron"
+      },
+      {
+        "label": "B",
+        "teks": "8 elektron"
+      },
+      {
+        "label": "C",
+        "teks": "18 elektron"
+      },
+      {
+        "label": "D",
+        "teks": "32 elektron"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Kapasitas kulit ke-$n$ = $2n^2$. Untuk kulit K ($n=1$): $2(1^2) = 2$ elektron.",
+    "valid": true
+  },
+  {
+    "nomor": 61,
+    "materi": "Unsur, Senyawa, dan Campuran",
+    "paket": "Bab V: Unsur, Senyawa, & Campuran - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Kulit kedua (kulit L) pada model atom Bohr dapat menampung elektron maksimum sebanyak ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch5_unsur_senyawa_atom.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "8 elektron"
+      },
+      {
+        "label": "B",
+        "teks": "2 elektron"
+      },
+      {
+        "label": "C",
+        "teks": "18 elektron"
+      },
+      {
+        "label": "D",
+        "teks": "32 elektron"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Untuk kulit L ($n=2$): $2(2^2) = 2 \\times 4 = 8$ elektron.",
+    "valid": true
+  },
+  {
+    "nomor": 62,
+    "materi": "Unsur, Senyawa, dan Campuran",
+    "paket": "Bab V: Unsur, Senyawa, & Campuran - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Elektron yang berada pada kulit terluar suatu atom disebut ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch5_unsur_senyawa_atom.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Elektron valensi"
+      },
+      {
+        "label": "B",
+        "teks": "Elektron inti"
+      },
+      {
+        "label": "C",
+        "teks": "Proton valensi"
+      },
+      {
+        "label": "D",
+        "teks": "Positron"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Elektron valensi adalah elektron pada orbital terluar yang berperan dalam pembentukan ikatan kimia.",
+    "valid": true
+  },
+  {
+    "nomor": 63,
+    "materi": "Unsur, Senyawa, dan Campuran",
+    "paket": "Bab V: Unsur, Senyawa, & Campuran - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Atom Karbon (nomor atom 6) memiliki konfigurasi elektron per kulit ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch5_unsur_senyawa_atom.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "2, 4"
+      },
+      {
+        "label": "B",
+        "teks": "2, 8"
+      },
+      {
+        "label": "C",
+        "teks": "4, 2"
+      },
+      {
+        "label": "D",
+        "teks": "6"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Nomor atom 6: Kulit K terisi 2 elektron, sisa 4 elektron mengisi kulit L (elektron valensi = 4).",
+    "valid": true
+  },
+  {
+    "nomor": 64,
+    "materi": "Unsur, Senyawa, dan Campuran",
+    "paket": "Bab V: Unsur, Senyawa, & Campuran - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Senyawa yang terbentuk dari ikatan antara kation logam dan anion nonlogam disebut senyawa ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch5_unsur_senyawa_atom.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Ionik (seperti NaCl)"
+      },
+      {
+        "label": "B",
+        "teks": "Kovalen nonpolar"
+      },
+      {
+        "label": "C",
+        "teks": "Campuran"
+      },
+      {
+        "label": "D",
+        "teks": "Unsur bebas"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Senyawa ionik terbentuk melalui gaya elektrostatis antara kation positif dan anion negatif.",
+    "valid": true
+  },
+  {
+    "nomor": 65,
+    "materi": "Unsur, Senyawa, dan Campuran",
+    "paket": "Bab V: Unsur, Senyawa, & Campuran - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Senyawa yang terbentuk dari penggunaan bersama pasangan elektron oleh atom-atom nonlogam disebut senyawa ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch5_unsur_senyawa_atom.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Kovalen (seperti H2O dan CO2)"
+      },
+      {
+        "label": "B",
+        "teks": "Ionik"
+      },
+      {
+        "label": "C",
+        "teks": "Logam"
+      },
+      {
+        "label": "D",
+        "teks": "Amalgam"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Ikatan kovalen terbentuk melalui pemakaian bersama pasangan elektron antar-unsur nonlogam.",
+    "valid": true
+  },
+  {
+    "nomor": 66,
+    "materi": "Unsur, Senyawa, dan Campuran",
+    "paket": "Bab V: Unsur, Senyawa, & Campuran - Bagian D: Pengayaan AKM Literasi Sains & TKA",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "[AKM Literasi Sains — Penentuan Formula Empiris & Analisis Stoikiometri] Suatu sampel senyawa hidrokarbon dianalisis di laboratorium dan diketahui mengandung 24 gram karbon ($A_r C = 12$) dan 6 gram hidrogen ($A_r H = 1$). Perbandingan mol atom C dan H serta rumus empiris senyawa tersebut adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch5_unsur_senyawa_atom.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Mol C : Mol H = 1 : 3 (Rumus Empiris CH3)"
+      },
+      {
+        "label": "B",
+        "teks": "Mol C : Mol H = 2 : 6 (Rumus Empiris C2H6)"
+      },
+      {
+        "label": "C",
+        "teks": "Mol C : Mol H = 1 : 2 (Rumus Empiris CH2)"
+      },
+      {
+        "label": "D",
+        "teks": "Mol C : Mol H = 1 : 4 (Rumus Empiris CH4)"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Mol C = $\\frac{\\text{massa}}{A_r} = \\frac{24}{12} = 2 \\text{ mol}$. Mol H = $\\frac{6}{1} = 6 \\text{ mol}$. Perbandingan mol atom $C : H = 2 : 6 = 1 : 3$. Maka rumus empiris senyawa hidrokarbon tersebut adalah $CH_3$.",
+    "valid": true
+  },
+  {
+    "nomor": 67,
+    "materi": "Unsur, Senyawa, dan Campuran",
+    "paket": "Bab V: Unsur, Senyawa, & Campuran - Bagian D: Pengayaan AKM Literasi Sains & TKA",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "[AKM Pilihan Ganda Kompleks — Sifat Koloid Pelindung & Koagulasi Susu Basi] Susu segar yang dibiarkan terbuka di suhu kamar lama-kelamaan menjadi asam dan menggumpal terpisah antara cairan bening (whey) dan gumpalan putih (curd). Peristiwa penggumpalan koloid susu tersebut terjadi karena ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch5_unsur_senyawa_atom.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Bakteri asam laktat memfermentasi laktosa menjadi asam laktat; ion H+ menetralkan muatan negatif protein kasein sehingga kasein terkoagulasi menggumpal"
+      },
+      {
+        "label": "B",
+        "teks": "Susu bereaksi dengan gas oksigen membentuk garam dapur"
+      },
+      {
+        "label": "C",
+        "teks": "Partikel koloid susu menguap habis"
+      },
+      {
+        "label": "D",
+        "teks": "Susu berubah menjadi unsur tunggal kalsium"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Kasein susu adalah koloid yang stabil pada pH netral 6,6 karena muatan negatifnya. Asidifikasi oleh asam laktat menurunkan pH menuju titik isoelektrik (pH 4,6) di mana muatan kasein menjadi nol, memicu koagulasi dan pemisahan dadih keju.",
+    "valid": true
+  },
+  {
+    "nomor": 68,
+    "materi": "Unsur, Senyawa, dan Campuran",
+    "paket": "Bab V: Unsur, Senyawa, & Campuran - Bagian D: Pengayaan AKM Literasi Sains & TKA",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "[AKM Analisis Data Spektrometri Massa — Isotop Karbon] Karbon di alam terdiri dari dua isotop stabil: Karbon-12 (kelimpahan 98,9%) dan Karbon-13 (kelimpahan 1,1%). Karbon-14 yang bersifat radioaktif digunakan oleh arkeolog untuk penanggalan fosil purba (radiocarbon dating) karena ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch5_unsur_senyawa_atom.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Karbon-14 meluruh secara bertahap dengan waktu paruh konstan 5.730 tahun sejak organisme mati"
+      },
+      {
+        "label": "B",
+        "teks": "Karbon-14 berwujud emas murni"
+      },
+      {
+        "label": "C",
+        "teks": "Karbon-14 tidak pernah mengalami perubahan"
+      },
+      {
+        "label": "D",
+        "teks": "Karbon-14 menyerap sinar matahari di dalam tanah"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Organisme hidup mempertahankan rasio C-14 terhadap C-12 yang konstan melalui respirasi dan fotosintesis. Saat organisme mati, asupan C-14 terhenti dan C-14 meluruh menjadi Nitrogen-14 dengan waktu paruh $T_{1/2} = 5.730 \\text{ tahun}$, memungkinkan penentuan usia fosil.",
+    "valid": true
+  },
+  {
+    "nomor": 69,
+    "materi": "Unsur, Senyawa, dan Campuran",
+    "paket": "Bab V: Unsur, Senyawa, & Campuran - Bagian D: Pengayaan AKM Literasi Sains & TKA",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "[AKM Rekayasa Material — Paduan Logam Memori Bentuk (Nitinol)] Kawat Nitinol (paduan Nikel dan Titanium) dapat ditekuk sesuka hati, namun saat dipanaskan kawat tersebut akan kembali ke bentuk aslinya secara ajaib. Paduan logam pintar ini banyak diaplikasikan dalam kedokteran untuk ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch5_unsur_senyawa_atom.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Kawat gigi (behel) dan stent ring pembuluh darah jantung"
+      },
+      {
+        "label": "B",
+        "teks": "Pengganti cairan infus"
+      },
+      {
+        "label": "C",
+        "teks": "Pewarna makanan"
+      },
+      {
+        "label": "D",
+        "teks": "Bahan pemanis obat sirup"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Nitinol memiliki sifat superelastisitas dan shape-memory effect akibat transformasi fasa kristal martensitik-austenitik reversibel. Digunakan luas pada kawat ortodontik dan ring stent pembuluh arteri koroner.",
+    "valid": true
+  },
+  {
+    "nomor": 70,
+    "materi": "Unsur, Senyawa, dan Campuran",
+    "paket": "Bab V: Unsur, Senyawa, & Campuran - Bagian D: Pengayaan AKM Literasi Sains & TKA",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "[AKM Evaluasi Dampak Lingkungan — Aerosol & Penipisan Ozon] Gas klorofluorokarbon (CFC / freon) yang digunakan pada pendingin AC dan kulkas zaman dahulu merupakan senyawa kovalen yang sangat stabil. Mengapa senyawa ini sangat merusak lapisan ozon di stratosfer?",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch5_unsur_senyawa_atom.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "CFC membakar atmosfer secara langsung"
+      },
+      {
+        "label": "B",
+        "teks": "Radiasi UV stratosfer memecah molekul CFC melepaskan radikal bebas klorin (Cl) yang bertindak sebagai katalis memecah jutaan molekul ozon (O3) menjadi gas O2 biasa"
+      },
+      {
+        "label": "C",
+        "teks": "CFC menyerap gas nitrogen secara masif"
+      },
+      {
+        "label": "D",
+        "teks": "CFC menurunkan gravitasi bumi"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Satu atom radikal klorin ($Cl^\\bullet$) dari dekomposisi fotolisis CFC dapat mengkatalisis penguraian hingga 100.000 molekul ozon ($O_3$) secara berulang melalui siklus katalitik, memicu timbulnya lubang ozon stratosfer.",
+    "valid": true
+  }
+]

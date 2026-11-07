@@ -1,0 +1,2242 @@
+[
+  {
+    "nomor": 1,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup I",
+    "paket": "Bab I: Struktur & Fungsi Tubuh I - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Perhatikan gambar organ-organ pada sistem pencernaan manusia berikut! Enzim yang dihasilkan oleh organ bertanda X (lambung) beserta fungsinya yang tepat adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch1_organ_pencernaan.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Ptialin, mengubah amilum menjadi maltosa"
+      },
+      {
+        "label": "B",
+        "teks": "Pepsin, mengubah protein menjadi pepton"
+      },
+      {
+        "label": "C",
+        "teks": "Lipase, mengubah lemak menjadi asam lemak dan gliserol"
+      },
+      {
+        "label": "D",
+        "teks": "Tripsin, mengubah pepton menjadi asam amino"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Organ bertanda X adalah lambung (ventrikulus). Getah lambung mengandung asam klorida (HCl), enzim pepsin (mengubah protein menjadi pepton), dan renin (mengendapkan kasein susu). Jadi enzim yang tepat beserta fungsinya adalah pepsin, mengubah protein menjadi pepton.",
+    "valid": true
+  },
+  {
+    "nomor": 2,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup I",
+    "paket": "Bab I: Struktur & Fungsi Tubuh I - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Ketika roti tawar dikunyah lama di dalam mulut tanpa lauk, lama-kelamaan muncul rasa agak manis. Proses perubahan kimiawi yang menyebabkan timbulnya rasa manis tersebut adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch1_tubuh_nutrisi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Enzim pepsin di mulut mengubah protein roti menjadi asam amino"
+      },
+      {
+        "label": "B",
+        "teks": "Enzim ptialin menghidrolisis amilum yang tidak manis menjadi gula sederhana maltosa yang terasa manis"
+      },
+      {
+        "label": "C",
+        "teks": "Asam klorida (HCl) mengemulsikan lemak pada roti tawar"
+      },
+      {
+        "label": "D",
+        "teks": "Gigi geraham mengubah selulosa menjadi gliserol secara mekanis"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Roti tawar banyak mengandung karbohidrat kompleks (amilum) yang rasanya tawar. Di dalam rongga mulut terdapat kelenjar ludah yang menghasilkan enzim ptialin (amilase saliva). Enzim ptialin menghidrolisis polisakarida amilum menjadi disakarida maltosa yang memiliki rasa manis.",
+    "valid": true
+  },
+  {
+    "nomor": 3,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup I",
+    "paket": "Bab I: Struktur & Fungsi Tubuh I - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Perhatikan tabel Hasil Praktikum Uji Kandungan Nutrisi Empat Bahan Makanan berikut!\n- Bahan K: Lugol (Biru Tua Kehitaman), Biuret (Tetap Biru), Benedict (Tetap Biru)\n- Bahan X: Lugol (Cokelat Kekuningan), Biuret (Ungu/Violet), Benedict (Tetap Biru)\n- Bahan Y: Lugol (Cokelat Kekuningan), Biuret (Tetap Biru), Benedict (Endapan Merah Bata)\n- Bahan Z: Lugol (Biru Tua Kehitaman), Biuret (Tetap Biru), Benedict (Endapan Merah Bata)\nBerdasarkan tabel hasil uji makanan di atas, bahan makanan yang mengandung protein dan bahan makanan yang mengandung glukosa berturut-turut adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch1_tubuh_nutrisi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Bahan K dan Bahan X"
+      },
+      {
+        "label": "B",
+        "teks": "Bahan X dan Bahan Y"
+      },
+      {
+        "label": "C",
+        "teks": "Bahan Y dan Bahan K"
+      },
+      {
+        "label": "D",
+        "teks": "Bahan K dan Bahan Y"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Uji reagen nutrisi: (1) Biuret menghasilkan warna ungu (violet) jika mengandung protein (ditunjukkan oleh Bahan X); (2) Benedict menghasilkan endapan merah bata jika dipanaskan bersama gula pereduksi/glukosa (ditunjukkan oleh Bahan Y). Maka berturut-turut adalah Bahan X dan Bahan Y.",
+    "valid": true
+  },
+  {
+    "nomor": 4,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup I",
+    "paket": "Bab I: Struktur & Fungsi Tubuh I - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Seorang pasien mengalami penyumbatan saluran empedu akibat batu empedu sehingga cairan empedu dari hati tidak dapat mengalir ke usus dua belas jari (duodenum). Jenis bahan makanan yang pencernaannya paling terganggu pada pasien tersebut adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch1_organ_pencernaan.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Nasi dan kentang rebus (karbohidrat)"
+      },
+      {
+        "label": "B",
+        "teks": "Air mineral dan buah-buahan segar"
+      },
+      {
+        "label": "C",
+        "teks": "Putih telur dan tahu kukus (protein)"
+      },
+      {
+        "label": "D",
+        "teks": "Daging berlemak, santan, dan gorengan (lemak)"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Cairan empedu yang diproduksi oleh hati dan disimpan di kantong empedu berfungsi mengemulsikan lemak, yaitu memecah gumpalan lemak besar menjadi droplet-droplet kecil agar luas permukaannya meningkat dan mudah dihidrolisis oleh enzim lipase. Gangguan aliran empedu menyebabkan pencernaan lemak terganggu parah.",
+    "valid": true
+  },
+  {
+    "nomor": 5,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup I",
+    "paket": "Bab I: Struktur & Fungsi Tubuh I - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Di dalam lambung manusia diproduksi asam klorida (HCl) konsentrasi tinggi yang membuat pH lambung sangat asam (pH 1,5–2,0). Fungsi utama HCl bagi proses pencernaan di lambung adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch1_tubuh_nutrisi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Mengubah amilum langsung menjadi glukosa"
+      },
+      {
+        "label": "B",
+        "teks": "Menetralkan sifat asam makanan sebelum masuk ke kerongkongan"
+      },
+      {
+        "label": "C",
+        "teks": "Membunuh bakteri patogen yang masuk bersama makanan dan mengaktifkan enzim pepsinogen menjadi pepsin"
+      },
+      {
+        "label": "D",
+        "teks": "Menyerap sari-sari makanan langsung ke pembuluh darah"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Asam klorida (HCl) di lambung berfungsi: (1) Mematikan bakteri patogen yang masuk bersama makanan; (2) Menciptakan lingkungan asam optimal untuk mengaktifkan pepsinogen yang inaktif menjadi enzim pepsin aktif pemecah protein.",
+    "valid": true
+  },
+  {
+    "nomor": 6,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup I",
+    "paket": "Bab I: Struktur & Fungsi Tubuh I - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Dinding bagian dalam usus halus (ileum) memiliki berjuta-juta lipatan tonjolan halus seperti jari yang disebut jonjot usus (vili) dan mikrovili. Adaptasi struktur anatomi ini bertujuan untuk ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch1_organ_pencernaan.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Menghancurkan tulang dan serat kasar secara mekanis"
+      },
+      {
+        "label": "B",
+        "teks": "Memperluas bidang permukaan penyerapan (absorpsi) sari-sari makanan"
+      },
+      {
+        "label": "C",
+        "teks": "Menghasilkan hormon insulin ke dalam rongga usus"
+      },
+      {
+        "label": "D",
+        "teks": "Mendorong sisa makanan keluar melalui gerak peristaltik cepat"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Keberadaan lipatan sirkular, jonjot usus (vili), dan mikrovili memperluas area permukaan serap usus halus hingga ratusan meter persegi, sehingga penyerapan sari-sari makanan ke dalam pembuluh darah dan limfa berlangsung sangat efisien.",
+    "valid": true
+  },
+  {
+    "nomor": 7,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup I",
+    "paket": "Bab I: Struktur & Fungsi Tubuh I - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Bakteri Escherichia coli yang hidup bersimbiosis mutualisme di dalam usus besar (kolon) manusia berperan penting dalam ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch1_tubuh_nutrisi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Membantu pembusukan sisa-sisa makanan menjadi feses dan mensintesis vitamin K serta vitamin B12"
+      },
+      {
+        "label": "B",
+        "teks": "Mencerna batu ginjal dan asam urat"
+      },
+      {
+        "label": "C",
+        "teks": "Menyerap oksigen dari sisa makanan"
+      },
+      {
+        "label": "D",
+        "teks": "Menghasilkan enzim amilase dan lipase tambahan"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Bakteri non-patogen E. coli di usus besar membantu membusukkan sisa-sisa makanan yang tidak tercerna menjadi feses dan menghasilkan produk samping yang sangat berguna bagi tubuh, yaitu vitamin K (penting untuk pembekuan darah) dan vitamin B12.",
+    "valid": true
+  },
+  {
+    "nomor": 8,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup I",
+    "paket": "Bab I: Struktur & Fungsi Tubuh I - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Seseorang yang jarang mengonsumsi sayur-sayuran dan buah-buahan berserat serta kurang minum air putih berisiko mengalami gangguan susah buang air besar karena feses menjadi sangat keras dan kering. Gangguan pencernaan ini disebut ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch1_tubuh_nutrisi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Diare (gastroenteritis)"
+      },
+      {
+        "label": "B",
+        "teks": "Gastritis (maag akut)"
+      },
+      {
+        "label": "C",
+        "teks": "Konstipasi (sembelit)"
+      },
+      {
+        "label": "D",
+        "teks": "Apendisitis (radang usus buntu)"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Konstipasi (sembelit) adalah gangguan pencernaan di mana feses mengering dan mengeras karena pergerakannya yang terlalu lambat di usus besar, menyebabkan penyerapan air yang berlebihan. Faktor pemicu utamanya adalah kurang serat dan kurang cairan.",
+    "valid": true
+  },
+  {
+    "nomor": 9,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup I",
+    "paket": "Bab I: Struktur & Fungsi Tubuh I - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Sel darah merah (eritrosit) manusia dewasa memiliki bentuk cakram bikonkaf (cekung di kedua sisi) dan tidak memiliki inti sel. Keuntungan fisiologis dari bentuk bikonkaf tersebut adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch1_tubuh_nutrisi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Agar eritrosit dapat menelan bakteri secara fagositosis"
+      },
+      {
+        "label": "B",
+        "teks": "Untuk menyimpan cadangan lemak di dalam darah"
+      },
+      {
+        "label": "C",
+        "teks": "Agar eritrosit dapat membelah diri di dalam pembuluh arteri"
+      },
+      {
+        "label": "D",
+        "teks": "Memperluas permukaan difusi pertukaran gas oksigen dan memudahkan eritrosit meliuk melewati pembuluh kapiler yang sangat sempit"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Bentuk cakram bikonkaf memberikan rasio luas permukaan terhadap volume yang lebih besar sehingga mempercepat difusi gas O2 dan CO2. Selain itu, ketiadaan inti sel membuat eritrosit fleksibel untuk melintasi kapiler mikro yang diameternya lebih kecil dari diameter sel itu sendiri.",
+    "valid": true
+  },
+  {
+    "nomor": 10,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup I",
+    "paket": "Bab I: Struktur & Fungsi Tubuh I - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Ketika warga yang tinggal di daerah pantai pindah dan mendaki ke pegunungan tinggi yang kadar oksigen udaranya tipis selama beberapa minggu, tubuhnya beradaptasi secara fisiologis dengan cara ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch1_tubuh_nutrisi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Menurunkan jumlah sel darah merah agar darah lebih encer"
+      },
+      {
+        "label": "B",
+        "teks": "Memicu ginjal melepaskan hormon eritropoietin untuk meningkatkan produksi sel darah merah dan kadar hemoglobin agar pengikatan O2 tetap tercukupi"
+      },
+      {
+        "label": "C",
+        "teks": "Menghentikan kerja bilik kiri jantung"
+      },
+      {
+        "label": "D",
+        "teks": "Mengubah leukosit menjadi trombosit"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Di dataran tinggi dengan tekanan parsial O2 yang rendah (hipoksia), ginjal merespons dengan mensekresikan hormon eritropoietin (EPO). Hormon ini merangsang sumsum tulang merah untuk memproduksi lebih banyak eritrosit dan hemoglobin, sehingga kapasitas darah mengikat O2 meningkat.",
+    "valid": true
+  },
+  {
+    "nomor": 11,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup I",
+    "paket": "Bab I: Struktur & Fungsi Tubuh I - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Seorang pasien menjalani pemeriksaan laboratorium darah lengkap karena mengalami demam tinggi dan radang tenggorokan akibat infeksi bakteri. Hasil lab menunjukkan jumlah salah satu sel darahnya melonjak menjadi 18.000 sel/mm3 (normal: 5.000–10.000 sel/mm3). Sel darah yang mengalami peningkatan tersebut dan fungsi utamanya adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch1_tubuh_nutrisi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Leukosit (sel darah putih), berfungsi memfagosit kuman patogen dan membentuk antibodi pertahanan tubuh"
+      },
+      {
+        "label": "B",
+        "teks": "Eritrosit, berfungsi mengangkut sari-sari makanan ke seluruh sel"
+      },
+      {
+        "label": "C",
+        "teks": "Trombosit, berfungsi memicu pembekuan darah pada luka"
+      },
+      {
+        "label": "D",
+        "teks": "Plasma darah, berfungsi mengangkut gas oksigen murni"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Leukosit (sel darah putih) berfungsi sebagai sistem pertahanan tubuh terhadap infeksi kuman. Nilai normalnya adalah 5.000–10.000 sel/mm3. Lonjakan jumlah leukosit (leukositosis) hingga 18.000 sel/mm3 mengindikasikan respons aktif tubuh melawan infeksi bakteri.",
+    "valid": true
+  },
+  {
+    "nomor": 12,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup I",
+    "paket": "Bab I: Struktur & Fungsi Tubuh I - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Ketika jari tangan tergores pisau hingga berdarah, beberapa menit kemudian darah berhenti mengalir dan terbentuk sumbatan luka. Urutan mekanisme pembekuan darah yang tepat adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch1_tubuh_nutrisi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Fibrinogen -> Trombin -> Trombosit pecah -> Trombokinase"
+      },
+      {
+        "label": "B",
+        "teks": "Trombokinase -> Fibrin -> Protrombin -> Trombosit pecah"
+      },
+      {
+        "label": "C",
+        "teks": "Protrombin -> Trombokinase -> Trombin -> Benang fibrin"
+      },
+      {
+        "label": "D",
+        "teks": "Trombosit pecah mengeluarkan trombokinase -> mengubah protrombin menjadi trombin dengan bantuan ion Ca2+ dan vitamin K -> trombin mengubah fibrinogen menjadi jaring benang fibrin"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Mekanisme pembekuan darah: Trombosit pecah bersentuhan dengan permukaan kasar -> melepaskan trombokinase/tromboplastin. Enzim ini bersama ion kalsium (Ca2+) dan vitamin K mengaktifkan protrombin menjadi trombin. Selanjutnya trombin mengkatalisis fibrinogen (protein terlarut) menjadi benang-benang fibrin yang menjerat sel darah hingga luka tertutup.",
+    "valid": true
+  },
+  {
+    "nomor": 13,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup I",
+    "paket": "Bab I: Struktur & Fungsi Tubuh I - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Mengapa dinding otot pada ruang Bilik Kiri (Ventrikel Sinister) jantung manusia memiliki ketebalan otot miokardium paling tebal dibandingkan tiga ruang jantung lainnya?",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch1_ruang_jantung.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Karena bilik kiri hanya menerima darah kotor dari serambi kiri"
+      },
+      {
+        "label": "B",
+        "teks": "Karena bilik kiri berfungsi menampung darah dari seluruh tubuh"
+      },
+      {
+        "label": "C",
+        "teks": "Karena bilik kiri harus memompa darah bertekanan tinggi ke seluruh tubuh melalui pembuluh aorta"
+      },
+      {
+        "label": "D",
+        "teks": "Karena bilik kiri hanya memompa darah menuju paru-paru"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Bilik kiri (ventrikel sinister) bertugas memompa darah kaya oksigen ke seluruh bagian tubuh melalui aorta yang memiliki hambatan perifer tinggi dan jarak tempuh jauh. Oleh karena itu, bilik kiri memerlukan lapisan miokardium yang paling tebal dan kuat untuk menghasilkan tekanan sistolik yang memadai.",
+    "valid": true
+  },
+  {
+    "nomor": 14,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup I",
+    "paket": "Bab I: Struktur & Fungsi Tubuh I - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Pada umumnya, pembuluh nadi (arteri) mengalirkan darah yang kaya oksigen dan pembuluh balik (vena) mengalirkan darah yang kaya karbon dioksida. Pengecualian pada aturan umum ini terjadi pada ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch1_ruang_jantung.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Aorta dan Vena Kava"
+      },
+      {
+        "label": "B",
+        "teks": "Arteri Pulmonalis yang mengalirkan darah kaya CO2 ke paru-paru, dan Vena Pulmonalis yang mengalirkan darah kaya O2 dari paru-paru ke serambi kiri jantung"
+      },
+      {
+        "label": "C",
+        "teks": "Arteri Koronaria dan Vena Jugularis"
+      },
+      {
+        "label": "D",
+        "teks": "Arteri Radialis dan Vena Porta Hepatika"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Definisi pembuluh nadi (arteri) adalah pembuluh yang mengalirkan darah meninggalkan jantung, sedangkan vena menuju jantung. Arteri pulmonalis membawa darah deoksigenasi (kaya CO2) dari bilik kanan ke paru-paru, sedangkan vena pulmonalis membawa darah teroksigenasi (kaya O2) dari paru-paru ke serambi kiri jantung.",
+    "valid": true
+  },
+  {
+    "nomor": 15,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup I",
+    "paket": "Bab I: Struktur & Fungsi Tubuh I - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Perhatikan tabel perbandingan karakteristik pembuluh Arteri dan pembuluh Vena berikut!\n(1) Dinding: Arteri tebal dan elastis; Vena tipis dan kurang elastis\n(2) Aliran darah: Arteri meninggalkan jantung; Vena menuju jantung\n(3) Katup: Arteri hanya satu di pangkal; Vena banyak di sepanjang pembuluh\n(4) Letak: Arteri dekat permukaan kulit; Vena tersembunyi jauh di dalam tubuh\nPasangan karakteristik pembuluh darah yang benar adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch1_tubuh_nutrisi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(1), (2), dan (3)"
+      },
+      {
+        "label": "B",
+        "teks": "(1), (3), dan (4)"
+      },
+      {
+        "label": "C",
+        "teks": "(2) dan (4)"
+      },
+      {
+        "label": "D",
+        "teks": "(3) dan (4)"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Pernyataan (1), (2), dan (3) benar. Pernyataan (4) salah karena pembuluh arteri umumnya terletak tersembunyi di dalam jaringan otot untuk perlindungan dari cedera, sedangkan pembuluh vena letaknya lebih dekat ke permukaan kulit dan sering tampak kebiruan.",
+    "valid": true
+  },
+  {
+    "nomor": 16,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup I",
+    "paket": "Bab I: Struktur & Fungsi Tubuh I - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Perhatikan gambar penampang ruang-ruang jantung manusia berikut! Nomor (1) = Serambi Kanan, (2) = Bilik Kanan, (3) = Serambi Kiri, (4) = Bilik Kiri. Ruang jantung yang berfungsi memompa darah bersih kaya oksigen ke seluruh tubuh dan memompa darah kotor ke paru-paru berturut-turut ditunjukkan oleh nomor ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch1_ruang_jantung.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(1) dan (3)"
+      },
+      {
+        "label": "B",
+        "teks": "(2) dan (4)"
+      },
+      {
+        "label": "C",
+        "teks": "(3) dan (1)"
+      },
+      {
+        "label": "D",
+        "teks": "(4) dan (2)"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Nomor (4) adalah bilik kiri (ventrikel sinister) yang memompa darah kaya O2 melalui aorta ke seluruh tubuh. Nomor (2) adalah bilik kanan (ventrikel dekster) yang memompa darah kaya CO2 melalui arteri pulmonalis ke paru-paru. Maka urutannya adalah (4) dan (2).",
+    "valid": true
+  },
+  {
+    "nomor": 17,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup I",
+    "paket": "Bab I: Struktur & Fungsi Tubuh I - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Ketika perawat mengukur tekanan darah seorang pasien menggunakan tensimeter/sfigmomanometer, diperoleh angka 120/80 mmHg. Makna dari angka 120 mmHg dan 80 mmHg tersebut adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch1_tubuh_nutrisi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "120 denyut jantung per menit dan 80 mL volume darah"
+      },
+      {
+        "label": "B",
+        "teks": "120 tekanan serambi dan 80 tekanan bilik"
+      },
+      {
+        "label": "C",
+        "teks": "120 tekanan saat bilik berelaksasi dan 80 saat bilik berkontraksi"
+      },
+      {
+        "label": "D",
+        "teks": "120 mmHg adalah tekanan sistol (saat bilik jantung berkontraksi memompa darah) dan 80 mmHg adalah tekanan diastol (saat bilik jantung berelaksasi mengembang menerima darah)"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Angka atas (120 mmHg) adalah tekanan sistol, yaitu tekanan maksimum pada dinding arteri saat ventrikel berkontraksi. Angka bawah (80 mmHg) adalah tekanan diastol, yaitu tekanan terendah pada arteri saat ventrikel berelaksasi dan mengisi kembali darah.",
+    "valid": true
+  },
+  {
+    "nomor": 18,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup I",
+    "paket": "Bab I: Struktur & Fungsi Tubuh I - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Dalam sistem penggolongan darah ABO, seseorang yang memiliki golongan darah O dapat mendonorkan darahnya kepada semua golongan darah (donor universal) karena ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch1_tubuh_nutrisi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Sel darah merahnya memiliki antigen A dan antigen B sekaligus"
+      },
+      {
+        "label": "B",
+        "teks": "Permukaan eritrositnya tidak mengandung aglutinogen (antigen) A maupun B sehingga tidak digumpalkan oleh aglutinin resipien"
+      },
+      {
+        "label": "C",
+        "teks": "Plasmanya tidak memiliki antibodi sama sekali"
+      },
+      {
+        "label": "D",
+        "teks": "Memiliki sel darah merah yang berukuran paling besar"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Eritrosit golongan darah O tidak memiliki aglutinogen A maupun B pada membran selnya. Ketika ditransfusikan, tidak ada antigen asing yang dapat diserang/digumpalkan oleh aglutinin alfa maupun beta dalam plasma darah resipien.",
+    "valid": true
+  },
+  {
+    "nomor": 19,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup I",
+    "paket": "Bab I: Struktur & Fungsi Tubuh I - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Penyakit penyempitan dan pengerasan pembuluh darah arteri akibat penumpukan plak kolesterol dan lemak jenuh yang dapat memicu serangan jantung disebut ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch1_tubuh_nutrisi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Aterosklerosis"
+      },
+      {
+        "label": "B",
+        "teks": "Anemia"
+      },
+      {
+        "label": "C",
+        "teks": "Hipotensi"
+      },
+      {
+        "label": "D",
+        "teks": "Hemofilia"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Aterosklerosis adalah penyempitan dan pengerasan pembuluh arteri akibat akumulasi plak lipid, kolesterol, dan kalsium pada dinding pembuluh. Jika terjadi di arteri koronaria yang menyuplai otot jantung, akan memicu infark miokard (serangan jantung koroner).",
+    "valid": true
+  },
+  {
+    "nomor": 20,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup I",
+    "paket": "Bab I: Struktur & Fungsi Tubuh I - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Seseorang yang kekurangan zat besi (Fe), asam folat, dan vitamin B12 di dalam menu makanannya berisiko tinggi mengalami penyakit anemia. Gejala klinis yang sering dialami penderita anemia adalah 5L (lemah, letih, lesu, lelah, lunglai) karena ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch1_tubuh_nutrisi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Sel darah putihnya menyerang sel tubuh sendiri"
+      },
+      {
+        "label": "B",
+        "teks": "Kadar gula darahnya melonjak drastis"
+      },
+      {
+        "label": "C",
+        "teks": "Darah kehilangan kemampuan membeku"
+      },
+      {
+        "label": "D",
+        "teks": "Kadar hemoglobin (Hb) menurun drastis sehingga suplai oksigen ke seluruh sel tubuh untuk pembentukan energi sel berkurang"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Zat besi (Fe) adalah komponen inti sintesis molekul hemoglobin pada eritrosit. Kekurangan Fe menyebabkan anemia defisiensi besi dengan penurunan kadar Hb, sehingga kapasitas darah membawa oksigen ke jaringan turun drastis dan respirasi seluler penghasil ATP terganggu.",
+    "valid": true
+  },
+  {
+    "nomor": 21,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup I",
+    "paket": "Bab I: Struktur & Fungsi Tubuh I - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Sebuah makanan kemasan mengandung 30 gram karbohidrat, 5 gram protein, dan 10 gram lemak. Jika 1 gram karbohidrat menghasilkan 4 kkal, 1 gram protein menghasilkan 4 kkal, dan 1 gram lemak menghasilkan 9 kkal, berapakah total energi yang diperoleh dari makanan tersebut?",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch1_tubuh_nutrisi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "180 kkal"
+      },
+      {
+        "label": "B",
+        "teks": "210 kkal"
+      },
+      {
+        "label": "C",
+        "teks": "230 kkal"
+      },
+      {
+        "label": "D",
+        "teks": "260 kkal"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Perhitungan energi makanan: Karbohidrat = 30 g x 4 kkal/g = 120 kkal; Protein = 5 g x 4 kkal/g = 20 kkal; Lemak = 10 g x 9 kkal/g = 90 kkal. Total Energi = 120 + 20 + 90 = 230 kkal.",
+    "valid": true
+  },
+  {
+    "nomor": 22,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup I",
+    "paket": "Bab I: Struktur & Fungsi Tubuh I - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Vitamin dikelompokkan menjadi vitamin larut dalam air (B dan C) serta vitamin larut dalam lemak (A, D, E, K). Penyakit skorbut (gusi berdarah dan sariawan) serta rakitis berturut-turut diakibatkan oleh defisiensi ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch1_tubuh_nutrisi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Vitamin A dan Vitamin K"
+      },
+      {
+        "label": "B",
+        "teks": "Vitamin C dan Vitamin D"
+      },
+      {
+        "label": "C",
+        "teks": "Vitamin B1 dan Vitamin E"
+      },
+      {
+        "label": "D",
+        "teks": "Vitamin K dan Vitamin A"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Defisiensi vitamin C (asam askorbat) menyebabkan kerapuhan kapiler dan gangguan sintesis kolagen yang memicu skorbut (skurvi/gusi berdarah). Defisiensi vitamin D menyebabkan gangguan absorpsi kalsium pada tulang sehingga memicu rakitis pada anak-anak.",
+    "valid": true
+  },
+  {
+    "nomor": 23,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup I",
+    "paket": "Bab I: Struktur & Fungsi Tubuh I - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Ketika tersedak saat makan sambil berbicara, butiran nasi dapat masuk ke saluran pernapasan. Struktur anatomis yang berfungsi sebagai katup pencegah masuknya makanan ke dalam laring/trakea adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch1_tubuh_nutrisi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Epiglotis"
+      },
+      {
+        "label": "B",
+        "teks": "Uvula"
+      },
+      {
+        "label": "C",
+        "teks": "Faring"
+      },
+      {
+        "label": "D",
+        "teks": "Kantung udara"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Epiglotis adalah katup tulang rawan elastis yang terletak di pangkal laring. Saat menelan makanan, epiglotis otomatis menutup pintu masuk saluran napas (glotis) sehingga makanan terarah masuk ke esofagus (kerongkongan).",
+    "valid": true
+  },
+  {
+    "nomor": 24,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup I",
+    "paket": "Bab I: Struktur & Fungsi Tubuh I - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Darah yang baru saja menyerap sari-sari makanan (glukosa dan asam amino) dari jonjot usus halus tidak langsung dialirkan ke jantung, melainkan dibawa terlebih dahulu ke organ hati melalui pembuluh ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch1_organ_pencernaan.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Arteri renalis"
+      },
+      {
+        "label": "B",
+        "teks": "Vena kava superior"
+      },
+      {
+        "label": "C",
+        "teks": "Vena porta hepatika"
+      },
+      {
+        "label": "D",
+        "teks": "Arteri pulmonalis"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Vena porta hepatika menghubungkan kapiler usus dengan hati. Darah yang kaya glukosa dan nutrisi disaring dan diproses di hati terlebih dahulu: kelebihan glukosa diubah menjadi glikogen dan zat toksin dinetralkan sebelum darah diedarkan ke seluruh tubuh.",
+    "valid": true
+  },
+  {
+    "nomor": 25,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup I",
+    "paket": "Bab I: Struktur & Fungsi Tubuh I - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Mengapa konsumsi makanan kemasan yang mengandung kadar garam natrium (Na+) dan lemak jenuh yang sangat tinggi secara terus-menerus dapat memicu timbulnya penyakit hipertensi?",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch1_tubuh_nutrisi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Karena natrium menguraikan eritrosit di ginjal"
+      },
+      {
+        "label": "B",
+        "teks": "Karena lemak jenuh menurunkan detak jantung"
+      },
+      {
+        "label": "C",
+        "teks": "Karena garam membunuh bakteri lambung"
+      },
+      {
+        "label": "D",
+        "teks": "Kadar natrium tinggi meningkatkan retensi air dalam pembuluh darah sehingga volume darah meningkat, sementara plak lemak menyempitkan lumen pembuluh darah arteri"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Kelebihan ion Na+ menarik air melalui osmosis ke dalam sirkulasi darah, meningkatkan volume darah. Pada saat yang sama, timbunan lemak jenuh mempersempit diameter lumen arteri. Kombinasi kenaikan volume cairan dan penyempitan saluran menyebabkan tekanan darah melonjak (hipertensi).",
+    "valid": true
+  },
+  {
+    "nomor": 26,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup I",
+    "paket": "Bab I: Struktur & Fungsi Tubuh I - Bagian B: Contoh Soal Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Organel sel yang berfungsi sebagai tempat berlangsungnya respirasi seluler untuk menghasilkan energi dalam bentuk ATP adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch1_tubuh_nutrisi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Ribosom"
+      },
+      {
+        "label": "B",
+        "teks": "Mitokondria"
+      },
+      {
+        "label": "C",
+        "teks": "Badan Golgi"
+      },
+      {
+        "label": "D",
+        "teks": "Retikulum Endoplasma"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Mitokondria sering disebut sebagai 'the powerhouse of the cell' karena merupakan organel utama tempat terjadinya oksidasi nutrisi (siklus Krebs dan rantai transpor elektron) yang menghasilkan energi ATP bagi sel.",
+    "valid": true
+  },
+  {
+    "nomor": 27,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup I",
+    "paket": "Bab I: Struktur & Fungsi Tubuh I - Bagian B: Contoh Soal Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Perbedaan utama antara sel hewan dan sel tumbuhan yang tepat adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch1_tubuh_nutrisi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Sel tumbuhan memiliki dinding sel dan kloroplas, sedangkan sel hewan tidak memiliki dinding sel dan kloroplas"
+      },
+      {
+        "label": "B",
+        "teks": "Sel hewan memiliki vakuola yang sangat besar di tengah, sedangkan sel tumbuhan tidak ber-vakuola"
+      },
+      {
+        "label": "C",
+        "teks": "Sel tumbuhan memiliki sentriol aktif untuk pembelahan, sel hewan tidak"
+      },
+      {
+        "label": "D",
+        "teks": "Sel hewan berfotosintesis menggunakan plastida"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Ciri khas sel tumbuhan adalah memiliki dinding selulosa yang kaku, plastida (kloroplas) untuk fotosintesis, serta vakuola sentral yang besar. Sel hewan tidak memiliki dinding sel maupun kloroplas, tetapi memiliki sentrosom/sentriol.",
+    "valid": true
+  },
+  {
+    "nomor": 28,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup I",
+    "paket": "Bab I: Struktur & Fungsi Tubuh I - Bagian B: Contoh Soal Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Di dalam usus halus, protein yang telah diubah menjadi pepton di lambung akan dihidrolisis lebih lanjut menjadi asam amino oleh enzim ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch1_organ_pencernaan.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Ptialin"
+      },
+      {
+        "label": "B",
+        "teks": "Tripsin"
+      },
+      {
+        "label": "C",
+        "teks": "Amilase"
+      },
+      {
+        "label": "D",
+        "teks": "Lipase"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Enzim tripsin yang dihasilkan oleh kelenjar pankreas disekresikan ke dalam duodenum (usus dua belas jari) untuk memecah pepton menjadi peptida yang lebih sederhana dan asam amino.",
+    "valid": true
+  },
+  {
+    "nomor": 29,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup I",
+    "paket": "Bab I: Struktur & Fungsi Tubuh I - Bagian B: Contoh Soal Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Penyerapan kembali air dan pembentukan massa feses terutama berlangsung pada organ ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch1_organ_pencernaan.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Usus dua belas jari (duodenum)"
+      },
+      {
+        "label": "B",
+        "teks": "Usus kosong (jejunum)"
+      },
+      {
+        "label": "C",
+        "teks": "Usus penyerapan (ileum)"
+      },
+      {
+        "label": "D",
+        "teks": "Usus besar (kolon)"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Fungsi utama usus besar (kolon) adalah mereabsorpsi air dan mineral dari sisa-sisa kimus yang tidak tercerna sehingga terbentuk massa feses padat yang siap dikeluarkan melalui rektum dan anus.",
+    "valid": true
+  },
+  {
+    "nomor": 30,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup I",
+    "paket": "Bab I: Struktur & Fungsi Tubuh I - Bagian B: Contoh Soal Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Peredaran darah manusia disebut peredaran darah ganda karena ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch1_ruang_jantung.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Mengalir di luar pembuluh darah sebanyak dua kali"
+      },
+      {
+        "label": "B",
+        "teks": "Dalam satu kali peredaran lengkap, darah melewati jantung sebanyak dua kali (peredaran kecil dan peredaran besar)"
+      },
+      {
+        "label": "C",
+        "teks": "Darah merah dan sel darah putih beredar secara terpisah"
+      },
+      {
+        "label": "D",
+        "teks": "Jantung manusia memompa darah hanya dua menit sekali"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Sistem peredaran darah ganda berarti dalam satu kali sirkulasi lengkap ke seluruh tubuh, darah melintasi jantung sebanyak 2 kali: sirkulasi pulmonalis (jantung -> paru-paru -> jantung) dan sirkulasi sistemik (jantung -> seluruh tubuh -> jantung).",
+    "valid": true
+  },
+  {
+    "nomor": 31,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup I",
+    "paket": "Bab I: Struktur & Fungsi Tubuh I - Bagian B: Contoh Soal Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Bagian darah yang berbentuk cair, berwarna kekuningan, dan berfungsi mengangkut sari makanan, hormon, antibodi, serta sisa metabolisme adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch1_tubuh_nutrisi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Eritrosit"
+      },
+      {
+        "label": "B",
+        "teks": "Leukosit"
+      },
+      {
+        "label": "C",
+        "teks": "Trombosit"
+      },
+      {
+        "label": "D",
+        "teks": "Plasma darah"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Plasma darah mencakup sekitar 55% dari volume darah total. Komposisinya sebagian besar adalah air (90%) yang melarutkan protein plasma (albumin, globulin, fibrinogen), nutrisi glukosa, asam amino, hormon, dan zat sisa urea.",
+    "valid": true
+  },
+  {
+    "nomor": 32,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup I",
+    "paket": "Bab I: Struktur & Fungsi Tubuh I - Bagian B: Contoh Soal Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Jaringan pengangkut pada tumbuhan yang berfungsi mengangkut air dan garam mineral terlarut dari akar menuju ke daun adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch1_tubuh_nutrisi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Xilem (pembuluh kayu)"
+      },
+      {
+        "label": "B",
+        "teks": "Floem (pembuluh tapis)"
+      },
+      {
+        "label": "C",
+        "teks": "Kambium"
+      },
+      {
+        "label": "D",
+        "teks": "Epidermis"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Xilem (pembuluh kayu) mengangkut air dan mineral dari akar ke daun. Floem (pembuluh tapis) mengedarkan hasil fotosintesis (sukrosa) dari daun ke seluruh bagian tubuh tumbuhan.",
+    "valid": true
+  },
+  {
+    "nomor": 33,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup I",
+    "paket": "Bab I: Struktur & Fungsi Tubuh I - Bagian B: Contoh Soal Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Zat aditif alami yang dapat digunakan sebagai pewarna kuning dan sekaligus penyedap aroma masakan adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch1_tubuh_nutrisi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Tartrazin"
+      },
+      {
+        "label": "B",
+        "teks": "Kunyit (kurkumin)"
+      },
+      {
+        "label": "C",
+        "teks": "Daun suji"
+      },
+      {
+        "label": "D",
+        "teks": "Karamel"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Kunyit mengandung pigmen alami kurkumin yang memberikan warna kuning cerah sekaligus memberi aroma khas sedap pada masakan. Tartrazin adalah pewarna sintetis.",
+    "valid": true
+  },
+  {
+    "nomor": 34,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup I",
+    "paket": "Bab I: Struktur & Fungsi Tubuh I - Bagian B: Contoh Soal Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Bahan pemanis buatan yang memiliki tingkat kemanisan ratusan kali lipat dibandingkan gula tebu dan sering digunakan pada minuman diet rendah kalori adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch1_tubuh_nutrisi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Glukosa"
+      },
+      {
+        "label": "B",
+        "teks": "Sukrosa"
+      },
+      {
+        "label": "C",
+        "teks": "Aspartam dan sakarin"
+      },
+      {
+        "label": "D",
+        "teks": "Madu murni"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Aspartam, sakarin, dan siklamat adalah pemanis buatan non-nutritif yang memberikan rasa manis sangat kuat tanpa memberikan sumbangan kalori tinggi seperti gula alami sukrosa.",
+    "valid": true
+  },
+  {
+    "nomor": 35,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup I",
+    "paket": "Bab I: Struktur & Fungsi Tubuh I - Bagian B: Contoh Soal Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Zat adiktif pada asap rokok yang menyebabkan ketergantungan psikologis dan fisik serta merangsang pelepasan dopamin adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch1_tubuh_nutrisi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Tar"
+      },
+      {
+        "label": "B",
+        "teks": "Nikotin"
+      },
+      {
+        "label": "C",
+        "teks": "Karbon monoksida (CO)"
+      },
+      {
+        "label": "D",
+        "teks": "Gas sianida"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Nikotin adalah senyawa alkaloid adiktif dalam daun tembakau yang memicu ketergantungan saraf. Tar bersifat karsinogenik (pemicu kanker), sedangkan CO mengikat hemoglobin darah.",
+    "valid": true
+  },
+  {
+    "nomor": 36,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup I",
+    "paket": "Bab I: Struktur & Fungsi Tubuh I - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Kumpulan dari beberapa sel yang memiliki bentuk dan fungsi yang sama disebut ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch1_tubuh_nutrisi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Organ"
+      },
+      {
+        "label": "B",
+        "teks": "Jaringan"
+      },
+      {
+        "label": "C",
+        "teks": "Sistem organ"
+      },
+      {
+        "label": "D",
+        "teks": "Organisme"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Jaringan adalah sekumpulan sel yang memiliki bentuk dan fungsi spesifik yang sama, misalnya jaringan epitel, jaringan otot, dan jaringan meristem.",
+    "valid": true
+  },
+  {
+    "nomor": 37,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup I",
+    "paket": "Bab I: Struktur & Fungsi Tubuh I - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Jaringan pada hewan yang berfungsi menerima dan meneruskan rangsangan dari lingkungan ke pusat saraf adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch1_tubuh_nutrisi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Jaringan epitel"
+      },
+      {
+        "label": "B",
+        "teks": "Jaringan saraf"
+      },
+      {
+        "label": "C",
+        "teks": "Jaringan ikat"
+      },
+      {
+        "label": "D",
+        "teks": "Jaringan otot"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Jaringan saraf tersusun atas sel-sel saraf (neuron) yang menghantarkan impuls listrik dari reseptor ke sistem saraf pusat dan efektor.",
+    "valid": true
+  },
+  {
+    "nomor": 38,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup I",
+    "paket": "Bab I: Struktur & Fungsi Tubuh I - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Jaringan tumbuhan yang sel-selnya selalu aktif membelah diri secara mitosis untuk pertumbuhan adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch1_tubuh_nutrisi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Jaringan meristem"
+      },
+      {
+        "label": "B",
+        "teks": "Jaringan parenkim"
+      },
+      {
+        "label": "C",
+        "teks": "Jaringan sklerenkim"
+      },
+      {
+        "label": "D",
+        "teks": "Jaringan kolenkim"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Jaringan meristem adalah jaringan embrional tumbuhan yang sel-selnya aktif membelah, seperti pada ujung akar dan ujung batang (meristem apikal).",
+    "valid": true
+  },
+  {
+    "nomor": 39,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup I",
+    "paket": "Bab I: Struktur & Fungsi Tubuh I - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Jaringan dasar pada tumbuhan yang berfungsi menyimpan cadangan makanan dan air adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch1_tubuh_nutrisi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Parenkim"
+      },
+      {
+        "label": "B",
+        "teks": "Kolenkim"
+      },
+      {
+        "label": "C",
+        "teks": "Sklerenkim"
+      },
+      {
+        "label": "D",
+        "teks": "Epidermis"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Parenkim (jaringan dasar) berfungsi sebagai tempat berlangsungnya fotosintesis (klorenkim) dan penyimpanan cadangan pati serta air.",
+    "valid": true
+  },
+  {
+    "nomor": 40,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup I",
+    "paket": "Bab I: Struktur & Fungsi Tubuh I - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Berikut ini yang merupakan contoh organ pada sistem pencernaan manusia adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch1_tubuh_nutrisi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Trakea"
+      },
+      {
+        "label": "B",
+        "teks": "Lambung"
+      },
+      {
+        "label": "C",
+        "teks": "Paru-paru"
+      },
+      {
+        "label": "D",
+        "teks": "Ginjal"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Lambung adalah organ sistem pencernaan. Trakea dan paru-paru adalah organ pernapasan, sedangkan ginjal adalah organ ekskresi.",
+    "valid": true
+  },
+  {
+    "nomor": 41,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup I",
+    "paket": "Bab I: Struktur & Fungsi Tubuh I - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Organ pada manusia yang berfungsi menetralkan racun (detoksifikasi) dan merombak sel darah merah yang telah rusak adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch1_tubuh_nutrisi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Jantung"
+      },
+      {
+        "label": "B",
+        "teks": "Hati"
+      },
+      {
+        "label": "C",
+        "teks": "Pankreas"
+      },
+      {
+        "label": "D",
+        "teks": "Limfa"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Hati (hepar) bertindak sebagai organ detoksifikasi zat kimia beracun dan merombak eritrosit tua yang telah berusia 120 hari menjadi pigmen empedu.",
+    "valid": true
+  },
+  {
+    "nomor": 42,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup I",
+    "paket": "Bab I: Struktur & Fungsi Tubuh I - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Enzim amilase yang dihasilkan oleh kelenjar pankreas berfungsi mengubah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch1_tubuh_nutrisi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Protein menjadi pepton"
+      },
+      {
+        "label": "B",
+        "teks": "Lemak menjadi gliserol"
+      },
+      {
+        "label": "C",
+        "teks": "Amilum menjadi maltosa / glukosa"
+      },
+      {
+        "label": "D",
+        "teks": "Pepton menjadi asam amino"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Amilase pankreas menghidrolisis sisa polisakarida amilum yang belum tuntas dicerna di mulut menjadi disakarida maltosa dan glukosa.",
+    "valid": true
+  },
+  {
+    "nomor": 43,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup I",
+    "paket": "Bab I: Struktur & Fungsi Tubuh I - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Enzim lipase berfungsi mencerna lemak menjadi ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch1_tubuh_nutrisi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Asam amino dan urea"
+      },
+      {
+        "label": "B",
+        "teks": "Asam lemak dan gliserol"
+      },
+      {
+        "label": "C",
+        "teks": "Glukosa dan galaktosa"
+      },
+      {
+        "label": "D",
+        "teks": "Pepton dan glikogen"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Lipase memecah trigliserida (lemak netral) yang telah diemulsikan oleh empedu menjadi molekul asam lemak dan gliserol.",
+    "valid": true
+  },
+  {
+    "nomor": 44,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup I",
+    "paket": "Bab I: Struktur & Fungsi Tubuh I - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Zat makanan yang tidak mengalami pencernaan secara kimiawi dan dapat langsung diserap oleh dinding usus halus adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch1_tubuh_nutrisi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Karbohidrat dan protein"
+      },
+      {
+        "label": "B",
+        "teks": "Lemak dan tepung"
+      },
+      {
+        "label": "C",
+        "teks": "Vitamin, mineral, dan air"
+      },
+      {
+        "label": "D",
+        "teks": "Polipeptida dan amilum"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Vitamin, garam mineral, dan molekul air memiliki ukuran partikel sangat kecil sehingga dapat langsung diserap oleh kapiler vili tanpa memerlukan hidrolisis enzimatik.",
+    "valid": true
+  },
+  {
+    "nomor": 45,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup I",
+    "paket": "Bab I: Struktur & Fungsi Tubuh I - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Penyakit radang akut pada selaput lendir dinding lambung yang dipicu oleh asam lambung berlebih atau infeksi bakteri Helicobacter pylori disebut ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch1_tubuh_nutrisi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Gastritis (maag)"
+      },
+      {
+        "label": "B",
+        "teks": "Apendisitis"
+      },
+      {
+        "label": "C",
+        "teks": "Konstipasi"
+      },
+      {
+        "label": "D",
+        "teks": "Kholera"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Gastritis adalah inflamasi mukosa lambung yang menimbulkan rasa perih di ulu hati akibat erosi oleh asam lambung berlebih atau bakteri H. pylori.",
+    "valid": true
+  },
+  {
+    "nomor": 46,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup I",
+    "paket": "Bab I: Struktur & Fungsi Tubuh I - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Penyakit peradangan pada umbai cacing (usus buntu) akibat penyumbatan oleh fekalit dan infeksi bakteri disebut ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch1_tubuh_nutrisi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Apendisitis"
+      },
+      {
+        "label": "B",
+        "teks": "Hepatitis"
+      },
+      {
+        "label": "C",
+        "teks": "Peritonitis"
+      },
+      {
+        "label": "D",
+        "teks": "Xerostomia"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Apendisitis adalah radang pada apendiks (umbai cacing) yang bila pecah dapat menimbulkan infeksi rongga perut fatal (peritonitis).",
+    "valid": true
+  },
+  {
+    "nomor": 47,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup I",
+    "paket": "Bab I: Struktur & Fungsi Tubuh I - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Kelenjar ludah terbesar yang terletak di dekat telinga bagian bawah adalah kelenjar ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch1_tubuh_nutrisi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Sublingualis"
+      },
+      {
+        "label": "B",
+        "teks": "Parotis"
+      },
+      {
+        "label": "C",
+        "teks": "Submandibularis"
+      },
+      {
+        "label": "D",
+        "teks": "Tiroid"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Kelenjar parotis adalah kelenjar saliva terbesar. Infeksi virus gondongan (mumps) menyerang kelenjar parotis ini.",
+    "valid": true
+  },
+  {
+    "nomor": 48,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup I",
+    "paket": "Bab I: Struktur & Fungsi Tubuh I - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Gerakan meremas-remas dan mendorong bolus makanan sepanjang saluran kerongkongan (esofagus) menuju lambung disebut ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch1_tubuh_nutrisi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Gerak peristaltik"
+      },
+      {
+        "label": "B",
+        "teks": "Gerak amuboid"
+      },
+      {
+        "label": "C",
+        "teks": "Gerak brown"
+      },
+      {
+        "label": "D",
+        "teks": "Gerak refleks"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Gerak peristaltik adalah kontraksi ritmis otot polos melingkar dan memanjang pada esofagus untuk mendorong makanan ke lambung.",
+    "valid": true
+  },
+  {
+    "nomor": 49,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup I",
+    "paket": "Bab I: Struktur & Fungsi Tubuh I - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Faktor pembekuan darah yang diproduksi di hati dengan bantuan vitamin K dan terdapat di dalam plasma darah adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch1_tubuh_nutrisi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Hemoglobin"
+      },
+      {
+        "label": "B",
+        "teks": "Protrombin"
+      },
+      {
+        "label": "C",
+        "teks": "Miosin"
+      },
+      {
+        "label": "D",
+        "teks": "Aktin"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Protrombin adalah protein plasma prekursor enzim trombin yang disintesis oleh sel hepatosit hati dengan memerlukan vitamin K.",
+    "valid": true
+  },
+  {
+    "nomor": 50,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup I",
+    "paket": "Bab I: Struktur & Fungsi Tubuh I - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Penyakit kelainan genetik terpaut kromosom X di mana darah penderita sukar membeku saat terjadi luka disebut ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch1_tubuh_nutrisi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Anemia"
+      },
+      {
+        "label": "B",
+        "teks": "Hemofilia"
+      },
+      {
+        "label": "C",
+        "teks": "Leukemia"
+      },
+      {
+        "label": "D",
+        "teks": "Talasemia"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Hemofilia adalah penyakit herediter resesif terpaut seks di mana penderita kekurangan faktor pembekuan darah VIII atau IX sehingga pendarahan sulit berhenti.",
+    "valid": true
+  },
+  {
+    "nomor": 51,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup I",
+    "paket": "Bab I: Struktur & Fungsi Tubuh I - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Kanker darah yang ditandai dengan produksi sel darah putih (leukosit) yang abnormal, tidak terkendali, dan memakan sel darah merah disebut ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch1_tubuh_nutrisi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Anemia"
+      },
+      {
+        "label": "B",
+        "teks": "Talasemia"
+      },
+      {
+        "label": "C",
+        "teks": "Leukemia"
+      },
+      {
+        "label": "D",
+        "teks": "Hipertensi"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Leukemia adalah keganasan sel darah putih di mana leukosit imatur membelah secara liar dan menekan populasi sel darah lain di sumsum tulang.",
+    "valid": true
+  },
+  {
+    "nomor": 52,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup I",
+    "paket": "Bab I: Struktur & Fungsi Tubuh I - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Kelainan genetik di mana bentuk eritrosit abnormal dan mudah pecah sehingga penderita memerlukan transfusi darah rutin seumur hidup adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch1_tubuh_nutrisi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Talasemia"
+      },
+      {
+        "label": "B",
+        "teks": "Hemofilia"
+      },
+      {
+        "label": "C",
+        "teks": "Varises"
+      },
+      {
+        "label": "D",
+        "teks": "Hipotensi"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Talasemia adalah gangguan genetik sintesis rantai hemoglobin yang menyebabkan eritrosit rapuh dan cepat hancur (hemolisis kronis).",
+    "valid": true
+  },
+  {
+    "nomor": 53,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup I",
+    "paket": "Bab I: Struktur & Fungsi Tubuh I - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Pelebaran pembuluh vena yang terjadi di sekitar area betis kaki akibat katup vena yang melemah disebut ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch1_tubuh_nutrisi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Wasir (ambeien)"
+      },
+      {
+        "label": "B",
+        "teks": "Varises"
+      },
+      {
+        "label": "C",
+        "teks": "Aterosklerosis"
+      },
+      {
+        "label": "D",
+        "teks": "Embolus"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Varises adalah distensi dan pemuntiran vena superfisial tungkai bawah akibat inkompetensi katup penahan arus balik gravitasi.",
+    "valid": true
+  },
+  {
+    "nomor": 54,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup I",
+    "paket": "Bab I: Struktur & Fungsi Tubuh I - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Pelebaran pembuluh darah vena yang terjadi di sekitar anus disebut ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch1_tubuh_nutrisi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Wasir (hemoroid)"
+      },
+      {
+        "label": "B",
+        "teks": "Varises"
+      },
+      {
+        "label": "C",
+        "teks": "Jantung koroner"
+      },
+      {
+        "label": "D",
+        "teks": "Trombus"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Wasir atau hemoroid adalah pembengkakan pleksus vena di dinding anus dan rektum bawah akibat tekanan berlebih (misal sering mengejan).",
+    "valid": true
+  },
+  {
+    "nomor": 55,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup I",
+    "paket": "Bab I: Struktur & Fungsi Tubuh I - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Seseorang yang memiliki aglutinogen B pada eritrositnya dan memiliki aglutinin alfa (anti-A) pada plasmanya tergolong bergolongan darah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch1_tubuh_nutrisi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "A"
+      },
+      {
+        "label": "B",
+        "teks": "B"
+      },
+      {
+        "label": "C",
+        "teks": "AB"
+      },
+      {
+        "label": "D",
+        "teks": "O"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Sesuai sistem Landsteiner: Golongan darah B memiliki aglutinogen B pada eritrosit dan aglutinin alfa pada plasma darah.",
+    "valid": true
+  },
+  {
+    "nomor": 56,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup I",
+    "paket": "Bab I: Struktur & Fungsi Tubuh I - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Resipien universal adalah sebutan bagi seseorang yang dapat menerima transfusi darah dari semua golongan darah, yaitu golongan darah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch1_tubuh_nutrisi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "O"
+      },
+      {
+        "label": "B",
+        "teks": "AB"
+      },
+      {
+        "label": "C",
+        "teks": "A"
+      },
+      {
+        "label": "D",
+        "teks": "B"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Golongan darah AB tidak memiliki aglutinin anti-A maupun anti-B di plasmanya, sehingga tidak akan menggumpalkan sel darah merah donor dari golongan apa pun.",
+    "valid": true
+  },
+  {
+    "nomor": 57,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup I",
+    "paket": "Bab I: Struktur & Fungsi Tubuh I - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Daun memiliki jaringan tiang (palisade) yang kaya akan klorofil. Fungsi utama jaringan palisade adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch1_tubuh_nutrisi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Tempat utama berlangsungnya fotosintesis"
+      },
+      {
+        "label": "B",
+        "teks": "Menyerap air dari udara"
+      },
+      {
+        "label": "C",
+        "teks": "Mengedarkan sari makanan"
+      },
+      {
+        "label": "D",
+        "teks": "Melindungi daun dari penguapan"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Jaringan tiang (palisade parenchyma) tersusun rapat vertikal dan mengandung kloroplas terbanyak, menjadikannya pusat utama fotosintesis tumbuhan.",
+    "valid": true
+  },
+  {
+    "nomor": 58,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup I",
+    "paket": "Bab I: Struktur & Fungsi Tubuh I - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Pori-pori mikro pada permukaan epidermis daun yang diapit oleh sepasang sel penjaga untuk pertukaran gas O2, CO2, dan uap air disebut ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch1_tubuh_nutrisi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Lentisel"
+      },
+      {
+        "label": "B",
+        "teks": "Stomata"
+      },
+      {
+        "label": "C",
+        "teks": "Kutikula"
+      },
+      {
+        "label": "D",
+        "teks": "Trikoma"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Stomata (mulut daun) adalah celah mikroskopis pada epidermis yang membuka dan menutup untuk transpirasi dan pertukaran gas respirasi fotosintesis.",
+    "valid": true
+  },
+  {
+    "nomor": 59,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup I",
+    "paket": "Bab I: Struktur & Fungsi Tubuh I - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Lapisan lilin kedap air yang melapisi epidermis atas daun untuk mengurangi laju penguapan air disebut ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch1_tubuh_nutrisi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Kambium"
+      },
+      {
+        "label": "B",
+        "teks": "Kutikula"
+      },
+      {
+        "label": "C",
+        "teks": "Kloroplas"
+      },
+      {
+        "label": "D",
+        "teks": "Endodermis"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Kutikula tersusun atas zat lilin (kutin) yang bersifat hidrofobik untuk meminimalkan kehilangan air lewat transpirasi kutikuler.",
+    "valid": true
+  },
+  {
+    "nomor": 60,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup I",
+    "paket": "Bab I: Struktur & Fungsi Tubuh I - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Zat pengawet kimia yang sering disalahgunakan untuk mengawetkan tahu, bakso, dan mie basah padahal sangat beracun dan berbahaya bagi tubuh adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch1_tubuh_nutrisi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Asam benzoat"
+      },
+      {
+        "label": "B",
+        "teks": "Formalin dan boraks"
+      },
+      {
+        "label": "C",
+        "teks": "Asam sitrat"
+      },
+      {
+        "label": "D",
+        "teks": "Natrium propionat"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Formalin (larutan formaldehida) dan boraks (natrium tetraborat) adalah bahan kimia industri beracun non-pangan yang dilarang keras untuk makanan karena bersifat karsinogenik.",
+    "valid": true
+  },
+  {
+    "nomor": 61,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup I",
+    "paket": "Bab I: Struktur & Fungsi Tubuh I - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Penyedap rasa buatan yang bekerja merangsang reseptor umami pada lidah adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch1_tubuh_nutrisi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Monosodium glutamat (MSG)"
+      },
+      {
+        "label": "B",
+        "teks": "Sakarin"
+      },
+      {
+        "label": "C",
+        "teks": "Tartrazin"
+      },
+      {
+        "label": "D",
+        "teks": "Kalsium propionat"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "MSG (Monosodium Glutamat) adalah garam natrium dari asam glutamat alami yang memicu sensasi rasa gurih (umami).",
+    "valid": true
+  },
+  {
+    "nomor": 62,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup I",
+    "paket": "Bab I: Struktur & Fungsi Tubuh I - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Gas berbahaya dalam asap rokok yang memiliki daya ikat (afinitas) terhadap hemoglobin 200 kali lebih kuat daripada oksigen adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch1_tubuh_nutrisi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Karbon dioksida (CO2)"
+      },
+      {
+        "label": "B",
+        "teks": "Karbon monoksida (CO)"
+      },
+      {
+        "label": "C",
+        "teks": "Sulfur dioksida (SO2)"
+      },
+      {
+        "label": "D",
+        "teks": "Amonia"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Gas CO mengikat hemoglobin membentuk karboksihemoglobin (HbCO) yang sangat stabil, menghalangi pengikatan O2 dan menyebabkan hipoksia jaringan tubuh.",
+    "valid": true
+  },
+  {
+    "nomor": 63,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup I",
+    "paket": "Bab I: Struktur & Fungsi Tubuh I - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Zat kimia psikoaktif yang terdapat di dalam minuman kopi dan teh yang bekerja menstimulasi sistem saraf pusat agar tetap terjaga adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch1_tubuh_nutrisi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Kafein"
+      },
+      {
+        "label": "B",
+        "teks": "Nikotin"
+      },
+      {
+        "label": "C",
+        "teks": "Morfin"
+      },
+      {
+        "label": "D",
+        "teks": "Kodein"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Kafein adalah zat psikoaktif golongan stimulan ringan yang memblokir reseptor adenosin di otak sehingga menghambat rasa kantuk.",
+    "valid": true
+  },
+  {
+    "nomor": 64,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup I",
+    "paket": "Bab I: Struktur & Fungsi Tubuh I - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Narkotika golongan alami yang disadap dari getah buah tanaman Papaver somniferum dan berkhasiat sebagai analgesik (penghilang rasa sakit) kuat adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch1_tubuh_nutrisi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Ganja (kanabis)"
+      },
+      {
+        "label": "B",
+        "teks": "Opium dan morfin"
+      },
+      {
+        "label": "C",
+        "teks": "Kokain"
+      },
+      {
+        "label": "D",
+        "teks": "Amfetamin"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Getah mentah Papaver somniferum menghasilkan opium, yang kemudian dimurnikan menjadi morfin dan kodein untuk menekan persepsi rasa sakit pada SSP.",
+    "valid": true
+  },
+  {
+    "nomor": 65,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup I",
+    "paket": "Bab I: Struktur & Fungsi Tubuh I - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Obat psikotropika yang bekerja memperlambat aktivitas sistem saraf pusat, memberikan efek tenang, dan membuat tertidur disebut golongan ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch1_tubuh_nutrisi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Stimulan"
+      },
+      {
+        "label": "B",
+        "teks": "Depresan (sedatif)"
+      },
+      {
+        "label": "C",
+        "teks": "Halusinogen"
+      },
+      {
+        "label": "D",
+        "teks": "Inhalansia"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Depresan (sedatif-hipnotik) menurunkan kerja sistem saraf pusat, memperlambat denyut jantung dan napas, serta menginduksi ketenangan atau tidur (misal diazepam, alkohol).",
+    "valid": true
+  },
+  {
+    "nomor": 66,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup I",
+    "paket": "Bab I: Struktur & Fungsi Tubuh I - Bagian D: Pengayaan AKM Literasi Sains & TKA",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "[AKM Literasi Sains — Sistem Peredaran Darah] Seseorang yang sedang berlari kencang mengalami kenaikan frekuensi denyut nadi dari 70 kali per menit menjadi 140 kali per menit. Mengapa denyut jantung meningkat drastis saat aktivitas fisik berat?",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch1_ruang_jantung.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Untuk mengeluarkan sel darah merah melalui keringat"
+      },
+      {
+        "label": "B",
+        "teks": "Karena otot yang berkontraksi hebat membutuhkan pasokan oksigen dan glukosa lebih banyak serta pembuangan CO2 yang lebih cepat"
+      },
+      {
+        "label": "C",
+        "teks": "Karena katup jantung mengalami kerusakan sementara"
+      },
+      {
+        "label": "D",
+        "teks": "Agar darah berhenti mengalir ke paru-paru"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Saat olahraga berat, laju metabolisme sel otot meningkat pesat. Jantung memompa darah lebih cepat (meningkatkan cardiac output) untuk memasok lebih banyak O2 dan glukosa demi pembentukan ATP serta mempercepat eliminasi asam laktat dan CO2.",
+    "valid": true
+  },
+  {
+    "nomor": 67,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup I",
+    "paket": "Bab I: Struktur & Fungsi Tubuh I - Bagian D: Pengayaan AKM Literasi Sains & TKA",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "[AKM Pilihan Ganda Kompleks — Uji Bahan Makanan] Sepotong tahu dihaluskan lalu diuji dengan beberapa reagen:\n- Menghasilkan warna ungu saat ditetesi Biuret\n- Tetap berwarna cokelat saat ditetesi Lugol\n- Tetap berwarna biru saat ditetesi Benedict lalu dipanaskan\nManakah kesimpulan yang benar mengenai kandungan tahu tersebut?",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch1_tubuh_nutrisi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Tahu kaya akan kandungan protein nabati dan tidak mengandung amilum maupun glukosa bebas"
+      },
+      {
+        "label": "B",
+        "teks": "Tahu mengandung kadar gula pereduksi yang sangat tinggi"
+      },
+      {
+        "label": "C",
+        "teks": "Tahu mengandung amilum dalam jumlah berlimpah"
+      },
+      {
+        "label": "D",
+        "teks": "Tahu hanya tersusun atas air dan garam murni"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Reaksi Biuret positif ungu menandakan ikatan peptida protein. Lugol negatif cokelat membuktikan tidak ada pati/amilum. Benedict negatif biru membuktikan tidak ada gula sederhana pereduksi. Jadi tahu kaya protein nabati.",
+    "valid": true
+  },
+  {
+    "nomor": 68,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup I",
+    "paket": "Bab I: Struktur & Fungsi Tubuh I - Bagian D: Pengayaan AKM Literasi Sains & TKA",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "[AKM Analisis Grafik — Aktivitas Enzim Pepsin vs pH] Enzim pepsin lambung memiliki aktivitas katalisis maksimal pada pH 2,0. Jika makanan dari lambung masuk ke usus dua belas jari yang ber-pH 8,0 (basa) karena getah empedu dan natrium bikarbonat pankreas, apa yang terjadi pada enzim pepsin?",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch1_organ_pencernaan.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Pepsin menjadi semakin aktif memecah protein di usus halus"
+      },
+      {
+        "label": "B",
+        "teks": "Pepsin mengalami denaturasi struktur protein dan menjadi inaktif karena berada jauh di luar pH optimumnya"
+      },
+      {
+        "label": "C",
+        "teks": "Pepsin berubah menjadi enzim ptialin"
+      },
+      {
+        "label": "D",
+        "teks": "Pepsin mulai mencerna dinding usus secara agresif"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Enzim adalah protein yang konformasinya sangat peka terhadap perubahan pH. Pada lingkungan duodenum yang basa (pH 8), struktur tersier pepsin terdenaturasi dan sisi aktifnya rusak permanen sehingga pepsin menjadi tidak aktif.",
+    "valid": true
+  },
+  {
+    "nomor": 69,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup I",
+    "paket": "Bab I: Struktur & Fungsi Tubuh I - Bagian D: Pengayaan AKM Literasi Sains & TKA",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "[AKM Evaluasi Kasus Klinis — Transfusi Darah] Pasien bergolongan darah B rhesus positif (B+) membutuhkan transfusi darah darurat. Dari daftar pendonor berikut, darah manakah yang paling aman ditransfusikan?",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch1_tubuh_nutrisi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Donor bergolongan darah A+"
+      },
+      {
+        "label": "B",
+        "teks": "Donor bergolongan darah AB+"
+      },
+      {
+        "label": "C",
+        "teks": "Donor bergolongan darah B+ atau O+"
+      },
+      {
+        "label": "D",
+        "teks": "Donor bergolongan darah AB-"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Resipien B+ memiliki aglutinin anti-A dalam plasmanya. Maka darah donor tidak boleh mengandung antigen A. Donor yang cocok dan aman adalah sesama B+ atau O+ (donor universal eritrosit).",
+    "valid": true
+  },
+  {
+    "nomor": 70,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup I",
+    "paket": "Bab I: Struktur & Fungsi Tubuh I - Bagian D: Pengayaan AKM Literasi Sains & TKA",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "[AKM Literasi Kesehatan — Efek Minuman Berenergi & Zat Aditif] Seseorang sering mengonsumsi minuman berenergi yang mengandung kafein dosis tinggi, taurin, dan pemanis buatan setiap malam. Dampak fisiologis jangka panjang yang paling mungkin terjadi pada sistem kardiovaskular adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch1_tubuh_nutrisi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Penurunan denyut nadi dan hipotensi kronis"
+      },
+      {
+        "label": "B",
+        "teks": "Palpitasi (jantung berdebar kencang), peningkatan resistensi vaskular, dan risiko hipertensi kronis"
+      },
+      {
+        "label": "C",
+        "teks": "Peningkatan kapasitas vital paru-paru secara permanen"
+      },
+      {
+        "label": "D",
+        "teks": "Peningkatan produksi trombosit hingga darah mencair"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Kombinasi kafein konsentrasi tinggi dan stimulan memicu pelepasan adrenalin berlebih yang meningkatkan kontraksi jantung (inotropik positif) dan vasokonstriksi arteri. Akibat jangka panjangnya adalah takikardia, aritmia, dan hipertensi.",
+    "valid": true
+  }
+]

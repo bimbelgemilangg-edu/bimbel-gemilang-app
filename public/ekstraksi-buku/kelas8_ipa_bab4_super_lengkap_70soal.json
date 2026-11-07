@@ -1,0 +1,2242 @@
+[
+  {
+    "nomor": 1,
+    "materi": "Getaran, Gelombang, dan Cahaya",
+    "paket": "Bab IV: Getaran, Gelombang, & Cahaya - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Perhatikan gambar grafik perambatan gelombang transversal berikut! Jika jarak antara dua puncak gelombang yang berdekatan adalah 4 meter dan waktu tempuhnya adalah 2 detik, cepat rambat gelombang tersebut adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch4_getaran_gelombang_cahaya.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "2 m/s"
+      },
+      {
+        "label": "B",
+        "teks": "4 m/s"
+      },
+      {
+        "label": "C",
+        "teks": "8 m/s"
+      },
+      {
+        "label": "D",
+        "teks": "16 m/s"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Panjang gelombang $\\lambda = 4 \\text{ m}$ (jarak 2 puncak berdekatan). Periode $T = 2 \\text{ s}$. Frekuensi $f = \\frac{1}{T} = \\frac{1}{2} = 0,5 \\text{ Hz}$. Cepat rambat gelombang: $v = \\lambda \\cdot f = 4 \\times 0,5 = 2 \\text{ m/s}$ (atau $v = \\frac{\\lambda}{T} = \\frac{4}{2} = 2 \\text{ m/s}$).",
+    "valid": true
+  },
+  {
+    "nomor": 2,
+    "materi": "Getaran, Gelombang, dan Cahaya",
+    "paket": "Bab IV: Getaran, Gelombang, & Cahaya - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Seorang siswa ingin membuat ayunan bandul jam dinding yang berayun lebih lambat (memiliki periode getaran T yang lebih besar). Langkah perbaikan yang harus dilakukan siswa tersebut adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch4_getaran_gelombang_cahaya.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Memperpendek panjang tali bandul"
+      },
+      {
+        "label": "B",
+        "teks": "Memperpanjang tali bandul"
+      },
+      {
+        "label": "C",
+        "teks": "Memperbesar massa beban bandul"
+      },
+      {
+        "label": "D",
+        "teks": "Memperkecil massa beban bandul"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Periode bandul sederhana dirumuskan sebagai $T = 2\\pi \\sqrt{\\frac{l}{g}}$. Periode $T$ berbanding lurus dengan akar panjang tali ($l$) dan sama sekali tidak dipengaruhi oleh massa beban ($m$). Agar ayunan lebih lambat ($T$ lebih besar), panjang tali $l$ harus diperpanjang.",
+    "valid": true
+  },
+  {
+    "nomor": 3,
+    "materi": "Getaran, Gelombang, dan Cahaya",
+    "paket": "Bab IV: Getaran, Gelombang, & Cahaya - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Sebuah bandul sederhana diayunkan dari titik A (kiri) – B (titik setimbang) – C (kanan). Jika jarak mendatar dari A ke C adalah 12 cm dan waktu yang dibutuhkan dari A ke C adalah 0,25 detik, maka amplitudo dan frekuensi getaran bandul tersebut adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch4_getaran_gelombang_cahaya.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "6 cm dan 2 Hz"
+      },
+      {
+        "label": "B",
+        "teks": "12 cm dan 4 Hz"
+      },
+      {
+        "label": "C",
+        "teks": "6 cm dan 0,5 Hz"
+      },
+      {
+        "label": "D",
+        "teks": "3 cm dan 2 Hz"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Jarak A ke C adalah 2 kali simpangan terjauh (2 x Amplitudo) $\\Rightarrow A = \\frac{12}{2} = 6 \\text{ cm}$. Gerakan A–B–C adalah $\\frac{1}{2}$ getaran dalam $t = 0,25 \\text{ s}$. Waktu untuk 1 getaran penuh (Periode $T$) = $2 \\times 0,25 = 0,5 \\text{ s}$. Frekuensi $f = \\frac{1}{T} = \\frac{1}{0,5} = 2 \\text{ Hz}$.",
+    "valid": true
+  },
+  {
+    "nomor": 4,
+    "materi": "Getaran, Gelombang, dan Cahaya",
+    "paket": "Bab IV: Getaran, Gelombang, & Cahaya - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Perbedaan utama antara gelombang cahaya dan gelombang bunyi dalam hal medium perambatan dan bentuk gelombangnya adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch4_getaran_gelombang_cahaya.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Bunyi dapat merambat di ruang hampa udara, sedangkan cahaya memerlukan medium"
+      },
+      {
+        "label": "B",
+        "teks": "Keduanya merupakan gelombang transversal"
+      },
+      {
+        "label": "C",
+        "teks": "Bunyi adalah gelombang elektromagnetik, cahaya adalah gelombang mekanik"
+      },
+      {
+        "label": "D",
+        "teks": "Cahaya adalah gelombang elektromagnetik transversal (dapat merambat di ruang hampa), sedangkan bunyi adalah gelombang mekanik longitudinal (wajib memerlukan medium materi padat, cair, atau gas)"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Gelombang cahaya tidak membutuhkan partikel medium untuk merambat (gelombang elektromagnetik) dan berosilasi tegak lurus arah rambat (transversal). Sebaliknya, gelombang bunyi merambat melalui rapatan dan renggangan partikel materi (mekanik longitudinal) sehingga tidak dapat merambat di ruang hampa udara (vakum).",
+    "valid": true
+  },
+  {
+    "nomor": 5,
+    "materi": "Getaran, Gelombang, dan Cahaya",
+    "paket": "Bab IV: Getaran, Gelombang, & Cahaya - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Mengapa saat terjadi petir di langit, kilatan cahaya petir selalu terlihat terlebih dahulu baru beberapa detik kemudian terdengar suara gemuruh guntur?",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch4_getaran_gelombang_cahaya.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Karena mata manusia merespons lebih lambat daripada telinga"
+      },
+      {
+        "label": "B",
+        "teks": "Karena suara guntur dihasilkan lebih lambat oleh awan"
+      },
+      {
+        "label": "C",
+        "teks": "Cepat rambat cahaya di udara ($3 \\times 10^8 \\text{ m/s}$) hampir satu juta kali lebih cepat daripada cepat rambat bunyi di udara ($340 \\text{ m/s}$)"
+      },
+      {
+        "label": "D",
+        "teks": "Karena cahaya petir menembus awan tebal"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Kecepatan cahaya di udara adalah $c = 300.000.000 \\text{ m/s}$, sedangkan kecepatan suara di udara hanya sekitar $v = 340 \\text{ m/s}$. Karena perbedaan laju perambatan yang sangat ekstrem ini, kilatan cahaya tiba hampir seketika (orde mikrodetik), sedangkan gelombang suara guntur membutuhkan waktu beberapa detik untuk menempuh jarak kilang petir ke pengamat.",
+    "valid": true
+  },
+  {
+    "nomor": 6,
+    "materi": "Getaran, Gelombang, dan Cahaya",
+    "paket": "Bab IV: Getaran, Gelombang, & Cahaya - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Sebuah kapal survei oseanografi memancarkan pulsa gelombang ultrasonik (SONAR) vertikal ke dasar laut. Pantulan gelombang bunyi tersebut terdeteksi kembali oleh hidrofon kapal setelah 4 detik. Jika cepat rambat bunyi di dalam air laut adalah 1.500 m/s, kedalaman laut di tempat tersebut adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch4_getaran_gelombang_cahaya.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "1.500 meter"
+      },
+      {
+        "label": "B",
+        "teks": "3.000 meter"
+      },
+      {
+        "label": "C",
+        "teks": "6.000 meter"
+      },
+      {
+        "label": "D",
+        "teks": "12.000 meter"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Gelombang bunyi menempuh lintasan bolak-balik (pergi dan pulang): $s = \\frac{v \\cdot t}{2} = \\frac{1.500 \\text{ m/s} \\times 4 \\text{ s}}{2} = 3.000 \\text{ meter}$.",
+    "valid": true
+  },
+  {
+    "nomor": 7,
+    "materi": "Getaran, Gelombang, dan Cahaya",
+    "paket": "Bab IV: Getaran, Gelombang, & Cahaya - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Dua buah senar gitar yang sejenis dipetik: Senar 1 dipetik dengan simpangan kecil menghasilkan suara lembut, sedangkan Senar 2 dipetik dengan simpangan besar menghasilkan suara keras/nyaring. Karakteristik gelombang bunyi yang menentukan kuat lemahnya bunyi adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch4_getaran_gelombang_cahaya.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Amplitudo gelombang"
+      },
+      {
+        "label": "B",
+        "teks": "Frekuensi gelombang"
+      },
+      {
+        "label": "C",
+        "teks": "Cepat rambat gelombang"
+      },
+      {
+        "label": "D",
+        "teks": "Panjang gelombang"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Kuat lemahnya bunyi (intensitas volume) ditentukan oleh besar kecilnya amplitudo getaran. Sedangkan tinggi rendahnya nada bunyi ditentukan oleh frekuensi gelombang bunyi.",
+    "valid": true
+  },
+  {
+    "nomor": 8,
+    "materi": "Getaran, Gelombang, dan Cahaya",
+    "paket": "Bab IV: Getaran, Gelombang, & Cahaya - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Ketika sebuah garpu tala berfrekuensi 440 Hz dipukul di dekat garpu tala lain yang frekuensi alaminya juga 440 Hz, garpu tala kedua ikut bergetar dan menghasilkan bunyi dengungan. Peristiwa ikut bergetarnya suatu benda karena memiliki frekuensi alami yang sama disebut ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch4_getaran_gelombang_cahaya.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Refraksi"
+      },
+      {
+        "label": "B",
+        "teks": "Difraksi"
+      },
+      {
+        "label": "C",
+        "teks": "Resonansi"
+      },
+      {
+        "label": "D",
+        "teks": "Polarisasi"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Resonansi adalah fenomena di mana suatu sistem osilator ikut bergetar saat dirangsang oleh getaran dari luar yang memiliki frekuensi sama atau kelipatan bulat dari frekuensi alaminya, menghasilkan penguatan amplitudo gelombang.",
+    "valid": true
+  },
+  {
+    "nomor": 9,
+    "materi": "Getaran, Gelombang, dan Cahaya",
+    "paket": "Bab IV: Getaran, Gelombang, & Cahaya - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Dinding dan langit-langit gedung bioskop atau studio rekaman musik selalu dilapisi karpet tebal, gabus berpori, atau busa wol akustik. Tujuan utama pelapisan bahan tersebut adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch4_getaran_gelombang_cahaya.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Memperkuat pantulan gema agar suara lebih nyaring"
+      },
+      {
+        "label": "B",
+        "teks": "Mencegah udara dingin masuk"
+      },
+      {
+        "label": "C",
+        "teks": "Menghilangkan gaya gravitasi di dalam ruangan"
+      },
+      {
+        "label": "D",
+        "teks": "Menyerap energi gelombang bunyi untuk mencegah terjadinya gaung (kerdam) yang mengaburkan suara asli"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Gaung atau kerdam adalah bunyi pantul yang datang sebelum bunyi asli selesai diucapkan sehingga mengganggu kejelasan suara. Bahan lunak dan berpori menyerap gelombang suara agar pantulan diminimalkan.",
+    "valid": true
+  },
+  {
+    "nomor": 10,
+    "materi": "Getaran, Gelombang, dan Cahaya",
+    "paket": "Bab IV: Getaran, Gelombang, & Cahaya - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Kelelawar dapat terbang berburu mangsa serangga di dalam gua gelap gulita tanpa menabrak dinding menggunakan kemampuan navigasi biologis yang disebut ekolokasi. Gelombang yang dimanfaatkan kelelawar adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch4_getaran_gelombang_cahaya.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Gelombang infrasonik (< 20 Hz)"
+      },
+      {
+        "label": "B",
+        "teks": "Gelombang ultrasonik (> 20.000 Hz)"
+      },
+      {
+        "label": "C",
+        "teks": "Gelombang radio"
+      },
+      {
+        "label": "D",
+        "teks": "Sinar ultraviolet"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Kelelawar memancarkan pulsa gelombang ultrasonik berfrekuensi tinggi (di atas 20 kHz hingga 100 kHz) melalui laring dan menerima pantulannya dengan daun telinga untuk memetakan lokasi mangsa dan rintangan.",
+    "valid": true
+  },
+  {
+    "nomor": 11,
+    "materi": "Getaran, Gelombang, dan Cahaya",
+    "paket": "Bab IV: Getaran, Gelombang, & Cahaya - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Sebuah pensil yang dimasukkan miring ke dalam gelas bening berisi air tampak patah atau membengkok pada batas permukaan air. Peristiwa optika ini terjadi karena ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch4_getaran_gelombang_cahaya.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Pembiasan (refraksi) cahaya saat merambat melintasi dua medium yang memiliki kerapatan optik berbeda (dari air yang lebih rapat ke udara yang kurang rapat)"
+      },
+      {
+        "label": "B",
+        "teks": "Pemantulan sempurna di dalam gelas"
+      },
+      {
+        "label": "C",
+        "teks": "Pensil menyerap panas dari air"
+      },
+      {
+        "label": "D",
+        "teks": "Dispersi cahaya menjadi pelangi"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Ketika berkas cahaya merambat dari air ($n = 1,33$) ke udara ($n = 1$), terjadi perubahan kelajuan rambat cahaya yang membelokkan arah sinar menjauhi garis normal. Pembelokan ini menimbulkan ilusi optik pensil tampak patah.",
+    "valid": true
+  },
+  {
+    "nomor": 12,
+    "materi": "Getaran, Gelombang, dan Cahaya",
+    "paket": "Bab IV: Getaran, Gelombang, & Cahaya - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Seberkas sinar polikromatik (cahaya putih matahari) diarahkan menembus prisma kaca segitiga sehingga terurai menjadi spektrum warna pelangi (merah, jingga, kuning, hijau, biru, nila, ungu). Peristiwa penguraian cahaya putih menjadi komponen-komponen monokromatiknya disebut ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch4_getaran_gelombang_cahaya.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Interferensi"
+      },
+      {
+        "label": "B",
+        "teks": "Polarisasi"
+      },
+      {
+        "label": "C",
+        "teks": "Difraksi"
+      },
+      {
+        "label": "D",
+        "teks": "Dispersi cahaya"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Dispersi terjadi karena tiap panjang gelombang warna cahaya memiliki indeks bias yang sedikit berbeda di dalam kaca prisma. Cahaya ungu mengalami deviasi pembelokan terbesar (panjang gelombang terpendek), sedangkan cahaya merah mengalami deviasi terkecil (panjang gelombang terpanjang).",
+    "valid": true
+  },
+  {
+    "nomor": 13,
+    "materi": "Getaran, Gelombang, dan Cahaya",
+    "paket": "Bab IV: Getaran, Gelombang, & Cahaya - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Seseorang berdiri di depan cermin datar pada jarak 1,5 meter. Sifat bayangan yang terbentuk pada cermin datar dan jarak antara orang tersebut dengan bayangannya adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch4_getaran_gelombang_cahaya.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Nyata, terbalik, diperbesar, dan berjarak 1,5 meter"
+      },
+      {
+        "label": "B",
+        "teks": "Maya, terbalik, sama besar, dan berjarak 0 meter"
+      },
+      {
+        "label": "C",
+        "teks": "Maya, tegak, sama besar (perbesaran M = 1), dan berjarak 3,0 meter"
+      },
+      {
+        "label": "D",
+        "teks": "Nyata, tegak, diperkecil, dan berjarak 4,5 meter"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Sifat bayangan cermin datar: Maya, tegak, sama besar dengan benda ($M = 1$), simetris kanan-kiri. Jarak bayangan ke cermin sama dengan jarak benda ke cermin ($s' = s = 1,5 \\text{ m}$). Jarak orang ke bayangannya = $s + s' = 1,5 + 1,5 = 3,0 \\text{ meter}$.",
+    "valid": true
+  },
+  {
+    "nomor": 14,
+    "materi": "Getaran, Gelombang, dan Cahaya",
+    "paket": "Bab IV: Getaran, Gelombang, & Cahaya - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Dua buah cermin datar disusun saling berhadapan membentuk sudut apit alpha = 60 derajat. Jika sebuah lilin menyala diletakkan di antara kedua cermin, jumlah bayangan lilin yang terbentuk adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch4_getaran_gelombang_cahaya.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "4 bayangan"
+      },
+      {
+        "label": "B",
+        "teks": "5 bayangan"
+      },
+      {
+        "label": "C",
+        "teks": "6 bayangan"
+      },
+      {
+        "label": "D",
+        "teks": "7 bayangan"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Rumus jumlah bayangan oleh dua cermin datar: $n = \\frac{360^\\circ}{\\alpha} - 1 = \\frac{360^\\circ}{60^\\circ} - 1 = 6 - 1 = 5 \\text{ bayangan}$.",
+    "valid": true
+  },
+  {
+    "nomor": 15,
+    "materi": "Getaran, Gelombang, dan Cahaya",
+    "paket": "Bab IV: Getaran, Gelombang, & Cahaya - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Sebuah benda diletakkan pada jarak 30 cm di depan sebuah cermin cekung yang memiliki jarak fokus f = 20 cm. Jarak bayangan (s') dan sifat bayangan yang terbentuk adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch4_getaran_gelombang_cahaya.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "s' = 60 cm, bersifat nyata, terbalik, diperbesar"
+      },
+      {
+        "label": "B",
+        "teks": "s' = 12 cm, bersifat maya, tegak, diperkecil"
+      },
+      {
+        "label": "C",
+        "teks": "s' = 30 cm, bersifat nyata, terbalik, sama besar"
+      },
+      {
+        "label": "D",
+        "teks": "s' = 10 cm, bersifat nyata, tegak, diperbesar"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Rumus cermin: $\\frac{1}{f} = \\frac{1}{s} + \\frac{1}{s'} \\Rightarrow \\frac{1}{20} = \\frac{1}{30} + \\frac{1}{s'} \\Rightarrow \\frac{1}{s'} = \\frac{1}{20} - \\frac{1}{30} = \\frac{3 - 2}{60} = \\frac{1}{60} \\Rightarrow s' = 60 \\text{ cm}$. Karena $s' > 0$, bayangan bersifat nyata dan terbalik. Perbesaran $M = |\\frac{s'}{s}| = \\frac{60}{30} = 2$ kali (diperbesar).",
+    "valid": true
+  },
+  {
+    "nomor": 16,
+    "materi": "Getaran, Gelombang, dan Cahaya",
+    "paket": "Bab IV: Getaran, Gelombang, & Cahaya - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Mengapa kaca spion kendaraan bermotor dan cermin pengawas di tikungan jalan berbahaya selalu menggunakan cermin cembung?",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch4_getaran_gelombang_cahaya.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Karena cermin cembung menghasilkan bayangan yang terbalik"
+      },
+      {
+        "label": "B",
+        "teks": "Karena cermin cembung memperbesar ukuran bayangan menjadi raksasa"
+      },
+      {
+        "label": "C",
+        "teks": "Cermin cembung selalu menghasilkan bayangan maya, tegak, dan diperkecil sehingga memberikan bidang pandang penglihatan (field of view) yang jauh lebih luas bagi pengemudi"
+      },
+      {
+        "label": "D",
+        "teks": "Karena cermin cembung tahan panas knalpot"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Sinar-sinar pantul pada cermin cembung bersifat divergen (menyebar). Hal ini menghasilkan bayangan maya, tegak, dan diperkecil dari semua benda di depannya, sehingga sudut jangkauan penglihatan pengemudi menjadi jauh lebih lebar dibandingkan cermin datar.",
+    "valid": true
+  },
+  {
+    "nomor": 17,
+    "materi": "Getaran, Gelombang, dan Cahaya",
+    "paket": "Bab IV: Getaran, Gelombang, & Cahaya - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Sebuah benda diletakkan pada jarak 15 cm di depan lensa cembung (lensa positif) yang memiliki panjang fokus f = 10 cm. Jarak bayangan yang terbentuk di belakang lensa adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch4_getaran_gelombang_cahaya.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "30 cm"
+      },
+      {
+        "label": "B",
+        "teks": "25 cm"
+      },
+      {
+        "label": "C",
+        "teks": "20 cm"
+      },
+      {
+        "label": "D",
+        "teks": "6 cm"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Rumus lensa tipis: $\\frac{1}{f} = \\frac{1}{s} + \\frac{1}{s'} \\Rightarrow \\frac{1}{10} = \\frac{1}{15} + \\frac{1}{s'} \\Rightarrow \\frac{1}{s'} = \\frac{1}{10} - \\frac{1}{15} = \\frac{3 - 2}{30} = \\frac{1}{30} \\Rightarrow s' = 30 \\text{ cm}$.",
+    "valid": true
+  },
+  {
+    "nomor": 18,
+    "materi": "Getaran, Gelombang, dan Cahaya",
+    "paket": "Bab IV: Getaran, Gelombang, & Cahaya - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Seseorang yang menderita cacat mata Miopi (rabun jauh) memiliki titik jauh (Punctum Remotum) PR = 2 meter (200 cm). Kekuatan kacamata lensa cekung (negatif) yang harus digunakannya agar dapat melihat benda di tak hingga dengan jelas adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch4_getaran_gelombang_cahaya.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "-0,5 Dioptri"
+      },
+      {
+        "label": "B",
+        "teks": "-2,0 Dioptri"
+      },
+      {
+        "label": "C",
+        "teks": "+0,5 Dioptri"
+      },
+      {
+        "label": "D",
+        "teks": "+2,0 Dioptri"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Rumus kekuatan lensa kacamata miopi: $P = -\\frac{100}{PR \\text{ (cm)}} = -\\frac{100}{200 \\text{ cm}} = -0,5 \\text{ Dioptri}$ (atau $P = -\\frac{1}{PR \\text{ (m)}} = -\\frac{1}{2} = -0,5 \\text{ D}$).",
+    "valid": true
+  },
+  {
+    "nomor": 19,
+    "materi": "Getaran, Gelombang, dan Cahaya",
+    "paket": "Bab IV: Getaran, Gelombang, & Cahaya - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Seseorang tidak dapat membaca buku pada jarak baca normal (sn = 25 cm) karena titik dekat matanya (Punctum Proximum) bergeser menjauh menjadi PP = 50 cm. Kekuatan kacamata lensa cembung (positif) yang dibutuhkannya adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch4_getaran_gelombang_cahaya.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "+2,0 Dioptri"
+      },
+      {
+        "label": "B",
+        "teks": "+1,5 Dioptri"
+      },
+      {
+        "label": "C",
+        "teks": "+0,5 Dioptri"
+      },
+      {
+        "label": "D",
+        "teks": "-2,0 Dioptri"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Kacamata hipermetropi: $P = \\frac{100}{s_n} - \\frac{100}{PP} = \\frac{100}{25} - \\frac{100}{50} = 4 - 2 = +2,0 \\text{ Dioptri}$.",
+    "valid": true
+  },
+  {
+    "nomor": 20,
+    "materi": "Getaran, Gelombang, dan Cahaya",
+    "paket": "Bab IV: Getaran, Gelombang, & Cahaya - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Bagian bola mata manusia yang berfungsi mengatur diameter bukaan pupil untuk mengontrol intensitas cahaya yang masuk ke retina, serta memberikan warna pada bola mata adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch4_getaran_gelombang_cahaya.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Kornea"
+      },
+      {
+        "label": "B",
+        "teks": "Lensa mata"
+      },
+      {
+        "label": "C",
+        "teks": "Sklera"
+      },
+      {
+        "label": "D",
+        "teks": "Iris (selaput pelangi)"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Iris mengandung pigmen melanin pemberi warna mata dan serat otot polos sirkular/radial yang mengatur konstriksi (mengecil saat silau) dan dilatasi (membesar saat remang) pada celah pupil.",
+    "valid": true
+  },
+  {
+    "nomor": 21,
+    "materi": "Getaran, Gelombang, dan Cahaya",
+    "paket": "Bab IV: Getaran, Gelombang, & Cahaya - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Kemampuan otot siliaris pada mata manusia untuk mengubah-ubah kecembungan lensa mata agar bayangan benda selalu jatuh tepat di bintik kuning retina disebut ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch4_getaran_gelombang_cahaya.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Adaptasi gelap"
+      },
+      {
+        "label": "B",
+        "teks": "Akomodasi mata"
+      },
+      {
+        "label": "C",
+        "teks": "Regenerasi fovea"
+      },
+      {
+        "label": "D",
+        "teks": "Refleks pupil"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Daya akomodasi adalah kemampuan lensa mata untuk mencembung saat melihat benda dekat dan memipih saat memandang objek jauh melalui kontraksi/relaksasi muskulus siliaris.",
+    "valid": true
+  },
+  {
+    "nomor": 22,
+    "materi": "Getaran, Gelombang, dan Cahaya",
+    "paket": "Bab IV: Getaran, Gelombang, & Cahaya - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Seorang teknisi reparasi jam tangan mengamati gerigi arloji menggunakan lup (kaca pembesar) dengan jarak fokus f = 5 cm. Jika mata teknisi berakomodasi maksimum pada jarak baca normal sn = 25 cm, perbesaran bayangan yang dihasilkan lup adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch4_getaran_gelombang_cahaya.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "5 kali"
+      },
+      {
+        "label": "B",
+        "teks": "6 kali"
+      },
+      {
+        "label": "C",
+        "teks": "10 kali"
+      },
+      {
+        "label": "D",
+        "teks": "25 kali"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Rumus perbesaran lup untuk mata berakomodasi maksimum: $M = \\frac{s_n}{f} + 1 = \\frac{25 \\text{ cm}}{5 \\text{ cm}} + 1 = 5 + 1 = 6 \\text{ kali}$.",
+    "valid": true
+  },
+  {
+    "nomor": 23,
+    "materi": "Getaran, Gelombang, dan Cahaya",
+    "paket": "Bab IV: Getaran, Gelombang, & Cahaya - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Kamera fotografi memiliki kemiripan prinsip kerja optik dengan mata manusia. Pasangan komponen kamera dan bagian mata manusia yang memiliki fungsi ekuivalen yang tepat adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch4_getaran_gelombang_cahaya.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Diafragma kamera ekuivalen dengan pupil/iris, lensa kamera ekuivalen dengan lensa mata, dan sensor CMOS/film kamera ekuivalen dengan retina"
+      },
+      {
+        "label": "B",
+        "teks": "Lensa kamera ekuivalen dengan kornea saja"
+      },
+      {
+        "label": "C",
+        "teks": "Shutter ekuivalen dengan saraf optik"
+      },
+      {
+        "label": "D",
+        "teks": "Flash kamera ekuivalen dengan kelopak mata"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Apertur diafragma kamera mengatur intensitas cahaya mirip iris/pupil. Lensa kamera memfokuskan bayangan mirip lensa kristalin mata. Sensor film/digital menangkap bayangan nyata terbalik mirip lapisan fotoreseptor retina.",
+    "valid": true
+  },
+  {
+    "nomor": 24,
+    "materi": "Getaran, Gelombang, dan Cahaya",
+    "paket": "Bab IV: Getaran, Gelombang, & Cahaya - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Pada lampu senter dan lampu depan sepeda motor, bola lampu kecil selalu diposisikan tepat di titik fokus (f) cermin cekung reflektor. Tujuan penempatan tersebut adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch4_getaran_gelombang_cahaya.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Menyebarkan cahaya ke segala arah agar redup"
+      },
+      {
+        "label": "B",
+        "teks": "Membuat bayangan lampu terbalik"
+      },
+      {
+        "label": "C",
+        "teks": "Sesuai hukum cermin cekung, sinar cahaya yang datang dari titik fokus akan dipantulkan sejajar sumbu utama membentuk berkas sinar paralel lurus ke depan yang terang dan berjangkauan jauh"
+      },
+      {
+        "label": "D",
+        "teks": "Mencegah terjadinya panas pada reflektor"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Sinar istimewa cermin cekung: Sinar yang berasal dari titik fokus ($F$) dipantulkan sejajar dengan sumbu utama. Hal ini dimanfaatkan reflektor lampu sorot untuk menghasilkan berkas sinar sejajar yang kuat menembus kegelapan.",
+    "valid": true
+  },
+  {
+    "nomor": 25,
+    "materi": "Getaran, Gelombang, dan Cahaya",
+    "paket": "Bab IV: Getaran, Gelombang, & Cahaya - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Kelainan mata Astigmatisme (mata silindris) yang membuat penderita tidak dapat membedakan garis-garis vertikal dan horizontal secara bersamaan disebabkan oleh ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch4_getaran_gelombang_cahaya.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Bola mata terlalu pendek"
+      },
+      {
+        "label": "B",
+        "teks": "Lensa mata mengalami kekeruhan katarak"
+      },
+      {
+        "label": "C",
+        "teks": "Kurangnya vitamin A"
+      },
+      {
+        "label": "D",
+        "teks": "Kelengkungan permukaan kornea mata atau lensa mata tidak sferis rata (berbentuk lonjong/kelengkungan silindrik) sehingga sinar tidak difokuskan pada satu titik retina"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Astigmatisme disebabkan oleh asimetri kelengkungan kornea, menyebabkan berkas cahaya dibiaskan dengan fokus berbeda pada bidang meridian horizontal dan vertikal, dan dapat dikoreksi menggunakan kacamata lensa silindris.",
+    "valid": true
+  },
+  {
+    "nomor": 26,
+    "materi": "Getaran, Gelombang, dan Cahaya",
+    "paket": "Bab IV: Getaran, Gelombang, & Cahaya - Bagian B: Contoh Soal Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Gerak bolak-balik suatu benda secara periodik melalui titik keseimbangan disebut ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch4_getaran_gelombang_cahaya.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Getaran"
+      },
+      {
+        "label": "B",
+        "teks": "Gelombang"
+      },
+      {
+        "label": "C",
+        "teks": "Kecepatan"
+      },
+      {
+        "label": "D",
+        "teks": "Percepatan"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Getaran didefinisikan sebagai gerak osilasi bolak-balik yang teratur melewati titik kesetimbangan statis.",
+    "valid": true
+  },
+  {
+    "nomor": 27,
+    "materi": "Getaran, Gelombang, dan Cahaya",
+    "paket": "Bab IV: Getaran, Gelombang, & Cahaya - Bagian B: Contoh Soal Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Waktu yang diperlukan oleh suatu benda untuk melakukan satu kali getaran penuh disebut ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch4_getaran_gelombang_cahaya.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Frekuensi"
+      },
+      {
+        "label": "B",
+        "teks": "Periode"
+      },
+      {
+        "label": "C",
+        "teks": "Amplitudo"
+      },
+      {
+        "label": "D",
+        "teks": "Cepat rambat"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Periode ($T$) adalah durasi waktu untuk menuntaskan 1 siklus getaran penuh ($T = t / n$). Frekuensi ($f$) adalah jumlah getaran per detik ($f = n / t$).",
+    "valid": true
+  },
+  {
+    "nomor": 28,
+    "materi": "Getaran, Gelombang, dan Cahaya",
+    "paket": "Bab IV: Getaran, Gelombang, & Cahaya - Bagian B: Contoh Soal Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Gelombang yang arah getarnya tegak lurus terhadap arah perambatannya disebut gelombang ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch4_getaran_gelombang_cahaya.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Transversal"
+      },
+      {
+        "label": "B",
+        "teks": "Longitudinal"
+      },
+      {
+        "label": "C",
+        "teks": "Stasioner"
+      },
+      {
+        "label": "D",
+        "teks": "Elektromagnetik"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Gelombang transversal memiliki osilasi tegak lurus arah rambat gelombang (contoh: gelombang tali, ombak air, gelombang cahaya).",
+    "valid": true
+  },
+  {
+    "nomor": 29,
+    "materi": "Getaran, Gelombang, dan Cahaya",
+    "paket": "Bab IV: Getaran, Gelombang, & Cahaya - Bagian B: Contoh Soal Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Satu gelombang transversal lengkap terdiri atas ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch4_getaran_gelombang_cahaya.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Satu bukit dan satu lembah gelombang"
+      },
+      {
+        "label": "B",
+        "teks": "Dua bukit gelombang saja"
+      },
+      {
+        "label": "C",
+        "teks": "Dua lembah gelombang saja"
+      },
+      {
+        "label": "D",
+        "teks": "Satu rapatan dan satu renggangan"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Satu panjang gelombang transversal ($\\lambda$) tersusun atas satu bukit gelombang dan satu lembah gelombang berurutan.",
+    "valid": true
+  },
+  {
+    "nomor": 30,
+    "materi": "Getaran, Gelombang, dan Cahaya",
+    "paket": "Bab IV: Getaran, Gelombang, & Cahaya - Bagian B: Contoh Soal Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Batas frekuensi getaran gelombang bunyi yang dapat didengar oleh telinga manusia normal (audiosonik) berada pada rentang ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch4_getaran_gelombang_cahaya.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "< 20 Hz"
+      },
+      {
+        "label": "B",
+        "teks": "20 Hz sampai 20.000 Hz"
+      },
+      {
+        "label": "C",
+        "teks": "> 20.000 Hz"
+      },
+      {
+        "label": "D",
+        "teks": "100.000 Hz"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Daerah pendengaran manusia berkisar antara 20 Hz hingga 20.000 Hz (audiosonik). Di bawah 20 Hz adalah infrasonik, di atas 20.000 Hz adalah ultrasonik.",
+    "valid": true
+  },
+  {
+    "nomor": 31,
+    "materi": "Getaran, Gelombang, dan Cahaya",
+    "paket": "Bab IV: Getaran, Gelombang, & Cahaya - Bagian B: Contoh Soal Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Bunyi pantul yang terdengar beberapa saat SETELAH bunyi asli selesai diucapkan dan terdengar jelas di tempat lapang yang jauh dari tebing disebut ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch4_getaran_gelombang_cahaya.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Gaung"
+      },
+      {
+        "label": "B",
+        "teks": "Kerdam"
+      },
+      {
+        "label": "C",
+        "teks": "Gema"
+      },
+      {
+        "label": "D",
+        "teks": "Desah"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Gema terjadi ketika jarak dinding pemantul cukup jauh sehingga jeda waktu tempuh bunyi pantul cukup lama dan terdengar jelas terpisah setelah bunyi asli selesai.",
+    "valid": true
+  },
+  {
+    "nomor": 32,
+    "materi": "Getaran, Gelombang, dan Cahaya",
+    "paket": "Bab IV: Getaran, Gelombang, & Cahaya - Bagian B: Contoh Soal Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Hukum pemantulan cahaya (Hukum Snellius) menyatakan bahwa sinar datang, sinar pantul, dan garis normal berada pada satu bidang datar, dan besar sudut datang (i) ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch4_getaran_gelombang_cahaya.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Sama dengan besar sudut pantul (r)"
+      },
+      {
+        "label": "B",
+        "teks": "Lebih besar dari sudut pantul"
+      },
+      {
+        "label": "C",
+        "teks": "Lebih kecil dari sudut pantul"
+      },
+      {
+        "label": "D",
+        "teks": "Selalu 90 derajat"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Hukum pemantulan cahaya: Sudut datang sama dengan sudut pantul ($\\angle i = \\angle r$).",
+    "valid": true
+  },
+  {
+    "nomor": 33,
+    "materi": "Getaran, Gelombang, dan Cahaya",
+    "paket": "Bab IV: Getaran, Gelombang, & Cahaya - Bagian B: Contoh Soal Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Sebuah cermin cekung memiliki jari-jari kelengkungan R = 40 cm. Jarak fokus (f) cermin cekung tersebut adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch4_getaran_gelombang_cahaya.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "10 cm"
+      },
+      {
+        "label": "B",
+        "teks": "20 cm"
+      },
+      {
+        "label": "C",
+        "teks": "40 cm"
+      },
+      {
+        "label": "D",
+        "teks": "80 cm"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Jarak fokus cermin sferis adalah setengah dari jari-jari kelengkungan ($f = \\frac{1}{2} R = \\frac{1}{2} \\times 40 = 20 \\text{ cm}$).",
+    "valid": true
+  },
+  {
+    "nomor": 34,
+    "materi": "Getaran, Gelombang, dan Cahaya",
+    "paket": "Bab IV: Getaran, Gelombang, & Cahaya - Bagian B: Contoh Soal Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Lensa cembung bersifat mengumpulkan berkas sinar cahaya yang sejajar menuju satu titik fokus, sehingga disebut lensa ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch4_getaran_gelombang_cahaya.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Konvergen (positif)"
+      },
+      {
+        "label": "B",
+        "teks": "Divergen (negatif)"
+      },
+      {
+        "label": "C",
+        "teks": "Bikonkaf"
+      },
+      {
+        "label": "D",
+        "teks": "Plano-konkaf"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Lensa cembung (lensa positif) mengumpulkan sinar (konvergen). Lensa cekung (lensa negatif) menyebarkan sinar (divergen).",
+    "valid": true
+  },
+  {
+    "nomor": 35,
+    "materi": "Getaran, Gelombang, dan Cahaya",
+    "paket": "Bab IV: Getaran, Gelombang, & Cahaya - Bagian B: Contoh Soal Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Alat optik yang digunakan oleh kapal selam untuk mengamati situasi di atas permukaan laut tanpa harus muncul ke permukaan adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch4_getaran_gelombang_cahaya.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Periskop"
+      },
+      {
+        "label": "B",
+        "teks": "Teleskop"
+      },
+      {
+        "label": "C",
+        "teks": "Mikroskop"
+      },
+      {
+        "label": "D",
+        "teks": "Episkop"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Periskop menggunakan tabung vertikal berisi dua cermin datar atau prisma siku-siku pemantul total yang dipasang miring 45 derajat untuk membelokkan berkas cahaya.",
+    "valid": true
+  },
+  {
+    "nomor": 36,
+    "materi": "Getaran, Gelombang, dan Cahaya",
+    "paket": "Bab IV: Getaran, Gelombang, & Cahaya - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Sebuah pegas bergetar 120 kali dalam waktu 1 menit. Frekuensi getaran pegas tersebut adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch4_getaran_gelombang_cahaya.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "0,5 Hz"
+      },
+      {
+        "label": "B",
+        "teks": "2 Hz"
+      },
+      {
+        "label": "C",
+        "teks": "60 Hz"
+      },
+      {
+        "label": "D",
+        "teks": "120 Hz"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "$f = n / t = 120 / 60 = 2$ Hz.",
+    "valid": true
+  },
+  {
+    "nomor": 37,
+    "materi": "Getaran, Gelombang, dan Cahaya",
+    "paket": "Bab IV: Getaran, Gelombang, & Cahaya - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Jika frekuensi suatu getaran adalah 50 Hz, maka periode getaran tersebut adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch4_getaran_gelombang_cahaya.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "0,02 detik"
+      },
+      {
+        "label": "B",
+        "teks": "0,2 detik"
+      },
+      {
+        "label": "C",
+        "teks": "2 detik"
+      },
+      {
+        "label": "D",
+        "teks": "5 detik"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "$T = 1 / f = 1 / 50 = 0,02$ detik.",
+    "valid": true
+  },
+  {
+    "nomor": 38,
+    "materi": "Getaran, Gelombang, dan Cahaya",
+    "paket": "Bab IV: Getaran, Gelombang, & Cahaya - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Simpangan terjauh dari titik kesetimbangan pada suatu getaran disebut ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch4_getaran_gelombang_cahaya.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Amplitudo"
+      },
+      {
+        "label": "B",
+        "teks": "Frekuensi"
+      },
+      {
+        "label": "C",
+        "teks": "Periode"
+      },
+      {
+        "label": "D",
+        "teks": "Fase"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Amplitudo adalah nilai mutlak jarak perpindahan terjauh partikel dari titik setimbang.",
+    "valid": true
+  },
+  {
+    "nomor": 39,
+    "materi": "Getaran, Gelombang, dan Cahaya",
+    "paket": "Bab IV: Getaran, Gelombang, & Cahaya - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Gelombang longitudinal tersusun atas ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch4_getaran_gelombang_cahaya.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Rapatan dan renggangan"
+      },
+      {
+        "label": "B",
+        "teks": "Bukit dan lembah"
+      },
+      {
+        "label": "C",
+        "teks": "Simpul dan perut"
+      },
+      {
+        "label": "D",
+        "teks": "Hanya rapatan"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Satu gelombang longitudinal terdiri dari 1 daerah rapatan (kompresi) dan 1 daerah renggangan (rarefaksi).",
+    "valid": true
+  },
+  {
+    "nomor": 40,
+    "materi": "Getaran, Gelombang, dan Cahaya",
+    "paket": "Bab IV: Getaran, Gelombang, & Cahaya - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Gelombang merambat dengan panjang gelombang 2 m dan frekuensi 150 Hz. Cepat rambat gelombangnya adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch4_getaran_gelombang_cahaya.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "75 m/s"
+      },
+      {
+        "label": "B",
+        "teks": "150 m/s"
+      },
+      {
+        "label": "C",
+        "teks": "300 m/s"
+      },
+      {
+        "label": "D",
+        "teks": "600 m/s"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "$v = \\lambda \\cdot f = 2 \\times 150 = 300$ m/s.",
+    "valid": true
+  },
+  {
+    "nomor": 41,
+    "materi": "Getaran, Gelombang, dan Cahaya",
+    "paket": "Bab IV: Getaran, Gelombang, & Cahaya - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Gelombang laut memiliki cepat rambat 12 m/s dan periode 3 detik. Panjang gelombangnya adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch4_getaran_gelombang_cahaya.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "4 meter"
+      },
+      {
+        "label": "B",
+        "teks": "15 meter"
+      },
+      {
+        "label": "C",
+        "teks": "36 meter"
+      },
+      {
+        "label": "D",
+        "teks": "72 meter"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "$\\lambda = v \\cdot T = 12 \\times 3 = 36$ meter.",
+    "valid": true
+  },
+  {
+    "nomor": 42,
+    "materi": "Getaran, Gelombang, dan Cahaya",
+    "paket": "Bab IV: Getaran, Gelombang, & Cahaya - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Medium yang menghantarkan gelombang bunyi dengan kelajuan paling cepat adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch4_getaran_gelombang_cahaya.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Zat padat (seperti rel baja)"
+      },
+      {
+        "label": "B",
+        "teks": "Zat cair (air laut)"
+      },
+      {
+        "label": "C",
+        "teks": "Gas (udara kering)"
+      },
+      {
+        "label": "D",
+        "teks": "Ruang hampa"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Partikel zat padat tersusun paling rapat dan memiliki modulus elastisitas tinggi sehingga kelajuan bunyi di zat padat paling tinggi (rel baja $\\approx 5.000$ m/s vs udara $340$ m/s).",
+    "valid": true
+  },
+  {
+    "nomor": 43,
+    "materi": "Getaran, Gelombang, dan Cahaya",
+    "paket": "Bab IV: Getaran, Gelombang, & Cahaya - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Hewan yang mampu mendengar dan menghasilkan gelombang infrasonik (< 20 Hz) untuk komunikasi jarak jauh adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch4_getaran_gelombang_cahaya.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Gajah dan paus"
+      },
+      {
+        "label": "B",
+        "teks": "Kelelawar"
+      },
+      {
+        "label": "C",
+        "teks": "Lumba-lumba"
+      },
+      {
+        "label": "D",
+        "teks": "Kucing"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Gajah dan paus memanfaatkan infrasonik yang berdaya jangkau sangat jauh karena redamannya kecil di udara dan air.",
+    "valid": true
+  },
+  {
+    "nomor": 44,
+    "materi": "Getaran, Gelombang, dan Cahaya",
+    "paket": "Bab IV: Getaran, Gelombang, & Cahaya - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Nada bunyi ditentukan oleh frekuensi getaran, sedangkan warna bunyi (timbre) ditentukan oleh ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch4_getaran_gelombang_cahaya.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Bentuk gelombang dan gabungan nada harmonik"
+      },
+      {
+        "label": "B",
+        "teks": "Amplitudo bunyi"
+      },
+      {
+        "label": "C",
+        "teks": "Cepat rambat bunyi"
+      },
+      {
+        "label": "D",
+        "teks": "Medium"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Timbre (warna bunyi) membedakan suara gitar dan biola pada nada yang sama akibat perbedaan spektrum gelombang harmoniknya.",
+    "valid": true
+  },
+  {
+    "nomor": 45,
+    "materi": "Getaran, Gelombang, dan Cahaya",
+    "paket": "Bab IV: Getaran, Gelombang, & Cahaya - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Resonansi kolom udara pertama terjadi pada panjang tabung L = 15 cm. Panjang gelombang bunyi adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch4_getaran_gelombang_cahaya.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "30 cm"
+      },
+      {
+        "label": "B",
+        "teks": "45 cm"
+      },
+      {
+        "label": "C",
+        "teks": "60 cm"
+      },
+      {
+        "label": "D",
+        "teks": "90 cm"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Resonansi 1: $L = \\frac{1}{4} \\lambda \\Rightarrow 15 = \\frac{1}{4} \\lambda \\Rightarrow \\lambda = 60$ cm.",
+    "valid": true
+  },
+  {
+    "nomor": 46,
+    "materi": "Getaran, Gelombang, dan Cahaya",
+    "paket": "Bab IV: Getaran, Gelombang, & Cahaya - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Peristiwa pembelokan arah rambat cahaya saat memasuki medium dengan indeks bias berbeda disebut ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch4_getaran_gelombang_cahaya.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Pembiasan (refraksi)"
+      },
+      {
+        "label": "B",
+        "teks": "Pemantulan"
+      },
+      {
+        "label": "C",
+        "teks": "Polarisasi"
+      },
+      {
+        "label": "D",
+        "teks": "Interferensi"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Refraksi adalah pembelokan berkas cahaya akibat perubahan kelajuan di antara dua medium berlainan kerapatan optik.",
+    "valid": true
+  },
+  {
+    "nomor": 47,
+    "materi": "Getaran, Gelombang, dan Cahaya",
+    "paket": "Bab IV: Getaran, Gelombang, & Cahaya - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Sinar datang dari medium renggang (udara) ke medium lebih rapat (air) akan dibiaskan ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch4_getaran_gelombang_cahaya.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Mendekati garis normal"
+      },
+      {
+        "label": "B",
+        "teks": "Menjauhi garis normal"
+      },
+      {
+        "label": "C",
+        "teks": "Lurus tanpa belok"
+      },
+      {
+        "label": "D",
+        "teks": "Dipantulkan total"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Dari medium kurang rapat ke lebih rapat, kelajuan cahaya melambat sehingga berkas sinar membelok mendekati garis normal.",
+    "valid": true
+  },
+  {
+    "nomor": 48,
+    "materi": "Getaran, Gelombang, dan Cahaya",
+    "paket": "Bab IV: Getaran, Gelombang, & Cahaya - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Indeks bias mutlak suatu zat adalah perbandingan antara ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch4_getaran_gelombang_cahaya.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Cepat rambat cahaya di ruang hampa terhadap di zat tersebut"
+      },
+      {
+        "label": "B",
+        "teks": "Sudut datang terhadap sudut bias"
+      },
+      {
+        "label": "C",
+        "teks": "Massa jenis zat terhadap air"
+      },
+      {
+        "label": "D",
+        "teks": "Tinggi benda terhadap bayangan"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "$n = c / v$, di mana $c$ adalah laju cahaya di vakum ($3 \\times 10^8$ m/s).",
+    "valid": true
+  },
+  {
+    "nomor": 49,
+    "materi": "Getaran, Gelombang, dan Cahaya",
+    "paket": "Bab IV: Getaran, Gelombang, & Cahaya - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Bayangan yang dibentuk oleh cermin datar selalu bersifat ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch4_getaran_gelombang_cahaya.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Maya, tegak, sama besar"
+      },
+      {
+        "label": "B",
+        "teks": "Nyata, terbalik, diperkecil"
+      },
+      {
+        "label": "C",
+        "teks": "Nyata, tegak, diperbesar"
+      },
+      {
+        "label": "D",
+        "teks": "Maya, terbalik, sama besar"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Cermin datar menghasilkan bayangan maya (di belakang cermin), tegak, dan berukuran identik sama ($M=1$).",
+    "valid": true
+  },
+  {
+    "nomor": 50,
+    "materi": "Getaran, Gelombang, dan Cahaya",
+    "paket": "Bab IV: Getaran, Gelombang, & Cahaya - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Jika sudut apit antara dua cermin datar adalah 90 derajat, jumlah bayangan yang terbentuk adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch4_getaran_gelombang_cahaya.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "3 bayangan"
+      },
+      {
+        "label": "B",
+        "teks": "4 bayangan"
+      },
+      {
+        "label": "C",
+        "teks": "5 bayangan"
+      },
+      {
+        "label": "D",
+        "teks": "6 bayangan"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "$n = (360^\\circ / 90^\\circ) - 1 = 4 - 1 = 3$ bayangan.",
+    "valid": true
+  },
+  {
+    "nomor": 51,
+    "materi": "Getaran, Gelombang, dan Cahaya",
+    "paket": "Bab IV: Getaran, Gelombang, & Cahaya - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Titik fokus cermin cembung bernilai negatif karena ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch4_getaran_gelombang_cahaya.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Letak titik fokus berada di belakang cermin (bersifat maya)"
+      },
+      {
+        "label": "B",
+        "teks": "Cermin tidak memantulkan cahaya"
+      },
+      {
+        "label": "C",
+        "teks": "Bentuknya melengkung ke dalam"
+      },
+      {
+        "label": "D",
+        "teks": "Cahaya tidak menembus"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Titik fokus cermin cembung dibentuk oleh perpanjangan sinar pantul di belakang permukaan cermin (titik api maya).",
+    "valid": true
+  },
+  {
+    "nomor": 52,
+    "materi": "Getaran, Gelombang, dan Cahaya",
+    "paket": "Bab IV: Getaran, Gelombang, & Cahaya - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Benda diletakkan di titik pusat kelengkungan (s = R = 2f) cermin cekung. Bayangannya akan bersifat ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch4_getaran_gelombang_cahaya.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Nyata, terbalik, sama besar"
+      },
+      {
+        "label": "B",
+        "teks": "Maya, tegak, diperbesar"
+      },
+      {
+        "label": "C",
+        "teks": "Nyata, terbalik, diperbesar"
+      },
+      {
+        "label": "D",
+        "teks": "Maya, tegak, diperkecil"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Sesuai Dalil Esbach: Benda di Ruang II ($s = 2f$) menghasilkan bayangan di Ruang II ($s' = 2f$) yang nyata, terbalik, dan sama besar.",
+    "valid": true
+  },
+  {
+    "nomor": 53,
+    "materi": "Getaran, Gelombang, dan Cahaya",
+    "paket": "Bab IV: Getaran, Gelombang, & Cahaya - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Sebuah cermin cekung memiliki fokus 15 cm. Benda diletakkan pada jarak 10 cm (di Ruang I). Bayangannya bersifat ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch4_getaran_gelombang_cahaya.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Maya, tegak, diperbesar"
+      },
+      {
+        "label": "B",
+        "teks": "Nyata, terbalik, diperkecil"
+      },
+      {
+        "label": "C",
+        "teks": "Nyata, terbalik, diperbesar"
+      },
+      {
+        "label": "D",
+        "teks": "Maya, terbalik, sama besar"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Benda di Ruang I ($s < f$) cermin cekung selalu menghasilkan bayangan di Ruang IV (di belakang cermin) yang maya, tegak, dan diperbesar.",
+    "valid": true
+  },
+  {
+    "nomor": 54,
+    "materi": "Getaran, Gelombang, dan Cahaya",
+    "paket": "Bab IV: Getaran, Gelombang, & Cahaya - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Lensa tipis yang memiliki jarak fokus f = 25 cm (0,25 m) memiliki kekuatan lensa sebesar ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch4_getaran_gelombang_cahaya.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "+4 Dioptri"
+      },
+      {
+        "label": "B",
+        "teks": "+2,5 Dioptri"
+      },
+      {
+        "label": "C",
+        "teks": "+0,25 Dioptri"
+      },
+      {
+        "label": "D",
+        "teks": "+10 Dioptri"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "$P = 100 / f \\text{ (cm)} = 100 / 25 = +4$ Dioptri.",
+    "valid": true
+  },
+  {
+    "nomor": 55,
+    "materi": "Getaran, Gelombang, dan Cahaya",
+    "paket": "Bab IV: Getaran, Gelombang, & Cahaya - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Lensa cekung memiliki kekuatan lensa bernilai ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch4_getaran_gelombang_cahaya.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Negatif (divergen)"
+      },
+      {
+        "label": "B",
+        "teks": "Positif (konvergen)"
+      },
+      {
+        "label": "C",
+        "teks": "Nol"
+      },
+      {
+        "label": "D",
+        "teks": "Selalu di atas 10 D"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Lensa cekung memiliki titik fokus maya ($f < 0$) sehingga nilai daya optiknya bertanda negatif.",
+    "valid": true
+  },
+  {
+    "nomor": 56,
+    "materi": "Getaran, Gelombang, dan Cahaya",
+    "paket": "Bab IV: Getaran, Gelombang, & Cahaya - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Pada mata manusia normal, bayangan benda yang dilihat jatuh tepat pada ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch4_getaran_gelombang_cahaya.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Retina (bintik kuning)"
+      },
+      {
+        "label": "B",
+        "teks": "Kornea"
+      },
+      {
+        "label": "C",
+        "teks": "Pupil"
+      },
+      {
+        "label": "D",
+        "teks": "Saraf optik"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Fovea sentralis (bintik kuning) pada retina adalah lapisan fotoreseptor kerucut yang menangkap bayangan nyata, terbalik, dan diperkecil.",
+    "valid": true
+  },
+  {
+    "nomor": 57,
+    "materi": "Getaran, Gelombang, dan Cahaya",
+    "paket": "Bab IV: Getaran, Gelombang, & Cahaya - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Cacat mata miopi (rabun jauh) terjadi karena ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch4_getaran_gelombang_cahaya.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Bola mata terlalu lonjong ke belakang sehingga bayangan jatuh di depan retina"
+      },
+      {
+        "label": "B",
+        "teks": "Bola mata terlalu pipih"
+      },
+      {
+        "label": "C",
+        "teks": "Lensa mata terlalu pipih"
+      },
+      {
+        "label": "D",
+        "teks": "Kornea keruh"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Miopi menyebabkan daya konvergensi mata terlalu kuat sehingga bayangan objek tak terhingga terfokus di depan retina.",
+    "valid": true
+  },
+  {
+    "nomor": 58,
+    "materi": "Getaran, Gelombang, dan Cahaya",
+    "paket": "Bab IV: Getaran, Gelombang, & Cahaya - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Penderita hipermetropi (rabun dekat) ditolong menggunakan kacamata berlensa ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch4_getaran_gelombang_cahaya.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Cembung (positif)"
+      },
+      {
+        "label": "B",
+        "teks": "Cekung (negatif)"
+      },
+      {
+        "label": "C",
+        "teks": "Silindris"
+      },
+      {
+        "label": "D",
+        "teks": "Ganda"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Lensa cembung membantu mengumpulkan sinar sebelum masuk ke mata agar bayangan jatuh tepat di retina.",
+    "valid": true
+  },
+  {
+    "nomor": 59,
+    "materi": "Getaran, Gelombang, dan Cahaya",
+    "paket": "Bab IV: Getaran, Gelombang, & Cahaya - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Titik dekat (Punctum Proximum) untuk mata normal orang dewasa adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch4_getaran_gelombang_cahaya.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "25 cm"
+      },
+      {
+        "label": "B",
+        "teks": "10 cm"
+      },
+      {
+        "label": "C",
+        "teks": "50 cm"
+      },
+      {
+        "label": "D",
+        "teks": "Tak terhingga"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Titik dekat standar mata emetrop normal ($s_n$) adalah 25 cm.",
+    "valid": true
+  },
+  {
+    "nomor": 60,
+    "materi": "Getaran, Gelombang, dan Cahaya",
+    "paket": "Bab IV: Getaran, Gelombang, & Cahaya - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Cacat mata tua (presbiopi) disebabkan oleh ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch4_getaran_gelombang_cahaya.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Penurunan elastisitas otot siliaris dan lensa mata akibat faktor penuaan"
+      },
+      {
+        "label": "B",
+        "teks": "Kerusakan bintik buta"
+      },
+      {
+        "label": "C",
+        "teks": "Infeksi kornea"
+      },
+      {
+        "label": "D",
+        "teks": "Kekurangan vitamin A"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Presbiopi adalah penurunan amplitudo daya akomodasi lensa kristalin karena sklerosis lensa terkait usia.",
+    "valid": true
+  },
+  {
+    "nomor": 61,
+    "materi": "Getaran, Gelombang, dan Cahaya",
+    "paket": "Bab IV: Getaran, Gelombang, & Cahaya - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Kacamata yang digunakan oleh penderita presbiopi yang sekaligus menderita miopi adalah kacamata ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch4_getaran_gelombang_cahaya.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Bifokal (lensa ganda: cekung atas dan cembung bawah)"
+      },
+      {
+        "label": "B",
+        "teks": "Hanya silindris"
+      },
+      {
+        "label": "C",
+        "teks": "Hanya cembung"
+      },
+      {
+        "label": "D",
+        "teks": "Kacamata hitam"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Kacamata bifokal memiliki lensa minus di atas untuk melihat jauh dan lensa plus di bawah untuk membaca dekat.",
+    "valid": true
+  },
+  {
+    "nomor": 62,
+    "materi": "Getaran, Gelombang, dan Cahaya",
+    "paket": "Bab IV: Getaran, Gelombang, & Cahaya - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Mikroskop tersusun atas dua lensa cembung, yaitu ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch4_getaran_gelombang_cahaya.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Lensa objektif (dekat benda) dan lensa okuler (dekat mata pengamat)"
+      },
+      {
+        "label": "B",
+        "teks": "Lensa cekung dan lensa cembung"
+      },
+      {
+        "label": "C",
+        "teks": "Dua lensa cekung"
+      },
+      {
+        "label": "D",
+        "teks": "Cermin datar dan cermin cekung"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Mikroskop optik menggunakan lensa objektif ($f_{ob}$ pendek) dan lensa okuler ($f_{ok}$ lebih panjang) untuk menghasilkan bayangan akhir maya, terbalik, sangat diperbesar.",
+    "valid": true
+  },
+  {
+    "nomor": 63,
+    "materi": "Getaran, Gelombang, dan Cahaya",
+    "paket": "Bab IV: Getaran, Gelombang, & Cahaya - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Pada mikroskop, sifat bayangan yang dihasilkan oleh lensa objektif adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch4_getaran_gelombang_cahaya.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Nyata, terbalik, diperbesar"
+      },
+      {
+        "label": "B",
+        "teks": "Maya, tegak, diperkecil"
+      },
+      {
+        "label": "C",
+        "teks": "Maya, terbalik, diperbesar"
+      },
+      {
+        "label": "D",
+        "teks": "Nyata, tegak, sama besar"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Benda diletakkan di antara $f_{ob}$ dan $2f_{ob}$ sehingga lensa objektif membentuk bayangan nyata, terbalik, dan diperbesar.",
+    "valid": true
+  },
+  {
+    "nomor": 64,
+    "materi": "Getaran, Gelombang, dan Cahaya",
+    "paket": "Bab IV: Getaran, Gelombang, & Cahaya - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Teleskop bintang (teropong astronomi) sederhana menggunakan dua lensa cembung. Panjang teropong (d) saat mata tak berakomodasi adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch4_getaran_gelombang_cahaya.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "d = f_ob + f_ok"
+      },
+      {
+        "label": "B",
+        "teks": "d = f_ob - f_ok"
+      },
+      {
+        "label": "C",
+        "teks": "d = f_ob x f_ok"
+      },
+      {
+        "label": "D",
+        "teks": "d = f_ob / f_ok"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Panjang tubus teropong bintang untuk pengamatan santai tanpa akomodasi adalah $d = f_{ob} + f_{ok}$.",
+    "valid": true
+  },
+  {
+    "nomor": 65,
+    "materi": "Getaran, Gelombang, dan Cahaya",
+    "paket": "Bab IV: Getaran, Gelombang, & Cahaya - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Sifat bayangan akhir yang diamati oleh mata pengamat melalui mikroskop adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch4_getaran_gelombang_cahaya.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Maya, terbalik terhadap arah benda asli, dan sangat diperbesar"
+      },
+      {
+        "label": "B",
+        "teks": "Nyata, tegak, diperbesar"
+      },
+      {
+        "label": "C",
+        "teks": "Maya, tegak, sama besar"
+      },
+      {
+        "label": "D",
+        "teks": "Nyata, terbalik, diperkecil"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Lensa okuler memperbesar bayangan nyata dari objektif menjadi bayangan akhir yang bersifat maya, terbalik, dan diperbesar.",
+    "valid": true
+  },
+  {
+    "nomor": 66,
+    "materi": "Getaran, Gelombang, dan Cahaya",
+    "paket": "Bab IV: Getaran, Gelombang, & Cahaya - Bagian D: Pengayaan AKM Literasi Sains & TKA",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "[AKM Literasi Sains — Pemetaan Topografi Dasar Laut SONAR] Kapal mendeteksi gema dasar laut di Titik P setelah 2 detik dan di Titik Q setelah 3,4 detik ($v = 1.500 \\text{ m/s}$). Berapakah selisih kedalaman dasar laut antara Titik P dan Titik Q?",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch4_getaran_gelombang_cahaya.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "525 meter"
+      },
+      {
+        "label": "B",
+        "teks": "1.050 meter"
+      },
+      {
+        "label": "C",
+        "teks": "1.500 meter"
+      },
+      {
+        "label": "D",
+        "teks": "2.100 meter"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Kedalaman di P: $h_P = \\frac{1.500 \\times 2}{2} = 1.500$ m. Kedalaman di Q: $h_Q = \\frac{1.500 \\times 3,4}{2} = 2.550$ m. Selisih kedalaman $\\Delta h = 2.550 - 1.500 = 1.050$ meter.",
+    "valid": true
+  },
+  {
+    "nomor": 67,
+    "materi": "Getaran, Gelombang, dan Cahaya",
+    "paket": "Bab IV: Getaran, Gelombang, & Cahaya - Bagian D: Pengayaan AKM Literasi Sains & TKA",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "[AKM Analisis Optika Lensa — Perbesaran Kamera Digital] Sebuah lensa kamera smartphone memiliki panjang fokus f = 4 mm memotret pemandangan pohon setinggi 8 meter yang berjarak 10 meter di depannya. Bayangan pohon yang terbentuk pada sensor CMOS kamera bersifat ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch4_getaran_gelombang_cahaya.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Nyata, terbalik, dan sangat diperkecil tepat di bidang fokus sensor kamera"
+      },
+      {
+        "label": "B",
+        "teks": "Maya, tegak, diperbesar"
+      },
+      {
+        "label": "C",
+        "teks": "Nyata, tegak, sama besar"
+      },
+      {
+        "label": "D",
+        "teks": "Maya, terbalik, sama besar"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Benda berada sangat jauh di luar $2f$ ($s = 10 \\text{ m} = 10.000 \\text{ mm} \\gg 2f$). Lensa cembung kamera membentuk bayangan yang bersifat nyata, terbalik, dan sangat diperkecil tepat pada bidang penangkap gambar sensor silikon.",
+    "valid": true
+  },
+  {
+    "nomor": 68,
+    "materi": "Getaran, Gelombang, dan Cahaya",
+    "paket": "Bab IV: Getaran, Gelombang, & Cahaya - Bagian D: Pengayaan AKM Literasi Sains & TKA",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "[AKM Pemecahan Masalah — Efek Fatamorgana di Gurun / Jalan Beraspal Panas] Mengapa jalan aspal hitam di siang hari terik tampak seperti genangan air yang memantulkan langit?",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch4_getaran_gelombang_cahaya.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Aspal meleleh menjadi air jernih"
+      },
+      {
+        "label": "B",
+        "teks": "Udara tepat di atas aspal sangat panas sehingga memiliki kerapatan optik lebih rendah daripada udara dingin di atasnya; berkas sinar langit mengalami pembiasan bertingkat dan pemantulan internal total ke mata pengamat"
+      },
+      {
+        "label": "C",
+        "teks": "Karena dispersi cahaya lampu jalan"
+      },
+      {
+        "label": "D",
+        "teks": "Karena mata manusia mengalami miopi sementara"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Lapisan aspal panas memanaskan udara di dekatnya sehingga kerapatan optiknya berkurang drastis (indeks bias lebih kecil). Berkas cahaya dari langit yang melintasi gradien indeks bias ini melengkung ke atas (refraksi bertingkat diikuti pemantulan total) menimbulkan ilusi optik fatamorgana.",
+    "valid": true
+  },
+  {
+    "nomor": 69,
+    "materi": "Getaran, Gelombang, dan Cahaya",
+    "paket": "Bab IV: Getaran, Gelombang, & Cahaya - Bagian D: Pengayaan AKM Literasi Sains & TKA",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "[AKM Evaluasi Kesehatan Pendengaran — Paparan Polusi Suara] Mendengarkan musik melalui earphone dengan intensitas volume 90 dB selama lebih dari 4 jam sehari secara terus-menerus berisiko memicu Noise-Induced Hearing Loss (NIHL). Kerusakan struktural yang terjadi di dalam telinga adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch4_getaran_gelombang_cahaya.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Gendang telinga mencair"
+      },
+      {
+        "label": "B",
+        "teks": "Kematian dan kerusakan permanen pada sel-sel rambut getar halus di organ Korti koklea (rumah siput) telinga dalam"
+      },
+      {
+        "label": "C",
+        "teks": "Hilangnya tulang martil"
+      },
+      {
+        "label": "D",
+        "teks": "Penyumbatan total tuba Eustachius"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Gelombang suara berenergi tinggi merusak sel silia rambut akustik mikro di organ Corti koklea. Sel-sel sensorik ini tidak dapat beregenerasi kembali bila mati, menyebabkan penurunan ketajaman pendengaran sensorineural permanen.",
+    "valid": true
+  },
+  {
+    "nomor": 70,
+    "materi": "Getaran, Gelombang, dan Cahaya",
+    "paket": "Bab IV: Getaran, Gelombang, & Cahaya - Bagian D: Pengayaan AKM Literasi Sains & TKA",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "[AKM Rekayasa Teknologi — Serat Optik / Fiber Optic] Kabel internet serat optik mampu mentransmisikan data berkecepatan terabit per detik melintasi benua berdasarkan prinsip optika ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch4_getaran_gelombang_cahaya.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Pemantulan internal total (Total Internal Reflection) di dalam inti kaca serat optik berindeks bias tinggi yang dilapisi selubung berindeks bias lebih rendah"
+      },
+      {
+        "label": "B",
+        "teks": "Resonansi gelombang infrasonik"
+      },
+      {
+        "label": "C",
+        "teks": "Pembiasan tegak lurus"
+      },
+      {
+        "label": "D",
+        "teks": "Penyerapan radiasi matahari"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Serat optik tersusun atas core (inti kaca berindeks bias $n_1$) dan cladding (selubung berindeks bias $n_2 < n_1$). Sinar laser ditembakkan dengan sudut datang lebih besar dari sudut kritis sehingga dipantulkan secara total di sepanjang serat tanpa ada cahaya yang bocor keluar.",
+    "valid": true
+  }
+]

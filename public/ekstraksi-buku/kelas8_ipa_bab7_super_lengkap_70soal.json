@@ -1,0 +1,2242 @@
+[
+  {
+    "nomor": 1,
+    "materi": "Struktur Bumi, Tanah, & Kebencanaan",
+    "paket": "Bab VII: Struktur Bumi, Tanah, & Bencana - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Perhatikan gambar penampang struktur lapisan interior Bumi berikut! Lapisan mantel Bumi (tempat terjadinya arus konveksi magma) dan lapisan inti dalam Bumi yang berwujud padat berturut-turut ditunjukkan oleh nomor ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch7_interior_bumi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "1 dan 3"
+      },
+      {
+        "label": "B",
+        "teks": "2 dan 3"
+      },
+      {
+        "label": "C",
+        "teks": "2 dan 4"
+      },
+      {
+        "label": "D",
+        "teks": "1 dan 4"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Struktur interior Bumi dari luar ke dalam: 1 = Kerak Bumi (Crust), 2 = Mantel Bumi (Mantle/Astenosfer, tempat arus konveksi cairan magma), 3 = Inti Luar (Outer Core, besi-nikel cair), 4 = Inti Dalam (Inner Core, besi padat akibat tekanan sangat tinggi). Jadi mantel Bumi dan inti dalam berturut-turut adalah nomor 2 dan 4.",
+    "valid": true
+  },
+  {
+    "nomor": 2,
+    "materi": "Struktur Bumi, Tanah, & Kebencanaan",
+    "paket": "Bab VII: Struktur Bumi, Tanah, & Bencana - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Meskipun suhu di lapisan Inti Dalam Bumi mencapai sekitar 5.500°C (jauh di atas titik leleh besi di permukaan bumi), mengapa logam besi dan nikel di Inti Dalam Bumi berwujud padat, sedangkan di Inti Luar berwujud cair?",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch7_interior_bumi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Karena inti dalam bumi didinginkan oleh air samudra yang merembes ke pusat bumi"
+      },
+      {
+        "label": "B",
+        "teks": "Karena tekanan gravitasi dan beban seluruh lapisan bumi di pusat inti dalam sangat luar biasa besar"
+      },
+      {
+        "label": "C",
+        "teks": "Karena inti dalam tersusun atas batuan kuarsa yang tidak bisa meleleh"
+      },
+      {
+        "label": "D",
+        "teks": "Karena di inti dalam tidak terjadi perpindahan kalor"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Wujud zat ditentukan oleh kesetimbangan suhu dan tekanan. Di Inti Dalam Bumi, tekanan kompresi litostatik gravitasi dari massa seluruh planet mencapai lebih dari 330–360 GigaPascal (3 juta kali tekanan atmosfer), menaikkan titik leleh besi melebihi suhunya (5.500°C) sehingga atom-atom besi dan nikel terkunci rapat dalam kisi kristal padat.",
+    "valid": true
+  },
+  {
+    "nomor": 3,
+    "materi": "Struktur Bumi, Tanah, & Kebencanaan",
+    "paket": "Bab VII: Struktur Bumi, Tanah, & Bencana - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Tenaga penggerak utama yang menyebabkan lempeng-lempeng tektonik litosfer di permukaan Bumi terus bergerak beberapa sentimeter setiap tahunnya adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch7_interior_bumi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Arus konveksi termal magma panas di lapisan astenosfer"
+      },
+      {
+        "label": "B",
+        "teks": "Hembusan angin pasat dan arus pasang surut air laut"
+      },
+      {
+        "label": "C",
+        "teks": "Tarikan gravitasi bulan saat fase purnama"
+      },
+      {
+        "label": "D",
+        "teks": "Getaran kendaraan dan aktivitas pertambangan manusia"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Arus konveksi termal di mantel bumi (astenosfer): batuan mantel bawah yang panas memuai, densitasnya turun sehingga naik perlahan ke atas, kemudian mendingin di dekat litosfer, menjadi lebih padat, lalu tenggelam kembali. Perputaran arus konveksi magma ini menyeret lempeng litosfer di atasnya bergerak.",
+    "valid": true
+  },
+  {
+    "nomor": 4,
+    "materi": "Struktur Bumi, Tanah, & Kebencanaan",
+    "paket": "Bab VII: Struktur Bumi, Tanah, & Bencana - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Kepulauan Indonesia terletak di pertemuan tiga lempeng tektonik besar dunia (Lempeng Eurasia, Lempeng Indo-Australia, dan Lempeng Pasifik) yang saling bergerak mendekat dan menunjam (batas konvergen / subduksi). Dampak geologis utama dari penunjaman lempeng Indo-Australia ke bawah lempeng Eurasia di sepanjang selatan Sumatera, Jawa, hingga Nusa Tenggara adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch7_interior_bumi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Terbentuknya benua es yang luas dan beriklim dingin"
+      },
+      {
+        "label": "B",
+        "teks": "Daratan pulau Jawa bergerak membelah menjadi dua samudra baru"
+      },
+      {
+        "label": "C",
+        "teks": "Indonesia bebas dari potensi bencana tsunami dan letusan gunung berapi"
+      },
+      {
+        "label": "D",
+        "teks": "Terbentuknya palung laut dalam serta deretan gunung berapi aktif dan tingginya aktivitas gempa tektonik"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Zona penunjaman (subduksi) lempeng samudra Indo-Australia ke bawah lempeng benua Eurasia menyebabkan lempeng samudra meleleh menjadi magma yang naik ke permukaan, membentuk palung samudra (Palung Jawa/Sunda Trench), jajaran gunung berapi aktif (Ring of Fire), serta zona patahan gempa tektonik dangkal hingga dalam.",
+    "valid": true
+  },
+  {
+    "nomor": 5,
+    "materi": "Struktur Bumi, Tanah, & Kebencanaan",
+    "paket": "Bab VII: Struktur Bumi, Tanah, & Bencana - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Ketika dua lempeng samudra bergerak saling menjauh (batas divergen) di dasar Samudra Atlantik, magma dari astenosfer naik ke celah rekahan dan membeku membentuk kerak samudra baru. Bentang alam bawah laut yang terbentuk dari gerakan divergen ini adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch7_interior_bumi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Palung Mariana yang sangat dalam"
+      },
+      {
+        "label": "B",
+        "teks": "Pegunungan lipatan Himalaya"
+      },
+      {
+        "label": "C",
+        "teks": "Punggung Tengah Samudra (Mid-Ocean Ridge) dan pemekaran lantai samudra"
+      },
+      {
+        "label": "D",
+        "teks": "Patahan mendatar San Andreas"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Gerakan divergen lempeng di dasar samudra menyebabkan pemekaran lantai samudra (seafloor spreading), menghasilkan rantai punggungan pegunungan bawah laut yang disebut Punggung Tengah Samudra (Mid-Ocean Ridge) akibat pendinginan magma yang naik.",
+    "valid": true
+  },
+  {
+    "nomor": 6,
+    "materi": "Struktur Bumi, Tanah, & Kebencanaan",
+    "paket": "Bab VII: Struktur Bumi, Tanah, & Bencana - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Perhatikan gambar penampang tumbukan lempeng tektonik (zona subduksi) berikut! Titik pusat sumber terjadinya gempa di dalam litosfer yang bertanda P dan titik di permukaan Bumi tepat di atasnya yang bertanda Q disebut ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch7_interior_bumi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "P = Episentrum dan Q = Hiposentrum"
+      },
+      {
+        "label": "B",
+        "teks": "P = Hiposentrum dan Q = Episentrum"
+      },
+      {
+        "label": "C",
+        "teks": "P = Seismograf dan Q = Seismogram"
+      },
+      {
+        "label": "D",
+        "teks": "P = Kaldera dan Q = Magma"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Pusat pelepasan energi gempa bumi yang terletak di kedalaman litosfer (bawah tanah) disebut hiposentrum (fokus gempa), sedangkan titik pada permukaan Bumi yang terletak tegak lurus tepat di atas hiposentrum disebut episentrum.",
+    "valid": true
+  },
+  {
+    "nomor": 7,
+    "materi": "Struktur Bumi, Tanah, & Kebencanaan",
+    "paket": "Bab VII: Struktur Bumi, Tanah, & Bencana - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Tidak semua gempa bumi yang berpusat di bawah laut akan memicu gelombang tsunami. Syarat geologis utama agar gempa bumi bawah laut dapat membangkitkan gelombang tsunami adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch7_bumi_tanah_mitigasi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Gempa memiliki kedalaman dangkal (< 70 km), kekuatan besar (M > 7,0), dan disebabkan oleh patahan naik/turun yang mengangkat atau menurunkan kolom air laut secara tiba-tiba"
+      },
+      {
+        "label": "B",
+        "teks": "Gempa berpusat sangat dalam (> 500 km) dengan magnitudo kecil (M < 4,0)"
+      },
+      {
+        "label": "C",
+        "teks": "Gempa disebabkan oleh pergeseran lempeng mendatar (transform) yang halus"
+      },
+      {
+        "label": "D",
+        "teks": "Gempa terjadi di daratan tengah pulau"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Syarat terjadinya tsunami: 1) Pusat gempa di dasar laut, 2) Kedalaman dangkal (< 70 km), 3) Magnitudo gempa besar (M >= 7,0 SR), 4) Terjadi deformasi vertikal dasar laut (sesar naik atau sesar turun / patahan dip-slip) yang memindahkan kolom air laut dalam volume raksasa secara mendadak.",
+    "valid": true
+  },
+  {
+    "nomor": 8,
+    "materi": "Struktur Bumi, Tanah, & Kebencanaan",
+    "paket": "Bab VII: Struktur Bumi, Tanah, & Bencana - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Saat seseorang sedang berada di pantai dan merasakan guncangan gempa bumi yang kuat disusul air laut di tepi pantai tiba-tiba surut drastis menjauhi garis pantai hingga memperlihatkan terumbu karang, tindakan penyelamatan diri (mitigasi) yang paling tepat adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch7_bumi_tanah_mitigasi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Turun ke pantai untuk mengumpulkan ikan-ikan yang terdampar di karang"
+      },
+      {
+        "label": "B",
+        "teks": "Bersembunyi di dalam perahu kecil di tepi pantai"
+      },
+      {
+        "label": "C",
+        "teks": "Segera berlari menjauhi pantai menuju tempat yang tinggi atau perbukitan"
+      },
+      {
+        "label": "D",
+        "teks": "Menunggu pengumuman sambil berenang di laut"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Air laut surut drastis setelah gempa kuat adalah peringatan alamiah paling nyata bahwa gelombang tsunami raksasa sedang terbentuk dan akan segera menerjang daratan dalam beberapa menit. Langkah mitigasi wajib: Segera tinggalkan pantai dan lari menuju tempat yang tinggi atau gedung evakuasi vertikal kokoh.",
+    "valid": true
+  },
+  {
+    "nomor": 9,
+    "materi": "Struktur Bumi, Tanah, & Kebencanaan",
+    "paket": "Bab VII: Struktur Bumi, Tanah, & Bencana - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Perhatikan tabel Karakteristik Empat Lapisan (Horizon) Profil Tanah dari Permukaan Atas ke Bawah: Horizon O/A (0-30 cm, gelap kehitaman, gembur, kaya humus dan mikroorganisme), Horizon B (30-60 cm, lebih terang, lebih padat, miskin humus, akumulasi mineral), Horizon C (60-100 cm, bongkahan batuan lapuk sebagian), Horizon R (>100 cm, batuan induk dasar utuh). Berdasarkan tabel profil tanah tersebut, lapisan tanah yang paling subur karena mengandung banyak humus dan mikroorganisme tanah adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch7_bumi_tanah_mitigasi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Horizon O / A (Lapisan Tanah Atas / Topsoil)"
+      },
+      {
+        "label": "B",
+        "teks": "Horizon B (Lapisan Tanah Bawah / Subsoil)"
+      },
+      {
+        "label": "C",
+        "teks": "Horizon C (Regolit / Batuan Lapuk)"
+      },
+      {
+        "label": "D",
+        "teks": "Horizon R (Batuan Induk / Bedrock)"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Horizon O (serasah organik) dan Horizon A (topsoil) merupakan lapisan teratas tanah tempat bercampurnya materi organik yang telah terurai sempurna (humus) dengan partikel mineral. Lapisan ini paling subur, kaya rongga aerasi, dan dihuni jutaan mikrobioma penyubur tanaman.",
+    "valid": true
+  },
+  {
+    "nomor": 10,
+    "materi": "Struktur Bumi, Tanah, & Kebencanaan",
+    "paket": "Bab VII: Struktur Bumi, Tanah, & Bencana - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Proses pembentukan tanah berawal dari pelapukan batuan induk. Lumut kerak (Lichenes) dan lumut daun disebut sebagai vegetasi perintis (pionir) karena mampu tumbuh di atas permukaan batuan cadas dan menghancurkannya menjadi butiran tanah awal. Proses pelapukan batuan oleh lumut kerak dan akar tumbuhan ini dikategorikan sebagai ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch7_bumi_tanah_mitigasi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Pelapukan fisika murni akibat angin"
+      },
+      {
+        "label": "B",
+        "teks": "Pelapukan biologis yang disertai pengeluaran zat asam organik oleh lumut"
+      },
+      {
+        "label": "C",
+        "teks": "Erosi glasial es"
+      },
+      {
+        "label": "D",
+        "teks": "Sedimentasi aluvial"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Pelapukan biologis (organik) terjadi akibat aktivitas makhluk hidup. Lumut kerak mengeluarkan senyawa asam liken yang melarutkan mineral batuan secara kimiawi, dan rizoidnya masuk ke pori batuan meretakkan batuan secara mekanis hingga hancur menjadi partikel tanah primer.",
+    "valid": true
+  },
+  {
+    "nomor": 11,
+    "materi": "Struktur Bumi, Tanah, & Kebencanaan",
+    "paket": "Bab VII: Struktur Bumi, Tanah, & Bencana - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Di wilayah pegunungan kapur (karst) seperti Gunungkidul atau Maros, air hujan yang mengikat gas karbon dioksida (CO2) membentuk asam karbonat lemah (H2CO3) yang melarutkan batuan kapur (CaCO3) hingga membentuk gua bawah tanah lengkap dengan stalaktit dan stalagmit. Peristiwa ini merupakan contoh nyata dari ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch7_bumi_tanah_mitigasi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Pelapukan kimiawi (karbonasi)"
+      },
+      {
+        "label": "B",
+        "teks": "Pelapukan fisika akibat perubahan suhu"
+      },
+      {
+        "label": "C",
+        "teks": "Pelapukan mekanik oleh gelombang laut"
+      },
+      {
+        "label": "D",
+        "teks": "Patahan tektonik lempeng"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Reaksi pelarutan batu kapur oleh air hujan asam karbonat: CaCO3 (padat) + H2O + CO2 -> Ca(HCO3)2 (larut). Proses dekomposisi struktur batuan melalui reaksi kimia ini tergolong ke dalam pelapukan kimiawi (chemical weathering), khususnya reaksi karbonasi.",
+    "valid": true
+  },
+  {
+    "nomor": 12,
+    "materi": "Struktur Bumi, Tanah, & Kebencanaan",
+    "paket": "Bab VII: Struktur Bumi, Tanah, & Bencana - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Mengapa keberadaan cacing tanah (Lumbricus terrestris) di lahan pertanian sangat menguntungkan dan menjadi indikator biologis tanah yang sehat dan subur?",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch7_bumi_tanah_mitigasi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Karena cacing tanah memakan pupuk pestisida kimia petani"
+      },
+      {
+        "label": "B",
+        "teks": "Karena cacing tanah memadatkan tanah agar air tidak merembes"
+      },
+      {
+        "label": "C",
+        "teks": "Karena cacing tanah mengeluarkan racun bagi serangga pengganggu"
+      },
+      {
+        "label": "D",
+        "teks": "Karena cacing tanah membuat liang terowongan biopori untuk sirkulasi udara (aerasi) dan air, serta kotorannya (kascing) kaya akan unsur hara N, P, dan K"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Cacing tanah memakan serasah daun dan tanah, mengeluarkan feses berupa casting (kascing) yang kaya humus, kalsium, nitrogen, fosfor, dan kalium dalam bentuk siap serap tanaman. Selain itu, terowongan liang cacing (biopori) melipatgandakan aerasi oksigen dan kapasitas infiltrasi air hujan ke dalam tanah.",
+    "valid": true
+  },
+  {
+    "nomor": 13,
+    "materi": "Struktur Bumi, Tanah, & Kebencanaan",
+    "paket": "Bab VII: Struktur Bumi, Tanah, & Bencana - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Petani di lereng pegunungan Jawa dan Bali membuat sawah berundak-undak seperti tangga yang dilengkapi pematang penahan air (terasering / sengkedan). Tujuan utama pembuatan terasering dari sudut pandang konservasi tanah dan pencegahan longsor adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch7_bumi_tanah_mitigasi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Menaikkan keasaman air tanah pegunungan"
+      },
+      {
+        "label": "B",
+        "teks": "Mempercepat aliran air ke sungai agar tanah cepat kering"
+      },
+      {
+        "label": "C",
+        "teks": "Memperkecil kemiringan lereng, memperlambat kecepatan aliran air permukaan, dan menahan hanyutnya lapisan tanah subur (topsoil)"
+      },
+      {
+        "label": "D",
+        "teks": "Memudahkan pergerakan traktor besar di lereng terjal"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Terasering membagi lereng yang curam menjadi deretan bidang datar bertingkat dengan pematang. Struktur ini memotong energi kinetik aliran limpasan permukaan (surface runoff), meningkatkan peresapan air ke dalam tanah, dan mencegah erosi lapisan hara tanah paling atas (topsoil).",
+    "valid": true
+  },
+  {
+    "nomor": 14,
+    "materi": "Struktur Bumi, Tanah, & Kebencanaan",
+    "paket": "Bab VII: Struktur Bumi, Tanah, & Bencana - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Selain terasering, petani di lahan miring membajak tanah dan menanam barisan tanaman mengikuti garis ketinggian yang sama (melintang lereng, bukan dari atas ke bawah). Teknik konservasi tanah mekanis ini dikenal dengan istilah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch7_bumi_tanah_mitigasi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Monokultur"
+      },
+      {
+        "label": "B",
+        "teks": "Contour farming (penanaman kontur)"
+      },
+      {
+        "label": "C",
+        "teks": "Deforestasi"
+      },
+      {
+        "label": "D",
+        "teks": "Pembakaran ladang berpindah"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Contour farming (pembajakan dan penanaman searah kontur) dilakukan melintang lereng sejajar garis horizontal kontur. Alur bajak dan barisan tanaman berfungsi sebagai barikade penahan air limpasan hujan sehingga sedimen tanah tidak meluncur hanyut ke bawah lereng.",
+    "valid": true
+  },
+  {
+    "nomor": 15,
+    "materi": "Struktur Bumi, Tanah, & Kebencanaan",
+    "paket": "Bab VII: Struktur Bumi, Tanah, & Bencana - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Setelah memanen tanaman padi atau jagung (yang banyak menyerap unsur Nitrogen dari tanah), petani dianjurkan menanam tanaman kacang tanah atau kedelai (famili Leguminosae) pada musim tanam berikutnya. Alasan biologis rotasi tanaman dengan kacang-kacangan ini adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch7_bumi_tanah_mitigasi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Bintil akar tanaman kacang bersimbiosis dengan bakteri Rhizobium yang mampu mengikat nitrogen bebas (N2) dari udara menyuburkan kembali tanah"
+      },
+      {
+        "label": "B",
+        "teks": "Kacang-kacangan tidak memerlukan air untuk tumbuh"
+      },
+      {
+        "label": "C",
+        "teks": "Akar kacang mengeluarkan racun mematikan seluruh cacing tanah"
+      },
+      {
+        "label": "D",
+        "teks": "Tanaman kacang dapat mengubah pasir menjadi batu kapur"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Bintil akar Leguminosae bersimbiosis mutualisme dengan bakteri Rhizobium leguminosarum yang memiliki enzim nitrogenase untuk memfiksasi gas $N_2$ atmosfer menjadi senyawa nitrat dan amonium yang memperkaya hara tanah secara alami tanpa memerlukan pupuk kimia sintetis.",
+    "valid": true
+  },
+  {
+    "nomor": 16,
+    "materi": "Struktur Bumi, Tanah, & Kebencanaan",
+    "paket": "Bab VII: Struktur Bumi, Tanah, & Bencana - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Tanah diklasifikasikan berdasarkan ukuran butiran partikelnya menjadi tanah pasir, tanah lempung (liat), dan tanah geluh (loam). Mengapa tanah pasir murni kurang baik untuk menahan air dan nutrisi tanaman?",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch7_bumi_tanah_mitigasi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Karena tanah pasir mengandung kadar humus yang terlalu tinggi"
+      },
+      {
+        "label": "B",
+        "teks": "Karena partikel tanah pasir terlalu halus dan kedap air"
+      },
+      {
+        "label": "C",
+        "teks": "Karena butirannya berukuran besar dengan pori makro yang dominan, sehingga air dan hara mineral mudah lolos ke bawah (daya ikat air sangat rendah)"
+      },
+      {
+        "label": "D",
+        "teks": "Karena tanah pasir memadatkan akar tanaman"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Tanah pasir tersusun atas partikel berdiameter 0,05–2,0 mm dengan luas permukaan per gram yang kecil dan rongga pori-pori makro yang lebar. Akibatnya, gaya kapilaritas sangat rendah sehingga air dan ion-ion mineral mudah tercuci (leaching) ke lapisan bawah yang tidak terjangkau akar tanaman.",
+    "valid": true
+  },
+  {
+    "nomor": 17,
+    "materi": "Struktur Bumi, Tanah, & Kebencanaan",
+    "paket": "Bab VII: Struktur Bumi, Tanah, & Bencana - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Hujan lebat yang terus-menerus mengguyur lahan miring yang telah gundul (tanpa pepohonan berakar tunggang) menyebabkan lapisan tanah atas (topsoil) terkikis habis oleh aliran air permukaan. Dampak jangka panjang hilangnya lapisan topsoil bagi kesuburan lahan adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch7_bumi_tanah_mitigasi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Tanah menjadi semakin gembur dan subur"
+      },
+      {
+        "label": "B",
+        "teks": "Kandungan mikroorganisme pengurai tanah bertambah banyak"
+      },
+      {
+        "label": "C",
+        "teks": "Kadar humus meningkat tajam"
+      },
+      {
+        "label": "D",
+        "teks": "Lahan menjadi kritis dan tandus karena lapisan hara dan humus telah hilang, menyisakan lapisan subsoil yang miskin nutrisi"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Lapisan topsoil (Horizon A) adalah gudang utama bahan organik, humus, dan komunitas mikrobiota tanah yang dibutuhkan untuk pertumbuhan vegetasi. Erosi topsoil menyisakan subsoil (Horizon B) yang padat, miskin bahan organik, dan berdaya infiltrasi rendah, menyebabkan lahan berubah menjadi kritis dan tandus.",
+    "valid": true
+  },
+  {
+    "nomor": 18,
+    "materi": "Struktur Bumi, Tanah, & Kebencanaan",
+    "paket": "Bab VII: Struktur Bumi, Tanah, & Bencana - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Pembuatan lubang resapan biopori dan sumur resapan di halaman rumah maupun kawasan perkotaan yang padat beton/aspal berfungsi untuk ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch7_bumi_tanah_mitigasi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Membuang limbah plastik dan minyak goreng bekas ke dalam tanah"
+      },
+      {
+        "label": "B",
+        "teks": "Meningkatkan laju peresapan air hujan ke dalam akuifer air tanah, mencegah genangan banjir, serta mengubah sampah organik menjadi kompos"
+      },
+      {
+        "label": "C",
+        "teks": "Membunuh seluruh bakteri dan cacing tanah perkotaan"
+      },
+      {
+        "label": "D",
+        "teks": "Mengeringkan air sumur warga sekitar"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Lubang Resapan Biopori (LRB) berbentuk silinder berdiameter 10 cm sedalam 100 cm yang diisi sampah organik serasah daun. Sampah memicu aktivitas cacing dan fauna tanah yang membuat pori-pori biopori alami, mempercepat laju infiltrasi air hujan ke akuifer dangkal dan mereduksi risiko banjir genangan.",
+    "valid": true
+  },
+  {
+    "nomor": 19,
+    "materi": "Struktur Bumi, Tanah, & Kebencanaan",
+    "paket": "Bab VII: Struktur Bumi, Tanah, & Bencana - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Ketika gunung berapi meletus, dalam jangka pendek abu vulkanik dan awan panas memang merusak lahan di sekitarnya. Namun dalam jangka panjang (beberapa tahun setelah erupsi), mengapa tanah di lereng gunung berapi (tanah Andosol) menjadi sangat subur bagi pertanian?",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch7_bumi_tanah_mitigasi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Karena abu vulkanik yang melapuk melepaskan mineral-mineral hara makro dan mikro penting seperti kalsium, magnesium, fosfor, dan kalium"
+      },
+      {
+        "label": "B",
+        "teks": "Karena abu vulkanik mematikan semua jenis lumut"
+      },
+      {
+        "label": "C",
+        "teks": "Karena abu vulkanik mengandung zat kimia beracun yang mengawetkan tanah"
+      },
+      {
+        "label": "D",
+        "teks": "Karena abu vulkanik mengubah batuan menjadi pasir pantai"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Abu vulkanik tersusun atas mineral silikat amorf, feldspar, piroksen, dan biotit yang kaya kalsium (Ca), magnesium (Mg), kalium (K), dan fosfor (P). Setelah terkena air hujan dan mengalami pelapukan, mineral ini melepaskan ion nutrisi yang membentuk tanah Andosol dengan kapasitas tukar kation tinggi dan sangat subur.",
+    "valid": true
+  },
+  {
+    "nomor": 20,
+    "materi": "Struktur Bumi, Tanah, & Kebencanaan",
+    "paket": "Bab VII: Struktur Bumi, Tanah, & Bencana - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Di daerah pantai yang landai dan berlumpur, penebangan hutan bakau (mangrove) untuk dijadikan tambak atau bangunan beton menyebabkan garis pantai makin lama makin mundur tergerus gelombang laut. Fenomena pengikisan pantai oleh energi ombak laut ini disebut ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch7_bumi_tanah_mitigasi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Deflasi angin"
+      },
+      {
+        "label": "B",
+        "teks": "Korasi gletser"
+      },
+      {
+        "label": "C",
+        "teks": "Sedimentasi sungai"
+      },
+      {
+        "label": "D",
+        "teks": "Abrasi pantai"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Abrasi adalah proses pengikisan pantai akibat hantaman energi mekanik gelombang dan arus laut. Akar napas dan sistem perakaran rapat pohon bakau (Rhizophora sp.) berfungsi alami sebagai pemecah ombak (breakwater) dan penjerat sedimen lumpur pesisir.",
+    "valid": true
+  },
+  {
+    "nomor": 21,
+    "materi": "Struktur Bumi, Tanah, & Kebencanaan",
+    "paket": "Bab VII: Struktur Bumi, Tanah, & Bencana - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Saat terjadi guncangan gempa bumi ketika kita sedang belajar di dalam ruang kelas di lantai dua gedung sekolah, langkah penyelamatan diri (Drop, Cover, Hold On) yang paling tepat selama guncangan berlangsung adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch7_bumi_tanah_mitigasi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Langsung melompat dari jendela lantai dua ke tanah"
+      },
+      {
+        "label": "B",
+        "teks": "Berebut berlari menuruni tangga bersamaan"
+      },
+      {
+        "label": "C",
+        "teks": "Merunduk jongkok, berlindung di bawah meja belajar yang kokoh sambil memegangi kaki meja untuk melindungi kepala dari runtuhan plafon"
+      },
+      {
+        "label": "D",
+        "teks": "Berdiri tegak di samping lemari kaca laboratorium"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Prosedur baku mitigasi gempa bumi saat berada di dalam ruangan adalah 'Drop, Cover, and Hold On': 1) Drop (merunduk bertumpu pada tangan dan lutut), 2) Cover (berlindung di bawah meja yang kokoh dan melindungi kepala/leher), 3) Hold On (pegangi kaki meja hingga getaran gempa benar-benar berhenti).",
+    "valid": true
+  },
+  {
+    "nomor": 22,
+    "materi": "Struktur Bumi, Tanah, & Kebencanaan",
+    "paket": "Bab VII: Struktur Bumi, Tanah, & Bencana - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Seorang siswa melakukan percobaan konservasi tanah menggunakan 2 baki miring: Baki P berisi tanah gundul tanpa tanaman, dan Baki Q berisi tanah yang ditanami rumput rapat. Ketika kedua baki disiram dengan volume air yang sama dari atas, air yang tertampung di wadah penampung bawah baki Q jauh lebih sedikit dan sangat jernih dibandingkan baki P yang airnya banyak dan sangat keruh berlumpur. Kesimpulan ilmiah yang tepat dari percobaan ini adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch7_bumi_tanah_mitigasi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Tanaman rumput menghancurkan tanah sehingga menjadi mudah longsor"
+      },
+      {
+        "label": "B",
+        "teks": "Akar-akar vegetasi mengikat butiran tanah dengan kuat dan tajuk daun menahan pukulan tetes air hujan sehingga mencegah erosi dan meningkatkan resapan air"
+      },
+      {
+        "label": "C",
+        "teks": "Tanah gundul menyerap air lebih banyak daripada tanah berumput"
+      },
+      {
+        "label": "D",
+        "teks": "Air hujan melarutkan daun rumput menjadi air jernih"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Keberadaan vegetasi rumput memberikan dua perlindungan utama: 1) Tajuk dedaunan meredam energi kinetik tetesan air hujan (pencegahan splash erosion), 2) Jaringan perakaran serabut rumput mengikat partikel agregat tanah dengan kuat serta meningkatkan kapasitas infiltrasi pori tanah.",
+    "valid": true
+  },
+  {
+    "nomor": 23,
+    "materi": "Struktur Bumi, Tanah, & Kebencanaan",
+    "paket": "Bab VII: Struktur Bumi, Tanah, & Bencana - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Pencemaran tanah oleh tumpahan minyak bumi atau limbah logam berat (seperti Timbal Pb dan Merkuri Hg) dapat dipulihkan secara ramah lingkungan dengan menanam tumbuhan khusus penyerap polutan (seperti bunga matahari atau tanaman sawi) maupun memanfaatkan mikroorganisme pengurai. Teknik pemulihan tanah tercemar menggunakan makhluk hidup ini disebut ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch7_bumi_tanah_mitigasi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Bioremediasi dan Fitoremediasi"
+      },
+      {
+        "label": "B",
+        "teks": "Insinerasi pembakaran tanah"
+      },
+      {
+        "label": "C",
+        "teks": "Eutrofikasi"
+      },
+      {
+        "label": "D",
+        "teks": "Biomagnifikasi"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Bioremediasi adalah pembersihan polutan lingkungan menggunakan mikroorganisme (bakteri pengurai hidrokarbon seperti Pseudomonas). Fitoremediasi adalah pemanfaatan tanaman hiperakumulator untuk menyerap, mengikat, atau menetralkan ion logam berat beracun dari dalam tanah.",
+    "valid": true
+  },
+  {
+    "nomor": 24,
+    "materi": "Struktur Bumi, Tanah, & Kebencanaan",
+    "paket": "Bab VII: Struktur Bumi, Tanah, & Bencana - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Perhatikan jenis-jenis tanah di Indonesia: (1) Tanah Aluvial (endapan lumpur sungai), (2) Tanah Vulkanis/Andosol (pelapukan abu gunung api), (3) Tanah Humus/Organosol, (4) Tanah Kapur/Mediteran. Jenis tanah yang terbentuk dari hasil pengendapan lumpur yang terbawa aliran sungai di dataran rendah dan sangat cocok untuk persawahan padi adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch7_bumi_tanah_mitigasi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Tanah Kapur (4)"
+      },
+      {
+        "label": "B",
+        "teks": "Tanah Laterit merah tua"
+      },
+      {
+        "label": "C",
+        "teks": "Tanah Aluvial (1)"
+      },
+      {
+        "label": "D",
+        "teks": "Tanah Pasir gurun"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Tanah aluvial merupakan tanah hasil erosi dan pengendapan (sedimentasi) lumpur halus di sepanjang bantaran dan muara sungai dataran rendah. Tanah ini bertekstur lempung berdebu yang kaya hara dan sangat ideal untuk pertanian lahan basah (sawah padi).",
+    "valid": true
+  },
+  {
+    "nomor": 25,
+    "materi": "Struktur Bumi, Tanah, & Kebencanaan",
+    "paket": "Bab VII: Struktur Bumi, Tanah, & Bencana - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Tanah Gambut (Organosol) yang banyak tersebar di rawa-rawa Kalimantan, Sumatera, dan Papua terbentuk dari tumpukan sisa tumbuhan rawa yang membusuk secara tidak sempurna (anaerob) sehingga bersifat sangat asam (pH 3,5 - 4,5). Agar lahan gambut atau tanah asam dapat ditanami dengan optimal, perlakuan kimiawi yang biasa diberikan petani untuk menaikkan pH tanah adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch7_bumi_tanah_mitigasi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Menyiramkan larutan asam sulfat encer"
+      },
+      {
+        "label": "B",
+        "teks": "Membakar lahan gambut saat musim kemarau"
+      },
+      {
+        "label": "C",
+        "teks": "Menaburkan garam dapur sebanyak-banyaknya"
+      },
+      {
+        "label": "D",
+        "teks": "Memberikan kapur pertanian (dolomit CaMg(CO3)2 atau kalsit CaCO3) yang bersifat basa untuk menetralkan asam tanah"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Pengapuran (liming) tanah asam menggunakan dolomit ($CaMg(CO_3)_2$) atau kalsit ($CaCO_3$): Ion karbonat bereaksi dengan ion $H^+$ di larutan tanah menghasilkan $CO_2$ dan $H_2O$, sehingga konsentrasi $H^+$ bebas turun dan derajat keasaman (pH) tanah naik menuju netral (pH 6,0–7,0).",
+    "valid": true
+  },
+  {
+    "nomor": 26,
+    "materi": "Struktur Bumi, Tanah, & Kebencanaan",
+    "paket": "Bab VII: Struktur Bumi, Tanah, & Bencana - Bagian B: Contoh Soal & Pembahasan Asli Buku",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Bumi tersusun dari lapisan-lapisan konsentris dengan kerapatan massa yang berbeda-beda. Lapisan interior Bumi yang memiliki volume terbesar (mencapai sekitar 84% dari total volume planet Bumi) dan memiliki sifat plastis adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch7_interior_bumi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Kerak Samudra"
+      },
+      {
+        "label": "B",
+        "teks": "Mantel Bumi (Mantle)"
+      },
+      {
+        "label": "C",
+        "teks": "Inti Luar"
+      },
+      {
+        "label": "D",
+        "teks": "Inti Dalam"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Mantel Bumi membentang dari kedalaman sekitar 35 km hingga 2.900 km, mencakup sekitar 84% volume Bumi dan 67% massanya. Mantel tersusun dari batuan silikat kaya besi dan magnesium yang bersifat padat elastis namun dapat mengalir lambat secara plastis (viskoplastik).",
+    "valid": true
+  },
+  {
+    "nomor": 27,
+    "materi": "Struktur Bumi, Tanah, & Kebencanaan",
+    "paket": "Bab VII: Struktur Bumi, Tanah, & Bencana - Bagian B: Contoh Soal & Pembahasan Asli Buku",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Dua lempeng tektonik yang saling bergeser mendatar sejajar satu sama lain tanpa saling menunjam maupun menjauh disebut batas transform (sesar mendatar). Contoh bentang alam dunia dan di Indonesia yang terbentuk dari batas transform ini adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch7_interior_bumi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Patahan San Andreas di California dan Sesar Besar Semangko di Sumatera"
+      },
+      {
+        "label": "B",
+        "teks": "Punggung Tengah Atlantik dan Danau Baikal"
+      },
+      {
+        "label": "C",
+        "teks": "Pegunungan Alpen dan Palung Mariana"
+      },
+      {
+        "label": "D",
+        "teks": "Gunung Krakatau dan Gunung Fuji"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Batas lempeng transform (strike-slip fault) ditandai oleh pergeseran horizontal lempeng yang memicu gempa bumi dangkal berkekuatan destruktif. Contoh terbesarnya adalah San Andreas Fault di Amerika Serikat dan Sesar Semangko (The Great Sumatran Fault) yang memanjang di Pulau Sumatera.",
+    "valid": true
+  },
+  {
+    "nomor": 28,
+    "materi": "Struktur Bumi, Tanah, & Kebencanaan",
+    "paket": "Bab VII: Struktur Bumi, Tanah, & Bencana - Bagian B: Contoh Soal & Pembahasan Asli Buku",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Ketika gempa bumi terjadi, stasiun seismograf mencatat dua jenis gelombang seismik utama dari dalam bumi: Gelombang Primer (Gelombang P) dan Gelombang Sekunder (Gelombang S). Karakteristik fisika yang membedakan kedua gelombang tersebut adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch7_interior_bumi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Gelombang P adalah gelombang transversal yang tidak dapat merambat di cairan, sedangkan Gelombang S adalah gelombang longitudinal"
+      },
+      {
+        "label": "B",
+        "teks": "Gelombang P adalah gelombang longitudinal (paling cepat merambat, dapat melewati padat dan cair), sedangkan Gelombang S adalah gelombang transversal (lebih lambat, hanya merambat pada medium padat)"
+      },
+      {
+        "label": "C",
+        "teks": "Gelombang P merambat di permukaan tanah, sedangkan Gelombang S merambat di udara"
+      },
+      {
+        "label": "D",
+        "teks": "Gelombang P berkecepatan 1 m/s, sedangkan Gelombang S berkecepatan 1000 km/s"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Gelombang P (Primary/Longitudinal wave): Partikel bergetar searah rambatan gelombang (rapatan-renggangan), tiba pertama di seismograf ($v \\approx 5-8 \\text{ km/s}$), mampu merambat melalui zat padat, cair, dan gas. Gelombang S (Secondary/Transverse wave): Partikel bergetar tegak lurus arah rambat, lebih lambat ($v \\approx 3-5 \\text{ km/s}$), dan hanya mampu merambat di medium padat.",
+    "valid": true
+  },
+  {
+    "nomor": 29,
+    "materi": "Struktur Bumi, Tanah, & Kebencanaan",
+    "paket": "Bab VII: Struktur Bumi, Tanah, & Bencana - Bagian B: Contoh Soal & Pembahasan Asli Buku",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Kekuatan pelepasan energi gempa bumi pada pusatnya diukur menggunakan Skala Magnitudo Momen (MMS) atau Skala Richter. Setiap kenaikan 1 skala magnitudo (misalnya dari magnitudo 5,0 ke 6,0), energi gempa yang dilepaskan meningkat sebesar ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch7_interior_bumi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "1 kali"
+      },
+      {
+        "label": "B",
+        "teks": "2 kali"
+      },
+      {
+        "label": "C",
+        "teks": "10 kali"
+      },
+      {
+        "label": "D",
+        "teks": "Sekitar 31,6 kali lipat energi (dan 10 kali lipat amplitudo gelombang)"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Skala magnitudo gempa bersifat logaritmik: Kenaikan 1 magnitudo ($+1$) melipatgandakan amplitudo rekaman seismogram sebesar 10 kali, sedangkan energi total yang dibebaskan berlipat ganda sebesar $10^{1,5} \\approx 31,6$ kali lipat. Jadi kenaikan 2 magnitudo melepaskan $10^3 = 1.000$ kali energi.",
+    "valid": true
+  },
+  {
+    "nomor": 30,
+    "materi": "Struktur Bumi, Tanah, & Kebencanaan",
+    "paket": "Bab VII: Struktur Bumi, Tanah, & Bencana - Bagian B: Contoh Soal & Pembahasan Asli Buku",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Kawasan sabuk gempa dan gunung berapi aktif di sekeliling Samudra Pasifik tempat bertemunya lempeng Pasifik dengan lempeng-lempeng sekitarnya dinamakan Cincin Api Pasifik (Pacific Ring of Fire). Mengapa wilayah kepulauan Indonesia masuk ke dalam cincin ini?",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch7_bumi_tanah_mitigasi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Karena Indonesia dikelilingi oleh lempeng es kutub"
+      },
+      {
+        "label": "B",
+        "teks": "Karena Indonesia dilintasi garis khatulistiwa berhawa panas"
+      },
+      {
+        "label": "C",
+        "teks": "Karena busur kepulauan Indonesia berada di tepi pertemuan lempeng samudra aktif yang mengalami subduksi lempeng"
+      },
+      {
+        "label": "D",
+        "teks": "Karena seluruh wilayah Indonesia tersusun atas batu bara"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Pacific Ring of Fire adalah sabuk subduksi lempeng tektonik sepanjang 40.000 km di cekungan Samudra Pasifik tempat terkonsentrasinya 75% gunung api dunia dan 90% gempa bumi bumi. Indonesia terletak tepat di persimpangan sabuk Sirkum Pasifik dan sabuk Sirkum Mediterania.",
+    "valid": true
+  },
+  {
+    "nomor": 31,
+    "materi": "Struktur Bumi, Tanah, & Kebencanaan",
+    "paket": "Bab VII: Struktur Bumi, Tanah, & Bencana - Bagian B: Contoh Soal & Pembahasan Asli Buku",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Dalam siklus batuan kerak Bumi, batuan beku yang tersingkap di permukaan tanah mengalami pelapukan, tererosi, tertransportasi oleh air dan angin, lalu terendapkan di dasar danau atau laut dan mengalami pembatuan (litifikasi). Batuan yang dihasilkan dari proses ini dinamakan ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch7_bumi_tanah_mitigasi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Batuan beku luar"
+      },
+      {
+        "label": "B",
+        "teks": "Batuan sedimen (endapan)"
+      },
+      {
+        "label": "C",
+        "teks": "Batuan metamorf kontak"
+      },
+      {
+        "label": "D",
+        "teks": "Magma astenosfer"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Batuan sedimen terbentuk melalui siklus sedimentasi: Pelapukan batuan asal -> Erosi -> Transportasi sedimen -> Deposisi pengendapan -> Litifikasi (kompaksi pemadatan dan sementasi perekat mineral). Contoh: batu pasir, batu lempung, batu konglomerat, batu gamping.",
+    "valid": true
+  },
+  {
+    "nomor": 32,
+    "materi": "Struktur Bumi, Tanah, & Kebencanaan",
+    "paket": "Bab VII: Struktur Bumi, Tanah, & Bencana - Bagian B: Contoh Soal & Pembahasan Asli Buku",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Perbedaan tipe letusan gunung berapi antara erupsi efusif (lelehan lava) dan erupsi eksplosif (ledakan dahsyat abu vulkanik) terutama dipengaruhi oleh ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch7_bumi_tanah_mitigasi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Warna batuan di puncak gunung"
+      },
+      {
+        "label": "B",
+        "teks": "Viskositas (kekentalan) magma dan kandungan gas di dalam dapur magma"
+      },
+      {
+        "label": "C",
+        "teks": "Arah hembusan angin troposfer"
+      },
+      {
+        "label": "D",
+        "teks": "Bentuk awan di langit saat siang hari"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Erupsi efusif terjadi jika magma bersifat basaltik (encer/viskositas rendah) dengan tekanan gas rendah sehingga lava hanya mengalir keluar. Sebaliknya, erupsi eksplosif terjadi jika magma bersifat riolitik/andesitik (sangat kental/viskositas tinggi) dengan kadar gas $CO_2/H_2O$ tinggi yang terperangkap memicu ledakan katastrofik.",
+    "valid": true
+  },
+  {
+    "nomor": 33,
+    "materi": "Struktur Bumi, Tanah, & Kebencanaan",
+    "paket": "Bab VII: Struktur Bumi, Tanah, & Bencana - Bagian B: Contoh Soal & Pembahasan Asli Buku",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Komposisi tanah yang ideal untuk menopang pertumbuhan tanaman pangan terdiri dari proporsi seimbang bahan padat dan ruang pori, yaitu sekitar ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch7_bumi_tanah_mitigasi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "100% batuan padat tanpa pori"
+      },
+      {
+        "label": "B",
+        "teks": "45% bahan mineral, 5% bahan organik (humus), 25% air, dan 25% udara"
+      },
+      {
+        "label": "C",
+        "teks": "90% air dan 10% serasah daun"
+      },
+      {
+        "label": "D",
+        "teks": "50% plastik dan 50% pasir"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Tanah ideal untuk pertanian tersusun atas 50% fraksi padatan (45% mineral partikel pasir/debu/lempung + 5% materi organik humus dan mikroba) dan 50% fraksi pori-pori tanah (terisi dinamis oleh 25% air kapiler dan 25% udara aerasi pernapasan akar).",
+    "valid": true
+  },
+  {
+    "nomor": 34,
+    "materi": "Struktur Bumi, Tanah, & Kebencanaan",
+    "paket": "Bab VII: Struktur Bumi, Tanah, & Bencana - Bagian B: Contoh Soal & Pembahasan Asli Buku",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Orang yang mendaki gunung tinggi sering merasakan telinga berdengung, bernapas lebih cepat, dan memasak air lebih cepat mendidih pada suhu di bawah 100°C. Hal ini membuktikan hukum fisika atmosfer bahwa ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch7_interior_bumi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Semakin tinggi suatu tempat dari permukaan laut, tekanan udara dan kerapatan oksigen semakin menurun"
+      },
+      {
+        "label": "B",
+        "teks": "Semakin tinggi tempat, tekanan atmosfer semakin bertambah besar"
+      },
+      {
+        "label": "C",
+        "teks": "Di puncak gunung tidak ada gaya gravitasi bumi"
+      },
+      {
+        "label": "D",
+        "teks": "Udara di puncak gunung lebih padat daripada udara di pantai"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Massa atmosfer tertarik oleh gravitasi bumi sehingga 50% molekul udara terkonsentrasi di ketinggian < 5,6 km. Semakin tinggi elevasi dari muka air laut, kolom udara di atasnya makin sedikit sehingga tekanan udara menurun drastis, menurunkan titik didih air dan kerapatan oksigen per liter udara.",
+    "valid": true
+  },
+  {
+    "nomor": 35,
+    "materi": "Struktur Bumi, Tanah, & Kebencanaan",
+    "paket": "Bab VII: Struktur Bumi, Tanah, & Bencana - Bagian B: Contoh Soal & Pembahasan Asli Buku",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Di dalam gua kapur bawah tanah yang berumur ribuan tahun, terbentuk formasi pilar kapur yang indah. Endapan kalsit mengerucut yang menggantung dari atap gua ke bawah disebut ...., sedangkan endapan kalsit yang tumbuh bertumpuk dari dasar lantai gua ke atas disebut ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch7_bumi_tanah_mitigasi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Stalaktit dan Stalagmit"
+      },
+      {
+        "label": "B",
+        "teks": "Stalagmit dan Stalaktit"
+      },
+      {
+        "label": "C",
+        "teks": "Dolina dan Uvala"
+      },
+      {
+        "label": "D",
+        "teks": "Geyser dan Fumarol"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Tetesan air rembesan atap gua yang mengandung larutan $Ca(HCO_3)_2$ melepaskan gas $CO_2$, mengendapkan kristal kalsit $CaCO_3$. Kristal yang menggantung di langit-langit atap disebut Stalaktit ('t' = atap), sedangkan kristal yang menumpuk di dasar lantai gua disebut Stalagmit ('m' = membumi/lantai).",
+    "valid": true
+  },
+  {
+    "nomor": 36,
+    "materi": "Struktur Bumi, Tanah, & Kebencanaan",
+    "paket": "Bab VII: Struktur Bumi, Tanah, & Bencana - Bagian C: Latihan Mandiri Asli Buku",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Urutan lapisan interior Bumi dari bagian paling luar hingga ke pusat Bumi yang benar adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch7_interior_bumi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Kerak Bumi – Mantel Bumi – Inti Luar – Inti Dalam"
+      },
+      {
+        "label": "B",
+        "teks": "Mantel Bumi – Kerak Bumi – Inti Dalam – Inti Luar"
+      },
+      {
+        "label": "C",
+        "teks": "Litosfer – Inti Luar – Astenosfer – Inti Dalam"
+      },
+      {
+        "label": "D",
+        "teks": "Kerak Samudra – Inti Dalam – Mantel – Kerak Benua"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Urutan struktur lapisan interior Bumi dari lapisan terluar ke pusat inti adalah Kerak Bumi (Crust: 0–70 km) -> Mantel Bumi (Mantle: 70–2.900 km) -> Inti Luar (Outer Core: 2.900–5.150 km) -> Inti Dalam (Inner Core: 5.150–6.371 km).",
+    "valid": true
+  },
+  {
+    "nomor": 37,
+    "materi": "Struktur Bumi, Tanah, & Kebencanaan",
+    "paket": "Bab VII: Struktur Bumi, Tanah, & Bencana - Bagian C: Latihan Mandiri Asli Buku",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Penggerak utama bergesernya lempeng-lempeng tektonik di permukaan Bumi adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch7_interior_bumi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Hembusan angin pasat di troposfer"
+      },
+      {
+        "label": "B",
+        "teks": "Pasang surut air laut oleh gravitasi Bulan"
+      },
+      {
+        "label": "C",
+        "teks": "Arus konveksi magma panas di lapisan astenosfer (mantel atas)"
+      },
+      {
+        "label": "D",
+        "teks": "Rotasi inti dalam yang berwujud gas"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Panas radioaktif di inti Bumi menciptakan arus konveksi fluida plastis magma di mantel astenosfer yang bersirkulasi dan menyeret lempeng litosfer kaku di atasnya bergerak.",
+    "valid": true
+  },
+  {
+    "nomor": 38,
+    "materi": "Struktur Bumi, Tanah, & Kebencanaan",
+    "paket": "Bab VII: Struktur Bumi, Tanah, & Bencana - Bagian C: Latihan Mandiri Asli Buku",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Indonesia memiliki banyak gunung berapi aktif dan rawan gempa bumi karena terletak pada pertemuan tiga lempeng tektonik besar dunia, yaitu ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch7_interior_bumi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Lempeng Eurasia, Lempeng Indo-Australia, dan Lempeng Pasifik"
+      },
+      {
+        "label": "B",
+        "teks": "Lempeng Afrika, Lempeng Amerika Utara, dan Lempeng Antartika"
+      },
+      {
+        "label": "C",
+        "teks": "Lempeng Nazca, Lempeng Karibia, dan Lempeng Arab"
+      },
+      {
+        "label": "D",
+        "teks": "Lempeng Artik, Lempeng Atlantik, dan Lempeng Hindia"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Kondisi tektonik Indonesia dibentuk oleh konvergensi tiga lempeng litosfer raksasa: Lempeng Benua Eurasia di utara, Lempeng Samudra Indo-Australia di selatan-barat, dan Lempeng Samudra Pasifik di timur.",
+    "valid": true
+  },
+  {
+    "nomor": 39,
+    "materi": "Struktur Bumi, Tanah, & Kebencanaan",
+    "paket": "Bab VII: Struktur Bumi, Tanah, & Bencana - Bagian C: Latihan Mandiri Asli Buku",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Tumbukan antara Lempeng Indo-Australia (samudra) yang menunjam ke bawah Lempeng Eurasia (benua) di sebelah selatan Pulau Jawa merupakan batas lempeng .... dan membentuk ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch7_interior_bumi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Divergen; Punggung Tengah Samudra"
+      },
+      {
+        "label": "B",
+        "teks": "Transform; Sesar mendatar"
+      },
+      {
+        "label": "C",
+        "teks": "Konvergen (Subduksi); Palung Jawa dan deretan gunung api"
+      },
+      {
+        "label": "D",
+        "teks": "Divergen; Lembah retakan benua"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Pertemuan lempeng samudra yang lebih padat dengan lempeng benua adalah batas konvergen tipe subduksi (penunjaman), yang membentuk palung laut dalam (Palung Jawa/Sunda) dan busur kepulauan vulkanik aktif.",
+    "valid": true
+  },
+  {
+    "nomor": 40,
+    "materi": "Struktur Bumi, Tanah, & Kebencanaan",
+    "paket": "Bab VII: Struktur Bumi, Tanah, & Bencana - Bagian C: Latihan Mandiri Asli Buku",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Lapisan atmosfer yang mengandung konsentrasi gas ozon (O3) untuk menyerap radiasi sinar ultraviolet (UV) Matahari berbahaya berada pada ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch7_interior_bumi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Troposfer"
+      },
+      {
+        "label": "B",
+        "teks": "Stratosfer"
+      },
+      {
+        "label": "C",
+        "teks": "Mesosfer"
+      },
+      {
+        "label": "D",
+        "teks": "Termosfer"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Lapisan ozonosfer terletak di lapisan stratosfer pada ketinggian 15–35 km di atas permukaan bumi. Molekul ozon ($O_3$) menyerap sinar UV-B dan UV-C Matahari yang merusak materi genetik DNA sel hidup.",
+    "valid": true
+  },
+  {
+    "nomor": 41,
+    "materi": "Struktur Bumi, Tanah, & Kebencanaan",
+    "paket": "Bab VII: Struktur Bumi, Tanah, & Bencana - Bagian C: Latihan Mandiri Asli Buku",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Meteor yang jatuh dari angkasa luar menuju Bumi sebagian besar habis terbakar dan tampak sebagai bintang jatuh pada lapisan ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch7_interior_bumi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Troposfer"
+      },
+      {
+        "label": "B",
+        "teks": "Stratosfer"
+      },
+      {
+        "label": "C",
+        "teks": "Mesosfer"
+      },
+      {
+        "label": "D",
+        "teks": "Eksosfer"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Lapisan mesosfer (ketinggian 50–85 km) bertindak sebagai perisai pelindung Bumi. Gesekan molekul gas udara mesosfer membakar habis sebagian besar meteoroid yang memasuki atmosfer bumi.",
+    "valid": true
+  },
+  {
+    "nomor": 42,
+    "materi": "Struktur Bumi, Tanah, & Kebencanaan",
+    "paket": "Bab VII: Struktur Bumi, Tanah, & Bencana - Bagian C: Latihan Mandiri Asli Buku",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Titik di permukaan Bumi yang terletak tegak lurus di atas pusat patahan sumber gempa di dalam bumi (hiposentrum) dan mengalami kerusakan paling parah disebut ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch7_interior_bumi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Episentrum"
+      },
+      {
+        "label": "B",
+        "teks": "Seismograf"
+      },
+      {
+        "label": "C",
+        "teks": "Isoseista"
+      },
+      {
+        "label": "D",
+        "teks": "Kaldera"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Pusat gempa di permukaan Bumi yang berada tepat di atas hiposentrum adalah episentrum. Episentrum menerima pancaran gelombang seismik pertama dan mengalami intensitas getaran gempa tertinggi.",
+    "valid": true
+  },
+  {
+    "nomor": 43,
+    "materi": "Struktur Bumi, Tanah, & Kebencanaan",
+    "paket": "Bab VII: Struktur Bumi, Tanah, & Bencana - Bagian C: Latihan Mandiri Asli Buku",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Alat untuk mencatat kekuatan dan getaran gelombang gempa bumi disebut ...., sedangkan hasil rekaman grafiknya disebut ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch7_interior_bumi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Barometer dan Barogram"
+      },
+      {
+        "label": "B",
+        "teks": "Anemometer dan Anemogram"
+      },
+      {
+        "label": "C",
+        "teks": "Seismograf dan Seismogram"
+      },
+      {
+        "label": "D",
+        "teks": "Higrometer dan Spirogram"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Seismograf adalah instrumen sensor pendeteksi getaran gempa bumi mekanis atau digital, dan seismogram adalah lembaran grafik hasil rekaman gelombang getaran gempa bumi.",
+    "valid": true
+  },
+  {
+    "nomor": 44,
+    "materi": "Struktur Bumi, Tanah, & Kebencanaan",
+    "paket": "Bab VII: Struktur Bumi, Tanah, & Bencana - Bagian C: Latihan Mandiri Asli Buku",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Syarat utama suatu gempa bumi di dasar laut dapat memicu terjadinya gelombang tsunami adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch7_bumi_tanah_mitigasi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Pusat gempa dangkal (< 70 km), kekuatan besar (M > 7,0), dan terjadi patahan vertikal (naik/turun) dasar laut"
+      },
+      {
+        "label": "B",
+        "teks": "Pusat gempa sangat dalam (> 500 km) dan terjadi pergeseran mendatar"
+      },
+      {
+        "label": "C",
+        "teks": "Gempa terjadi di puncak gunung berapi daratan"
+      },
+      {
+        "label": "D",
+        "teks": "Kekuatan gempa sangat kecil (M < 3,0) di tepi danau"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Tsunami dipicu perpindahan volume air laut secara tiba-tiba akibat deformasi vertikal patahan sesar naik atau sesar turun dasar laut dangkal (< 70 km) bermagnitudo besar ($M \\ge 7,0$).",
+    "valid": true
+  },
+  {
+    "nomor": 45,
+    "materi": "Struktur Bumi, Tanah, & Kebencanaan",
+    "paket": "Bab VII: Struktur Bumi, Tanah, & Bencana - Bagian C: Latihan Mandiri Asli Buku",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Batu pualam (marmer) yang terbentuk dari perubahan batu kapur (CaCO3) akibat pengaruh suhu dan tekanan yang sangat tinggi di dalam kerak Bumi tergolong jenis batuan ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch7_bumi_tanah_mitigasi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Batuan beku dalam"
+      },
+      {
+        "label": "B",
+        "teks": "Batuan beku luar"
+      },
+      {
+        "label": "C",
+        "teks": "Batuan sedimen klastik"
+      },
+      {
+        "label": "D",
+        "teks": "Batuan metamorf (malihan)"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Batu marmer (pualam) adalah batuan metamorf kontak/termal yang berasal dari rekristalisasi batuan sedimen batu kapur (gamping) akibat pemanasan suhu tinggi magma.",
+    "valid": true
+  },
+  {
+    "nomor": 46,
+    "materi": "Struktur Bumi, Tanah, & Kebencanaan",
+    "paket": "Bab VII: Struktur Bumi, Tanah, & Bencana - Bagian C: Latihan Mandiri Asli Buku",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Gas beracun dan guguran material piroklastik bersuhu mencapai 600°C yang meluncur cepat menuruni lereng gunung berapi saat erupsi eksplosif disebut ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch7_bumi_tanah_mitigasi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Lahar dingin"
+      },
+      {
+        "label": "B",
+        "teks": "Awan panas (wedhus gembel)"
+      },
+      {
+        "label": "C",
+        "teks": "Geyser air mendidih"
+      },
+      {
+        "label": "D",
+        "teks": "Makdani sumber mineral"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Awan panas (aliran piroklastik / wedhus gembel) merupakan campuran suspensi abu vulkanik, pasir, batu apung, dan gas beracun bersuhu 200–800°C yang meluncur hingga kecepatan ratusan km/jam menuruni lereng gunung api.",
+    "valid": true
+  },
+  {
+    "nomor": 47,
+    "materi": "Struktur Bumi, Tanah, & Kebencanaan",
+    "paket": "Bab VII: Struktur Bumi, Tanah, & Bencana - Bagian C: Latihan Mandiri Asli Buku",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Lapisan tanah paling atas yang berwarna gelap, gembur, kaya bahan organik (humus), dan paling subur bagi pertumbuhan akar tanaman berada pada ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch7_bumi_tanah_mitigasi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Horizon A (Topsoil)"
+      },
+      {
+        "label": "B",
+        "teks": "Horizon B (Subsoil)"
+      },
+      {
+        "label": "C",
+        "teks": "Horizon C (Regolit)"
+      },
+      {
+        "label": "D",
+        "teks": "Horizon R (Bedrock)"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Horizon A (topsoil) adalah lapisan tanah atas yang paling subur karena mengandung akumulasi bahan organik terhumifikasi, nutrisi mineral esensial, dan aktivitas biologi tanah tertinggi.",
+    "valid": true
+  },
+  {
+    "nomor": 48,
+    "materi": "Struktur Bumi, Tanah, & Kebencanaan",
+    "paket": "Bab VII: Struktur Bumi, Tanah, & Bencana - Bagian C: Latihan Mandiri Asli Buku",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Organisme perintis (pionir) yang mampu hidup di atas batuan keras dan mengeluarkan zat asam untuk memulai proses pelapukan batuan menjadi tanah adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch7_bumi_tanah_mitigasi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Pohon jati dan mahoni"
+      },
+      {
+        "label": "B",
+        "teks": "Cacing tanah dan rayap"
+      },
+      {
+        "label": "C",
+        "teks": "Lumut kerak (Lichenes) dan lumut"
+      },
+      {
+        "label": "D",
+        "teks": "Rumput gajah dan pakis"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Lumut kerak (Lichenes) bersimbiosis alga dan jamur yang mampu tumbuh di substrat batuan gersang. Senyawa asam liken yang disekresikannya menghancurkan batuan menjadi remah tanah pertama dalam suksesi primer.",
+    "valid": true
+  },
+  {
+    "nomor": 49,
+    "materi": "Struktur Bumi, Tanah, & Kebencanaan",
+    "paket": "Bab VII: Struktur Bumi, Tanah, & Bencana - Bagian C: Latihan Mandiri Asli Buku",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Peran ekologis cacing tanah (Lumbricus terrestris) dalam menjaga kesuburan tanah pertanian adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch7_bumi_tanah_mitigasi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Membuat pori-pori aerasi tanah (biopori) dan menguraikan serasah organik menjadi kascing yang kaya hara"
+      },
+      {
+        "label": "B",
+        "teks": "Memakan akar tanaman padi yang masih muda"
+      },
+      {
+        "label": "C",
+        "teks": "Mengubah pasir kuarsa menjadi batuan granit"
+      },
+      {
+        "label": "D",
+        "teks": "Menyerap seluruh cadangan air tanah hingga kering"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Cacing tanah menggali rongga terowongan yang meningkatkan peresapan air dan sirkulasi udara, serta mencerna sisa organik menghasilkan kotoran kascing yang kaya unsur nitrogen, kalium, dan fosfat.",
+    "valid": true
+  },
+  {
+    "nomor": 50,
+    "materi": "Struktur Bumi, Tanah, & Kebencanaan",
+    "paket": "Bab VII: Struktur Bumi, Tanah, & Bencana - Bagian C: Latihan Mandiri Asli Buku",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Metode konservasi tanah pada lahan pertanian di lereng pegunungan yang curam dengan cara membuat undakan-undakan bertingkat untuk menahan laju aliran air permukaan dan mencegah erosi disebut ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch7_bumi_tanah_mitigasi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Rotasi tanaman"
+      },
+      {
+        "label": "B",
+        "teks": "Terasering (Sengkedan)"
+      },
+      {
+        "label": "C",
+        "teks": "Monokultur"
+      },
+      {
+        "label": "D",
+        "teks": "Deforestasi"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Terasering atau sengkedan adalah rekayasa mekanis berupa pembuatan teras-teras berundak di lahan miring untuk mereduksi kecepatan limpasan air hujan dan mengendapkan sedimen tanah subur.",
+    "valid": true
+  },
+  {
+    "nomor": 51,
+    "materi": "Struktur Bumi, Tanah, & Kebencanaan",
+    "paket": "Bab VII: Struktur Bumi, Tanah, & Bencana - Bagian C: Latihan Mandiri Asli Buku",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Di suatu stasiun meteorologi, suhu udara di permukaan laut (0 m) adalah 28°C. Jika setiap kenaikan 100 m di troposfer suhu udara turun rata-rata 0,6°C, perkiraan suhu udara di puncak pegunungan dengan ketinggian 2.000 m dpl adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch7_interior_bumi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "12°C"
+      },
+      {
+        "label": "B",
+        "teks": "16°C"
+      },
+      {
+        "label": "C",
+        "teks": "20°C"
+      },
+      {
+        "label": "D",
+        "teks": "22°C"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Rumus penurunan temperatur terhadap ketinggian (lapse rate): $T = T_0 - \\left(\\frac{h}{100}\\right) \\times 0,6^\\circ\\text{C}$. Diketahui $T_0 = 28^\\circ\\text{C}$ dan $h = 2.000\\text{ m}$. Maka $T = 28^\\circ\\text{C} - \\left(\\frac{2.000}{100}\\right) \\times 0,6^\\circ\\text{C} = 28 - (20 \\times 0,6) = 28 - 12 = 16^\\circ\\text{C}$.",
+    "valid": true
+  },
+  {
+    "nomor": 52,
+    "materi": "Struktur Bumi, Tanah, & Kebencanaan",
+    "paket": "Bab VII: Struktur Bumi, Tanah, & Bencana - Bagian C: Latihan Mandiri Asli Buku",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Material vulkanik hasil erupsi gunung berapi dalam jangka panjang membuat tanah di sekitar lereng gunung menjadi sangat subur karena ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch7_bumi_tanah_mitigasi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Abu vulkanik kaya akan unsur hara mineral makro dan mikro yang dibutuhkan tumbuhan setelah melapuk"
+      },
+      {
+        "label": "B",
+        "teks": "Lava pijar membunuh seluruh mikroba penyubur tanah selamanya"
+      },
+      {
+        "label": "C",
+        "teks": "Gas belerang meningkatkan keasaman tanah hingga pH = 1"
+      },
+      {
+        "label": "D",
+        "teks": "Batu apung menutup pori-pori tanah"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Abu dan debu vulkanis mengandung aneka mineral silikat, kalsium, magnesium, dan kalium alami yang setelah melapuk bersama air dan mikroba memperkaya cadangan hara tanah pertanian.",
+    "valid": true
+  },
+  {
+    "nomor": 53,
+    "materi": "Struktur Bumi, Tanah, & Kebencanaan",
+    "paket": "Bab VII: Struktur Bumi, Tanah, & Bencana - Bagian C: Latihan Mandiri Asli Buku",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Saat berada di lantai 3 gedung sekolah dan tiba-tiba terjadi guncangan gempa bumi yang kuat, tindakan penyelamatan diri yang paling tepat adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch7_bumi_tanah_mitigasi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Melompat keluar dari jendela lantai 3"
+      },
+      {
+        "label": "B",
+        "teks": "Berlindung di bawah meja belajar yang kokoh sambil melindungi kepala, lalu turun melalui tangga darurat setelah guncangan berhenti"
+      },
+      {
+        "label": "C",
+        "teks": "Berebut masuk ke dalam lift agar cepat sampai di lantai dasar"
+      },
+      {
+        "label": "D",
+        "teks": "Berdiri tepat di dekat lemari kaca dan lampu gantung"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Saat gempa: Drop, Cover, Hold On di bawah meja kokoh untuk menghindari runtuhan benda keras. Hindari penggunaan lift karena berisiko anjlok saat aliran listrik padam. Setelah gempa reda, evakuasi tertib lewat tangga darurat.",
+    "valid": true
+  },
+  {
+    "nomor": 54,
+    "materi": "Struktur Bumi, Tanah, & Kebencanaan",
+    "paket": "Bab VII: Struktur Bumi, Tanah, & Bencana - Bagian C: Latihan Mandiri Asli Buku",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "[Pilihan Ganda Kompleks - Pilih Lebih dari Satu] Pilihlah pernyataan yang benar mengenai karakteristik lapisan-lapisan atmosfer Bumi!",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch7_interior_bumi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Seluruh peristiwa cuaca (awan, hujan, petir, pelangi, dan badai) berlangsung di lapisan troposfer."
+      },
+      {
+        "label": "B",
+        "teks": "Pesawat terbang komersial bermesin jet terbang di bagian bawah stratosfer untuk menghindari turbulensi awan cuaca."
+      },
+      {
+        "label": "C",
+        "teks": "Lapisan ionosfer (termosfer) mengandung partikel terionisasi yang memantulkan gelombang radio dan menampilkan fenomena aurora di kutub."
+      },
+      {
+        "label": "D",
+        "teks": "Semakin tinggi posisi suatu tempat dari permukaan laut, tekanan dan kerapatan udaranya semakin besar."
+      }
+    ],
+    "kunci_jawaban": "A, B, C",
+    "pembahasan": "Pernyataan A, B, dan C benar. Pernyataan D salah karena semakin tinggi elevasi dari muka laut, massa kolom udara semakin tipis sehingga tekanan dan kerapatan udara justru semakin kecil.",
+    "valid": true
+  },
+  {
+    "nomor": 55,
+    "materi": "Struktur Bumi, Tanah, & Kebencanaan",
+    "paket": "Bab VII: Struktur Bumi, Tanah, & Bencana - Bagian C: Latihan Mandiri Asli Buku",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "[Pilihan Ganda Kompleks - Pilih Lebih dari Satu] Pilihlah tindakan mitigasi bencana tsunami yang tepat bagi masyarakat yang tinggal di wilayah pesisir pantai!",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch7_bumi_tanah_mitigasi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Segera berlari menuju dataran tinggi atau gedung penyelamatan vertikal (shelter) jika merasakan gempa kuat disusul surutnya air laut secara mendadak."
+      },
+      {
+        "label": "B",
+        "teks": "Menanam dan melestarikan hutan bakau (mangrove) di sepanjang garis pantai untuk meredam energi terjangan gelombang tsunami."
+      },
+      {
+        "label": "C",
+        "teks": "Memasang dan merawat sistem peringatan dini tsunami (InaTEWS / buoy tsunami) serta rambu jalur evakuasi."
+      },
+      {
+        "label": "D",
+        "teks": "Berkumpul di tepi pantai untuk mengambil ikan-ikan yang terdampar saat air laut tiba-tiba surut pascagempa."
+      }
+    ],
+    "kunci_jawaban": "A, B, C",
+    "pembahasan": "Pernyataan A, B, dan C merupakan langkah mitigasi struktural dan non-struktural yang tepat. Pernyataan D sangat berbahaya karena air surut drastis menandakan gelombang tsunami sedang menuju daratan.",
+    "valid": true
+  },
+  {
+    "nomor": 56,
+    "materi": "Struktur Bumi, Tanah, & Kebencanaan",
+    "paket": "Bab VII: Struktur Bumi, Tanah, & Bencana - Bagian C: Latihan Mandiri Asli Buku",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "[Pilihan Ganda Kompleks - Pilih Lebih dari Satu] Pernyataan yang benar mengenai sifat tanah dan upaya pelestariannya adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch7_bumi_tanah_mitigasi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Tanah lempung (liat) memiliki partikel sangat halus dan sulit ditembus air, sedangkan tanah pasir memiliki pori-pori besar dan mudah meloloskan air."
+      },
+      {
+        "label": "B",
+        "teks": "Tanah lempung berpasir (loam) yang kaya humus merupakan tekstur tanah paling ideal untuk pertanian."
+      },
+      {
+        "label": "C",
+        "teks": "Pembuatan lubang resapan biopori membantu meningkatkan daya serap air tanah dan mencegah banjir genangan."
+      },
+      {
+        "label": "D",
+        "teks": "Penebangan hutan secara liar (deforestasi) di hulu sungai dapat mempertebal lapisan humus (topsoil)."
+      }
+    ],
+    "kunci_jawaban": "A, B, C",
+    "pembahasan": "Pernyataan A, B, dan C benar. Pernyataan D salah karena deforestasi menyebabkan hilangnya tajuk penahan hujan sehingga memicu erosi hebat yang mengikis habis lapisan humus topsoil.",
+    "valid": true
+  },
+  {
+    "nomor": 57,
+    "materi": "Struktur Bumi, Tanah, & Kebencanaan",
+    "paket": "Bab VII: Struktur Bumi, Tanah, & Bencana - Bagian C: Latihan Mandiri Asli Buku",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "[Tabel Benar / Salah] Tentukan kebenaran pernyataan tentang lempeng tektonik dan struktur Bumi berikut: (a) Kerak samudra lebih tipis (5-10 km) tetapi memiliki massa jenis lebih besar (~3,0 g/cm3) dibandingkan kerak benua (~2,7 g/cm3); (b) Medan magnet Bumi (magnetosfer) yang melindungi Bumi dari angin matahari dibangkitkan oleh perputaran logam besi-nikel cair di lapisan inti luar Bumi; (c) Pergerakan lempeng divergen (saling menjauh) menyebabkan terbentuknya Pegunungan Himalaya.",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch7_interior_bumi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(a) Benar, (b) Benar, (c) Salah"
+      },
+      {
+        "label": "B",
+        "teks": "(a) Benar, (b) Salah, (c) Benar"
+      },
+      {
+        "label": "C",
+        "teks": "(a) Salah, (b) Benar, (c) Benar"
+      },
+      {
+        "label": "D",
+        "teks": "(a) Benar, (b) Benar, (c) Benar"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Pernyataan (a) Benar: kerak samudra lebih padat (basaltik) dibanding kerak benua (granitis). Pernyataan (b) Benar: dinamo geologis inti luar cair menghasilkan medan magnet bumi. Pernyataan (c) Salah: Pegunungan Himalaya terbentuk dari pergerakan konvergen (tumbukan) antara Lempeng Benua India dan Eurasia, bukan divergen.",
+    "valid": true
+  },
+  {
+    "nomor": 58,
+    "materi": "Struktur Bumi, Tanah, & Kebencanaan",
+    "paket": "Bab VII: Struktur Bumi, Tanah, & Bencana - Bagian C: Latihan Mandiri Asli Buku",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "[Tabel Benar / Salah] Evaluasilah kebenaran pernyataan tentang tanah dan mitigasi bencana berikut: (a) Bakteri Nitrosomonas, Nitrobacter, dan Rhizobium berperan penting dalam siklus nitrogen yang menjaga ketersediaan unsur hara nitrat di dalam tanah; (b) Stalaktit adalah kerucut kapur di dalam gua yang tumbuh dari dasar gua ke atas, sedangkan stalagmit menggantung dari langit-langit gua ke bawah; (c) Status aktivitas gunung berapi di Indonesia dari terendah hingga tertinggi adalah: Normal (Level I) -> Waspada (Level II) -> Siaga (Level III) -> Awas (Level IV).",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch7_bumi_tanah_mitigasi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(a) Benar, (b) Salah, (c) Benar"
+      },
+      {
+        "label": "B",
+        "teks": "(a) Benar, (b) Benar, (c) Salah"
+      },
+      {
+        "label": "C",
+        "teks": "(a) Salah, (b) Benar, (c) Benar"
+      },
+      {
+        "label": "D",
+        "teks": "(a) Benar, (b) Benar, (c) Benar"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Pernyataan (a) Benar: bakteri tanah mengoksidasi amonia menjadi nitrit dan nitrat yang diserap akar. Pernyataan (b) Salah: Stalaktit menggantung dari atap langit-langit gua, sedangkan stalagmit tumbuh bertumpuk dari lantai dasar gua. Pernyataan (c) Benar: urutan status vulkanik PVMBG adalah Normal -> Waspada -> Siaga -> Awas.",
+    "valid": true
+  },
+  {
+    "nomor": 59,
+    "materi": "Struktur Bumi, Tanah, & Kebencanaan",
+    "paket": "Bab VII: Struktur Bumi, Tanah, & Bencana - Bagian C: Latihan Mandiri Asli Buku",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "[Membandingkan Data Seismograf Tiga Kota] Gempa bumi tercatat pada tiga stasiun seismograf: Kota A (Gelombang P pukul 10.05.10, Gelombang S pukul 10.07.10), Kota B (Gelombang P pukul 10.05.40, Gelombang S pukul 10.09.10), Kota C (Gelombang P pukul 10.06.00, Gelombang S pukul 10.10.30). Berdasarkan rumus Laska (delta = [(S - P) - 1 menit] x 1.000 km), jarak episentrum gempa dari Kota A, Kota B, dan Kota C berturut-turut adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch7_interior_bumi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "1.000 km, 2.500 km, dan 3.500 km"
+      },
+      {
+        "label": "B",
+        "teks": "1.500 km, 2.000 km, dan 3.000 km"
+      },
+      {
+        "label": "C",
+        "teks": "2.000 km, 3.500 km, dan 4.500 km"
+      },
+      {
+        "label": "D",
+        "teks": "500 km, 1.500 km, dan 2.500 km"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Perhitungan rumus Laska $\\Delta = [(S - P) - 1'] \\times 1.000\\text{ km}$:\n- Kota A: $(S - P) = 10.07.10 - 10.05.10 = 2'00''$. $\\Delta_A = (2 - 1) \\times 1.000 = 1.000\\text{ km}$.\n- Kota B: $(S - P) = 10.09.10 - 10.05.40 = 3'30'' = 3,5'$. $\\Delta_B = (3,5 - 1) \\times 1.000 = 2.500\\text{ km}$.\n- Kota C: $(S - P) = 10.10.30 - 10.06.00 = 4'30'' = 4,5'$. $\\Delta_C = (4,5 - 1) \\times 1.000 = 3.500\\text{ km}$.",
+    "valid": true
+  },
+  {
+    "nomor": 60,
+    "materi": "Struktur Bumi, Tanah, & Kebencanaan",
+    "paket": "Bab VII: Struktur Bumi, Tanah, & Bencana - Bagian C: Latihan Mandiri Asli Buku",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "[Membandingkan Percobaan Daya Serap Tanah] Tiga corong kaca diisi sampel tanah berbeda dengan massa sama (200 g) lalu dituangi 100 mL air: Sampel I (air tertampung di gelas ukur bawah = 85 mL dalam 1 menit), Sampel II (air tertampung = 45 mL dalam 3 menit), dan Sampel III (air tertampung = 12 mL dalam 10 menit). Jenis tanah pada Sampel I, II, dan III berturut-turut adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch7_bumi_tanah_mitigasi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Tanah pasir, tanah humus/lempung berpasir, dan tanah liat (lempung)"
+      },
+      {
+        "label": "B",
+        "teks": "Tanah liat, tanah pasir, dan tanah humus"
+      },
+      {
+        "label": "C",
+        "teks": "Tanah humus, tanah liat, dan tanah kapur"
+      },
+      {
+        "label": "D",
+        "teks": "Tanah gambut, tanah liat, dan tanah pasir"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Tingkat permeabilitas dan perkolasi air pada tanah: Sampel I meloloskan 85 mL paling cepat menunjukkan pori makro besar khas tanah pasir. Sampel II meloloskan 45 mL menunjukkan porositas seimbang khas tanah humus/geluh. Sampel III meloloskan 12 mL paling lambat menunjukkan pori mikro sangat rapat kedap air khas tanah lempung (liat).",
+    "valid": true
+  },
+  {
+    "nomor": 61,
+    "materi": "Struktur Bumi, Tanah, & Kebencanaan",
+    "paket": "Bab VII: Struktur Bumi, Tanah, & Bencana - Bagian C: Latihan Mandiri Asli Buku",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Pergerakan lempeng tektonik yang saling bertumbukan antara lempeng benua dengan lempeng benua (keduanya memiliki massa jenis sama rendah) menyebabkan kerak tertekan dan melipat ke atas membentuk pegunungan lipatan raksasa. Fenomena orogenesis ini terjadi pada pembentukan ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch7_interior_bumi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Palung Jawa"
+      },
+      {
+        "label": "B",
+        "teks": "Patahan Semangko"
+      },
+      {
+        "label": "C",
+        "teks": "Pegunungan Himalaya di benua Asia"
+      },
+      {
+        "label": "D",
+        "teks": "Lembah Retakan Afrika Timur"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Tumbukan kolisi antara Lempeng Benua India dan Lempeng Benua Eurasia membentuk Pegunungan Himalaya dan Dataran Tinggi Tibet. Karena kedua lempeng benua memiliki densitas rendah yang setara, tidak ada yang menunjam ke mantel, melainkan saling meremas dan terangkat ke atas.",
+    "valid": true
+  },
+  {
+    "nomor": 62,
+    "materi": "Struktur Bumi, Tanah, & Kebencanaan",
+    "paket": "Bab VII: Struktur Bumi, Tanah, & Bencana - Bagian C: Latihan Mandiri Asli Buku",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Zona bayangan gempa (shadow zone) untuk Gelombang S (gelombang sekunder) terjadi pada sudut busur 103° hingga 180° dari episentrum. Fakta geofisika ini menjadi bukti tak terbantahkan bagi para ilmuwan bahwa ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch7_interior_bumi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Inti dalam Bumi berwujud gas"
+      },
+      {
+        "label": "B",
+        "teks": "Lapisan inti luar Bumi berwujud cair, karena gelombang transversal S tidak dapat merambat melalui zat cair"
+      },
+      {
+        "label": "C",
+        "teks": "Bumi berongga di bagian tengahnya"
+      },
+      {
+        "label": "D",
+        "teks": "Mantel bumi terbuat dari es padat"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Gelombang S adalah gelombang geser transversal yang membutuhkan elastisitas medium padat untuk merambat. Terhalangnya gelombang S di seberang Bumi setelah kedalaman 2.900 km membuktikan bahwa Inti Luar Bumi berada dalam fase cair (besi cair).",
+    "valid": true
+  },
+  {
+    "nomor": 63,
+    "materi": "Struktur Bumi, Tanah, & Kebencanaan",
+    "paket": "Bab VII: Struktur Bumi, Tanah, & Bencana - Bagian C: Latihan Mandiri Asli Buku",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Tanah Regosol dan Latosol banyak ditemukan di daerah tropis bercurah hujan tinggi. Mengapa tanah Latosol (tanah merah laterit) umumnya memiliki tingkat kesuburan alami yang rendah meskipun tebal?",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch7_bumi_tanah_mitigasi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Karena mengalami pencucian (leaching) intensif oleh curah hujan tinggi yang melarutkan unsur hara basa dan menyisakan oksida besi dan aluminium"
+      },
+      {
+        "label": "B",
+        "teks": "Karena tertutup abu vulkanik baru"
+      },
+      {
+        "label": "C",
+        "teks": "Karena kadar airnya nol persen"
+      },
+      {
+        "label": "D",
+        "teks": "Karena tidak memiliki lapisan batuan induk"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Proses laterisasi pada iklim tropis basah menyebabkan unsur hara silika dan basa ($K, Na, Ca, Mg$) tercuci larut ke bawah tanah oleh curah hujan lebat berkepanjangan, menyisakan endapan seskuioksida besi ($Fe_2O_3$, pemberi warna merah) dan aluminium ($Al_2O_3$) yang miskin hara.",
+    "valid": true
+  },
+  {
+    "nomor": 64,
+    "materi": "Struktur Bumi, Tanah, & Kebencanaan",
+    "paket": "Bab VII: Struktur Bumi, Tanah, & Bencana - Bagian C: Latihan Mandiri Asli Buku",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Teknik konservasi tanah secara vegetatif dapat dilakukan dengan menutupi permukaan tanah menggunakan jerami, sisa batang jagung, atau serasah daun mati. Teknik pemberian penutup tanah ini disebut ...., dan berfungsi untuk ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch7_bumi_tanah_mitigasi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Mulsa (mulching); menahan evaporasi air tanah, menjaga kelembapan, dan meredam pukulan air hujan"
+      },
+      {
+        "label": "B",
+        "teks": "Strip cropping; memotong tebing batu"
+      },
+      {
+        "label": "C",
+        "teks": "Dolomitisasi; membakar gulma"
+      },
+      {
+        "label": "D",
+        "teks": "Perkolasi; mengeringkan tanah"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Mulsa (mulching) adalah penutupan permukaan lahan dengan sisa biomassa tanaman. Mulsa menjaga suhu dan kelembapan tanah, meredam energi kinetik hujan perusak agregat topsoil, menekan pertumbuhan gulma, dan terdekomposisi menjadi humus tanah.",
+    "valid": true
+  },
+  {
+    "nomor": 65,
+    "materi": "Struktur Bumi, Tanah, & Kebencanaan",
+    "paket": "Bab VII: Struktur Bumi, Tanah, & Bencana - Bagian C: Latihan Mandiri Asli Buku",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Pusat Vulkanologi dan Mitigasi Bencana Geologi (PVMBG) membagi Kawasan Rawan Bencana (KRB) gunung berapi menjadi KRB I, KRB II, dan KRB III. Kawasan yang selalu terancam oleh awan panas, lontaran batu pijar, dan aliran lava pekat saat letusan terjadi sehingga tidak boleh dijadikan pemukiman permanen adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch7_bumi_tanah_mitigasi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Kawasan Rawan Bencana III (KRB III)"
+      },
+      {
+        "label": "B",
+        "teks": "Kawasan Rawan Bencana I (KRB I)"
+      },
+      {
+        "label": "C",
+        "teks": "Kawasan Non-Bencana"
+      },
+      {
+        "label": "D",
+        "teks": "Kawasan Dataran Aluvial"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "KRB III adalah wilayah yang terletak paling dekat dengan pusat erupsi/kawah aktif yang berpotensi langsung terlanda awan panas, aliran lava, guguran batu pijar, dan gas beracun. Zona ini merupakan zona merah yang dilarang untuk pemukiman penduduk.",
+    "valid": true
+  },
+  {
+    "nomor": 66,
+    "materi": "Struktur Bumi, Tanah, & Kebencanaan",
+    "paket": "Bab VII: Struktur Bumi, Tanah, & Bencana - Bagian D: Pengayaan AKM Literasi Sains & TKA",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "[AKM Literasi Sains - Geodinamika Sesar Aktif] Sesar Lembang di Jawa Barat merupakan patahan geser aktif sepanjang 29 km yang bergerak dengan laju slip 3-5 mm/tahun. Analisis paleoseismik menunjukkan sesar ini memiliki periode ulang gempa bumi berkekuatan M 6,5-7,0 setiap 170-500 tahun. Berdasarkan pemahaman mitigasi struktural kebencanaan, tindakan paling efektif bagi warga dan pemda di sepanjang jalur sesar aktif tersebut adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch7_bumi_tanah_mitigasi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Mendirikan bangunan bertingkat tanpa pondasi tahan gempa"
+      },
+      {
+        "label": "B",
+        "teks": "Menetapkan sempadan patahan aktif yang bebas dari bangunan vital dan menerapkan standar konstruksi bangunan tahan gempa (SNI)"
+      },
+      {
+        "label": "C",
+        "teks": "Mengebor tanah patahan agar air tanah mengalir keluar"
+      },
+      {
+        "label": "D",
+        "teks": "Mengabaikan peta mikrozonasi gempa bumi"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Mitigasi struktural sesar aktif meliputi penetapan zona penyangga sempadan patahan (fault setback zone) yang bebas dari bangunan fasilitas publik/hunian, penegakan kode standar bangunan tahan gempa (building code SNI), serta edukasi simulasi evakuasi rutin.",
+    "valid": true
+  },
+  {
+    "nomor": 67,
+    "materi": "Struktur Bumi, Tanah, & Kebencanaan",
+    "paket": "Bab VII: Struktur Bumi, Tanah, & Bencana - Bagian D: Pengayaan AKM Literasi Sains & TKA",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "[AKM Numerasi Kebencanaan - Waktu Tiba Tsunami] Sebuah gempa megathrust bawah laut dangkal bermagnitudo M 8,2 terjadi di Palung Sunda pada jarak 180 km dari garis pantai terdekat. Kecepatan rambat gelombang tsunami di laut dalam dirumuskan dengan rumus fluida dangkal v = akar(g x d), di mana percepatan gravitasi g = 10 m/s2 dan kedalaman rata-rata laut d = 4.000 meter. Berapa waktu tempuh yang dibutuhkan gelombang tsunami untuk mencapai garis pantai tersebut?",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch7_bumi_tanah_mitigasi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "5 menit"
+      },
+      {
+        "label": "B",
+        "teks": "15 menit"
+      },
+      {
+        "label": "C",
+        "teks": "30 menit"
+      },
+      {
+        "label": "D",
+        "teks": "60 menit"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Kecepatan rambat tsunami: $v = \\sqrt{g \\times d} = \\sqrt{10 \\times 4.000} = \\sqrt{40.000} = 200\\text{ m/s} = 720\\text{ km/jam}$.\nJarak episentrum ke pantai $s = 180\\text{ km}$.\nWaktu tempuh: $t = \\frac{s}{v} = \\frac{180\\text{ km}}{720\\text{ km/jam}} = 0,25\\text{ jam} = 15\\text{ menit}$. Jadi waktu evakuasi emas masyarakat pesisir pantai hanya sekitar 15 menit.",
+    "valid": true
+  },
+  {
+    "nomor": 68,
+    "materi": "Struktur Bumi, Tanah, & Kebencanaan",
+    "paket": "Bab VII: Struktur Bumi, Tanah, & Bencana - Bagian D: Pengayaan AKM Literasi Sains & TKA",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "[AKM Literasi Sains - Konservasi Ekosistem Tanah] Di kawasan dataran tinggi, alih fungsi hutan lindung menjadi ladang tanaman semusim kentang yang intensif dengan pengolahan tanah searah lereng menyebabkan erosi topsoil mencapai 150 ton/hektar/tahun. Akibatnya waduk di hilir mengalami pendangkalan cepat (sedimentasi). Upaya konservasi tanah terpadu yang paling solutif untuk memulihkan fungsi lahan tersebut adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch7_bumi_tanah_mitigasi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Membeton seluruh permukaan lereng pertanian"
+      },
+      {
+        "label": "B",
+        "teks": "Menerapkan sistem agroforestri (tumpang sari tanaman semusim dengan pohon keras berakar dalam) dipadukan dengan pembuatan terasering dan rorak penampung sedimen"
+      },
+      {
+        "label": "C",
+        "teks": "Menambah dosis herbisida pembasmi rumput liar"
+      },
+      {
+        "label": "D",
+        "teks": "Membajak tanah lebih dalam saat musim hujan lebat"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Kombinasi metode konservasi vegetatif (agroforestri dengan pohon multiguna seperti kopi/alpukat) dan mekanis (terasering bertangga dan rorak penangkap air limpasan) mampu menahan erosi hingga > 80% sekaligus menjaga pendapatan ekonomi petani.",
+    "valid": true
+  },
+  {
+    "nomor": 69,
+    "materi": "Struktur Bumi, Tanah, & Kebencanaan",
+    "paket": "Bab VII: Struktur Bumi, Tanah, & Bencana - Bagian D: Pengayaan AKM Literasi Sains & TKA",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "[AKM Numerasi - Neraca Air DAS & Koefisien Limpasan] Suatu Daerah Aliran Sungai (DAS) seluas 100 km2 menerima curah hujan 50 mm dalam satu kejadian badai. Ketika kawasan hulu masih berupa hutan rapat, koefisien limpasan C = 0,20 (hanya 20% air hujan menjadi aliran permukaan). Setelah terjadi alih fungsi lahan menjadi pemukiman dan vila, koefisien limpasan naik menjadi C = 0,70. Peningkatan volume air limpasan banjir yang mengalir ke sungai hilir akibat degradasi lahan tersebut adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch7_bumi_tanah_mitigasi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "500.000 m3"
+      },
+      {
+        "label": "B",
+        "teks": "1.000.000 m3"
+      },
+      {
+        "label": "C",
+        "teks": "2.500.000 m3"
+      },
+      {
+        "label": "D",
+        "teks": "5.000.000 m3"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Volume hujan total: $V = \\text{Luas} \\times \\text{Tinggi Hujan} = 100\\times 10^6\\text{ m}^2 \\times 0,05\\text{ m} = 5.000.000\\text{ m}^3$.\nLimpasan awal hutan: $Q_1 = 0,20 \\times 5.000.000 = 1.000.000\\text{ m}^3$.\nLimpasan akhir pemukiman: $Q_2 = 0,70 \\times 5.000.000 = 3.500.000\\text{ m}^3$.\nPeningkatan volume air limpasan: $\\Delta Q = 3.500.000 - 1.000.000 = 2.500.000\\text{ m}^3$.",
+    "valid": true
+  },
+  {
+    "nomor": 70,
+    "materi": "Struktur Bumi, Tanah, & Kebencanaan",
+    "paket": "Bab VII: Struktur Bumi, Tanah, & Bencana - Bagian D: Pengayaan AKM Literasi Sains & TKA",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "[AKM Literasi Sains - Fitoremediasi Tanah] Sebuah lokasi bekas tambang tercemar logam berat Timbal (Pb) dengan konsentrasi melebihi ambang batas baku mutu. Peneliti menanam tanaman akar wangi (Vetiveria zizanioides) dan bunga matahari (Helianthus annuus). Mekanisme fitoremediasi di mana akar tanaman menyerap ion Pb dari larutan tanah dan menumpuknya pada biomassa daun tanpa merusak ekosistem disebut ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch7_bumi_tanah_mitigasi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Fitoekstraksi (fitoakumulasi)"
+      },
+      {
+        "label": "B",
+        "teks": "Fitovolatilisasi menjadi gas beracun"
+      },
+      {
+        "label": "C",
+        "teks": "Biodegradasi menjadi plastik"
+      },
+      {
+        "label": "D",
+        "teks": "Biomagnifikasi rantai makanan"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Fitoekstraksi adalah proses penyerapan kontaminan polutan logam berat oleh sistem perakaran tumbuhan dan mentranslokasikannya ke bagian tajuk tanaman (daun dan batang) yang kemudian dipanen secara berkala untuk diolah secara terisolir dan aman.",
+    "valid": true
+  }
+]

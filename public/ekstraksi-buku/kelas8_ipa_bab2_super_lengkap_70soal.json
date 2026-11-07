@@ -1,0 +1,2242 @@
+[
+  {
+    "nomor": 1,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup II",
+    "paket": "Bab II: Struktur & Fungsi Tubuh II - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Perhatikan grafik spirogram volume udara pernapasan manusia berikut! Berdasarkan skala grafik spirogram tersebut, besar volume tidal (pernapasan biasa) dan kapasitas vital paru-paru berturut-turut adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch2_spirogram_paru.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "100 mL dan 300 mL"
+      },
+      {
+        "label": "B",
+        "teks": "100 mL dan 400 mL"
+      },
+      {
+        "label": "C",
+        "teks": "200 mL dan 400 mL"
+      },
+      {
+        "label": "D",
+        "teks": "300 mL dan 500 mL"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Pada grafik spirogram tersebut, volume tidal (volume udara inspirasi/ekspirasi biasa) berada pada rentang 200 mL hingga 300 mL (= 100 mL). Kapasitas vital (volume udara maksimum yang dapat dihembuskan setelah inspirasi maksimal) berada pada rentang 100 mL hingga 500 mL (= 400 mL). Maka berturut-turut adalah 100 mL dan 400 mL.",
+    "valid": true
+  },
+  {
+    "nomor": 2,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup II",
+    "paket": "Bab II: Struktur & Fungsi Tubuh II - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Dinding trakea (batang tenggorokan) manusia tersusun atas cincin-cincin tulang rawan dan dilapisi oleh sel-sel epitel bersilia yang menghasilkan lendir (mukus). Fungsi utama epitel bersilia tersebut adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch2_pernapasan_ekskresi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Menghasilkan suara nyaring saat berbicara"
+      },
+      {
+        "label": "B",
+        "teks": "Menyapu dan mendorong partikel debu, kotoran, dan kuman patogen keluar menuju faring agar tidak masuk ke paru-paru"
+      },
+      {
+        "label": "C",
+        "teks": "Menyerap gas oksigen langsung ke pembuluh darah trakea"
+      },
+      {
+        "label": "D",
+        "teks": "Mengatur suhu udara napas agar sama dengan suhu ruangan"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Silia (rambut getar) pada dinding trakea bergerak menyapu ke arah atas (faring) bersama lapisan lendir, berfungsi sebagai eskalator mukosiliar untuk menjerat dan mengeluarkan debu atau mikroba patogen dari saluran pernapasan.",
+    "valid": true
+  },
+  {
+    "nomor": 3,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup II",
+    "paket": "Bab II: Struktur & Fungsi Tubuh II - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Pertukaran gas oksigen (O2) dari udara di alveolus ke dalam kapiler darah dan pelepasan karbon dioksida (CO2) dari kapiler ke alveolus berlangsung secara difusi pasif. Faktor pendorong utama difusi gas tersebut adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch2_pernapasan_ekskresi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Perbedaan tekanan parsial gas di mana PO2 di alveolus lebih tinggi daripada PO2 di kapiler darah, dan PCO2 di kapiler darah lebih tinggi daripada di alveolus"
+      },
+      {
+        "label": "B",
+        "teks": "Bantuan pompa aktif ion kalsium pada dinding alveolus"
+      },
+      {
+        "label": "C",
+        "teks": "Perbedaan suhu udara napas dan darah"
+      },
+      {
+        "label": "D",
+        "teks": "Gaya dorong peristaltik bronkiolus"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Pertukaran gas di alveolus berlangsung melalui difusi pasif menembus membran tipis alveolokapiler. Gas berpindah dari daerah yang memiliki tekanan parsial tinggi ke daerah bertekanan parsial lebih rendah tanpa membutuhkan energi ATP.",
+    "valid": true
+  },
+  {
+    "nomor": 4,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup II",
+    "paket": "Bab II: Struktur & Fungsi Tubuh II - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Pada peragaan alat model paru-paru menggunakan botol kaca transparan (rongga dada), dua balon karet di dalam (paru-paru), dan membran karet di bagian bawah (diafragma), ketika membran karet bawah ditarik ke bawah, yang terjadi adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch2_pernapasan_ekskresi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Volume tabung menyusut dan balon mengempis (ekspirasi)"
+      },
+      {
+        "label": "B",
+        "teks": "Tekanan udara di dalam tabung membesar dan udara keluar dari balon"
+      },
+      {
+        "label": "C",
+        "teks": "Balon tidak mengalami perubahan karena udara tertahan"
+      },
+      {
+        "label": "D",
+        "teks": "Volume di dalam tabung membesar sehingga tekanan udara turun, menyebabkan udara luar masuk dan kedua balon mengembang (memodelkan inspirasi pernapasan perut)"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Menarik membran karet ke bawah memodelkan kontraksi diafragma (mendatar) pada pernapasan perut. Hal ini memperbesar volume rongga dada, menurunkan tekanan intrapulmonal di bawah tekanan atmosfer, sehingga udara mengalir masuk dan paru-paru mengembang.",
+    "valid": true
+  },
+  {
+    "nomor": 5,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup II",
+    "paket": "Bab II: Struktur & Fungsi Tubuh II - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Rongga hidung manusia dilengkapi dengan rambut-rambut hidung (silia), selaput lendir (mukus), dan anyaman kapiler darah (konka nasalis). Tiga perlakuan fisiologis yang dialami udara pernapasan saat melewati rongga hidung adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch2_pernapasan_ekskresi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Pemanasan, pendinginan, dan pembekuan kuman"
+      },
+      {
+        "label": "B",
+        "teks": "Pengikatan oksigen, pengeluaran karbon monoksida, dan pengenceran"
+      },
+      {
+        "label": "C",
+        "teks": "Penyaringan debu oleh rambut hidung, penyesuaian suhu tubuh oleh kapiler konka, dan pelembapan udara oleh selaput lendir"
+      },
+      {
+        "label": "D",
+        "teks": "Pemisahan nitrogen, penyaringan karbon dioksida, dan sterilisasi mutlak"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Rongga hidung mengkondisikan udara inspirasi melalui 3 mekanisme: (1) Menyaring partikel kasar oleh silia/rambut; (2) Menghangatkan udara mendekati suhu inti tubuh (37°C) oleh konka; (3) Melembapkan udara hingga mendekati saturasi 100% oleh mukus.",
+    "valid": true
+  },
+  {
+    "nomor": 6,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup II",
+    "paket": "Bab II: Struktur & Fungsi Tubuh II - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Gas karbon monoksida (CO) dari asap knalpot kendaraan bermotor di ruangan tertutup sangat mematikan karena ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch2_pernapasan_ekskresi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Menyebabkan dinding trakea mencair"
+      },
+      {
+        "label": "B",
+        "teks": "Memiliki afinitas daya ikat terhadap hemoglobin 200–250 kali lebih kuat daripada oksigen, sehingga membentuk HbCO dan memblokir pengikatan oksigen ke jaringan tubuh"
+      },
+      {
+        "label": "C",
+        "teks": "Membekukan cairan empedu di hati"
+      },
+      {
+        "label": "D",
+        "teks": "Mengubah sel darah putih menjadi sel kanker"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Hemoglobin memiliki afinitas ikatan terhadap gas CO sekitar 200–250 kali lipat dibanding terhadap O2. Akibatnya, terbentuk karboksihemoglobin (HbCO) stabil yang menyebabkan sel-sel tubuh mengalami asfiksia (kekurangan O2 parah) hingga berujung kematian.",
+    "valid": true
+  },
+  {
+    "nomor": 7,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup II",
+    "paket": "Bab II: Struktur & Fungsi Tubuh II - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Ketika kita menghembuskan napas melalui sedotan ke dalam tabung reaksi yang berisi air kapur jernih (Ca(OH)2), beberapa detik kemudian air kapur berubah menjadi keruh putih. Fenomena ini membuktikan bahwa udara ekspirasi mengandung ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch2_pernapasan_ekskresi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Gas oksigen murni"
+      },
+      {
+        "label": "B",
+        "teks": "Gas nitrogen bebas"
+      },
+      {
+        "label": "C",
+        "teks": "Gas karbon dioksida (CO2) yang bereaksi membentuk endapan kalsium karbonat (CaCO3)"
+      },
+      {
+        "label": "D",
+        "teks": "Uap asam klorida pekat"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Reaksi kimia: $Ca(OH)_2 + CO_2 \\rightarrow CaCO_3(s) + H_2O$. Terbentuknya endapan putih kalsium karbonat ($CaCO_3$) membuktikan bahwa gas yang diekspirasikan manusia mengandung karbon dioksida ($CO_2$) hasil respirasi seluler.",
+    "valid": true
+  },
+  {
+    "nomor": 8,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup II",
+    "paket": "Bab II: Struktur & Fungsi Tubuh II - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Penyakit saluran pernapasan kronis yang menyebabkan kerusakan dan robeknya dinding penyekat antar-alveolus sehingga elastisitas paru-paru hilang dan permukaan pertukaran gas menyusut drastis disebut ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch2_pernapasan_ekskresi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Asma"
+      },
+      {
+        "label": "B",
+        "teks": "Faringitis"
+      },
+      {
+        "label": "C",
+        "teks": "Emfisema"
+      },
+      {
+        "label": "D",
+        "teks": "Pneumonia"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Emfisema adalah penyakit obstruktif paru kronis di mana dinding alveolus mengalami destruksi dan kehilangan daya elastisitas pegasnya, sering kali akibat paparan asap rokok jangka panjang, sehingga penderita mengalami sesak napas berat.",
+    "valid": true
+  },
+  {
+    "nomor": 9,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup II",
+    "paket": "Bab II: Struktur & Fungsi Tubuh II - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Perhatikan gambar struktur nefron ginjal berikut! Bagian (1) = Glomerulus, (2) = Kapsula Bowman, (3) = Tubulus Kontortus Proksimal, (4) = Tubulus Kontortus Distal. Proses filtrasi darah dan reabsorpsi zat berguna (seperti glukosa dan asam amino) berturut-turut berlangsung pada bagian bernomor ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch2_nefron_ginjal.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(1) dan (2)"
+      },
+      {
+        "label": "B",
+        "teks": "(1) dan (3)"
+      },
+      {
+        "label": "C",
+        "teks": "(2) dan (4)"
+      },
+      {
+        "label": "D",
+        "teks": "(3) dan (4)"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Filtrasi darah terjadi di glomerulus (nomor 1) menghasilkan urine primer (filtrat glomerulus). Reabsorpsi zat-zat yang masih berguna (glukosa, asam amino, garam, air) terjadi di tubulus kontortus proksimal (nomor 3) menghasilkan urine sekunder.",
+    "valid": true
+  },
+  {
+    "nomor": 10,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup II",
+    "paket": "Bab II: Struktur & Fungsi Tubuh II - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Zat-zat manakah di bawah ini yang dalam kondisi fisiologis ginjal sehat MASIH DITEMUKAN di dalam urine primer, tetapi SUDAH TIDAK DITEMUKAN LAGI di dalam urine sesungguhnya?",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch2_nefron_ginjal.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Urea dan asam urat"
+      },
+      {
+        "label": "B",
+        "teks": "Glukosa dan asam amino"
+      },
+      {
+        "label": "C",
+        "teks": "Eritrosit dan leukosit"
+      },
+      {
+        "label": "D",
+        "teks": "Protein albumin dan globulin"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Glukosa dan asam amino lolos dari pori-pori glomerulus ke urine primer karena molekulnya kecil. Namun di tubulus kontortus proksimal (TKP), 100% glukosa dan asam amino diserap kembali ke kapiler darah secara transpor aktif, sehingga urine normal tidak mengandung glukosa.",
+    "valid": true
+  },
+  {
+    "nomor": 11,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup II",
+    "paket": "Bab II: Struktur & Fungsi Tubuh II - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Perhatikan tabel Hasil Uji Laboratorium Sampel Urine Tiga Pasien di Rumah Sakit berikut!\n- Pasien P: Uji Biuret (Tetap Biru), Uji Benedict dipanaskan (Endapan Merah Bata)\n- Pasien Q: Uji Biuret (Warna Ungu/Violet), Uji Benedict dipanaskan (Tetap Biru)\n- Pasien R: Uji Biuret (Tetap Biru), Uji Benedict dipanaskan (Tetap Biru)\nBerdasarkan data di atas, penyakit yang diderita oleh Pasien P dan Pasien Q berturut-turut adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch2_nefron_ginjal.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Diabetes mellitus (kencing manis) dan Albuminuria (proteinuria)"
+      },
+      {
+        "label": "B",
+        "teks": "Albuminuria dan Diabetes insipidus"
+      },
+      {
+        "label": "C",
+        "teks": "Batu ginjal dan Gagal ginjal akut"
+      },
+      {
+        "label": "D",
+        "teks": "Nefritis dan Diabetes mellitus"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Pasien P positif uji Benedict (merah bata), artinya urine mengandung glukosa akibat defisiensi insulin (Diabetes Mellitus). Pasien Q positif uji Biuret (ungu), artinya urine mengandung protein albumin akibat kebocoran membran filtrasi glomerulus (Albuminuria).",
+    "valid": true
+  },
+  {
+    "nomor": 12,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup II",
+    "paket": "Bab II: Struktur & Fungsi Tubuh II - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Mengapa pada saat berada di udara dingin atau ruangan ber-AC kita cenderung lebih sering buang air kecil (beser/volume urine meningkat)?",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch2_pernapasan_ekskresi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Karena paru-paru berhenti mengeluarkan uap air"
+      },
+      {
+        "label": "B",
+        "teks": "Karena glomerulus mengalami radang kedinginan"
+      },
+      {
+        "label": "C",
+        "teks": "Karena detak jantung berhenti sementara"
+      },
+      {
+        "label": "D",
+        "teks": "Pada suhu dingin, pembuluh kapiler kulit mengalami vasokonstriksi sehingga pengeluaran keringat berkurang drastis, menyebabkan ginjal bekerja lebih banyak membuang kelebihan air tubuh"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Suhu dingin memicu vasokonstriksi kapiler perifer kulit untuk menghemat panas, sehingga aktivitas kelenjar keringat menurun drastis. Tubuh menjaga keseimbangan osmoregulasi cairan dengan mengekskresikan kelebihan volume air melalui peningkatan volume urine di ginjal.",
+    "valid": true
+  },
+  {
+    "nomor": 13,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup II",
+    "paket": "Bab II: Struktur & Fungsi Tubuh II - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Kelainan ekskresi di mana penderita mengeluarkan urine yang sangat banyak (dapat mencapai 15–20 liter per hari) dan selalu merasa haus hebat akibat hiposekresi hormon Antidiuretik (ADH) oleh kelenjar hipofisis disebut ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch2_nefron_ginjal.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Diabetes mellitus"
+      },
+      {
+        "label": "B",
+        "teks": "Albuminuria"
+      },
+      {
+        "label": "C",
+        "teks": "Diabetes insipidus"
+      },
+      {
+        "label": "D",
+        "teks": "Uremia"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Diabetes insipidus disebabkan oleh kekurangan hormon ADH (vasopresin). Tanpa ADH, tubulus kontortus distal dan duktus kolektivus tidak mampu menyerap kembali air ke darah, sehingga terjadi poliuria masif (volume urine encer sangat banyak).",
+    "valid": true
+  },
+  {
+    "nomor": 14,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup II",
+    "paket": "Bab II: Struktur & Fungsi Tubuh II - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Organ Hati (Hepar) berperan ganda sebagai kelenjar pencernaan sekaligus organ ekskresi. Peran ekskresi organ hati yang paling utama adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch2_pernapasan_ekskresi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Menghasilkan asam klorida encer"
+      },
+      {
+        "label": "B",
+        "teks": "Merombak sel darah merah (eritrosit) yang telah tua dan rusak menjadi bilirubin, serta mengubah amonia beracun menjadi urea melalui siklus ornitin"
+      },
+      {
+        "label": "C",
+        "teks": "Menyerap glukosa langsung menjadi vitamin C"
+      },
+      {
+        "label": "D",
+        "teks": "Menghasilkan sel-sel darah putih fagositik"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Fungsi ekskresi hati: (1) Sel histiosit/Kupffer merombak hemoglobin eritrosit tua menjadi zat warna empedu (bilirubin & biliverdin); (2) Sel hati mendetoksifikasi amonia berbahaya sisa metabolisme protein menjadi senyawa urea yang lebih aman untuk dibuang ginjal.",
+    "valid": true
+  },
+  {
+    "nomor": 15,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup II",
+    "paket": "Bab II: Struktur & Fungsi Tubuh II - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Zat warna empedu hasil perombakan hemoglobin di hati yang memberikan warna kuning khas pada urine dan feses manusia berturut-turut adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch2_pernapasan_ekskresi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Urobilin pada urine dan sterkobilin pada feses"
+      },
+      {
+        "label": "B",
+        "teks": "Melanin dan klorofil"
+      },
+      {
+        "label": "C",
+        "teks": "Hemoglobin dan fibrin"
+      },
+      {
+        "label": "D",
+        "teks": "Albumin dan amonia"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Bilirubin dialirkan ke usus halus, lalu diubah oleh flora usus menjadi urobilinogen. Sebagian diserap kembali ke darah dan diekskresikan ginjal sebagai urobilin (pemberi warna kuning urine), sedangkan sebagian besar dioksidasi menjadi sterkobilin (pemberi warna cokelat feses).",
+    "valid": true
+  },
+  {
+    "nomor": 16,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup II",
+    "paket": "Bab II: Struktur & Fungsi Tubuh II - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Di dalam lapisan dermis (kulit jangat) manusia terdapat berbagai struktur pelengkap. Kelenjar yang berfungsi mengeluarkan keringat untuk mengatur suhu tubuh dan kelenjar yang menghasilkan minyak pelumas rambut/kulit berturut-turut adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch2_pernapasan_ekskresi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Kelenjar tiroid dan parotis"
+      },
+      {
+        "label": "B",
+        "teks": "Kelenjar timus dan adrenal"
+      },
+      {
+        "label": "C",
+        "teks": "Glandula sudorifera (kelenjar keringat) dan Glandula sebasea (kelenjar minyak)"
+      },
+      {
+        "label": "D",
+        "teks": "Kelenjar getah bening dan hipofisis"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Kelenjar sudorifera (kelenjar keringat) menggulung di lapisan dermis dan menyalurkan keringat ke pori epidermis. Kelenjar sebasea bermuara pada folikel rambut untuk mensekresikan sebum (minyak) agar kulit dan rambut tidak kering.",
+    "valid": true
+  },
+  {
+    "nomor": 17,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup II",
+    "paket": "Bab II: Struktur & Fungsi Tubuh II - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Mengapa proses keluarnya dan menguapnya keringat di permukaan kulit saat kita kepanasan atau berolahraga dapat mendinginkan suhu tubuh kembali ke batas normal?",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch2_pernapasan_ekskresi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Karena keringat mengandung es mikro"
+      },
+      {
+        "label": "B",
+        "teks": "Karena keringat menyerap oksigen dari udara bebas"
+      },
+      {
+        "label": "C",
+        "teks": "Karena keringat merusak pembuluh darah kapiler"
+      },
+      {
+        "label": "D",
+        "teks": "Proses penguapan (evaporasi) air keringat menyerap kalor laten dari permukaan kulit, sehingga suhu tubuh menurun (termoregulasi)"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Perubahan wujud cair ke gas (evaporasi) adalah proses endotermik yang memerlukan energi kalor. Kalor tersebut diserap dari kapiler darah permukaan kulit, sehingga panas tubuh terdisipasi dan temperatur inti tubuh kembali stabil.",
+    "valid": true
+  },
+  {
+    "nomor": 18,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup II",
+    "paket": "Bab II: Struktur & Fungsi Tubuh II - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Perbedaan mendasar antara proses Ekskresi, Sekresi, dan Defekasi dalam fisiologi manusia yang tepat adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch2_pernapasan_ekskresi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Ekskresi membuang feses, sekresi membuang urine, defekasi membuang keringat"
+      },
+      {
+        "label": "B",
+        "teks": "Ekskresi adalah pengeluaran zat sisa metabolisme sel yang tidak berguna lagi bagi tubuh (urine, keringat, CO2, empedu); Sekresi adalah pengeluaran zat hasil kelenjar yang masih berguna bagi tubuh (enzim, hormon); Defekasi adalah pengeluaran sisa makanan yang tidak tercerna (feses)"
+      },
+      {
+        "label": "C",
+        "teks": "Ketiga proses tersebut memiliki pengertian yang identik sama"
+      },
+      {
+        "label": "D",
+        "teks": "Sekresi hanya terjadi pada tumbuhan"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Ekskresi mengeluarkan sisa-sisa metabolik selular beracun. Sekresi memproduksi senyawa fungsional yang dibutuhkan proses biologis lain (getah lambung, saliva, hormon). Defekasi mengeluarkan materi feses yang tidak pernah diserap ke dalam sel tubuh.",
+    "valid": true
+  },
+  {
+    "nomor": 19,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup II",
+    "paket": "Bab II: Struktur & Fungsi Tubuh II - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Endapan kristal garam kalsium oksalat atau asam urat yang mengeras di dalam rongga ginjal (pelvis) atau saluran ureter sehingga menyumbat aliran urine dan menimbulkan rasa nyeri hebat disebut ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch2_nefron_ginjal.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Nefrolitiasis (batu ginjal)"
+      },
+      {
+        "label": "B",
+        "teks": "Gagal ginjal kronis"
+      },
+      {
+        "label": "C",
+        "teks": "Nefritis akut"
+      },
+      {
+        "label": "D",
+        "teks": "Pielonefritis"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Batu ginjal (nefrolitiasis) terbentuk ketika konsentrasi zat-zat terlarut seperti kalsium, oksalat, dan asam urat melebihi batas kelarutan jenuh sehingga mengalami kristalisasi dan presipitasi membentuk batu padat di saluran kemih.",
+    "valid": true
+  },
+  {
+    "nomor": 20,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup II",
+    "paket": "Bab II: Struktur & Fungsi Tubuh II - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Persendian pada tubuh manusia yang memungkinkan gerakan bebas ke segala arah (memiliki bonggol sendi yang masuk ke mangkuk sendi), seperti pada hubungan gelang bahu dengan tulang lengan atas, adalah sendi ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch2_pernapasan_ekskresi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Sendi engsel"
+      },
+      {
+        "label": "B",
+        "teks": "Sendi putar"
+      },
+      {
+        "label": "C",
+        "teks": "Sendi pelana"
+      },
+      {
+        "label": "D",
+        "teks": "Sendi peluru (ball-and-socket joint)"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Sendi peluru menghubungkan ujung tulang membulat (bonggol) ke dalam lekukan mangkuk tulang lain, memungkinkan rentang gerak triaksial rotasi bebas ke segala arah (pada artikulasio humeri bahu dan artikulasio koksae panggul).",
+    "valid": true
+  },
+  {
+    "nomor": 21,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup II",
+    "paket": "Bab II: Struktur & Fungsi Tubuh II - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Saat kita menekuk siku mengangkat lengan bawah ke atas (gerakan fleksi), mekanisme kerja otot antagonis pada lengan atas yang terjadi adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch2_pernapasan_ekskresi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Otot bisep dan trisep sama-sama berelaksasi"
+      },
+      {
+        "label": "B",
+        "teks": "Otot bisep berelaksasi dan otot trisep berkontraksi"
+      },
+      {
+        "label": "C",
+        "teks": "Otot bisep berkontraksi (memendek dan menebal) dan otot trisep berelaksasi (memanjang)"
+      },
+      {
+        "label": "D",
+        "teks": "Otot bisep dan trisep bekerja secara sinergis searah"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Otot bisep dan trisep bekerja antagonis (berlawanan). Saat fleksi (menekuk sendi siku), otot bisep bertindak sebagai fleksor (berkontraksi) sementara otot trisep bertindak sebagai ekstensor yang berelaksasi.",
+    "valid": true
+  },
+  {
+    "nomor": 22,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup II",
+    "paket": "Bab II: Struktur & Fungsi Tubuh II - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Perhatikan ciri-ciri jaringan otot berikut:\n(1) Sel berbentuk silindris memanjang dan bercabang-cabang\n(2) Memiliki lurik-lurik gelap dan terang\n(3) Memiliki satu atau dua inti sel yang terletak di tengah\n(4) Bekerja secara tidak sadar (involunter) dan berirama tanpa lelah\nBerdasarkan ciri-ciri di atas, jaringan tersebut adalah otot ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch2_pernapasan_ekskresi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Otot polos"
+      },
+      {
+        "label": "B",
+        "teks": "Otot jantung (miokardium)"
+      },
+      {
+        "label": "C",
+        "teks": "Otot rangka (otot lurik)"
+      },
+      {
+        "label": "D",
+        "teks": "Otot lingkar lambung"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Ciri khas otot jantung adalah perpaduan sifat struktural (silindris berlurik bercabang dengan diskus interkalaris) dan fungsional involunter (bekerja otomatis dipacu nodus sinoatrial tanpa kelelahan).",
+    "valid": true
+  },
+  {
+    "nomor": 23,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup II",
+    "paket": "Bab II: Struktur & Fungsi Tubuh II - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Seorang siswa yang memiliki kebiasaan duduk membungkuk miring ke samping saat menulis dalam jangka waktu bertahun-tahun berisiko mengalami kelainan tulang belakang melengkung ke arah lateral (berbentuk huruf 'S' atau 'C'). Kelainan ini disebut ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch2_pernapasan_ekskresi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Skoliosis"
+      },
+      {
+        "label": "B",
+        "teks": "Kifosis"
+      },
+      {
+        "label": "C",
+        "teks": "Lordosis"
+      },
+      {
+        "label": "D",
+        "teks": "Fraktura"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Skoliosis adalah deviasi tulang belakang ke arah samping (lateral). Kifosis adalah tulang belakang melengkung ke belakang (bungkuk), sedangkan lordosis adalah melengkung ke depan di daerah pinggang.",
+    "valid": true
+  },
+  {
+    "nomor": 24,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup II",
+    "paket": "Bab II: Struktur & Fungsi Tubuh II - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Pusat pengendali laju pernapasan pada manusia terletak di medula oblongata batang otak. Faktor kimiawi utama di dalam darah yang paling sensitif merangsang pusat napas untuk mempercepat tarikan napas adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch2_pernapasan_ekskresi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Penurunan kadar glukosa darah"
+      },
+      {
+        "label": "B",
+        "teks": "Kenaikan kadar nitrogen bebas"
+      },
+      {
+        "label": "C",
+        "teks": "Kenaikan kadar karbon dioksida (CO2) dan ion hidrogen (H+) yang menurunkan pH cairan darah/serebrospinal"
+      },
+      {
+        "label": "D",
+        "teks": "Penurunan volume keringat"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Kemosereptor sentral di medula oblongata sangat sensitif terhadap konsentrasi H+ akibat kenaikan PCO2 darah. Kenaikan CO2 menurunkan pH, yang secara cepat memicu sinyal impuls saraf untuk mempercepat frekuensi dan kedalaman respirasi.",
+    "valid": true
+  },
+  {
+    "nomor": 25,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup II",
+    "paket": "Bab II: Struktur & Fungsi Tubuh II - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Urutan saluran kemih tempat mengalirnya urine sesungguhnya sejak keluar dari ginjal hingga dikeluarkan dari tubuh manusia adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch2_nefron_ginjal.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Uretra -> Vesika urinaria -> Ureter"
+      },
+      {
+        "label": "B",
+        "teks": "Kandung kemih -> Ureter -> Uretra"
+      },
+      {
+        "label": "C",
+        "teks": "Ureter -> Uretra -> Kandung kemih"
+      },
+      {
+        "label": "D",
+        "teks": "Ureter -> Kandung kemih (Vesika urinaria) -> Uretra"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Dari pelvis renalis ginjal, urine mengalir melalui sepasang saluran ureter menuju kantung penampung urine (kandung kemih/vesika urinaria). Ketika sfingter terbuka saat berkemih, urine dikeluarkan melalui uretra ke luar tubuh.",
+    "valid": true
+  },
+  {
+    "nomor": 26,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup II",
+    "paket": "Bab II: Struktur & Fungsi Tubuh II - Bagian B: Contoh Soal Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Cabang batang tenggorokan yang menghubungkan trakea dengan paru-paru kanan dan paru-paru kiri disebut ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch2_pernapasan_ekskresi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Bronkus"
+      },
+      {
+        "label": "B",
+        "teks": "Bronkiolus"
+      },
+      {
+        "label": "C",
+        "teks": "Alveolus"
+      },
+      {
+        "label": "D",
+        "teks": "Laring"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Trakea bercabang dua menjadi bronkus primer kanan dan bronkus primer kiri yang masing-masing masuk ke dalam pulmo (paru-paru).",
+    "valid": true
+  },
+  {
+    "nomor": 27,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup II",
+    "paket": "Bab II: Struktur & Fungsi Tubuh II - Bagian B: Contoh Soal Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Kapasitas vital paru-paru adalah jumlah volume udara dari ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch2_spirogram_paru.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Udara tidal saja"
+      },
+      {
+        "label": "B",
+        "teks": "Udara residu ditambah udara komplementer"
+      },
+      {
+        "label": "C",
+        "teks": "Udara tidal + udara komplementer (cadangan inspirasi) + udara suplementer (cadangan ekspirasi)"
+      },
+      {
+        "label": "D",
+        "teks": "Total kapasitas paru-paru dikurangi udara tidal"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Kapasitas Vital Paru-paru (KV) = Volume Tidal ($V_T$) + Volume Cadangan Inspirasi ($V_{CI}$) + Volume Cadangan Ekspirasi ($V_{CE}$). Pada orang dewasa normal nilainya sekitar 3.500–4.000 mL.",
+    "valid": true
+  },
+  {
+    "nomor": 28,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup II",
+    "paket": "Bab II: Struktur & Fungsi Tubuh II - Bagian B: Contoh Soal Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Volume udara yang tetap tertinggal di dalam paru-paru dan tidak dapat dihembuskan keluar meskipun kita telah melakukan ekspirasi sekuat-kuatnya disebut ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch2_spirogram_paru.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Udara tidal"
+      },
+      {
+        "label": "B",
+        "teks": "Udara residu"
+      },
+      {
+        "label": "C",
+        "teks": "Kapasitas vital"
+      },
+      {
+        "label": "D",
+        "teks": "Udara cadangan inspirasi"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Udara residu (volume sisa) adalah volume udara sekitar 1.000–1.200 mL yang selalu ada di dalam alveolus agar paru-paru tidak mengempis total (kolaps).",
+    "valid": true
+  },
+  {
+    "nomor": 29,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup II",
+    "paket": "Bab II: Struktur & Fungsi Tubuh II - Bagian B: Contoh Soal Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Bagian ginjal yang merupakan lapisan terluar tempat jutaan badan Malpighi (glomerulus dan kapsula Bowman) berada adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch2_nefron_ginjal.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Korteks renalis"
+      },
+      {
+        "label": "B",
+        "teks": "Medula renalis"
+      },
+      {
+        "label": "C",
+        "teks": "Pelvis renalis"
+      },
+      {
+        "label": "D",
+        "teks": "Ureter"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Struktur ginjal dari luar ke dalam: Korteks (kulit ginjal tempat glomerulus dan tubulus proksimal/distal), Medula (sumsum ginjal tempat lengkung Henle), dan Pelvis (rongga ginjal penampung urine).",
+    "valid": true
+  },
+  {
+    "nomor": 30,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup II",
+    "paket": "Bab II: Struktur & Fungsi Tubuh II - Bagian B: Contoh Soal Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Penambahan zat-zat sisa metabolisme yang sudah tidak diperlukan oleh tubuh (seperti asam urat, obat-obatan, kelebihan ion H+) ke dalam urine sekunder di tubulus kontortus distal disebut proses ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch2_nefron_ginjal.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Filtrasi"
+      },
+      {
+        "label": "B",
+        "teks": "Reabsorpsi"
+      },
+      {
+        "label": "C",
+        "teks": "Augmentasi"
+      },
+      {
+        "label": "D",
+        "teks": "Defekasi"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Augmentasi adalah tahap ketiga pembentukan urine di tubulus kontortus distal dan tubulus kolektivus yang menghasilkan urine sejati (sesungguhnya).",
+    "valid": true
+  },
+  {
+    "nomor": 31,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup II",
+    "paket": "Bab II: Struktur & Fungsi Tubuh II - Bagian B: Contoh Soal Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Penyakit radang ginjal yang disebabkan oleh infeksi bakteri Streptococcus pada nefron sehingga protein dan darah bocor ke urine disebut ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch2_nefron_ginjal.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Nefritis"
+      },
+      {
+        "label": "B",
+        "teks": "Albuminuria"
+      },
+      {
+        "label": "C",
+        "teks": "Batu ginjal"
+      },
+      {
+        "label": "D",
+        "teks": "Diabetes insipidus"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Nefritis (glomerulonefritis) adalah peradangan pada nefron ginjal akibat kompleks imun pasca-infeksi Streptococcus yang merusak unit penyaring glomerulus.",
+    "valid": true
+  },
+  {
+    "nomor": 32,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup II",
+    "paket": "Bab II: Struktur & Fungsi Tubuh II - Bagian B: Contoh Soal Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Hubungan antar-tulang tengkorak kepala manusia yang dihubungkan oleh jaringan ikat fibrosa dan tidak memungkinkan adanya gerakan sama sekali disebut sendi ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch2_pernapasan_ekskresi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Diartrosis (sendi gerak)"
+      },
+      {
+        "label": "B",
+        "teks": "Amfiartrosis (sendi kaku)"
+      },
+      {
+        "label": "C",
+        "teks": "Sinartrosis (sendi mati / sutura)"
+      },
+      {
+        "label": "D",
+        "teks": "Sendi engsel"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Sinartrosis adalah persendian yang tidak memungkinkan pergerakan sama sekali. Contohnya adalah sutura pada tulang-tulang tengkorak kepala.",
+    "valid": true
+  },
+  {
+    "nomor": 33,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup II",
+    "paket": "Bab II: Struktur & Fungsi Tubuh II - Bagian B: Contoh Soal Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Persendian pada lutut dan siku yang hanya memungkinkan gerakan ke satu arah saja adalah sendi ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch2_pernapasan_ekskresi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Sendi peluru"
+      },
+      {
+        "label": "B",
+        "teks": "Sendi pelana"
+      },
+      {
+        "label": "C",
+        "teks": "Sendi engsel"
+      },
+      {
+        "label": "D",
+        "teks": "Sendi putar"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Sendi engsel bekerja seperti engsel pintu yang membatasi gerakan fleksi-ekstensi dalam satu bidang datar saja (uniaksial).",
+    "valid": true
+  },
+  {
+    "nomor": 34,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup II",
+    "paket": "Bab II: Struktur & Fungsi Tubuh II - Bagian B: Contoh Soal Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Penurunan kepadatan massa tulang akibat hilangnya kalsium pada orang lanjut usia sehingga tulang menjadi keropos dan mudah patah disebut ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch2_pernapasan_ekskresi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Rakitis"
+      },
+      {
+        "label": "B",
+        "teks": "Osteoporosis"
+      },
+      {
+        "label": "C",
+        "teks": "Artritis"
+      },
+      {
+        "label": "D",
+        "teks": "Polio"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Osteoporosis adalah kelainan sistemik rangka yang ditandai dengan penurunan densitas massa tulang dan kemunduran mikroarsitektur jaringan tulang, sering terkait penurunan hormon estrogen pada wanita pascamonopause.",
+    "valid": true
+  },
+  {
+    "nomor": 35,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup II",
+    "paket": "Bab II: Struktur & Fungsi Tubuh II - Bagian B: Contoh Soal Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Jaringan ikat khusus yang menghubungkan ujung otot rangka (daging) dengan tulang keras disebut ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch2_pernapasan_ekskresi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Ligamen"
+      },
+      {
+        "label": "B",
+        "teks": "Tendon"
+      },
+      {
+        "label": "C",
+        "teks": "Kartilago"
+      },
+      {
+        "label": "D",
+        "teks": "Fasia"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Tendon adalah berkas serat kolagen kuat yang mengikat otot ke tulang. Ligamen menghubungkan tulang dengan tulang pada persendian.",
+    "valid": true
+  },
+  {
+    "nomor": 36,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup II",
+    "paket": "Bab II: Struktur & Fungsi Tubuh II - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Otot antartulang rusuk berkontraksi, tulang rusuk terangkat, volume rongga dada membesar, tekanan paru-paru mengecil sehingga udara luar masuk. Peristiwa ini disebut ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch2_pernapasan_ekskresi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Inspirasi pernapasan dada"
+      },
+      {
+        "label": "B",
+        "teks": "Ekspirasi pernapasan dada"
+      },
+      {
+        "label": "C",
+        "teks": "Inspirasi pernapasan perut"
+      },
+      {
+        "label": "D",
+        "teks": "Ekspirasi pernapasan perut"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Kontraksi muskulus interkostalis eksternus mengangkat sangkar iga, memperluas dimensi rongga dada, memicu masuknya udara pada inspirasi dada.",
+    "valid": true
+  },
+  {
+    "nomor": 37,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup II",
+    "paket": "Bab II: Struktur & Fungsi Tubuh II - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Otot diafragma berkontraksi sehingga posisinya mendatar, rongga dada membesar, dan udara masuk ke paru-paru merupakan mekanisme ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch2_pernapasan_ekskresi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Inspirasi pernapasan perut"
+      },
+      {
+        "label": "B",
+        "teks": "Ekspirasi pernapasan perut"
+      },
+      {
+        "label": "C",
+        "teks": "Inspirasi pernapasan dada"
+      },
+      {
+        "label": "D",
+        "teks": "Ekspirasi pernapasan dada"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Kontraksi diafragma menjadikannya datar dan memperluas dimensi vertikal rongga toraks, memicu inspirasi pernapasan perut.",
+    "valid": true
+  },
+  {
+    "nomor": 38,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup II",
+    "paket": "Bab II: Struktur & Fungsi Tubuh II - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Pada waktu bernapas biasa, volume udara yang masuk atau keluar paru-paru orang dewasa adalah sekitar ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch2_pernapasan_ekskresi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "500 mL"
+      },
+      {
+        "label": "B",
+        "teks": "1.500 mL"
+      },
+      {
+        "label": "C",
+        "teks": "3.500 mL"
+      },
+      {
+        "label": "D",
+        "teks": "4.500 mL"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Volume tidal (udara pernapasan tenang biasa) pada orang dewasa sehat rata-rata adalah 500 mL.",
+    "valid": true
+  },
+  {
+    "nomor": 39,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup II",
+    "paket": "Bab II: Struktur & Fungsi Tubuh II - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Penyakit batuk menular kronis yang disebabkan oleh infeksi kuman Mycobacterium tuberculosis pada alveolus paru-paru adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch2_pernapasan_ekskresi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "TBC (Tuberkulosis)"
+      },
+      {
+        "label": "B",
+        "teks": "Asma"
+      },
+      {
+        "label": "C",
+        "teks": "Bronkitis"
+      },
+      {
+        "label": "D",
+        "teks": "Pneumonia"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "TBC disebabkan oleh bakteri tahan asam Mycobacterium tuberculosis yang membentuk bintil-bintil tuberkel pada jaringan alveolus.",
+    "valid": true
+  },
+  {
+    "nomor": 40,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup II",
+    "paket": "Bab II: Struktur & Fungsi Tubuh II - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Peradangan pada selaput pembungkus paru-paru (pleura) yang menimbulkan nyeri dada saat bernapas disebut ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch2_pernapasan_ekskresi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Pleuritis"
+      },
+      {
+        "label": "B",
+        "teks": "Sinusitis"
+      },
+      {
+        "label": "C",
+        "teks": "Laringitis"
+      },
+      {
+        "label": "D",
+        "teks": "Rinitis"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Pleuritis adalah radang pada selaput pleura yang menyebabkan gesekan antarlapisan pleura terasa sangat menyakitkan.",
+    "valid": true
+  },
+  {
+    "nomor": 41,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup II",
+    "paket": "Bab II: Struktur & Fungsi Tubuh II - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Penyempitan saluran napas akibat alergi debu, hawa dingin, atau stres emosional yang menyebabkan napas berbunyi mengi disebut ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch2_pernapasan_ekskresi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Asma"
+      },
+      {
+        "label": "B",
+        "teks": "TBC"
+      },
+      {
+        "label": "C",
+        "teks": "Polip"
+      },
+      {
+        "label": "D",
+        "teks": "Asfiksi"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Asma adalah hipersensitivitas bronkiolus terhadap alergen yang memicu spasme otot polos bronkus dan hipersekresi mukus kental.",
+    "valid": true
+  },
+  {
+    "nomor": 42,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup II",
+    "paket": "Bab II: Struktur & Fungsi Tubuh II - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Kelainan saluran pernapasan di mana paru-paru terendam cairan atau lendir radang akibat infeksi bakteri Streptococcus pneumoniae disebut ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch2_pernapasan_ekskresi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Pneumonia (paru-paru basah)"
+      },
+      {
+        "label": "B",
+        "teks": "Emfisema"
+      },
+      {
+        "label": "C",
+        "teks": "Difteri"
+      },
+      {
+        "label": "D",
+        "teks": "Kanker paru"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Pneumonia menyebabkan eksudat radang memenuhi rongga alveolus sehingga pertukaran gas terhambat.",
+    "valid": true
+  },
+  {
+    "nomor": 43,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup II",
+    "paket": "Bab II: Struktur & Fungsi Tubuh II - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Jumlah unit fungsional penyaring darah terkecil di dalam kedua ginjal manusia (nefron) mencapai sekitar ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch2_pernapasan_ekskresi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "10.000 nefron"
+      },
+      {
+        "label": "B",
+        "teks": "100.000 nefron"
+      },
+      {
+        "label": "C",
+        "teks": "1.000.000 nefron"
+      },
+      {
+        "label": "D",
+        "teks": "10.000.000 nefron"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Tiap ginjal manusia normal memiliki sekitar 1–1,25 juta nefron, sehingga total kedua ginjal memiliki lebih dari 2 juta unit nefron.",
+    "valid": true
+  },
+  {
+    "nomor": 44,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup II",
+    "paket": "Bab II: Struktur & Fungsi Tubuh II - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Lengkung Henle (ansae Henle) pada nefron ginjal berfungsi terutama untuk ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch2_pernapasan_ekskresi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Membuat glukosa baru"
+      },
+      {
+        "label": "B",
+        "teks": "Mengatur kepekatan urine dan reabsorpsi air serta ion Na+ dan Cl-"
+      },
+      {
+        "label": "C",
+        "teks": "Menyaring protein darah"
+      },
+      {
+        "label": "D",
+        "teks": "Mengeluarkan enzim amilase"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Lengkung Henle descending dan ascending menciptakan gradien konsentrasi osmotik di medula ginjal untuk mengkonsentrasikan urine.",
+    "valid": true
+  },
+  {
+    "nomor": 45,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup II",
+    "paket": "Bab II: Struktur & Fungsi Tubuh II - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Zat sisa metabolisme protein yang bersifat racun dan paling banyak terkandung di dalam urine orang sehat adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch2_pernapasan_ekskresi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Urea"
+      },
+      {
+        "label": "B",
+        "teks": "Glukosa"
+      },
+      {
+        "label": "C",
+        "teks": "Albumin"
+      },
+      {
+        "label": "D",
+        "teks": "Empedu"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Urea merupakan produk akhir katabolisme asam amino yang disintesis di hati dan diekskresikan melalui urine sekitar 25–30 gram per hari.",
+    "valid": true
+  },
+  {
+    "nomor": 46,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup II",
+    "paket": "Bab II: Struktur & Fungsi Tubuh II - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Pigmen pada lapisan epidermis kulit yang memberikan warna kulit dan melindungi jaringan di bawahnya dari bahaya sinar ultraviolet (UV) adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch2_pernapasan_ekskresi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Melanin"
+      },
+      {
+        "label": "B",
+        "teks": "Karoten"
+      },
+      {
+        "label": "C",
+        "teks": "Hemoglobin"
+      },
+      {
+        "label": "D",
+        "teks": "Keratin"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Melanin diproduksi oleh melanosit di stratum basale epidermis untuk menyerap radiasi foton UV berbahaya.",
+    "valid": true
+  },
+  {
+    "nomor": 47,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup II",
+    "paket": "Bab II: Struktur & Fungsi Tubuh II - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Lapisan terluar kulit yang tersusun atas sel-sel mati yang selalu mengelupas dan digantikan oleh sel baru disebut stratum ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch2_pernapasan_ekskresi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Korneum (lapisan tanduk)"
+      },
+      {
+        "label": "B",
+        "teks": "Lusidum"
+      },
+      {
+        "label": "C",
+        "teks": "Granulosum"
+      },
+      {
+        "label": "D",
+        "teks": "Spinosum"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Stratum korneum tersusun dari lapisan sel keratin gepeng mati tanpa inti yang tahan air dan melindungi tubuh dari patogen mekanik.",
+    "valid": true
+  },
+  {
+    "nomor": 48,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup II",
+    "paket": "Bab II: Struktur & Fungsi Tubuh II - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Ujung-ujung saraf sensorik penerima rangsang panas, dingin, rabaan, dan nyeri terutama terkonsentrasi di lapisan ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch2_pernapasan_ekskresi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Dermis (kulit jangat)"
+      },
+      {
+        "label": "B",
+        "teks": "Stratum korneum"
+      },
+      {
+        "label": "C",
+        "teks": "Subkutan"
+      },
+      {
+        "label": "D",
+        "teks": "Korteks"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Reseptor indra raba (Meissner, Pacini, Ruffini, Krause, dan ujung saraf bebas nyeri) terletak di lapisan dermis.",
+    "valid": true
+  },
+  {
+    "nomor": 49,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup II",
+    "paket": "Bab II: Struktur & Fungsi Tubuh II - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Kandungan utama cairan keringat yang dikeluarkan oleh glandula sudorifera adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch2_pernapasan_ekskresi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Air, garam NaCl, dan sedikit urea"
+      },
+      {
+        "label": "B",
+        "teks": "Asam klorida dan empedu"
+      },
+      {
+        "label": "C",
+        "teks": "Lemak dan vitamin"
+      },
+      {
+        "label": "D",
+        "teks": "Darah dan protein"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Keringat terdiri dari 99% air dan 1% zat terlarut berupa natrium klorida (garam), kalium, dan sisa metabolit urea.",
+    "valid": true
+  },
+  {
+    "nomor": 50,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup II",
+    "paket": "Bab II: Struktur & Fungsi Tubuh II - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Fungsi hati dalam merombak eritrosit menghasilkan zat warna biliverdin yang berwarna kehijauan dan zat warna bilirubin yang berwarna ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch2_pernapasan_ekskresi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Kuning kecokelatan"
+      },
+      {
+        "label": "B",
+        "teks": "Merah darah"
+      },
+      {
+        "label": "C",
+        "teks": "Ungu pekat"
+      },
+      {
+        "label": "D",
+        "teks": "Biru muda"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Bilirubin adalah pigmen kuning-oranye yang berasal dari pemecahan cincin protoporfirin pada gugus heme hemoglobin.",
+    "valid": true
+  },
+  {
+    "nomor": 51,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup II",
+    "paket": "Bab II: Struktur & Fungsi Tubuh II - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Kuningnya kulit dan bola mata (ikterus/jaundice) pada penderita radang hati (hepatitis) terjadi akibat ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch2_pernapasan_ekskresi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Tersumbatnya saluran empedu sehingga pigmen bilirubin menumpuk di dalam darah"
+      },
+      {
+        "label": "B",
+        "teks": "Kekurangan vitamin A"
+      },
+      {
+        "label": "C",
+        "teks": "Produksi sel darah putih berlebih"
+      },
+      {
+        "label": "D",
+        "teks": "Kelebihan gula darah"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Hepatitis merusak hepatosit dan menyumbat kanalikuli biliaris, menyebabkan hiperbilirubinemia yang terdeposisi di sklera dan kulit.",
+    "valid": true
+  },
+  {
+    "nomor": 52,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup II",
+    "paket": "Bab II: Struktur & Fungsi Tubuh II - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Proses cuci darah buatan (hemodialisis) bagi penderita gagal ginjal kronis bekerja berdasarkan prinsip fisika ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch2_pernapasan_ekskresi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Difusi dan osmosis melintasi membran semipermeabel dialiser"
+      },
+      {
+        "label": "B",
+        "teks": "Penguapan air bertekanan tinggi"
+      },
+      {
+        "label": "C",
+        "teks": "Pembekuan darah menggunakan nitrogen cair"
+      },
+      {
+        "label": "D",
+        "teks": "Pemanasan listrik"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Hemodialisis memanfaatkan gradien difusi zat sisa urea dan racun dari darah pasien melintasi membran membran dialisis ke cairan dialisat.",
+    "valid": true
+  },
+  {
+    "nomor": 53,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup II",
+    "paket": "Bab II: Struktur & Fungsi Tubuh II - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Tulang keras tersusun atas sel-sel tulang yang disebut ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch2_pernapasan_ekskresi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Osteosit"
+      },
+      {
+        "label": "B",
+        "teks": "Kondrosit"
+      },
+      {
+        "label": "C",
+        "teks": "Eritrosit"
+      },
+      {
+        "label": "D",
+        "teks": "Miosit"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Osteosit adalah sel tulang dewasa yang terkurung dalam lakuna matriks kalsium fosfat. Kondrosit adalah sel tulang rawan.",
+    "valid": true
+  },
+  {
+    "nomor": 54,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup II",
+    "paket": "Bab II: Struktur & Fungsi Tubuh II - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Bagian tengah tulang pipa yang mengandung sumsum tulang berlemak dan rongga medula disebut ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch2_pernapasan_ekskresi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Diafisis"
+      },
+      {
+        "label": "B",
+        "teks": "Epifisis"
+      },
+      {
+        "label": "C",
+        "teks": "Metafisis"
+      },
+      {
+        "label": "D",
+        "teks": "Cakra epifisis"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Diafisis adalah batang tubular tulang pipa. Epifisis adalah kedua ujung membesar dari tulang pipa.",
+    "valid": true
+  },
+  {
+    "nomor": 55,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup II",
+    "paket": "Bab II: Struktur & Fungsi Tubuh II - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Hubungan antara tulang leher pertama (atlas) dengan tulang tengkorak kepala membentuk sendi ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch2_pernapasan_ekskresi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Sendi putar"
+      },
+      {
+        "label": "B",
+        "teks": "Sendi engsel"
+      },
+      {
+        "label": "C",
+        "teks": "Sendi peluru"
+      },
+      {
+        "label": "D",
+        "teks": "Sendi luncur"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Sendi putar antara tulang atlas dan aksis memungkinkan gerakan rotasi menggelengkan kepala ke kiri dan ke kanan.",
+    "valid": true
+  },
+  {
+    "nomor": 56,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup II",
+    "paket": "Bab II: Struktur & Fungsi Tubuh II - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Persendian antara tulang ibu jari tangan dengan tulang telapak tangan yang memungkinkan gerakan dua arah seperti orang menunggang kuda adalah sendi ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch2_pernapasan_ekskresi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Sendi pelana"
+      },
+      {
+        "label": "B",
+        "teks": "Sendi putar"
+      },
+      {
+        "label": "C",
+        "teks": "Sendi engsel"
+      },
+      {
+        "label": "D",
+        "teks": "Sendi mati"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Sendi pelana (saddle joint) memiliki permukaan bikonkaf-bikonveks yang memungkinkan gerakan biaksial saling berhadapan.",
+    "valid": true
+  },
+  {
+    "nomor": 57,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup II",
+    "paket": "Bab II: Struktur & Fungsi Tubuh II - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Otot yang bekerja pada dinding organ-organ dalam seperti lambung, usus, dan pembuluh darah adalah otot ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch2_pernapasan_ekskresi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Otot polos"
+      },
+      {
+        "label": "B",
+        "teks": "Otot lurik"
+      },
+      {
+        "label": "C",
+        "teks": "Otot jantung"
+      },
+      {
+        "label": "D",
+        "teks": "Otot serat melintang"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Otot polos berbentuk gelendong berinti tunggal di tengah, bekerja involunter secara lambat dan tidak mudah lelah pada visera.",
+    "valid": true
+  },
+  {
+    "nomor": 58,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup II",
+    "paket": "Bab II: Struktur & Fungsi Tubuh II - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Kelelahan dan rasa pegal pada otot setelah melakukan aktivitas lari cepat tanpa pemanasan disebabkan oleh penumpukan senyawa ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch2_pernapasan_ekskresi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Asam laktat"
+      },
+      {
+        "label": "B",
+        "teks": "Asam sitrat"
+      },
+      {
+        "label": "C",
+        "teks": "Asam asetat"
+      },
+      {
+        "label": "D",
+        "teks": "Glukosa"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Respirasi anaerob seluler pada kondisi defisit oksigen menghasilkan asam laktat yang mengendap di miofibril dan menimbulkan asidosis otot.",
+    "valid": true
+  },
+  {
+    "nomor": 59,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup II",
+    "paket": "Bab II: Struktur & Fungsi Tubuh II - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Kelainan tulang belakang yang melengkung berlebihan ke arah depan di daerah pinggang sehingga pinggul tampak menonjol ke belakang disebut ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch2_pernapasan_ekskresi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Lordosis"
+      },
+      {
+        "label": "B",
+        "teks": "Kifosis"
+      },
+      {
+        "label": "C",
+        "teks": "Skoliosis"
+      },
+      {
+        "label": "D",
+        "teks": "Subluksasi"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Lordosis adalah kurvatura anterior berlebihan pada kolumna vertebralis lumbalis.",
+    "valid": true
+  },
+  {
+    "nomor": 60,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup II",
+    "paket": "Bab II: Struktur & Fungsi Tubuh II - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Penyakit kelainan tulang pada anak-anak akibat kekurangan vitamin D dan kalsium yang menyebabkan tulang kaki melengkung membentuk huruf O atau X disebut ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch2_pernapasan_ekskresi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Rakitis"
+      },
+      {
+        "label": "B",
+        "teks": "Osteoporosis"
+      },
+      {
+        "label": "C",
+        "teks": "Nekrosis"
+      },
+      {
+        "label": "D",
+        "teks": "Layuh semu"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Rakitis (rickets) menyebabkan mineralisasi tulang terhambat sehingga tulang lunak dan membengkok saat menahan bobot tubuh.",
+    "valid": true
+  },
+  {
+    "nomor": 61,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup II",
+    "paket": "Bab II: Struktur & Fungsi Tubuh II - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Peradangan pada sendi yang menimbulkan rasa linu, kaku, dan pembengkakan disebut ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch2_pernapasan_ekskresi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Artritis"
+      },
+      {
+        "label": "B",
+        "teks": "Fraktura"
+      },
+      {
+        "label": "C",
+        "teks": "Dislokasi"
+      },
+      {
+        "label": "D",
+        "teks": "Ankilosis"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Artritis (seperti gout artritis atau osteoartritis) adalah inflamasi sendi yang merusak kartilago artikularis sendi.",
+    "valid": true
+  },
+  {
+    "nomor": 62,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup II",
+    "paket": "Bab II: Struktur & Fungsi Tubuh II - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Pergeseran posisi sendi di mana bonggol sendi terlepas dari mangkuk sendinya disebut ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch2_pernapasan_ekskresi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Dislokasi"
+      },
+      {
+        "label": "B",
+        "teks": "Fraktura"
+      },
+      {
+        "label": "C",
+        "teks": "Fisura"
+      },
+      {
+        "label": "D",
+        "teks": "Sprain"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Dislokasi adalah keluarnya ujung tulang persendian dari kedudukan anatomis aslinya pada ligamen kapsul sendi.",
+    "valid": true
+  },
+  {
+    "nomor": 63,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup II",
+    "paket": "Bab II: Struktur & Fungsi Tubuh II - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Otot yang bekerja searah secara bersama-sama seperti otot pronator teres dan pronator kuadratus pada lengan bawah disebut otot ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch2_pernapasan_ekskresi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Sinergis"
+      },
+      {
+        "label": "B",
+        "teks": "Antagonis"
+      },
+      {
+        "label": "C",
+        "teks": "Ekstensor"
+      },
+      {
+        "label": "D",
+        "teks": "Abduktor"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Otot sinergis adalah dua otot atau lebih yang berkontraksi bersama untuk menimbulkan satu gerakan yang sama (contoh gerak pronasi menelungkupkan tangan).",
+    "valid": true
+  },
+  {
+    "nomor": 64,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup II",
+    "paket": "Bab II: Struktur & Fungsi Tubuh II - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Penyakit layuh otot yang disebabkan oleh infeksi virus polio yang merusak sel saraf motorik kornu anterior medula spinalis adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch2_pernapasan_ekskresi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Polio (Poliomielitis)"
+      },
+      {
+        "label": "B",
+        "teks": "Tetanus"
+      },
+      {
+        "label": "C",
+        "teks": "Atrofi"
+      },
+      {
+        "label": "D",
+        "teks": "Distrofi"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Polio disebabkan oleh Poliovirus yang melumpuhkan neuron motorik sehingga serabut otot yang dipersarafinya mengalami atrofi parah.",
+    "valid": true
+  },
+  {
+    "nomor": 65,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup II",
+    "paket": "Bab II: Struktur & Fungsi Tubuh II - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "Penyakit kejang otot terus-menerus yang disebabkan oleh racun tetanospasmin dari bakteri Clostridium tetani adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch2_pernapasan_ekskresi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Tetanus"
+      },
+      {
+        "label": "B",
+        "teks": "Polio"
+      },
+      {
+        "label": "C",
+        "teks": "Kram"
+      },
+      {
+        "label": "D",
+        "teks": "Miopati"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Toksin Clostridium tetani memblokir pelepasan neurotransmiter inhibitorik di sinaps saraf spinal sehingga memicu spasme tonik ekstrem (tetanus).",
+    "valid": true
+  },
+  {
+    "nomor": 66,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup II",
+    "paket": "Bab II: Struktur & Fungsi Tubuh II - Bagian D: Pengayaan AKM Literasi Sains & TKA",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "[AKM Literasi Sains — Kapasitas Spirogram Paru-Paru] Seorang atlet renang menjalani tes spirometri di laboratorium. Diperoleh data: Volume Tidal = 500 mL, Volume Cadangan Inspirasi = 2.000 mL, Volume Cadangan Ekspirasi = 1.500 mL, dan Volume Residu = 1.000 mL. Berapakah Kapasitas Vital dan Kapasitas Total Paru-paru atlet tersebut?",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch2_spirogram_paru.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "2.500 mL dan 3.500 mL"
+      },
+      {
+        "label": "B",
+        "teks": "3.500 mL dan 4.500 mL"
+      },
+      {
+        "label": "C",
+        "teks": "4.000 mL dan 5.000 mL"
+      },
+      {
+        "label": "D",
+        "teks": "4.500 mL dan 6.000 mL"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Kapasitas Vital (KV) = $V_T + V_{CI} + V_{CE} = 500 + 2.000 + 1.500 = 4.000$ mL. Kapasitas Total Paru-Paru (KT) = $KV + V_R = 4.000 + 1.000 = 5.000$ mL.",
+    "valid": true
+  },
+  {
+    "nomor": 67,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup II",
+    "paket": "Bab II: Struktur & Fungsi Tubuh II - Bagian D: Pengayaan AKM Literasi Sains & TKA",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "[AKM Analisis Data Klinis — Kerusakan Nefron Ginjal] Hasil uji sampel urine seorang pasien menunjukkan kadar protein albumin 300 mg/dL (sangat tinggi) namun kadar glukosa 0 mg/dL (negatif). Lokasi nefron yang paling dicurigai mengalami kerusakan membran selektif adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch2_nefron_ginjal.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Glomerulus ginjal"
+      },
+      {
+        "label": "B",
+        "teks": "Tubulus kontortus distal"
+      },
+      {
+        "label": "C",
+        "teks": "Tubulus kolektivus"
+      },
+      {
+        "label": "D",
+        "teks": "Saluran uretra luar"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Pada ginjal sehat, pori-pori podosit membran filtrasi glomerulus menahan molekul protein makro seperti albumin agar tidak lolos ke urine primer. Kebocoran albumin mengindikasikan kerusakan pada membran glomerulus (sindrom nefrotik/glomerulonefritis).",
+    "valid": true
+  },
+  {
+    "nomor": 68,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup II",
+    "paket": "Bab II: Struktur & Fungsi Tubuh II - Bagian D: Pengayaan AKM Literasi Sains & TKA",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "[AKM Evaluasi Fisiologis — Regulasi Osmoregulasi & Hormon ADH] Mengapa mengonsumsi minuman berkafein atau beralkohol dalam jumlah berlebih menyebabkan seseorang mengalami dehidrasi ringan?",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch2_nefron_ginjal.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Kafein dan alkohol menghambat pelepasan hormon ADH dari kelenjar hipofisis posterior sehingga reabsorpsi air di tubulus ginjal menurun dan ekskresi urine meningkat"
+      },
+      {
+        "label": "B",
+        "teks": "Karena alkohol membekukan nefron"
+      },
+      {
+        "label": "C",
+        "teks": "Karena kafein menguapkan air langsung dari kulit"
+      },
+      {
+        "label": "D",
+        "teks": "Karena racun alkohol diserap oleh paru-paru"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Alkohol dan kafein bekerja sebagai diuretik dengan menekan sekresi hormon ADH (Antidiuretic Hormone). Rendahnya ADH menyebabkan tubulus ginjal tidak menyerap air kembali ke darah, sehingga volume urine keluar melimpah dan memicu dehidrasi.",
+    "valid": true
+  },
+  {
+    "nomor": 69,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup II",
+    "paket": "Bab II: Struktur & Fungsi Tubuh II - Bagian D: Pengayaan AKM Literasi Sains & TKA",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "[AKM Pemecahan Masalah Ergonomis — Beban Tulang Belakang] Mengapa saat mengangkat benda berat dari lantai, dokter ortopedi sangat menganjurkan untuk menekuk lutut terlebih dahulu (posisi berjongkok) daripada membungkukkan pinggang secara langsung?",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch2_pernapasan_ekskresi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Agar otot bisep bekerja maksimal"
+      },
+      {
+        "label": "B",
+        "teks": "Membungkukkan pinggang melipatgandakan gaya torsi mekanik pada bantalan diskus tulang belakang lumbalis, sedangkan menekuk lutut mendistribusikan beban ke otot paha yang jauh lebih kuat"
+      },
+      {
+        "label": "C",
+        "teks": "Untuk mencegah keluarnya urine sekunder"
+      },
+      {
+        "label": "D",
+        "teks": "Agar paru-paru tertekan ke atas"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Mengangkat benda dengan pinggang membungkuk menciptakan lengan kuasa pendek dan gaya tumpu ekstrem pada ruas lumbal L4-L5/S1 yang berisiko memicu hernia nukleus pulposus (HNP/saraf kejepit). Menekuk lutut memindahkan titik tumpu beban ke otot quadriceps paha yang berdaya tahan tinggi.",
+    "valid": true
+  },
+  {
+    "nomor": 70,
+    "materi": "Struktur & Fungsi Tubuh Makhluk Hidup II",
+    "paket": "Bab II: Struktur & Fungsi Tubuh II - Bagian D: Pengayaan AKM Literasi Sains & TKA",
+    "kelas": "8",
+    "mapel": "IPA",
+    "teks_soal": "[AKM Evaluasi Kasus — Asfiksia pada Keracunan Gas Sianida] Gas hidrogen sianida (HCN) mematikan sel secara cepat karena memblokir enzim sitokrom c oksidase di dalam rantai transpor elektron mitokondria. Kondisi asfiksia seluler yang terjadi adalah ....",
+    "gambar": [
+      "/soal/ipa/kmerdeka_kls8_ipa_ch2_pernapasan_ekskresi.jpg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Darah kehilangan seluruh molekul hemoglobin"
+      },
+      {
+        "label": "B",
+        "teks": "Meskipun darah mengandung oksigen melimpah, sel-sel tubuh sama sekali tidak mampu memanfaatkan oksigen tersebut untuk menghasilkan energi ATP"
+      },
+      {
+        "label": "C",
+        "teks": "Trakea tersumbat oleh dahak kental"
+      },
+      {
+        "label": "D",
+        "teks": "Ginjal berhenti menghasilkan batu ginjal"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Sianida memicu asfiksia histotoksik: suplai O2 di darah normal, namun sel-sel tubuh lumpuh dan tidak dapat mengonsumsi O2 untuk respirasi aerobik karena enzim pernapasan mitokondria terinaktivasi.",
+    "valid": true
+  }
+]
