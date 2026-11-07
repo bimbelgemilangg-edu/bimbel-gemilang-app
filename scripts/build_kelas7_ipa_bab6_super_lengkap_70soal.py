@@ -40,7 +40,7 @@ contoh_soal_asli = [
         "kunci": "A",
         "pembahasan": "Organisasi kehidupan ekologi tersusun hierarkis: Individu (satu makhluk hidup tunggal) -> Populasi (kumpulan individu sejenis) -> Komunitas (kumpulan berbagai populasi) -> Ekosistem (interaksi komunitas dengan faktor abiotik) -> Bioma (ekosistem luas dengan iklim khas) -> Biosfer (seluruh lapisan bumi tempat hidup).",
         "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian B: Contoh Soal Asli Buku Big Book",
-        "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg"
+        "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi_biodiversitas.jpg"
     },
     {
         "nomor_bab": 27,
@@ -54,7 +54,7 @@ contoh_soal_asli = [
         "kunci": "A",
         "pembahasan": "Faktor abiotik adalah benda tak hidup seperti intensitas sinar matahari, curah hujan/ketersediaan air, suhu lingkungan, kelembapan, dan sifat kimia-fisika tanah (pH, aerasi, hara mineral) yang menjadi pembatas persebaran vegetasi.",
         "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian B: Contoh Soal Asli Buku Big Book",
-        "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg"
+        "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi_biodiversitas.jpg"
     },
     {
         "nomor_bab": 28,
@@ -68,7 +68,7 @@ contoh_soal_asli = [
         "kunci": "B",
         "pembahasan": "Tingkat trofik: Rumput (Produsen) -> Belalang (Konsumen I / Herbivora) -> Katak (Konsumen II / Karnivora) -> Ular (Konsumen III) -> Elang (Konsumen Puncak).",
         "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian B: Contoh Soal Asli Buku Big Book",
-        "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg"
+        "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi_biodiversitas.jpg"
     },
     {
         "nomor_bab": 29,
@@ -82,7 +82,7 @@ contoh_soal_asli = [
         "kunci": "A",
         "pembahasan": "Sesuai hukum termodinamika dan kaidah 10% (Lindeman), sebagian besar energi hilang sebagai panas tubuh (disipasi kalor), feses, dan respirasi saat berpindah antar trofik, sehingga energi pada trofik yang lebih tinggi selalu lebih sedikit.",
         "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian B: Contoh Soal Asli Buku Big Book",
-        "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg"
+        "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi_biodiversitas.jpg"
     },
     {
         "nomor_bab": 30,
@@ -96,7 +96,7 @@ contoh_soal_asli = [
         "kunci": "A",
         "pembahasan": "Rhizobium mengikat gas nitrogen bebas dari udara untuk nutrisi tanaman kacang, dan sebaliknya tanaman kacang menyediakan karbohidrat serta tempat tinggal bagi bakteri (simbiosis mutualisme).",
         "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian B: Contoh Soal Asli Buku Big Book",
-        "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg"
+        "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi_biodiversitas.jpg"
     },
     {
         "nomor_bab": 31,
@@ -110,7 +110,7 @@ contoh_soal_asli = [
         "kunci": "A",
         "pembahasan": "Komensalisme adalah interaksi di mana satu pihak diuntungkan (remora mendapat remah makanan dan aman dari predator) sementara pihak lain tidak dirugikan maupun diuntungkan (hiu netral).",
         "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian B: Contoh Soal Asli Buku Big Book",
-        "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg"
+        "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi_biodiversitas.jpg"
     },
     {
         "nomor_bab": 32,
@@ -124,7 +124,7 @@ contoh_soal_asli = [
         "kunci": "A",
         "pembahasan": "Dekomposer merombak senyawa organik kompleks dari sisa tubuh organisme mati menjadi senyawa anorganik sederhana (seperti nitrat, fosfat, karbon) yang menyuburkan tanah dan didaur ulang oleh produsen.",
         "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian B: Contoh Soal Asli Buku Big Book",
-        "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg"
+        "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi_biodiversitas.jpg"
     },
     {
         "nomor_bab": 33,
@@ -138,7 +138,7 @@ contoh_soal_asli = [
         "kunci": "A",
         "pembahasan": "Garis Wallace membentang antara Kalimantan dan Sulawesi serta melintasi Selat Lombok antara Bali dan Lombok, memisahkan fauna Asiatis (barat) dengan fauna Peralihan (tengah). Garis Weber memisahkan fauna Peralihan dengan fauna Australis (timur).",
         "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian B: Contoh Soal Asli Buku Big Book",
-        "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg"
+        "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi_biodiversitas.jpg"
     },
     {
         "nomor_bab": 34,
@@ -152,7 +152,7 @@ contoh_soal_asli = [
         "kunci": "A",
         "pembahasan": "Zona Peralihan dihuni hewan endemik unik khas Wallacea seperti Anoa (Bubalus sp.), Babi Rusa (Babyrousa babyrussa), Burung Maleo di Sulawesi, dan Komodo (Varanus komodoensis) di NTT.",
         "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian B: Contoh Soal Asli Buku Big Book",
-        "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg"
+        "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi_biodiversitas.jpg"
     },
     {
         "nomor_bab": 35,
@@ -166,7 +166,7 @@ contoh_soal_asli = [
         "kunci": "B",
         "pembahasan": "Pelestarian in-situ dilakukan di habitat asli satwa (Taman Nasional Ujung Kulon, Suaka Margasatwa). Pelestarian ex-situ dilakukan di luar habitat aslinya (Kebun Binatang, Taman Safari, Herbarium, Kebun Raya Bogor).",
         "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian B: Contoh Soal Asli Buku Big Book",
-        "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg"
+        "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi_biodiversitas.jpg"
     }
 ]
 
@@ -189,7 +189,7 @@ latihan_soal_asli = [
         "kunci": "B",
         "pembahasan": "Kumpulan individu dari spesies yang sama yang menempati habitat tertentu dalam waktu bersamaan disebut populasi.",
         "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian C: Latihan Soal Mandiri Asli",
-        "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg"
+        "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi_biodiversitas.jpg"
     },
     {
         "nomor_bab": 37,
@@ -203,7 +203,7 @@ latihan_soal_asli = [
         "kunci": "C",
         "pembahasan": "Kumpulan berbagai populasi makhluk hidup yang hidup bersama dan saling berinteraksi pada suatu daerah tertentu disebut komunitas.",
         "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian C: Latihan Soal Mandiri Asli",
-        "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg"
+        "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi_biodiversitas.jpg"
     },
     {
         "nomor_bab": 38,
@@ -217,7 +217,7 @@ latihan_soal_asli = [
         "kunci": "B",
         "pembahasan": "Organisme autotrof (produsen) seperti tumbuhan berklorofil, alga, dan fitoplankton dapat memproduksi glukosa sendiri melalui proses fotosintesis.",
         "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian C: Latihan Soal Mandiri Asli",
-        "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg"
+        "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi_biodiversitas.jpg"
     },
     {
         "nomor_bab": 39,
@@ -231,7 +231,7 @@ latihan_soal_asli = [
         "kunci": "D",
         "pembahasan": "Fitoplankton adalah mikroorganisme berklorofil yang melayang di lapisan fotik air dan berperan vital sebagai produsen primer pada rantai makanan akuatik.",
         "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian C: Latihan Soal Mandiri Asli",
-        "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg"
+        "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi_biodiversitas.jpg"
     },
     {
         "nomor_bab": 40,
@@ -245,7 +245,7 @@ latihan_soal_asli = [
         "kunci": "C",
         "pembahasan": "Karnivora adalah hewan yang sumber nutrisi utamanya diperoleh dari memakan jaringan hewan lain (contoh: harimau, serigala, elang).",
         "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian C: Latihan Soal Mandiri Asli",
-        "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg"
+        "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi_biodiversitas.jpg"
     },
     {
         "nomor_bab": 41,
@@ -259,7 +259,7 @@ latihan_soal_asli = [
         "kunci": "B",
         "pembahasan": "Detritivora memakan serpihan bangkai atau sisa organik padat (detritus) secara mekanis, sedangkan dekomposer menguraikan bahan organik secara enzimatis kimiawi.",
         "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian C: Latihan Soal Mandiri Asli",
-        "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg"
+        "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi_biodiversitas.jpg"
     },
     {
         "nomor_bab": 42,
@@ -273,7 +273,7 @@ latihan_soal_asli = [
         "kunci": "C",
         "pembahasan": "Jaring-jaring makanan (food web) adalah gabungan kompleks dari berbagai rantai makanan yang saling berhubungan di alam, menjaga kestabilan ekosistem.",
         "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian C: Latihan Soal Mandiri Asli",
-        "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg"
+        "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi_biodiversitas.jpg"
     },
     {
         "nomor_bab": 43,
@@ -287,7 +287,7 @@ latihan_soal_asli = [
         "kunci": "A",
         "pembahasan": "Predasi adalah hubungan antara mangsa (prey) dan pemangsa (predator), seperti singa yang berburu dan memakan zebra.",
         "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian C: Latihan Soal Mandiri Asli",
-        "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg"
+        "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi_biodiversitas.jpg"
     },
     {
         "nomor_bab": 44,
@@ -301,7 +301,7 @@ latihan_soal_asli = [
         "kunci": "D",
         "pembahasan": "Kompetisi intraspesifik terjadi antarsesama individu dalam satu populasi/spesies yang sama (misalnya sesama ayam jantan bersaing wilayah teritorial).",
         "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian C: Latihan Soal Mandiri Asli",
-        "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg"
+        "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi_biodiversitas.jpg"
     },
     {
         "nomor_bab": 45,
@@ -315,7 +315,7 @@ latihan_soal_asli = [
         "kunci": "A",
         "pembahasan": "Parasitisme adalah interaksi di mana parasit mengambil nutrisi dan merugikan inangnya. Benalu menembus berkas pengangkut inang untuk mengisap air dan hara mineral.",
         "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian C: Latihan Soal Mandiri Asli",
-        "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg"
+        "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi_biodiversitas.jpg"
     },
     {
         "nomor_bab": 46,
@@ -329,7 +329,7 @@ latihan_soal_asli = [
         "kunci": "B",
         "pembahasan": "Piramida biomassa menyajikan estimasi berat kering total seluruh materi organik organisme per satuan luas pada masing-masing trofik ekosistem.",
         "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian C: Latihan Soal Mandiri Asli",
-        "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg"
+        "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi_biodiversitas.jpg"
     },
     {
         "nomor_bab": 47,
@@ -343,7 +343,7 @@ latihan_soal_asli = [
         "kunci": "A",
         "pembahasan": "Fitoplankton memiliki laju turnover reproduksi sangat pesat, sehingga biomassa yang berdiri (standing crop) saat diukur lebih kecil dibanding konsumen zooplankton di atasnya.",
         "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian C: Latihan Soal Mandiri Asli",
-        "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg"
+        "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi_biodiversitas.jpg"
     },
     {
         "nomor_bab": 48,
@@ -357,7 +357,7 @@ latihan_soal_asli = [
         "kunci": "A",
         "pembahasan": "Bencana alam skala besar atau intervensi antropogenik seperti pemusnahan karnivora puncak memicu ledakan populasi herbivora (trophic cascade) yang merusak ekosistem.",
         "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian C: Latihan Soal Mandiri Asli",
-        "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg"
+        "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi_biodiversitas.jpg"
     },
     {
         "nomor_bab": 49,
@@ -371,7 +371,7 @@ latihan_soal_asli = [
         "kunci": "A",
         "pembahasan": "Eutrofikasi adalah pengayaan nutrien berlebih (N dan P) pada badan air yang memicu pertumbuhan massal alga, menutup sinar matahari, dan menurunkan kadar oksigen terlarut saat alga mati.",
         "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian C: Latihan Soal Mandiri Asli",
-        "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg"
+        "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi_biodiversitas.jpg"
     },
     {
         "nomor_bab": 50,
@@ -385,7 +385,7 @@ latihan_soal_asli = [
         "kunci": "A",
         "pembahasan": "Kawasan Dangkalan Sunda (Sumatera, Jawa, Kalimantan) dicirikan oleh mamalia plasental berbadan besar, kera primata (orangutan, bekantan), dan ikan air tawar yang berkerabat dekat dengan fauna daratan Asia.",
         "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian C: Latihan Soal Mandiri Asli",
-        "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg"
+        "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi_biodiversitas.jpg"
     },
     {
         "nomor_bab": 51,
@@ -399,7 +399,7 @@ latihan_soal_asli = [
         "kunci": "B",
         "pembahasan": "Dangkalan Sahul (Papua dan sekitarnya) dihuni hewan marsupialia berkantung dan aves warna-warni yang berkerabat dekat dengan benua Australia.",
         "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian C: Latihan Soal Mandiri Asli",
-        "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg"
+        "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi_biodiversitas.jpg"
     },
     {
         "nomor_bab": 52,
@@ -413,7 +413,7 @@ latihan_soal_asli = [
         "kunci": "A",
         "pembahasan": "Taman Nasional Komodo adalah cagar biosfer pelestarian in-situ di habitat aslinya guna menjaga kelestarian satwa purba langka Varanus komodoensis.",
         "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian C: Latihan Soal Mandiri Asli",
-        "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg"
+        "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi_biodiversitas.jpg"
     },
     {
         "nomor_bab": 53,
@@ -427,7 +427,7 @@ latihan_soal_asli = [
         "kunci": "C",
         "pembahasan": "Taman Nasional Ujung Kulon adalah suaka perlindungan terakhir bagi populasi badak jawa bercula satu yang berstatus kritis terancam punah (Critically Endangered).",
         "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian C: Latihan Soal Mandiri Asli",
-        "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg"
+        "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi_biodiversitas.jpg"
     },
     {
         "nomor_bab": 54,
@@ -441,7 +441,7 @@ latihan_soal_asli = [
         "kunci": "A",
         "pembahasan": "Deforestasi melalui pembalakan liar dan pembakaran hutan menghancurkan habitat primer, memutus rantai makanan, dan memicu kepunahan massal spesies endemik.",
         "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian C: Latihan Soal Mandiri Asli",
-        "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg"
+        "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi_biodiversitas.jpg"
     },
     {
         "nomor_bab": 55,
@@ -455,7 +455,7 @@ latihan_soal_asli = [
         "kunci": "C",
         "pembahasan": "Biomagnifikasi adalah proses peningkatan konsentrasi bahan kimia beracun yang sulit terurai (bioakumulatif) pada jaringan tubuh organisme seiring kenaikan tingkat trofik.",
         "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian C: Latihan Soal Mandiri Asli",
-        "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg"
+        "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi_biodiversitas.jpg"
     },
     {
         "nomor_bab": 56,
@@ -469,7 +469,7 @@ latihan_soal_asli = [
         "kunci": "C",
         "pembahasan": "Suksesi primer bermula dari substrat batuan steril tanpa kehidupan awal (seperti pasca letusan Krakatau), diawali oleh vegetasi perintis lumut kerak (Lichenes).",
         "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian C: Latihan Soal Mandiri Asli",
-        "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg"
+        "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi_biodiversitas.jpg"
     },
     {
         "nomor_bab": 57,
@@ -483,7 +483,7 @@ latihan_soal_asli = [
         "kunci": "A",
         "pembahasan": "Lichenes mensekresikan zat kimia organik yang mempercepat pelapukan batuan keras menjadi lapisan tanah humus tipis yang kemudian dapat ditumbuhi oleh lumut dan paku.",
         "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian C: Latihan Soal Mandiri Asli",
-        "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg"
+        "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi_biodiversitas.jpg"
     },
     {
         "nomor_bab": 58,
@@ -497,7 +497,7 @@ latihan_soal_asli = [
         "kunci": "B",
         "pembahasan": "Fotosintesis tumbuhan darat dan fitoplankton laut merupakan penyerap karbon (carbon sink) utama yang mengubah CO2 menjadi oksigen dan biomassa biomolekul glukosa.",
         "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian C: Latihan Soal Mandiri Asli",
-        "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg"
+        "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi_biodiversitas.jpg"
     },
     {
         "nomor_bab": 59,
@@ -511,7 +511,7 @@ latihan_soal_asli = [
         "kunci": "A",
         "pembahasan": "Rhizobium memiliki enzim nitrogenase yang mampu melakukan fiksasi N2 di udara menjadi ion amonium/nitrat yang siap diserap tanaman untuk sintesis protein.",
         "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian C: Latihan Soal Mandiri Asli",
-        "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg"
+        "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi_biodiversitas.jpg"
     },
     {
         "nomor_bab": 60,
@@ -525,7 +525,7 @@ latihan_soal_asli = [
         "kunci": "A",
         "pembahasan": "Eceng gondok tumbuh cepat menutupi seluruh permukaan air, menghambat fotosintesis tanaman bawah air, mempercepat pendangkalan danau, dan menghabiskan oksigen terlarut saat membusuk.",
         "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian C: Latihan Soal Mandiri Asli",
-        "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg"
+        "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi_biodiversitas.jpg"
     },
     {
         "nomor_bab": 61,
@@ -539,7 +539,7 @@ latihan_soal_asli = [
         "kunci": "B",
         "pembahasan": "Cagar alam adalah kawasan suaka alam yang keadaan alamnya mempunyai kekhasan tumbuhan, satwa, dan ekosistemnya yang perkembangannya diserahkan pada proses alami.",
         "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian C: Latihan Soal Mandiri Asli",
-        "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg"
+        "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi_biodiversitas.jpg"
     },
     {
         "nomor_bab": 62,
@@ -553,7 +553,7 @@ latihan_soal_asli = [
         "kunci": "A",
         "pembahasan": "Variasi antarindividu dalam satu spesies yang sama (varietas atau ras kelapa) merupakan manifestasi dari keanekaragaman genetik (tingkat gen).",
         "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian C: Latihan Soal Mandiri Asli",
-        "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg"
+        "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi_biodiversitas.jpg"
     },
     {
         "nomor_bab": 63,
@@ -567,7 +567,7 @@ latihan_soal_asli = [
         "kunci": "C",
         "pembahasan": "Kucing, harimau, dan singa adalah spesies-spesies berbeda yang masih tergolong dalam famili Felidae, menunjukkan keanekaragaman tingkat spesies.",
         "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian C: Latihan Soal Mandiri Asli",
-        "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg"
+        "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi_biodiversitas.jpg"
     },
     {
         "nomor_bab": 64,
@@ -581,7 +581,7 @@ latihan_soal_asli = [
         "kunci": "A",
         "pembahasan": "Rafflesia arnoldii adalah tumbuhan parasit obligat endofitik tanpa klorofil, seluruh nutrisinya diserap dari liana merambat Tetrastigma hingga menghasilkan kuncup bunga raksasa.",
         "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian C: Latihan Soal Mandiri Asli",
-        "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg"
+        "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi_biodiversitas.jpg"
     },
     {
         "nomor_bab": 65,
@@ -595,7 +595,7 @@ latihan_soal_asli = [
         "kunci": "B",
         "pembahasan": "Bank benih (seed bank) dan koleksi kultur jaringan di laboratorium adalah fasilitas buatan di luar habitat alami tanaman, sehingga tergolong pelestarian ex-situ.",
         "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian C: Latihan Soal Mandiri Asli",
-        "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg"
+        "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi_biodiversitas.jpg"
     }
 ]
 
@@ -613,7 +613,7 @@ pengayaan_akm = [
         "kunci": "A",
         "pembahasan": "Katak adalah predator pengendali belalang dan sumber pakan ular. Hilangnya katak menyebabkan populasi belalang meledak (merusak tanaman padi petani) dan populasi ular kelaparan sehingga menurun.",
         "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian D: Pengayaan AKM & TKA",
-        "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg"
+        "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi_biodiversitas.jpg"
     },
     {
         "nomor_bab": 67,
@@ -627,7 +627,7 @@ pengayaan_akm = [
         "kunci": "A",
         "pembahasan": "Produsen = 50.000 kkal -> Konsumen I (10%) = 5.000 kkal -> Konsumen II (10%) = 500 kkal -> Konsumen III (10%) = 50 kkal.",
         "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian D: Pengayaan AKM & TKA",
-        "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg"
+        "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi_biodiversitas.jpg"
     },
     {
         "nomor_bab": 68,
@@ -641,7 +641,7 @@ pengayaan_akm = [
         "kunci": "A",
         "pembahasan": "Kepulauan Wallacea (Sulawesi, Maluku, Nusa Tenggara) terisolasi oleh laut dalam sejak zaman es, menghasilkan evolusi satwa endemik unik yang memadukan garis keturunan Asiatis dan Australasia.",
         "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian D: Pengayaan AKM & TKA",
-        "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg"
+        "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi_biodiversitas.jpg"
     },
     {
         "nomor_bab": 69,
@@ -655,7 +655,7 @@ pengayaan_akm = [
         "kunci": "A",
         "pembahasan": "Perakaran mangrove yang rapat meredam energi gelombang ombak tsunami, mengikat sedimen lumpur pantai dari abrasi, dan mengunci sedimen organik karbon biru (blue carbon sink).",
         "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian D: Pengayaan AKM & TKA",
-        "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg"
+        "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi_biodiversitas.jpg"
     },
     {
         "nomor_bab": 70,
@@ -669,7 +669,7 @@ pengayaan_akm = [
         "kunci": "A",
         "pembahasan": "Tekanan seleksi kimiawi membunuh serangga rentan, sementara sedikit serangga yang kebal bertahan hidup dan mewariskan alel resistensi ke generasi berikutnya (resistensi hama).",
         "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian D: Pengayaan AKM & TKA",
-        "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg"
+        "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi_biodiversitas.jpg"
     }
 ]
 
@@ -687,7 +687,7 @@ for q in soal_1_to_25:
         "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian A: Suplemen HOTS Kurikulum Merdeka",
         "materi": "Ekologi dan Keanekaragaman Hayati: Biotik-Abiotik, Rantai Makanan, Piramida Energi, Simbiosis, Wallace-Weber",
         "capaian": "Peserta didik mampu menganalisis interaksi antar komponen ekosistem serta upaya konservasi keanekaragaman hayati Indonesia.",
-        "img": q.get("img", "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg"),
+        "img": q.get("img", "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi_biodiversitas.jpg"),
         "bacaan": q.get("bacaan", "")
     })
 
