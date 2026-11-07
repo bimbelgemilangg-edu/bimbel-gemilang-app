@@ -1,0 +1,2102 @@
+[
+  {
+    "nomor": 101,
+    "tipe": "pg_sederhana",
+    "soal": "Perhatikan gambar bagian-bagian mikroskop cahaya berikut! Bagian mikroskop yang berfungsi memperbesar bayangan benda di dekat mata pengamat (lensa okuler) dan bagian untuk mengatur fokus bayangan secara halus (mikrometer) ditunjukkan oleh nomor ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "1 dan 2"
+      },
+      {
+        "label": "B",
+        "teks": "1 dan 4"
+      },
+      {
+        "label": "C",
+        "teks": "2 dan 3"
+      },
+      {
+        "label": "D",
+        "teks": "3 dan 6"
+      }
+    ],
+    "kunci": "B",
+    "pembahasan": "Keterangan bagian mikroskop: 1 = lensa okuler, 2 = makrometer (pemutar kasar), 3 = lensa objektif, 4 = mikrometer (pemutar halus), 5 = meja preparat, 6 = cermin pengumpul cahaya.",
+    "paket": "Bab V: Klasifikasi Makhluk Hidup - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "materi": "Klasifikasi Makhluk Hidup: 8 Ciri Hidup, Mikroskop, Taksonomi, 5 Kingdom, Kunci Determinasi",
+    "capaian": "Peserta didik mampu mengklasifikasikan makhluk hidup berdasarkan karakteristiknya serta menggunakan mikroskop dan kunci determinasi.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch5_klasifikasi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 102,
+    "tipe": "pg_sederhana",
+    "soal": "Ketika daun tumbuhan putri malu (Mimosa pudica) disentuh oleh jari tangan, helai-helai daunnya segera mengatup rapat akibat perubahan tekanan turgor pada persendian daun. Peristiwa ini me- nunjukkan ciri makhluk hidup yaitu ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Ekskresi dan respirasi"
+      },
+      {
+        "label": "B",
+        "teks": "Peka terhadap rangsang dan melakukan gerak"
+      },
+      {
+        "label": "C",
+        "teks": "Adaptasi morfologi dan reproduksi vegetatif"
+      },
+      {
+        "label": "D",
+        "teks": "Fotosintesis dan gutasi"
+      }
+    ],
+    "kunci": "B",
+    "pembahasan": "Mengatupnya daun putri malu akibat sentuhan (seismonasti) menunjukkan ciri peka terhadap rangsang (iritabilitas) dan gerak pasif.",
+    "paket": "Bab V: Klasifikasi Makhluk Hidup - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "materi": "Klasifikasi Makhluk Hidup: 8 Ciri Hidup, Mikroskop, Taksonomi, 5 Kingdom, Kunci Determinasi",
+    "capaian": "Peserta didik mampu mengklasifikasikan makhluk hidup berdasarkan karakteristiknya serta menggunakan mikroskop dan kunci determinasi.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch5_klasifikasi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 103,
+    "tipe": "pg_sederhana",
+    "soal": "Tunas tanaman kacang hijau yang diletakkan di dekat jendela tampak tumbuh membengkok ke arah datangnya cahaya matahari, dan dalam waktu 7 hari tingginya bertambah dari 2 cm menjadi 12 cm. Dua ciri makhluk hidup yang tampak secara berurutan adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Peka terhadap rangsang cahaya dan mengalami pertumbuhan"
+      },
+      {
+        "label": "B",
+        "teks": "Bernapas dan mengeluarkan zat sisa"
+      },
+      {
+        "label": "C",
+        "teks": "Berkembang biak dan bergerak aktif berpindah tempat"
+      },
+      {
+        "label": "D",
+        "teks": "Nutrisi heterotrof dan ekskresi"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Membengkok ke arah cahaya adalah iritabilitas/fototropisme, sedangkan pertambahan tinggi dari 2 cm ke 12 cm adalah pertumbuhan.",
+    "paket": "Bab V: Klasifikasi Makhluk Hidup - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "materi": "Klasifikasi Makhluk Hidup: 8 Ciri Hidup, Mikroskop, Taksonomi, 5 Kingdom, Kunci Determinasi",
+    "capaian": "Peserta didik mampu mengklasifikasikan makhluk hidup berdasarkan karakteristiknya serta menggunakan mikroskop dan kunci determinasi.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch5_klasifikasi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 104,
+    "tipe": "pg_sederhana",
+    "soal": "Pada pagi hari yang lembap, di ujung-ujung tepi daun tanaman talas atau jagung sering ditemukan tetesan-tetesan air yang keluar melalui pori hidatoda. Proses pengeluaran kelebihan air tersebut me- nunjukkan ciri makhluk hidup berupa ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Pengembunan abiotik dari udara luar"
+      },
+      {
+        "label": "B",
+        "teks": "Penyerapan karbon dioksida di malam hari"
+      },
+      {
+        "label": "C",
+        "teks": "Respirasi anaerob pada akar tanaman"
+      },
+      {
+        "label": "D",
+        "teks": "Pengeluaran zat sisa/kelebihan air"
+      }
+    ],
+    "kunci": "D",
+    "pembahasan": "Pengeluaran titik-titik air melalui celah hidatoda di tepi daun disebut gutasi (bentuk pengeluaran zat sisa/kelebihan air).",
+    "paket": "Bab V: Klasifikasi Makhluk Hidup - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "materi": "Klasifikasi Makhluk Hidup: 8 Ciri Hidup, Mikroskop, Taksonomi, 5 Kingdom, Kunci Determinasi",
+    "capaian": "Peserta didik mampu mengklasifikasikan makhluk hidup berdasarkan karakteristiknya serta menggunakan mikroskop dan kunci determinasi.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch5_klasifikasi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 105,
+    "tipe": "pg_sederhana",
+    "soal": "Seorang siswa mengamati preparat penampang melintang daun menggunakan mikroskop cahaya dengan lensa okuler berlabel 10× dan lensa objektif berlabel 40×. Perbesaran total bayangan yang diamati oleh siswa tersebut adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "50×"
+      },
+      {
+        "label": "B",
+        "teks": "140×"
+      },
+      {
+        "label": "C",
+        "teks": "400×"
+      },
+      {
+        "label": "D",
+        "teks": "4.000×"
+      }
+    ],
+    "kunci": "C",
+    "pembahasan": "Mtotal = Mok× Mobj = 10× 40 = 400×.",
+    "paket": "Bab V: Klasifikasi Makhluk Hidup - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "materi": "Klasifikasi Makhluk Hidup: 8 Ciri Hidup, Mikroskop, Taksonomi, 5 Kingdom, Kunci Determinasi",
+    "capaian": "Peserta didik mampu mengklasifikasikan makhluk hidup berdasarkan karakteristiknya serta menggunakan mikroskop dan kunci determinasi.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch5_klasifikasi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 106,
+    "tipe": "pg_sederhana",
+    "soal": "Saat mengamati preparat di bawah mikroskop, bayangan objek sudah tampak jelas namun po- sisinya berada terlalu di tepi kiri atas bidang pandang. Jika siswa ingin menggeser bayangan ke tengah bidang pandang, ke arah manakah kaca preparat harus digeser?",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Ke arah kiri atas, searah dengan posisi bayangan"
+      },
+      {
+        "label": "B",
+        "teks": "Ke arah kanan bawah"
+      },
+      {
+        "label": "C",
+        "teks": "Menjauhi lensa objektif dengan memutar makrometer"
+      },
+      {
+        "label": "D",
+        "teks": "Memutar diafragma hingga tertutup rapat"
+      }
+    ],
+    "kunci": "B",
+    "pembahasan": "Karena sifat bayangan mikroskop terbalik (atas-bawah dan kiri-kanan), untuk mem- bawa bayangan dari kiri atas ke tengah, preparat digeser ke kiri atas (atau jika objek tampak di kiri atas, preparat digeser ke kiri atas agar bayangan bergeser ke kanan bawah ke tengah).",
+    "paket": "Bab V: Klasifikasi Makhluk Hidup - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "materi": "Klasifikasi Makhluk Hidup: 8 Ciri Hidup, Mikroskop, Taksonomi, 5 Kingdom, Kunci Determinasi",
+    "capaian": "Peserta didik mampu mengklasifikasikan makhluk hidup berdasarkan karakteristiknya serta menggunakan mikroskop dan kunci determinasi.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch5_klasifikasi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 107,
+    "tipe": "pg_sederhana",
+    "soal": "Sebuah robot pembersih lantai otomatis dapat bergerak menghindari dinding, mengeluarkan suara, dan membutuhkan pengisian daya baterai. Mengapa robot tersebut tetap dikategorikan seba- gai benda tak hidup (abiotik)?",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Karena robot tidak tersusun atas sel, tidak mengalami metabolisme biologis, tidak tumbuh dari pembelahan sel, dan tidak dapat bereproduksi"
+      },
+      {
+        "label": "B",
+        "teks": "Karena robot bergerak terlalu lambat dibandingkan hewan"
+      },
+      {
+        "label": "C",
+        "teks": "Karena robot hanya bekerja di dalam ruangan tertutup"
+      },
+      {
+        "label": "D",
+        "teks": "Karena robot tidak memiliki sensor cahaya"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Robot tidak tersusun atas unit struktural sel, tidak bermetabolisme, tidak tumbuh se- cara biologis, dan tidak bereproduksi.",
+    "paket": "Bab V: Klasifikasi Makhluk Hidup - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "materi": "Klasifikasi Makhluk Hidup: 8 Ciri Hidup, Mikroskop, Taksonomi, 5 Kingdom, Kunci Determinasi",
+    "capaian": "Peserta didik mampu mengklasifikasikan makhluk hidup berdasarkan karakteristiknya serta menggunakan mikroskop dan kunci determinasi.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch5_klasifikasi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 108,
+    "tipe": "pg_sederhana",
+    "soal": "Urutan tingkatan takson dalam klasifikasi tumbuhan dari tingkat tertinggi (paling umum) menuju tingkat terendah (paling spesifik) yang benar adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Kingdom - Filum - Kelas - Ordo - Famili - Genus - Spesies"
+      },
+      {
+        "label": "B",
+        "teks": "Kingdom - Divisi - Ordo - Kelas - Famili - Genus - Spesies"
+      },
+      {
+        "label": "C",
+        "teks": "Kingdom - Divisi - Kelas - Ordo - Famili - Genus - Spesies"
+      },
+      {
+        "label": "D",
+        "teks": "Spesies - Genus - Famili - Ordo - Kelas - Divisi - Kingdom"
+      }
+    ],
+    "kunci": "C",
+    "pembahasan": "Pada tumbuhan digunakan istilah Divisi (bukan Filum): Kingdom - Divisi - Kelas - Ordo - Famili - Genus - Spesies.",
+    "paket": "Bab V: Klasifikasi Makhluk Hidup - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "materi": "Klasifikasi Makhluk Hidup: 8 Ciri Hidup, Mikroskop, Taksonomi, 5 Kingdom, Kunci Determinasi",
+    "capaian": "Peserta didik mampu mengklasifikasikan makhluk hidup berdasarkan karakteristiknya serta menggunakan mikroskop dan kunci determinasi.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch5_klasifikasi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 109,
+    "tipe": "pg_sederhana",
+    "soal": "Tanaman terung (Solanum melongena), kentang (Solanum tuberosum), dan tomat ( Solanum ly- copersicum) dikelompokkan ke dalam satu kelompok marga yang sama. Pernyataan taksonomi yang benar mengenai ketiga tanaman tersebut adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Ketiganya berada dalam satu Spesies yang sama namun berbeda Genus"
+      },
+      {
+        "label": "B",
+        "teks": "Ketiganya tidak memiliki hubungan kekerabatan sama sekali"
+      },
+      {
+        "label": "C",
+        "teks": "Ketiganya berbeda Famili namun memiliki Spesies yang sama"
+      },
+      {
+        "label": "D",
+        "teks": "Ketiganya memiliki Genus yang sama, Famili yang sama, dan Ordo yang sama, tetapi berbeda Spesies"
+      }
+    ],
+    "kunci": "D",
+    "pembahasan": "Kata pertama nama ilmiah ketiganya sama (Solanum) yang berarti satu Genus (otoma- tis satu Famili Solanaceae dan satu Ordo). --- Page 110 ---",
+    "paket": "Bab V: Klasifikasi Makhluk Hidup - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "materi": "Klasifikasi Makhluk Hidup: 8 Ciri Hidup, Mikroskop, Taksonomi, 5 Kingdom, Kunci Determinasi",
+    "capaian": "Peserta didik mampu mengklasifikasikan makhluk hidup berdasarkan karakteristiknya serta menggunakan mikroskop dan kunci determinasi.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch5_klasifikasi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 110,
+    "tipe": "pg_sederhana",
+    "soal": "Penulisan nama ilmiah tanaman jagung dan komodo sesuai aturan tata nama ganda ( Binomial Nomenclature) Carolus Linnaeus yang paling tepat adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Zea Mays dan Varanus Komodoensis"
+      },
+      {
+        "label": "B",
+        "teks": "Zea mays dan Varanus komodoensis"
+      },
+      {
+        "label": "C",
+        "teks": "Zea mays dan Varanus komodoensis"
+      },
+      {
+        "label": "D",
+        "teks": "zea Mays dan varanus Komodoensis"
+      }
+    ],
+    "kunci": "B",
+    "pembahasan": "Kata pertama (Genus) diawali huruf kapital, kata kedua (spesies) huruf kecil semua, dan dicetak miring: Zea mays dan Varanus komodoensis.",
+    "paket": "Bab V: Klasifikasi Makhluk Hidup - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "materi": "Klasifikasi Makhluk Hidup: 8 Ciri Hidup, Mikroskop, Taksonomi, 5 Kingdom, Kunci Determinasi",
+    "capaian": "Peserta didik mampu mengklasifikasikan makhluk hidup berdasarkan karakteristiknya serta menggunakan mikroskop dan kunci determinasi.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch5_klasifikasi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 111,
+    "tipe": "pg_sederhana",
+    "soal": "Perhatikan tabel Kunci Determinasi Dikotomi Identifikasi Hewan berikut! Nomor Kunci Pernyataan Ciri Morfologi dan Fisi- ologi Petunjuk Lanjutan 1a / 1b 1a. Memiliki tulang belakang (Vertebrata) ................. lanjut ke no. 2 1b. Tidak bertulang belakang ................................. lanjut ke no. 4 2a / 2b 2a. Suhu tubuh tetap (homoioterm) ........................ lanjut ke no. 3 2b. Suhu tubuh berubah-ubah (poikilo- term) ............ lanjut ke no. 4 3a / 3b 3a. Memiliki kelenjar susu dan daun telinga ........... Mammalia 3b. Tubuh ditutupi bulu dan berkembang biak bertelur ... Aves 4a / 4b 4a. Kulit bersisik kering ........................................ Reptilia 4b. Kulit selalu lembap berlendir ........................... Amphibia Berdasarkan kunci determinasi pada tabel di atas, urutan nomor kunci determinasi yang tepat untuk mengidentifikasi Burung Merpati (Aves) adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "1a - 2a - 3a"
+      },
+      {
+        "label": "B",
+        "teks": "1a - 2a - 3b"
+      },
+      {
+        "label": "C",
+        "teks": "1a - 2b - 4a"
+      },
+      {
+        "label": "D",
+        "teks": "1b - 5a"
+      }
+    ],
+    "kunci": "B",
+    "pembahasan": "Burung merpati memiliki tulang belakang (1a→ 2), suhu tubuh tetap/homoioterm (2a → 3), dan tubuh ditutupi bulu serta berkembang biak dengan bertelur (3b = Aves).",
+    "paket": "Bab V: Klasifikasi Makhluk Hidup - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "materi": "Klasifikasi Makhluk Hidup: 8 Ciri Hidup, Mikroskop, Taksonomi, 5 Kingdom, Kunci Determinasi",
+    "capaian": "Peserta didik mampu mengklasifikasikan makhluk hidup berdasarkan karakteristiknya serta menggunakan mikroskop dan kunci determinasi.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch5_klasifikasi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 112,
+    "tipe": "pg_sederhana",
+    "soal": "Mengapa bakteri Escherichia coli dan ganggang hijau-biru ( Anabaena azollae) dikelompokkan ke dalam Kingdom Monera, bukan Kingdom Protista?",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Karena selnya tidak memiliki dinding sel sama sekali"
+      },
+      {
+        "label": "B",
+        "teks": "Karena keduanya mampu menghasilkan biji tertutup"
+      },
+      {
+        "label": "C",
+        "teks": "Karena keduanya merupakan organisme multiseluler berukuran besar"
+      },
+      {
+        "label": "D",
+        "teks": "Karena selnya bersifat prokariotik"
+      }
+    ],
+    "kunci": "D",
+    "pembahasan": "Ciri khas utama Kingdom Monera adalah struktur sel prokariotik (belum memiliki membran inti sel).",
+    "paket": "Bab V: Klasifikasi Makhluk Hidup - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "materi": "Klasifikasi Makhluk Hidup: 8 Ciri Hidup, Mikroskop, Taksonomi, 5 Kingdom, Kunci Determinasi",
+    "capaian": "Peserta didik mampu mengklasifikasikan makhluk hidup berdasarkan karakteristiknya serta menggunakan mikroskop dan kunci determinasi.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch5_klasifikasi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 113,
+    "tipe": "pg_sederhana",
+    "soal": "Seorang siswa mengamati setetes air kolam di bawah mikroskop dan menemukan mikroorgan- isme bersel satu yang memiliki membran inti jelas (eukariotik), bergerak aktif menggunakan bulu getar (silia) di seluruh permukaan tubuhnya. Organisme tersebut adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Amoeba proteus (bergerak dengan kaki semu/pseudopodia)"
+      },
+      {
+        "label": "B",
+        "teks": "Euglena viridis (bergerak dengan cambuk/flagela)"
+      },
+      {
+        "label": "C",
+        "teks": "Paramecium caudatum (Ciliata dari Kingdom Protista)"
+      },
+      {
+        "label": "D",
+        "teks": "Rhizopus oligosporus (jamur tempe)"
+      }
+    ],
+    "kunci": "C",
+    "pembahasan": "Paramecium caudatum adalah Protozoa (Protista mirip hewan) kelas Ciliata yang bergerak dengan silia (rambut getar).",
+    "paket": "Bab V: Klasifikasi Makhluk Hidup - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "materi": "Klasifikasi Makhluk Hidup: 8 Ciri Hidup, Mikroskop, Taksonomi, 5 Kingdom, Kunci Determinasi",
+    "capaian": "Peserta didik mampu mengklasifikasikan makhluk hidup berdasarkan karakteristiknya serta menggunakan mikroskop dan kunci determinasi.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch5_klasifikasi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 114,
+    "tipe": "pg_sederhana",
+    "soal": "Dahulu jamur (Fungi) sempat dikelompokkan ke dalam dunia tumbuhan (Plantae), namun dalam sistem 5 Kingdom Whittaker jamur dipisahkan menjadi Kingdom tersendiri. Alasan ilmiah utama pemisahan tersebut adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Jamur dapat bergerak aktif berlari seperti hewan"
+      },
+      {
+        "label": "B",
+        "teks": "Jamur tidak memiliki klorofil"
+      },
+      {
+        "label": "C",
+        "teks": "Jamur bersifat prokariotik seperti bakteri"
+      },
+      {
+        "label": "D",
+        "teks": "Jamur berkembang biak menggunakan biji di dalam buah"
+      }
+    ],
+    "kunci": "B",
+    "pembahasan": "Jamur tidak berklorofil (heterotrof) dan dinding selnya terbuat dari zat kitin, berbeda dari tumbuhan yang berklorofil dan berdinding selulosa.",
+    "paket": "Bab V: Klasifikasi Makhluk Hidup - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "materi": "Klasifikasi Makhluk Hidup: 8 Ciri Hidup, Mikroskop, Taksonomi, 5 Kingdom, Kunci Determinasi",
+    "capaian": "Peserta didik mampu mengklasifikasikan makhluk hidup berdasarkan karakteristiknya serta menggunakan mikroskop dan kunci determinasi.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch5_klasifikasi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 115,
+    "tipe": "pg_sederhana",
+    "soal": "Tumbuhan lumut daun (Bryophyta) dan tumbuhan paku (Pteridophyta) sama-sama berkembang biak menggunakan spora dan menyukai tempat lembap. Perbedaan mendasar struktur tubuh tum- buhan paku dibandingkan lumut adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Tumbuhan paku sudah memiliki akar, batang, dan daun sejati serta pembuluh angkut xilem dan floem"
+      },
+      {
+        "label": "B",
+        "teks": "Tumbuhan lumut memiliki bunga dan biji, sedangkan paku tidak"
+      },
+      {
+        "label": "C",
+        "teks": "Tumbuhan paku tidak memiliki klorofil sama sekali"
+      },
+      {
+        "label": "D",
+        "teks": "Daun tumbuhan lumut memiliki bintik sorus di bagian bawahnya"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Tumbuhan paku sudah tergolong Tracheophyta (memiliki berkas pengangkut xilem- floem serta akar, batang, daun sejati).",
+    "paket": "Bab V: Klasifikasi Makhluk Hidup - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "materi": "Klasifikasi Makhluk Hidup: 8 Ciri Hidup, Mikroskop, Taksonomi, 5 Kingdom, Kunci Determinasi",
+    "capaian": "Peserta didik mampu mengklasifikasikan makhluk hidup berdasarkan karakteristiknya serta menggunakan mikroskop dan kunci determinasi.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch5_klasifikasi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 116,
+    "tipe": "pg_sederhana",
+    "soal": "Pada permukaan bawah daun tumbuhan paku yang sudah dewasa sering terlihat deretan bintik- bintik berwarna cokelat tua atau kehitaman. Fungsi biologis dari bintik-bintik (sorus) tersebut adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Gejala penyakit infeksi jamur parasit pada daun paku"
+      },
+      {
+        "label": "B",
+        "teks": "Bintil akar tempat bersimbiosis dengan bakteri pengikat nitrogen"
+      },
+      {
+        "label": "C",
+        "teks": "Kumpulan kotak spora (sporangium) yang berfungsi sebagai alat perkembangbiakan"
+      },
+      {
+        "label": "D",
+        "teks": "Stomata raksasa untuk menyerap air hujan"
+      }
+    ],
+    "kunci": "C",
+    "pembahasan": "Sorus di permukaan bawah daun paku berisi kumpulan sporangium penghasil spora reproduktif.",
+    "paket": "Bab V: Klasifikasi Makhluk Hidup - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "materi": "Klasifikasi Makhluk Hidup: 8 Ciri Hidup, Mikroskop, Taksonomi, 5 Kingdom, Kunci Determinasi",
+    "capaian": "Peserta didik mampu mengklasifikasikan makhluk hidup berdasarkan karakteristiknya serta menggunakan mikroskop dan kunci determinasi.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch5_klasifikasi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 117,
+    "tipe": "pg_sederhana",
+    "soal": "Tanaman melinjo ( Gnetum gnemon ), pakis haji ( Cycas rumphii ), dan pinus ( Pinus merkusii ) dikelompokkan ke dalam tumbuhan berbiji terbuka (Gymnospermae) karena ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Bijinya dilindungi oleh daging buah yang tebal dan manis"
+      },
+      {
+        "label": "B",
+        "teks": "Bunganya memiliki mahkota kelipatan tiga"
+      },
+      {
+        "label": "C",
+        "teks": "Akarnya selalu berupa akar serabut dan daunnya sejajar"
+      },
+      {
+        "label": "D",
+        "teks": "Bakal bijinya tidak tertutup oleh daun buah dan alat reproduksinya berupa runjung"
+      }
+    ],
+    "kunci": "D",
+    "pembahasan": "Gymnospermae memiliki bakal biji yang terbuka (tidak terbungkus bakal buah) pada sisik strobilus.",
+    "paket": "Bab V: Klasifikasi Makhluk Hidup - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "materi": "Klasifikasi Makhluk Hidup: 8 Ciri Hidup, Mikroskop, Taksonomi, 5 Kingdom, Kunci Determinasi",
+    "capaian": "Peserta didik mampu mengklasifikasikan makhluk hidup berdasarkan karakteristiknya serta menggunakan mikroskop dan kunci determinasi.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch5_klasifikasi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 118,
+    "tipe": "pg_sederhana",
+    "soal": "Seorang siswa mengamati dua tanaman di kebun sekolah: Tanaman P memiliki akar serabut, batang tidak berkambium, tulang daun sejajar, dan bagian bunga berjumlah kelipatan 3. Tanaman Q memiliki akar tunggang, batang bercabang berkambium, tulang daun menyirip, dan keping biji dua. Contoh tanaman P dan Q secara berurutan adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Mangga dan Padi"
+      },
+      {
+        "label": "B",
+        "teks": "Jagung (Monokotil) dan Mangga (Dikotil)"
+      },
+      {
+        "label": "C",
+        "teks": "Kacang tanah dan Kelapa"
+      },
+      {
+        "label": "D",
+        "teks": "Rambutan dan Jambu biji"
+      }
+    ],
+    "kunci": "B",
+    "pembahasan": "Tanaman P berciri Monokotil (contoh: jagung/padi), sedangkan Tanaman Q berciri Dikotil (contoh: mangga/kacang tanah).",
+    "paket": "Bab V: Klasifikasi Makhluk Hidup - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "materi": "Klasifikasi Makhluk Hidup: 8 Ciri Hidup, Mikroskop, Taksonomi, 5 Kingdom, Kunci Determinasi",
+    "capaian": "Peserta didik mampu mengklasifikasikan makhluk hidup berdasarkan karakteristiknya serta menggunakan mikroskop dan kunci determinasi.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch5_klasifikasi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 119,
+    "tipe": "pg_sederhana",
+    "soal": "Cacing tanah (Lumbricus terrestris), lintah, dan cacing wawo memiliki tubuh bersegmen-segmen seperti cincin yang jelas. Hewan-hewan invertebrata tersebut termasuk ke dalam filum ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Annelida (Cacing gelang)"
+      },
+      {
+        "label": "B",
+        "teks": "Nemathelminthes (Cacing gilik)"
+      },
+      {
+        "label": "C",
+        "teks": "Platyhelminthes (Cacing pipih)"
+      },
+      {
+        "label": "D",
+        "teks": "Mollusca (Hewan bertubuh lunak)"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Cacing bersegmen cincin seperti cacing tanah dan lintah termasuk filum Annelida.",
+    "paket": "Bab V: Klasifikasi Makhluk Hidup - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "materi": "Klasifikasi Makhluk Hidup: 8 Ciri Hidup, Mikroskop, Taksonomi, 5 Kingdom, Kunci Determinasi",
+    "capaian": "Peserta didik mampu mengklasifikasikan makhluk hidup berdasarkan karakteristiknya serta menggunakan mikroskop dan kunci determinasi.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch5_klasifikasi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 120,
+    "tipe": "pg_sederhana",
+    "soal": "Laba-laba, udang windu, belalang, dan lipan dikelompokkan ke dalam satu filum yang sama yaitu Arthropoda karena memiliki ciri utama bersama berupa ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Tubuh lunak yang dilindungi cangkang zat kapur tunggal"
+      },
+      {
+        "label": "B",
+        "teks": "Tubuh berpori-pori seperti spons di dasar laut"
+      },
+      {
+        "label": "C",
+        "teks": "Permukaan kulit berduri dan sistem pembuluh air (ambulakral)"
+      },
+      {
+        "label": "D",
+        "teks": "Tubuh dan kaki yang beruas-ruas serta rangka luar dari kitin"
+      }
+    ],
+    "kunci": "D",
+    "pembahasan": "Arthropoda (arthros = ruas, podos = kaki) berciri tubuh dan tungkai berbuku-buku dengan eksoskeleton kitin.",
+    "paket": "Bab V: Klasifikasi Makhluk Hidup - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "materi": "Klasifikasi Makhluk Hidup: 8 Ciri Hidup, Mikroskop, Taksonomi, 5 Kingdom, Kunci Determinasi",
+    "capaian": "Peserta didik mampu mengklasifikasikan makhluk hidup berdasarkan karakteristiknya serta menggunakan mikroskop dan kunci determinasi.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch5_klasifikasi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 121,
+    "tipe": "pg_sederhana",
+    "soal": "Perhatikan gambar empat hewan Arthropoda berikut! Pasangan hewan yang termasuk ke dalam kelas Insecta (berkaki 3 pasang) dan kelas Crustacea (berkaki 5 pasang / dekapoda) berturut-turut adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Belalang dan Laba-laba"
+      },
+      {
+        "label": "B",
+        "teks": "Belalang dan Udang"
+      },
+      {
+        "label": "C",
+        "teks": "Laba-laba dan Lipan"
+      },
+      {
+        "label": "D",
+        "teks": "Udang dan Lipan"
+      }
+    ],
+    "kunci": "B",
+    "pembahasan": "Belalang termasuk kelas Insecta (3 pasang kaki jalan, tubuh terbagi atas caput, toraks, abdomen), sedangkan Udang termasuk kelas Crustacea. Laba-laba termasuk Arachnida (4 pasang kaki) dan Lipan termasuk Myriapoda (Chilopoda).",
+    "paket": "Bab V: Klasifikasi Makhluk Hidup - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "materi": "Klasifikasi Makhluk Hidup: 8 Ciri Hidup, Mikroskop, Taksonomi, 5 Kingdom, Kunci Determinasi",
+    "capaian": "Peserta didik mampu mengklasifikasikan makhluk hidup berdasarkan karakteristiknya serta menggunakan mikroskop dan kunci determinasi.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch5_klasifikasi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 122,
+    "tipe": "pg_sederhana",
+    "soal": "Paus biru, lumba-lumba, dan duyung hidup di laut seperti ikan hiu dan ikan pari, namun ketiganya diklasifikasikan ke dalam kelas Mammalia dan bukan Pisces. Alasan taksonomi yang mendasari pengelompokan tersebut adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Karena ukuran tubuhnya lebih besar daripada ikan biasa"
+      },
+      {
+        "label": "B",
+        "teks": "Karena bernapas dengan paru-paru, berdarah panas, melahirkan anak, dan memiliki kelenjar susu untuk menyusui anaknya"
+      },
+      {
+        "label": "C",
+        "teks": "Karena memiliki sirip ekor dan kulit yang selalu basah"
+      },
+      {
+        "label": "D",
+        "teks": "Karena memakan plankton dan ikan-ikan kecil di laut"
+      }
+    ],
+    "kunci": "B",
+    "pembahasan": "Paus dan lumba-lumba bernapas dengan paru-paru, berdarah panas, vivipar, dan menyusui anaknya (Mammalia).",
+    "paket": "Bab V: Klasifikasi Makhluk Hidup - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "materi": "Klasifikasi Makhluk Hidup: 8 Ciri Hidup, Mikroskop, Taksonomi, 5 Kingdom, Kunci Determinasi",
+    "capaian": "Peserta didik mampu mengklasifikasikan makhluk hidup berdasarkan karakteristiknya serta menggunakan mikroskop dan kunci determinasi.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch5_klasifikasi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 123,
+    "tipe": "pg_sederhana",
+    "soal": "Hewan Platypus (cungur bebek) dari Australia bertelur seperti reptil/burung, namun setelah telurnya menetas ia menyusui anaknya dan tubuhnya ditutupi rambut tebal. Oleh karena itu,Platypus diklasifikasikan ke dalam kelas ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Mammalia (ordo Monotremata)"
+      },
+      {
+        "label": "B",
+        "teks": "Reptilia"
+      },
+      {
+        "label": "C",
+        "teks": "Aves (Burung)"
+      },
+      {
+        "label": "D",
+        "teks": "Amphibia"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Platypus adalah mamalia bertelur (Monotremata) karena memiliki kelenjar susu dan rambut tubuh.",
+    "paket": "Bab V: Klasifikasi Makhluk Hidup - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "materi": "Klasifikasi Makhluk Hidup: 8 Ciri Hidup, Mikroskop, Taksonomi, 5 Kingdom, Kunci Determinasi",
+    "capaian": "Peserta didik mampu mengklasifikasikan makhluk hidup berdasarkan karakteristiknya serta menggunakan mikroskop dan kunci determinasi.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch5_klasifikasi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 124,
+    "tipe": "pg_sederhana",
+    "soal": "Manakah pasangan kelas hewan Vertebrata berikut yang keduanya termasuk kelompok hewan berdarah panas (homoioterm, suhu tubuh stabil tidak bergantung suhu lingkungan)?",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Pisces dan Amphibia"
+      },
+      {
+        "label": "B",
+        "teks": "Amphibia dan Reptilia"
+      },
+      {
+        "label": "C",
+        "teks": "Aves (Burung) dan Mammalia"
+      },
+      {
+        "label": "D",
+        "teks": "Reptilia dan Aves"
+      }
+    ],
+    "kunci": "C",
+    "pembahasan": "Aves dan Mammalia adalah hewan homoioterm (endoterm), sedangkan Pisces, Am- phibia, dan Reptilia adalah poikiloterm.",
+    "paket": "Bab V: Klasifikasi Makhluk Hidup - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "materi": "Klasifikasi Makhluk Hidup: 8 Ciri Hidup, Mikroskop, Taksonomi, 5 Kingdom, Kunci Determinasi",
+    "capaian": "Peserta didik mampu mengklasifikasikan makhluk hidup berdasarkan karakteristiknya serta menggunakan mikroskop dan kunci determinasi.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch5_klasifikasi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 125,
+    "tipe": "pg_sederhana",
+    "soal": "Virus (seperti virus Influenza atau SARS-CoV-2) sering disebut sebagai peralihan antara benda mati dan makhluk hidup sehingga tidak dimasukkan ke dalam klasifikasi 5 Kingdom. Ciri virus yang menyerupai benda mati dan ciri yang menyerupai makhluk hidup secara berurutan adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Dapat berfotosintesis di tempat terang; dapat bergerak dengan kaki semu"
+      },
+      {
+        "label": "B",
+        "teks": "Dapat membelah diri di atas medium agar mati; peka terhadap cahaya"
+      },
+      {
+        "label": "C",
+        "teks": "Memiliki dinding sel selulosa; bernapas menggunakan mitokondria"
+      },
+      {
+        "label": "D",
+        "teks": "Dapat dikristalkan saat di luar sel inang (aseluler/tidak punya organel sel)"
+      }
+    ],
+    "kunci": "D",
+    "pembahasan": "Virus bersifat aseluler dan dapat dikristalkan (ciri benda mati), tetapi memiliki asam nukleat DNA/RNA untuk bereplikasi di dalam sel hidup.",
+    "paket": "Bab V: Klasifikasi Makhluk Hidup - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "materi": "Klasifikasi Makhluk Hidup: 8 Ciri Hidup, Mikroskop, Taksonomi, 5 Kingdom, Kunci Determinasi",
+    "capaian": "Peserta didik mampu mengklasifikasikan makhluk hidup berdasarkan karakteristiknya serta menggunakan mikroskop dan kunci determinasi.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch5_klasifikasi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 26,
+    "tipe": "pg_sederhana",
+    "soal": "Peristiwa daun putri malu (Mimosa pudica) yang mengatupkan daunnya ketika disentuh membuktikan bahwa makhluk hidup memiliki ciri ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "peka terhadap rangsang (iritabilitas)"
+      },
+      {
+        "label": "B",
+        "teks": "berkembang biak (reproduksi)"
+      },
+      {
+        "label": "C",
+        "teks": "mengeluarkan zat sisa (ekskresi)"
+      },
+      {
+        "label": "D",
+        "teks": "memerlukan nutrisi"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Gerak seismonasti/tigmonasti pada putri malu merupakan respon cepat terhadap rangsang sentuhan mekanik, yang membuktikan bahwa tumbuhan memiliki ciri iritabilitas (peka terhadap rangsang).",
+    "paket": "Bab V: Klasifikasi Makhluk Hidup - Bagian B: Contoh Soal Asli Buku Big Book",
+    "materi": "Klasifikasi Makhluk Hidup: Binomial Nomenclature dan Tingkatan Takson",
+    "capaian": "Peserta didik mampu memahami aturan penulisan nama ilmiah dan urutan taksonomi hewan serta tumbuhan.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch5_klasifikasi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 27,
+    "tipe": "pg_sederhana",
+    "soal": "Urutan tingkatan takson pada tumbuhan dari yang tertinggi (terbesar) hingga terendah adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Kingdom - Divisio - Classis - Ordo - Familia - Genus - Species"
+      },
+      {
+        "label": "B",
+        "teks": "Kingdom - Filum - Classis - Ordo - Familia - Genus - Species"
+      },
+      {
+        "label": "C",
+        "teks": "Kingdom - Ordo - Familia - Classis - Divisio - Genus - Species"
+      },
+      {
+        "label": "D",
+        "teks": "Species - Genus - Familia - Ordo - Classis - Divisio - Kingdom"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Pada taksonomi tumbuhan, tingkatan kedua di bawah Kingdom adalah Divisio (sedangkan pada hewan menggunakan Filum). Urutan lengkapnya: Kingdom -> Divisio -> Classis -> Ordo -> Familia -> Genus -> Species.",
+    "paket": "Bab V: Klasifikasi Makhluk Hidup - Bagian B: Contoh Soal Asli Buku Big Book",
+    "materi": "Klasifikasi Makhluk Hidup: Binomial Nomenclature dan Tingkatan Takson",
+    "capaian": "Peserta didik mampu memahami aturan penulisan nama ilmiah dan urutan taksonomi hewan serta tumbuhan.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch5_klasifikasi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 28,
+    "tipe": "pg_sederhana",
+    "soal": "Berdasarkan sistem tata nama ganda (Binomial Nomenclature) karya Carolus Linnaeus, penulisan nama ilmiah padi yang benar adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Oryza sativa (dicetak miring atau digarisbawahi terpisah)"
+      },
+      {
+        "label": "B",
+        "teks": "oryza Sativa"
+      },
+      {
+        "label": "C",
+        "teks": "ORYZA SATIVA"
+      },
+      {
+        "label": "D",
+        "teks": "Oryza Sativa"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Aturan Binomial Nomenclature: terdiri dari 2 kata bahasa Latin, kata pertama menunjukkan Genus (diawali huruf kapital), kata kedua menunjukkan penunjuk spesies (seluruhnya huruf kecil), dan dicetak miring (italic) atau digarisbawahi terpisah.",
+    "paket": "Bab V: Klasifikasi Makhluk Hidup - Bagian B: Contoh Soal Asli Buku Big Book",
+    "materi": "Klasifikasi Makhluk Hidup: Binomial Nomenclature dan Tingkatan Takson",
+    "capaian": "Peserta didik mampu memahami aturan penulisan nama ilmiah dan urutan taksonomi hewan serta tumbuhan.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch5_klasifikasi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 29,
+    "tipe": "pg_sederhana",
+    "soal": "Sistem klasifikasi 5 kingdom yang dikemukakan oleh Robert H. Whittaker mengelompokkan makhluk hidup menjadi ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Monera, Protista, Fungi, Plantae, Animalia"
+      },
+      {
+        "label": "B",
+        "teks": "Virus, Monera, Jamur, Tumbuhan, Hewan"
+      },
+      {
+        "label": "C",
+        "teks": "Bakteri, Alga, Lumut, Paku, Biji"
+      },
+      {
+        "label": "D",
+        "teks": "Protozoa, Porifera, Coelenterata, Arthropoda, Chordata"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Sistem 5 Kingdom Whittaker (1969) terdiri atas: (1) Monera (prokariotik), (2) Protista (eukariotik sederhana), (3) Fungi (jamur saprofit berkitin), (4) Plantae (tumbuhan autotrof), dan (5) Animalia (hewan heterotrof multiseluler).",
+    "paket": "Bab V: Klasifikasi Makhluk Hidup - Bagian B: Contoh Soal Asli Buku Big Book",
+    "materi": "Klasifikasi Makhluk Hidup: Binomial Nomenclature dan Tingkatan Takson",
+    "capaian": "Peserta didik mampu memahami aturan penulisan nama ilmiah dan urutan taksonomi hewan serta tumbuhan.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch5_klasifikasi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 30,
+    "tipe": "pg_sederhana",
+    "soal": "Ciri khas yang membedakan Kingdom Monera (seperti bakteri dan alga biru) dari keempat kingdom lainnya adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "selnya bersifat prokariotik (tidak memiliki membran inti sel)"
+      },
+      {
+        "label": "B",
+        "teks": "selnya tidak memiliki dinding sel"
+      },
+      {
+        "label": "C",
+        "teks": "tubuhnya selalu multiseluler makroskopis"
+      },
+      {
+        "label": "D",
+        "teks": "mampu bergerak dengan pseudopodia"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Monera adalah satu-satunya kelompok makhluk hidup yang materi genetiknya (DNA) tidak dibungkus oleh membran inti (prokariotik). Keempat kingdom lainnya sudah memiliki membran inti sejati (eukariotik).",
+    "paket": "Bab V: Klasifikasi Makhluk Hidup - Bagian B: Contoh Soal Asli Buku Big Book",
+    "materi": "Klasifikasi Makhluk Hidup: Binomial Nomenclature dan Tingkatan Takson",
+    "capaian": "Peserta didik mampu memahami aturan penulisan nama ilmiah dan urutan taksonomi hewan serta tumbuhan.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch5_klasifikasi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 31,
+    "tipe": "pg_sederhana",
+    "soal": "Tumbuhan lumut (Bryophyta) dan tumbuhan paku (Pteridophyta) dikelompokkan bersama karena memiliki kesamaan dalam hal ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "berkembang biak dengan spora dan mengalami metagenesis (pergiliran keturunan)"
+      },
+      {
+        "label": "B",
+        "teks": "sama-sama memiliki pembuluh xilem dan floem"
+      },
+      {
+        "label": "C",
+        "teks": "menghasilkan bunga dan buah berbiji"
+      },
+      {
+        "label": "D",
+        "teks": "memiliki akar tunggang yang kokoh"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Lumut dan paku adalah tumbuhan berspora yang mengalami pergiliran keturunan (metagenesis) antara fase gametofit (penghasil gamet) dan fase sporofit (penghasil spora). Perbedaannya, lumut belum berkormus sejati/atrakheofita, sedangkan paku sudah memiliki pembuluh angkut sejati (kormofita berspora).",
+    "paket": "Bab V: Klasifikasi Makhluk Hidup - Bagian B: Contoh Soal Asli Buku Big Book",
+    "materi": "Klasifikasi Makhluk Hidup: Binomial Nomenclature dan Tingkatan Takson",
+    "capaian": "Peserta didik mampu memahami aturan penulisan nama ilmiah dan urutan taksonomi hewan serta tumbuhan.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch5_klasifikasi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 32,
+    "tipe": "pg_sederhana",
+    "soal": "Perbedaan utama antara tumbuhan monokotil (berkeping satu) dan dikotil (berkeping dua) pada struktur daun dan batangnya adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Monokotil: tulang daun sejajar/melengkung dan berkas pengangkut tersebar; Dikotil: tulang daun menyirip/menjari dan berkas pengangkut teratur melingkar dengan kambium"
+      },
+      {
+        "label": "B",
+        "teks": "Monokotil: tulang daun menjari; Dikotil: tulang daun sejajar"
+      },
+      {
+        "label": "C",
+        "teks": "Monokotil berkambium dan bercabang; Dikotil tidak berkambium"
+      },
+      {
+        "label": "D",
+        "teks": "Monokotil memiliki akar tunggang; Dikotil memiliki akar serabut"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Karakteristik Monokotil: keping biji 1, akar serabut, batang tidak berkambium (berkas pengangkut tersebar), pertulangan daun sejajar/melengkung. Karakteristik Dikotil: keping biji 2, akar tunggang, batang berkambium (berkas pengangkut teratur melingkar), pertulangan daun menyirip/menjari.",
+    "paket": "Bab V: Klasifikasi Makhluk Hidup - Bagian B: Contoh Soal Asli Buku Big Book",
+    "materi": "Klasifikasi Makhluk Hidup: Binomial Nomenclature dan Tingkatan Takson",
+    "capaian": "Peserta didik mampu memahami aturan penulisan nama ilmiah dan urutan taksonomi hewan serta tumbuhan.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch5_klasifikasi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 33,
+    "tipe": "pg_sederhana",
+    "soal": "Hewan yang memiliki ciri tubuh beruas-ruas, rangka luar (eksoskeleton) dari zat kitin, dan kaki berbuku-buku dikelompokkan ke dalam Filum ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Mollusca"
+      },
+      {
+        "label": "B",
+        "teks": "Arthropoda"
+      },
+      {
+        "label": "C",
+        "teks": "Annelida"
+      },
+      {
+        "label": "D",
+        "teks": "Echinodermata"
+      }
+    ],
+    "kunci": "B",
+    "pembahasan": "Arthropoda (hewan berbuku-buku) memiliki tubuh beruas (kepala, dada, perut), eksoskeleton dari kitin yang mengalami molting/ekdisis, dan kaki bersendi/berbuku-buku. Contohnya serangga, udang, laba-laba, dan kelabang.",
+    "paket": "Bab V: Klasifikasi Makhluk Hidup - Bagian B: Contoh Soal Asli Buku Big Book",
+    "materi": "Klasifikasi Makhluk Hidup: Binomial Nomenclature dan Tingkatan Takson",
+    "capaian": "Peserta didik mampu memahami aturan penulisan nama ilmiah dan urutan taksonomi hewan serta tumbuhan.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch5_klasifikasi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 34,
+    "tipe": "pg_sederhana",
+    "soal": "Hewan berdarah dingin (poikiloterm) adalah hewan yang suhu tubuhnya berubah-ubah mengikuti suhu lingkungan sekitar. Kelompok hewan vertebrata yang bersifat poikiloterm adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Pisces, Amphibia, dan Reptilia"
+      },
+      {
+        "label": "B",
+        "teks": "Aves dan Mammalia"
+      },
+      {
+        "label": "C",
+        "teks": "Reptilia, Aves, dan Mammalia"
+      },
+      {
+        "label": "D",
+        "teks": "Hanya kelas Pisces saja"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Hewan poikiloterm (berdarah dingin) meliputi Ikan (Pisces), Katak (Amphibia), dan Reptil (Reptilia). Sedangkan Burung (Aves) dan Mamalia (Mammalia) bersifat homoioterm (berdarah panas / suhu tubuh konstan).",
+    "paket": "Bab V: Klasifikasi Makhluk Hidup - Bagian B: Contoh Soal Asli Buku Big Book",
+    "materi": "Klasifikasi Makhluk Hidup: Binomial Nomenclature dan Tingkatan Takson",
+    "capaian": "Peserta didik mampu memahami aturan penulisan nama ilmiah dan urutan taksonomi hewan serta tumbuhan.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch5_klasifikasi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 35,
+    "tipe": "pg_sederhana",
+    "soal": "Kunci determinasi format dikotomi disajikan dalam bentuk pasangan pernyataan yang saling berlawanan. Jika kunci 1a: bertulang belakang dan 1b: tidak bertulang belakang, maka cumi-cumi dan cacing tanah akan masuk ke nomor ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "1a"
+      },
+      {
+        "label": "B",
+        "teks": "1b"
+      },
+      {
+        "label": "C",
+        "teks": "2a"
+      },
+      {
+        "label": "D",
+        "teks": "2b"
+      }
+    ],
+    "kunci": "B",
+    "pembahasan": "Cumi-cumi (Mollusca) dan cacing tanah (Annelida) adalah kelompok hewan avertebrata (invertebrata), yaitu hewan yang tidak memiliki tulang belakang, sehingga diarahkan ke nomor 1b.",
+    "paket": "Bab V: Klasifikasi Makhluk Hidup - Bagian B: Contoh Soal Asli Buku Big Book",
+    "materi": "Klasifikasi Makhluk Hidup: Binomial Nomenclature dan Tingkatan Takson",
+    "capaian": "Peserta didik mampu memahami aturan penulisan nama ilmiah dan urutan taksonomi hewan serta tumbuhan.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch5_klasifikasi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 36,
+    "tipe": "pg_sederhana",
+    "soal": "Tumbuhan mengeluarkan uap air melalui stomata pada daun saat udara panas terik. Proses ini merupakan ciri makhluk hidup yaitu ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "adaptasi"
+      },
+      {
+        "label": "B",
+        "teks": "ekskresi dan pengeluaran zat sisa (transpirasi)"
+      },
+      {
+        "label": "C",
+        "teks": "reproduksi"
+      },
+      {
+        "label": "D",
+        "teks": "respirasi anaerob"
+      }
+    ],
+    "kunci": "B",
+    "pembahasan": "Transpirasi (penguapan air melalui stomata) merupakan salah satu mekanisme ekskresi pengeluaran kelebihan air pada tumbuhan untuk menjaga turgiditas sel dan mendinginkan suhu daun.",
+    "paket": "Bab V: Klasifikasi Makhluk Hidup - Bagian C: Latihan Soal Mandiri Asli",
+    "materi": "Klasifikasi Makhluk Hidup: Ciri Avertebrata dan Vertebrata",
+    "capaian": "Peserta didik mampu membedakan ciri filum Porifera, Coelenterata, Mollusca, Arthropoda, dan kelas Vertebrata.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch5_klasifikasi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 37,
+    "tipe": "pg_sederhana",
+    "soal": "Proses pembentukan glukosa dan oksigen oleh klorofil daun dengan bantuan sinar matahari menunjukkan ciri makhluk hidup ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "memerlukan nutrisi (sintesis makanan secara autotrof)"
+      },
+      {
+        "label": "B",
+        "teks": "mengeluarkan zat sisa"
+      },
+      {
+        "label": "C",
+        "teks": "peka terhadap rangsang kimia"
+      },
+      {
+        "label": "D",
+        "teks": "beradaptasi secara morfologi"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Fotosintesis adalah proses pemenuhan nutrisi secara autotrof oleh tumbuhan hijau menggunakan bahan anorganik (CO2 dan H2O) menjadi zat makanan organik (glukosa).",
+    "paket": "Bab V: Klasifikasi Makhluk Hidup - Bagian C: Latihan Soal Mandiri Asli",
+    "materi": "Klasifikasi Makhluk Hidup: Ciri Avertebrata dan Vertebrata",
+    "capaian": "Peserta didik mampu membedakan ciri filum Porifera, Coelenterata, Mollusca, Arthropoda, dan kelas Vertebrata.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch5_klasifikasi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 38,
+    "tipe": "pg_sederhana",
+    "soal": "Perbesaran total sebuah bayangan sel epidermis bawang merah di bawah mikroskop jika menggunakan lensa okuler 10× dan lensa objektif 40× adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "40 kali"
+      },
+      {
+        "label": "B",
+        "teks": "50 kali"
+      },
+      {
+        "label": "C",
+        "teks": "300 kali"
+      },
+      {
+        "label": "D",
+        "teks": "400 kali"
+      }
+    ],
+    "kunci": "D",
+    "pembahasan": "Perbesaran total mikroskop = Perbesaran lensa okuler × Perbesaran lensa objektif = 10 × 40 = 400 kali.",
+    "paket": "Bab V: Klasifikasi Makhluk Hidup - Bagian C: Latihan Soal Mandiri Asli",
+    "materi": "Klasifikasi Makhluk Hidup: Ciri Avertebrata dan Vertebrata",
+    "capaian": "Peserta didik mampu membedakan ciri filum Porifera, Coelenterata, Mollusca, Arthropoda, dan kelas Vertebrata.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch5_klasifikasi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 39,
+    "tipe": "pg_sederhana",
+    "soal": "Bagian mikroskop yang berfungsi untuk memfokuskan bayangan preparat secara cepat dan kasar adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "makrometer (sekrup fokus kasar)"
+      },
+      {
+        "label": "B",
+        "teks": "mikrometer (sekrup fokus halus)"
+      },
+      {
+        "label": "C",
+        "teks": "revolver"
+      },
+      {
+        "label": "D",
+        "teks": "diafragma"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Makrometer digunakan untuk menaik-turunkan tabung mikroskop atau meja preparat secara cepat guna menemukan fokus awal objek, sedangkan mikrometer untuk memperjelas fokus halus.",
+    "paket": "Bab V: Klasifikasi Makhluk Hidup - Bagian C: Latihan Soal Mandiri Asli",
+    "materi": "Klasifikasi Makhluk Hidup: Ciri Avertebrata dan Vertebrata",
+    "capaian": "Peserta didik mampu membedakan ciri filum Porifera, Coelenterata, Mollusca, Arthropoda, dan kelas Vertebrata.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch5_klasifikasi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 40,
+    "tipe": "pg_sederhana",
+    "soal": "Pada klasifikasi tumbuhan berbiji (Spermatophyta), tumbuhan biji terbuka (Gymnospermae) dicirikan oleh ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "biji tidak dilindungi oleh daun buah (karpel) melainkan menempel pada konus/strobilus"
+      },
+      {
+        "label": "B",
+        "teks": "memiliki bunga sejati dengan mahkota berwarna-warni"
+      },
+      {
+        "label": "C",
+        "teks": "mengalami pembuahan ganda"
+      },
+      {
+        "label": "D",
+        "teks": "akarnya selalu berbentuk serabut halus"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Gymnospermae (contoh: pinus, melinjo, pakis haji, ginkgo) memiliki bakal biji yang terbuka pada permukaan strobilus dan tidak terbungkus daun buah, serta mengalami pembuahan tunggal.",
+    "paket": "Bab V: Klasifikasi Makhluk Hidup - Bagian C: Latihan Soal Mandiri Asli",
+    "materi": "Klasifikasi Makhluk Hidup: Ciri Avertebrata dan Vertebrata",
+    "capaian": "Peserta didik mampu membedakan ciri filum Porifera, Coelenterata, Mollusca, Arthropoda, dan kelas Vertebrata.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch5_klasifikasi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 41,
+    "tipe": "pg_sederhana",
+    "soal": "Di antara pasangan tumbuhan berikut yang keduanya termasuk ke dalam kelompok Gymnospermae adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "mangga dan rambutan"
+      },
+      {
+        "label": "B",
+        "teks": "pakis haji (Cycas rumphii) dan melinjo (Gnetum gnemon)"
+      },
+      {
+        "label": "C",
+        "teks": "jagung dan padi"
+      },
+      {
+        "label": "D",
+        "teks": "kacang tanah dan kedelai"
+      }
+    ],
+    "kunci": "B",
+    "pembahasan": "Pakis haji dan melinjo adalah anggota Gymnospermae yang menghasilkan strobilus jantan dan betina serta bijinya tidak tertutup oleh daging buah karpel.",
+    "paket": "Bab V: Klasifikasi Makhluk Hidup - Bagian C: Latihan Soal Mandiri Asli",
+    "materi": "Klasifikasi Makhluk Hidup: Ciri Avertebrata dan Vertebrata",
+    "capaian": "Peserta didik mampu membedakan ciri filum Porifera, Coelenterata, Mollusca, Arthropoda, dan kelas Vertebrata.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch5_klasifikasi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 42,
+    "tipe": "pg_sederhana",
+    "soal": "Jamur (Fungi) dipisahkan dari Kingdom Plantae dan diletakkan dalam kingdom tersendiri karena jamur ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "tidak memiliki klorofil dan dinding selnya tersusun dari zat kitin"
+      },
+      {
+        "label": "B",
+        "teks": "dapat bergerak aktif seperti hewan"
+      },
+      {
+        "label": "C",
+        "teks": "bersifat prokariotik seperti bakteri"
+      },
+      {
+        "label": "D",
+        "teks": "menghasilkan biji di dalam sporangium"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Jamur tidak memiliki klorofil sehingga bersifat heterotrof (saprofit/parasit), dinding selnya dari kitin (bukan selulosa seperti tumbuhan), dan cadangan makanannya berupa glikogen.",
+    "paket": "Bab V: Klasifikasi Makhluk Hidup - Bagian C: Latihan Soal Mandiri Asli",
+    "materi": "Klasifikasi Makhluk Hidup: Ciri Avertebrata dan Vertebrata",
+    "capaian": "Peserta didik mampu membedakan ciri filum Porifera, Coelenterata, Mollusca, Arthropoda, dan kelas Vertebrata.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch5_klasifikasi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 43,
+    "tipe": "pg_sederhana",
+    "soal": "Organisme bersel satu (uniseluler), eukariotik, dan bergerak aktif menggunakan bulu cambuk (flagela) seperti Euglena viridis digolongkan ke dalam Kingdom ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Monera"
+      },
+      {
+        "label": "B",
+        "teks": "Protista"
+      },
+      {
+        "label": "C",
+        "teks": "Fungi"
+      },
+      {
+        "label": "D",
+        "teks": "Plantae"
+      }
+    ],
+    "kunci": "B",
+    "pembahasan": "Euglena viridis adalah mikroorganisme eukariotik uniseluler yang dimasukkan ke dalam Kingdom Protista (kelompok Protozoa menyerupai tumbuhan/hewan karena memiliki kloroplas dan flagela).",
+    "paket": "Bab V: Klasifikasi Makhluk Hidup - Bagian C: Latihan Soal Mandiri Asli",
+    "materi": "Klasifikasi Makhluk Hidup: Ciri Avertebrata dan Vertebrata",
+    "capaian": "Peserta didik mampu membedakan ciri filum Porifera, Coelenterata, Mollusca, Arthropoda, dan kelas Vertebrata.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch5_klasifikasi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 44,
+    "tipe": "pg_sederhana",
+    "soal": "Protozoa yang bergerak menggunakan kaki semu (pseudopodia) untuk menangkap mangsa secara fagositosis adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Amoeba proteus"
+      },
+      {
+        "label": "B",
+        "teks": "Paramecium caudatum"
+      },
+      {
+        "label": "C",
+        "teks": "Plasmodium malariae"
+      },
+      {
+        "label": "D",
+        "teks": "Trypanosoma gambiense"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Amoeba tergolong Rhizopoda yang bergerak dan memangsa makanan dengan menjulurkan sitoplasmanya membentuk kaki semu (pseudopodia).",
+    "paket": "Bab V: Klasifikasi Makhluk Hidup - Bagian C: Latihan Soal Mandiri Asli",
+    "materi": "Klasifikasi Makhluk Hidup: Ciri Avertebrata dan Vertebrata",
+    "capaian": "Peserta didik mampu membedakan ciri filum Porifera, Coelenterata, Mollusca, Arthropoda, dan kelas Vertebrata.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch5_klasifikasi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 45,
+    "tipe": "pg_sederhana",
+    "soal": "Ciri morfologi tumbuhan yang menunjukkan keping biji berbelah dua, perakaran tunggang, dan tulang daun menyirip dimiliki oleh kelompok ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Dicotyledoneae (Tumbuhan Dikotil)"
+      },
+      {
+        "label": "B",
+        "teks": "Monocotyledoneae (Tumbuhan Monokotil)"
+      },
+      {
+        "label": "C",
+        "teks": "Gymnospermae"
+      },
+      {
+        "label": "D",
+        "teks": "Pteridophyta"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Karakteristik keping biji dua (berbelah), akar tunggang, dan daun menyirip/menjari adalah ciri definitif kelas Dikotil (contoh: mangga, jambu, kacang tanah).",
+    "paket": "Bab V: Klasifikasi Makhluk Hidup - Bagian C: Latihan Soal Mandiri Asli",
+    "materi": "Klasifikasi Makhluk Hidup: Ciri Avertebrata dan Vertebrata",
+    "capaian": "Peserta didik mampu membedakan ciri filum Porifera, Coelenterata, Mollusca, Arthropoda, dan kelas Vertebrata.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch5_klasifikasi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 46,
+    "tipe": "pg_sederhana",
+    "soal": "Tumbuhan paku muda memiliki ciri khas pada ujung daunnya yaitu ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "menggulung (circinate vernation)"
+      },
+      {
+        "label": "B",
+        "teks": "membulat seperti bola"
+      },
+      {
+        "label": "C",
+        "teks": "membentuk duri tajam"
+      },
+      {
+        "label": "D",
+        "teks": "mengeluarkan getah putih pekat"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Salah satu ciri morfologis utama tumbuhan paku (Pteridophyta) adalah daun mudanya yang menggulung melingkar seperti spiral (circinate).",
+    "paket": "Bab V: Klasifikasi Makhluk Hidup - Bagian C: Latihan Soal Mandiri Asli",
+    "materi": "Klasifikasi Makhluk Hidup: Ciri Avertebrata dan Vertebrata",
+    "capaian": "Peserta didik mampu membedakan ciri filum Porifera, Coelenterata, Mollusca, Arthropoda, dan kelas Vertebrata.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch5_klasifikasi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 47,
+    "tipe": "pg_sederhana",
+    "soal": "Kelompok hewan avertebrata yang tubuhnya berpori-pori halus tempat masuknya air dan zat makanan disebut ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Porifera (hewan spons)"
+      },
+      {
+        "label": "B",
+        "teks": "Coelenterata (hewan berongga)"
+      },
+      {
+        "label": "C",
+        "teks": "Platyhelminthes (cacing pipih)"
+      },
+      {
+        "label": "D",
+        "teks": "Nemathelminthes (cacing gilig)"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Porifera adalah hewan multiseluler paling primitif yang tubuhnya dipenuhi pori-pori mikroskopis (ostium) untuk menyaring partikel makanan dari aliran air.",
+    "paket": "Bab V: Klasifikasi Makhluk Hidup - Bagian C: Latihan Soal Mandiri Asli",
+    "materi": "Klasifikasi Makhluk Hidup: Ciri Avertebrata dan Vertebrata",
+    "capaian": "Peserta didik mampu membedakan ciri filum Porifera, Coelenterata, Mollusca, Arthropoda, dan kelas Vertebrata.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch5_klasifikasi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 48,
+    "tipe": "pg_sederhana",
+    "soal": "Ubur-ubur, anemon laut, dan karang laut dikelompokkan ke dalam Filum Coelenterata (Cnidaria) karena memiliki ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "sel penyengat (knidosit/nematokis) pada tentakelnya untuk melumpuhkan mangsa"
+      },
+      {
+        "label": "B",
+        "teks": "tulang belakang berongga udara"
+      },
+      {
+        "label": "C",
+        "teks": "sistem saraf pusat yang sempurna"
+      },
+      {
+        "label": "D",
+        "teks": "kaki berbuku-buku"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Cnidaria dicirikan oleh adanya sel sengat nematokis pada tentakel di sekitar mulutnya untuk pertahanan dan menangkap mangsa.",
+    "paket": "Bab V: Klasifikasi Makhluk Hidup - Bagian C: Latihan Soal Mandiri Asli",
+    "materi": "Klasifikasi Makhluk Hidup: Ciri Avertebrata dan Vertebrata",
+    "capaian": "Peserta didik mampu membedakan ciri filum Porifera, Coelenterata, Mollusca, Arthropoda, dan kelas Vertebrata.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch5_klasifikasi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 49,
+    "tipe": "pg_sederhana",
+    "soal": "Cacing tanah (Lumbricus terrestris) dikelompokkan ke dalam Filum Annelida karena tubuhnya ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "tersusun atas cincin atau ruas-ruas bersegmen menyerupai gelang (metameri)"
+      },
+      {
+        "label": "B",
+        "teks": "berbentuk pipih tanpa rongga tubuh"
+      },
+      {
+        "label": "C",
+        "teks": "tertutup oleh cangkang keras berkapur"
+      },
+      {
+        "label": "D",
+        "teks": "dilengkapi kaki semu berbulu"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Annelida berasal dari kata annulus (cincin kecil), mencirikan hewan triploblastik selomata yang tubuhnya beruas-ruas cincin seperti gelang berulang.",
+    "paket": "Bab V: Klasifikasi Makhluk Hidup - Bagian C: Latihan Soal Mandiri Asli",
+    "materi": "Klasifikasi Makhluk Hidup: Ciri Avertebrata dan Vertebrata",
+    "capaian": "Peserta didik mampu membedakan ciri filum Porifera, Coelenterata, Mollusca, Arthropoda, dan kelas Vertebrata.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch5_klasifikasi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 50,
+    "tipe": "pg_sederhana",
+    "soal": "Hewan bertubuh lunak yang umumnya dilindungi oleh cangkang dari kalsium karbonat (seperti siput, kerang, dan bekicot) tergolong ke dalam Filum ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Mollusca"
+      },
+      {
+        "label": "B",
+        "teks": "Echinodermata"
+      },
+      {
+        "label": "C",
+        "teks": "Arthropoda"
+      },
+      {
+        "label": "D",
+        "teks": "Chordata"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Mollusca (mollis = lunak) adalah filum hewan bertubuh lunak, tidak bersegmen, memiliki mantel penghasil cangkang berkapur, dan bergerak dengan kaki otot.",
+    "paket": "Bab V: Klasifikasi Makhluk Hidup - Bagian C: Latihan Soal Mandiri Asli",
+    "materi": "Klasifikasi Makhluk Hidup: Ciri Avertebrata dan Vertebrata",
+    "capaian": "Peserta didik mampu membedakan ciri filum Porifera, Coelenterata, Mollusca, Arthropoda, dan kelas Vertebrata.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch5_klasifikasi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 51,
+    "tipe": "pg_sederhana",
+    "soal": "Bintang laut dan bulu babi dikelompokkan ke dalam Filum Echinodermata karena memiliki ciri khas berupa ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "kulit berduri dari lempeng zat kapur dan sistem ambulakral untuk bergerak"
+      },
+      {
+        "label": "B",
+        "teks": "sayap berselaput tipis"
+      },
+      {
+        "label": "C",
+        "teks": "alat gerak berupa sirip berpasangan"
+      },
+      {
+        "label": "D",
+        "teks": "paru-paru dengan pundi-pundi hawa"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Echinodermata (echinos = landak/duri, derma = kulit) memiliki endoskeleton berkapur dengan tonjolan duri serta sistem vaskular air (ambulakral) untuk lokomosi dan respirasi.",
+    "paket": "Bab V: Klasifikasi Makhluk Hidup - Bagian C: Latihan Soal Mandiri Asli",
+    "materi": "Klasifikasi Makhluk Hidup: Ciri Avertebrata dan Vertebrata",
+    "capaian": "Peserta didik mampu membedakan ciri filum Porifera, Coelenterata, Mollusca, Arthropoda, dan kelas Vertebrata.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch5_klasifikasi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 52,
+    "tipe": "pg_sederhana",
+    "soal": "Hewan vertebrata yang bernapas dengan insang saat fase berudu dan bernapas dengan paru-paru serta kulit saat dewasa adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Amphibia (seperti katak dan kodok)"
+      },
+      {
+        "label": "B",
+        "teks": "Pisces (ikan mas)"
+      },
+      {
+        "label": "C",
+        "teks": "Reptilia (kadal)"
+      },
+      {
+        "label": "D",
+        "teks": "Aves (burung pipit)"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Amfibi mengalami metamorfosis: larva berudu hidup di air bernapas dengan insang luar/dalam, setelah dewasa hidup di darat dan bernapas dengan paru-paru serta kulit tipis berlendir.",
+    "paket": "Bab V: Klasifikasi Makhluk Hidup - Bagian C: Latihan Soal Mandiri Asli",
+    "materi": "Klasifikasi Makhluk Hidup: Ciri Avertebrata dan Vertebrata",
+    "capaian": "Peserta didik mampu membedakan ciri filum Porifera, Coelenterata, Mollusca, Arthropoda, dan kelas Vertebrata.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch5_klasifikasi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 53,
+    "tipe": "pg_sederhana",
+    "soal": "Ciri khas kelas Mammalia yang membedakannya secara mutlak dari kelas vertebrata lainnya adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "memiliki kelenjar susu (glandula mammae) untuk menyusui anaknya dan tubuh ditutupi rambut"
+      },
+      {
+        "label": "B",
+        "teks": "bernapas menggunakan paru-paru"
+      },
+      {
+        "label": "C",
+        "teks": "memiliki empat ruang jantung"
+      },
+      {
+        "label": "D",
+        "teks": "bersifat homoioterm"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Kelenjar susu (mammae) dan penutup tubuh berupa rambut (hair) adalah sinapomorfi khas Mammalia. Burung dan buaya juga memiliki 4 ruang jantung, namun tidak memiliki kelenjar susu.",
+    "paket": "Bab V: Klasifikasi Makhluk Hidup - Bagian C: Latihan Soal Mandiri Asli",
+    "materi": "Klasifikasi Makhluk Hidup: Ciri Avertebrata dan Vertebrata",
+    "capaian": "Peserta didik mampu membedakan ciri filum Porifera, Coelenterata, Mollusca, Arthropoda, dan kelas Vertebrata.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch5_klasifikasi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 54,
+    "tipe": "pg_sederhana",
+    "soal": "Burung (Aves) memiliki kantung udara (pundi-pundi hawa) yang sangat penting untuk membantu pernapasan saat ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "terbang tinggi di udara"
+      },
+      {
+        "label": "B",
+        "teks": "menyelam di air"
+      },
+      {
+        "label": "C",
+        "teks": "mengerami telur di sarang"
+      },
+      {
+        "label": "D",
+        "teks": "mencerna biji-bijian keras di lambung"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Saat terbang, gerakan sayap mengekang rongga dada burung sehingga paru-paru sulit menghirup udara langsung. Pundi-pundi hawa berfungsi menyimpan cadangan udara beroksigen dan mengalirkannya ke paru-paru saat sayap mengepak.",
+    "paket": "Bab V: Klasifikasi Makhluk Hidup - Bagian C: Latihan Soal Mandiri Asli",
+    "materi": "Klasifikasi Makhluk Hidup: Ciri Avertebrata dan Vertebrata",
+    "capaian": "Peserta didik mampu membedakan ciri filum Porifera, Coelenterata, Mollusca, Arthropoda, dan kelas Vertebrata.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch5_klasifikasi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 55,
+    "tipe": "pg_sederhana",
+    "soal": "Penemu sistem klasifikasi lima kingdom yang diakui secara luas dalam literatur biologi modern adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Robert H. Whittaker"
+      },
+      {
+        "label": "B",
+        "teks": "Carolus Linnaeus"
+      },
+      {
+        "label": "C",
+        "teks": "Charles Darwin"
+      },
+      {
+        "label": "D",
+        "teks": "Gregor Mendel"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Robert H. Whittaker mengusulkan sistem 5 kingdom pada tahun 1969 berdasarkan tingkat organisasi sel, ada tidaknya membran inti, dan cara pemenuhan nutrisi.",
+    "paket": "Bab V: Klasifikasi Makhluk Hidup - Bagian C: Latihan Soal Mandiri Asli",
+    "materi": "Klasifikasi Makhluk Hidup: Ciri Avertebrata dan Vertebrata",
+    "capaian": "Peserta didik mampu membedakan ciri filum Porifera, Coelenterata, Mollusca, Arthropoda, dan kelas Vertebrata.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch5_klasifikasi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 56,
+    "tipe": "pg_sederhana",
+    "soal": "Dalam klasifikasi taksonomi, dua individu organisme digolongkan ke dalam spesies yang sama apabila ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "keduanya dapat melakukan perkawinan dan menghasilkan keturunan yang fertil (subur)"
+      },
+      {
+        "label": "B",
+        "teks": "keduanya memiliki warna tubuh dan habitat yang identik"
+      },
+      {
+        "label": "C",
+        "teks": "keduanya mengonsumsi jenis makanan yang sama"
+      },
+      {
+        "label": "D",
+        "teks": "keduanya hidup pada zona iklim yang serupa"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Definisi spesies secara biologis (konsep Ernst Mayr) adalah populasi organisme yang dapat saling kawin (interbreeding) di alam dan menghasilkan keturunan yang fertil (mampu berkembang biak kembali).",
+    "paket": "Bab V: Klasifikasi Makhluk Hidup - Bagian C: Latihan Soal Mandiri Asli",
+    "materi": "Klasifikasi Makhluk Hidup: Ciri Avertebrata dan Vertebrata",
+    "capaian": "Peserta didik mampu membedakan ciri filum Porifera, Coelenterata, Mollusca, Arthropoda, dan kelas Vertebrata.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch5_klasifikasi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 57,
+    "tipe": "pg_sederhana",
+    "soal": "Felis catus (kucing rumah) dan Panthera leo (singa) dimasukkan ke dalam famili yang sama yaitu ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Felidae"
+      },
+      {
+        "label": "B",
+        "teks": "Canidae"
+      },
+      {
+        "label": "C",
+        "teks": "Ursidae"
+      },
+      {
+        "label": "D",
+        "teks": "Hominidae"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Kucing, harimau, singa, dan macan tutul digolongkan ke dalam Famili Felidae (keluarga kucing-kucingan berakar karnivora dengan cakar yang dapat ditarik).",
+    "paket": "Bab V: Klasifikasi Makhluk Hidup - Bagian C: Latihan Soal Mandiri Asli",
+    "materi": "Klasifikasi Makhluk Hidup: Ciri Avertebrata dan Vertebrata",
+    "capaian": "Peserta didik mampu membedakan ciri filum Porifera, Coelenterata, Mollusca, Arthropoda, dan kelas Vertebrata.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch5_klasifikasi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 58,
+    "tipe": "pg_sederhana",
+    "soal": "Tumbuhan dikotil memiliki jaringan meristematik sekunder di antara xilem dan floem yang memungkinkan batang bertambah besar. Jaringan tersebut adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "kambium"
+      },
+      {
+        "label": "B",
+        "teks": "epidermis"
+      },
+      {
+        "label": "C",
+        "teks": "parenkim"
+      },
+      {
+        "label": "D",
+        "teks": "kolenkim"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Kambium vaskular membelah ke arah dalam membentuk xilem sekunder (kayu) dan membelah ke arah luar membentuk floem sekunder (kulit kayu), menyebabkan pertumbuhan diameter batang dikotil.",
+    "paket": "Bab V: Klasifikasi Makhluk Hidup - Bagian C: Latihan Soal Mandiri Asli",
+    "materi": "Klasifikasi Makhluk Hidup: Ciri Avertebrata dan Vertebrata",
+    "capaian": "Peserta didik mampu membedakan ciri filum Porifera, Coelenterata, Mollusca, Arthropoda, dan kelas Vertebrata.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch5_klasifikasi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 59,
+    "tipe": "pg_sederhana",
+    "soal": "Ikan hiu dan ikan pari dikelompokkan ke dalam kelas Chondrichthyes karena memiliki ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "rangka tubuh yang tersusun dari tulang rawan"
+      },
+      {
+        "label": "B",
+        "teks": "rangka tubuh dari tulang keras sejati (osteon)"
+      },
+      {
+        "label": "C",
+        "teks": "operkulum penutup insang dari lempeng tulang"
+      },
+      {
+        "label": "D",
+        "teks": "gelembung renang di dalam perut"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Chondrichthyes adalah kelas ikan bertulang rawan (cartilaginous fish) tanpa gelembung renang, celah insang terbuka tanpa operkulum keras, seperti pada hiu dan pari.",
+    "paket": "Bab V: Klasifikasi Makhluk Hidup - Bagian C: Latihan Soal Mandiri Asli",
+    "materi": "Klasifikasi Makhluk Hidup: Ciri Avertebrata dan Vertebrata",
+    "capaian": "Peserta didik mampu membedakan ciri filum Porifera, Coelenterata, Mollusca, Arthropoda, dan kelas Vertebrata.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch5_klasifikasi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 60,
+    "tipe": "pg_sederhana",
+    "soal": "Hewan reptilia seperti buaya dan ular memiliki kulit bersisik tanduk dari zat keratin yang berfungsi untuk ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "mencegah kehilangan air tubuh berlebihan akibat penguapan di darat"
+      },
+      {
+        "label": "B",
+        "teks": "memudahkan pertukaran gas pernapasan melalui kulit"
+      },
+      {
+        "label": "C",
+        "teks": "menghasilkan lendir pelicin saat berenang"
+      },
+      {
+        "label": "D",
+        "teks": "mempercepat laju metabolisme dingin"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Sisik zat tanduk kering pada reptil kedap air, mencegah dehidrasi atau penguapan cairan tubuh, memungkinkan reptil beradaptasi hidup di daratan kering.",
+    "paket": "Bab V: Klasifikasi Makhluk Hidup - Bagian C: Latihan Soal Mandiri Asli",
+    "materi": "Klasifikasi Makhluk Hidup: Ciri Avertebrata dan Vertebrata",
+    "capaian": "Peserta didik mampu membedakan ciri filum Porifera, Coelenterata, Mollusca, Arthropoda, dan kelas Vertebrata.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch5_klasifikasi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 61,
+    "tipe": "pg_sederhana",
+    "soal": "Contoh alga hijau-biru (Cyanobacteria) yang mampu mengikat nitrogen bebas dari udara dan bersimbiosis dengan paku air Azolla pinnata adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Anabaena azollae"
+      },
+      {
+        "label": "B",
+        "teks": "Spirogyra sp."
+      },
+      {
+        "label": "C",
+        "teks": "Chlorella vulgaris"
+      },
+      {
+        "label": "D",
+        "teks": "Volvox globator"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Anabaena azollae adalah Cyanobacteria berkemampuan fiksasi N2 bebas yang hidup bersimbiosis di daun paku air Azolla, menyuburkan lahan sawah padi.",
+    "paket": "Bab V: Klasifikasi Makhluk Hidup - Bagian C: Latihan Soal Mandiri Asli",
+    "materi": "Klasifikasi Makhluk Hidup: Ciri Avertebrata dan Vertebrata",
+    "capaian": "Peserta didik mampu membedakan ciri filum Porifera, Coelenterata, Mollusca, Arthropoda, dan kelas Vertebrata.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch5_klasifikasi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 62,
+    "tipe": "pg_sederhana",
+    "soal": "Penulisan nama ilmiah singa yaitu Panthera leo, kata 'Panthera' menunjukkan tingkatan takson ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Genus"
+      },
+      {
+        "label": "B",
+        "teks": "Species"
+      },
+      {
+        "label": "C",
+        "teks": "Familia"
+      },
+      {
+        "label": "D",
+        "teks": "Ordo"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Kata pertama pada binomial nomenclature menunjukkan tingkatan Genus (marga), sedangkan kata kedua merupakan penunjuk spesies (epitheton specificum).",
+    "paket": "Bab V: Klasifikasi Makhluk Hidup - Bagian C: Latihan Soal Mandiri Asli",
+    "materi": "Klasifikasi Makhluk Hidup: Ciri Avertebrata dan Vertebrata",
+    "capaian": "Peserta didik mampu membedakan ciri filum Porifera, Coelenterata, Mollusca, Arthropoda, dan kelas Vertebrata.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch5_klasifikasi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 63,
+    "tipe": "pg_sederhana",
+    "soal": "Katak sawah (Fejervarya cancrivora) berkembang biak dengan cara bertelur di dalam air dengan fertilisasi eksternal, yang berarti ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "peleburan sel telur dan sel sperma terjadi di luar tubuh induknya (di lingkungan air)"
+      },
+      {
+        "label": "B",
+        "teks": "embrio tumbuh di dalam saluran rahim induk"
+      },
+      {
+        "label": "C",
+        "teks": "telur menetas di dalam kantung tubuh induk betina"
+      },
+      {
+        "label": "D",
+        "teks": "fertilisasi dibantu oleh serangga penyerbuk"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Fertilisasi eksternal adalah pembuahan di mana sel sperma membuahi sel telur di luar tubuh hewan, umumnya terjadi pada medium air seperti katak dan ikan.",
+    "paket": "Bab V: Klasifikasi Makhluk Hidup - Bagian C: Latihan Soal Mandiri Asli",
+    "materi": "Klasifikasi Makhluk Hidup: Ciri Avertebrata dan Vertebrata",
+    "capaian": "Peserta didik mampu membedakan ciri filum Porifera, Coelenterata, Mollusca, Arthropoda, dan kelas Vertebrata.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch5_klasifikasi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 64,
+    "tipe": "pg_sederhana",
+    "soal": "Paku ekor kuda (Equisetum) dan paku kawat (Lycopodium) digolongkan ke dalam tumbuhan Tracheophyta karena ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "telah memiliki sistem jaringan pembuluh angkut sejati (xilem dan floem)"
+      },
+      {
+        "label": "B",
+        "teks": "menghasilkan biji di dalam bunga"
+      },
+      {
+        "label": "C",
+        "teks": "tidak memiliki akar dan batang sejati"
+      },
+      {
+        "label": "D",
+        "teks": "bersifat parasit obligat pada pohon inang"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Tracheophyta (tumbuhan berpembuluh) mencakup Pteridophyta (paku) dan Spermatophyta (tumbuhan berbiji) yang memiliki trakea pengangkut xilem dan floem.",
+    "paket": "Bab V: Klasifikasi Makhluk Hidup - Bagian C: Latihan Soal Mandiri Asli",
+    "materi": "Klasifikasi Makhluk Hidup: Ciri Avertebrata dan Vertebrata",
+    "capaian": "Peserta didik mampu membedakan ciri filum Porifera, Coelenterata, Mollusca, Arthropoda, dan kelas Vertebrata.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch5_klasifikasi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 65,
+    "tipe": "pg_sederhana",
+    "soal": "Tujuan utama para ilmuwan biologi melakukan klasifikasi makhluk hidup adalah untuk ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "mempermudah mengenali, mempelajari, dan mengetahui hubungan kekerabatan antarmakhluk hidup"
+      },
+      {
+        "label": "B",
+        "teks": "mengubah sifat genetik makhluk hidup liar"
+      },
+      {
+        "label": "C",
+        "teks": "menghitung jumlah total populasi hewan di bumi"
+      },
+      {
+        "label": "D",
+        "teks": "memisahkan hewan yang berbahaya dan jinak"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Klasifikasi sistematis bertujuan menyederhanakan objek studi biologi yang sangat beraneka ragam agar mudah dikenali ciri-cirinya dan diketahui jalur filogeni/kekerabatannya.",
+    "paket": "Bab V: Klasifikasi Makhluk Hidup - Bagian C: Latihan Soal Mandiri Asli",
+    "materi": "Klasifikasi Makhluk Hidup: Ciri Avertebrata dan Vertebrata",
+    "capaian": "Peserta didik mampu membedakan ciri filum Porifera, Coelenterata, Mollusca, Arthropoda, dan kelas Vertebrata.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch5_klasifikasi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 66,
+    "tipe": "pg_sederhana",
+    "soal": "Dalam percobaan Ingenhousz, tanaman air Hydrilla verticillata dimasukkan ke dalam corong kaca terbalik di dalam bejana air di bawah sinar matahari langsung. Gelembung gas yang terkumpul di ujung tabung dapat menyalakan bara api lidi karena gas tersebut adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "oksigen (O2) hasil dari reaksi fotolisis air pada fotosintesis"
+      },
+      {
+        "label": "B",
+        "teks": "karbon dioksida (CO2) hasil respirasi tanaman"
+      },
+      {
+        "label": "C",
+        "teks": "nitrogen (N2) yang dilepas oleh kloroplas"
+      },
+      {
+        "label": "D",
+        "teks": "gas hidrogen (H2) yang mudah meledak"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Gelembung gas pada percobaan Ingenhousz adalah gas oksigen (O2) yang dihasilkan dari fotosintesis. Oksigen bersifat mendukung pembakaran sehingga mampu menyalakan kembali bara api pada lidi.",
+    "paket": "Bab V: Klasifikasi Makhluk Hidup - Bagian D: Pengayaan AKM & TKA",
+    "materi": "Klasifikasi Makhluk Hidup: Pengayaan AKM Literasi Sains & TKA",
+    "capaian": "Peserta didik mampu menelaah percobaan Ingenhousz, kunci dikotomi paku/lumut, dan sifat aseluler virus.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch5_klasifikasi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 67,
+    "tipe": "pg_sederhana",
+    "soal": "Kunci determinasi: 1a. Tumbuhan berpembuluh (ke No. 2), 1b. Tumbuhan tidak berpembuluh (Bryophyta); 2a. Menghasilkan biji (ke No. 3), 2b. Menghasilkan spora (Pteridophyta); 3a. Biji tertutup daun buah (Angiospermae), 3b. Biji terbuka (Gymnospermae). Urutan nomor kunci determinasi untuk tanaman Melinjo adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "1a - 2a - 3b"
+      },
+      {
+        "label": "B",
+        "teks": "1a - 2a - 3a"
+      },
+      {
+        "label": "C",
+        "teks": "1a - 2b"
+      },
+      {
+        "label": "D",
+        "teks": "1b - 2a - 3b"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Melinjo adalah tumbuhan berpembuluh (1a) -> menghasilkan biji (2a) -> biji tidak tertutup daging buah/Gymnospermae (3b). Jadi urutannya adalah 1a - 2a - 3b.",
+    "paket": "Bab V: Klasifikasi Makhluk Hidup - Bagian D: Pengayaan AKM & TKA",
+    "materi": "Klasifikasi Makhluk Hidup: Pengayaan AKM Literasi Sains & TKA",
+    "capaian": "Peserta didik mampu menelaah percobaan Ingenhousz, kunci dikotomi paku/lumut, dan sifat aseluler virus.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch5_klasifikasi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 68,
+    "tipe": "pg_sederhana",
+    "soal": "Tumbuhan lumut tanduk (Anthocerotopsida) dan lumut hati (Hepaticopsida) dikelompokkan ke dalam Divisio Bryophyta. Ciri khas lumut yang membedakannya dari tumbuhan paku adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Fase gametofit lebih dominan dan hidup bebas daripada fase sporofitnya"
+      },
+      {
+        "label": "B",
+        "teks": "Memiliki akar tunggang berkambium"
+      },
+      {
+        "label": "C",
+        "teks": "Memiliki xilem trakeid sejati"
+      },
+      {
+        "label": "D",
+        "teks": "Menghasilkan strobilus berkayu"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Pada lumut (Bryophyta), generasi gametofit (tumbuhan lumut hijau) berumur panjang dan dominan, sedangkan generasi sporofit (sporogonium) menumpang hidup pada gametofit. Pada paku, sporofitlah yang dominan.",
+    "paket": "Bab V: Klasifikasi Makhluk Hidup - Bagian D: Pengayaan AKM & TKA",
+    "materi": "Klasifikasi Makhluk Hidup: Pengayaan AKM Literasi Sains & TKA",
+    "capaian": "Peserta didik mampu menelaah percobaan Ingenhousz, kunci dikotomi paku/lumut, dan sifat aseluler virus.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch5_klasifikasi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 69,
+    "tipe": "pg_sederhana",
+    "soal": "Perhatikan empat pasang hewan berikut: (1) Udang dan kepiting, (2) Belalang dan kupu-kupu, (3) Cacing tanah dan lintah, (4) Laba-laba dan kalajengking. Pasangan hewan yang seluruhnya termasuk dalam kelompok Arthropoda adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "(1), (2), dan (4)"
+      },
+      {
+        "label": "B",
+        "teks": "(1) dan (3) saja"
+      },
+      {
+        "label": "C",
+        "teks": "(2) dan (3) saja"
+      },
+      {
+        "label": "D",
+        "teks": "Semua nomor (1, 2, 3, dan 4)"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Udang & kepiting (Crustacea), belalang & kupu-kupu (Insecta), dan laba-laba & kalajengking (Arachnida) semuanya adalah Arthropoda. Sedangkan cacing tanah & lintah adalah Annelida (bukan Arthropoda).",
+    "paket": "Bab V: Klasifikasi Makhluk Hidup - Bagian D: Pengayaan AKM & TKA",
+    "materi": "Klasifikasi Makhluk Hidup: Pengayaan AKM Literasi Sains & TKA",
+    "capaian": "Peserta didik mampu menelaah percobaan Ingenhousz, kunci dikotomi paku/lumut, dan sifat aseluler virus.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch5_klasifikasi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 70,
+    "tipe": "pg_sederhana",
+    "soal": "Dalam biosistematik modern, virus tidak dimasukkan ke dalam sistem 5 kingdom Whittaker karena virus ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "bersifat aseluler (bukan sel), tidak memiliki organel sitoplasma, dan hanya dapat bereplikasi di dalam sel inang hidup"
+      },
+      {
+        "label": "B",
+        "teks": "terlalu kecil untuk dilihat dengan mikroskop cahaya"
+      },
+      {
+        "label": "C",
+        "teks": "dapat menyebabkan penyakit mematikan pada manusia"
+      },
+      {
+        "label": "D",
+        "teks": "tidak memiliki materi genetik DNA maupun RNA"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Virus dianggap sebagai bentuk peralihan antara benda mati (dapat dikristalkan) dan makhluk hidup (dapat bereplikasi jika menginfeksi sel hidup). Karena tidak berstruktur sel (aseluler), virus tidak memenuhi kriteria sistem klasifikasi seluler 5 kingdom.",
+    "paket": "Bab V: Klasifikasi Makhluk Hidup - Bagian D: Pengayaan AKM & TKA",
+    "materi": "Klasifikasi Makhluk Hidup: Pengayaan AKM Literasi Sains & TKA",
+    "capaian": "Peserta didik mampu menelaah percobaan Ingenhousz, kunci dikotomi paku/lumut, dan sifat aseluler virus.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch5_klasifikasi.jpg",
+    "bacaan": ""
+  }
+]

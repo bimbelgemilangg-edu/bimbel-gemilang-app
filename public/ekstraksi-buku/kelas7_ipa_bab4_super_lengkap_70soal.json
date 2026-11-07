@@ -1,0 +1,2102 @@
+[
+  {
+    "nomor": 76,
+    "tipe": "pg_sederhana",
+    "soal": "Perhatikan gambar gaya-gaya yang bekerja pada balok di atas lantai licin berikut! Besar resultan gaya dan percepatan yang dialami oleh balok tersebut adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "20 N dan 4 m/s2"
+      },
+      {
+        "label": "B",
+        "teks": "30 N dan 6 m/s2"
+      },
+      {
+        "label": "C",
+        "teks": "40 N dan 8 m/s2"
+      },
+      {
+        "label": "D",
+        "teks": "50 N dan 10 m/s2"
+      }
+    ],
+    "kunci": "B",
+    "pembahasan": "Resultan gaya ΣF =F1 +F2-F3 = 25 + 15- 10 = 30 N ke kanan. Berdasarkan Hukum II Newton:a = ΣF m = 30 5 = 6 m/s2.",
+    "paket": "Bab IV: Gerak dan Gaya - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "materi": "Gerak dan Gaya: Jarak, Perpindahan, GLB, GLBB, Tiga Hukum Newton, Gaya Gesek",
+    "capaian": "Peserta didik mampu menganalisis konsep gerak lurus dan gaya serta penerapannya dalam kehidupan sehari-hari.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch4_gerak_gaya.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 77,
+    "tipe": "pg_sederhana",
+    "soal": "Seorang atlet berlari mengelilingi lintasan stadion berbentuk lingkaran berjari-jari 35 m sebanyak 1 putaran penuh dan kembali tepat ke garis start semula. Jarak tempuh dan besar perpindahan atlet tersebut secara berurutan adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Jarak = 220 m dan perpindahan = 220 m"
+      },
+      {
+        "label": "B",
+        "teks": "Jarak = 220 m dan perpindahan = 0 m"
+      },
+      {
+        "label": "C",
+        "teks": "Jarak = 0 m dan perpindahan = 220 m"
+      },
+      {
+        "label": "D",
+        "teks": "Jarak = 110 m dan perpindahan = 70 m"
+      }
+    ],
+    "kunci": "B",
+    "pembahasan": "Jarak = keliling = 2πr = 2× 22 7 × 35 = 220 m; karena kembali ke posisi awal, perpindahan = 0 m.",
+    "paket": "Bab IV: Gerak dan Gaya - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "materi": "Gerak dan Gaya: Jarak, Perpindahan, GLB, GLBB, Tiga Hukum Newton, Gaya Gesek",
+    "capaian": "Peserta didik mampu menganalisis konsep gerak lurus dan gaya serta penerapannya dalam kehidupan sehari-hari.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch4_gerak_gaya.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 78,
+    "tipe": "pg_sederhana",
+    "soal": "Seseorang berjalan lurus ke arah Timur sejauh 80 meter selama 60 sekon, kemudian berbelok tegak lurus ke arah Utara sejauh60 meter selama 40 sekon. Kelajuan rata-rata dan besar kecepatan rata-rata gerak tersebut adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Kelajuan = 1, 4 m/s dan kecepatan = 1, 0 m/s"
+      },
+      {
+        "label": "B",
+        "teks": "Kelajuan = 1, 0 m/s dan kecepatan = 1, 4 m/s"
+      },
+      {
+        "label": "C",
+        "teks": "Kelajuan = 1, 4 m/s dan kecepatan = 1, 4 m/s"
+      },
+      {
+        "label": "D",
+        "teks": "Kelajuan = 1, 2 m/s dan kecepatan = 0, 8 m/s"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Kelajuan = (80 + 60)/(60 + 40) = 140/100 = 1, 4 m/s; perpindahan Pythagoras = √ 802 + 602 = 100 m, kecepatan = 100/100 = 1, 0 m/s.",
+    "paket": "Bab IV: Gerak dan Gaya - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "materi": "Gerak dan Gaya: Jarak, Perpindahan, GLB, GLBB, Tiga Hukum Newton, Gaya Gesek",
+    "capaian": "Peserta didik mampu menganalisis konsep gerak lurus dan gaya serta penerapannya dalam kehidupan sehari-hari.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch4_gerak_gaya.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 79,
+    "tipe": "pg_sederhana",
+    "soal": "Sebuah mobil yang mula-mula bergerak dengan kecepatan10 m/s menginjak pedal gas sehingga dalam waktu 5 sekon kecepatannya menjadi 25 m/s. Besar percepatan dan jarak yang ditempuh mobil selama 5 sekon tersebut adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "a = 2 m/s2 dans = 75, 0 m"
+      },
+      {
+        "label": "B",
+        "teks": "a = 3 m/s2 dans = 125, 0 m"
+      },
+      {
+        "label": "C",
+        "teks": "a = 5 m/s2 dans = 87, 5 m"
+      },
+      {
+        "label": "D",
+        "teks": "a = 3 m/s2 dans = 87, 5 m"
+      }
+    ],
+    "kunci": "D",
+    "pembahasan": "a = (25- 10)/5 = 3 m/s2;s =v0t + 1 2at2 = (10× 5) + (1 2× 3× 25) = 50 + 37, 5 = 87, 5 m.",
+    "paket": "Bab IV: Gerak dan Gaya - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "materi": "Gerak dan Gaya: Jarak, Perpindahan, GLB, GLBB, Tiga Hukum Newton, Gaya Gesek",
+    "capaian": "Peserta didik mampu menganalisis konsep gerak lurus dan gaya serta penerapannya dalam kehidupan sehari-hari.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch4_gerak_gaya.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 80,
+    "tipe": "pg_sederhana",
+    "soal": "Sebuah mobil tangki yang mengalami kebocoran oli meneteskan oli di sepanjang jalan lurus dari titik A menuju titik B, lalu dari titik B menuju titik C. Jika dari A ke B jarak antartetesan oli tampak makin renggang (jauh), sedangkan dari B ke C jarak antartetesan oli sama rata, maka jenis gerak mobil tangki tersebut adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "A-B adalah GLBB diperlambat, dan B-C adalah GLB"
+      },
+      {
+        "label": "B",
+        "teks": "A-B adalah GLB, dan B-C adalah GLBB dipercepat"
+      },
+      {
+        "label": "C",
+        "teks": "A-B adalah GLBB dipercepat, dan B-C adalah GLB"
+      },
+      {
+        "label": "D",
+        "teks": "A-B adalah GLBB dipercepat, dan B-C adalah GLBB diperlambat"
+      }
+    ],
+    "kunci": "C",
+    "pembahasan": "Tetesan oli makin renggang searah gerak menunjukkan mobil makin cepat (GLBB dipercepat); tetesan sama rata menunjukkan GLB.",
+    "paket": "Bab IV: Gerak dan Gaya - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "materi": "Gerak dan Gaya: Jarak, Perpindahan, GLB, GLBB, Tiga Hukum Newton, Gaya Gesek",
+    "capaian": "Peserta didik mampu menganalisis konsep gerak lurus dan gaya serta penerapannya dalam kehidupan sehari-hari.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch4_gerak_gaya.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 81,
+    "tipe": "pg_sederhana",
+    "soal": "Perhatikan gambar percobaan kereta dinamika yang dihubungkan dengan ticker timer berikut! Jika massa kereta dinamika 2, 5 kg dan gesekan diabaikan, maka besar percepatan kereta dinamika serta jenis gerak yang terekam pada pita ketik adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "6 m/s2 dan GLB"
+      },
+      {
+        "label": "B",
+        "teks": "6 m/s2 dan GLBB diperlambat"
+      },
+      {
+        "label": "C",
+        "teks": "10 m/s2 dan GLBB dipercepat"
+      },
+      {
+        "label": "D",
+        "teks": "10 m/s2 dan GLB"
+      }
+    ],
+    "kunci": "C",
+    "pembahasan": "Resultan gaya searah gerakΣF =F1 +F2 = 10 N+15 N = 25 N. Percepatan kereta a = ΣF m = 25 2,5 = 10 m/s2 dan geraknya merupakan GLBB dipercepat.",
+    "paket": "Bab IV: Gerak dan Gaya - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "materi": "Gerak dan Gaya: Jarak, Perpindahan, GLB, GLBB, Tiga Hukum Newton, Gaya Gesek",
+    "capaian": "Peserta didik mampu menganalisis konsep gerak lurus dan gaya serta penerapannya dalam kehidupan sehari-hari.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch4_gerak_gaya.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 82,
+    "tipe": "pg_sederhana",
+    "soal": "Sebuah kelapa jatuh bebas dari tangkainya di atas pohon menuju tanah, sedangkan sebuah bola dilemparkan vertikal ke atas hingga mencapai titik tertinggi. Pasangan jenis gerak kedua benda tersebut yang tepat adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Kelapa jatuh adalah GLBB dipercepat (searah gravitasi)"
+      },
+      {
+        "label": "B",
+        "teks": "Kelapa jatuh adalah GLBB diperlambat; bola ke atas adalah GLBB dipercepat"
+      },
+      {
+        "label": "C",
+        "teks": "Keduanya melakukan Gerak Lurus Beraturan (GLB)"
+      },
+      {
+        "label": "D",
+        "teks": "Kelapa jatuh adalah GLB; bola ke atas adalah GLBB diperlambat"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Kelapa jatuh dipercepat oleh gravitasi ( a = +g), sedangkan bola dilempar ke atas diperlambat oleh gravitasi (a =-g).",
+    "paket": "Bab IV: Gerak dan Gaya - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "materi": "Gerak dan Gaya: Jarak, Perpindahan, GLB, GLBB, Tiga Hukum Newton, Gaya Gesek",
+    "capaian": "Peserta didik mampu menganalisis konsep gerak lurus dan gaya serta penerapannya dalam kehidupan sehari-hari.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch4_gerak_gaya.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 83,
+    "tipe": "pg_sederhana",
+    "soal": "Sebuah kereta api bergerak dengan kecepatan20 m/s. Ketika mendekati stasiun, masinis melakukan pengereman dengan perlambatan tetap 2 m/s2 hingga kereta berhenti sempurna (vt = 0). Waktu dan jarak yang ditempuh kereta sejak direm hingga berhenti adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "t = 5 s dans = 50 m"
+      },
+      {
+        "label": "B",
+        "teks": "t = 10 s dans = 200 m"
+      },
+      {
+        "label": "C",
+        "teks": "t = 10 s dans = 100 m"
+      },
+      {
+        "label": "D",
+        "teks": "t = 20 s dans = 150 m"
+      }
+    ],
+    "kunci": "C",
+    "pembahasan": "t = (0- 20)/(-2) = 10 s;s = (20× 10) + 1 2 (-2)(102) = 200- 100 = 100 m. --- Page 70 ---",
+    "paket": "Bab IV: Gerak dan Gaya - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "materi": "Gerak dan Gaya: Jarak, Perpindahan, GLB, GLBB, Tiga Hukum Newton, Gaya Gesek",
+    "capaian": "Peserta didik mampu menganalisis konsep gerak lurus dan gaya serta penerapannya dalam kehidupan sehari-hari.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch4_gerak_gaya.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 84,
+    "tipe": "pg_sederhana",
+    "soal": "Seorang penumpang duduk diam di dalam gerbong kereta api yang sedang melaju meninggalkan stasiun. Pernyataan gerak relatif (bersifat semu/relatif terhadap titik acuan) yang tepat adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Penumpang tersebut bergerak terhadap kursi yang didudukinya"
+      },
+      {
+        "label": "B",
+        "teks": "Kereta api diam terhadap pohon-pohon di tepi rel"
+      },
+      {
+        "label": "C",
+        "teks": "Gedung stasiun bergerak nyata menjauhi permukaan bumi"
+      },
+      {
+        "label": "D",
+        "teks": "Penumpang tersebut diam terhadap kursi kereta, tetapi bergerak terhadap gedung stasiun"
+      }
+    ],
+    "kunci": "D",
+    "pembahasan": "Gerak bersifat relatif terhadap titik acuan: terhadap kursi kereta jaraknya tetap (diam), terhadap stasiun jaraknya berubah (bergerak).",
+    "paket": "Bab IV: Gerak dan Gaya - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "materi": "Gerak dan Gaya: Jarak, Perpindahan, GLB, GLBB, Tiga Hukum Newton, Gaya Gesek",
+    "capaian": "Peserta didik mampu menganalisis konsep gerak lurus dan gaya serta penerapannya dalam kehidupan sehari-hari.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch4_gerak_gaya.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 85,
+    "tipe": "pg_sederhana",
+    "soal": "Di antara gaya-gaya berikut: (1) Gaya otot saat mengangkat ember, (2) Gaya gravitasi bumi ter- hadap buah apel, (3) Gaya gesek ban dengan aspal, (4) Gaya magnet menarik paku besi, (5) Gaya elektrostatis penggaris plastik menarik serpihan kertas. Kelompok gaya tak sentuh (non-contact force) ditunjukkan oleh nomor ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "(1), (2), dan (3)"
+      },
+      {
+        "label": "B",
+        "teks": "(1), (3), dan (4)"
+      },
+      {
+        "label": "C",
+        "teks": "(2), (4), dan (5)"
+      },
+      {
+        "label": "D",
+        "teks": "(3), (4), dan (5)"
+      }
+    ],
+    "kunci": "C",
+    "pembahasan": "Gaya gravitasi (2), gaya magnet (4), dan gaya elektrostatis (5) bekerja melalui medan tanpa sentuhan fisik langsung.",
+    "paket": "Bab IV: Gerak dan Gaya - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "materi": "Gerak dan Gaya: Jarak, Perpindahan, GLB, GLBB, Tiga Hukum Newton, Gaya Gesek",
+    "capaian": "Peserta didik mampu menganalisis konsep gerak lurus dan gaya serta penerapannya dalam kehidupan sehari-hari.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch4_gerak_gaya.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 86,
+    "tipe": "pg_sederhana",
+    "soal": "Ketika sebuah bus yang sedang melaju kencang tiba-tiba direm secara mendadak, tubuh para penumpang yang berdiri spontan terdorong ke arah depan. Fenomena ini merupakan penerapan dari ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Hukum I Newton tentang kelembaman (inersia) benda"
+      },
+      {
+        "label": "B",
+        "teks": "Hukum II Newton tentang percepatan sebanding gaya"
+      },
+      {
+        "label": "C",
+        "teks": "Hukum III Newton tentang gaya aksi-reaksi"
+      },
+      {
+        "label": "D",
+        "teks": "Hukum Archimedes tentang gaya apung"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Tubuh penumpang mempertahankan keadaan gerak ke depan saat bus direm men- dadak sesuai Hukum I Newton (inersia).",
+    "paket": "Bab IV: Gerak dan Gaya - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "materi": "Gerak dan Gaya: Jarak, Perpindahan, GLB, GLBB, Tiga Hukum Newton, Gaya Gesek",
+    "capaian": "Peserta didik mampu menganalisis konsep gerak lurus dan gaya serta penerapannya dalam kehidupan sehari-hari.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch4_gerak_gaya.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 87,
+    "tipe": "pg_sederhana",
+    "soal": "Ketika taplak meja yang licin ditarik dengan cepat secara mendadak, piring dan gelas di atasnya tetap bertahan diam di tempatnya. Peristiwa ini merupakan penerapan ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Karena piring memiliki lem perekat di bagian bawahnya"
+      },
+      {
+        "label": "B",
+        "teks": "Karena massa taplak meja lebih besar daripada massa piring"
+      },
+      {
+        "label": "C",
+        "teks": "Karena gaya gravitasi meja hilang sesaat"
+      },
+      {
+        "label": "D",
+        "teks": "Karena piring dan gelas memiliki sifat kelembaman untuk mempertahankan keadaan diamnya ketika waktu kerja gaya gesek sangat singkat"
+      }
+    ],
+    "kunci": "D",
+    "pembahasan": "Inersia mempertahankan posisi diam piring ketika taplak ditarik sangat cepat se- hingga impuls gesekannya sangat kecil.",
+    "paket": "Bab IV: Gerak dan Gaya - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "materi": "Gerak dan Gaya: Jarak, Perpindahan, GLB, GLBB, Tiga Hukum Newton, Gaya Gesek",
+    "capaian": "Peserta didik mampu menganalisis konsep gerak lurus dan gaya serta penerapannya dalam kehidupan sehari-hari.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch4_gerak_gaya.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 88,
+    "tipe": "pg_sederhana",
+    "soal": "Sebuah balok bermassa 8 kg terletak di atas lantai licin. Jika balok tersebut ditarik oleh gaya mendatar ke kanan sebesar 50 N dan gaya ke kiri sebesar 18 N, maka besar percepatan yang di- alami balok adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "2, 0 m/s2"
+      },
+      {
+        "label": "B",
+        "teks": "6, 25 m/s2"
+      },
+      {
+        "label": "C",
+        "teks": "4, 0 m/s2"
+      },
+      {
+        "label": "D",
+        "teks": "8, 5 m/s2"
+      }
+    ],
+    "kunci": "C",
+    "pembahasan": "ΣF = 50- 18 = 32 N;a = ΣF/m = 32/8 = 4, 0 m/s2.",
+    "paket": "Bab IV: Gerak dan Gaya - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "materi": "Gerak dan Gaya: Jarak, Perpindahan, GLB, GLBB, Tiga Hukum Newton, Gaya Gesek",
+    "capaian": "Peserta didik mampu menganalisis konsep gerak lurus dan gaya serta penerapannya dalam kehidupan sehari-hari.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch4_gerak_gaya.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 89,
+    "tipe": "pg_sederhana",
+    "soal": "Perhatikan tabel Data Massa Kereta dan Gaya yang Bekerja pada Empat Percobaan Kereta Dinamika berikut! Percobaan Massa Kereta (m) Gaya Tarik Kanan (F1) Gaya Tahan Kiri (F2) Percobaan I 4 kg 30 N 10 N Percobaan II 8 kg 50 N 18 N Percobaan III 10 kg 45 N 15 N Percobaan IV 2 kg 24 N 8 N Berdasarkan data pada tabel di atas, kereta dinamika yang mengalamipercepatan terbesar adalah kereta pada percobaan ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Percobaan I"
+      },
+      {
+        "label": "B",
+        "teks": "Percobaan II"
+      },
+      {
+        "label": "C",
+        "teks": "Percobaan III"
+      },
+      {
+        "label": "D",
+        "teks": "Percobaan IV"
+      }
+    ],
+    "kunci": "D",
+    "pembahasan": "Berdasarkan Hukum II Newton ( a = F/m), dari data tabel diperoleh percepatan terbesar terjadi ketika gaya tarik paling besar bekerja pada massa kereta terkecil, yaitu pada Percobaan IV.",
+    "paket": "Bab IV: Gerak dan Gaya - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "materi": "Gerak dan Gaya: Jarak, Perpindahan, GLB, GLBB, Tiga Hukum Newton, Gaya Gesek",
+    "capaian": "Peserta didik mampu menganalisis konsep gerak lurus dan gaya serta penerapannya dalam kehidupan sehari-hari.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch4_gerak_gaya.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 90,
+    "tipe": "pg_sederhana",
+    "soal": "Perhatikan peristiwa berikut: (1) Semburan gas panas ke bawah dari ekor roket mendorong badan roket meluncur ke angkasa, (2) Perenang mendorong dinding kolam ke belakang sehingga tubuhnya meluncur ke depan, (3) Buku yang terletak diam di atas meja karena gaya beratnya diim- bangi gaya normal meja. Peristiwa yang merupakan pasangan gaya Aksi-Reaksi (Hukum III Newton) ditunjukkan oleh nomor ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "(1) dan (2)"
+      },
+      {
+        "label": "B",
+        "teks": "(1) dan (3)"
+      },
+      {
+        "label": "C",
+        "teks": "(2) dan (3)"
+      },
+      {
+        "label": "D",
+        "teks": "(1), (2), dan (3)"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Semburan gas vs roket (1) dan tangan perenang vs dinding kolam (2) bekerja pada dua benda berbeda dengan arah berlawanan (Aksi-Reaksi).",
+    "paket": "Bab IV: Gerak dan Gaya - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "materi": "Gerak dan Gaya: Jarak, Perpindahan, GLB, GLBB, Tiga Hukum Newton, Gaya Gesek",
+    "capaian": "Peserta didik mampu menganalisis konsep gerak lurus dan gaya serta penerapannya dalam kehidupan sehari-hari.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch4_gerak_gaya.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 91,
+    "tipe": "pg_sederhana",
+    "soal": "Mengapa gaya berat buku (W ) yang menekan bumi dan gaya normal meja (N) yang menahan buku di atas meja bukan merupakan pasangan gaya aksi-reaksi menurut Hukum III Newton?",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Karena besar gaya berat dan gaya normal berbeda"
+      },
+      {
+        "label": "B",
+        "teks": "Karena arah kedua gaya tersebut sama-sama ke bawah"
+      },
+      {
+        "label": "C",
+        "teks": "Karena kedua gaya tersebut bekerja pada satu benda yang sama"
+      },
+      {
+        "label": "D",
+        "teks": "Karena buku sedang bergerak dipercepat"
+      }
+    ],
+    "kunci": "C",
+    "pembahasan": "Syarat mutlak pasangan aksi-reaksi adalah bekerja pada dua benda berbeda;W dan N sama-sama bekerja pada buku.",
+    "paket": "Bab IV: Gerak dan Gaya - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "materi": "Gerak dan Gaya: Jarak, Perpindahan, GLB, GLBB, Tiga Hukum Newton, Gaya Gesek",
+    "capaian": "Peserta didik mampu menganalisis konsep gerak lurus dan gaya serta penerapannya dalam kehidupan sehari-hari.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch4_gerak_gaya.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 92,
+    "tipe": "pg_sederhana",
+    "soal": "Seorang astronot membawa peralatan ilmiah yang memiliki massa 60 kg saat ditimbang di Bumi (gBumi = 9, 8 m/s2). Ketika peralatan tersebut dibawa mendarat di permukaan Bulan ( gBulan = 1, 6 m/s2), maka massa dan berat peralatan tersebut di Bulan adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Massa = 10 kg dan berat = 96 N"
+      },
+      {
+        "label": "B",
+        "teks": "Massa = 96 kg dan berat = 60 N"
+      },
+      {
+        "label": "C",
+        "teks": "Massa = 60 kg dan berat = 588 N"
+      },
+      {
+        "label": "D",
+        "teks": "Massa = 60 kg dan berat = 96 N"
+      }
+    ],
+    "kunci": "D",
+    "pembahasan": "Massa benda selalu tetap di mana pun ( m = 60 kg), sedangkan berat di Bulan W =m·gBulan = 60× 1, 6 = 96 N.",
+    "paket": "Bab IV: Gerak dan Gaya - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "materi": "Gerak dan Gaya: Jarak, Perpindahan, GLB, GLBB, Tiga Hukum Newton, Gaya Gesek",
+    "capaian": "Peserta didik mampu menganalisis konsep gerak lurus dan gaya serta penerapannya dalam kehidupan sehari-hari.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch4_gerak_gaya.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 93,
+    "tipe": "pg_sederhana",
+    "soal": "Sebuah lemari kayu bermassa 40 kg berada di atas lantai kasar dengan gaya gesek statis mak- simum sebesar 100 N dan gaya gesek kinetis sebesar 70 N. Jika seorang siswa mendorong lemari tersebut dengan gaya mendatar sebesar 85 N, maka keadaan lemari dan besar gaya gesek yang bekerja saat itu adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Lemari bergerak dipercepat; gaya gesek = 70 N"
+      },
+      {
+        "label": "B",
+        "teks": "Lemari tetap diam; gaya gesek statis yang bekerja menyesuaikan sama dengan gaya dorong yaitu 85 N"
+      },
+      {
+        "label": "C",
+        "teks": "Lemari tetap diam; gaya gesek statis yang bekerja = 100 N sehingga lemari mundur ke belakang"
+      },
+      {
+        "label": "D",
+        "teks": "Lemari bergerak lurus beraturan; gaya gesek = 85 N"
+      }
+    ],
+    "kunci": "B",
+    "pembahasan": "Karena gaya dorong (85 N) belum melampaui gaya gesek statis maksimum (100 N), lemari tetap diam danfs =F = 85 N.",
+    "paket": "Bab IV: Gerak dan Gaya - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "materi": "Gerak dan Gaya: Jarak, Perpindahan, GLB, GLBB, Tiga Hukum Newton, Gaya Gesek",
+    "capaian": "Peserta didik mampu menganalisis konsep gerak lurus dan gaya serta penerapannya dalam kehidupan sehari-hari.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch4_gerak_gaya.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 94,
+    "tipe": "pg_sederhana",
+    "soal": "Sebuah lemari kayu bermassa 40 kg di atas lantai kasar memiliki gaya gesek statis maksimum 120 N dan gaya gesek kinetis 80 N. Apabila lemari tersebut didorong mendatar dengan total gaya 160 N ke kanan, besar percepatan lemari adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "2, 00 m/s2"
+      },
+      {
+        "label": "B",
+        "teks": "1, 25 m/s2"
+      },
+      {
+        "label": "C",
+        "teks": "3, 75 m/s2"
+      },
+      {
+        "label": "D",
+        "teks": "5, 50 m/s2"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Saat bergerak, bekerja gaya gesek kinetis fk = 70 N: ΣF = 150- 70 = 80 N⇒ a = 80/40 = 2, 00 m/s2.",
+    "paket": "Bab IV: Gerak dan Gaya - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "materi": "Gerak dan Gaya: Jarak, Perpindahan, GLB, GLBB, Tiga Hukum Newton, Gaya Gesek",
+    "capaian": "Peserta didik mampu menganalisis konsep gerak lurus dan gaya serta penerapannya dalam kehidupan sehari-hari.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch4_gerak_gaya.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 95,
+    "tipe": "pg_sederhana",
+    "soal": "Di antara penerapan gaya gesek dalam kehidupan sehari-hari berikut, manakah yang termasuk gaya gesek yang menguntungkan?",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Gesekan antara piston dan dinding silinder mesin kendaraan yang menyebabkan panas dan aus"
+      },
+      {
+        "label": "B",
+        "teks": "Gesekan rantai sepeda yang kering dan berkarat"
+      },
+      {
+        "label": "C",
+        "teks": "Gesekan bagian bawah kapal laut dengan air yang menghambat laju kapal"
+      },
+      {
+        "label": "D",
+        "teks": "Pembuatan alur/kembangan pada permukaan ban kendaraan dan sol sepatu olahraga agar tidak tergelincir di jalan basah"
+      }
+    ],
+    "kunci": "D",
+    "pembahasan": "Alur ban dan sol sepatu memperbesar cengkeraman gesek agar kendaraan/pejalan kaki tidak selip.",
+    "paket": "Bab IV: Gerak dan Gaya - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "materi": "Gerak dan Gaya: Jarak, Perpindahan, GLB, GLBB, Tiga Hukum Newton, Gaya Gesek",
+    "capaian": "Peserta didik mampu menganalisis konsep gerak lurus dan gaya serta penerapannya dalam kehidupan sehari-hari.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch4_gerak_gaya.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 96,
+    "tipe": "pg_sederhana",
+    "soal": "Penerjun payung yang melompat dari pesawat mula-mula jatuh dipercepat, namun setelah para- sutnya mengembang lebar, laju turunnya menjadi jauh lebih lambat dan konstan hingga mendarat dengan selamat. Fungsi pengembangan parasut secara fisika adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Menghilangkan massa penerjun payung di udara"
+      },
+      {
+        "label": "B",
+        "teks": "Memperkecil percepatan gravitasi bumi di sekitar parasut"
+      },
+      {
+        "label": "C",
+        "teks": "Memperbesar luas permukaan sentuh dengan udara"
+      },
+      {
+        "label": "D",
+        "teks": "Mengubah gaya berat menjadi gaya magnetik"
+      }
+    ],
+    "kunci": "C",
+    "pembahasan": "Parasut lebar menghasilkan gaya hambat udara (air drag) ke atas yang besar hingga ΣF = 0 dan penerjun turun dengan laju terminal yang aman.",
+    "paket": "Bab IV: Gerak dan Gaya - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "materi": "Gerak dan Gaya: Jarak, Perpindahan, GLB, GLBB, Tiga Hukum Newton, Gaya Gesek",
+    "capaian": "Peserta didik mampu menganalisis konsep gerak lurus dan gaya serta penerapannya dalam kehidupan sehari-hari.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch4_gerak_gaya.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 97,
+    "tipe": "pg_sederhana",
+    "soal": "Bagaimana cara yang paling tepat dilakukan mekanik untuk memperkecil gaya gesek yang merugikan pada poros roda dan gir mesin sepeda motor?",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Menaburkan pasir kasar pada sela-sela gir mesin"
+      },
+      {
+        "label": "B",
+        "teks": "Memasang bantalan peluru dan memberikan minyak pelumas"
+      },
+      {
+        "label": "C",
+        "teks": "Memperkasar permukaan logam yang saling bersentuhan"
+      },
+      {
+        "label": "D",
+        "teks": "Menambah beban muatan di atas sepeda motor"
+      }
+    ],
+    "kunci": "B",
+    "pembahasan": "Bantalan peluru mengubah gesekan luncur menjadi gesekan gelinding, dan pelumas memisahkan permukaan logam.",
+    "paket": "Bab IV: Gerak dan Gaya - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "materi": "Gerak dan Gaya: Jarak, Perpindahan, GLB, GLBB, Tiga Hukum Newton, Gaya Gesek",
+    "capaian": "Peserta didik mampu menganalisis konsep gerak lurus dan gaya serta penerapannya dalam kehidupan sehari-hari.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch4_gerak_gaya.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 98,
+    "tipe": "pg_sederhana",
+    "soal": "Dua buah mobil A dan B bergerak saling mendekati dari jarak600 meter pada lintasan lurus. Mo- bil A bergerak ke kanan dengan kelajuan tetap 12 m/s dan mobil B bergerak ke kiri dengan kelajuan tetap 18 m/s. Jika keduanya berangkat pada saat yang bersamaan, setelah berapa sekon kedua mobil tersebut berpapasan?",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "20 sekon"
+      },
+      {
+        "label": "B",
+        "teks": "15 sekon"
+      },
+      {
+        "label": "C",
+        "teks": "25 sekon"
+      },
+      {
+        "label": "D",
+        "teks": "30 sekon"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "t = stotal vA+vB = 600 12+18 = 600 30 = 20 sekon.",
+    "paket": "Bab IV: Gerak dan Gaya - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "materi": "Gerak dan Gaya: Jarak, Perpindahan, GLB, GLBB, Tiga Hukum Newton, Gaya Gesek",
+    "capaian": "Peserta didik mampu menganalisis konsep gerak lurus dan gaya serta penerapannya dalam kehidupan sehari-hari.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch4_gerak_gaya.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 99,
+    "tipe": "pg_sederhana",
+    "soal": "Perhatikan grafik kecepatan (v) terhadap waktu (t) sebuah benda bermassa 4 kg: dari t = 0 s hingga t = 4 s kecepatan naik linear dari 2 m/s menjadi 14 m/s. Besar resultan gaya ( ΣF ) yang bekerja pada benda tersebut selama selang waktu tersebut adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "8 N"
+      },
+      {
+        "label": "B",
+        "teks": "16 N"
+      },
+      {
+        "label": "C",
+        "teks": "12 N"
+      },
+      {
+        "label": "D",
+        "teks": "48 N"
+      }
+    ],
+    "kunci": "C",
+    "pembahasan": "a = 14-2 4 = 3 m/s2; ΣF =m·a = 4 kg× 3 m/s2 = 12 N.",
+    "paket": "Bab IV: Gerak dan Gaya - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "materi": "Gerak dan Gaya: Jarak, Perpindahan, GLB, GLBB, Tiga Hukum Newton, Gaya Gesek",
+    "capaian": "Peserta didik mampu menganalisis konsep gerak lurus dan gaya serta penerapannya dalam kehidupan sehari-hari.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch4_gerak_gaya.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 100,
+    "tipe": "pg_sederhana",
+    "soal": "Ketika kita memukul dinding tembok dengan keras menggunakan kepalan tangan, tangan kita justru terasa sakit. Berdasarkan Hukum III Newton, rasa sakit pada tangan disebabkan oleh ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Gaya gravitasi dinding yang berpindah ke tangan"
+      },
+      {
+        "label": "B",
+        "teks": "Udara di antara tangan dan dinding memuai secara tiba-tiba"
+      },
+      {
+        "label": "C",
+        "teks": "Massa dinding lebih kecil daripada massa tangan"
+      },
+      {
+        "label": "D",
+        "teks": "Dinding memberikan gaya reaksi yang sama besar namun berlawanan arah terhadap gaya aksi pukulan tangan kita"
+      }
+    ],
+    "kunci": "D",
+    "pembahasan": "Semakin besar gaya aksi pukulan tangan pada dinding, semakin besar pula gaya reaksi dinding yang menekan balik tangan.",
+    "paket": "Bab IV: Gerak dan Gaya - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "materi": "Gerak dan Gaya: Jarak, Perpindahan, GLB, GLBB, Tiga Hukum Newton, Gaya Gesek",
+    "capaian": "Peserta didik mampu menganalisis konsep gerak lurus dan gaya serta penerapannya dalam kehidupan sehari-hari.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch4_gerak_gaya.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 26,
+    "tipe": "pg_sederhana",
+    "soal": "Perbedaan mendasar antara besaran jarak dan perpindahan dalam konsep gerak fisika adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "jarak adalah besaran skalar (panjang total lintasan), sedangkan perpindahan adalah besaran vektor (perubahan posisi dari titik awal ke akhir)"
+      },
+      {
+        "label": "B",
+        "teks": "jarak memiliki arah, sedangkan perpindahan tidak memiliki arah"
+      },
+      {
+        "label": "C",
+        "teks": "perpindahan selalu lebih besar daripada jarak"
+      },
+      {
+        "label": "D",
+        "teks": "jarak diukur dalam satuan m/s, perpindahan dalam satuan meter"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Jarak adalah panjang seluruh lintasan yang ditempuh benda tanpa memperhitungkan arah (besaran skalar). Perpindahan adalah perubahan kedudukan benda diukur dari titik acuan awal ke posisi akhir beserta arahnya (besaran vektor).",
+    "paket": "Bab IV: Gerak dan Gaya - Bagian B: Contoh Soal Asli Buku Big Book",
+    "materi": "Gerak dan Gaya: Konsep GLB, GLBB, dan Tiga Hukum Newton",
+    "capaian": "Peserta didik mampu menghitung kelajuan rata-rata dan percepatan serta memahami inersia dan aksi-reaksi.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch4_gerak_gaya.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 27,
+    "tipe": "pg_sederhana",
+    "soal": "Sebuah mobil menempuh jarak 120 km dalam waktu 2 jam. Kelajuan rata-rata mobil tersebut adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "30 km/jam"
+      },
+      {
+        "label": "B",
+        "teks": "60 km/jam"
+      },
+      {
+        "label": "C",
+        "teks": "90 km/jam"
+      },
+      {
+        "label": "D",
+        "teks": "120 km/jam"
+      }
+    ],
+    "kunci": "B",
+    "pembahasan": "Kelajuan rata-rata v = s / t = 120 km / 2 jam = 60 km/jam.",
+    "paket": "Bab IV: Gerak dan Gaya - Bagian B: Contoh Soal Asli Buku Big Book",
+    "materi": "Gerak dan Gaya: Konsep GLB, GLBB, dan Tiga Hukum Newton",
+    "capaian": "Peserta didik mampu menghitung kelajuan rata-rata dan percepatan serta memahami inersia dan aksi-reaksi.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch4_gerak_gaya.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 28,
+    "tipe": "pg_sederhana",
+    "soal": "Ciri utama dari Gerak Lurus Beraturan (GLB) adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "kecepatannya konstan (tetap) dan percepatannya nol (a = 0)"
+      },
+      {
+        "label": "B",
+        "teks": "percepatannya konstan dan kecepatannya berubah beraturan"
+      },
+      {
+        "label": "C",
+        "teks": "kecepatannya selalu bertambah cepat"
+      },
+      {
+        "label": "D",
+        "teks": "lintasannya berupa lingkaran beraturan"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Gerak Lurus Beraturan (GLB) adalah gerak suatu benda pada lintasan garis lurus dengan kelajuan atau kecepatan yang tetap pada setiap selang waktu, sehingga percepatannya a = 0.",
+    "paket": "Bab IV: Gerak dan Gaya - Bagian B: Contoh Soal Asli Buku Big Book",
+    "materi": "Gerak dan Gaya: Konsep GLB, GLBB, dan Tiga Hukum Newton",
+    "capaian": "Peserta didik mampu menghitung kelajuan rata-rata dan percepatan serta memahami inersia dan aksi-reaksi.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch4_gerak_gaya.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 29,
+    "tipe": "pg_sederhana",
+    "soal": "Sebuah sepeda motor bergerak dengan kecepatan awal 10 m/s kemudian dipercepat beraturan hingga mencapai 30 m/s dalam waktu 5 detik. Percepatan sepeda motor tersebut adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "2 m/s²"
+      },
+      {
+        "label": "B",
+        "teks": "4 m/s²"
+      },
+      {
+        "label": "C",
+        "teks": "6 m/s²"
+      },
+      {
+        "label": "D",
+        "teks": "8 m/s²"
+      }
+    ],
+    "kunci": "B",
+    "pembahasan": "Percepatan a = (v_t - v_0) / t = (30 - 10) / 5 = 20 / 5 = 4 m/s².",
+    "paket": "Bab IV: Gerak dan Gaya - Bagian B: Contoh Soal Asli Buku Big Book",
+    "materi": "Gerak dan Gaya: Konsep GLB, GLBB, dan Tiga Hukum Newton",
+    "capaian": "Peserta didik mampu menghitung kelajuan rata-rata dan percepatan serta memahami inersia dan aksi-reaksi.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch4_gerak_gaya.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 30,
+    "tipe": "pg_sederhana",
+    "soal": "Pada pita ticker timer, gerak lurus berubah beraturan dipercepat (GLBB dipercepat) ditunjukkan oleh pola titik-titik ketikan yang ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "jarak antartitik semakin lama semakin renggang (menjauh)"
+      },
+      {
+        "label": "B",
+        "teks": "jarak antartitik semakin lama semakin rapat"
+      },
+      {
+        "label": "C",
+        "teks": "jarak antartitik selalu sama dan berjarak tetap"
+      },
+      {
+        "label": "D",
+        "teks": "titik-titik bertumpuk pada satu tempat"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Pada ticker timer, selang waktu antar ketikan selalu sama (misalnya 1/50 detik). Jika benda bergerak semakin cepat (dipercepat), jarak yang ditempuh dalam selang waktu yang sama akan semakin panjang, sehingga titik-titik ketikan menjadi semakin renggang.",
+    "paket": "Bab IV: Gerak dan Gaya - Bagian B: Contoh Soal Asli Buku Big Book",
+    "materi": "Gerak dan Gaya: Konsep GLB, GLBB, dan Tiga Hukum Newton",
+    "capaian": "Peserta didik mampu menghitung kelajuan rata-rata dan percepatan serta memahami inersia dan aksi-reaksi.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch4_gerak_gaya.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 31,
+    "tipe": "pg_sederhana",
+    "soal": "Hukum I Newton (Hukum Kelembaman atau Inersia) menyatakan bahwa ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Jika resultan gaya yang bekerja pada benda sama dengan nol (ΣF = 0), benda yang diam akan tetap diam dan benda yang bergerak lurus akan tetap bergerak lurus beraturan"
+      },
+      {
+        "label": "B",
+        "teks": "Percepatan berbanding lurus dengan resultan gaya dan berbanding terbalik dengan massa"
+      },
+      {
+        "label": "C",
+        "teks": "Untuk setiap aksi selalu ada reaksi yang sama besar dan berlawanan arah"
+      },
+      {
+        "label": "D",
+        "teks": "Gaya gesek selalu berlawanan arah dengan gerak benda"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Hukum I Newton (ΣF = 0) menyatakan sifat inersia (kelembaman) benda, yaitu kecenderungan alami setiap benda untuk mempertahankan keadaan semula: jika diam tetap diam, jika bergerak lurus tetap bergerak lurus beraturan.",
+    "paket": "Bab IV: Gerak dan Gaya - Bagian B: Contoh Soal Asli Buku Big Book",
+    "materi": "Gerak dan Gaya: Konsep GLB, GLBB, dan Tiga Hukum Newton",
+    "capaian": "Peserta didik mampu menghitung kelajuan rata-rata dan percepatan serta memahami inersia dan aksi-reaksi.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch4_gerak_gaya.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 32,
+    "tipe": "pg_sederhana",
+    "soal": "Ketika mobil yang melaju kencang tiba-tiba direm mendadak oleh sopir, tubuh penumpang terdorong ke depan. Peristiwa ini merupakan bukti dari berlakunya ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Hukum I Newton"
+      },
+      {
+        "label": "B",
+        "teks": "Hukum II Newton"
+      },
+      {
+        "label": "C",
+        "teks": "Hukum III Newton"
+      },
+      {
+        "label": "D",
+        "teks": "Hukum Kekekalan Energi"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Tubuh penumpang cenderung mempertahankan gerak majunya ke depan karena sifat kelembaman (inersia), sehingga saat mobil direm mendadak, tubuh penumpang terdorong ke depan (Hukum I Newton).",
+    "paket": "Bab IV: Gerak dan Gaya - Bagian B: Contoh Soal Asli Buku Big Book",
+    "materi": "Gerak dan Gaya: Konsep GLB, GLBB, dan Tiga Hukum Newton",
+    "capaian": "Peserta didik mampu menghitung kelajuan rata-rata dan percepatan serta memahami inersia dan aksi-reaksi.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch4_gerak_gaya.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 33,
+    "tipe": "pg_sederhana",
+    "soal": "Sebuah balok bermassa 5 kg ditarik dengan gaya mendatar 25 N di atas lantai licin tanpa gesekan. Percepatan yang dialami balok tersebut adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "2 m/s²"
+      },
+      {
+        "label": "B",
+        "teks": "5 m/s²"
+      },
+      {
+        "label": "C",
+        "teks": "10 m/s²"
+      },
+      {
+        "label": "D",
+        "teks": "20 m/s²"
+      }
+    ],
+    "kunci": "B",
+    "pembahasan": "Berdasarkan Hukum II Newton: a = ΣF / m = 25 N / 5 kg = 5 m/s².",
+    "paket": "Bab IV: Gerak dan Gaya - Bagian B: Contoh Soal Asli Buku Big Book",
+    "materi": "Gerak dan Gaya: Konsep GLB, GLBB, dan Tiga Hukum Newton",
+    "capaian": "Peserta didik mampu menghitung kelajuan rata-rata dan percepatan serta memahami inersia dan aksi-reaksi.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch4_gerak_gaya.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 34,
+    "tipe": "pg_sederhana",
+    "soal": "Dua buah gaya F1 = 15 N ke kanan dan F2 = 35 N ke kanan bekerja bersamaan pada sebuah benda bermassa 10 kg. Jika terdapat gaya gesek kinetis f_k = 10 N ke kiri, percepatan benda adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "2 m/s²"
+      },
+      {
+        "label": "B",
+        "teks": "4 m/s²"
+      },
+      {
+        "label": "C",
+        "teks": "5 m/s²"
+      },
+      {
+        "label": "D",
+        "teks": "6 m/s²"
+      }
+    ],
+    "kunci": "B",
+    "pembahasan": "Resultan gaya ΣF = F1 + F2 - f_k = 15 + 35 - 10 = 40 N ke kanan. Percepatan a = ΣF / m = 40 / 10 = 4 m/s².",
+    "paket": "Bab IV: Gerak dan Gaya - Bagian B: Contoh Soal Asli Buku Big Book",
+    "materi": "Gerak dan Gaya: Konsep GLB, GLBB, dan Tiga Hukum Newton",
+    "capaian": "Peserta didik mampu menghitung kelajuan rata-rata dan percepatan serta memahami inersia dan aksi-reaksi.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch4_gerak_gaya.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 35,
+    "tipe": "pg_sederhana",
+    "soal": "Saat seorang anak mendayung perahu ke arah belakang, perahu justru meluncur maju ke arah depan. Fenomena ini merupakan penerapan dari ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Hukum I Newton"
+      },
+      {
+        "label": "B",
+        "teks": "Hukum II Newton"
+      },
+      {
+        "label": "C",
+        "teks": "Hukum III Newton (Aksi-Reaksi)"
+      },
+      {
+        "label": "D",
+        "teks": "Gaya Gravitasi Bumi"
+      }
+    ],
+    "kunci": "C",
+    "pembahasan": "Dayung memberikan gaya aksi pada air ke arah belakang (F_aksi), dan sebagai reaksinya air memberikan gaya dorong ke depan pada perahu dengan besar yang sama dan arah berlawanan (F_reaksi = -F_aksi), sesuai Hukum III Newton.",
+    "paket": "Bab IV: Gerak dan Gaya - Bagian B: Contoh Soal Asli Buku Big Book",
+    "materi": "Gerak dan Gaya: Konsep GLB, GLBB, dan Tiga Hukum Newton",
+    "capaian": "Peserta didik mampu menghitung kelajuan rata-rata dan percepatan serta memahami inersia dan aksi-reaksi.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch4_gerak_gaya.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 36,
+    "tipe": "pg_sederhana",
+    "soal": "Benda dikatakan bergerak terhadap suatu titik acuan jika ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "jarak benda ke titik acuan selalu berubah seiring berjalannya waktu"
+      },
+      {
+        "label": "B",
+        "teks": "kedudukan benda terhadap titik acuan mengalami perubahan"
+      },
+      {
+        "label": "C",
+        "teks": "benda memiliki percepatan positif"
+      },
+      {
+        "label": "D",
+        "teks": "benda menempuh lintasan lurus"
+      }
+    ],
+    "kunci": "B",
+    "pembahasan": "Gerak bersifat relatif. Suatu benda dikatakan bergerak jika posisi atau kedudukan benda tersebut berubah terhadap suatu titik acuan tertentu seiring waktu.",
+    "paket": "Bab IV: Gerak dan Gaya - Bagian C: Latihan Soal Mandiri Asli",
+    "materi": "Gerak dan Gaya: Perhitungan Gaya Gesek, Berat Benda, dan Resultan Gaya",
+    "capaian": "Peserta didik mampu menghitung resultan gaya, gaya gesek, berat di bumi vs bulan, dan jarak pengereman.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch4_gerak_gaya.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 37,
+    "tipe": "pg_sederhana",
+    "soal": "Rudi berjalan ke arah timur sejauh 40 meter, kemudian berbalik arah berjalan ke barat sejauh 30 meter. Jarak total dan perpindahan yang dilakukan Rudi berturut-turut adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "70 meter dan 10 meter ke timur"
+      },
+      {
+        "label": "B",
+        "teks": "10 meter dan 70 meter ke barat"
+      },
+      {
+        "label": "C",
+        "teks": "70 meter dan 70 meter"
+      },
+      {
+        "label": "D",
+        "teks": "10 meter dan 10 meter"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Jarak = 40 m + 30 m = 70 meter. Perpindahan = 40 m - 30 m = 10 meter ke arah timur.",
+    "paket": "Bab IV: Gerak dan Gaya - Bagian C: Latihan Soal Mandiri Asli",
+    "materi": "Gerak dan Gaya: Perhitungan Gaya Gesek, Berat Benda, dan Resultan Gaya",
+    "capaian": "Peserta didik mampu menghitung resultan gaya, gaya gesek, berat di bumi vs bulan, dan jarak pengereman.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch4_gerak_gaya.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 38,
+    "tipe": "pg_sederhana",
+    "soal": "Sebuah mobil menempuh jarak 180 km dalam waktu 3 jam. Kecepatan mobil tersebut dinyatakan dalam satuan meter per sekon (m/s) adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "10 m/s"
+      },
+      {
+        "label": "B",
+        "teks": "16,7 m/s"
+      },
+      {
+        "label": "C",
+        "teks": "20 m/s"
+      },
+      {
+        "label": "D",
+        "teks": "25 m/s"
+      }
+    ],
+    "kunci": "B",
+    "pembahasan": "Kelajuan v = 180 km / 3 jam = 60 km/jam. Konversi ke m/s: 60 × (1.000 m / 3.600 s) = 60 / 3,6 ≈ 16,67 m/s.",
+    "paket": "Bab IV: Gerak dan Gaya - Bagian C: Latihan Soal Mandiri Asli",
+    "materi": "Gerak dan Gaya: Perhitungan Gaya Gesek, Berat Benda, dan Resultan Gaya",
+    "capaian": "Peserta didik mampu menghitung resultan gaya, gaya gesek, berat di bumi vs bulan, dan jarak pengereman.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch4_gerak_gaya.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 39,
+    "tipe": "pg_sederhana",
+    "soal": "Contoh peristiwa gerak lurus berubah beraturan diperlambat (GLBB diperlambat) dalam kehidupan sehari-hari adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "bola yang dilempar vertikal ke atas hingga mencapai titik tertinggi"
+      },
+      {
+        "label": "B",
+        "teks": "buah kelapa yang jatuh bebas dari tangkai pohonnya"
+      },
+      {
+        "label": "C",
+        "teks": "mobil yang meluncur bebas di jalan turunan curam"
+      },
+      {
+        "label": "D",
+        "teks": "kereta api yang melaju konstan di rel lurus"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Bola yang dilempar ke atas bergerak melawan gravitasi bumi sehingga kecepatannya berkurang secara teratur (diperlambat) sampai berhenti sesaat pada titik puncak (v = 0).",
+    "paket": "Bab IV: Gerak dan Gaya - Bagian C: Latihan Soal Mandiri Asli",
+    "materi": "Gerak dan Gaya: Perhitungan Gaya Gesek, Berat Benda, dan Resultan Gaya",
+    "capaian": "Peserta didik mampu menghitung resultan gaya, gaya gesek, berat di bumi vs bulan, dan jarak pengereman.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch4_gerak_gaya.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 40,
+    "tipe": "pg_sederhana",
+    "soal": "Buah mangga yang jatuh bebas dari pohonnya mengalami percepatan gravitasi bumi sebesar 10 m/s². Kecepatan buah mangga setelah jatuh bebas selama 2 detik dari keadaan diam adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "10 m/s"
+      },
+      {
+        "label": "B",
+        "teks": "20 m/s"
+      },
+      {
+        "label": "C",
+        "teks": "30 m/s"
+      },
+      {
+        "label": "D",
+        "teks": "40 m/s"
+      }
+    ],
+    "kunci": "B",
+    "pembahasan": "Pada gerak jatuh bebas (v₀ = 0): v_t = g × t = 10 m/s² × 2 s = 20 m/s.",
+    "paket": "Bab IV: Gerak dan Gaya - Bagian C: Latihan Soal Mandiri Asli",
+    "materi": "Gerak dan Gaya: Perhitungan Gaya Gesek, Berat Benda, dan Resultan Gaya",
+    "capaian": "Peserta didik mampu menghitung resultan gaya, gaya gesek, berat di bumi vs bulan, dan jarak pengereman.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch4_gerak_gaya.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 41,
+    "tipe": "pg_sederhana",
+    "soal": "Satuan gaya dalam Sistem Internasional (SI) adalah Newton (N). Satu Newton setara dengan ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "1 kg·m/s"
+      },
+      {
+        "label": "B",
+        "teks": "1 kg·m/s²"
+      },
+      {
+        "label": "C",
+        "teks": "1 kg·m²/s²"
+      },
+      {
+        "label": "D",
+        "teks": "1 g·cm/s²"
+      }
+    ],
+    "kunci": "B",
+    "pembahasan": "Berdasarkan F = m × a, satuan gaya adalah satuan massa (kg) dikalikan satuan percepatan (m/s²), yaitu kg·m/s² yang didefinisikan sebagai 1 Newton.",
+    "paket": "Bab IV: Gerak dan Gaya - Bagian C: Latihan Soal Mandiri Asli",
+    "materi": "Gerak dan Gaya: Perhitungan Gaya Gesek, Berat Benda, dan Resultan Gaya",
+    "capaian": "Peserta didik mampu menghitung resultan gaya, gaya gesek, berat di bumi vs bulan, dan jarak pengereman.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch4_gerak_gaya.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 42,
+    "tipe": "pg_sederhana",
+    "soal": "Gaya yang timbul akibat persentuhan antara dua permukaan benda yang saling bergesekan dan arahnya selalu berlawanan arah dengan kecenderungan gerak benda disebut ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "gaya normal"
+      },
+      {
+        "label": "B",
+        "teks": "gaya gesek"
+      },
+      {
+        "label": "C",
+        "teks": "gaya berat"
+      },
+      {
+        "label": "D",
+        "teks": "gaya tegangan tali"
+      }
+    ],
+    "kunci": "B",
+    "pembahasan": "Gaya gesek (friction) bekerja sejajar bidang sentuh dan selalu berlawanan arah dengan arah gerak atau kecenderungan gerak benda relatif terhadap bidang sentuh.",
+    "paket": "Bab IV: Gerak dan Gaya - Bagian C: Latihan Soal Mandiri Asli",
+    "materi": "Gerak dan Gaya: Perhitungan Gaya Gesek, Berat Benda, dan Resultan Gaya",
+    "capaian": "Peserta didik mampu menghitung resultan gaya, gaya gesek, berat di bumi vs bulan, dan jarak pengereman.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch4_gerak_gaya.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 43,
+    "tipe": "pg_sederhana",
+    "soal": "Gaya gesek yang bekerja pada benda saat benda masih diam tepat sesaat sebelum mulai bergerak disebut ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "gaya gesek statis maksimum"
+      },
+      {
+        "label": "B",
+        "teks": "gaya gesek kinetis"
+      },
+      {
+        "label": "C",
+        "teks": "gaya normal"
+      },
+      {
+        "label": "D",
+        "teks": "gaya sentripetal"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Gaya gesek pada benda diam disebut gaya gesek statis (f_s). Nilai maksimumnya dicapai sesaat sebelum benda bergerak (f_s,max = μ_s·N), yang nilainya selalu lebih besar daripada gaya gesek kinetis (f_k).",
+    "paket": "Bab IV: Gerak dan Gaya - Bagian C: Latihan Soal Mandiri Asli",
+    "materi": "Gerak dan Gaya: Perhitungan Gaya Gesek, Berat Benda, dan Resultan Gaya",
+    "capaian": "Peserta didik mampu menghitung resultan gaya, gaya gesek, berat di bumi vs bulan, dan jarak pengereman.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch4_gerak_gaya.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 44,
+    "tipe": "pg_sederhana",
+    "soal": "Upaya yang dapat dilakukan untuk memperkecil gaya gesek yang merugikan pada mesin kendaraan bermotor adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "membuat alur garis-garis kasar pada permukaan logam"
+      },
+      {
+        "label": "B",
+        "teks": "memberikan minyak pelumas (oli) dan memasang bantalan roda (bearing)"
+      },
+      {
+        "label": "C",
+        "teks": "meningkatkan massa beban mesin"
+      },
+      {
+        "label": "D",
+        "teks": "mengeringkan permukaan piston mesin"
+      }
+    ],
+    "kunci": "B",
+    "pembahasan": "Pemberian pelumas oli dan bearing (laher/roda peluru) dapat menghaluskan kontak antarpermukaan logam yang berputar sehingga gesekan dan keausan mesin berkurang drastis.",
+    "paket": "Bab IV: Gerak dan Gaya - Bagian C: Latihan Soal Mandiri Asli",
+    "materi": "Gerak dan Gaya: Perhitungan Gaya Gesek, Berat Benda, dan Resultan Gaya",
+    "capaian": "Peserta didik mampu menghitung resultan gaya, gaya gesek, berat di bumi vs bulan, dan jarak pengereman.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch4_gerak_gaya.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 45,
+    "tipe": "pg_sederhana",
+    "soal": "Sebaliknya, gaya gesek yang sengaja diperbesar karena sangat menguntungkan keselamatan pengendara dapat ditemukan pada ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "pemberian alur bergerigi pada tapak ban kendaraan dan kampas rem"
+      },
+      {
+        "label": "B",
+        "teks": "bagian dalam silinder mesin mobil"
+      },
+      {
+        "label": "C",
+        "teks": "rantai gir sepeda yang dilumasi oli"
+      },
+      {
+        "label": "D",
+        "teks": "poros baling-baling kapal laut"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Alur pada ban mobil/motor dan kampas rem sengaja dibuat kasar untuk memperbesar gaya gesek dengan jalan dan piringan roda agar kendaraan tidak tergelincir (selip) saat jalan basah dan dapat mengerem secara efektif.",
+    "paket": "Bab IV: Gerak dan Gaya - Bagian C: Latihan Soal Mandiri Asli",
+    "materi": "Gerak dan Gaya: Perhitungan Gaya Gesek, Berat Benda, dan Resultan Gaya",
+    "capaian": "Peserta didik mampu menghitung resultan gaya, gaya gesek, berat di bumi vs bulan, dan jarak pengereman.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch4_gerak_gaya.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 46,
+    "tipe": "pg_sederhana",
+    "soal": "Perbedaan antara massa dan berat benda dalam konsep fisika adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "massa besarnya tetap di mana pun berada, sedangkan berat bergantung pada percepatan gravitasi tempat benda berada"
+      },
+      {
+        "label": "B",
+        "teks": "massa diukur dengan neraca pegas, berat diukur dengan neraca sama lengan"
+      },
+      {
+        "label": "C",
+        "teks": "massa bersatuan Newton, berat bersatuan kilogram"
+      },
+      {
+        "label": "D",
+        "teks": "berat adalah besaran skalar, massa adalah besaran vektor"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Massa (kg) adalah jumlah materi penyusun benda yang nilainya selalu konstan di mana pun. Berat (w = m·g dalam Newton) adalah gaya tarik gravitasi pada benda tersebut yang nilainya bervariasi bergantung pada kuat medan gravitasi tempat benda berada.",
+    "paket": "Bab IV: Gerak dan Gaya - Bagian C: Latihan Soal Mandiri Asli",
+    "materi": "Gerak dan Gaya: Perhitungan Gaya Gesek, Berat Benda, dan Resultan Gaya",
+    "capaian": "Peserta didik mampu menghitung resultan gaya, gaya gesek, berat di bumi vs bulan, dan jarak pengereman.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch4_gerak_gaya.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 47,
+    "tipe": "pg_sederhana",
+    "soal": "Seorang astronot memiliki massa 60 kg di Bumi (g_bumi = 10 m/s²). Jika percepatan gravitasi di Bulan adalah 1/6 percepatan gravitasi Bumi, maka berat astronot tersebut di Bulan adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "100 Newton"
+      },
+      {
+        "label": "B",
+        "teks": "360 Newton"
+      },
+      {
+        "label": "C",
+        "teks": "600 Newton"
+      },
+      {
+        "label": "D",
+        "teks": "3.600 Newton"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Massa astronot di Bulan tetap m = 60 kg. Percepatan gravitasi Bulan g_bulan = 1/6 × 10 = 1,67 m/s². Berat astronot di Bulan w = m × g_bulan = 60 × (10/6) = 100 Newton.",
+    "paket": "Bab IV: Gerak dan Gaya - Bagian C: Latihan Soal Mandiri Asli",
+    "materi": "Gerak dan Gaya: Perhitungan Gaya Gesek, Berat Benda, dan Resultan Gaya",
+    "capaian": "Peserta didik mampu menghitung resultan gaya, gaya gesek, berat di bumi vs bulan, dan jarak pengereman.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch4_gerak_gaya.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 48,
+    "tipe": "pg_sederhana",
+    "soal": "Dua regu tarik tambang saling menarik tali. Regu A menarik ke kiri dengan gaya total 450 N dan Regu B menarik ke kanan dengan gaya total 400 N. Resultan gaya tarik tambang tersebut adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "50 N ke arah Regu A (kiri)"
+      },
+      {
+        "label": "B",
+        "teks": "50 N ke arah Regu B (kanan)"
+      },
+      {
+        "label": "C",
+        "teks": "850 N ke arah Regu A"
+      },
+      {
+        "label": "D",
+        "teks": "0 N (seimbang)"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Resultan gaya ΣF = F_A - F_B = 450 N - 400 N = 50 N ke arah kiri (arah tarikan Regu A).",
+    "paket": "Bab IV: Gerak dan Gaya - Bagian C: Latihan Soal Mandiri Asli",
+    "materi": "Gerak dan Gaya: Perhitungan Gaya Gesek, Berat Benda, dan Resultan Gaya",
+    "capaian": "Peserta didik mampu menghitung resultan gaya, gaya gesek, berat di bumi vs bulan, dan jarak pengereman.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch4_gerak_gaya.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 49,
+    "tipe": "pg_sederhana",
+    "soal": "Sebuah benda bermassa 2 kg yang mula-mula diam diberi gaya konstan 12 N selama 3 sekon. Kecepatan akhir yang dicapai benda tersebut adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "6 m/s"
+      },
+      {
+        "label": "B",
+        "teks": "12 m/s"
+      },
+      {
+        "label": "C",
+        "teks": "18 m/s"
+      },
+      {
+        "label": "D",
+        "teks": "24 m/s"
+      }
+    ],
+    "kunci": "C",
+    "pembahasan": "Percepatan a = F / m = 12 / 2 = 6 m/s². Kecepatan akhir v_t = v₀ + a × t = 0 + 6 × 3 = 18 m/s.",
+    "paket": "Bab IV: Gerak dan Gaya - Bagian C: Latihan Soal Mandiri Asli",
+    "materi": "Gerak dan Gaya: Perhitungan Gaya Gesek, Berat Benda, dan Resultan Gaya",
+    "capaian": "Peserta didik mampu menghitung resultan gaya, gaya gesek, berat di bumi vs bulan, dan jarak pengereman.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch4_gerak_gaya.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 50,
+    "tipe": "pg_sederhana",
+    "soal": "Berdasarkan Hukum III Newton, pasangan gaya aksi dan reaksi memiliki sifat-sifat berikut, KECUALI ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "bekerja pada satu benda yang sama"
+      },
+      {
+        "label": "B",
+        "teks": "besarnya selalu sama"
+      },
+      {
+        "label": "C",
+        "teks": "arahnya saling berlawanan"
+      },
+      {
+        "label": "D",
+        "teks": "terjadi secara serempak/bersamaan"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Pasangan gaya aksi-reaksi bekerja pada DUA BENDA YANG BERBEDA (bukan pada satu benda yang sama), memiliki besar yang sama, garis kerja yang sama, arah yang berlawanan, dan terjadi bersamaan.",
+    "paket": "Bab IV: Gerak dan Gaya - Bagian C: Latihan Soal Mandiri Asli",
+    "materi": "Gerak dan Gaya: Perhitungan Gaya Gesek, Berat Benda, dan Resultan Gaya",
+    "capaian": "Peserta didik mampu menghitung resultan gaya, gaya gesek, berat di bumi vs bulan, dan jarak pengereman.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch4_gerak_gaya.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 51,
+    "tipe": "pg_sederhana",
+    "soal": "Saat peluru ditembakkan dari moncong senapan, senapan terdorong ke belakang membentur bahu penembak. Peristiwa terdorongnya senapan ke belakang merupakan contoh ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "gaya reaksi akibat gaya aksi dorongan mesiu pada peluru ke depan"
+      },
+      {
+        "label": "B",
+        "teks": "pengaruh gaya gesek udara di dalam laras senapan"
+      },
+      {
+        "label": "C",
+        "teks": "gaya gravitasi bumi pada senapan"
+      },
+      {
+        "label": "D",
+        "teks": "kehilangan massa peluru secara tiba-tiba"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Gas hasil ledakan mesiu memberikan gaya aksi pada peluru ke arah depan, dan pada saat yang sama peluru memberikan gaya reaksi yang sama besar mendorong senapan ke arah belakang (Hukum III Newton).",
+    "paket": "Bab IV: Gerak dan Gaya - Bagian C: Latihan Soal Mandiri Asli",
+    "materi": "Gerak dan Gaya: Perhitungan Gaya Gesek, Berat Benda, dan Resultan Gaya",
+    "capaian": "Peserta didik mampu menghitung resultan gaya, gaya gesek, berat di bumi vs bulan, dan jarak pengereman.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch4_gerak_gaya.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 52,
+    "tipe": "pg_sederhana",
+    "soal": "Sebuah mobil bermassa 1.000 kg direm dengan gaya pengereman 4.000 N dari kelajuan 20 m/s hingga berhenti. Jarak yang ditempuh mobil selama pengereman adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "25 meter"
+      },
+      {
+        "label": "B",
+        "teks": "50 meter"
+      },
+      {
+        "label": "C",
+        "teks": "75 meter"
+      },
+      {
+        "label": "D",
+        "teks": "100 meter"
+      }
+    ],
+    "kunci": "B",
+    "pembahasan": "Perlambatan a = F / m = 4.000 / 1.000 = 4 m/s². Jarak henti: v_t² = v₀² - 2·a·s => 0 = 20² - 2 × 4 × s => 8s = 400 => s = 50 meter.",
+    "paket": "Bab IV: Gerak dan Gaya - Bagian C: Latihan Soal Mandiri Asli",
+    "materi": "Gerak dan Gaya: Perhitungan Gaya Gesek, Berat Benda, dan Resultan Gaya",
+    "capaian": "Peserta didik mampu menghitung resultan gaya, gaya gesek, berat di bumi vs bulan, dan jarak pengereman.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch4_gerak_gaya.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 53,
+    "tipe": "pg_sederhana",
+    "soal": "Grafik kecepatan terhadap waktu (v-t) pada Gerak Lurus Beraturan (GLB) berbentuk ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "garis lurus horizontal mendatar sejajar sumbu waktu t"
+      },
+      {
+        "label": "B",
+        "teks": "garis lurus miring naik ke atas"
+      },
+      {
+        "label": "C",
+        "teks": "garis lengkung parabola terbuka ke atas"
+      },
+      {
+        "label": "D",
+        "teks": "garis lurus miring turun ke bawah"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Pada GLB, kecepatan konstan sepanjang waktu sehingga grafiknya berupa garis lurus mendatar (horizontal) sejajar dengan sumbu waktu t.",
+    "paket": "Bab IV: Gerak dan Gaya - Bagian C: Latihan Soal Mandiri Asli",
+    "materi": "Gerak dan Gaya: Perhitungan Gaya Gesek, Berat Benda, dan Resultan Gaya",
+    "capaian": "Peserta didik mampu menghitung resultan gaya, gaya gesek, berat di bumi vs bulan, dan jarak pengereman.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch4_gerak_gaya.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 54,
+    "tipe": "pg_sederhana",
+    "soal": "Sebaliknya, pada grafik kecepatan terhadap waktu (v-t), luas daerah di bawah kurva grafik menyatakan besaran ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "jarak atau perpindahan yang ditempuh benda"
+      },
+      {
+        "label": "B",
+        "teks": "percepatan benda"
+      },
+      {
+        "label": "C",
+        "teks": "gaya yang bekerja pada benda"
+      },
+      {
+        "label": "D",
+        "teks": "energi potensial benda"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Luas area di bawah kurva grafik v-t (kecepatan dikalikan selang waktu) merepresentasikan jarak atau besar perpindahan yang ditempuh oleh benda (s = v × t atau integral v dt).",
+    "paket": "Bab IV: Gerak dan Gaya - Bagian C: Latihan Soal Mandiri Asli",
+    "materi": "Gerak dan Gaya: Perhitungan Gaya Gesek, Berat Benda, dan Resultan Gaya",
+    "capaian": "Peserta didik mampu menghitung resultan gaya, gaya gesek, berat di bumi vs bulan, dan jarak pengereman.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch4_gerak_gaya.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 55,
+    "tipe": "pg_sederhana",
+    "soal": "Alat ukur yang digunakan di laboratorium untuk mengukur besar gaya tarik atau gaya tekan adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "dinamometer (neraca pegas)"
+      },
+      {
+        "label": "B",
+        "teks": "neraca Ohaus tiga lengan"
+      },
+      {
+        "label": "C",
+        "teks": "speedometer"
+      },
+      {
+        "label": "D",
+        "teks": "manometer"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Dinamometer (neraca pegas) memanfaatkan pertambahan panjang pegas sesuai Hukum Hooke (F = k·Δx) untuk mengukur besar gaya dalam satuan Newton.",
+    "paket": "Bab IV: Gerak dan Gaya - Bagian C: Latihan Soal Mandiri Asli",
+    "materi": "Gerak dan Gaya: Perhitungan Gaya Gesek, Berat Benda, dan Resultan Gaya",
+    "capaian": "Peserta didik mampu menghitung resultan gaya, gaya gesek, berat di bumi vs bulan, dan jarak pengereman.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch4_gerak_gaya.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 56,
+    "tipe": "pg_sederhana",
+    "soal": "Gaya sentuh adalah gaya yang bekerja karena adanya kontak fisik langsung antar permukaan benda. Contoh gaya tak sentuh adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "gaya gravitasi, gaya magnet, dan gaya listrik statis"
+      },
+      {
+        "label": "B",
+        "teks": "gaya gesek, gaya otot, dan gaya pegas"
+      },
+      {
+        "label": "C",
+        "teks": "gaya normal, gaya gesek, dan gaya mesin"
+      },
+      {
+        "label": "D",
+        "teks": "gaya dorong angin dan gaya angkat sayap"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Gaya tak sentuh adalah gaya medan yang bekerja melintasi ruang tanpa membutuhkan kontak langsung, yaitu gaya gravitasi bumi, gaya tarik/tolak magnet, dan gaya elektrostatik Coulomb.",
+    "paket": "Bab IV: Gerak dan Gaya - Bagian C: Latihan Soal Mandiri Asli",
+    "materi": "Gerak dan Gaya: Perhitungan Gaya Gesek, Berat Benda, dan Resultan Gaya",
+    "capaian": "Peserta didik mampu menghitung resultan gaya, gaya gesek, berat di bumi vs bulan, dan jarak pengereman.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch4_gerak_gaya.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 57,
+    "tipe": "pg_sederhana",
+    "soal": "Sebuah balok ditarik di atas meja kasar. Jika massa balok 4 kg, koefisien gesek kinetis μ_k = 0,2, dan percepatan gravitasi g = 10 m/s², besar gaya gesek kinetisnya adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "4 Newton"
+      },
+      {
+        "label": "B",
+        "teks": "8 Newton"
+      },
+      {
+        "label": "C",
+        "teks": "20 Newton"
+      },
+      {
+        "label": "D",
+        "teks": "40 Newton"
+      }
+    ],
+    "kunci": "B",
+    "pembahasan": "Gaya normal N = w = m × g = 4 kg × 10 m/s² = 40 N. Gaya gesek kinetis f_k = μ_k × N = 0,2 × 40 N = 8 Newton.",
+    "paket": "Bab IV: Gerak dan Gaya - Bagian C: Latihan Soal Mandiri Asli",
+    "materi": "Gerak dan Gaya: Perhitungan Gaya Gesek, Berat Benda, dan Resultan Gaya",
+    "capaian": "Peserta didik mampu menghitung resultan gaya, gaya gesek, berat di bumi vs bulan, dan jarak pengereman.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch4_gerak_gaya.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 58,
+    "tipe": "pg_sederhana",
+    "soal": "Roket dapat meluncur mengangkasa ke luar angkasa dengan memanfaatkan prinsip ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "semburan gas pembakaran kecepatan tinggi ke bawah sebagai aksi menghasilkan gaya dorong roket ke atas sebagai reaksi"
+      },
+      {
+        "label": "B",
+        "teks": "gaya gesekan udara atmosfer yang mendorong badan roket"
+      },
+      {
+        "label": "C",
+        "teks": "tarikan gravitasi planet luar"
+      },
+      {
+        "label": "D",
+        "teks": "daya apung Archimedes di lapisan termosfer"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Berdasarkan Hukum III Newton dan hukum kekekalan momentum, gas buang yang disemburkan mesin roket ke bawah dengan momentum besar memberikan dorongan reaksi ke atas yang mengangkat badan roket mengangkasa.",
+    "paket": "Bab IV: Gerak dan Gaya - Bagian C: Latihan Soal Mandiri Asli",
+    "materi": "Gerak dan Gaya: Perhitungan Gaya Gesek, Berat Benda, dan Resultan Gaya",
+    "capaian": "Peserta didik mampu menghitung resultan gaya, gaya gesek, berat di bumi vs bulan, dan jarak pengereman.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch4_gerak_gaya.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 59,
+    "tipe": "pg_sederhana",
+    "soal": "Jika resultan gaya yang bekerja pada suatu benda adalah nol (ΣF = 0), maka pernyataan yang benar adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "benda pasti diam atau bergerak lurus dengan kelajuan konstan"
+      },
+      {
+        "label": "B",
+        "teks": "benda pasti bergerak dipercepat"
+      },
+      {
+        "label": "C",
+        "teks": "benda pasti berhenti dan tidak memiliki massa"
+      },
+      {
+        "label": "D",
+        "teks": "benda berputar mengelilingi pusat massanya"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Sesuai Hukum I Newton, bila resultan gaya nol (keseimbangan statis atau dinamis), maka benda diam akan tetap diam atau benda yang sedang bergerak akan tetap bergerak lurus beraturan (GLB).",
+    "paket": "Bab IV: Gerak dan Gaya - Bagian C: Latihan Soal Mandiri Asli",
+    "materi": "Gerak dan Gaya: Perhitungan Gaya Gesek, Berat Benda, dan Resultan Gaya",
+    "capaian": "Peserta didik mampu menghitung resultan gaya, gaya gesek, berat di bumi vs bulan, dan jarak pengereman.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch4_gerak_gaya.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 60,
+    "tipe": "pg_sederhana",
+    "soal": "Dua benda A dan B masing-masing bermassa 2 kg dan 6 kg didorong dengan gaya yang sama besar. Perbandingan percepatan benda A dan benda B (a_A : a_B) adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "1 : 3"
+      },
+      {
+        "label": "B",
+        "teks": "3 : 1"
+      },
+      {
+        "label": "C",
+        "teks": "1 : 1"
+      },
+      {
+        "label": "D",
+        "teks": "9 : 1"
+      }
+    ],
+    "kunci": "B",
+    "pembahasan": "Berdasarkan Hukum II Newton (a = F / m), untuk gaya F yang sama, percepatan berbanding terbalik dengan massa: a_A / a_B = m_B / m_A = 6 / 2 = 3 / 1 atau 3 : 1.",
+    "paket": "Bab IV: Gerak dan Gaya - Bagian C: Latihan Soal Mandiri Asli",
+    "materi": "Gerak dan Gaya: Perhitungan Gaya Gesek, Berat Benda, dan Resultan Gaya",
+    "capaian": "Peserta didik mampu menghitung resultan gaya, gaya gesek, berat di bumi vs bulan, dan jarak pengereman.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch4_gerak_gaya.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 61,
+    "tipe": "pg_sederhana",
+    "soal": "Sebuah mobil mainan bergerak lurus dengan kecepatan konstan 4 m/s selama 15 sekon. Jarak yang ditempuh mobil mainan tersebut adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "30 meter"
+      },
+      {
+        "label": "B",
+        "teks": "45 meter"
+      },
+      {
+        "label": "C",
+        "teks": "60 meter"
+      },
+      {
+        "label": "D",
+        "teks": "75 meter"
+      }
+    ],
+    "kunci": "C",
+    "pembahasan": "Pada GLB: s = v × t = 4 m/s × 15 s = 60 meter.",
+    "paket": "Bab IV: Gerak dan Gaya - Bagian C: Latihan Soal Mandiri Asli",
+    "materi": "Gerak dan Gaya: Perhitungan Gaya Gesek, Berat Benda, dan Resultan Gaya",
+    "capaian": "Peserta didik mampu menghitung resultan gaya, gaya gesek, berat di bumi vs bulan, dan jarak pengereman.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch4_gerak_gaya.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 62,
+    "tipe": "pg_sederhana",
+    "soal": "Kecepatan sebuah kereta api berkurang secara beraturan dari 25 m/s menjadi 15 m/s dalam selang waktu 5 sekon. Besar perlambatan kereta api tersebut adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "1 m/s²"
+      },
+      {
+        "label": "B",
+        "teks": "2 m/s²"
+      },
+      {
+        "label": "C",
+        "teks": "3 m/s²"
+      },
+      {
+        "label": "D",
+        "teks": "4 m/s²"
+      }
+    ],
+    "kunci": "B",
+    "pembahasan": "Perlambatan a = (25 - 15) / 5 = 10 / 5 = 2 m/s².",
+    "paket": "Bab IV: Gerak dan Gaya - Bagian C: Latihan Soal Mandiri Asli",
+    "materi": "Gerak dan Gaya: Perhitungan Gaya Gesek, Berat Benda, dan Resultan Gaya",
+    "capaian": "Peserta didik mampu menghitung resultan gaya, gaya gesek, berat di bumi vs bulan, dan jarak pengereman.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch4_gerak_gaya.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 63,
+    "tipe": "pg_sederhana",
+    "soal": "Benda bermassa 8 kg berada di atas lantai mendatar ditarik gaya F = 50 N ke kanan. Jika lantai kasar menimbulkan gaya gesek 18 N, percepatan benda adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "2 m/s²"
+      },
+      {
+        "label": "B",
+        "teks": "4 m/s²"
+      },
+      {
+        "label": "C",
+        "teks": "6 m/s²"
+      },
+      {
+        "label": "D",
+        "teks": "8 m/s²"
+      }
+    ],
+    "kunci": "B",
+    "pembahasan": "Resultan gaya ΣF = F - f_gesek = 50 - 18 = 32 N. Percepatan a = ΣF / m = 32 / 8 = 4 m/s².",
+    "paket": "Bab IV: Gerak dan Gaya - Bagian C: Latihan Soal Mandiri Asli",
+    "materi": "Gerak dan Gaya: Perhitungan Gaya Gesek, Berat Benda, dan Resultan Gaya",
+    "capaian": "Peserta didik mampu menghitung resultan gaya, gaya gesek, berat di bumi vs bulan, dan jarak pengereman.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch4_gerak_gaya.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 64,
+    "tipe": "pg_sederhana",
+    "soal": "Saat seorang pelari menginjakkan kakinya ke tanah ke arah belakang saat start, tanah memberikan gaya dorong ke arah depan pada tubuh pelari. Hal ini membuktikan ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Hukum III Newton tentang gaya aksi dan reaksi"
+      },
+      {
+        "label": "B",
+        "teks": "Hukum I Newton tentang kelembaman"
+      },
+      {
+        "label": "C",
+        "teks": "Hukum II Newton tentang resultan percepatan"
+      },
+      {
+        "label": "D",
+        "teks": "Hukum gravitasi semesta"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Kaki pelari menekan tanah ke belakang (F_aksi) dan tanah mendorong telapak kaki pelari ke depan (F_reaksi) yang membuat pelari dapat meluncur cepat ke depan.",
+    "paket": "Bab IV: Gerak dan Gaya - Bagian C: Latihan Soal Mandiri Asli",
+    "materi": "Gerak dan Gaya: Perhitungan Gaya Gesek, Berat Benda, dan Resultan Gaya",
+    "capaian": "Peserta didik mampu menghitung resultan gaya, gaya gesek, berat di bumi vs bulan, dan jarak pengereman.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch4_gerak_gaya.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 65,
+    "tipe": "pg_sederhana",
+    "soal": "Penyelam scuba menggunakan sirip kaki katak (fins) untuk berenang di dalam air karena ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "sirip yang lebar dapat mendorong volume air lebih banyak ke belakang sehingga menghasilkan gaya reaksi maju yang lebih besar"
+      },
+      {
+        "label": "B",
+        "teks": "sirip katak mengurangi massa jenis penyelam di air laut"
+      },
+      {
+        "label": "C",
+        "teks": "sirip katak menghindarkan penyelam dari tekanan hidrostatis"
+      },
+      {
+        "label": "D",
+        "teks": "sirip katak menurunkan percepatan gerak penyelam"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Kepakan sirip yang luas menghasilkan gaya dorong aksi yang kuat pada air ke arah belakang, sehingga timbul gaya reaksi balik yang besar mendorong badan penyelam meluncur maju.",
+    "paket": "Bab IV: Gerak dan Gaya - Bagian C: Latihan Soal Mandiri Asli",
+    "materi": "Gerak dan Gaya: Perhitungan Gaya Gesek, Berat Benda, dan Resultan Gaya",
+    "capaian": "Peserta didik mampu menghitung resultan gaya, gaya gesek, berat di bumi vs bulan, dan jarak pengereman.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch4_gerak_gaya.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 66,
+    "tipe": "pg_sederhana",
+    "soal": "Sebuah mobil bergerak lurus dari keadaan diam dan mencapai kecepatan 20 m/s dalam waktu 5 sekon, kemudian mempertahankan kecepatan tersebut selama 10 sekon. Jarak total yang ditempuh mobil selama 15 sekon tersebut adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "200 meter"
+      },
+      {
+        "label": "B",
+        "teks": "250 meter"
+      },
+      {
+        "label": "C",
+        "teks": "300 meter"
+      },
+      {
+        "label": "D",
+        "teks": "350 meter"
+      }
+    ],
+    "kunci": "B",
+    "pembahasan": "Fase 1 (GLBB): s1 = 0,5 × v × t1 = 0,5 × 20 × 5 = 50 meter. Fase 2 (GLB): s2 = v × t2 = 20 × 10 = 200 meter. Jarak total s = s1 + s2 = 50 + 200 = 250 meter.",
+    "paket": "Bab IV: Gerak dan Gaya - Bagian D: Pengayaan AKM & TKA",
+    "materi": "Gerak dan Gaya: Pengayaan AKM Literasi Sains & TKA",
+    "capaian": "Peserta didik mampu menelaah grafik GLBB dua fase dan analisis keselamatan berkendara (airbag & seatbelt).",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch4_gerak_gaya.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 67,
+    "tipe": "pg_sederhana",
+    "soal": "Perhatikan data empat pelari cepat: Pelari K (s = 100 m, t = 12,5 s), Pelari L (s = 200 m, t = 20 s), Pelari M (s = 400 m, t = 50 s), dan Pelari N (s = 150 m, t = 12 s). Urutan pelari dari yang memiliki kelajuan rata-rata tertinggi ke terendah adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "N – L – K/M"
+      },
+      {
+        "label": "B",
+        "teks": "L – N – K/M"
+      },
+      {
+        "label": "C",
+        "teks": "K – L – M – N"
+      },
+      {
+        "label": "D",
+        "teks": "M – K – L – N"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Hitung kelajuan rata-rata: v_K = 100/12,5 = 8 m/s; v_L = 200/20 = 10 m/s; v_M = 400/50 = 8 m/s; v_N = 150/12 = 12,5 m/s. Urutan dari tertinggi ke terendah: N (12,5 m/s) -> L (10 m/s) -> K & M (8 m/s).",
+    "paket": "Bab IV: Gerak dan Gaya - Bagian D: Pengayaan AKM & TKA",
+    "materi": "Gerak dan Gaya: Pengayaan AKM Literasi Sains & TKA",
+    "capaian": "Peserta didik mampu menelaah grafik GLBB dua fase dan analisis keselamatan berkendara (airbag & seatbelt).",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch4_gerak_gaya.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 68,
+    "tipe": "pg_sederhana",
+    "soal": "Sebuah balok bermassa 4 kg ditarik ke kanan oleh gaya F1 = 35 N dan F2 = 15 N, serta ditarik ke kiri oleh gaya F3 = 22 N. Jika gaya gesek lantai terhadap balok sebesar 8 N ke kiri, percepatan yang dialami balok adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "4 m/s²"
+      },
+      {
+        "label": "B",
+        "teks": "5 m/s²"
+      },
+      {
+        "label": "C",
+        "teks": "6 m/s²"
+      },
+      {
+        "label": "D",
+        "teks": "8 m/s²"
+      }
+    ],
+    "kunci": "B",
+    "pembahasan": "Gaya total ke kanan = 35 + 15 = 50 N. Gaya penahan ke kiri = 22 + 8 = 30 N. Resultan gaya ΣF = 50 - 30 = 20 N ke kanan. Percepatan a = ΣF / m = 20 / 4 = 5 m/s².",
+    "paket": "Bab IV: Gerak dan Gaya - Bagian D: Pengayaan AKM & TKA",
+    "materi": "Gerak dan Gaya: Pengayaan AKM Literasi Sains & TKA",
+    "capaian": "Peserta didik mampu menelaah grafik GLBB dua fase dan analisis keselamatan berkendara (airbag & seatbelt).",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch4_gerak_gaya.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 69,
+    "tipe": "pg_sederhana",
+    "soal": "Empat benda diberi resultan gaya berbeda: Benda I (m = 2 kg, ΣF = 12 N), Benda II (m = 5 kg, ΣF = 20 N), Benda III (m = 4 kg, ΣF = 32 N), dan Benda IV (m = 10 kg, ΣF = 30 N). Benda yang mengalami percepatan terbesar dan terkecil berturut-turut adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "III dan IV"
+      },
+      {
+        "label": "B",
+        "teks": "I dan II"
+      },
+      {
+        "label": "C",
+        "teks": "III dan I"
+      },
+      {
+        "label": "D",
+        "teks": "IV dan II"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Hitung percepatan: a_I = 12/2 = 6 m/s²; a_II = 20/5 = 4 m/s²; a_III = 32/4 = 8 m/s²; a_IV = 30/10 = 3 m/s². Percepatan terbesar adalah Benda III (8 m/s²) dan terkecil adalah Benda IV (3 m/s²).",
+    "paket": "Bab IV: Gerak dan Gaya - Bagian D: Pengayaan AKM & TKA",
+    "materi": "Gerak dan Gaya: Pengayaan AKM Literasi Sains & TKA",
+    "capaian": "Peserta didik mampu menelaah grafik GLBB dua fase dan analisis keselamatan berkendara (airbag & seatbelt).",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch4_gerak_gaya.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 70,
+    "tipe": "pg_sederhana",
+    "soal": "Dalam uji tabrakan mobil (crash test), mobil dilengkapi fitur kantung udara (airbag) dan sabuk pengaman (seatbelt). Peran utama airbag ditinjau dari konsep Hukum II Newton dan impuls adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Memperpanjang selang waktu kontak benturan (Δt) sehingga gaya impak benturan (F = Δp / Δt) yang diterima tubuh pengemudi menjadi jauh lebih kecil"
+      },
+      {
+        "label": "B",
+        "teks": "Meniadakan massa pengemudi saat benturan"
+      },
+      {
+        "label": "C",
+        "teks": "Menambah kecepatan mobil saat menabrak rintangan"
+      },
+      {
+        "label": "D",
+        "teks": "Menyerap energi potensial gravitasi bumi"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Berdasarkan hubungan impuls dan perubahan momentum (F = Δp / Δt), ketika waktu benturan (Δt) diperpanjang oleh kantung udara yang mengembang empuk, maka besar gaya benturan (F) yang bekerja pada tubuh pengemudi menjadi sangat berkurang, sehingga mencegah cedera fatal.",
+    "paket": "Bab IV: Gerak dan Gaya - Bagian D: Pengayaan AKM & TKA",
+    "materi": "Gerak dan Gaya: Pengayaan AKM Literasi Sains & TKA",
+    "capaian": "Peserta didik mampu menelaah grafik GLBB dua fase dan analisis keselamatan berkendara (airbag & seatbelt).",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch4_gerak_gaya.jpg",
+    "bacaan": ""
+  }
+]

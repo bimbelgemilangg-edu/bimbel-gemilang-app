@@ -1,0 +1,2102 @@
+[
+  {
+    "nomor": 126,
+    "tipe": "pg_sederhana",
+    "soal": "Perhatikan gambar jaring-jaring makanan pada ekosistem sawah berikut! Apabila populasi ular pada ekosistem sawah tersebut habis diburu manusia, maka dampak langsung yang terjadi adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Populasi elang meningkat dan populasi padi meningkat"
+      },
+      {
+        "label": "B",
+        "teks": "Populasi tikus dan katak meningkat, sedangkan hasil panen padi menurun"
+      },
+      {
+        "label": "C",
+        "teks": "Populasi belalang dan ulat meningkat pesat"
+      },
+      {
+        "label": "D",
+        "teks": "Populasi burung pipit langsung punah"
+      }
+    ],
+    "kunci": "B",
+    "pembahasan": "Ular merupakan predator utama tikus dan katak. Jika ular habis diburu, populasi tikus dan katak meningkat karena kehilangan predator, dan lonjakan populasi tikus menyebabkan kerusakan tanaman padi meningkat.",
+    "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "materi": "Ekologi dan Keanekaragaman Hayati: Biotik-Abiotik, Rantai Makanan, Piramida Energi, Simbiosis, Wallace-Weber",
+    "capaian": "Peserta didik mampu menganalisis interaksi antar komponen ekosistem serta upaya konservasi keanekaragaman hayati Indonesia.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 127,
+    "tipe": "pg_sederhana",
+    "soal": "Sebuah penelitian mengamati bahwa di perairan kolam yang tercemar limbah cair pabrik tekstil, kadar oksigen terlarut (DO) turun drastis sehingga banyak ikan mati mengambang. Peristiwa ini menggambarkan interaksi antara ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Komponen biotik mempengaruhi komponen biotik lainnya"
+      },
+      {
+        "label": "B",
+        "teks": "Perubahan komponen abiotik yang berdampak langsung terhadap kelangsungan hidup kompo- nen biotik"
+      },
+      {
+        "label": "C",
+        "teks": "Simbiosis parasitisme antara ikan dan air kolam"
+      },
+      {
+        "label": "D",
+        "teks": "Kompetisi antarprodusen di dalam kolam"
+      }
+    ],
+    "kunci": "B",
+    "pembahasan": "Limbah pabrik menurunkan DO (faktor abiotik air), yang kemudian menyebabkan ke- matian ikan (komponen biotik).",
+    "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "materi": "Ekologi dan Keanekaragaman Hayati: Biotik-Abiotik, Rantai Makanan, Piramida Energi, Simbiosis, Wallace-Weber",
+    "capaian": "Peserta didik mampu menganalisis interaksi antar komponen ekosistem serta upaya konservasi keanekaragaman hayati Indonesia.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 128,
+    "tipe": "pg_sederhana",
+    "soal": "Perhatikan rantai makanan di ekosistem kebun berikut: Tanaman Cabai → Kutu Daun→ Kepik Merah→ Burung Gereja→ Elang. Dalam rantai makanan tersebut, Kepik Merah berperan sebagai ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Konsumen II (Trofik III)"
+      },
+      {
+        "label": "B",
+        "teks": "Konsumen I (Trofik II)"
+      },
+      {
+        "label": "C",
+        "teks": "Produsen (Trofik I)"
+      },
+      {
+        "label": "D",
+        "teks": "Konsumen III (Trofik IV)"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Tanaman cabai (Produsen/Trofik I)→ Kutu daun (Konsumen I/Trofik II)→ Kepik merah (Konsumen II/Trofik III).",
+    "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "materi": "Ekologi dan Keanekaragaman Hayati: Biotik-Abiotik, Rantai Makanan, Piramida Energi, Simbiosis, Wallace-Weber",
+    "capaian": "Peserta didik mampu menganalisis interaksi antar komponen ekosistem serta upaya konservasi keanekaragaman hayati Indonesia.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 129,
+    "tipe": "pg_sederhana",
+    "soal": "Di sebuah ekosistem sawah terdapat: sebatang pohon kelapa, 250 rumpun tanaman padi, 40 ekor belalang, 15 ekor katak, 6 ekor ular sawah, serta air, tanah lumpur, dan cahaya matahari. Berdasarkan satuan organisasi kehidupan, 40 ekor belalang di sawah tersebut merupakan satu ke- satuan ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Individu"
+      },
+      {
+        "label": "B",
+        "teks": "Bioma"
+      },
+      {
+        "label": "C",
+        "teks": "Komunitas"
+      },
+      {
+        "label": "D",
+        "teks": "Populasi"
+      }
+    ],
+    "kunci": "D",
+    "pembahasan": "Kumpulan individu sejenis (40 ekor belalang) yang menempati area dan waktu yang sama disebut populasi.",
+    "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "materi": "Ekologi dan Keanekaragaman Hayati: Biotik-Abiotik, Rantai Makanan, Piramida Energi, Simbiosis, Wallace-Weber",
+    "capaian": "Peserta didik mampu menganalisis interaksi antar komponen ekosistem serta upaya konservasi keanekaragaman hayati Indonesia.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 130,
+    "tipe": "pg_sederhana",
+    "soal": "Perhatikan gambar piramida makanan berikut! Tingkat trofik yang memiliki energi total paling besar serta tingkat trofik yang menduduki posisi kon- sumen tingkat II berturut-turut ditunjukkan oleh nomor ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "I dan II"
+      },
+      {
+        "label": "B",
+        "teks": "I dan III"
+      },
+      {
+        "label": "C",
+        "teks": "II dan III"
+      },
+      {
+        "label": "D",
+        "teks": "IV dan II"
+      }
+    ],
+    "kunci": "B",
+    "pembahasan": "Pada piramida makanan, tingkat trofik I (Produsen) memiliki biomassa dan energi terbesar. Tingkat trofik II adalah Konsumen I (herbivora), tingkat trofik III adalah Konsumen II (karnivora --- Page 151 --- kecil), dan tingkat trofik IV adalah Konsumen puncak.",
+    "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "materi": "Ekologi dan Keanekaragaman Hayati: Biotik-Abiotik, Rantai Makanan, Piramida Energi, Simbiosis, Wallace-Weber",
+    "capaian": "Peserta didik mampu menganalisis interaksi antar komponen ekosistem serta upaya konservasi keanekaragaman hayati Indonesia.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 131,
+    "tipe": "pg_sederhana",
+    "soal": "Jika pestisida jenis DDT yang sulit terurai disemprotkan ke lahan pertanian lalu terbawa aliran air ke danau (Fitoplankton→ Zooplankton→ Ikan Kecil→ Ikan Besar→ Burung Pemakan Ikan), or- ganisme manakah yang akan memiliki konsentrasi akumulasi racun DDT tertinggi di jaringan lemak tubuhnya (biomagnifikasi)?",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Fitoplankton karena menyerap air pertama kali"
+      },
+      {
+        "label": "B",
+        "teks": "Burung pemakan ikan (predator puncak)"
+      },
+      {
+        "label": "C",
+        "teks": "Ikan kecil"
+      },
+      {
+        "label": "D",
+        "teks": "Zooplankton karena jumlahnya paling banyak"
+      }
+    ],
+    "kunci": "B",
+    "pembahasan": "Pada peristiwa biomagnifikasi, polutan persisten seperti DDT dan merkuri terakumulasi paling tinggi pada predator puncak.",
+    "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "materi": "Ekologi dan Keanekaragaman Hayati: Biotik-Abiotik, Rantai Makanan, Piramida Energi, Simbiosis, Wallace-Weber",
+    "capaian": "Peserta didik mampu menganalisis interaksi antar komponen ekosistem serta upaya konservasi keanekaragaman hayati Indonesia.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 132,
+    "tipe": "pg_sederhana",
+    "soal": "Tanaman kacang tanah memiliki bintil-bintil akar yang dihuni oleh bakteri Rhizobium legumi- nosarum. Bakteri tersebut mengikat nitrogen bebas ( N2) dari udara tanah menjadi nitrat yang menyuburkan tanaman kacang, sedangkan bakteri memperoleh karbohidrat dari akar kacang. Jenis interaksi ini adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Simbiosis mutualisme"
+      },
+      {
+        "label": "B",
+        "teks": "Simbiosis komensalisme"
+      },
+      {
+        "label": "C",
+        "teks": "Simbiosis parasitisme"
+      },
+      {
+        "label": "D",
+        "teks": "Alelopati"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Kedua pihak sama-sama untung ( +/+): kacang mendapat nitrat hasil fiksasi N2, bakteri Rhizobium mendapat nutrisi organik.",
+    "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "materi": "Ekologi dan Keanekaragaman Hayati: Biotik-Abiotik, Rantai Makanan, Piramida Energi, Simbiosis, Wallace-Weber",
+    "capaian": "Peserta didik mampu menganalisis interaksi antar komponen ekosistem serta upaya konservasi keanekaragaman hayati Indonesia.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 133,
+    "tipe": "pg_sederhana",
+    "soal": "Tanaman tali putri (Cuscuta sp.) yang berwarna kuning tanpa daun tumbuh melilit di atas tana- man pagar teh-tehan dan menancapkan alat isap (haustorium) ke pembuluh floem tanaman pagar. Berbeda dari benalu yang masih berwarna hijau, tali putri mengambil air sekaligus hasil fotosintesis inangnya. Interaksi ini termasuk ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Komensalisme karena tanaman pagar tidak terpengaruh"
+      },
+      {
+        "label": "B",
+        "teks": "Kompetisi interspesifik memperebutkan cahaya"
+      },
+      {
+        "label": "C",
+        "teks": "Parasitisme obligat (parasit sejati)"
+      },
+      {
+        "label": "D",
+        "teks": "Mutualisme fakultatif"
+      }
+    ],
+    "kunci": "C",
+    "pembahasan": "Tali putri tidak berklorofil sehingga mengambil air dan fotosintat dari floem inang (par- asitisme sejati/obligat).",
+    "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "materi": "Ekologi dan Keanekaragaman Hayati: Biotik-Abiotik, Rantai Makanan, Piramida Energi, Simbiosis, Wallace-Weber",
+    "capaian": "Peserta didik mampu menganalisis interaksi antar komponen ekosistem serta upaya konservasi keanekaragaman hayati Indonesia.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 134,
+    "tipe": "pg_sederhana",
+    "soal": "Di suatu ekosistem padang rumput savana, populasi banteng ( Bos javanicus) dan populasi rusa (Rusa timorensis) sama-sama memakan rumput yang sama. Bentuk interaksi antarkedua populasi tersebut adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Predasi"
+      },
+      {
+        "label": "B",
+        "teks": "Netralisme"
+      },
+      {
+        "label": "C",
+        "teks": "Simbiosis parasitisme"
+      },
+      {
+        "label": "D",
+        "teks": "Kompetisi interspesifik"
+      }
+    ],
+    "kunci": "D",
+    "pembahasan": "Banteng dan rusa adalah dua spesies berbeda yang bersaing memperebutkan sumber rumput yang sama (kompetisi interspesifik).",
+    "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "materi": "Ekologi dan Keanekaragaman Hayati: Biotik-Abiotik, Rantai Makanan, Piramida Energi, Simbiosis, Wallace-Weber",
+    "capaian": "Peserta didik mampu menganalisis interaksi antar komponen ekosistem serta upaya konservasi keanekaragaman hayati Indonesia.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 135,
+    "tipe": "pg_sederhana",
+    "soal": "Jamur Penicillium notatum menghasilkan zat antibiotik penisilin yang menghambat pertumbuhan dan mematikan bakteri Staphylococcus di sekitarnya. Hubungan interaksi di mana satu organisme mengeluarkan zat metabolit yang menghambat organisme lain disebut ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Simbiosis komensalisme"
+      },
+      {
+        "label": "B",
+        "teks": "Antibiosis / Alelopati"
+      },
+      {
+        "label": "C",
+        "teks": "Simbiosis mutualisme"
+      },
+      {
+        "label": "D",
+        "teks": "Kanibalisme"
+      }
+    ],
+    "kunci": "B",
+    "pembahasan": "Penghambatan pertumbuhan suatu mikroorganisme oleh zat antibiotik/metabolit or- ganisme lain disebut antibiosis (alelopati).",
+    "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "materi": "Ekologi dan Keanekaragaman Hayati: Biotik-Abiotik, Rantai Makanan, Piramida Energi, Simbiosis, Wallace-Weber",
+    "capaian": "Peserta didik mampu menganalisis interaksi antar komponen ekosistem serta upaya konservasi keanekaragaman hayati Indonesia.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 136,
+    "tipe": "pg_sederhana",
+    "soal": "Mengapa jamur dan bakteri pengurai (dekomposer) memegang peranan yang sangat vital bagi keberlangsungan siklus materi di dalam suatu ekosistem?",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Karena dekomposer menguraikan sisa tubuh makhluk hidup yang mati kembali menjadi unsur hara anorganik yang dibutuhkan produsen"
+      },
+      {
+        "label": "B",
+        "teks": "Karena dekomposer dapat mengubah cahaya matahari langsung menjadi glukosa"
+      },
+      {
+        "label": "C",
+        "teks": "Karena dekomposer menjadi makanan utama bagi predator puncak seperti elang"
+      },
+      {
+        "label": "D",
+        "teks": "Karena dekomposer menghirup gas karbon dioksida dan menghasilkan oksigen"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Dekomposer mendaur ulang materi organik mati menjadi mineral anorganik sehingga siklus materi ekosistem tidak terputus.",
+    "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "materi": "Ekologi dan Keanekaragaman Hayati: Biotik-Abiotik, Rantai Makanan, Piramida Energi, Simbiosis, Wallace-Weber",
+    "capaian": "Peserta didik mampu menganalisis interaksi antar komponen ekosistem serta upaya konservasi keanekaragaman hayati Indonesia.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 137,
+    "tipe": "pg_sederhana",
+    "soal": "Garis khayal biogeografi yang memisahkan wilayah fauna Indonesia bagian Barat (Tipe Asiatis, seperti Kalimantan dan Bali) dengan wilayah fauna Indonesia bagian Tengah (Tipe Peralihan / Wal- lacea, seperti Sulawesi dan Lombok) adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Garis Khatulistiwa"
+      },
+      {
+        "label": "B",
+        "teks": "Garis Bujur Timur"
+      },
+      {
+        "label": "C",
+        "teks": "Garis Weber"
+      },
+      {
+        "label": "D",
+        "teks": "Garis Wallace"
+      }
+    ],
+    "kunci": "D",
+    "pembahasan": "Garis Wallace memisahkan fauna tipe Asiatis (Barat) dengan fauna tipe Perali- han/Wallacea (Tengah).",
+    "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "materi": "Ekologi dan Keanekaragaman Hayati: Biotik-Abiotik, Rantai Makanan, Piramida Energi, Simbiosis, Wallace-Weber",
+    "capaian": "Peserta didik mampu menganalisis interaksi antar komponen ekosistem serta upaya konservasi keanekaragaman hayati Indonesia.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 138,
+    "tipe": "pg_sederhana",
+    "soal": "Perhatikan tabel Data Persebaran Fauna Endemik di Tiga Wilayah Kepulauan Indonesia berikut! Zona Wilayah Kepulauan Utama Contoh Fauna Endemik Indonesia Barat (Asiatis) Sumatera, Jawa, Kalimantan, Bali Harimau sumatera, Gajah, Badak, Orangutan Indonesia Tengah (Peralihan) Sulawesi, NTB, NTT Komodo, Anoa, Babirusa, Burung Maleo Indonesia Timur (Australis) Papua dan Kepulauan Aru Kanguru pohon, Kuskus, Burung Cendrawasih Berdasarkan tabel persebaran fauna Indonesia di atas, garis khayal biogeografi yang memisahkan wilayah fauna Asiatis (Indonesia Barat) dengan wilayah fauna Peralihan (Wallacea) adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Garis Khatulistiwa"
+      },
+      {
+        "label": "B",
+        "teks": "Garis Weber"
+      },
+      {
+        "label": "C",
+        "teks": "Garis Wallace"
+      },
+      {
+        "label": "D",
+        "teks": "Garis Lydekker"
+      }
+    ],
+    "kunci": "C",
+    "pembahasan": "Garis Wallace membentang dari Selat Lombok hingga Selat Makassar memisahkan fauna tipe Asiatis (Barat) dengan tipe Peralihan (Tengah), sedangkan Garis Weber memisahkan tipe Per- alihan dengan tipe Australis (Timur).",
+    "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "materi": "Ekologi dan Keanekaragaman Hayati: Biotik-Abiotik, Rantai Makanan, Piramida Energi, Simbiosis, Wallace-Weber",
+    "capaian": "Peserta didik mampu menganalisis interaksi antar komponen ekosistem serta upaya konservasi keanekaragaman hayati Indonesia.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 139,
+    "tipe": "pg_sederhana",
+    "soal": "Seorang peneliti biologi melakukan ekspedisi di hutan Papua dan Kepulauan Aru (Zona Aus- tralis). Ciri khas fauna yang paling mungkin ditemukan oleh peneliti tersebut dibandingkan hutan Sumatera adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Banyak ditemukan kera besar seperti orangutan dan gajah"
+      },
+      {
+        "label": "B",
+        "teks": "Ditemukan mamalia berkantung seperti kanguru pohon dan kuskus"
+      },
+      {
+        "label": "C",
+        "teks": "Banyak ditemukan badak bercula satu dan harimau loreng"
+      },
+      {
+        "label": "D",
+        "teks": "Hanya dihuni oleh reptil gurun pasir"
+      }
+    ],
+    "kunci": "B",
+    "pembahasan": "Fauna Australis (Papua) dicirikan oleh mamalia marsupialia (kanguru pohon, kuskus) dan burung cendrawasih/kasuari.",
+    "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "materi": "Ekologi dan Keanekaragaman Hayati: Biotik-Abiotik, Rantai Makanan, Piramida Energi, Simbiosis, Wallace-Weber",
+    "capaian": "Peserta didik mampu menganalisis interaksi antar komponen ekosistem serta upaya konservasi keanekaragaman hayati Indonesia.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 140,
+    "tipe": "pg_sederhana",
+    "soal": "Bunga padma raksasa (Rafflesia arnoldii) dan bunga bangkai raksasa (Amorphophallus titanum) merupakan flora langka kebanggaan Indonesia yang secara alami tumbuh endemik di ekosistem hutan hujan tropis wilayah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Sumatera (Paparan Sunda / Flora Malesiana Barat)"
+      },
+      {
+        "label": "B",
+        "teks": "Papua dan Maluku"
+      },
+      {
+        "label": "C",
+        "teks": "Nusa Tenggara Timur yang beriklim sabana kering"
+      },
+      {
+        "label": "D",
+        "teks": "Pesisir pantai utara Jawa"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Rafflesia arnoldii dan Amorphophallus titanum adalah puspa langka endemik hutan hujan Sumatera.",
+    "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "materi": "Ekologi dan Keanekaragaman Hayati: Biotik-Abiotik, Rantai Makanan, Piramida Energi, Simbiosis, Wallace-Weber",
+    "capaian": "Peserta didik mampu menganalisis interaksi antar komponen ekosistem serta upaya konservasi keanekaragaman hayati Indonesia.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 141,
+    "tipe": "pg_sederhana",
+    "soal": "Pelestarian badak bercula satu di Taman Nasional Ujung Kulon (Banten) dan pelestarian komodo di Taman Nasional Komodo (NTT) dikategorikan sebagai upaya konservasiIn-Situ karena ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Hewan-hewan tersebut dipindahkan ke kebun binatang di kota besar"
+      },
+      {
+        "label": "B",
+        "teks": "Dilakukan melalui pembekuan embrio di laboratorium"
+      },
+      {
+        "label": "C",
+        "teks": "Pelestarian dilakukan langsung di dalam habitat asli tempat spesies tersebut hidup dan berkem- bang biak secara alami"
+      },
+      {
+        "label": "D",
+        "teks": "Melibatkan perkawinan silang dengan hewan dari benua lain"
+      }
+    ],
+    "kunci": "C",
+    "pembahasan": "Konservasi In-Situ melestarikan spesies langsung di habitat alaminya (Taman Na- sional, Cagar Alam, Suaka Margasatwa).",
+    "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "materi": "Ekologi dan Keanekaragaman Hayati: Biotik-Abiotik, Rantai Makanan, Piramida Energi, Simbiosis, Wallace-Weber",
+    "capaian": "Peserta didik mampu menganalisis interaksi antar komponen ekosistem serta upaya konservasi keanekaragaman hayati Indonesia.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 142,
+    "tipe": "pg_sederhana",
+    "soal": "Manakah di antara tempat pelestarian berikut yang seluruhnya merupakan contoh konservasi Ex-Situ (pelestarian di luar habitat asli)?",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Taman Nasional Baluran, Cagar Alam Pangandaran, dan Suaka Margasatwa"
+      },
+      {
+        "label": "B",
+        "teks": "Taman Laut Bunaken dan Taman Nasional Way Kambas"
+      },
+      {
+        "label": "C",
+        "teks": "Taman Nasional Lorentz dan Hutan Lindung Kalimantan"
+      },
+      {
+        "label": "D",
+        "teks": "Kebun Raya Bogor, Kebun Raya Purwodadi, Taman Safari, dan Kebun Binatang Ragunan"
+      }
+    ],
+    "kunci": "D",
+    "pembahasan": "Kebun Raya, Taman Safari, dan Kebun Binatang memelihara koleksi flora/fauna di luar habitat aslinya (Ex-Situ).",
+    "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "materi": "Ekologi dan Keanekaragaman Hayati: Biotik-Abiotik, Rantai Makanan, Piramida Energi, Simbiosis, Wallace-Weber",
+    "capaian": "Peserta didik mampu menganalisis interaksi antar komponen ekosistem serta upaya konservasi keanekaragaman hayati Indonesia.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 143,
+    "tipe": "pg_sederhana",
+    "soal": "Pembukaan hutan hujan tropis secara masif untuk dialihfungsikan menjadi lahan perkebunan satu jenis tanaman saja (monokultur) berdampak buruk terhadap ekologi karena ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Meningkatkan keanekaragaman hayati serangga dan burung hutan"
+      },
+      {
+        "label": "B",
+        "teks": "Menurunkan tingkat keanekaragaman hayati, memutus jaring-jaring makanan alami, dan mem- buat ekosistem rentan terhadap ledakan hama"
+      },
+      {
+        "label": "C",
+        "teks": "Menambah cadangan air tanah secara drastis saat musim kemarau"
+      },
+      {
+        "label": "D",
+        "teks": "Menurunkan suhu udara global secara instan"
+      }
+    ],
+    "kunci": "B",
+    "pembahasan": "Monokultur memangkas keanekaragaman spesies sehingga rantai makanan menjadi rapuh dan rentan wabah hama.",
+    "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "materi": "Ekologi dan Keanekaragaman Hayati: Biotik-Abiotik, Rantai Makanan, Piramida Energi, Simbiosis, Wallace-Weber",
+    "capaian": "Peserta didik mampu menganalisis interaksi antar komponen ekosistem serta upaya konservasi keanekaragaman hayati Indonesia.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 144,
+    "tipe": "pg_sederhana",
+    "soal": "Penggunaan pupuk kimia sintetis (urea dan fosfat) secara berlebihan di lahan pertanian yang kemudian hanyut terbawa air hujan ke danau dapat memicu ledakan pertumbuhan ganggang dan eceng gondok (eutrofikasi). Dampak lanjutan eutrofikasi bagi biota air di dasar danau adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Cahaya matahari terhalang masuk dan saat ganggang mati membusuk, bakteri dekomposer menghabiskan oksigen terlarut"
+      },
+      {
+        "label": "B",
+        "teks": "Air danau menjadi sangat jernih dan kaya oksigen"
+      },
+      {
+        "label": "C",
+        "teks": "Ikan-ikan tumbuh menjadi ukuran raksasa karena memakan pupuk kimia"
+      },
+      {
+        "label": "D",
+        "teks": "Suhu air danau turun hingga membeku"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Eutrofikasi memicu blooming alga; saat alga mati, dekomposisi aerob menguras ok- sigen terlarut hingga ikan mati lemas.",
+    "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "materi": "Ekologi dan Keanekaragaman Hayati: Biotik-Abiotik, Rantai Makanan, Piramida Energi, Simbiosis, Wallace-Weber",
+    "capaian": "Peserta didik mampu menganalisis interaksi antar komponen ekosistem serta upaya konservasi keanekaragaman hayati Indonesia.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 145,
+    "tipe": "pg_sederhana",
+    "soal": "Ikan sapu-sapu atau ikan aligator ( Arapaima gigas) yang berasal dari Sungai Amazon Amerika Selatan dilarang keras dilepasliarkan ke sungai-sungai di Indonesia karena ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Ikan tersebut tidak dapat berenang di air tawar Indonesia"
+      },
+      {
+        "label": "B",
+        "teks": "Menghasilkan oksigen berlebih di dalam sungai"
+      },
+      {
+        "label": "C",
+        "teks": "Menyebabkan air sungai berubah menjadi asin"
+      },
+      {
+        "label": "D",
+        "teks": "Merupakan spesies asing invasif yang memangsa dan mendesak populasi ikan lokal asli Indone- sia hingga terancam punah"
+      }
+    ],
+    "kunci": "D",
+    "pembahasan": "Spesies invasif tidak memiliki predator alami di ekosistem baru dan memangsa habis spesies endemik lokal.",
+    "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "materi": "Ekologi dan Keanekaragaman Hayati: Biotik-Abiotik, Rantai Makanan, Piramida Energi, Simbiosis, Wallace-Weber",
+    "capaian": "Peserta didik mampu menganalisis interaksi antar komponen ekosistem serta upaya konservasi keanekaragaman hayati Indonesia.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 146,
+    "tipe": "pg_sederhana",
+    "soal": "Dalam daur karbon dan oksigen di biosfer, proses biologis yang menyerap gas karbon dioksida (CO2) dari atmosfer dan mengubahnya menjadi senyawa organik glukosa serta melepaskan oksigen (O2) adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Respirasi seluler oleh hewan dan manusia"
+      },
+      {
+        "label": "B",
+        "teks": "Pembakaran bahan bakar fosil oleh kendaraan bermotor"
+      },
+      {
+        "label": "C",
+        "teks": "Fotosintesis oleh tumbuhan hijau dan fitoplankton"
+      },
+      {
+        "label": "D",
+        "teks": "Dekomposisi serasah daun oleh jamur"
+      }
+    ],
+    "kunci": "C",
+    "pembahasan": "Fotosintesis mengikat CO2 atmosfer menjadi karbohidrat dan melepaskan O2.",
+    "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "materi": "Ekologi dan Keanekaragaman Hayati: Biotik-Abiotik, Rantai Makanan, Piramida Energi, Simbiosis, Wallace-Weber",
+    "capaian": "Peserta didik mampu menganalisis interaksi antar komponen ekosistem serta upaya konservasi keanekaragaman hayati Indonesia.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 147,
+    "tipe": "pg_sederhana",
+    "soal": "Ekosistem terumbu karang di perairan Indonesia mengalami pemutihan karang (coral bleaching) akibat kenaikan suhu air laut sebesar 1, 5°C- 2°C. Secara biologis, mengapa karang berubah men- jadi putih dan terancam mati?",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Karang tertutup oleh endapan garam dapur yang memutih"
+      },
+      {
+        "label": "B",
+        "teks": "Polip karang mengeluarkan alga bersimbiosis yang selama ini menyuplai nutrisi fotosintesis dan pigmen warna bagi karang"
+      },
+      {
+        "label": "C",
+        "teks": "Ikan-ikan karang memakan zat kapur pada terumbu karang"
+      },
+      {
+        "label": "D",
+        "teks": "Air laut kehilangan seluruh kandungan mineral kalsiumnya"
+      }
+    ],
+    "kunci": "B",
+    "pembahasan": "Stres suhu tinggi membuat polip karang mengeluarkan alga simbion Zooxanthellae sehingga karang memutih dan kelaparan.",
+    "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "materi": "Ekologi dan Keanekaragaman Hayati: Biotik-Abiotik, Rantai Makanan, Piramida Energi, Simbiosis, Wallace-Weber",
+    "capaian": "Peserta didik mampu menganalisis interaksi antar komponen ekosistem serta upaya konservasi keanekaragaman hayati Indonesia.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 148,
+    "tipe": "pg_sederhana",
+    "soal": "Keanekaragaman hayati dibedakan menjadi tiga tingkatan: tingkat gen, tingkat jenis (spesies), dan tingkat ekosistem. Adanya variasi mangga gadung, mangga manalagi, mangga arumanis, dan mangga golek menunjukkan keanekaragaman hayati tingkat ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Tingkat Gen"
+      },
+      {
+        "label": "B",
+        "teks": "Tingkat Jenis (Spesies)"
+      },
+      {
+        "label": "C",
+        "teks": "Tingkat Ekosistem"
+      },
+      {
+        "label": "D",
+        "teks": "Tingkat Famili"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Berbagai varietas mangga masih berada dalam satu spesies yang sama ( Mangifera indica), sehingga merupakan variasi tingkat gen.",
+    "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "materi": "Ekologi dan Keanekaragaman Hayati: Biotik-Abiotik, Rantai Makanan, Piramida Energi, Simbiosis, Wallace-Weber",
+    "capaian": "Peserta didik mampu menganalisis interaksi antar komponen ekosistem serta upaya konservasi keanekaragaman hayati Indonesia.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 149,
+    "tipe": "pg_sederhana",
+    "soal": "Keberadaan kucing rumah ( Felis catus), harimau sumatera ( Panthera tigris), dan singa ( Pan- thera leo) yang berada dalam satu famili Felidae menunjukkan keanekaragaman hayati tingkat ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Tingkat Gen"
+      },
+      {
+        "label": "B",
+        "teks": "Tingkat Populasi"
+      },
+      {
+        "label": "C",
+        "teks": "Tingkat Jenis (Spesies)"
+      },
+      {
+        "label": "D",
+        "teks": "Tingkat Bioma"
+      }
+    ],
+    "kunci": "C",
+    "pembahasan": "Kucing, harimau, dan macan tutul adalah spesies yang berbeda di dalam famili yang sama (keanekaragaman tingkat jenis).",
+    "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "materi": "Ekologi dan Keanekaragaman Hayati: Biotik-Abiotik, Rantai Makanan, Piramida Energi, Simbiosis, Wallace-Weber",
+    "capaian": "Peserta didik mampu menganalisis interaksi antar komponen ekosistem serta upaya konservasi keanekaragaman hayati Indonesia.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 150,
+    "tipe": "pg_sederhana",
+    "soal": "Untuk mengendalikan hama tikus sawah secara ramah lingkungan tanpa mencemari tanah dan air dengan racun kimia rodentisida, strategi pengendalian hayati ( biokontrol) yang paling tepat di- lakukan petani adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Membakar seluruh jerami dan pematang sawah setiap minggu"
+      },
+      {
+        "label": "B",
+        "teks": "Menangkap seluruh katak dan capung di area persawahan"
+      },
+      {
+        "label": "C",
+        "teks": "Mengaliri sawah dengan limbah deterjen rumah tangga"
+      },
+      {
+        "label": "D",
+        "teks": "Melestarikan dan menyediakan rumah burung hantu serta ular sawah tidak berbisa sebagai predator alami tikus"
+      }
+    ],
+    "kunci": "D",
+    "pembahasan": "Burung hantu (Tyto alba) adalah predator alami tikus sawah yang efektif dan bebas pencemaran kimia.",
+    "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "materi": "Ekologi dan Keanekaragaman Hayati: Biotik-Abiotik, Rantai Makanan, Piramida Energi, Simbiosis, Wallace-Weber",
+    "capaian": "Peserta didik mampu menganalisis interaksi antar komponen ekosistem serta upaya konservasi keanekaragaman hayati Indonesia.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 26,
+    "tipe": "pg_sederhana",
+    "soal": "Urutan satuan organisasi kehidupan dalam suatu ekosistem dari yang terkecil hingga terbesar adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Individu - Populasi - Komunitas - Ekosistem - Bioma - Biosfer"
+      },
+      {
+        "label": "B",
+        "teks": "Populasi - Individu - Komunitas - Ekosistem - Biosfer"
+      },
+      {
+        "label": "C",
+        "teks": "Individu - Komunitas - Populasi - Ekosistem - Biosfer"
+      },
+      {
+        "label": "D",
+        "teks": "Ekosistem - Komunitas - Populasi - Individu"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Organisasi kehidupan ekologi tersusun hierarkis: Individu (satu makhluk hidup tunggal) -> Populasi (kumpulan individu sejenis) -> Komunitas (kumpulan berbagai populasi) -> Ekosistem (interaksi komunitas dengan faktor abiotik) -> Bioma (ekosistem luas dengan iklim khas) -> Biosfer (seluruh lapisan bumi tempat hidup).",
+    "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian B: Contoh Soal Asli Buku Big Book",
+    "materi": "Ekologi dan Ekosistem: Satuan Organisasi dan Aliran Energi",
+    "capaian": "Peserta didik mampu memahami hierarki organisasi kehidupan, rantai makanan, dan hukum aliran energi.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 27,
+    "tipe": "pg_sederhana",
+    "soal": "Komponen abiotik yang sangat menentukan jenis tumbuhan yang dapat hidup subur pada suatu daerah adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "cahaya matahari, suhu, air, dan derajat keasaman (pH) tanah"
+      },
+      {
+        "label": "B",
+        "teks": "konsumen primer dan sekunder"
+      },
+      {
+        "label": "C",
+        "teks": "bakteri pengurai dan jamur saprofit"
+      },
+      {
+        "label": "D",
+        "teks": "populasi serangga penyerbuk"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Faktor abiotik adalah benda tak hidup seperti intensitas sinar matahari, curah hujan/ketersediaan air, suhu lingkungan, kelembapan, dan sifat kimia-fisika tanah (pH, aerasi, hara mineral) yang menjadi pembatas persebaran vegetasi.",
+    "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian B: Contoh Soal Asli Buku Big Book",
+    "materi": "Ekologi dan Ekosistem: Satuan Organisasi dan Aliran Energi",
+    "capaian": "Peserta didik mampu memahami hierarki organisasi kehidupan, rantai makanan, dan hukum aliran energi.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 28,
+    "tipe": "pg_sederhana",
+    "soal": "Dalam rantai makanan di padang rumput: Rumput -> Belalang -> Katak -> Ular -> Elang. Organisme yang berperan sebagai konsumen tingkat II (sekunder) adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Belalang"
+      },
+      {
+        "label": "B",
+        "teks": "Katak"
+      },
+      {
+        "label": "C",
+        "teks": "Ular"
+      },
+      {
+        "label": "D",
+        "teks": "Elang"
+      }
+    ],
+    "kunci": "B",
+    "pembahasan": "Tingkat trofik: Rumput (Produsen) -> Belalang (Konsumen I / Herbivora) -> Katak (Konsumen II / Karnivora) -> Ular (Konsumen III) -> Elang (Konsumen Puncak).",
+    "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian B: Contoh Soal Asli Buku Big Book",
+    "materi": "Ekologi dan Ekosistem: Satuan Organisasi dan Aliran Energi",
+    "capaian": "Peserta didik mampu memahami hierarki organisasi kehidupan, rantai makanan, dan hukum aliran energi.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 29,
+    "tipe": "pg_sederhana",
+    "soal": "Piramida energi selalu berbentuk menyempit ke atas dan tidak pernah terbalik karena ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "hanya sekitar 10% energi yang dapat dialirkan dan dimanfaatkan ke tingkat trofik berikutnya, sisanya hilang sebagai panas dan metabolisme"
+      },
+      {
+        "label": "B",
+        "teks": "massa produsen selalu lebih kecil dari konsumen puncak"
+      },
+      {
+        "label": "C",
+        "teks": "energi dari konsumen puncak mengalir kembali ke matahari"
+      },
+      {
+        "label": "D",
+        "teks": "jumlah karnivora selalu lebih banyak daripada herbivora"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Sesuai hukum termodinamika dan kaidah 10% (Lindeman), sebagian besar energi hilang sebagai panas tubuh (disipasi kalor), feses, dan respirasi saat berpindah antar trofik, sehingga energi pada trofik yang lebih tinggi selalu lebih sedikit.",
+    "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian B: Contoh Soal Asli Buku Big Book",
+    "materi": "Ekologi dan Ekosistem: Satuan Organisasi dan Aliran Energi",
+    "capaian": "Peserta didik mampu memahami hierarki organisasi kehidupan, rantai makanan, dan hukum aliran energi.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 30,
+    "tipe": "pg_sederhana",
+    "soal": "Bentuk interaksi simbiosis mutualisme (kedua belah pihak saling menguntungkan) ditunjukkan oleh hubungan antara ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "bakteri Rhizobium radicicola yang hidup pada bintil akar tanaman kacang-kacangan"
+      },
+      {
+        "label": "B",
+        "teks": "tanaman anggrek yang menempel pada batang pohon mangga"
+      },
+      {
+        "label": "C",
+        "teks": "tali putri yang melilit dan mengisap sari makanan dari tumbuhan inang"
+      },
+      {
+        "label": "D",
+        "teks": "kutu daun dengan semut"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Rhizobium mengikat gas nitrogen bebas dari udara untuk nutrisi tanaman kacang, dan sebaliknya tanaman kacang menyediakan karbohidrat serta tempat tinggal bagi bakteri (simbiosis mutualisme).",
+    "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian B: Contoh Soal Asli Buku Big Book",
+    "materi": "Ekologi dan Ekosistem: Satuan Organisasi dan Aliran Energi",
+    "capaian": "Peserta didik mampu memahami hierarki organisasi kehidupan, rantai makanan, dan hukum aliran energi.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 31,
+    "tipe": "pg_sederhana",
+    "soal": "Hubungan antara ikan hiu dan ikan remora yang berenang di dekatnya merupakan contoh simbiosis komensalisme karena ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "ikan remora mendapat sisa makanan dan perlindungan, sedangkan ikan hiu tidak dirugikan dan tidak diuntungkan"
+      },
+      {
+        "label": "B",
+        "teks": "ikan remora mengisap darah ikan hiu hingga lemas"
+      },
+      {
+        "label": "C",
+        "teks": "ikan hiu memakan ikan remora sebagai mangsa utama"
+      },
+      {
+        "label": "D",
+        "teks": "keduanya bersaing memperebutkan plankton"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Komensalisme adalah interaksi di mana satu pihak diuntungkan (remora mendapat remah makanan dan aman dari predator) sementara pihak lain tidak dirugikan maupun diuntungkan (hiu netral).",
+    "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian B: Contoh Soal Asli Buku Big Book",
+    "materi": "Ekologi dan Ekosistem: Satuan Organisasi dan Aliran Energi",
+    "capaian": "Peserta didik mampu memahami hierarki organisasi kehidupan, rantai makanan, dan hukum aliran energi.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 32,
+    "tipe": "pg_sederhana",
+    "soal": "Peran dekomposer (bakteri pembusuk dan jamur saprofit) dalam siklus materi suatu ekosistem sangat penting karena ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "menguraikan sisa zat organik dari bangkai makhluk hidup menjadi zat anorganik yang dapat diserap kembali oleh tumbuhan"
+      },
+      {
+        "label": "B",
+        "teks": "menghasilkan oksigen melalui fotosintesis gelap"
+      },
+      {
+        "label": "C",
+        "teks": "memangsa konsumen puncak yang telah tua"
+      },
+      {
+        "label": "D",
+        "teks": "mencegah terjadinya hujan asam di udara"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Dekomposer merombak senyawa organik kompleks dari sisa tubuh organisme mati menjadi senyawa anorganik sederhana (seperti nitrat, fosfat, karbon) yang menyuburkan tanah dan didaur ulang oleh produsen.",
+    "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian B: Contoh Soal Asli Buku Big Book",
+    "materi": "Ekologi dan Ekosistem: Satuan Organisasi dan Aliran Energi",
+    "capaian": "Peserta didik mampu memahami hierarki organisasi kehidupan, rantai makanan, dan hukum aliran energi.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 33,
+    "tipe": "pg_sederhana",
+    "soal": "Garis khayal yang memisahkan wilayah fauna tipe Asiatis (oriental) dengan fauna tipe Peralihan (Wallace) di Kepulauan Indonesia adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Garis Wallace"
+      },
+      {
+        "label": "B",
+        "teks": "Garis Weber"
+      },
+      {
+        "label": "C",
+        "teks": "Garis Lydekker"
+      },
+      {
+        "label": "D",
+        "teks": "Garis Khatulistiwa"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Garis Wallace membentang antara Kalimantan dan Sulawesi serta melintasi Selat Lombok antara Bali dan Lombok, memisahkan fauna Asiatis (barat) dengan fauna Peralihan (tengah). Garis Weber memisahkan fauna Peralihan dengan fauna Australis (timur).",
+    "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian B: Contoh Soal Asli Buku Big Book",
+    "materi": "Ekologi dan Ekosistem: Satuan Organisasi dan Aliran Energi",
+    "capaian": "Peserta didik mampu memahami hierarki organisasi kehidupan, rantai makanan, dan hukum aliran energi.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 34,
+    "tipe": "pg_sederhana",
+    "soal": "Hewan endemik Indonesia yang hanya dapat dijumpai di zona Peralihan (Sulawesi dan Kepulauan Nusa Tenggara) adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "anoa, babi rusa, dan komodo"
+      },
+      {
+        "label": "B",
+        "teks": "gajah sumatera dan harimau loreng"
+      },
+      {
+        "label": "C",
+        "teks": "burung cenderawasih dan kanguru pohon"
+      },
+      {
+        "label": "D",
+        "teks": "badak bercula satu dan orangutan"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Zona Peralihan dihuni hewan endemik unik khas Wallacea seperti Anoa (Bubalus sp.), Babi Rusa (Babyrousa babyrussa), Burung Maleo di Sulawesi, dan Komodo (Varanus komodoensis) di NTT.",
+    "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian B: Contoh Soal Asli Buku Big Book",
+    "materi": "Ekologi dan Ekosistem: Satuan Organisasi dan Aliran Energi",
+    "capaian": "Peserta didik mampu memahami hierarki organisasi kehidupan, rantai makanan, dan hukum aliran energi.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 35,
+    "tipe": "pg_sederhana",
+    "soal": "Pelestarian satwa langka yang dilakukan di luar habitat aslinya karena habitat aslinya telah rusak parah disebut pelestarian ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "in-situ"
+      },
+      {
+        "label": "B",
+        "teks": "ex-situ (seperti di kebun binatang, taman safari, dan pusat penangkaran)"
+      },
+      {
+        "label": "C",
+        "teks": "cagar alam"
+      },
+      {
+        "label": "D",
+        "teks": "taman nasional"
+      }
+    ],
+    "kunci": "B",
+    "pembahasan": "Pelestarian in-situ dilakukan di habitat asli satwa (Taman Nasional Ujung Kulon, Suaka Margasatwa). Pelestarian ex-situ dilakukan di luar habitat aslinya (Kebun Binatang, Taman Safari, Herbarium, Kebun Raya Bogor).",
+    "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian B: Contoh Soal Asli Buku Big Book",
+    "materi": "Ekologi dan Ekosistem: Satuan Organisasi dan Aliran Energi",
+    "capaian": "Peserta didik mampu memahami hierarki organisasi kehidupan, rantai makanan, dan hukum aliran energi.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 36,
+    "tipe": "pg_sederhana",
+    "soal": "Sekelompok kambing yang hidup di sebuah padang rumput pada waktu yang sama membentuk suatu ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "individu"
+      },
+      {
+        "label": "B",
+        "teks": "populasi"
+      },
+      {
+        "label": "C",
+        "teks": "komunitas"
+      },
+      {
+        "label": "D",
+        "teks": "ekosistem"
+      }
+    ],
+    "kunci": "B",
+    "pembahasan": "Kumpulan individu dari spesies yang sama yang menempati habitat tertentu dalam waktu bersamaan disebut populasi.",
+    "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian C: Latihan Soal Mandiri Asli",
+    "materi": "Ekologi dan Ekosistem: Interaksi Simbiosis, Predasi, dan Konservasi Hayati",
+    "capaian": "Peserta didik mampu membedakan mutualisme, komensalisme, parasitisme, serta suksesi dan konservasi in-situ/ex-situ.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 37,
+    "tipe": "pg_sederhana",
+    "soal": "Seluruh populasi tumbuhan, hewan, dan mikroorganisme yang saling berinteraksi di dalam suatu danau disebut ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "bioma"
+      },
+      {
+        "label": "B",
+        "teks": "ekosistem"
+      },
+      {
+        "label": "C",
+        "teks": "komunitas"
+      },
+      {
+        "label": "D",
+        "teks": "biosfer"
+      }
+    ],
+    "kunci": "C",
+    "pembahasan": "Kumpulan berbagai populasi makhluk hidup yang hidup bersama dan saling berinteraksi pada suatu daerah tertentu disebut komunitas.",
+    "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian C: Latihan Soal Mandiri Asli",
+    "materi": "Ekologi dan Ekosistem: Interaksi Simbiosis, Predasi, dan Konservasi Hayati",
+    "capaian": "Peserta didik mampu membedakan mutualisme, komensalisme, parasitisme, serta suksesi dan konservasi in-situ/ex-situ.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 38,
+    "tipe": "pg_sederhana",
+    "soal": "Organisme yang mampu mensintesis makanannya sendiri dari bahan anorganik dengan bantuan energi cahaya matahari disebut organisme ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "heterotrof"
+      },
+      {
+        "label": "B",
+        "teks": "autotrof (produsen)"
+      },
+      {
+        "label": "C",
+        "teks": "saprofit"
+      },
+      {
+        "label": "D",
+        "teks": "karnivora"
+      }
+    ],
+    "kunci": "B",
+    "pembahasan": "Organisme autotrof (produsen) seperti tumbuhan berklorofil, alga, dan fitoplankton dapat memproduksi glukosa sendiri melalui proses fotosintesis.",
+    "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian C: Latihan Soal Mandiri Asli",
+    "materi": "Ekologi dan Ekosistem: Interaksi Simbiosis, Predasi, dan Konservasi Hayati",
+    "capaian": "Peserta didik mampu membedakan mutualisme, komensalisme, parasitisme, serta suksesi dan konservasi in-situ/ex-situ.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 39,
+    "tipe": "pg_sederhana",
+    "soal": "Di dalam ekosistem perairan danau, organisme mikroskopis autotrof yang melayang-layang di kolom air dan menjadi produsen utama adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "zooplankton"
+      },
+      {
+        "label": "B",
+        "teks": "benthos"
+      },
+      {
+        "label": "C",
+        "teks": "nekton"
+      },
+      {
+        "label": "D",
+        "teks": "fitoplankton"
+      }
+    ],
+    "kunci": "D",
+    "pembahasan": "Fitoplankton adalah mikroorganisme berklorofil yang melayang di lapisan fotik air dan berperan vital sebagai produsen primer pada rantai makanan akuatik.",
+    "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian C: Latihan Soal Mandiri Asli",
+    "materi": "Ekologi dan Ekosistem: Interaksi Simbiosis, Predasi, dan Konservasi Hayati",
+    "capaian": "Peserta didik mampu membedakan mutualisme, komensalisme, parasitisme, serta suksesi dan konservasi in-situ/ex-situ.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 40,
+    "tipe": "pg_sederhana",
+    "soal": "Konsumen yang memakan hewan lain (pemakan daging) digolongkan sebagai ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "herbivora"
+      },
+      {
+        "label": "B",
+        "teks": "omnivora"
+      },
+      {
+        "label": "C",
+        "teks": "karnivora"
+      },
+      {
+        "label": "D",
+        "teks": "detritivora"
+      }
+    ],
+    "kunci": "C",
+    "pembahasan": "Karnivora adalah hewan yang sumber nutrisi utamanya diperoleh dari memakan jaringan hewan lain (contoh: harimau, serigala, elang).",
+    "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian C: Latihan Soal Mandiri Asli",
+    "materi": "Ekologi dan Ekosistem: Interaksi Simbiosis, Predasi, dan Konservasi Hayati",
+    "capaian": "Peserta didik mampu membedakan mutualisme, komensalisme, parasitisme, serta suksesi dan konservasi in-situ/ex-situ.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 41,
+    "tipe": "pg_sederhana",
+    "soal": "Organisme yang memakan hancuran partikel bahan organik mati (detritus) seperti cacing tanah dan teripang disebut ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "dekomposer"
+      },
+      {
+        "label": "B",
+        "teks": "detritivora"
+      },
+      {
+        "label": "C",
+        "teks": "parasitoid"
+      },
+      {
+        "label": "D",
+        "teks": "predator"
+      }
+    ],
+    "kunci": "B",
+    "pembahasan": "Detritivora memakan serpihan bangkai atau sisa organik padat (detritus) secara mekanis, sedangkan dekomposer menguraikan bahan organik secara enzimatis kimiawi.",
+    "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian C: Latihan Soal Mandiri Asli",
+    "materi": "Ekologi dan Ekosistem: Interaksi Simbiosis, Predasi, dan Konservasi Hayati",
+    "capaian": "Peserta didik mampu membedakan mutualisme, komensalisme, parasitisme, serta suksesi dan konservasi in-situ/ex-situ.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 42,
+    "tipe": "pg_sederhana",
+    "soal": "Kumpulan dari beberapa rantai makanan yang saling terhubung dan tumpang tindih dalam suatu ekosistem disebut ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "daur biogeokimia"
+      },
+      {
+        "label": "B",
+        "teks": "piramida biomassa"
+      },
+      {
+        "label": "C",
+        "teks": "jaring-jaring makanan"
+      },
+      {
+        "label": "D",
+        "teks": "tingkat trofik"
+      }
+    ],
+    "kunci": "C",
+    "pembahasan": "Jaring-jaring makanan (food web) adalah gabungan kompleks dari berbagai rantai makanan yang saling berhubungan di alam, menjaga kestabilan ekosistem.",
+    "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian C: Latihan Soal Mandiri Asli",
+    "materi": "Ekologi dan Ekosistem: Interaksi Simbiosis, Predasi, dan Konservasi Hayati",
+    "capaian": "Peserta didik mampu membedakan mutualisme, komensalisme, parasitisme, serta suksesi dan konservasi in-situ/ex-situ.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 43,
+    "tipe": "pg_sederhana",
+    "soal": "Bentuk interaksi predasi (pemangsaan) ditunjukkan oleh hubungan antara ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "singa dengan zebra"
+      },
+      {
+        "label": "B",
+        "teks": "burung jalak dengan kerbau"
+      },
+      {
+        "label": "C",
+        "teks": "ikan badut dengan anemon laut"
+      },
+      {
+        "label": "D",
+        "teks": "kutu dengan kepala manusia"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Predasi adalah hubungan antara mangsa (prey) dan pemangsa (predator), seperti singa yang berburu dan memakan zebra.",
+    "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian C: Latihan Soal Mandiri Asli",
+    "materi": "Ekologi dan Ekosistem: Interaksi Simbiosis, Predasi, dan Konservasi Hayati",
+    "capaian": "Peserta didik mampu membedakan mutualisme, komensalisme, parasitisme, serta suksesi dan konservasi in-situ/ex-situ.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 44,
+    "tipe": "pg_sederhana",
+    "soal": "Interaksi kompetisi intraspesifik terjadi apabila dua organisme bersaing dalam ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "dua spesies yang berbeda memperebutkan mangsa yang sama"
+      },
+      {
+        "label": "B",
+        "teks": "tumbuhan inang dan benalu"
+      },
+      {
+        "label": "C",
+        "teks": "hewan pemangsa dan korbannya"
+      },
+      {
+        "label": "D",
+        "teks": "individu-individu dalam satu spesies yang sama memperebutkan sumber daya terbatas (makanan atau pasangan kawin)"
+      }
+    ],
+    "kunci": "D",
+    "pembahasan": "Kompetisi intraspesifik terjadi antarsesama individu dalam satu populasi/spesies yang sama (misalnya sesama ayam jantan bersaing wilayah teritorial).",
+    "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian C: Latihan Soal Mandiri Asli",
+    "materi": "Ekologi dan Ekosistem: Interaksi Simbiosis, Predasi, dan Konservasi Hayati",
+    "capaian": "Peserta didik mampu membedakan mutualisme, komensalisme, parasitisme, serta suksesi dan konservasi in-situ/ex-situ.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 45,
+    "tipe": "pg_sederhana",
+    "soal": "Benalu (Loranthus) yang hidup menempel pada dahan pohon mangga merupakan contoh simbiosis parasitisme karena ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "benalu menyerap air dan mineral dari pohon mangga menggunakan haustorium sehingga merugikan pohon inang"
+      },
+      {
+        "label": "B",
+        "teks": "benalu memberikan pupuk nitrogen pada pohon mangga"
+      },
+      {
+        "label": "C",
+        "teks": "pohon mangga terlindungi dari ulat daun"
+      },
+      {
+        "label": "D",
+        "teks": "keduanya saling bertukar fotosintat"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Parasitisme adalah interaksi di mana parasit mengambil nutrisi dan merugikan inangnya. Benalu menembus berkas pengangkut inang untuk mengisap air dan hara mineral.",
+    "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian C: Latihan Soal Mandiri Asli",
+    "materi": "Ekologi dan Ekosistem: Interaksi Simbiosis, Predasi, dan Konservasi Hayati",
+    "capaian": "Peserta didik mampu membedakan mutualisme, komensalisme, parasitisme, serta suksesi dan konservasi in-situ/ex-situ.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 46,
+    "tipe": "pg_sederhana",
+    "soal": "Piramida biomassa menggambarkan ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "jumlah individu tiap tingkat trofik"
+      },
+      {
+        "label": "B",
+        "teks": "total berat kering (massa organik) organisme pada setiap tingkat trofik dalam suatu waktu"
+      },
+      {
+        "label": "C",
+        "teks": "laju kecepatan aliran energi matahari"
+      },
+      {
+        "label": "D",
+        "teks": "keanekaragaman jenis tumbuhan hutan"
+      }
+    ],
+    "kunci": "B",
+    "pembahasan": "Piramida biomassa menyajikan estimasi berat kering total seluruh materi organik organisme per satuan luas pada masing-masing trofik ekosistem.",
+    "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian C: Latihan Soal Mandiri Asli",
+    "materi": "Ekologi dan Ekosistem: Interaksi Simbiosis, Predasi, dan Konservasi Hayati",
+    "capaian": "Peserta didik mampu membedakan mutualisme, komensalisme, parasitisme, serta suksesi dan konservasi in-situ/ex-situ.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 47,
+    "tipe": "pg_sederhana",
+    "soal": "Pada ekosistem laut terbuka, piramida biomassa dapat berbentuk terbalik (inverted) karena ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "biomassa fitoplankton berumur pendek dan bereproduksi sangat cepat meski biomassa sesaatnya lebih kecil daripada zooplankton pemakannya"
+      },
+      {
+        "label": "B",
+        "teks": "ikan paus memakan fitoplankton secara langsung"
+      },
+      {
+        "label": "C",
+        "teks": "zooplankton tidak memerlukan energi"
+      },
+      {
+        "label": "D",
+        "teks": "ekosistem laut tidak memiliki produsen"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Fitoplankton memiliki laju turnover reproduksi sangat pesat, sehingga biomassa yang berdiri (standing crop) saat diukur lebih kecil dibanding konsumen zooplankton di atasnya.",
+    "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian C: Latihan Soal Mandiri Asli",
+    "materi": "Ekologi dan Ekosistem: Interaksi Simbiosis, Predasi, dan Konservasi Hayati",
+    "capaian": "Peserta didik mampu membedakan mutualisme, komensalisme, parasitisme, serta suksesi dan konservasi in-situ/ex-situ.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 48,
+    "tipe": "pg_sederhana",
+    "soal": "Keseimbangan ekosistem (homeostatis) dapat terganggu apabila terjadi peristiwa ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "letusan gunung berapi dahsyat atau perburuan liar predator puncak hingga punah"
+      },
+      {
+        "label": "B",
+        "teks": "pergantian musim kemarau dan hujan secara alami"
+      },
+      {
+        "label": "C",
+        "teks": "terjadinya penyerbukan bunga oleh lebah madu"
+      },
+      {
+        "label": "D",
+        "teks": "perputaran daur biogeokimia secara teratur"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Bencana alam skala besar atau intervensi antropogenik seperti pemusnahan karnivora puncak memicu ledakan populasi herbivora (trophic cascade) yang merusak ekosistem.",
+    "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian C: Latihan Soal Mandiri Asli",
+    "materi": "Ekologi dan Ekosistem: Interaksi Simbiosis, Predasi, dan Konservasi Hayati",
+    "capaian": "Peserta didik mampu membedakan mutualisme, komensalisme, parasitisme, serta suksesi dan konservasi in-situ/ex-situ.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 49,
+    "tipe": "pg_sederhana",
+    "soal": "Fenomena blooming algae (ledakan populasi ganggang air) di danau akibat pencemaran limbah pupuk pertanian kaya nitrogen dan fosfat disebut ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "eutrofikasi"
+      },
+      {
+        "label": "B",
+        "teks": "biomagnifikasi"
+      },
+      {
+        "label": "C",
+        "teks": "suksesi primer"
+      },
+      {
+        "label": "D",
+        "teks": "desalinasi"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Eutrofikasi adalah pengayaan nutrien berlebih (N dan P) pada badan air yang memicu pertumbuhan massal alga, menutup sinar matahari, dan menurunkan kadar oksigen terlarut saat alga mati.",
+    "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian C: Latihan Soal Mandiri Asli",
+    "materi": "Ekologi dan Ekosistem: Interaksi Simbiosis, Predasi, dan Konservasi Hayati",
+    "capaian": "Peserta didik mampu membedakan mutualisme, komensalisme, parasitisme, serta suksesi dan konservasi in-situ/ex-situ.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 50,
+    "tipe": "pg_sederhana",
+    "soal": "Fauna Indonesia bagian barat (tipe Asiatis) memiliki kesamaan dengan fauna benua Asia. Karakteristik fauna tipe Asiatis adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "banyak dijumpai mamalia berukuran besar (gajah, badak, harimau) dan berbagai jenis kera"
+      },
+      {
+        "label": "B",
+        "teks": "didominasi oleh hewan berkantung (marsupialia)"
+      },
+      {
+        "label": "C",
+        "teks": "burung-burung berbulu sangat indah tetapi bersuara merdu minim"
+      },
+      {
+        "label": "D",
+        "teks": "tidak ada hewan karnivora besar"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Kawasan Dangkalan Sunda (Sumatera, Jawa, Kalimantan) dicirikan oleh mamalia plasental berbadan besar, kera primata (orangutan, bekantan), dan ikan air tawar yang berkerabat dekat dengan fauna daratan Asia.",
+    "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian C: Latihan Soal Mandiri Asli",
+    "materi": "Ekologi dan Ekosistem: Interaksi Simbiosis, Predasi, dan Konservasi Hayati",
+    "capaian": "Peserta didik mampu membedakan mutualisme, komensalisme, parasitisme, serta suksesi dan konservasi in-situ/ex-situ.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 51,
+    "tipe": "pg_sederhana",
+    "soal": "Fauna Indonesia bagian timur (tipe Australis) yang menempati Kepulauan Papua dan Maluku memiliki kemiripan dengan fauna benua Australia, dicirikan oleh ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "banyak mamalia besar dan kera ekor panjang"
+      },
+      {
+        "label": "B",
+        "teks": "keberadaan hewan berkantung (kuskus, kanguru pohon) dan burung berbulu indah (cenderawasih, kasuari)"
+      },
+      {
+        "label": "C",
+        "teks": "populasi harimau loreng yang melimpah"
+      },
+      {
+        "label": "D",
+        "teks": "fauna endemik babi rusa"
+      }
+    ],
+    "kunci": "B",
+    "pembahasan": "Dangkalan Sahul (Papua dan sekitarnya) dihuni hewan marsupialia berkantung dan aves warna-warni yang berkerabat dekat dengan benua Australia.",
+    "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian C: Latihan Soal Mandiri Asli",
+    "materi": "Ekologi dan Ekosistem: Interaksi Simbiosis, Predasi, dan Konservasi Hayati",
+    "capaian": "Peserta didik mampu membedakan mutualisme, komensalisme, parasitisme, serta suksesi dan konservasi in-situ/ex-situ.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 52,
+    "tipe": "pg_sederhana",
+    "soal": "Taman Nasional Komodo di Nusa Tenggara Timur didirikan dengan tujuan utama sebagai kawasan pelestarian ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "in-situ untuk melindungi kadal raksasa purba Komodo dan ekosistem savananya"
+      },
+      {
+        "label": "B",
+        "teks": "ex-situ penangkaran komodo di dalam kandang kaca"
+      },
+      {
+        "label": "C",
+        "teks": "perkebunan kelapa sawit terpadu"
+      },
+      {
+        "label": "D",
+        "teks": "peternakan sapi liar"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Taman Nasional Komodo adalah cagar biosfer pelestarian in-situ di habitat aslinya guna menjaga kelestarian satwa purba langka Varanus komodoensis.",
+    "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian C: Latihan Soal Mandiri Asli",
+    "materi": "Ekologi dan Ekosistem: Interaksi Simbiosis, Predasi, dan Konservasi Hayati",
+    "capaian": "Peserta didik mampu membedakan mutualisme, komensalisme, parasitisme, serta suksesi dan konservasi in-situ/ex-situ.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 53,
+    "tipe": "pg_sederhana",
+    "soal": "Kawasan hutan lindung Ujung Kulon di ujung barat Pulau Jawa terkenal sebagai habitat konservasi in-situ untuk satwa langka ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Gajah sumatera"
+      },
+      {
+        "label": "B",
+        "teks": "Harimau sumatera"
+      },
+      {
+        "label": "C",
+        "teks": "Badak jawa bercula satu (Rhinoceros sondaicus)"
+      },
+      {
+        "label": "D",
+        "teks": "Burung jalak bali"
+      }
+    ],
+    "kunci": "C",
+    "pembahasan": "Taman Nasional Ujung Kulon adalah suaka perlindungan terakhir bagi populasi badak jawa bercula satu yang berstatus kritis terancam punah (Critically Endangered).",
+    "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian C: Latihan Soal Mandiri Asli",
+    "materi": "Ekologi dan Ekosistem: Interaksi Simbiosis, Predasi, dan Konservasi Hayati",
+    "capaian": "Peserta didik mampu membedakan mutualisme, komensalisme, parasitisme, serta suksesi dan konservasi in-situ/ex-situ.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 54,
+    "tipe": "pg_sederhana",
+    "soal": "Tindakan manusia berikut yang dapat mengancam kelestarian keanekaragaman hayati (biodiversitas) hutan tropis adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "pembalakan liar (illegal logging) dan pembukaan lahan dengan membakar hutan"
+      },
+      {
+        "label": "B",
+        "teks": "penerapan sistem tebang pilih tanam kembali"
+      },
+      {
+        "label": "C",
+        "teks": "pembuatan suaka margasatwa"
+      },
+      {
+        "label": "D",
+        "teks": "pengembangan bank plasma nutfah biji-bijian"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Deforestasi melalui pembalakan liar dan pembakaran hutan menghancurkan habitat primer, memutus rantai makanan, dan memicu kepunahan massal spesies endemik.",
+    "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian C: Latihan Soal Mandiri Asli",
+    "materi": "Ekologi dan Ekosistem: Interaksi Simbiosis, Predasi, dan Konservasi Hayati",
+    "capaian": "Peserta didik mampu membedakan mutualisme, komensalisme, parasitisme, serta suksesi dan konservasi in-situ/ex-situ.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 55,
+    "tipe": "pg_sederhana",
+    "soal": "Akumulasi zat racun pestisida berbahaya (seperti DDT) yang semakin pekat konsentrasinya pada tingkat trofik yang lebih tinggi dalam rantai makanan disebut ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "eutrofikasi"
+      },
+      {
+        "label": "B",
+        "teks": "suksesi sekunder"
+      },
+      {
+        "label": "C",
+        "teks": "biomagnifikasi (pemekatan hayati)"
+      },
+      {
+        "label": "D",
+        "teks": "bioindikator"
+      }
+    ],
+    "kunci": "C",
+    "pembahasan": "Biomagnifikasi adalah proses peningkatan konsentrasi bahan kimia beracun yang sulit terurai (bioakumulatif) pada jaringan tubuh organisme seiring kenaikan tingkat trofik.",
+    "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian C: Latihan Soal Mandiri Asli",
+    "materi": "Ekologi dan Ekosistem: Interaksi Simbiosis, Predasi, dan Konservasi Hayati",
+    "capaian": "Peserta didik mampu membedakan mutualisme, komensalisme, parasitisme, serta suksesi dan konservasi in-situ/ex-situ.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 56,
+    "tipe": "pg_sederhana",
+    "soal": "Suatu suksesi ekologis yang terjadi pada lahan yang baru terbentuk akibat muntahan lahar dingin dan abu vulkanik letusan gunung berapi yang melenyapkan seluruh komunitas asal disebut ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "suksesi sekunder"
+      },
+      {
+        "label": "B",
+        "teks": "suksesi tersier"
+      },
+      {
+        "label": "C",
+        "teks": "suksesi primer"
+      },
+      {
+        "label": "D",
+        "teks": "klimaks terganggu"
+      }
+    ],
+    "kunci": "C",
+    "pembahasan": "Suksesi primer bermula dari substrat batuan steril tanpa kehidupan awal (seperti pasca letusan Krakatau), diawali oleh vegetasi perintis lumut kerak (Lichenes).",
+    "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian C: Latihan Soal Mandiri Asli",
+    "materi": "Ekologi dan Ekosistem: Interaksi Simbiosis, Predasi, dan Konservasi Hayati",
+    "capaian": "Peserta didik mampu membedakan mutualisme, komensalisme, parasitisme, serta suksesi dan konservasi in-situ/ex-situ.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 57,
+    "tipe": "pg_sederhana",
+    "soal": "Lumut kerak (Lichenes) yang merupakan simbiosis mutualisme antara jamur dan alga dikenal sebagai tumbuhan perintis (pioneer) karena mampu ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "mengeluarkan asam kimia yang melapukkan batuan keras menjadi partikel tanah awal bagi tumbuhan lain"
+      },
+      {
+        "label": "B",
+        "teks": "menghasilkan kayu bernilai tinggi"
+      },
+      {
+        "label": "C",
+        "teks": "memakan serangga kecil di sekitarnya"
+      },
+      {
+        "label": "D",
+        "teks": "menyerap racun karbon monoksida"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Lichenes mensekresikan zat kimia organik yang mempercepat pelapukan batuan keras menjadi lapisan tanah humus tipis yang kemudian dapat ditumbuhi oleh lumut dan paku.",
+    "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian C: Latihan Soal Mandiri Asli",
+    "materi": "Ekologi dan Ekosistem: Interaksi Simbiosis, Predasi, dan Konservasi Hayati",
+    "capaian": "Peserta didik mampu membedakan mutualisme, komensalisme, parasitisme, serta suksesi dan konservasi in-situ/ex-situ.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 58,
+    "tipe": "pg_sederhana",
+    "soal": "Dalam siklus karbon di bumi, proses alami yang berfungsi menyerap dan mengikat karbon dioksida (CO2) terbesar dari atmosfer adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "respirasi seluler hewan"
+      },
+      {
+        "label": "B",
+        "teks": "fotosintesis oleh tumbuhan hijau dan fitoplankton di samudra"
+      },
+      {
+        "label": "C",
+        "teks": "pembakaran bahan bakar fosil minyak bumi"
+      },
+      {
+        "label": "D",
+        "teks": "letusan gunung berapi aktif"
+      }
+    ],
+    "kunci": "B",
+    "pembahasan": "Fotosintesis tumbuhan darat dan fitoplankton laut merupakan penyerap karbon (carbon sink) utama yang mengubah CO2 menjadi oksigen dan biomassa biomolekul glukosa.",
+    "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian C: Latihan Soal Mandiri Asli",
+    "materi": "Ekologi dan Ekosistem: Interaksi Simbiosis, Predasi, dan Konservasi Hayati",
+    "capaian": "Peserta didik mampu membedakan mutualisme, komensalisme, parasitisme, serta suksesi dan konservasi in-situ/ex-situ.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 59,
+    "tipe": "pg_sederhana",
+    "soal": "Bakteri Rhizobium yang hidup pada bintil akar kacang tanah berperan penting dalam daur biogeokimia ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "daur nitrogen (mengikat gas N2 bebas dari atmosfer menjadi amonia/nitrat)"
+      },
+      {
+        "label": "B",
+        "teks": "daur fosfor"
+      },
+      {
+        "label": "C",
+        "teks": "daur belerang (sulfur)"
+      },
+      {
+        "label": "D",
+        "teks": "daur air"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Rhizobium memiliki enzim nitrogenase yang mampu melakukan fiksasi N2 di udara menjadi ion amonium/nitrat yang siap diserap tanaman untuk sintesis protein.",
+    "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian C: Latihan Soal Mandiri Asli",
+    "materi": "Ekologi dan Ekosistem: Interaksi Simbiosis, Predasi, dan Konservasi Hayati",
+    "capaian": "Peserta didik mampu membedakan mutualisme, komensalisme, parasitisme, serta suksesi dan konservasi in-situ/ex-situ.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 60,
+    "tipe": "pg_sederhana",
+    "soal": "Spesies invasif (asing) seperti eceng gondok (Eichhornia crassipes) yang masuk ke danau dapat mengancam biodiversitas lokal karena ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "tumbuh sangat masif menutupi permukaan air sehingga menghalangi penetrasi cahaya matahari ke tumbuhan air lokal"
+      },
+      {
+        "label": "B",
+        "teks": "memangsa ikan-ikan kecil di danau"
+      },
+      {
+        "label": "C",
+        "teks": "menghasilkan sengatan beracun bagi manusia"
+      },
+      {
+        "label": "D",
+        "teks": "menaikkan suhu air danau menjadi mendidih"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Eceng gondok tumbuh cepat menutupi seluruh permukaan air, menghambat fotosintesis tanaman bawah air, mempercepat pendangkalan danau, dan menghabiskan oksigen terlarut saat membusuk.",
+    "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian C: Latihan Soal Mandiri Asli",
+    "materi": "Ekologi dan Ekosistem: Interaksi Simbiosis, Predasi, dan Konservasi Hayati",
+    "capaian": "Peserta didik mampu membedakan mutualisme, komensalisme, parasitisme, serta suksesi dan konservasi in-situ/ex-situ.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 61,
+    "tipe": "pg_sederhana",
+    "soal": "Kawasan suaka alam yang ditunjuk khusus untuk melindungi formasi tanah, geologi, dan keindahan alam yang memiliki nilai ilmiah tinggi tanpa campur tangan manusia disebut ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "kebun binatang"
+      },
+      {
+        "label": "B",
+        "teks": "cagar alam"
+      },
+      {
+        "label": "C",
+        "teks": "taman safari"
+      },
+      {
+        "label": "D",
+        "teks": "taman hutan raya"
+      }
+    ],
+    "kunci": "B",
+    "pembahasan": "Cagar alam adalah kawasan suaka alam yang keadaan alamnya mempunyai kekhasan tumbuhan, satwa, dan ekosistemnya yang perkembangannya diserahkan pada proses alami.",
+    "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian C: Latihan Soal Mandiri Asli",
+    "materi": "Ekologi dan Ekosistem: Interaksi Simbiosis, Predasi, dan Konservasi Hayati",
+    "capaian": "Peserta didik mampu membedakan mutualisme, komensalisme, parasitisme, serta suksesi dan konservasi in-situ/ex-situ.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 62,
+    "tipe": "pg_sederhana",
+    "soal": "Keanekaragaman hayati tingkat gen ditunjukkan oleh variasi ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "kelapa kopyor, kelapa gading, dan kelapa hijau"
+      },
+      {
+        "label": "B",
+        "teks": "kucing, harimau, dan singa"
+      },
+      {
+        "label": "C",
+        "teks": "padi, jagung, dan tebu"
+      },
+      {
+        "label": "D",
+        "teks": "ekosistem pantai, sabana, dan tundra"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Variasi antarindividu dalam satu spesies yang sama (varietas atau ras kelapa) merupakan manifestasi dari keanekaragaman genetik (tingkat gen).",
+    "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian C: Latihan Soal Mandiri Asli",
+    "materi": "Ekologi dan Ekosistem: Interaksi Simbiosis, Predasi, dan Konservasi Hayati",
+    "capaian": "Peserta didik mampu membedakan mutualisme, komensalisme, parasitisme, serta suksesi dan konservasi in-situ/ex-situ.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 63,
+    "tipe": "pg_sederhana",
+    "soal": "Keanekaragaman hayati tingkat jenis (spesies) dapat diamati pada contoh ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "mangga gadung, mangga manalagi, dan mangga arumanis"
+      },
+      {
+        "label": "B",
+        "teks": "beras putih, beras merah, dan beras ketan"
+      },
+      {
+        "label": "C",
+        "teks": "kucing (Felis catus), harimau (Panthera tigris), dan singa (Panthera leo)"
+      },
+      {
+        "label": "D",
+        "teks": "mawar merah, mawar putih, dan mawar kuning"
+      }
+    ],
+    "kunci": "C",
+    "pembahasan": "Kucing, harimau, dan singa adalah spesies-spesies berbeda yang masih tergolong dalam famili Felidae, menunjukkan keanekaragaman tingkat spesies.",
+    "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian C: Latihan Soal Mandiri Asli",
+    "materi": "Ekologi dan Ekosistem: Interaksi Simbiosis, Predasi, dan Konservasi Hayati",
+    "capaian": "Peserta didik mampu membedakan mutualisme, komensalisme, parasitisme, serta suksesi dan konservasi in-situ/ex-situ.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 64,
+    "tipe": "pg_sederhana",
+    "soal": "Bunga bangkai raksasa (Rafflesia arnoldii) yang tumbuh di hutan Bengkulu dan Sumatera merupakan tumbuhan langka yang bersifat ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "parasit obligat pada akar tumbuhan inang Tetrastigma tanpa memiliki batang, daun, dan akar sejati"
+      },
+      {
+        "label": "B",
+        "teks": "produsen berklorofil melimpah"
+      },
+      {
+        "label": "C",
+        "teks": "tumbuhan karnivora pemakan katak"
+      },
+      {
+        "label": "D",
+        "teks": "tumbuhan epifit pembuat makanan sendiri"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Rafflesia arnoldii adalah tumbuhan parasit obligat endofitik tanpa klorofil, seluruh nutrisinya diserap dari liana merambat Tetrastigma hingga menghasilkan kuncup bunga raksasa.",
+    "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian C: Latihan Soal Mandiri Asli",
+    "materi": "Ekologi dan Ekosistem: Interaksi Simbiosis, Predasi, dan Konservasi Hayati",
+    "capaian": "Peserta didik mampu membedakan mutualisme, komensalisme, parasitisme, serta suksesi dan konservasi in-situ/ex-situ.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 65,
+    "tipe": "pg_sederhana",
+    "soal": "Upaya konservasi plasma nutfah tumbuhan melalui penyimpanan biji pada suhu sangat rendah (kriopreservasi) di bank benih merupakan metode pelestarian ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "in-situ"
+      },
+      {
+        "label": "B",
+        "teks": "ex-situ"
+      },
+      {
+        "label": "C",
+        "teks": "taman nasional"
+      },
+      {
+        "label": "D",
+        "teks": "hutan suaka alam"
+      }
+    ],
+    "kunci": "B",
+    "pembahasan": "Bank benih (seed bank) dan koleksi kultur jaringan di laboratorium adalah fasilitas buatan di luar habitat alami tanaman, sehingga tergolong pelestarian ex-situ.",
+    "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian C: Latihan Soal Mandiri Asli",
+    "materi": "Ekologi dan Ekosistem: Interaksi Simbiosis, Predasi, dan Konservasi Hayati",
+    "capaian": "Peserta didik mampu membedakan mutualisme, komensalisme, parasitisme, serta suksesi dan konservasi in-situ/ex-situ.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 66,
+    "tipe": "pg_sederhana",
+    "soal": "Pada suatu ekosistem sawah terdapat rantai makanan: Padi -> Belalang -> Katak -> Ular sawah -> Elang. Jika populasi katak menurun drastis akibat perburuan berlebih oleh manusia, dampak ekologis langsung yang akan terjadi adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Populasi belalang meningkat pesat sehingga hasil panen padi menurun, dan populasi ular sawah menurun karena kekurangan mangsa"
+      },
+      {
+        "label": "B",
+        "teks": "Populasi elang meningkat tajam"
+      },
+      {
+        "label": "C",
+        "teks": "Hasil panen padi meningkat melimpah"
+      },
+      {
+        "label": "D",
+        "teks": "Populasi belalang ikut punah"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Katak adalah predator pengendali belalang dan sumber pakan ular. Hilangnya katak menyebabkan populasi belalang meledak (merusak tanaman padi petani) dan populasi ular kelaparan sehingga menurun.",
+    "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian D: Pengayaan AKM & TKA",
+    "materi": "Ekologi dan Keanekaragaman Hayati: Pengayaan AKM Literasi Sains & TKA",
+    "capaian": "Peserta didik mampu menganalisis dinamika rantai makanan, peran ekosistem mangrove, dan resistensi pestisida.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 67,
+    "tipe": "pg_sederhana",
+    "soal": "Perhatikan piramida energi suatu ekosistem: Jika produsen menghasilkan energi sebesar 50.000 kkal, maka estimasi energi yang tersedia untuk konsumen tingkat III (karnivora sekunder) berdasarkan kaidah efisiensi 10% adalah ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "50 kkal"
+      },
+      {
+        "label": "B",
+        "teks": "500 kkal"
+      },
+      {
+        "label": "C",
+        "teks": "5.000 kkal"
+      },
+      {
+        "label": "D",
+        "teks": "25 kkal"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Produsen = 50.000 kkal -> Konsumen I (10%) = 5.000 kkal -> Konsumen II (10%) = 500 kkal -> Konsumen III (10%) = 50 kkal.",
+    "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian D: Pengayaan AKM & TKA",
+    "materi": "Ekologi dan Keanekaragaman Hayati: Pengayaan AKM Literasi Sains & TKA",
+    "capaian": "Peserta didik mampu menganalisis dinamika rantai makanan, peran ekosistem mangrove, dan resistensi pestisida.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 68,
+    "tipe": "pg_sederhana",
+    "soal": "Kawasan peralihan Wallacea memiliki nilai biogeografi yang sangat unik di dunia karena ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "memiliki percampuran fauna Asiatis dan Australis serta tingkat endemisitas satwa yang sangat tinggi"
+      },
+      {
+        "label": "B",
+        "teks": "seluruh wilayahnya ditutupi salju abadi"
+      },
+      {
+        "label": "C",
+        "teks": "tidak ada hewan reptil dan burung yang hidup"
+      },
+      {
+        "label": "D",
+        "teks": "faunanya identik persis dengan fauna benua Afrika"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Kepulauan Wallacea (Sulawesi, Maluku, Nusa Tenggara) terisolasi oleh laut dalam sejak zaman es, menghasilkan evolusi satwa endemik unik yang memadukan garis keturunan Asiatis dan Australasia.",
+    "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian D: Pengayaan AKM & TKA",
+    "materi": "Ekologi dan Keanekaragaman Hayati: Pengayaan AKM Literasi Sains & TKA",
+    "capaian": "Peserta didik mampu menganalisis dinamika rantai makanan, peran ekosistem mangrove, dan resistensi pestisida.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 69,
+    "tipe": "pg_sederhana",
+    "soal": "Hutan mangrove di garis pantai tropis memiliki peran ekologis krusial sebagai tempat pemijahan dan perlindungan bibit ikan karang (nursery ground), serta fungsi fisik yaitu ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "mencegah abrasi pantai dari hantaman ombak tsunami dan menyerap emisi karbon biru (blue carbon) dalam jumlah besar"
+      },
+      {
+        "label": "B",
+        "teks": "mengeringkan air laut menjadi garam meja"
+      },
+      {
+        "label": "C",
+        "teks": "menghalangi arus perahu nelayan melaut"
+      },
+      {
+        "label": "D",
+        "teks": "meningkatkan suhu air laut secara global"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Perakaran mangrove yang rapat meredam energi gelombang ombak tsunami, mengikat sedimen lumpur pantai dari abrasi, dan mengunci sedimen organik karbon biru (blue carbon sink).",
+    "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian D: Pengayaan AKM & TKA",
+    "materi": "Ekologi dan Keanekaragaman Hayati: Pengayaan AKM Literasi Sains & TKA",
+    "capaian": "Peserta didik mampu menganalisis dinamika rantai makanan, peran ekosistem mangrove, dan resistensi pestisida.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg",
+    "bacaan": ""
+  },
+  {
+    "nomor": 70,
+    "tipe": "pg_sederhana",
+    "soal": "Pemberian insektisida kimia secara berlebihan dan terus-menerus di lahan pertanian dapat memicu fenomena resistensi hama, yang berarti ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "populasi hama menjadi kebal terhadap insektisida karena individu yang memiliki mutasi pertahanan bertahan hidup dan memperbanyak diri"
+      },
+      {
+        "label": "B",
+        "teks": "hama bermutasi menjadi serangga penyerbuk yang jinak"
+      },
+      {
+        "label": "C",
+        "teks": "seluruh tanaman pertanian ikut layu dan mati"
+      },
+      {
+        "label": "D",
+        "teks": "kandungan nutrisi tanah meningkat pesat"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Tekanan seleksi kimiawi membunuh serangga rentan, sementara sedikit serangga yang kebal bertahan hidup dan mewariskan alel resistensi ke generasi berikutnya (resistensi hama).",
+    "paket": "Bab VI: Ekologi dan Keanekaragaman Hayati - Bagian D: Pengayaan AKM & TKA",
+    "materi": "Ekologi dan Keanekaragaman Hayati: Pengayaan AKM Literasi Sains & TKA",
+    "capaian": "Peserta didik mampu menganalisis dinamika rantai makanan, peran ekosistem mangrove, dan resistensi pestisida.",
+    "img": "/soal/ipa/kmerdeka_kls7_ipa_ch6_ekologi.jpg",
+    "bacaan": ""
+  }
+]
