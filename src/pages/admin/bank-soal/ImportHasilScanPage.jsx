@@ -2147,8 +2147,10 @@ function parseHTMLMaster(raw) {
       // yang putus di OCR dilengkapi dari kunci soal itu sendiri (bukan
       // ditebak) dan DICATAT di catatan_ocr.
       pembahasan: (() => {
-        const mentah = perbaikiKurungHimpunanLatex(bersihkanOcrTeks(htmlNodeText(explanationNode), { jagaBaris: true }).teks);
-        const ekor = lengkapEkorJawaban(mentah, normalizeAnswerKey(keyRaw));
+        const rawNodeText = htmlNodeText(explanationNode);
+        const mentah = perbaikiKurungHimpunanLatex(bersihkanOcrTeks(rawNodeText, { jagaBaris: true }).teks);
+        const teksFinal = mentah.trim() ? mentah : rawNodeText.trim();
+        const ekor = lengkapEkorJawaban(teksFinal, normalizeAnswerKey(keyRaw));
         catatanEkorJawaban.push(...ekor.catatan);
         return ekor.teks;
       })(),

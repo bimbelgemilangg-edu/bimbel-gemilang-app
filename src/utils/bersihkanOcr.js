@@ -41,6 +41,9 @@ function barisGarbar(baris) {
   // miskin huruf sehingga dulu tertelan aturan rácak kolom. Baris bersimbol
   // matematika adalah ISI buku, bukan sampah scan.
   if (RE_SIMBOL_MATIKA.test(t)) return false;
+  // 🔥 Baris yang diawali kata kunci pembahasan/jawaban/penjelasan atau simbol derajat (°C / ◦C)
+  // adalah isi pembahasan sah, bukan sampah OCR.
+  if (/^(pembahasan|jawaban|penjelasan|solusi|kunci)\b/i.test(t) || /[°◦]C/i.test(t)) return false;
   const huruf = t.replace(/[^a-zA-Z]/g, '');
   if (huruf.length < 3) return false;
   const vokal = (huruf.match(/[aeiouAEIOU]/g) || []).length;
