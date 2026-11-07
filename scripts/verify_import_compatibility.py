@@ -29,6 +29,14 @@ TARGET_FILES = [
     "kelas9_ch3_journeys_to_the_fantasy_worlds.html",
     "kelas9_ch4_upcycling_used_materials.html",
     "kelas9_ch5_digital_life.html",
+    "kelas7_ipa_kurikulum_merdeka_175soal_lengkap.html",
+    "kelas7_ipa_ch1_hakikat_ilmu_sains.html",
+    "kelas7_ipa_ch2_zat_dan_perubahannya.html",
+    "kelas7_ipa_ch3_suhu_kalor_dan_pemuaian.html",
+    "kelas7_ipa_ch4_gerak_dan_gaya.html",
+    "kelas7_ipa_ch5_klasifikasi_makhluk_hidup.html",
+    "kelas7_ipa_ch6_ekologi_dan_keanekaragaman_hayati.html",
+    "kelas7_ipa_ch7_bumi_dan_tata_surya.html",
 ]
 
 def simulate_parse_and_validate(filepath):
