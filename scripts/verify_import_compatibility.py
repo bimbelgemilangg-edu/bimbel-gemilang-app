@@ -17,6 +17,12 @@ TARGET_FILES = [
     "kelas7_ch3_home_sweet_home.html",
     "kelas7_ch4_my_school_activities.html",
     "kelas7_ch5_this_is_my_school.html",
+    "kelas8_kurikulum_merdeka_125soal_lengkap.html",
+    "kelas8_ch1_celebrating_independence_day.html",
+    "kelas8_ch2_kindness_begins_with_me.html",
+    "kelas8_ch3_love_our_world.html",
+    "kelas8_ch4_no_littering.html",
+    "kelas8_ch5_embrace_yourself.html",
 ]
 
 def simulate_parse_and_validate(filepath):

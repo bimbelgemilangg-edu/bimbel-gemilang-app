@@ -96,6 +96,53 @@ CHAPTER_CONFIG_K8 = {
     }
 }
 
+STIM_HEAD_RE = re.compile(
+    r"\n(?=(?:Compare|Read|Study|Observe|Look at|This|GAMBAR)\b[\s\S]*?\bfor\s+ques[-\s]*tions?\s+number\b)",
+    re.I
+)
+
+def format_pembahasan_k8(q, k_raw, raw_bahasan):
+    ch = q["chapter"]
+    no = q["nomor"]
+    tipe = q["tipe"]
+    kunci = q["kunci_jawaban"]
+
+    raw_clean = (raw_bahasan or "").replace("◦C", "°C").replace("−", "-").replace("→", " menjadi ")
+    raw_clean = re.sub(r"\s+", " ", raw_clean).strip()
+
+    # Special handling for Soal 58 (Ch 3 No 8)
+    if ch == 3 and no == 8:
+        opt_text = next((o["teks"] for o in q["opsi_jawaban"] if o["label"] == "B"), "24 to 26 degrees Celsius")
+        return (
+            f"Jawaban yang tepat adalah B ({opt_text}). Berdasarkan instruksi Langkah 4 pada teks prosedur "
+            f"'How to Save Electrical Energy in Your Bedroom Every Day', rentang temperatur pendingin ruangan (AC) yang "
+            f"disarankan dan ramah lingkungan adalah antara 24 derajat Celsius hingga 26 derajat Celsius (24°C - 26°C) "
+            f"guna menghemat konsumsi energi listrik serta menekan emisi karbon."
+        )
+
+    if tipe == "benar_salah":
+        stmts = [f"{p['label']} bernilai {p['jawaban']}" for p in q["pernyataan"]]
+        detail = "; ".join(stmts)
+        has_extra = raw_clean and not raw_clean.startswith("(a)") and raw_clean != kunci
+        extra = f" Penjelasan: {raw_clean}." if has_extra else ""
+        return f"Analisis kesesuaian pernyataan berdasarkan wacana: {detail}.{extra}"
+    elif tipe == "pg_kompleks":
+        selected_opts = [f"{o['label']}. {o['teks']}" for o in q["opsi_jawaban"] if o["label"] in kunci]
+        detail = " dan ".join(selected_opts)
+        has_extra = raw_clean and not re.match(r"^[A-D,\s]+$", raw_clean) and raw_clean != kunci
+        extra = f" Penjelasan: {raw_clean}." if has_extra else ""
+        return f"Pilihan jawaban yang benar adalah {kunci} ({detail}).{extra}"
+    else:  # pg_sederhana
+        opt_text = next((o["teks"] for o in q["opsi_jawaban"] if o["label"] == kunci), "")
+        has_extra = raw_clean and len(raw_clean) > 3 and not re.match(r"^[A-D]$", raw_clean) and raw_clean != kunci
+        if has_extra:
+            return f"Jawaban yang tepat adalah {kunci} ({opt_text}). Penjelasan: {raw_clean}."
+        else:
+            return (
+                f"Jawaban yang tepat adalah {kunci} ({opt_text}). Sesuai fakta dan informasi kunci yang termuat pada "
+                f"stimulus bacaan serta penerapan kaidah kebahasaan Kurikulum Merdeka Fase D."
+            )
+
 def parse_chapter_k8(ch_num):
     filepath = os.path.join(SCRATCH_DIR, f"chapter_8_{ch_num}_raw.txt")
     with open(filepath, "r", encoding="utf-8") as f:
@@ -138,13 +185,13 @@ def parse_chapter_k8(ch_num):
             if expected > 25:
                 break
 
-    # Extract initial stimulus
+    u1_end = 4 if ch_num in [3, 4] else 5
     stim1 = "\n".join(lines[:seq[0][1]]).strip()
     stim1 = re.sub(r"^for questions? number[^\n]*\n", "", stim1, flags=re.I).strip()
 
     stimulus_map = {
-        (1, 5): stim1,
-        (6, 15): "",
+        (1, u1_end): stim1,
+        (u1_end + 1, 15): "",
         (16, 25): "",
     }
 
@@ -154,13 +201,13 @@ def parse_chapter_k8(ch_num):
         end_idx = seq[k+1][1] if k + 1 < len(seq) else len(lines)
         chunk = "\n".join(lines[start_idx:end_idx]).strip()
 
-        sm = re.search(r"\n(?=(?:Compare|Read|Study|Observe|Look at|This|Below|GAMBAR)\b.*?\bfor questions? number\b)", chunk, re.I)
+        sm = STIM_HEAD_RE.search(chunk)
         if sm:
             st = chunk[sm.start():].strip()
             st = re.sub(r"--- Page \d+ ---", "", st).strip()
-            if num in [4, 5]:
-                stimulus_map[(6, 15)] = st
-            elif num in [14, 15]:
+            if num == u1_end:
+                stimulus_map[(u1_end + 1, 15)] = st
+            elif num == 15:
                 stimulus_map[(16, 25)] = st
 
     parsed_questions = []
@@ -171,7 +218,7 @@ def parse_chapter_k8(ch_num):
         chunk = "\n".join(lines[start_idx:end_idx]).strip()
 
         # Clean trailing stimulus
-        stim_match = re.search(r"\n(?=(?:Compare|Read|Study|Observe|Look at|This|Below|GAMBAR)\b.*?\bfor questions? number\b)", chunk, re.I)
+        stim_match = STIM_HEAD_RE.search(chunk)
         if stim_match:
             chunk = chunk[:stim_match.start()].strip()
         chunk = re.sub(r"--- Page \d+ ---", "", chunk).strip()
@@ -187,7 +234,7 @@ def parse_chapter_k8(ch_num):
         opsi = []
         pernyataan = []
         key_val = ""
-        pembahasan = ""
+        raw_pembahasan = ""
 
         if tipe == "benar_salah":
             stmt_matches = re.findall(r"\(([a-c])\)\s+(.*?)(?=\n\(([a-c])\)|\n□|\Z)", chunk, re.DOTALL)
@@ -202,7 +249,7 @@ def parse_chapter_k8(ch_num):
                 pernyataan.append({"label": f"({ltr})", "teks": st, "jawaban": ans_code})
 
             key_val = ", ".join(p["jawaban"] for p in pernyataan)
-            pembahasan = k_raw
+            raw_pembahasan = k_raw
 
             prompt_m = re.search(r"^\d+\.\s+(.*?)(?=\nNo\.|\nStatements|\n\([a-c]\))", chunk, re.DOTALL)
             soal_text = prompt_m.group(1).strip() if prompt_m else chunk.split("\n")[0]
@@ -215,10 +262,10 @@ def parse_chapter_k8(ch_num):
             km = re.match(r"^([A-D](?:,\s*[A-D])?)(?:\s*\((.*?)\))?", k_raw)
             if km:
                 key_val = km.group(1).strip()
-                pembahasan = km.group(2).strip() if km.group(2) else k_raw
+                raw_pembahasan = km.group(2).strip() if km.group(2) else k_raw
             else:
                 key_val = k_raw[:5].strip()
-                pembahasan = k_raw
+                raw_pembahasan = k_raw
 
             prompt_m = re.search(r"^\d+\.\s+(.*?)(?=\n(?:□\s*|\b)[A-D]\.)", chunk, re.DOTALL)
             soal_text = prompt_m.group(1).strip() if prompt_m else chunk.split("\n")[0]
@@ -244,9 +291,9 @@ def parse_chapter_k8(ch_num):
                 stim_text = s_text
                 break
         if not stim_text:
-            stim_text = stimulus_map.get((1, 5), "")
+            stim_text = stimulus_map.get((1, u1_end), "")
 
-        parsed_questions.append({
+        q_obj = {
             "nomor": num,
             "chapter": ch_num,
             "paket": q_unit,
@@ -259,8 +306,9 @@ def parse_chapter_k8(ch_num):
             "opsi_jawaban": opsi,
             "pernyataan": pernyataan,
             "kunci_jawaban": key_val,
-            "pembahasan": pembahasan
-        })
+        }
+        q_obj["pembahasan"] = format_pembahasan_k8(q_obj, k_raw, raw_pembahasan)
+        parsed_questions.append(q_obj)
 
     return parsed_questions
 
