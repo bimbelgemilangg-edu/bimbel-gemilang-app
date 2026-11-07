@@ -1674,12 +1674,20 @@ function htmlImageToObject(img, index = 0) {
   // Gemini Canvas ("[url](url)") -- tanpa ini alamat dibaca apa adanya,
   // gagal dimuat browser, dan gambar asli dicap "rusak/palsu dari AI".
   const src = lepasBungkusanSrcGambar(safeString(img?.getAttribute?.('src') || img?.src || '').trim());
+  const dataUrlAttr = safeString(img?.getAttribute?.('data-url') || img?.getAttribute?.('data-src') || '').trim();
   const alt = safeString(img?.getAttribute?.('alt') || img?.getAttribute?.('data-description') || '').trim();
+
+  // Jika tag img memiliki data-url atau data-src yang mengarah ke path/URL asli (/soal/... atau https://...), utamakan itu agar tidak perlu upload ulang base64
+  const hasHostedUrl = Boolean(dataUrlAttr && !dataUrlAttr.startsWith('data:image'));
   const isData = src.startsWith('data:image');
+
+  const finalUrl = hasHostedUrl ? dataUrlAttr : (isData ? '' : src);
+  const finalDataUrl = hasHostedUrl ? '' : (isData ? src : '');
+
   return {
     id: safeString(img?.getAttribute?.('data-id'), `gambar-${index + 1}`),
-    url: isData ? '' : src,
-    dataUrl: isData ? src : '',
+    url: finalUrl,
+    dataUrl: finalDataUrl,
     uploadedUrl: '',
     deskripsi: alt,
     nomor: index + 1,
@@ -4562,62 +4570,79 @@ Ikuti PERSIS format/skema HTML di bawah ini buat cara nulis soalnya (struktur da
     if (toUpload.length > 0) {
       addLog(`⏳ Menyiapkan ${toUpload.length} gambar (soal + opsi)...`);
 
-      try {
-        const response = await fetch('/api/uploadBankSoalImages', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            images: toUpload.map(item => ({ key: item.key, dataUrl: item.dataUrl })),
-          }),
-        });
+      const urlMap = {};
+      const BATCH_SIZE = 2; // Unggah 2 gambar per request agar selalu di bawah batas 4.5 MB Vercel Serverless (HTTP 413)
+      const totalBatches = Math.ceil(toUpload.length / BATCH_SIZE);
+      let totalUploaded = 0;
+      let totalErrors = 0;
 
-        let result = null;
-        try { result = await response.json(); } catch { result = null; }
-
-        if (!response.ok) {
-          throw new Error(result?.error || `Server upload mengembalikan HTTP ${response.status}`);
+      for (let bi = 0; bi < toUpload.length; bi += BATCH_SIZE) {
+        const batch = toUpload.slice(bi, bi + BATCH_SIZE);
+        const batchIndex = Math.floor(bi / BATCH_SIZE) + 1;
+        if (totalBatches > 1) {
+          addLog(`⏳ Mengunggah gambar batch ${batchIndex}/${totalBatches} (${batch.length} gambar)...`);
         }
 
-        const urlMap = {};
-        safeArray(result?.uploaded).forEach(upload => {
-          if (upload?.key && upload?.url) urlMap[upload.key] = upload.url;
-        });
+        try {
+          const response = await fetch('/api/uploadBankSoalImages', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              images: batch.map(item => ({ key: item.key, dataUrl: item.dataUrl })),
+            }),
+          });
 
-        let uploadedCount = 0;
+          let result = null;
+          try { result = await response.json(); } catch { result = null; }
 
-        toUpload.forEach(item => {
-          const uploadedUrl = urlMap[item.key];
-          if (!uploadedUrl) return;
-
-          if (item.kind === 'soal') {
-            const images = [...safeArray(soalProcessed[item.qi].gambar)];
-            images[item.gi] = { ...images[item.gi], uploadedUrl, dataUrl: '' };
-            soalProcessed[item.qi] = { ...soalProcessed[item.qi], gambar: images };
-          } else if (item.kind === 'bacaan') {
-            const bacaan = soalProcessed[item.qi].bacaan;
-            const images = [...safeArray(bacaan?.gambar)];
-            images[item.gi] = { ...images[item.gi], uploadedUrl, dataUrl: '' };
-            soalProcessed[item.qi] = { ...soalProcessed[item.qi], bacaan: { ...bacaan, gambar: images } };
-          } else {
-            const opsi = [...safeArray(soalProcessed[item.qi].opsi_jawaban)];
-            const opt = opsi[item.oi];
-            const images = [...safeArray(opt.gambar)];
-            images[item.gi] = { ...images[item.gi], uploadedUrl, dataUrl: '' };
-            opsi[item.oi] = { ...opt, gambar: images };
-            soalProcessed[item.qi] = { ...soalProcessed[item.qi], opsi_jawaban: opsi };
+          if (!response.ok) {
+            throw new Error(result?.error || `Server upload mengembalikan HTTP ${response.status}`);
           }
 
-          uploadedCount++;
-        });
+          safeArray(result?.uploaded).forEach(upload => {
+            if (upload?.key && upload?.url) {
+              urlMap[upload.key] = upload.url;
+              totalUploaded++;
+            }
+          });
 
-        addLog(`✅ ${uploadedCount}/${toUpload.length} gambar berhasil diproses.`);
+          const uploadErrors = safeArray(result?.errors);
+          if (uploadErrors.length) totalErrors += uploadErrors.length;
+        } catch (batchErr) {
+          console.error(`Batch upload error (batch ${batchIndex}):`, batchErr);
+          addLog(`⚠️ Gagal unggah batch ${batchIndex}: ${batchErr?.message || 'error jaringan'}`);
+          totalErrors += batch.length;
+        }
+      }
 
-        const uploadErrors = safeArray(result?.errors);
-        if (uploadErrors.length) addLog(`⚠️ ${uploadErrors.length} gambar gagal diupload.`);
-      } catch (error) {
-        console.error('Image upload error:', error);
-        addLog(`⚠️ Upload gambar gagal: ${error?.message || 'error tidak diketahui'}`);
-        addLog('ℹ️ Proses penyimpanan tetap dilanjutkan. Gambar base64 yang gagal upload tidak akan menjadi URL.');
+      toUpload.forEach(item => {
+        const uploadedUrl = urlMap[item.key];
+        if (!uploadedUrl) return;
+
+        if (item.kind === 'soal') {
+          const images = [...safeArray(soalProcessed[item.qi].gambar)];
+          images[item.gi] = { ...images[item.gi], uploadedUrl, dataUrl: '' };
+          soalProcessed[item.qi] = { ...soalProcessed[item.qi], gambar: images };
+        } else if (item.kind === 'bacaan') {
+          const bacaan = soalProcessed[item.qi].bacaan;
+          const images = [...safeArray(bacaan?.gambar)];
+          images[item.gi] = { ...images[item.gi], uploadedUrl, dataUrl: '' };
+          soalProcessed[item.qi] = { ...soalProcessed[item.qi], bacaan: { ...bacaan, gambar: images } };
+        } else {
+          const opsi = [...safeArray(soalProcessed[item.qi].opsi_jawaban)];
+          const opt = opsi[item.oi];
+          const images = [...safeArray(opt.gambar)];
+          images[item.gi] = { ...images[item.gi], uploadedUrl, dataUrl: '' };
+          opsi[item.oi] = { ...opt, gambar: images };
+          soalProcessed[item.qi] = { ...soalProcessed[item.qi], opsi_jawaban: opsi };
+        }
+      });
+
+      if (totalUploaded > 0) {
+        addLog(`✅ ${totalUploaded}/${toUpload.length} gambar berhasil diproses.`);
+      }
+      if (totalErrors > 0) {
+        addLog(`⚠️ ${totalErrors} gambar tidak terunggah ke storage. Gambar tetap disimpan sebagai rujukan.`);
       }
     }
 

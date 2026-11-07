@@ -362,7 +362,7 @@ def generate_article_html(q, global_num):
         f'    </div>',
         f'  </div>',
         f'  <div data-field="gambar">',
-        f'    <img src="{data_uri}" data-url="{url_path}" alt="Visual Stimulus {q["gambar_file"]}" style="max-width: 100%; height: auto; border-radius: 8px; margin: 8px 0; border: 1px solid #cbd5e1;" />',
+        f'    <img src="{url_path}" data-url="{url_path}" alt="Visual Stimulus {q["gambar_file"]}" style="max-width: 100%; height: auto; border-radius: 8px; margin: 8px 0; border: 1px solid #cbd5e1;" />',
         f'  </div>',
         f'  <div data-field="teks_soal">',
         f'    <p><strong>Soal #{global_num} ({q["tipe"].replace("_", " ").upper()}):</strong> {teks_soal_esc}</p>',
