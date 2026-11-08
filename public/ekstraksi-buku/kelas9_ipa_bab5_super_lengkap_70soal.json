@@ -1,0 +1,2106 @@
+[
+  {
+    "nomor": 1,
+    "materi": "Reaksi-Reaksi Kimia dan Dinamikanya",
+    "paket": "Bab V: Reaksi-Reaksi Kimia dan Dinamikanya - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "9",
+    "mapel": "IPA",
+    "teks_soal": "Perhatikan gambar pengujian sifat asam-basa empat larutan dengan kertas lakmus merah dan biru berikut! Gelas (1): lakmus merah tetap merah, lakmus biru menjadi merah. Gelas (2): lakmus merah menjadi biru, lakmus biru tetap biru. Gelas (3): lakmus merah tetap merah, lakmus biru tetap biru. Gelas (4): lakmus merah tetap merah, lakmus biru menjadi merah. Larutan yang bersifat asam ditunjukkan oleh gelas nomor ....",
+    "gambar": [
+      "/soal/ipa/kls9_ipa_ch5_q1_uji_lakmus_asam_basa.png"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(1) dan (4)"
+      },
+      {
+        "label": "B",
+        "teks": "(1) dan (2)"
+      },
+      {
+        "label": "C",
+        "teks": "(2) dan (3)"
+      },
+      {
+        "label": "D",
+        "teks": "(3) dan (4)"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Larutan asam memiliki sifat memerahkan kertas lakmus (lakmus biru berubah menjadi merah, sedangkan lakmus merah tetap merah). Hal ini tampak pada gelas (1) dan (4). Gelas (2) bersifat basa (membirukan lakmus), dan gelas (3) bersifat netral (tidak mengubah warna kedua lakmus).",
+    "valid": true
+  },
+  {
+    "nomor": 2,
+    "materi": "Reaksi-Reaksi Kimia dan Dinamikanya",
+    "paket": "Bab V: Reaksi-Reaksi Kimia dan Dinamikanya - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "9",
+    "mapel": "IPA",
+    "teks_soal": "Sebanyak 12 gram pita magnesium (Mg) dibakar sempurna dengan 8 gram gas oksigen (O2) di dalam tabung tertutup rapat menghasilkan serbuk putih magnesium oksida (MgO). Menurut Hukum Kekekalan Massa Lavoisier, massa serbuk magnesium oksida yang terbentuk adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "16 gram"
+      },
+      {
+        "label": "B",
+        "teks": "20 gram"
+      },
+      {
+        "label": "C",
+        "teks": "24 gram"
+      },
+      {
+        "label": "D",
+        "teks": "96 gram"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Hukum Kekekalan Massa (Antoine Lavoisier) menyatakan bahwa dalam sistem tertutup, massa total zat sebelum reaksi (reaktan) sama persis dengan massa total zat sesudah reaksi (produk): m_reaktan = m_produk. Massa MgO = m_Mg + m_O2 = 12 g + 8 g = 20 gram.",
+    "valid": true
+  },
+  {
+    "nomor": 3,
+    "materi": "Reaksi-Reaksi Kimia dan Dinamikanya",
+    "paket": "Bab V: Reaksi-Reaksi Kimia dan Dinamikanya - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "9",
+    "mapel": "IPA",
+    "teks_soal": "Perhatikan persamaan reaksi pembentukan gas amonia berikut: N2 (g) + 3 H2 (g) -> 2 NH3 (g). Zat-zat yang bertindak sebagai pereaksi (reaktan) dan hasil reaksi (produk) berturut-turut adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "N2 dan H2 sebagai reaktan; NH3 sebagai produk"
+      },
+      {
+        "label": "B",
+        "teks": "NH3 sebagai reaktan; N2 dan H2 sebagai produk"
+      },
+      {
+        "label": "C",
+        "teks": "N2 saja sebagai reaktan"
+      },
+      {
+        "label": "D",
+        "teks": "H2 dan NH3 sebagai reaktan"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Dalam penulisan persamaan reaksi kimia: zat-zat di sebelah kiri tanda panah disebut pereaksi / reaktan (yaitu gas nitrogen N2 dan gas hidrogen H2), sedangkan zat di sebelah kanan tanda panah disebut produk / hasil reaksi (yaitu gas amonia NH3).",
+    "valid": true
+  },
+  {
+    "nomor": 4,
+    "materi": "Reaksi-Reaksi Kimia dan Dinamikanya",
+    "paket": "Bab V: Reaksi-Reaksi Kimia dan Dinamikanya - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "9",
+    "mapel": "IPA",
+    "teks_soal": "Persamaan reaksi pembakaran sempurna gas metana (CH4) pada kompor gas: a CH4 (g) + b O2 (g) -> c CO2 (g) + d H2O (g). Nilai koefisien reaksi a, b, c, dan d yang benar agar reaksi tersebut setara adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "1, 1, 1, 1"
+      },
+      {
+        "label": "B",
+        "teks": "1, 2, 2, 1"
+      },
+      {
+        "label": "C",
+        "teks": "1, 3, 1, 2"
+      },
+      {
+        "label": "D",
+        "teks": "1, 2, 1, 2"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Penyetaraan reaksi: Jika a = 1: Atom C di kiri = 1 => c = 1. Atom H di kiri = 4 => 2d = 4 => d = 2. Atom O di kanan = 2c + d = 2(1) + 2 = 4 => 2b = 4 => b = 2. Persamaan setara: CH4 + 2 O2 -> CO2 + 2 H2O. Jadi koefisiennya 1, 2, 1, 2.",
+    "valid": true
+  },
+  {
+    "nomor": 5,
+    "materi": "Reaksi-Reaksi Kimia dan Dinamikanya",
+    "paket": "Bab V: Reaksi-Reaksi Kimia dan Dinamikanya - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "9",
+    "mapel": "IPA",
+    "teks_soal": "Perhatikan beberapa bahan rumah tangga berikut: (1) Cuka makan, (2) Air sabun mandi, (3) Air perasan jeruk nipis, (4) Obat maag cair (antasida), (5) Minuman bersoda, (6) Larutan soda api pembersih saluran pipa. Bahan-bahan yang memiliki sifat basa adalah nomor ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(1), (3), dan (5)"
+      },
+      {
+        "label": "B",
+        "teks": "(2), (4), dan (6)"
+      },
+      {
+        "label": "C",
+        "teks": "(1), (2), dan (4)"
+      },
+      {
+        "label": "D",
+        "teks": "(3), (5), dan (6)"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Bahan bersifat asam (pH < 7): cuka (asam asetat), perasan jeruk (asam sitrat), minuman soda (asam karbonat). Bahan bersifat basa (pH > 7): air sabun (garam natrium asam lemak ber-pH basa), obat maag (mengandung Mg(OH)2 dan Al(OH)3), dan soda api (NaOH).",
+    "valid": true
+  },
+  {
+    "nomor": 6,
+    "materi": "Reaksi-Reaksi Kimia dan Dinamikanya",
+    "paket": "Bab V: Reaksi-Reaksi Kimia dan Dinamikanya - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "9",
+    "mapel": "IPA",
+    "teks_soal": "Seseorang yang menderita sakit maag akibat kelebihan produksi asam klorida (HCl) di dalam lambung meminum obat antasida yang mengandung senyawa magnesium hidroksida (Mg(OH)2). Jenis reaksi kimia yang terjadi di dalam lambung tersebut adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Reaksi fermentasi anaerob"
+      },
+      {
+        "label": "B",
+        "teks": "Reaksi netralisasi (penetralan) antara senyawa asam dan basa yang menghasilkan garam netral dan air"
+      },
+      {
+        "label": "C",
+        "teks": "Reaksi pembusukan protein"
+      },
+      {
+        "label": "D",
+        "teks": "Reaksi pembakaran spontan"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Reaksi antara asam lambung (HCl) dan antasida (Mg(OH)2) merupakan reaksi netralisasi asam-basa: 2 HCl + Mg(OH)2 -> MgCl2 + 2 H2O. Reaksi ini menaikkan pH lambung kembali ke tingkat aman serta meredakan rasa perih di dinding lambung.",
+    "valid": true
+  },
+  {
+    "nomor": 7,
+    "materi": "Reaksi-Reaksi Kimia dan Dinamikanya",
+    "paket": "Bab V: Reaksi-Reaksi Kimia dan Dinamikanya - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "9",
+    "mapel": "IPA",
+    "teks_soal": "Empat larutan diuji nilai pH-nya dengan indikator universal: Larutan P memiliki pH = 1,5; Larutan Q memiliki pH = 6,5; Larutan R memiliki pH = 7,0; dan Larutan S memiliki pH = 13,0. Pasangan larutan yang merupakan asam kuat dan basa kuat berturut-turut adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "P dan Q"
+      },
+      {
+        "label": "B",
+        "teks": "P dan S"
+      },
+      {
+        "label": "C",
+        "teks": "Q dan R"
+      },
+      {
+        "label": "D",
+        "teks": "R dan S"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Pada skala pH (0–14): pH 0 s.d. 3 dikategorikan sebagai asam kuat (Larutan P, pH 1,5); pH 4 s.d. 6 asam lemah (Q, pH 6,5); pH 7 netral (R); pH 8 s.d. 10 basa lemah; dan pH 11 s.d. 14 dikategorikan sebagai basa kuat (Larutan S, pH 13,0).",
+    "valid": true
+  },
+  {
+    "nomor": 8,
+    "materi": "Reaksi-Reaksi Kimia dan Dinamikanya",
+    "paket": "Bab V: Reaksi-Reaksi Kimia dan Dinamikanya - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "9",
+    "mapel": "IPA",
+    "teks_soal": "Ekstrak bahan alam seperti kunyit dapat dijadikan sebagai indikator alami asam-basa. Perubahan warna yang terjadi pada ekstrak kunyit saat diteteskan ke dalam larutan asam dan larutan basa berturut-turut adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Berwarna merah pada asam dan kuning pada basa"
+      },
+      {
+        "label": "B",
+        "teks": "Berwarna ungu pada asam dan hijau pada basa"
+      },
+      {
+        "label": "C",
+        "teks": "Berwarna kuning cerah pada suasana asam dan berubah menjadi merah kecokelatan pada suasana basa"
+      },
+      {
+        "label": "D",
+        "teks": "Tidak mengalami perubahan warna sama sekali"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Kunyit mengandung zat kurkumin. Dalam medium asam atau netral, kurkumin mempertahankan warna kuning cerah. Dalam medium basa (seperti saat terkena sabun atau kapur sirih), struktur molekul kurkumin terionisasi membentuk warna merah tua kecokelatan.",
+    "valid": true
+  },
+  {
+    "nomor": 9,
+    "materi": "Reaksi-Reaksi Kimia dan Dinamikanya",
+    "paket": "Bab V: Reaksi-Reaksi Kimia dan Dinamikanya - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "9",
+    "mapel": "IPA",
+    "teks_soal": "Fenomena hujan asam (pH air hujan < 5,6) di daerah industri padat kendaraan dipicu oleh gas buang polutan udara berupa .... yang bereaksi dengan uap air di atmosfer membentuk asam sulfat dan asam nitrat.",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Gas oksigen dan gas nitrogen"
+      },
+      {
+        "label": "B",
+        "teks": "Gas karbon monoksida dan uap air"
+      },
+      {
+        "label": "C",
+        "teks": "Gas argon dan gas neon"
+      },
+      {
+        "label": "D",
+        "teks": "Gas belerang dioksida (SO2) dan nitrogen oksida (NOx)"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Pembakaran batubara dan bahan bakar fosil melepaskan gas belerang dioksida (SO2) dan oksida nitrogen (NO dan NO2). Di atmosfer, gas ini mengalami oksidasi fotokimia dan bereaksi dengan uap air awan: SO2 + H2O -> H2SO3 -> H2SO4 (asam sulfat) dan 2 NO2 + H2O -> HNO2 + HNO3 (asam nitrat), menghasilkan hujan asam yang sangat korosif.",
+    "valid": true
+  },
+  {
+    "nomor": 10,
+    "materi": "Reaksi-Reaksi Kimia dan Dinamikanya",
+    "paket": "Bab V: Reaksi-Reaksi Kimia dan Dinamikanya - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "9",
+    "mapel": "IPA",
+    "teks_soal": "Ketika padatan kapur tohor (CaO) dimasukkan ke dalam gelas beker berisi air, air seketika mendidih bergolak dan dinding gelas beker terasa sangat panas. Reaksi kimia ini dikategorikan sebagai ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Reaksi endoterm karena menyerap kalor dari lingkungan"
+      },
+      {
+        "label": "B",
+        "teks": "Reaksi eksoterm karena sistem melepaskan kalor ke lingkungan sehingga suhu wadah meningkat drastis (Delta H < 0)"
+      },
+      {
+        "label": "C",
+        "teks": "Reaksi fisika tanpa perubahan energi"
+      },
+      {
+        "label": "D",
+        "teks": "Reaksi fotosintesis"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Reaksi eksoterm adalah reaksi yang membebaskan/melepaskan kalor dari sistem ke lingkungan. Reaksi hidrasi kapur tohor: CaO (s) + H2O (l) -> Ca(OH)2 (aq) + Kalor. Pelepasan kalor ini menyebabkan suhu lingkungan (air dan dinding beker) meningkat drastis, dengan perubahan entalpi bernilai negatif (Delta H < 0).",
+    "valid": true
+  },
+  {
+    "nomor": 11,
+    "materi": "Reaksi-Reaksi Kimia dan Dinamikanya",
+    "paket": "Bab V: Reaksi-Reaksi Kimia dan Dinamikanya - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "9",
+    "mapel": "IPA",
+    "teks_soal": "Sebaliknya, saat pupuk urea dimasukkan ke dalam segelas air lalu diaduk, dinding luar gelas terasa dingin dan berembun. Reaksi pelarutan urea tersebut merupakan contoh ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Reaksi endoterm karena sistem menyerap kalor dari lingkungan sehingga suhu lingkungan turun (Delta H > 0)"
+      },
+      {
+        "label": "B",
+        "teks": "Reaksi eksoterm"
+      },
+      {
+        "label": "C",
+        "teks": "Reaksi pembakaran"
+      },
+      {
+        "label": "D",
+        "teks": "Reaksi pengendapan"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Reaksi endoterm adalah reaksi kimia yang menyerap kalor dari lingkungan sekitar masuk ke dalam sistem. Akibatnya, energi kalor lingkungan berkurang dan suhu terukur pada wadah mengalami penurunan (terasa dingin), dengan perubahan entalpi positif (Delta H > 0).",
+    "valid": true
+  },
+  {
+    "nomor": 12,
+    "materi": "Reaksi-Reaksi Kimia dan Dinamikanya",
+    "paket": "Bab V: Reaksi-Reaksi Kimia dan Dinamikanya - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "9",
+    "mapel": "IPA",
+    "teks_soal": "Ibu di rumah menyimpan daging sapi segar di dalam freezer kulkas agar tidak cepat membusuk dibandingkan jika diletakkan di atas meja dapur pada suhu ruang. Berdasarkan teori kinetik laju reaksi, alasan ilmiah tindakan ibu tersebut adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Suhu rendah menurunkan energi kinetik partikel sehingga frekuensi tumbukan efektif melambat dan aktivitas enzim/bakteri pembusuk terhambat"
+      },
+      {
+        "label": "B",
+        "teks": "Suhu rendah menambah kadar air dalam daging"
+      },
+      {
+        "label": "C",
+        "teks": "Suhu beku mengubah daging menjadi es batu tanpa enzim"
+      },
+      {
+        "label": "D",
+        "teks": "Freezer menghilangkan gas oksigen di sekitar daging"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Suhu memengaruhi laju reaksi: Setiap penurunan suhu sebesar 10°C, laju reaksi kimia rata-rata melambat menjadi setengahnya karena energi kinetik molekul menurun dan jumlah partikel yang memiliki energi aktivasi berkurang. Pada suhu beku (-18°C), reaksi metabolisme mikroorganisme pembusuk nyaris terhenti total.",
+    "valid": true
+  },
+  {
+    "nomor": 13,
+    "materi": "Reaksi-Reaksi Kimia dan Dinamikanya",
+    "paket": "Bab V: Reaksi-Reaksi Kimia dan Dinamikanya - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "9",
+    "mapel": "IPA",
+    "teks_soal": "Mengapa gula pasir butiran halus jauh lebih cepat larut di dalam secangkir air teh hangat dibandingkan gula batu yang berukuran bongkahan besar dengan massa yang sama?",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Gula halus memiliki total luas permukaan bidang sentuh yang jauh lebih besar sehingga frekuensi tumbukan antarpartikel air dan zat terlarut terjadi lebih banyak"
+      },
+      {
+        "label": "B",
+        "teks": "Gula batu memiliki rasa yang lebih manis"
+      },
+      {
+        "label": "C",
+        "teks": "Gula pasir memiliki massa jenis lebih besar"
+      },
+      {
+        "label": "D",
+        "teks": "Air hangat hanya mampu melarutkan gula halus"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Faktor luas permukaan bidang sentuh: Menghaluskan zat padat menjadi butiran kecil memperluas total area permukaan kontak yang terpapar langsung dengan molekul pelarut. Makin luas bidang sentuh, makin banyak peluang terjadinya tumbukan antarpartikel per satuan waktu sehingga reaksi/pelarutan berlangsung jauh lebih cepat.",
+    "valid": true
+  },
+  {
+    "nomor": 14,
+    "materi": "Reaksi-Reaksi Kimia dan Dinamikanya",
+    "paket": "Bab V: Reaksi-Reaksi Kimia dan Dinamikanya - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "9",
+    "mapel": "IPA",
+    "teks_soal": "Perhatikan gambar percobaan reaksi antara 1 gram pualam (CaCO3) dengan larutan HCl berikut! Tabung 1: 1 g bongkahan CaCO3 + HCl 1 M pada 25°C. Tabung 2: 1 g serbuk CaCO3 + HCl 1 M pada 25°C. Tabung 3: 1 g serbuk CaCO3 + HCl 2 M pada 25°C. Tabung 4: 1 g serbuk CaCO3 + HCl 2 M pada 40°C. Laju reaksi pembentukan gas CO2 yang paling cepat berlangsung pada tabung nomor ....",
+    "gambar": [
+      "/soal/ipa/kls9_ipa_ch5_q14_laju_reaksi_pualam.png"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Tabung 1"
+      },
+      {
+        "label": "B",
+        "teks": "Tabung 2"
+      },
+      {
+        "label": "C",
+        "teks": "Tabung 3"
+      },
+      {
+        "label": "D",
+        "teks": "Tabung 4"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Laju reaksi dipengaruhi oleh: wujud serbuk (luas permukaan kontak maksimal), konsentrasi pereaksi tinggi (HCl 2 M memiliki kerapatan partikel reaktan lebih rapat), dan suhu tinggi (40°C energi kinetik partikel terbesar). Tabung 4 menggabungkan ketiga faktor optimal tersebut sehingga laju reaksinya paling cepat.",
+    "valid": true
+  },
+  {
+    "nomor": 15,
+    "materi": "Reaksi-Reaksi Kimia dan Dinamikanya",
+    "paket": "Bab V: Reaksi-Reaksi Kimia dan Dinamikanya - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "9",
+    "mapel": "IPA",
+    "teks_soal": "Katalisator (katalis) adalah zat kimia yang dapat mempercepat laju suatu reaksi kimia tanpa dirinya ikut habis bereaksi. Mekanisme kerja katalis dalam mempercepat reaksi adalah dengan cara ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Menurunkan energi aktivasi (Ea) yang dibutuhkan reaksi sehingga lebih banyak partikel yang mampu bertumbukan efektif"
+      },
+      {
+        "label": "B",
+        "teks": "Menaikkan suhu sistem secara drastis"
+      },
+      {
+        "label": "C",
+        "teks": "Menambah massa zat pereaksi"
+      },
+      {
+        "label": "D",
+        "teks": "Mengubah reaksi endoterm menjadi eksoterm"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Katalis bekerja dengan menyediakan jalur mekanisme reaksi alternatif yang memiliki rintangan energi aktivasi (Ea) lebih rendah. Dengan Ea yang lebih rendah, persentase tumbukan antarpartikel reaktan yang berhasil melampaui ambang energi minimal menjadi jauh lebih besar sehingga laju reaksi meningkat pesat.",
+    "valid": true
+  },
+  {
+    "nomor": 16,
+    "materi": "Reaksi-Reaksi Kimia dan Dinamikanya",
+    "paket": "Bab V: Reaksi-Reaksi Kimia dan Dinamikanya - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "9",
+    "mapel": "IPA",
+    "teks_soal": "Enzim ptialin (amilase) di dalam air liur manusia merupakan contoh biokatalisator alami. Fungsi enzim ptialin saat kita mengunyah nasi adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Mempercepat penguraian karbohidrat amilum menjadi maltosa dan glukosa pada suhu fisiologis tubuh 37°C"
+      },
+      {
+        "label": "B",
+        "teks": "Mengubah lemak menjadi asam lemak"
+      },
+      {
+        "label": "C",
+        "teks": "Membunuh bakteri patogen di lambung"
+      },
+      {
+        "label": "D",
+        "teks": "Mengentalkan cairan empedu"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Biokatalisator adalah katalis biologis berupa protein (enzim). Enzim amilase (ptialin) di rongga mulut mempercepat hidrolisis polisakarida (amilum) menjadi disakarida (maltosa) ribuan kali lebih cepat pada suhu normal tubuh tanpa memerlukan perebusan asam pekat.",
+    "valid": true
+  },
+  {
+    "nomor": 17,
+    "materi": "Reaksi-Reaksi Kimia dan Dinamikanya",
+    "paket": "Bab V: Reaksi-Reaksi Kimia dan Dinamikanya - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "9",
+    "mapel": "IPA",
+    "teks_soal": "Reaksi fotosintesis pada tumbuhan hijau dirumuskan: 6 CO2 + 6 H2O + Cahaya Matahari -> C6H12O6 + 6 O2. Reaksi fotosintesis tersebut merupakan contoh dari reaksi ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Reaksi endoterm karena menyerap energi foton cahaya dari lingkungan luar untuk membentuk ikatan kimia glukosa (Delta H > 0)"
+      },
+      {
+        "label": "B",
+        "teks": "Reaksi eksoterm yang menghasilkan panas"
+      },
+      {
+        "label": "C",
+        "teks": "Reaksi perkaratan"
+      },
+      {
+        "label": "D",
+        "teks": "Reaksi netralisasi"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Fotosintesis adalah reaksi anabolisme pembentukan molekul kompleks dari molekul sederhana yang mutlak membutuhkan input energi foton cahaya matahari (endergonik / endoterm, Delta H positif). Energi cahaya tersimpan di dalam ikatan kovalen molekul glukosa.",
+    "valid": true
+  },
+  {
+    "nomor": 18,
+    "materi": "Reaksi-Reaksi Kimia dan Dinamikanya",
+    "paket": "Bab V: Reaksi-Reaksi Kimia dan Dinamikanya - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "9",
+    "mapel": "IPA",
+    "teks_soal": "Sebaliknya, reaksi respirasi seluler di dalam mitokondria yang menguraikan glukosa bersama oksigen menghasilkan energi ATP dan panas tubuh merupakan contoh dari reaksi ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Reaksi eksoterm (katabolisme yang membebaskan energi)"
+      },
+      {
+        "label": "B",
+        "teks": "Reaksi endoterm yang menyerap panas"
+      },
+      {
+        "label": "C",
+        "teks": "Reaksi pengendapan garam"
+      },
+      {
+        "label": "D",
+        "teks": "Reaksi elektrolisis"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Respirasi aerob: C6H12O6 + 6 O2 -> 6 CO2 + 6 H2O + Energi (36-38 ATP + Panas). Pemutusan ikatan glukosa membebaskan energi kimia yang sebagian besar dipakai kerja seluler dan sebagian dilepaskan sebagai panas tubuh (reaksi eksoterm, Delta H negatif).",
+    "valid": true
+  },
+  {
+    "nomor": 19,
+    "materi": "Reaksi-Reaksi Kimia dan Dinamikanya",
+    "paket": "Bab V: Reaksi-Reaksi Kimia dan Dinamikanya - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "9",
+    "mapel": "IPA",
+    "teks_soal": "Penyetaraan reaksi perkaratan besi oleh gas oksigen membentuk karat besi: a Fe (s) + b O2 (g) -> c Fe2O3 (s). Nilai a, b, dan c berturut-turut adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "4, 3, dan 2"
+      },
+      {
+        "label": "B",
+        "teks": "2, 3, dan 1"
+      },
+      {
+        "label": "C",
+        "teks": "2, 1, dan 2"
+      },
+      {
+        "label": "D",
+        "teks": "1, 2, dan 1"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Jika c = 2: jumlah Fe di kanan = 4 => a = 4. Jumlah O di kanan = 2 * 3 = 6 => 2b = 6 => b = 3. Maka persamaan setara: 4 Fe + 3 O2 -> 2 Fe2O3. Nilai a, b, c berturut-turut adalah 4, 3, dan 2.",
+    "valid": true
+  },
+  {
+    "nomor": 20,
+    "materi": "Reaksi-Reaksi Kimia dan Dinamikanya",
+    "paket": "Bab V: Reaksi-Reaksi Kimia dan Dinamikanya - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "9",
+    "mapel": "IPA",
+    "teks_soal": "Dalam suatu percobaan kimia tertutup, 4 gram gas hidrogen (H2) direaksikan dengan 32 gram gas oksigen (O2) menghasilkan uap air (H2O). Jika reaksi berlangsung tuntas tanpa ada sisa pereaksi, massa uap air yang dihasilkan adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "36 gram"
+      },
+      {
+        "label": "B",
+        "teks": "28 gram"
+      },
+      {
+        "label": "C",
+        "teks": "18 gram"
+      },
+      {
+        "label": "D",
+        "teks": "8 gram"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Berdasarkan Hukum Lavoisier: m_H2O = m_H2 + m_O2 = 4 g + 32 g = 36 gram uap air.",
+    "valid": true
+  },
+  {
+    "nomor": 21,
+    "materi": "Reaksi-Reaksi Kimia dan Dinamikanya",
+    "paket": "Bab V: Reaksi-Reaksi Kimia dan Dinamikanya - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "9",
+    "mapel": "IPA",
+    "teks_soal": "Ciri-ciri fisik yang membuktikan telah terjadinya reaksi kimia antara dua zat ketika dicampurkan meliputi peristiwa berikut, KECUALI ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Terjadinya perubahan warna yang permanen"
+      },
+      {
+        "label": "B",
+        "teks": "Pembentukan gelembung gas"
+      },
+      {
+        "label": "C",
+        "teks": "Pembentukan endapan padat (presipitat)"
+      },
+      {
+        "label": "D",
+        "teks": "Zat hanya berubah wujud dari es menjadi air tanpa membentuk senyawa baru"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Empat indikator utama terjadinya reaksi kimia: (1) perubahan warna, (2) timbulnya gas, (3) terbentuknya endapan baru, dan (4) perubahan suhu (kalor reaksi). Meleburnya es batu menjadi air merupakan perubahan fisika semata karena rumus kimianya tetap sama persis (H2O).",
+    "valid": true
+  },
+  {
+    "nomor": 22,
+    "materi": "Reaksi-Reaksi Kimia dan Dinamikanya",
+    "paket": "Bab V: Reaksi-Reaksi Kimia dan Dinamikanya - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "9",
+    "mapel": "IPA",
+    "teks_soal": "Gas berbahaya yang sering dihasilkan dari reaksi pembakaran tidak sempurna bahan bakar minyak pada knalpot kendaraan bermotor yang sangat beracun karena mengikat hemoglobin darah adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Karbon monoksida (CO)"
+      },
+      {
+        "label": "B",
+        "teks": "Karbon dioksida (CO2)"
+      },
+      {
+        "label": "C",
+        "teks": "Gas nitrogen (N2)"
+      },
+      {
+        "label": "D",
+        "teks": "Gas metana (CH4)"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Pembakaran tidak sempurna hidrokarbon karena pasokan oksigen minim menghasilkan gas karbon monoksida (CO). Gas CO memiliki afinitas ikatan terhadap hemoglobin 200 kali lebih kuat dibanding oksigen, membentuk karboksihemoglobin (COHb) yang memicu hipoksia jaringan dan kematian.",
+    "valid": true
+  },
+  {
+    "nomor": 23,
+    "materi": "Reaksi-Reaksi Kimia dan Dinamikanya",
+    "paket": "Bab V: Reaksi-Reaksi Kimia dan Dinamikanya - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "9",
+    "mapel": "IPA",
+    "teks_soal": "Petani di daerah rawa gambut sering menaburkan serbuk kapur pertanian (kalsium hidroksida / kapur tohor) pada lahan sawahnya sebelum masa tanam padi. Tujuan penaburan kapur tersebut adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Menaikkan pH tanah gambut yang terlalu asam (pH < 4) menuju pH netral yang cocok bagi perakaran padi melalui reaksi netralisasi"
+      },
+      {
+        "label": "B",
+        "teks": "Membunuh seluruh cacing tanah"
+      },
+      {
+        "label": "C",
+        "teks": "Mengeringkan air rawa seketika"
+      },
+      {
+        "label": "D",
+        "teks": "Membuat tanaman padi berbuah kapur"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Tanah gambut mengandung asam-asam organik pekat (asam humat dan fulvat) yang membuat tanah sangat asam (pH 3-4) sehingga unsur hara P dan K terikat dan tanaman kerdil. Penaburan kapur pertanian Ca(OH)2 atau CaCO3 menetralkan asam tanah menuju pH ideal (6-7).",
+    "valid": true
+  },
+  {
+    "nomor": 24,
+    "materi": "Reaksi-Reaksi Kimia dan Dinamikanya",
+    "paket": "Bab V: Reaksi-Reaksi Kimia dan Dinamikanya - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "9",
+    "mapel": "IPA",
+    "teks_soal": "Penyetaraan reaksi pembentukan gas belerang trioksida pada pembuatan asam sulfat: 2 SO2 (g) + O2 (g) -> 2 SO3 (g). Perbandingan volume gas SO2, O2, dan SO3 pada suhu dan tekanan yang sama (Hukum Gay-Lussac) adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "2 : 1 : 2"
+      },
+      {
+        "label": "B",
+        "teks": "1 : 2 : 1"
+      },
+      {
+        "label": "C",
+        "teks": "2 : 2 : 1"
+      },
+      {
+        "label": "D",
+        "teks": "1 : 1 : 1"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Hukum Perbandingan Volume (Gay-Lussac) menyatakan bahwa pada suhu dan tekanan yang sama, perbandingan volume gas-gas yang bereaksi dan gas hasil reaksi berbanding sebagai bilangan bulat sederhana yang setara dengan perbandingan koefisien reaksinya. Koefisien reaksi SO2 : O2 : SO3 adalah 2 : 1 : 2.",
+    "valid": true
+  },
+  {
+    "nomor": 25,
+    "materi": "Reaksi-Reaksi Kimia dan Dinamikanya",
+    "paket": "Bab V: Reaksi-Reaksi Kimia dan Dinamikanya - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+    "kelas": "9",
+    "mapel": "IPA",
+    "teks_soal": "Dalam pembuatan tape ketan tradisional, ragi ditambahkan pada beras ketan yang sudah dikukus dingin dan disimpan rapat kedap udara (fermentasi). Perubahan kimia yang terjadi selama fermentasi adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Amilum ketan dihidrolisis menjadi glukosa oleh kapang, lalu glukosa difermentasi oleh ragi Saccharomyces cerevisiae menjadi alkohol etanol dan gas CO2"
+      },
+      {
+        "label": "B",
+        "teks": "Ketan mengeras menjadi batu"
+      },
+      {
+        "label": "C",
+        "teks": "Terbentuk asam sulfat beracun"
+      },
+      {
+        "label": "D",
+        "teks": "Klorofil daun terbentuk kembali"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Fermentasi tape melibatkan mikroorganisme sinergis: Aspergillus/Endomycopsis memecah pati (amilum) menjadi glukosa manis, lalu Saccharomyces cerevisiae mengubah glukosa menjadi alkohol (etanol) dan karbon dioksida: C6H12O6 -> 2 C2H5OH + 2 CO2, memberikan aroma harum dan rasa manis beralkohol khas tape.",
+    "valid": true
+  },
+  {
+    "nomor": 26,
+    "materi": "Reaksi-Reaksi Kimia dan Dinamikanya",
+    "paket": "Bab V: Reaksi-Reaksi Kimia dan Dinamikanya - Bagian B: Contoh Soal Asli Buku Big Book",
+    "kelas": "9",
+    "mapel": "IPA",
+    "teks_soal": "Menurut teori asam-basa Svante Arrhenius, suatu senyawa dikelompokkan sebagai senyawa asam jika senyawa tersebut di dalam air ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Melepaskan ion hidrogen (H+)"
+      },
+      {
+        "label": "B",
+        "teks": "Melepaskan ion hidroksida (OH-)"
+      },
+      {
+        "label": "C",
+        "teks": "Menerima proton dari pelarut"
+      },
+      {
+        "label": "D",
+        "teks": "Membentuk gas klorin"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Teori Arrhenius: Asam adalah zat yang bila dilarutkan ke dalam air menghasilkan ion H+ (contoh HCl -> H+ + Cl-), sedangkan basa adalah zat yang melepaskan ion OH- di dalam air (contoh NaOH -> Na+ + OH-).",
+    "valid": true
+  },
+  {
+    "nomor": 27,
+    "materi": "Reaksi-Reaksi Kimia dan Dinamikanya",
+    "paket": "Bab V: Reaksi-Reaksi Kimia dan Dinamikanya - Bagian B: Contoh Soal Asli Buku Big Book",
+    "kelas": "9",
+    "mapel": "IPA",
+    "teks_soal": "Senyawa berikut yang tergolong sebagai garam dapur netral adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Natrium klorida (NaCl)"
+      },
+      {
+        "label": "B",
+        "teks": "Asam klorida (HCl)"
+      },
+      {
+        "label": "C",
+        "teks": "Natrium hidroksida (NaOH)"
+      },
+      {
+        "label": "D",
+        "teks": "Asam sulfat (H2SO4)"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Natrium klorida (NaCl) terbentuk dari reaksi asam kuat HCl dan basa kuat NaOH: HCl + NaOH -> NaCl + H2O. Garam ini terhidrolisis netral pada pH = 7.",
+    "valid": true
+  },
+  {
+    "nomor": 28,
+    "materi": "Reaksi-Reaksi Kimia dan Dinamikanya",
+    "paket": "Bab V: Reaksi-Reaksi Kimia dan Dinamikanya - Bagian B: Contoh Soal Asli Buku Big Book",
+    "kelas": "9",
+    "mapel": "IPA",
+    "teks_soal": "Larutan yang memiliki nilai pH tepat sama dengan 7 dikategorikan sebagai larutan ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Netral"
+      },
+      {
+        "label": "B",
+        "teks": "Asam kuat"
+      },
+      {
+        "label": "C",
+        "teks": "Basa kuat"
+      },
+      {
+        "label": "D",
+        "teks": "Asam lemah"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Air murni pada suhu 25°C memiliki konsentrasi [H+] = [OH-] = 10^-7 M, sehingga memiliki nilai pH = 7 dan bersifat netral.",
+    "valid": true
+  },
+  {
+    "nomor": 29,
+    "materi": "Reaksi-Reaksi Kimia dan Dinamikanya",
+    "paket": "Bab V: Reaksi-Reaksi Kimia dan Dinamikanya - Bagian B: Contoh Soal Asli Buku Big Book",
+    "kelas": "9",
+    "mapel": "IPA",
+    "teks_soal": "Kertas lakmus merah akan berubah warna menjadi biru jika dicelupkan ke dalam larutan ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Air kapur Ca(OH)2"
+      },
+      {
+        "label": "B",
+        "teks": "Air cuka"
+      },
+      {
+        "label": "C",
+        "teks": "Air jeruk"
+      },
+      {
+        "label": "D",
+        "teks": "Air aki"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Larutan yang membirukan lakmus merah adalah larutan basa (mengandung ion OH-), yaitu air kapur sirih Ca(OH)2. Pilihan B, C, dan D semuanya asam.",
+    "valid": true
+  },
+  {
+    "nomor": 30,
+    "materi": "Reaksi-Reaksi Kimia dan Dinamikanya",
+    "paket": "Bab V: Reaksi-Reaksi Kimia dan Dinamikanya - Bagian B: Contoh Soal Asli Buku Big Book",
+    "kelas": "9",
+    "mapel": "IPA",
+    "teks_soal": "Peristiwa berikut yang merupakan contoh perubahan kimia adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Besi berkarat"
+      },
+      {
+        "label": "B",
+        "teks": "Lilin meleleh"
+      },
+      {
+        "label": "C",
+        "teks": "Air membeku menjadi es"
+      },
+      {
+        "label": "D",
+        "teks": "Beras ditumbuk menjadi tepung"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Besi berkarat menghasilkan senyawa baru besi(III) oksida hidrat (Fe2O3.xH2O) yang tidak dapat kembali ke besi murni semula (perubahan kimia irreversible). Lilin meleleh, air membeku, dan beras digiling adalah perubahan fisika.",
+    "valid": true
+  },
+  {
+    "nomor": 31,
+    "materi": "Reaksi-Reaksi Kimia dan Dinamikanya",
+    "paket": "Bab V: Reaksi-Reaksi Kimia dan Dinamikanya - Bagian B: Contoh Soal Asli Buku Big Book",
+    "kelas": "9",
+    "mapel": "IPA",
+    "teks_soal": "Reaksi pembakaran kayu unggun memancarkan cahaya dan rasa hangat di sekitarnya. Reaksi ini tergolong reaksi ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Eksoterm"
+      },
+      {
+        "label": "B",
+        "teks": "Endoterm"
+      },
+      {
+        "label": "C",
+        "teks": "Sublimasi"
+      },
+      {
+        "label": "D",
+        "teks": "Kondensasi"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Pembakaran kayu melepaskan energi kalor dan cahaya ke lingkungan sekitar, menaikkan suhu lingkungan, sehingga merupakan reaksi eksoterm.",
+    "valid": true
+  },
+  {
+    "nomor": 32,
+    "materi": "Reaksi-Reaksi Kimia dan Dinamikanya",
+    "paket": "Bab V: Reaksi-Reaksi Kimia dan Dinamikanya - Bagian B: Contoh Soal Asli Buku Big Book",
+    "kelas": "9",
+    "mapel": "IPA",
+    "teks_soal": "Jika konsentrasi reaktan dalam suatu reaksi kimia diperbesar, maka laju reaksi akan ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Semakin cepat karena jumlah partikel per satuan volume bertambah sehingga kemungkinan tumbukan efektif semakin tinggi"
+      },
+      {
+        "label": "B",
+        "teks": "Semakin lambat"
+      },
+      {
+        "label": "C",
+        "teks": "Tetap konstan"
+      },
+      {
+        "label": "D",
+        "teks": "Berhenti seketika"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Meningkatnya konsentrasi reaktan merapatkan jarak antarpartikel sehingga frekuensi tumbukan efektif antarmolekul pereaksi meningkat per satuan waktu, mempercepat laju reaksi.",
+    "valid": true
+  },
+  {
+    "nomor": 33,
+    "materi": "Reaksi-Reaksi Kimia dan Dinamikanya",
+    "paket": "Bab V: Reaksi-Reaksi Kimia dan Dinamikanya - Bagian B: Contoh Soal Asli Buku Big Book",
+    "kelas": "9",
+    "mapel": "IPA",
+    "teks_soal": "Koefisien reaksi pembentukan air: 2 H2 + O2 -> 2 H2O menunjukkan bahwa ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "2 molekul H2 bereaksi dengan 1 molekul O2 menghasilkan 2 molekul H2O"
+      },
+      {
+        "label": "B",
+        "teks": "1 molekul H2 bereaksi dengan 2 molekul O2"
+      },
+      {
+        "label": "C",
+        "teks": "Jumlah atom di kiri berbeda dari kanan"
+      },
+      {
+        "label": "D",
+        "teks": "Reaksi tidak dapat berlangsung"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Koefisien reaksi kimia menunjukkan rasio perbandingan jumlah molekul atau mol zat-zat yang terlibat dalam reaksi kimia.",
+    "valid": true
+  },
+  {
+    "nomor": 34,
+    "materi": "Reaksi-Reaksi Kimia dan Dinamikanya",
+    "paket": "Bab V: Reaksi-Reaksi Kimia dan Dinamikanya - Bagian B: Contoh Soal Asli Buku Big Book",
+    "kelas": "9",
+    "mapel": "IPA",
+    "teks_soal": "Senyawa asam cuka yang biasa digunakan sebagai penyedap bakso memiliki rumus kimia ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "CH3COOH"
+      },
+      {
+        "label": "B",
+        "teks": "HCl"
+      },
+      {
+        "label": "C",
+        "teks": "H2SO4"
+      },
+      {
+        "label": "D",
+        "teks": "HNO3"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Asam cuka adalah nama lazim untuk asam asetat (asam etanoat) dengan rumus kimia CH3COOH.",
+    "valid": true
+  },
+  {
+    "nomor": 35,
+    "materi": "Reaksi-Reaksi Kimia dan Dinamikanya",
+    "paket": "Bab V: Reaksi-Reaksi Kimia dan Dinamikanya - Bagian B: Contoh Soal Asli Buku Big Book",
+    "kelas": "9",
+    "mapel": "IPA",
+    "teks_soal": "Gas hasil reaksi antara logam seng (Zn) dengan larutan asam klorida (HCl) sesuai reaksi Zn + 2 HCl -> ZnCl2 + H2 adalah gas ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Gas hidrogen (H2) yang mudah meletup bila disulut api"
+      },
+      {
+        "label": "B",
+        "teks": "Gas oksigen"
+      },
+      {
+        "label": "C",
+        "teks": "Gas klorin beracun"
+      },
+      {
+        "label": "D",
+        "teks": "Gas karbon dioksida"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Reaksi logam aktif di sebelah kiri deret Volta dengan asam menghasilkan garam dan pelepasan gas hidrogen (H2) yang bila didekatkan api akan meletup berbunyi 'pop'.",
+    "valid": true
+  },
+  {
+    "nomor": 36,
+    "materi": "Reaksi-Reaksi Kimia dan Dinamikanya",
+    "paket": "Bab V: Reaksi-Reaksi Kimia dan Dinamikanya - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "9",
+    "mapel": "IPA",
+    "teks_soal": "Zat indikator buatan fenolftalein (PP) jika diteteskan ke dalam larutan asam akan berwarna .... sedangkan di dalam larutan basa akan berwarna ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Tak berwarna; merah muda (pink)"
+      },
+      {
+        "label": "B",
+        "teks": "Merah; biru"
+      },
+      {
+        "label": "C",
+        "teks": "Kuning; hijau"
+      },
+      {
+        "label": "D",
+        "teks": "Biru; merah"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Trayek pH fenolftalein adalah 8,3 – 10,0. Pada pH asam dan netral (di bawah 8,3) PP tidak berwarna, sedangkan pada larutan basa (pH > 8,3) PP berubah menjadi warna merah muda keunguan.",
+    "valid": true
+  },
+  {
+    "nomor": 37,
+    "materi": "Reaksi-Reaksi Kimia dan Dinamikanya",
+    "paket": "Bab V: Reaksi-Reaksi Kimia dan Dinamikanya - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "9",
+    "mapel": "IPA",
+    "teks_soal": "Air murni memiliki derajat keasaman (pH) bernilai ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "7"
+      },
+      {
+        "label": "B",
+        "teks": "0"
+      },
+      {
+        "label": "C",
+        "teks": "1"
+      },
+      {
+        "label": "D",
+        "teks": "14"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Air netral memiliki pH = 7.",
+    "valid": true
+  },
+  {
+    "nomor": 38,
+    "materi": "Reaksi-Reaksi Kimia dan Dinamikanya",
+    "paket": "Bab V: Reaksi-Reaksi Kimia dan Dinamikanya - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "9",
+    "mapel": "IPA",
+    "teks_soal": "Perkaratan pada pagar besi dapat dicegah secara efektif dengan cara ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Mengecat permukaan besi untuk mencegah kontak langsung dengan oksigen dan kelembapan air"
+      },
+      {
+        "label": "B",
+        "teks": "Merendam pagar di air garam"
+      },
+      {
+        "label": "C",
+        "teks": "Memanaskan pagar setiap pagi"
+      },
+      {
+        "label": "D",
+        "teks": "Menyemprotkan asam cuka"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Korosi besi memerlukan keberadaan air dan gas oksigen secara bersamaan. Pengecatan, pelapisan oli, atau galvanisasi seng melindungi permukaan besi dari kontak udara dan air.",
+    "valid": true
+  },
+  {
+    "nomor": 39,
+    "materi": "Reaksi-Reaksi Kimia dan Dinamikanya",
+    "paket": "Bab V: Reaksi-Reaksi Kimia dan Dinamikanya - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "9",
+    "mapel": "IPA",
+    "teks_soal": "Zat yang terasa pahit di lidah dan terasa licin seperti sabun di jari tangan merupakan ciri dari zat ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Basa"
+      },
+      {
+        "label": "B",
+        "teks": "Asam"
+      },
+      {
+        "label": "C",
+        "teks": "Netral"
+      },
+      {
+        "label": "D",
+        "teks": "Garam"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Rasa pahit dan sensasi licin di kulit (saponifikasi lemak kulit) merupakan ciri khas larutan basa.",
+    "valid": true
+  },
+  {
+    "nomor": 40,
+    "materi": "Reaksi-Reaksi Kimia dan Dinamikanya",
+    "paket": "Bab V: Reaksi-Reaksi Kimia dan Dinamikanya - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "9",
+    "mapel": "IPA",
+    "teks_soal": "Persamaan reaksi netralisasi antara asam klorida dan kalium hidroksida adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "HCl + KOH -> KCl + H2O"
+      },
+      {
+        "label": "B",
+        "teks": "HCl + NaOH -> NaCl + H2"
+      },
+      {
+        "label": "C",
+        "teks": "H2SO4 + KOH -> K2SO4 + H2"
+      },
+      {
+        "label": "D",
+        "teks": "HNO3 + KOH -> KNO3 + H2"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Asam klorida (HCl) bereaksi dengan kalium hidroksida (KOH) menghasilkan garam kalium klorida (KCl) dan air (H2O): HCl + KOH -> KCl + H2O.",
+    "valid": true
+  },
+  {
+    "nomor": 41,
+    "materi": "Reaksi-Reaksi Kimia dan Dinamikanya",
+    "paket": "Bab V: Reaksi-Reaksi Kimia dan Dinamikanya - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "9",
+    "mapel": "IPA",
+    "teks_soal": "Bahan alami mahkota bunga kembang sepatu bila diekstrak dengan air menghasilkan warna merah. Di dalam larutan asam kuat ekstrak ini berwarna .... dan di dalam basa berwarna ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Merah terang; hijau kekuningan"
+      },
+      {
+        "label": "B",
+        "teks": "Biru; merah"
+      },
+      {
+        "label": "C",
+        "teks": "Kuning; ungu"
+      },
+      {
+        "label": "D",
+        "teks": "Cokelat; hitam"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Ekstrak bunga sepatu mengandung pigmen antosianin: berwarna merah cerah dalam suasana asam dan berubah menjadi hijau kekuningan dalam suasana basa.",
+    "valid": true
+  },
+  {
+    "nomor": 42,
+    "materi": "Reaksi-Reaksi Kimia dan Dinamikanya",
+    "paket": "Bab V: Reaksi-Reaksi Kimia dan Dinamikanya - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "9",
+    "mapel": "IPA",
+    "teks_soal": "Dalam reaksi endoterm, perubahan entalpi (Delta H) bernilai ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Positif (Delta H > 0)"
+      },
+      {
+        "label": "B",
+        "teks": "Negatif (Delta H < 0)"
+      },
+      {
+        "label": "C",
+        "teks": "Sama dengan nol"
+      },
+      {
+        "label": "D",
+        "teks": "Tak terhingga"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Reaksi endoterm menyerap kalor sehingga entalpi produk lebih besar dari entalpi reaktan (H_produk > H_reaktan), menghasilkan Delta H bernilai positif.",
+    "valid": true
+  },
+  {
+    "nomor": 43,
+    "materi": "Reaksi-Reaksi Kimia dan Dinamikanya",
+    "paket": "Bab V: Reaksi-Reaksi Kimia dan Dinamikanya - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "9",
+    "mapel": "IPA",
+    "teks_soal": "Dalam reaksi eksoterm, perubahan entalpi (Delta H) bernilai ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Negatif (Delta H < 0)"
+      },
+      {
+        "label": "B",
+        "teks": "Positif (Delta H > 0)"
+      },
+      {
+        "label": "C",
+        "teks": "Nol"
+      },
+      {
+        "label": "D",
+        "teks": "Tidak dapat diukur"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Reaksi eksoterm melepaskan kalor sehingga entalpi produk lebih rendah daripada reaktan (H_produk < H_reaktan), menghasilkan Delta H bertanda negatif.",
+    "valid": true
+  },
+  {
+    "nomor": 44,
+    "materi": "Reaksi-Reaksi Kimia dan Dinamikanya",
+    "paket": "Bab V: Reaksi-Reaksi Kimia dan Dinamikanya - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "9",
+    "mapel": "IPA",
+    "teks_soal": "Kembang api meledak di langit memancarkan warna-warni indah dan dentuman keras. Reaksi pembakaran kembang api tersebut tergolong reaksi ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Eksoterm cepat"
+      },
+      {
+        "label": "B",
+        "teks": "Endoterm lambat"
+      },
+      {
+        "label": "C",
+        "teks": "Netralisasi"
+      },
+      {
+        "label": "D",
+        "teks": "Pelarutan"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Ledakan kembang api adalah reaksi pembakaran oksidasi sangat cepat yang membebaskan energi cahaya, panas, dan bunyi dalam waktu singkat (reaksi eksoterm cepat).",
+    "valid": true
+  },
+  {
+    "nomor": 45,
+    "materi": "Reaksi-Reaksi Kimia dan Dinamikanya",
+    "paket": "Bab V: Reaksi-Reaksi Kimia dan Dinamikanya - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "9",
+    "mapel": "IPA",
+    "teks_soal": "Senyawa asam sulfat yang digunakan sebagai elektrolit di dalam aki kendaraan bermotor memiliki rumus kimia ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "H2SO4"
+      },
+      {
+        "label": "B",
+        "teks": "HCl"
+      },
+      {
+        "label": "C",
+        "teks": "HNO3"
+      },
+      {
+        "label": "D",
+        "teks": "H3PO4"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Air aki mengandung larutan asam sulfat dengan rumus kimia H2SO4.",
+    "valid": true
+  },
+  {
+    "nomor": 46,
+    "materi": "Reaksi-Reaksi Kimia dan Dinamikanya",
+    "paket": "Bab V: Reaksi-Reaksi Kimia dan Dinamikanya - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "9",
+    "mapel": "IPA",
+    "teks_soal": "Senyawa natrium hidroksida (soda api) memiliki rumus kimia ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "NaOH"
+      },
+      {
+        "label": "B",
+        "teks": "KOH"
+      },
+      {
+        "label": "C",
+        "teks": "Ca(OH)2"
+      },
+      {
+        "label": "D",
+        "teks": "Mg(OH)2"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Soda api adalah natrium hidroksida dengan rumus NaOH.",
+    "valid": true
+  },
+  {
+    "nomor": 47,
+    "materi": "Reaksi-Reaksi Kimia dan Dinamikanya",
+    "paket": "Bab V: Reaksi-Reaksi Kimia dan Dinamikanya - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "9",
+    "mapel": "IPA",
+    "teks_soal": "Suatu larutan memiliki konsentrasi ion hidrogen [H+] = 10^-3 M. Nilai pH larutan tersebut adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "3"
+      },
+      {
+        "label": "B",
+        "teks": "7"
+      },
+      {
+        "label": "C",
+        "teks": "11"
+      },
+      {
+        "label": "D",
+        "teks": "14"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Rumus pH = -log[H+] = -log(10^-3) = 3 (bersifat asam).",
+    "valid": true
+  },
+  {
+    "nomor": 48,
+    "materi": "Reaksi-Reaksi Kimia dan Dinamikanya",
+    "paket": "Bab V: Reaksi-Reaksi Kimia dan Dinamikanya - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "9",
+    "mapel": "IPA",
+    "teks_soal": "Suatu larutan memiliki konsentrasi ion hidroksida [OH-] = 10^-4 M. Nilai pH larutan tersebut pada 25°C adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "10"
+      },
+      {
+        "label": "B",
+        "teks": "4"
+      },
+      {
+        "label": "C",
+        "teks": "7"
+      },
+      {
+        "label": "D",
+        "teks": "14"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "pOH = -log[OH-] = 4. Maka pH = 14 - pOH = 14 - 4 = 10 (bersifat basa).",
+    "valid": true
+  },
+  {
+    "nomor": 49,
+    "materi": "Reaksi-Reaksi Kimia dan Dinamikanya",
+    "paket": "Bab V: Reaksi-Reaksi Kimia dan Dinamikanya - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "9",
+    "mapel": "IPA",
+    "teks_soal": "Pemanasan serbuk belerang dengan serbuk besi menghasilkan besi(II) sulfida sesuai persamaan reaksi Fe + S -> FeS. Jika 56 g besi bereaksi dengan 32 g belerang tanpa sisa, massa FeS yang dihasilkan adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "88 gram"
+      },
+      {
+        "label": "B",
+        "teks": "64 gram"
+      },
+      {
+        "label": "C",
+        "teks": "48 gram"
+      },
+      {
+        "label": "D",
+        "teks": "24 gram"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Massa produk = m_Fe + m_S = 56 g + 32 g = 88 gram (Hukum Lavoisier).",
+    "valid": true
+  },
+  {
+    "nomor": 50,
+    "materi": "Reaksi-Reaksi Kimia dan Dinamikanya",
+    "paket": "Bab V: Reaksi-Reaksi Kimia dan Dinamikanya - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "9",
+    "mapel": "IPA",
+    "teks_soal": "Manakah di antara peristiwa berikut yang merupakan reaksi eksoterm?",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Respirasi seluler dan pembakaran lilin"
+      },
+      {
+        "label": "B",
+        "teks": "Fotosintesis dan pelarutan urea"
+      },
+      {
+        "label": "C",
+        "teks": "Mencairnya es batu"
+      },
+      {
+        "label": "D",
+        "teks": "Menguapnya alkohol"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Respirasi seluler dan pembakaran membebaskan kalor ke lingkungan (eksoterm). Fotosintesis, peleburan es, dan penguapan menyerap kalor (endoterm).",
+    "valid": true
+  },
+  {
+    "nomor": 51,
+    "materi": "Reaksi-Reaksi Kimia dan Dinamikanya",
+    "paket": "Bab V: Reaksi-Reaksi Kimia dan Dinamikanya - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "9",
+    "mapel": "IPA",
+    "teks_soal": "Reaksi fotosintesis pada tumbuhan memerlukan gas karbon dioksida dan air. Gas yang dihasilkan dan dilepaskan ke udara adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Oksigen (O2)"
+      },
+      {
+        "label": "B",
+        "teks": "Karbon monoksida"
+      },
+      {
+        "label": "C",
+        "teks": "Nitrogen"
+      },
+      {
+        "label": "D",
+        "teks": "Metana"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Reaksi fotosintesis menghasilkan glukosa sebagai makanan dan melepaskan gas oksigen (O2) ke atmosfer.",
+    "valid": true
+  },
+  {
+    "nomor": 52,
+    "materi": "Reaksi-Reaksi Kimia dan Dinamikanya",
+    "paket": "Bab V: Reaksi-Reaksi Kimia dan Dinamikanya - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "9",
+    "mapel": "IPA",
+    "teks_soal": "Jika suhu suatu reaksi kimia dinaikkan dari 20°C menjadi 30°C, laju reaksi umumnya akan ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Meningkat menjadi 2 kali lipat"
+      },
+      {
+        "label": "B",
+        "teks": "Menjadi setengahnya"
+      },
+      {
+        "label": "C",
+        "teks": "Menjadi nol"
+      },
+      {
+        "label": "D",
+        "teks": "Tidak berubah"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Aturan praktis kinetika kimia menyatakan bahwa kenaikan suhu sebesar 10°C umumnya melipatgandakan laju reaksi menjadi 2 hingga 3 kali lebih cepat.",
+    "valid": true
+  },
+  {
+    "nomor": 53,
+    "materi": "Reaksi-Reaksi Kimia dan Dinamikanya",
+    "paket": "Bab V: Reaksi-Reaksi Kimia dan Dinamikanya - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "9",
+    "mapel": "IPA",
+    "teks_soal": "Bahan pengawet makanan alami yang bekerja menciptakan suasana asam sehingga menghambat perkembangbiakan bakteri pembusuk adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Asam cuka (asam asetat)"
+      },
+      {
+        "label": "B",
+        "teks": "Minyak goreng"
+      },
+      {
+        "label": "C",
+        "teks": "Tepung terigu"
+      },
+      {
+        "label": "D",
+        "teks": "Santan"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Asam cuka menurunkan pH medium makanan hingga di bawah 4,5, menghambat pertumbuhan dan pembelahan bakteri serta kapang perusak makanan (contohnya pada acar).",
+    "valid": true
+  },
+  {
+    "nomor": 54,
+    "materi": "Reaksi-Reaksi Kimia dan Dinamikanya",
+    "paket": "Bab V: Reaksi-Reaksi Kimia dan Dinamikanya - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "9",
+    "mapel": "IPA",
+    "teks_soal": "Reaksi peragian singkong menjadi tape menghasilkan gas karbon dioksida. Bukti adanya pelepasan gas CO2 dapat diuji dengan mengalirkan gas ke dalam ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Air kapur jernih, yang akan berubah menjadi keruh"
+      },
+      {
+        "label": "B",
+        "teks": "Minyak tanah"
+      },
+      {
+        "label": "C",
+        "teks": "Air sabun"
+      },
+      {
+        "label": "D",
+        "teks": "Alkohol"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Gas CO2 yang dialirkan ke dalam air kapur Ca(OH)2 bereaksi membentuk endapan kalsium karbonat CaCO3 berwarna putih yang membuat larutan menjadi keruh: Ca(OH)2 + CO2 -> CaCO3 (s) + H2O.",
+    "valid": true
+  },
+  {
+    "nomor": 55,
+    "materi": "Reaksi-Reaksi Kimia dan Dinamikanya",
+    "paket": "Bab V: Reaksi-Reaksi Kimia dan Dinamikanya - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "9",
+    "mapel": "IPA",
+    "teks_soal": "Reaksi pembakaran logam natrium dengan gas klorin menghasilkan garam dapur sesuai reaksi: 2 Na (s) + Cl2 (g) -> 2 NaCl (s). Reaksi ini tergolong reaksi ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Reaksi penggabungan (sintesis) dan eksoterm"
+      },
+      {
+        "label": "B",
+        "teks": "Reaksi penguraian"
+      },
+      {
+        "label": "C",
+        "teks": "Reaksi pengendapan"
+      },
+      {
+        "label": "D",
+        "teks": "Reaksi asam basa"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Dua unsur sederhana Na dan Cl2 bergabung membentuk satu senyawa tunggal NaCl (reaksi sintesis/kombinasi) dengan pelepasan energi panas yang sangat besar (eksoterm).",
+    "valid": true
+  },
+  {
+    "nomor": 56,
+    "materi": "Reaksi-Reaksi Kimia dan Dinamikanya",
+    "paket": "Bab V: Reaksi-Reaksi Kimia dan Dinamikanya - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "9",
+    "mapel": "IPA",
+    "teks_soal": "Penambahan ragi pada pembuatan adonan roti bertujuan agar roti mengembang saat dipanggang. Gas yang menyebabkan adonan roti mengembang berpori-pori adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Gas karbon dioksida (CO2)"
+      },
+      {
+        "label": "B",
+        "teks": "Gas oksigen"
+      },
+      {
+        "label": "C",
+        "teks": "Gas nitrogen"
+      },
+      {
+        "label": "D",
+        "teks": "Gas hidrogen"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Ragi Saccharomyces cerevisiae memfermentasi gula adonan menghasilkan alkohol dan gas CO2. Gas CO2 terperangkap dalam jaring gluten elastis terigu, memuai saat dipanggang dan membuat tekstur roti empuk berpori.",
+    "valid": true
+  },
+  {
+    "nomor": 57,
+    "materi": "Reaksi-Reaksi Kimia dan Dinamikanya",
+    "paket": "Bab V: Reaksi-Reaksi Kimia dan Dinamikanya - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "9",
+    "mapel": "IPA",
+    "teks_soal": "Senyawa kalsium karbonat pada batu kapur memiliki rumus kimia ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "CaCO3"
+      },
+      {
+        "label": "B",
+        "teks": "CaO"
+      },
+      {
+        "label": "C",
+        "teks": "Ca(OH)2"
+      },
+      {
+        "label": "D",
+        "teks": "CaCl2"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Batu kapur (pualam / marmer) adalah kalsium karbonat dengan rumus CaCO3.",
+    "valid": true
+  },
+  {
+    "nomor": 58,
+    "materi": "Reaksi-Reaksi Kimia dan Dinamikanya",
+    "paket": "Bab V: Reaksi-Reaksi Kimia dan Dinamikanya - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "9",
+    "mapel": "IPA",
+    "teks_soal": "Penyetaraan reaksi pembakaran gas etana (C2H6): 2 C2H6 + 7 O2 -> 4 CO2 + 6 H2O. Perbandingan mol C2H6 terhadap O2 yang bereaksi adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "2 : 7"
+      },
+      {
+        "label": "B",
+        "teks": "1 : 3"
+      },
+      {
+        "label": "C",
+        "teks": "4 : 6"
+      },
+      {
+        "label": "D",
+        "teks": "2 : 4"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Perbandingan koefisien C2H6 terhadap O2 adalah 2 : 7.",
+    "valid": true
+  },
+  {
+    "nomor": 59,
+    "materi": "Reaksi-Reaksi Kimia dan Dinamikanya",
+    "paket": "Bab V: Reaksi-Reaksi Kimia dan Dinamikanya - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "9",
+    "mapel": "IPA",
+    "teks_soal": "Bahan kimia yang berfungsi sebagai katalisator dalam konverter katalitik knalpot mobil untuk mereduksi gas beracun NOx dan CO adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Logam mulia platina (Pt), paladium (Pd), dan rodium (Rh)"
+      },
+      {
+        "label": "B",
+        "teks": "Besi berkarat"
+      },
+      {
+        "label": "C",
+        "teks": "Garam dapur"
+      },
+      {
+        "label": "D",
+        "teks": "Arang kayu"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Konverter katalitik knalpot modern menggunakan logam transisi mulia (platina, paladium, rodium) sebagai heterogen katalis untuk mempercepat oksidasi gas CO menjadi CO2 serta reduksi NOx menjadi gas N2 yang tidak berbahaya.",
+    "valid": true
+  },
+  {
+    "nomor": 60,
+    "materi": "Reaksi-Reaksi Kimia dan Dinamikanya",
+    "paket": "Bab V: Reaksi-Reaksi Kimia dan Dinamikanya - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "9",
+    "mapel": "IPA",
+    "teks_soal": "Air perasan lemon terasa sangat asam karena kaya akan kandungan ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Asam sitrat"
+      },
+      {
+        "label": "B",
+        "teks": "Asam laktat"
+      },
+      {
+        "label": "C",
+        "teks": "Asam format"
+      },
+      {
+        "label": "D",
+        "teks": "Asam tartrat"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Lemon dan jeruk sitrun mengandung asam sitrat (C6H8O7) berkadar tinggi.",
+    "valid": true
+  },
+  {
+    "nomor": 61,
+    "materi": "Reaksi-Reaksi Kimia dan Dinamikanya",
+    "paket": "Bab V: Reaksi-Reaksi Kimia dan Dinamikanya - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "9",
+    "mapel": "IPA",
+    "teks_soal": "Asam laktat dapat dijumpai pada bahan makanan ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Susu fermentasi / yogurt dan keju"
+      },
+      {
+        "label": "B",
+        "teks": "Cuka dapur"
+      },
+      {
+        "label": "C",
+        "teks": "Minyak kelapa"
+      },
+      {
+        "label": "D",
+        "teks": "Air kelapa muda"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Bakteri Lactobacillus memfermentasi gula laktosa pada susu menjadi asam laktat yang memberikan rasa asam segar pada yogurt dan keju.",
+    "valid": true
+  },
+  {
+    "nomor": 62,
+    "materi": "Reaksi-Reaksi Kimia dan Dinamikanya",
+    "paket": "Bab V: Reaksi-Reaksi Kimia dan Dinamikanya - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "9",
+    "mapel": "IPA",
+    "teks_soal": "Sengatan lebah bersifat asam dan dapat diredakan rasa sakitnya dengan mengoleskan zat yang bersifat basa lemah seperti ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Pasta soda kue (natrium bikarbonat)"
+      },
+      {
+        "label": "B",
+        "teks": "Asam cuka"
+      },
+      {
+        "label": "C",
+        "teks": "Air perasan jeruk"
+      },
+      {
+        "label": "D",
+        "teks": "Minyak kayu putih"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Bisa lebah mengandung asam format. Mengoleskan pasta soda kue NaHCO3 (bersifat basa lemah) akan menetralkan racun asam lebah sehingga rasa perih mereda.",
+    "valid": true
+  },
+  {
+    "nomor": 63,
+    "materi": "Reaksi-Reaksi Kimia dan Dinamikanya",
+    "paket": "Bab V: Reaksi-Reaksi Kimia dan Dinamikanya - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "9",
+    "mapel": "IPA",
+    "teks_soal": "Zat yang ditambahkan ke dalam minyak goreng saat menggoreng untuk mencegah ketengikan (reaksi oksidasi lemak) disebut ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Antioksidan (inhibitor oksidasi)"
+      },
+      {
+        "label": "B",
+        "teks": "Katalisator"
+      },
+      {
+        "label": "C",
+        "teks": "Emulgator"
+      },
+      {
+        "label": "D",
+        "teks": "Pewarna"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Antioksidan (seperti vitamin E / tokoferol, BHT, BHA) bertindak sebagai inhibitor yang menghambat rantai reaksi radikal bebas oksidasi lipid lemak sehingga minyak tidak lekas tengik.",
+    "valid": true
+  },
+  {
+    "nomor": 64,
+    "materi": "Reaksi-Reaksi Kimia dan Dinamikanya",
+    "paket": "Bab V: Reaksi-Reaksi Kimia dan Dinamikanya - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "9",
+    "mapel": "IPA",
+    "teks_soal": "Perubahan entalpi pembakaran 1 mol gas metana adalah Delta H = -890 kJ. Tanda minus pada nilai Delta H menunjukkan bahwa reaksi tersebut ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Melepaskan energi kalor sebesar 890 kJ ke lingkungan (reaksi eksoterm)"
+      },
+      {
+        "label": "B",
+        "teks": "Menyerap energi"
+      },
+      {
+        "label": "C",
+        "teks": "Mengalami penurunan energi aktivasi"
+      },
+      {
+        "label": "D",
+        "teks": "Berlangsung pada suhu di bawah nol"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Tanda negatif pada Delta H selalu menandakan reaksi eksoterm di mana sistem melepas energi kalor ke lingkungan.",
+    "valid": true
+  },
+  {
+    "nomor": 65,
+    "materi": "Reaksi-Reaksi Kimia dan Dinamikanya",
+    "paket": "Bab V: Reaksi-Reaksi Kimia dan Dinamikanya - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+    "kelas": "9",
+    "mapel": "IPA",
+    "teks_soal": "Jika persamaan reaksi pembentukan amonia N2 + 3 H2 -> 2 NH3 memiliki laju pengurangan gas N2 sebesar 0,2 M/s, maka laju pembentukan gas amonia NH3 adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "0,4 M/s"
+      },
+      {
+        "label": "B",
+        "teks": "0,2 M/s"
+      },
+      {
+        "label": "C",
+        "teks": "0,1 M/s"
+      },
+      {
+        "label": "D",
+        "teks": "0,6 M/s"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Perbandingan laju reaksi setara dengan perbandingan koefisien reaksi: r_NH3 / r_N2 = koefisien NH3 / koefisien N2 = 2 / 1 => r_NH3 = 2 * 0,2 M/s = 0,4 M/s.",
+    "valid": true
+  },
+  {
+    "nomor": 66,
+    "materi": "Reaksi-Reaksi Kimia dan Dinamikanya",
+    "paket": "Bab V: Reaksi-Reaksi Kimia dan Dinamikanya - Bagian D: Pengayaan AKM Literasi Sains & TKA",
+    "kelas": "9",
+    "mapel": "IPA",
+    "teks_soal": "Teknologi 'cold pack' (kompres dingin instan) yang digunakan atlet olahraga yang cedera bekerja tanpa perlu dimasukkan ke kulkas. Saat kantung ditekan keras, kantung air di dalam pecah dan melarutkan serbuk amonium nitrat (NH4NO3). Fenomena kimia di balik kompres instan ini adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Pelarutan amonium nitrat merupakan reaksi endoterm yang menyerap sejumlah besar kalor dari lingkungan sekitar sehingga suhu kompres turun mendekati 0°C seketika"
+      },
+      {
+        "label": "B",
+        "teks": "Reaksi pembentukan gas dingin"
+      },
+      {
+        "label": "C",
+        "teks": "Reaksi eksoterm"
+      },
+      {
+        "label": "D",
+        "teks": "Pembentukan es kering"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Cold pack memanfaatkan proses endoterm pelarutan garam amonium nitrat: NH4NO3 (s) + H2O (l) -> NH4+ (aq) + NO3- (aq) (Delta H bernilai positif tinggi). Sistem menyerap energi kalor secara cepat dari lingkungan luar (kulit atlet), menurunkan bengkak dan peradangan cedera.",
+    "valid": true
+  },
+  {
+    "nomor": 67,
+    "materi": "Reaksi-Reaksi Kimia dan Dinamikanya",
+    "paket": "Bab V: Reaksi-Reaksi Kimia dan Dinamikanya - Bagian D: Pengayaan AKM Literasi Sains & TKA",
+    "kelas": "9",
+    "mapel": "IPA",
+    "teks_soal": "Dalam industri pupuk modern, sintesis gas amonia melalui Proses Haber-Bosch (N2 + 3 H2 <-> 2 NH3, Delta H = -92 kJ) dilakukan pada suhu tinggi 450°C dan tekanan tinggi 200 atm dengan bantuan katalis serbuk besi. Ditinjau dari faktor kinetika reaksi, fungsi katalis besi dan tekanan tinggi adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Katalis besi menurunkan energi aktivasi reaksi pemutusan ikatan rangkap tiga N≡N yang sangat kuat, sedangkan tekanan tinggi memadatkan kerapatan gas reaktan sehingga laju reaksi dan rendemen amonia maksimal"
+      },
+      {
+        "label": "B",
+        "teks": "Katalis besi mendinginkan reaktor"
+      },
+      {
+        "label": "C",
+        "teks": "Tekanan tinggi mengurangi massa gas"
+      },
+      {
+        "label": "D",
+        "teks": "Besi bereaksi membentuk garam"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Molekul N2 memiliki ikatan kovalen rangkap tiga (N≡N) berenergi disosiasi sangat tinggi (945 kJ/mol). Tanpa katalis serbuk besi berpromotor K2O dan Al2O3, reaksi hampir tidak berjalan pada suhu moderat. Tekanan tinggi (200 atm) memperbanyak tumbukan partikel dan menggeser kesetimbangan ke arah produk amonia.",
+    "valid": true
+  },
+  {
+    "nomor": 68,
+    "materi": "Reaksi-Reaksi Kimia dan Dinamikanya",
+    "paket": "Bab V: Reaksi-Reaksi Kimia dan Dinamikanya - Bagian D: Pengayaan AKM Literasi Sains & TKA",
+    "kelas": "9",
+    "mapel": "IPA",
+    "teks_soal": "Asidosis respiratorik adalah kondisi klinis di mana pH darah seseorang anjlok di bawah batas normal (< 7,35) akibat penumpukan gas CO2 di dalam tubuh karena gangguan pernapasan. Reaksi kesetimbangan asam bikarbonat dalam darah yang menjelaskan asidosis adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "CO2 + H2O <-> H2CO3 <-> H+ + HCO3-, di mana penumpukan CO2 menggeser reaksi ke kanan menghasilkan ion H+ berlebih yang menurunkan pH darah"
+      },
+      {
+        "label": "B",
+        "teks": "CO2 langsung mengendapkan kalsium tulang"
+      },
+      {
+        "label": "C",
+        "teks": "CO2 menghentikan enzim katalase"
+      },
+      {
+        "label": "D",
+        "teks": "Darah berubah menjadi asam sulfat"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Darah manusia dikendalikan sistem penyangga (buffer) asam karbonat-bikarbonat: CO2 + H2O <-> H2CO3 <-> H+ + HCO3-. Hipoventilasi menyebabkan retensi CO2 tinggi, menggeser kesetimbangan kimia ke arah kanan (asam karbonat terdisosiasi melepaskan ion H+), sehingga konsentrasi [H+] naik dan pH darah anjlok (asidosis).",
+    "valid": true
+  },
+  {
+    "nomor": 69,
+    "materi": "Reaksi-Reaksi Kimia dan Dinamikanya",
+    "paket": "Bab V: Reaksi-Reaksi Kimia dan Dinamikanya - Bagian D: Pengayaan AKM Literasi Sains & TKA",
+    "kelas": "9",
+    "mapel": "IPA",
+    "teks_soal": "Logam aluminium (Al) merupakan logam yang sangat reaktif terhadap oksigen, namun perkakas dapur dari aluminium tidak mudah keropos berkarat seperti besi. Fenomena ketahanan kimia aluminium ini disebabkan oleh ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Aluminium segera bereaksi dengan oksigen membentuk lapisan tipis aluminium oksida (Al2O3) yang sangat rapat, kuat, dan melindungi permukaan logam di bawahnya dari oksidasi lanjutan (lapisan pasivasi)"
+      },
+      {
+        "label": "B",
+        "teks": "Aluminium tidak memiliki elektron valensi"
+      },
+      {
+        "label": "C",
+        "teks": "Aluminium tidak dapat bereaksi dengan air"
+      },
+      {
+        "label": "D",
+        "teks": "Massa jenis aluminium terlalu ringan"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Aluminium mengalami proses pasivasi alami: begitu tergores atau terpapar udara, atom Al permukaan langsung bereaksi dengan O2 membentuk lapisan film Al2O3 setebal beberapa nanometer yang amorf, tak berpori, dan melekat sangat kuat, menghentikan difusi oksigen lebih lanjut ke dalam inti logam.",
+    "valid": true
+  },
+  {
+    "nomor": 70,
+    "materi": "Reaksi-Reaksi Kimia dan Dinamikanya",
+    "paket": "Bab V: Reaksi-Reaksi Kimia dan Dinamikanya - Bagian D: Pengayaan AKM Literasi Sains & TKA",
+    "kelas": "9",
+    "mapel": "IPA",
+    "teks_soal": "Debu tepung gandum atau serbuk batubara di dalam ruang silo penyimpanan yang tertutup rapat dapat meledak secara hebat (dust explosion) hanya karena percikan api kecil, padahal tumpukan karung gandum atau bongkahan batubara tidak mudah meledak. Faktor penentu laju reaksi yang memicu ledakan debu tersebut adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Luas permukaan bidang sentuh serbuk partikel debu yang melayang di udara sangat masif sehingga seluruh partikel bereaksi dengan oksigen secara simultan dalam fraksi detik menghasilkan pelepasan kalor dan tekanan gas raksasa"
+      },
+      {
+        "label": "B",
+        "teks": "Suhu ruangan naik mendadak"
+      },
+      {
+        "label": "C",
+        "teks": "Tepung berubah menjadi gas hidrogen"
+      },
+      {
+        "label": "D",
+        "teks": "Ketiadaan gaya gravitasi bumi"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Fenomena ledakan debu (dust explosion): Partikel padat yang digiling sangat halus memiliki rasio luas permukaan terhadap volume (A/V) yang amat sangat tinggi. Saat melayang tersuspensi di udara dengan konsentrasi tertentu, tumbukan antarpartikel reaktan dengan O2 terjadi secara serentak, membangkitkan laju reaksi pembakaran eksotermik eksplosif bertekanan dahsyat.",
+    "valid": true
+  }
+]

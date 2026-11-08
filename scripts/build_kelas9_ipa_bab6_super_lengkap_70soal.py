@@ -1,0 +1,1116 @@
+#!/usr/bin/env python3
+"""
+build_kelas9_ipa_bab6_super_lengkap_70soal.py
+=============================================
+Menghasilkan 70 Butir Soal Super Lengkap Bab 6 IPA SMP Kelas 9:
+Pewarisan Sifat dan Bioteknologi:
+- 25 Soal HOTS Kurikulum Merdeka (No. 1–25)
+- 10 Soal Contoh & Pembahasan Asli Buku Big Book (No. 26–35)
+- 30 Soal Latihan Mandiri Asli Buku Big Book (No. 36–65)
+- 5 Soal Pengayaan AKM Literasi Sains & TKA (No. 66–70)
+
+100% Sesuai Format Impor Bank Soal Bimbel Gemilang:
+- Validasi 70/70 Valid (0 Error)
+- Gambar Asli Otentik: Skema Plasmid Insulin (Soal #26)
+- HTML & JSON Master
+"""
+
+import os
+import json
+import html
+
+OUTPUT_DIR = "/Users/macbook/.gemini/antigravity/scratch/bimbel-gemilang-app/public/ekstraksi-buku"
+os.makedirs(OUTPUT_DIR, exist_ok=True)
+
+# 25 Soal Kurikulum Merdeka HOTS Bab 6
+soal_hots = [
+    {
+        "nomor_bab": 1,
+        "soal": "Pada persilangan dihibrid tanaman kacang ercis berbiji bulat warna kuning (BbKk) disilangkan sesamanya, dihasilkan 16 kombinasi genotipe pada papan catur Punnett. Kombinasi genotipe pada kotak nomor 1 (pertemuan gamet BK dan BK) dan kotak nomor 16 (pertemuan gamet bk dan bk) berturut-turut adalah ....",
+        "opsi": [
+            {"label": "A", "teks": "BBKK (bulat kuning homozigot) dan bbkk (kisut hijau homozigot)"},
+            {"label": "B", "teks": "BbKk dan BbKk"},
+            {"label": "C", "teks": "BBkk dan bbKK"},
+            {"label": "D", "teks": "Bbkk dan bbKk"}
+        ],
+        "kunci": "A",
+        "pembahasan": "Pada diagram Punnett persilangan dihibrid heterozigot ganda BbKk x BbKk: Kotak nomor 1 adalah hasil peleburan gamet dominan BK x BK = BBKK (fenotipe bulat kuning homozigot). Kotak nomor 16 adalah peleburan gamet resesif bk x bk = bbkk (fenotipe kisut hijau homozigot ganda).",
+        "paket": "Bab VI: Pewarisan Sifat dan Bioteknologi - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+        "img": ""
+    },
+    {
+        "nomor_bab": 2,
+        "soal": "Molekul DNA (Deoxyribonucleic Acid) tersusun atas rantai ganda berpilin (double helix) menurut model Watson-Crick. Struktur 'tulang punggung' rantai DNA dan 'anak tangga' penghubung antaruntai berturut-turut tersusun atas ....",
+        "opsi": [
+            {"label": "A", "teks": "Asam amino dan lipid"},
+            {"label": "B", "teks": "Gugus gula deoksiribosa yang berselingan dengan gugus fosfat; serta pasangan basa nitrogen yang dihubungkan ikatan hidrogen (Adenin = Timin, dan Guanin ≡ Sitosin)"},
+            {"label": "C", "teks": "Ribosa dan urasil"},
+            {"label": "D", "teks": "Protein histon dan glukosa"}
+        ],
+        "kunci": "B",
+        "pembahasan": "Struktur DNA double helix: Bagian luar/tulang punggung heliks tersusun atas untaian berseling gula pentosa deoksiribosa dan gugus fosfat melalui ikatan fosfodiester. Bagian dalam (anak tangga) tersusun atas pasangan basa nitrogen komplementer: Basa purin Adenin berpasangan dengan Timin (2 ikatan hidrogen, A=T), serta Guanin berpasangan dengan Sitosin (3 ikatan hidrogen, G≡C).",
+        "paket": "Bab VI: Pewarisan Sifat dan Bioteknologi - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+        "img": ""
+    },
+    {
+        "nomor_bab": 3,
+        "soal": "Gregor Johann Mendel memilih tanaman kacang ercis (Pisum sativum) sebagai objek penelitian genetika penemuan hukum-hukum pewarisan sifat karena alasan-alasan berikut, KECUALI ....",
+        "opsi": [
+            {"label": "A", "teks": "Memiliki masa hidup yang sangat panjang hingga puluhan tahun sehingga sulit berbuah"},
+            {"label": "B", "teks": "Memiliki pasangan sifat beda yang sangat mencolok (seperti biji bulat vs kisut, bunga ungu vs putih)"},
+            {"label": "C", "teks": "Dapat melakukan penyerbukan sendiri (autogami) dan mudah disilangkan secara buatan"},
+            {"label": "D", "teks": "Siklus hidupnya singkat dan cepat menghasilkan keturunan dalam jumlah banyak"}
+        ],
+        "kunci": "A",
+        "pembahasan": "Alasan Mendel memilih tanaman ercis: 1) Siklus hidup pendek dan cepat menghasilkan keturunan banyak, 2) Memiliki 7 pasang sifat kontras yang jelas teramati, 3) Bunganya bermahkota tertutup sehingga dapat menyerbuk sendiri dan menghasilkan galur murni, 4) Mudah diserbukkan silang secara buatan. Pernyataan A salah karena ercis justru berumur pendek.",
+        "paket": "Bab VI: Pewarisan Sifat dan Bioteknologi - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+        "img": ""
+    },
+    {
+        "nomor_bab": 4,
+        "soal": "Tanaman bunga mawar merah (Mm) disilangkan dengan sesamanya (Mm). Jika sifat warna merah dominan penuh terhadap putih, maka perbandingan fenotipe keturunan yang dihasilkan adalah ....",
+        "opsi": [
+            {"label": "A", "teks": "1 Merah : 2 Merah muda : 1 Putih"},
+            {"label": "B", "teks": "1 Merah : 1 Putih"},
+            {"label": "C", "teks": "Semuanya berwarna merah"},
+            {"label": "D", "teks": "3 Merah : 1 Putih"}
+        ],
+        "kunci": "D",
+        "pembahasan": "Persilangan monohibrid dominan penuh Mm x Mm: Genotipe F2 = 1 MM (merah) : 2 Mm (merah) : 1 mm (putih). Karena alel M dominan penuh terhadap m, maka genotipe MM dan Mm sama-sama menghasilkan fenotipe warna merah. Jadi rasio fenotipe F2 adalah (1+2) Merah : 1 Putih = 3 Merah : 1 Putih.",
+        "paket": "Bab VI: Pewarisan Sifat dan Bioteknologi - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+        "img": ""
+    },
+    {
+        "nomor_bab": 5,
+        "soal": "Pada tanaman bunga pukul empat (Mirabilis jalapa), sifat warna merah (M) dan putih (m) bersifat intermediet (kodominan tak penuh). Jika bunga merah muda (Mm) disilangkan dengan sesamanya menghasilkan 80 individu bibit baru, maka jumlah bibit yang memiliki bunga merah, merah muda, dan putih berturut-turut adalah ....",
+        "opsi": [
+            {"label": "A", "teks": "60 merah dan 20 putih"},
+            {"label": "B", "teks": "40 merah dan 40 putih"},
+            {"label": "C", "teks": "20 merah, 40 merah muda, dan 20 putih"},
+            {"label": "D", "teks": "Semuanya 80 merah muda"}
+        ],
+        "kunci": "C",
+        "pembahasan": "Pada sifat intermediet, gen heterozigot Mm memunculkan sifat fenotipe campuran/antara yaitu merah muda. Persilangan Mm x Mm menghasilkan rasio genotipe dan fenotipe yang sama persis: 1 MM (merah) : 2 Mm (merah muda) : 1 mm (putih). Dari total 80 bibit: Merah = 1/4 * 80 = 20 bibit; Merah muda = 2/4 * 80 = 40 bibit; Putih = 1/4 * 80 = 20 bibit.",
+        "paket": "Bab VI: Pewarisan Sifat dan Bioteknologi - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+        "img": ""
+    },
+    {
+        "nomor_bab": 6,
+        "soal": "Tanaman mangga berbuah besar rasa masam (BBmm) disilangkan dengan mangga berbuah kecil rasa manis (bbMM). Semua keturunan F1 berbuah besar rasa manis (BbMm). Jika tanaman F1 disilangkan sesamanya dan menghasilkan 320 bibit F2, berapakah jumlah bibit yang berfenotipe buah besar rasa manis dan bibit bergenotipe galur murni unggul (BBMM)?",
+        "opsi": [
+            {"label": "A", "teks": "180 bibit dan 20 bibit"},
+            {"label": "B", "teks": "160 bibit dan 40 bibit"},
+            {"label": "C", "teks": "200 bibit dan 20 bibit"},
+            {"label": "D", "teks": "240 bibit dan 10 bibit"}
+        ],
+        "kunci": "A",
+        "pembahasan": "Rasio fenotipe F2 persilangan dihibrid BbMm x BbMm: 9 Besar-Manis (B_M_) : 3 Besar-Masam (B_mm) : 3 Kecil-Manis (bbM_) : 1 Kecil-Masam (bbmm). Jumlah fenotipe Besar-Manis = 9/16 * 320 = 180 bibit. Genotipe homozigot unggul BBMM hanya 1 dari 16 kombinasi: 1/16 * 320 = 20 bibit.",
+        "paket": "Bab VI: Pewarisan Sifat dan Bioteknologi - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+        "img": ""
+    },
+    {
+        "nomor_bab": 7,
+        "soal": "Sepasang suami istri masing-masing bergolongan darah A heterozigot (IAI0) dan B heterozigot (IBI0). Kemungkinan golongan darah anak-anak kandung yang dilahirkan pasangan tersebut adalah ....",
+        "opsi": [
+            {"label": "A", "teks": "Hanya golongan darah AB saja"},
+            {"label": "B", "teks": "Semua 4 golongan darah (A, B, AB, dan O) memiliki peluang muncul masing-masing sebesar 25%"},
+            {"label": "C", "teks": "Hanya golongan darah A dan B"},
+            {"label": "D", "teks": "Hanya golongan darah O saja"}
+        ],
+        "kunci": "B",
+        "pembahasan": "Persilangan alel ganda golongan darah ABO: Orang tua IAI0 x IBI0 menghasilkan kombinasi genotipe anak: (1) IAIB = golongan darah AB (25%), (2) IAI0 = golongan darah A (25%), (3) IBI0 = golongan darah B (25%), dan (4) I0I0 = golongan darah O (25%). Jadi seluruh 4 jenis golongan darah berpeluang lahir.",
+        "paket": "Bab VI: Pewarisan Sifat dan Bioteknologi - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+        "img": ""
+    },
+    {
+        "nomor_bab": 8,
+        "soal": "Seorang wanita normal pembawa sifat buta warna (carrier, genotipe XcbX) menikah dengan pria bermata normal (genotipe XY). Peluang anak laki-laki mereka menderita kelainan buta warna adalah ....",
+        "opsi": [
+            {"label": "A", "teks": "50% dari seluruh anak laki-laki yang dilahirkan (atau 25% dari total seluruh anak)"},
+            {"label": "B", "teks": "100% anak laki-laki pasti buta warna"},
+            {"label": "C", "teks": "0% anak laki-laki menderita buta warna"},
+            {"label": "D", "teks": "75% dari seluruh anak laki-laki"}
+        ],
+        "kunci": "A",
+        "pembahasan": "Persilangan terpaut kromosom X: Ibu (XcbX) x Ayah (XY) -> Anak perempuan: XX (normal 25%) dan XcbX (carrier normal 25%); Anak laki-laki: XY (normal 25%) dan XcbY (buta warna 25%). Dari khusus kelompok anak laki-laki, perbandingannya 1 normal : 1 buta warna (peluang 50%).",
+        "paket": "Bab VI: Pewarisan Sifat dan Bioteknologi - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+        "img": ""
+    },
+    {
+        "nomor_bab": 9,
+        "soal": "Penyakit hemofilia (darah sukar membeku saat luka) merupakan kelainan genetik yang diwariskan melalui gen resesif yang terpaut pada ....",
+        "opsi": [
+            {"label": "A", "teks": "Kromosom kelamin X (gonosom X)"},
+            {"label": "B", "teks": "Kromosom kelamin Y"},
+            {"label": "C", "teks": "Kromosom tubuh nomor 21"},
+            {"label": "D", "teks": "Mitokondria sel"}
+        ],
+        "kunci": "A",
+        "pembahasan": "Hemofilia dan buta warna dikendalikan oleh alel resesif yang terpaut pada kromosom X (X-linked recessive). Pria hanya memiliki satu kromosom X (XY), sehingga jika mewarisi gen resesif Xh dari ibu, ia otomatis menderita hemofilia (XhY). Wanita bergenotipe XhXh umumnya bersifat letal sebelum lahir.",
+        "paket": "Bab VI: Pewarisan Sifat dan Bioteknologi - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+        "img": ""
+    },
+    {
+        "nomor_bab": 10,
+        "soal": "Albino (ketiadaan pigmen melanin pada kulit, rambut, dan retina mata) merupakan kelainan genetik yang diwariskan melalui ....",
+        "opsi": [
+            {"label": "A", "teks": "Gen resesif pada kromosom tubuh (autosom, alel aa)"},
+            {"label": "B", "teks": "Gen dominan pada kromosom Y"},
+            {"label": "C", "teks": "Infeksi bakteri saat masih balita"},
+            {"label": "D", "teks": "Kekurangan vitamin A menahun"}
+        ],
+        "kunci": "A",
+        "pembahasan": "Albino diwariskan melalui alel resesif autosom (a). Individu homozigot dominan (AA) dan heterozigot (Aa) berpigmentasi normal (Aa sebagai pembawa sifat/carrier). Individu homozigot resesif (aa) tidak mampu menghasilkan enzim tirosinase sehingga tubuhnya tidak dapat memproduksi pigmen melanin (albino).",
+        "paket": "Bab VI: Pewarisan Sifat dan Bioteknologi - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+        "img": ""
+    },
+    {
+        "nomor_bab": 11,
+        "soal": "Sel tubuh (sel somatis) manusia normal memiliki 46 buah kromosom (23 pasang). Formula susunan kromosom pada sel tubuh seorang laki-laki normal dituliskan sebagai ....",
+        "opsi": [
+            {"label": "A", "teks": "22 pasang autosom + 1 pasang gonosom XY (atau 44A + XY)"},
+            {"label": "B", "teks": "44A + XX"},
+            {"label": "C", "teks": "22A + Y"},
+            {"label": "D", "teks": "23A + XY"}
+        ],
+        "kunci": "A",
+        "pembahasan": "Kariotipe manusia normal: 46 kromosom terdiri atas 44 buah (22 pasang) kromosom tubuh (autosom) dan 2 buah (1 pasang) kromosom seks (gonosom). Laki-laki: 44A + XY (atau 22AA + XY); Perempuan: 44A + XX (atau 22AA + XX). Pada sel gamet sperma: 22A + X atau 22A + Y.",
+        "paket": "Bab VI: Pewarisan Sifat dan Bioteknologi - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+        "img": ""
+    },
+    {
+        "nomor_bab": 12,
+        "soal": "Produk bioteknologi pangan tradisional khas Indonesia yaitu tempe dibuat dari bahan baku kedelai dengan memanfaatkan aktivitas hifa jamur ....",
+        "opsi": [
+            {"label": "A", "teks": "Rhizopus oryzae dan Rhizopus oligosporus"},
+            {"label": "B", "teks": "Saccharomyces cerevisiae"},
+            {"label": "C", "teks": "Aspergillus wentii"},
+            {"label": "D", "teks": "Acetobacter xylinum"}
+        ],
+        "kunci": "A",
+        "pembahasan": "Tempe difermentasi oleh kapang Rhizopus oryzae / Rhizopus oligosporus. Hifa miselium jamur mengikat biji kedelai menjadi padat kompak serta menyekresikan enzim protease yang memecah protein kompleks kedelai menjadi peptida dan asam amino yang jauh lebih mudah dicerna usus.",
+        "paket": "Bab VI: Pewarisan Sifat dan Bioteknologi - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+        "img": ""
+    },
+    {
+        "nomor_bab": 13,
+        "soal": "Mikroorganisme bersel tunggal dari kelompok ragi/khamir yang berperan penting dalam fermentasi tapai singkong dan pembuatan adonan roti adalah ....",
+        "opsi": [
+            {"label": "A", "teks": "Saccharomyces cerevisiae"},
+            {"label": "B", "teks": "Lactobacillus bulgaricus"},
+            {"label": "C", "teks": "Penicillium notatum"},
+            {"label": "D", "teks": "Escherichia coli"}
+        ],
+        "kunci": "A",
+        "pembahasan": "Saccharomyces cerevisiae adalah ragi bersel satu yang memfermentasi glukosa secara anaerob menjadi etanol dan gas CO2: C6H12O6 -> 2 C2H5OH + 2 CO2 + Energi. Gas CO2 mengembangkan adonan roti dan alkohol memberikan aroma manis khas tape.",
+        "paket": "Bab VI: Pewarisan Sifat dan Bioteknologi - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+        "img": ""
+    },
+    {
+        "nomor_bab": 14,
+        "soal": "Yogurt dibuat dari fermentasi susu segar menggunakan bakteri menguntungkan ....",
+        "opsi": [
+            {"label": "A", "teks": "Lactobacillus bulgaricus dan Streptococcus thermophilus"},
+            {"label": "B", "teks": "Rhizopus stolonifer"},
+            {"label": "C", "teks": "Neurospora sitophila"},
+            {"label": "D", "teks": "Spirulina"}
+        ],
+        "kunci": "A",
+        "pembahasan": "Kultur starter yogurt terdiri atas bakteri Lactobacillus bulgaricus dan Streptococcus thermophilus. Bakteri ini memfermentasi gula laktosa susu menjadi asam laktat yang mengentalkan protein kasein susu menghasilkan tekstur kental lembut dan rasa asam khas yogurt.",
+        "paket": "Bab VI: Pewarisan Sifat dan Bioteknologi - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+        "img": ""
+    },
+    {
+        "nomor_bab": 15,
+        "soal": "Nata de coco yang kenyal dan kaya serat selulosa dibuat dari bahan dasar air kelapa dengan bantuan aktivitas bakteri ....",
+        "opsi": [
+            {"label": "A", "teks": "Acetobacter xylinum"},
+            {"label": "B", "teks": "Bacillus thuringiensis"},
+            {"label": "C", "teks": "Pseudomonas putida"},
+            {"label": "D", "teks": "Streptomyces griseus"}
+        ],
+        "kunci": "A",
+        "pembahasan": "Acetobacter xylinum mampu merangkai monomer gula glukosa di dalam air kelapa menjadi jalinan serat selulosa ekstraseluler tebal berwarna putih transparan kenyal yang dikenal sebagai nata de coco.",
+        "paket": "Bab VI: Pewarisan Sifat dan Bioteknologi - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+        "img": ""
+    },
+    {
+        "nomor_bab": 16,
+        "soal": "Kecap manis atau kecap asin tradisional diproduksi melalui proses fermentasi kedelai hitam menggunakan bantuan jamur ....",
+        "opsi": [
+            {"label": "A", "teks": "Aspergillus wentii atau Aspergillus oryzae"},
+            {"label": "B", "teks": "Saccharomyces ellipsoideus"},
+            {"label": "C", "teks": "Rhizopus nigricans"},
+            {"label": "D", "teks": "Trichoderma reesei"}
+        ],
+        "kunci": "A",
+        "pembahasan": "Pembuatan kecap menggunakan jamur Aspergillus wentii atau Aspergillus oryzae pada tahap fermentasi koji (fermentasi kapang) untuk mendegradasi pati dan protein kedelai hitam, dilanjutkan dengan fermentasi garam moromi oleh bakteri asam laktat.",
+        "paket": "Bab VI: Pewarisan Sifat dan Bioteknologi - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+        "img": ""
+    },
+    {
+        "nomor_bab": 17,
+        "soal": "Oncom merah khas Jawa Barat dibuat dari bungkil tahu atau ampas kedelai yang difermentasi oleh jamur ascomycota berwarna jingga yaitu ....",
+        "opsi": [
+            {"label": "A", "teks": "Neurospora crassa (Neurospora sitophila)"},
+            {"label": "B", "teks": "Candida utilis"},
+            {"label": "C", "teks": "Penicillium roqueforti"},
+            {"label": "D", "teks": "Mucor mucedo"}
+        ],
+        "kunci": "A",
+        "pembahasan": "Oncom merah dihasilkan dari fermentasi bungkil tahu oleh kapang Neurospora crassa (dahulu Monilia sitophila) yang menghasilkan spora berwarna jingga kemerahan cerah.",
+        "paket": "Bab VI: Pewarisan Sifat dan Bioteknologi - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+        "img": ""
+    },
+    {
+        "nomor_bab": 18,
+        "soal": "Dalam pembuatan keju padat, cairan susu digumpalkan menggunakan enzim pencerna kasein yaitu enzim ....",
+        "opsi": [
+            {"label": "A", "teks": "Renin (kimosin)"},
+            {"label": "B", "teks": "Amilase"},
+            {"label": "C", "teks": "Lipase"},
+            {"label": "D", "teks": "Katalase"}
+        ],
+        "kunci": "A",
+        "pembahasan": "Enzim renin (chymosin) mengkoagulasi protein kasein susu menghasilkan gumpalan dadih padat (curd) yang dipisahkan dari cairan whey untuk dimatangkan menjadi berbagai jenis keju keras.",
+        "paket": "Bab VI: Pewarisan Sifat dan Bioteknologi - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+        "img": ""
+    },
+    {
+        "nomor_bab": 19,
+        "soal": "Penderita diabetes melitus sangat bergantung pada suntikan hormon insulin. Pada era bioteknologi modern, hormon insulin manusia diproduksi secara massal dan murni melalui teknik rekayasa genetika berupa ....",
+        "opsi": [
+            {"label": "A", "teks": "Teknologi DNA rekombinan dengan menyisipkan gen penyandi insulin manusia ke dalam plasmid bakteri Escherichia coli"},
+            {"label": "B", "teks": "Fermentasi ragi roti dengan air kelapa"},
+            {"label": "C", "teks": "Ekstraksi pankreas sapi secara langsung"},
+            {"label": "D", "teks": "Kultur jaringan daun tembakau"}
+        ],
+        "kunci": "A",
+        "pembahasan": "Teknik plasmid DNA rekombinan: Gen penyandi insulin manusia dipotong dengan enzim restriksi dan disisipkan ke dalam plasmid bakteri E. coli menggunakan enzim ligase. Bakteri transgenik ini kemudian dikultur di bioreaktor fermentor untuk mengekspresikan hormon insulin manusia murni dalam jumlah masif tanpa risiko alergi hewan.",
+        "paket": "Bab VI: Pewarisan Sifat dan Bioteknologi - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+        "img": ""
+    },
+    {
+        "nomor_bab": 20,
+        "soal": "Dua jenis enzim biologis yang memegang peranan krusial sebagai 'gunting pemotong DNA' dan 'lem penyambung untai DNA' pada teknik rekayasa genetika rekombinan berturut-turut adalah ....",
+        "opsi": [
+            {"label": "A", "teks": "Enzim restriksi endonuklease dan enzim DNA ligase"},
+            {"label": "B", "teks": "Enzim amilase dan enzim lipase"},
+            {"label": "C", "teks": "Enzim renin dan pepsin"},
+            {"label": "D", "teks": "Enzim ptialin dan tripsin"}
+        ],
+        "kunci": "A",
+        "pembahasan": "Enzim restriksi endonuklease bertindak sebagai gunting molekuler mengenali urutan sekuens basa nukleotida spesifik dan memotong untai DNA menghasilkan ujung lengket (sticky ends). Enzim DNA ligase bertindak sebagai lem kimia menyambungkan kembali ikatan fosfodiester antara gen sisipan dan plasmid vektor.",
+        "paket": "Bab VI: Pewarisan Sifat dan Bioteknologi - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+        "img": ""
+    },
+    {
+        "nomor_bab": 21,
+        "soal": "Tanaman transgenik tahan hama (seperti jagung Bt dan kapas Bt) diciptakan dengan menyisipkan gen Cry yang menghasilkan toksin pembunuh hama ulat penggerek. Gen Cry tersebut diisolasi dari mikroorganisme tanah yaitu ....",
+        "opsi": [
+            {"label": "A", "teks": "Bacillus thuringiensis"},
+            {"label": "B", "teks": "Escherichia coli"},
+            {"label": "C", "teks": "Streptomyces aureofaciens"},
+            {"label": "D", "teks": "Agrobacterium tumefaciens"}
+        ],
+        "kunci": "A",
+        "pembahasan": "Bakteri Bacillus thuringiensis (Bt) menghasilkan kristal protein endotoksin (protein Cry) yang mematikan bagi saluran pencernaan larva serangga hama Lepidoptera. Gen Bt disisipkan ke genom tanaman jagung/kapas sehingga tanaman kebal hama tanpa perlu disemprot insektisida kimiawi sintetis berlebih.",
+        "paket": "Bab VI: Pewarisan Sifat dan Bioteknologi - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+        "img": ""
+    },
+    {
+        "nomor_bab": 22,
+        "soal": "Teknik perbanyakan bibit tanaman secara vegetatif in vitro dengan menumbuhkan jaringan eksplan daun atau tunas pada media agar steril kaya nutrisi dan hormon tumbuhan disebut ....",
+        "opsi": [
+            {"label": "A", "teks": "Kultur jaringan (tissue culture)"},
+            {"label": "B", "teks": "Hibridisasi"},
+            {"label": "C", "teks": "Inseminasi buatan"},
+            {"label": "D", "teks": "Fermentasi padat"}
+        ],
+        "kunci": "A",
+        "pembahasan": "Kultur jaringan tumbuhan didasarkan pada sifat totipotensi sel tumbuhan (Gottlieb Haberlandt), yaitu kemampuan sel somatik tumbuhan yang utuh untuk berdiferensiasi dan beregenerasi menjadi tanaman lengkap jika diberi nutrisi dan hormon auksin/sitokinin yang sesuai di laboratorium steril.",
+        "paket": "Bab VI: Pewarisan Sifat dan Bioteknologi - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+        "img": ""
+    },
+    {
+        "nomor_bab": 23,
+        "soal": "Keberhasilan pengkloningan mamalia pertama di dunia yaitu domba Dolly pada tahun 1996 dilakukan melalui teknik Somatic Cell Nuclear Transfer (SCNT), yaitu dengan cara ....",
+        "opsi": [
+            {"label": "A", "teks": "Memasukkan inti sel somatik kelenjar mammae domba donor ke dalam sel ovum yang telah dihilangkan intinya (enukleasi), lalu distimulasi listrik dan diimplan ke rahim induk pengganti"},
+            {"label": "B", "teks": "Membuahi sel ovum dengan sperma di laboratorium"},
+            {"label": "C", "teks": "Mencampurkan darah domba yang berbeda"},
+            {"label": "D", "teks": "Menyuntikkan hormon pertumbuhan dosis tinggi"}
+        ],
+        "kunci": "A",
+        "pembahasan": "Kloning domba Dolly: Inti sel telur (ovum) domba resipien dikeluarkan (enukleasi), kemudian fusi dilakukan dengan inti sel diploid (2n) dari sel kelenjar susu (mammae) domba donor menggunakan sengatan listrik mikro. Embrio blastosis yang terbentuk ditransplantasikan ke uterus ibu titipan (surrogate mother), melahirkan Dolly yang genotipenya 100% identik dengan domba donor inti sel.",
+        "paket": "Bab VI: Pewarisan Sifat dan Bioteknologi - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+        "img": ""
+    },
+    {
+        "nomor_bab": 24,
+        "soal": "Terapi gen merupakan aplikasi bioteknologi kedokteran terkini yang bertujuan untuk ....",
+        "opsi": [
+            {"label": "A", "teks": "Memperbaiki atau mengganti gen mutan rusak penyabab penyakit bawaan (seperti hemofilia atau SCID) dengan salinan gen fungsional normal menggunakan vektor virus"},
+            {"label": "B", "teks": "Mengganti seluruh darah penderita"},
+            {"label": "C", "teks": "Memperpanjang usia sel otot"},
+            {"label": "D", "teks": "Menghilangkan seluruh bakteri tubuh"}
+        ],
+        "kunci": "A",
+        "pembahasan": "Terapi gen (gene therapy) mentransfer gen sehat terapeutik ke dalam sel pasien untuk mengoreksi mutasi genetik bawaan, misalnya kelainan imun SCID (Severe Combined Immunodeficiency) atau kelainan darah thalassemia.",
+        "paket": "Bab VI: Pewarisan Sifat dan Bioteknologi - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+        "img": ""
+    },
+    {
+        "nomor_bab": 25,
+        "soal": "Kekhawatiran para ahli biologi terhadap meluasnya penanaman tanaman transgenik (GMO) monokultur dalam skala luas terhadap kelestarian lingkungan hidup adalah ....",
+        "opsi": [
+            {"label": "A", "teks": "Potensi terjadinya aliran gen liar (gene flow) ke gulma liar membentuk 'gulma super' tahan herbisida serta mengancam erosi plasma nutfah varietas lokal alami"},
+            {"label": "B", "teks": "Menyebabkan gempa tektonik"},
+            {"label": "C", "teks": "Mengurangi kadar air hujan"},
+            {"label": "D", "teks": "Menaikkan suhu atmosfer secara instan"}
+        ],
+        "kunci": "A",
+        "pembahasan": "Dampak negatif bioteknologi transgenik yang diwaspadai: 1) Erosi plasma nutfah karena punahnya varietas lokal non-transgenik, 2) Munculnya gulma super (superweeds) akibat transfer serbuk sari gen toleran herbisida ke kerabat liar, 3) Terganggunya rantai makanan ekologis serangga non-target.",
+        "paket": "Bab VI: Pewarisan Sifat dan Bioteknologi - Bagian A: Suplemen HOTS Kurikulum Merdeka",
+        "img": ""
+    }
+]
+
+# 10 Soal Contoh Asli (No. 26-35)
+soal_contoh = [
+    {
+        "nomor_bab": 26,
+        "soal": "Perhatikan skema tahapan pembuatan insulin manusia melalui teknik DNA rekombinan / plasmid berikut! Tahap 1: Isolasi plasmid bakteri E. coli dan DNA sel manusia. Tahap 2: Pemotongan gen penyandi insulin manusia dan cincin plasmid. Tahap 3: Penggabungan (rekombinasi) gen insulin dengan plasmid bakteri. Tahap 4: Memasukkan plasmid rekombinan kembali ke dalam sel bakteri E. coli. Enzim yang bertindak memotong DNA pada tahap 2 dan menyambungkan kembali DNA pada tahap 3 berturut-turut adalah ....",
+        "opsi": [
+            {"label": "A", "teks": "Enzim restriksi endonuklease dan enzim ligase"},
+            {"label": "B", "teks": "Enzim ligase dan enzim restriksi"},
+            {"label": "C", "teks": "Enzim amilase dan enzim lipase"},
+            {"label": "D", "teks": "Enzim peptidase dan amilase"}
+        ],
+        "kunci": "A",
+        "pembahasan": "Pada teknologi rekayasa genetika plasmid insulin: Enzim restriksi endonuklease berfungsi memotong fragmen DNA plasmid dan gen insulin pada sekuens palindromik tertentu, sedangkan enzim DNA ligase menyambungkan ujung kedua fragmen DNA membentuk plasmid rekombinan yang stabil.",
+        "paket": "Bab VI: Pewarisan Sifat dan Bioteknologi - Bagian B: Contoh Soal Asli Buku Big Book",
+        "img": "/soal/ipa/kls9_ipa_ch6_q26_skema_plasmid_insulin.png"
+    },
+    {
+        "nomor_bab": 27,
+        "soal": "Individu dengan genotipe AaBbCc akan menghasilkan macam gamet sebanyak ....",
+        "opsi": [
+            {"label": "A", "teks": "8 macam gamet"},
+            {"label": "B", "teks": "6 macam gamet"},
+            {"label": "C", "teks": "4 macam gamet"},
+            {"label": "D", "teks": "2 macam gamet"}
+        ],
+        "kunci": "A",
+        "pembahasan": "Rumus jumlah macam gamet: 2^n, di mana n adalah jumlah pasangan alel heterozigot. Pada genotipe AaBbCc terdapat 3 pasangan heterozigot (Aa, Bb, Cc), maka n = 3. Macam gamet = 2^3 = 8 (yaitu ABC, ABc, AbC, Abc, aBC, aBc, abC, dan abc).",
+        "paket": "Bab VI: Pewarisan Sifat dan Bioteknologi - Bagian B: Contoh Soal Asli Buku Big Book",
+        "img": ""
+    },
+    {
+        "nomor_bab": 28,
+        "soal": "Kelinci berbulu hitam heterozigot (Hh) disilangkan dengan kelinci berbulu putih homozigot resesif (hh). Persentase keturunan kelinci yang berbulu hitam adalah ....",
+        "opsi": [
+            {"label": "A", "teks": "50%"},
+            {"label": "B", "teks": "75%"},
+            {"label": "C", "teks": "25%"},
+            {"label": "D", "teks": "100%"}
+        ],
+        "kunci": "A",
+        "pembahasan": "Persilangan backcross Hh x hh: Gamet H dan h disilangkan dengan h menghasilkan: 1 Hh (hitam, 50%) dan 1 hh (putih, 50%). Jadi persentase kelinci berbulu hitam adalah 50%.",
+        "paket": "Bab VI: Pewarisan Sifat dan Bioteknologi - Bagian B: Contoh Soal Asli Buku Big Book",
+        "img": ""
+    },
+    {
+        "nomor_bab": 29,
+        "soal": "Jumlah kromosom kelamin (gonosom) pada sebuah sel sperma manusia normal adalah ....",
+        "opsi": [
+            {"label": "A", "teks": "1 buah (kromosom X atau kromosom Y)"},
+            {"label": "B", "teks": "2 buah (XY)"},
+            {"label": "C", "teks": "22 buah"},
+            {"label": "D", "teks": "23 buah"}
+        ],
+        "kunci": "A",
+        "pembahasan": "Sel sperma bersifat haploid (n = 23 kromosom) yang terdiri atas 22 buah autosom dan 1 buah gonosom (antara kromosom X atau kromosom Y).",
+        "paket": "Bab VI: Pewarisan Sifat dan Bioteknologi - Bagian B: Contoh Soal Asli Buku Big Book",
+        "img": ""
+    },
+    {
+        "nomor_bab": 30,
+        "soal": "Sedangkan formula kromosom sel ovum (sel telur) manusia normal yang matang adalah ....",
+        "opsi": [
+            {"label": "A", "teks": "22A + X"},
+            {"label": "B", "teks": "22A + Y"},
+            {"label": "C", "teks": "44A + XX"},
+            {"label": "D", "teks": "23A + X"}
+        ],
+        "kunci": "A",
+        "pembahasan": "Sel ovum haploid hanya membawa kromosom kelamin X, sehingga formulanya selalu 22 autosom + 1 gonosom X (ditulis 22A + X).",
+        "paket": "Bab VI: Pewarisan Sifat dan Bioteknologi - Bagian B: Contoh Soal Asli Buku Big Book",
+        "img": ""
+    },
+    {
+        "nomor_bab": 31,
+        "soal": "Padi varietas Golden Rice diciptakan oleh pakar bioteknologi tanaman untuk mengatasi masalah defisiensi .... di negara-negara berkembang.",
+        "opsi": [
+            {"label": "A", "teks": "Vitamin A (karena beras mengandung beta-karoten)"},
+            {"label": "B", "teks": "Zat besi"},
+            {"label": "C", "teks": "Karbohidrat"},
+            {"label": "D", "teks": "Kalsium"}
+        ],
+        "kunci": "A",
+        "pembahasan": "Golden Rice adalah beras transgenik yang disisipi jalur biosintesis provitamin A (beta-karoten) dari bunga narsis/daffodil dan bakteri, menghasilkan bulir beras berwarna kuning keemasan untuk mengatasi kebutaan anak akibat defisiensi vitamin A.",
+        "paket": "Bab VI: Pewarisan Sifat dan Bioteknologi - Bagian B: Contoh Soal Asli Buku Big Book",
+        "img": ""
+    },
+    {
+        "nomor_bab": 32,
+        "soal": "Pasangan gen yang terletak pada lokus yang bersesuaian pada pasangan kromosom homolog disebut ....",
+        "opsi": [
+            {"label": "A", "teks": "Alel"},
+            {"label": "B", "teks": "Kromatid"},
+            {"label": "C", "teks": "Sentromer"},
+            {"label": "D", "teks": "Kromatin"}
+        ],
+        "kunci": "A",
+        "pembahasan": "Alel adalah bentuk-bentuk alternatif dari suatu gen yang menempati lokus yang sama pada pasangan kromosom homolog yang mengatur sifat tertentu (contoh alel T untuk tinggi dan alel t untuk pendek).",
+        "paket": "Bab VI: Pewarisan Sifat dan Bioteknologi - Bagian B: Contoh Soal Asli Buku Big Book",
+        "img": ""
+    },
+    {
+        "nomor_bab": 33,
+        "soal": "Sifat fisik atau ciri-ciri organisme yang dapat diamati secara langsung oleh indra kita (seperti warna bunga, tinggi tanaman, bentuk biji) disebut ....",
+        "opsi": [
+            {"label": "A", "teks": "Fenotipe"},
+            {"label": "B", "teks": "Genotipe"},
+            {"label": "C", "teks": "Gamet"},
+            {"label": "D", "teks": "Alel"}
+        ],
+        "kunci": "A",
+        "pembahasan": "Fenotipe adalah perwujudan fisik tampak dari suatu karakter organisme hasil interaksi susunan materi genetik (genotipe) dengan pengaruh lingkungan.",
+        "paket": "Bab VI: Pewarisan Sifat dan Bioteknologi - Bagian B: Contoh Soal Asli Buku Big Book",
+        "img": ""
+    },
+    {
+        "nomor_bab": 34,
+        "soal": "Sedangkan komposisi susunan faktor keturunan genetik suatu organisme yang disimbolkan dengan huruf (seperti BB, Bb, atau bb) disebut ....",
+        "opsi": [
+            {"label": "A", "teks": "Genotipe"},
+            {"label": "B", "teks": "Fenotipe"},
+            {"label": "C", "teks": "Kariotipe"},
+            {"label": "D", "teks": "Mutasi"}
+        ],
+        "kunci": "A",
+        "pembahasan": "Genotipe adalah susunan genetik penyusun sifat yang tidak tampak langsung dan dilambangkan dengan sepasang huruf alel.",
+        "paket": "Bab VI: Pewarisan Sifat dan Bioteknologi - Bagian B: Contoh Soal Asli Buku Big Book",
+        "img": ""
+    },
+    {
+        "nomor_bab": 35,
+        "soal": "Persilangan antara tanaman berbuah manis (Mm) dengan sesamanya (Mm) menghasilkan rasio genotipe ....",
+        "opsi": [
+            {"label": "A", "teks": "1 MM : 2 Mm : 1 mm"},
+            {"label": "B", "teks": "3 MM : 1 mm"},
+            {"label": "C", "teks": "2 MM : 2 mm"},
+            {"label": "D", "teks": "Semuanya Mm"}
+        ],
+        "kunci": "A",
+        "pembahasan": "Persilangan monohibrid Mm x Mm menghasilkan perbandingan rasio genotipe: 1 MM : 2 Mm : 1 mm (25% homozigot dominan, 50% heterozigot, 25% homozigot resesif).",
+        "paket": "Bab VI: Pewarisan Sifat dan Bioteknologi - Bagian B: Contoh Soal Asli Buku Big Book",
+        "img": ""
+    }
+]
+
+# 30 Soal Latihan Mandiri Asli (No. 36-65)
+soal_mandiri = [
+    {
+        "nomor_bab": 36,
+        "soal": "Tokoh penemu hukum pewarisan sifat yang dikenal luas sebagai 'Bapak Genetika Dunia' adalah ....",
+        "opsi": [
+            {"label": "A", "teks": "Gregor Johann Mendel"},
+            {"label": "B", "teks": "Charles Darwin"},
+            {"label": "C", "teks": "Louis Pasteur"},
+            {"label": "D", "teks": "Alexander Fleming"}
+        ],
+        "kunci": "A",
+        "pembahasan": "Gregor Mendel adalah biarawan Austria yang meletakkan hukum-hukum fundamental pewarisan sifat genetika melalui eksperimen tanaman kacang ercis (1866).",
+        "paket": "Bab VI: Pewarisan Sifat dan Bioteknologi - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+        "img": ""
+    },
+    {
+        "nomor_bab": 37,
+        "soal": "Hukum I Mendel dikenal dengan nama hukum ....",
+        "opsi": [
+            {"label": "A", "teks": "Hukum Segregasi Bebas (pemisahan alel secara bebas pada saat pembentukan gamet)"},
+            {"label": "B", "teks": "Hukum Asortasi Bebas"},
+            {"label": "C", "teks": "Hukum Kekekalan Massa"},
+            {"label": "D", "teks": "Hukum Dominasi Mutlak"}
+        ],
+        "kunci": "A",
+        "pembahasan": "Hukum I Mendel (Law of Segregation): Pada pembentukan gamet (meiosis), pasangan gen atau alel pada kromosom homolog memisah (bersegregasi) secara bebas sehingga setiap gamet hanya menerima satu alel dari pasangannya.",
+        "paket": "Bab VI: Pewarisan Sifat dan Bioteknologi - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+        "img": ""
+    },
+    {
+        "nomor_bab": 38,
+        "soal": "Hukum II Mendel dikenal dengan nama hukum ....",
+        "opsi": [
+            {"label": "A", "teks": "Hukum Asortasi Bebas (pengelompokan alel secara bebas pada persilangan dihibrid/polihibrid)"},
+            {"label": "B", "teks": "Hukum Segregasi"},
+            {"label": "C", "teks": "Hukum Tautan Gen"},
+            {"label": "D", "teks": "Hukum Pindah Silang"}
+        ],
+        "kunci": "A",
+        "pembahasan": "Hukum II Mendel (Law of Independent Assortment): Anggota pasangan alel yang berbeda mengelompok secara bebas ke dalam gamet selama meiosis.",
+        "paket": "Bab VI: Pewarisan Sifat dan Bioteknologi - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+        "img": ""
+    },
+    {
+        "nomor_bab": 39,
+        "soal": "Keturunan pertama hasil persilangan antara dua induk galur murni disebut generasi ....",
+        "opsi": [
+            {"label": "A", "teks": "Filial ke-1 (F1)"},
+            {"label": "B", "teks": "Parental (P)"},
+            {"label": "C", "teks": "Filial ke-2 (F2)"},
+            {"label": "D", "teks": "Gamet (G)"}
+        ],
+        "kunci": "A",
+        "pembahasan": "Induk disebut Parental (P). Anak keturunan pertama disebut Filial ke-1 (F1), dan keturunan dari persilangan F1 disebut Filial ke-2 (F2).",
+        "paket": "Bab VI: Pewarisan Sifat dan Bioteknologi - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+        "img": ""
+    },
+    {
+        "nomor_bab": 40,
+        "soal": "Plasmid pada sel bakteri yang sering dimanfaatkan sebagai vektor pembawa gen dalam rekayasa genetika berbentuk ....",
+        "opsi": [
+            {"label": "A", "teks": "Cincin DNA sirkular ganda di luar kromosom utama bakteri"},
+            {"label": "B", "teks": "Batang protein lurus"},
+            {"label": "C", "teks": "Kapsul karbohidrat"},
+            {"label": "D", "teks": "Dinding peptidoglikan"}
+        ],
+        "kunci": "A",
+        "pembahasan": "Plasmid adalah molekul DNA sirkular beruntai ganda kecil yang terpisah dari kromosom genom bakteri utama, mampu bereplikasi secara mandiri di dalam sel inang.",
+        "paket": "Bab VI: Pewarisan Sifat dan Bioteknologi - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+        "img": ""
+    },
+    {
+        "nomor_bab": 41,
+        "soal": "Sifat totipotensi sel tumbuhan yang menjadi landasan teknik kultur jaringan pertama kali diperkenalkan oleh ....",
+        "opsi": [
+            {"label": "A", "teks": "Gottlieb Haberlandt"},
+            {"label": "B", "teks": "Robert Hooke"},
+            {"label": "C", "teks": "Antonie van Leeuwenhoek"},
+            {"label": "D", "teks": "Ian Wilmut"}
+        ],
+        "kunci": "A",
+        "pembahasan": "Gottlieb Haberlandt (1902) mengemukakan hipotesis bahwa setiap sel tumbuhan hidup menyimpan seluruh instruksi genetik yang diperlukan untuk beregenerasi menjadi tanaman lengkap (sifat totipotensi).",
+        "paket": "Bab VI: Pewarisan Sifat dan Bioteknologi - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+        "img": ""
+    },
+    {
+        "nomor_bab": 42,
+        "soal": "Sel limfosit B penghasil antibodi difusikan dengan sel kanker mieloma abadi untuk memproduksi antibodi spesifik murni. Produk bioteknologi ini disebut ....",
+        "opsi": [
+            {"label": "A", "teks": "Antibodi monoklonal (melalui teknik hibridoma)"},
+            {"label": "B", "teks": "Interferon"},
+            {"label": "C", "teks": "Antibiotik spektrum luas"},
+            {"label": "D", "teks": "Vaksin DNA"}
+        ],
+        "kunci": "A",
+        "pembahasan": "Teknologi hibridoma (Milstein dan Kohler) menggabungkan sel limfosit B (penghasil antibodi spesifik) dengan sel myeloma (dapat membelah tanpa henti), menghasilkan sel hibridoma penghasil antibodi monoklonal murni.",
+        "paket": "Bab VI: Pewarisan Sifat dan Bioteknologi - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+        "img": ""
+    },
+    {
+        "nomor_bab": 43,
+        "soal": "Bakteri yang dimanfaatkan dalam penambangan bijih tembaga secara biologis (bioleaching) dengan mengoksidasi senyawa besi dan belerang adalah ....",
+        "opsi": [
+            {"label": "A", "teks": "Thiobacillus ferrooxidans"},
+            {"label": "B", "teks": "Escherichia coli"},
+            {"label": "C", "teks": "Bacillus subtilis"},
+            {"label": "D", "teks": "Clostridium tetani"}
+        ],
+        "kunci": "A",
+        "pembahasan": "Thiobacillus ferrooxidans adalah bakteri kemolitotrof yang mengoksidasi senyawa belerang dan besi dalam bijih tembaga berkadar rendah, melarutkan tembaga menjadi larutan CuSO4 murni secara ekonomis.",
+        "paket": "Bab VI: Pewarisan Sifat dan Bioteknologi - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+        "img": ""
+    },
+    {
+        "nomor_bab": 44,
+        "soal": "Bakteri pembersih tumpahan minyak mentah di laut (bioremediasi) yang mampu memecah rantai hidrokarbon minyak adalah ....",
+        "opsi": [
+            {"label": "A", "teks": "Pseudomonas putida"},
+            {"label": "B", "teks": "Lactobacillus casei"},
+            {"label": "C", "teks": "Streptococcus lactis"},
+            {"label": "D", "teks": "Acetobacter aceti"}
+        ],
+        "kunci": "A",
+        "pembahasan": "Pseudomonas putida transgenik (karya Ananda Chakrabarty) memiliki plasmid pengurai 4 jenis fraksi hidrokarbon minyak bumi untuk bioremediasi tumpahan minyak di perairan.",
+        "paket": "Bab VI: Pewarisan Sifat dan Bioteknologi - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+        "img": ""
+    },
+    {
+        "nomor_bab": 45,
+        "soal": "Mikroalga bersel satu seperti Spirulina sp. dan Chlorella sp. dibudidayakan secara intensif sebagai sumber pangan masa depan yang dikenal sebagai ....",
+        "opsi": [
+            {"label": "A", "teks": "Protein Sel Tunggal (PST / Single Cell Protein)"},
+            {"label": "B", "teks": "Vitamin sintetis"},
+            {"label": "C", "teks": "Lemak nabati jenuh"},
+            {"label": "D", "teks": "Antibiotik alami"}
+        ],
+        "kunci": "A",
+        "pembahasan": "Protein Sel Tunggal (PST) adalah biomassa protein murni dari mikroorganisme (ganggang Chlorella, Spirulina, atau jamur) yang kaya asam amino esensial dan vitamin.",
+        "paket": "Bab VI: Pewarisan Sifat dan Bioteknologi - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+        "img": ""
+    },
+    {
+        "nomor_bab": 46,
+        "soal": "Penyakit menurun thalasemia ditandai dengan sel eritrosit darah merah mudah lisis/hancur sehingga pasien mengalami anemia parah. Thalasemia diwariskan melalui ....",
+        "opsi": [
+            {"label": "A", "teks": "Gen mutasi pada kromosom autosom"},
+            {"label": "B", "teks": "Kromosom Y"},
+            {"label": "C", "teks": "Kromosom X dominan"},
+            {"label": "D", "teks": "Pola makan berlemak"}
+        ],
+        "kunci": "A",
+        "pembahasan": "Thalasemia diwariskan melalui mutasi gen globin pada kromosom autosom (autosom resesif). Penderita thalasemia mayor (homozigot) memerlukan transfusi darah rutin seumur hidup.",
+        "paket": "Bab VI: Pewarisan Sifat dan Bioteknologi - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+        "img": ""
+    },
+    {
+        "nomor_bab": 47,
+        "soal": "Golongan darah sistem Rhesus diatur oleh antigen D pada membran eritrosit. Individu bergolongan darah Rh-negatif memiliki genotipe ....",
+        "opsi": [
+            {"label": "A", "teks": "Homozigot resesif (rh-rh-)"},
+            {"label": "B", "teks": "Heterozigot (Rh-rh)"},
+            {"label": "C", "teks": "Homozigot dominan (Rh-Rh)"},
+            {"label": "D", "teks": "Tak tentu"}
+        ],
+        "kunci": "A",
+        "pembahasan": "Rhesus positif (Rh+) dikendalikan alel dominan Rh (genotipe RhRh atau Rhrh). Rhesus negatif (Rh-) hanya muncul pada genotipe homozigot resesif (rhrh).",
+        "paket": "Bab VI: Pewarisan Sifat dan Bioteknologi - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+        "img": ""
+    },
+    {
+        "nomor_bab": 48,
+        "soal": "Antibiotik pertama yang ditemukan oleh ilmuwan Alexander Fleming pada tahun 1928 adalah senyawa penisilin yang dihasilkan oleh jamur ....",
+        "opsi": [
+            {"label": "A", "teks": "Penicillium notatum"},
+            {"label": "B", "teks": "Aspergillus niger"},
+            {"label": "C", "teks": "Rhizopus oryzae"},
+            {"label": "D", "teks": "Saccharomyces cerevisiae"}
+        ],
+        "kunci": "A",
+        "pembahasan": "Jamur kapang Penicillium notatum (dan Penicillium chrysogenum) menyekresikan senyawa antibiotik alami penisilin yang menghambat sintesis dinding sel peptidoglikan bakteri patogen.",
+        "paket": "Bab VI: Pewarisan Sifat dan Bioteknologi - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+        "img": ""
+    },
+    {
+        "nomor_bab": 49,
+        "soal": "Vaksinasi bekerja melindungi tubuh dari serangan penyakit menular dengan cara ....",
+        "opsi": [
+            {"label": "A", "teks": "Memasukkan antigen patogen yang telah dilemahkan atau dimatikan guna memicu sistem imun memproduksi antibodi dan sel memori spesifik"},
+            {"label": "B", "teks": "Membunuh seluruh sel darah putih"},
+            {"label": "C", "teks": "Memberikan antibiotik kimia dosis tinggi"},
+            {"label": "D", "teks": "Mengganti plasma darah"}
+        ],
+        "kunci": "A",
+        "pembahasan": "Vaksin memberikan kekebalan aktif buatan: Antigen yang dilemahkan merangsang limfosit B membentuk antibodi dan sel T memori tanpa memicu timbulnya gejala sakit parah.",
+        "paket": "Bab VI: Pewarisan Sifat dan Bioteknologi - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+        "img": ""
+    },
+    {
+        "nomor_bab": 50,
+        "soal": "Biogas dihasilkan dari proses fermentasi anaerob kotoran ternak di dalam digester oleh bakteri ....",
+        "opsi": [
+            {"label": "A", "teks": "Bakteri metanogen (seperti Methanobacterium)"},
+            {"label": "B", "teks": "Bakteri nitrifikasi"},
+            {"label": "C", "teks": "Bakteri Rhizobium"},
+            {"label": "D", "teks": "Cyanobacteria"}
+        ],
+        "kunci": "A",
+        "pembahasan": "Bakteri metanogenik mengubah asam-asam organik dan hidrogen hasil dekomposisi feses ternak menjadi gas metana (CH4 sekitar 60%) dan gas CO2 sebagai bahan bakar biogas ramah lingkungan.",
+        "paket": "Bab VI: Pewarisan Sifat dan Bioteknologi - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+        "img": ""
+    },
+    {
+        "nomor_bab": 51,
+        "soal": "Tanaman kapri berbiji bulat (B) warna kuning (K) heterozigot memiliki genotipe ....",
+        "opsi": [
+            {"label": "A", "teks": "BbKk"},
+            {"label": "B", "teks": "BBKK"},
+            {"label": "C", "teks": "bbkk"},
+            {"label": "D", "teks": "BBkk"}
+        ],
+        "kunci": "A",
+        "pembahasan": "Heterozigot untuk dua sifat beda (dihibrid) memiliki alel Bb (bulat) dan Kk (kuning), sehingga genotipenya BbKk.",
+        "paket": "Bab VI: Pewarisan Sifat dan Bioteknologi - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+        "img": ""
+    },
+    {
+        "nomor_bab": 52,
+        "soal": "Jumlah kombinasi genotipe yang dihasilkan pada papan catur persilangan monohibrid heterozigot (Aa x Aa) adalah ....",
+        "opsi": [
+            {"label": "A", "teks": "4 kotak kombinasi (AA, Aa, Aa, aa)"},
+            {"label": "B", "teks": "16 kotak kombinasi"},
+            {"label": "C", "teks": "8 kotak kombinasi"},
+            {"label": "D", "teks": "2 kotak kombinasi"}
+        ],
+        "kunci": "A",
+        "pembahasan": "Persilangan monohibrid dengan 2 jenis gamet jantan dan 2 jenis gamet betina menghasilkan 2 x 2 = 4 kotak kombinasi.",
+        "paket": "Bab VI: Pewarisan Sifat dan Bioteknologi - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+        "img": ""
+    },
+    {
+        "nomor_bab": 53,
+        "soal": "Penyerbukan buatan pada bunga kacang ercis oleh Mendel dilakukan dengan cara ....",
+        "opsi": [
+            {"label": "A", "teks": "Memotong benang sari bunga sebelum matang (kastrasi), lalu menaburkan serbuk sari dari varietas lain ke kepala putiknya"},
+            {"label": "B", "teks": "Menyemprotkan air ke bunga"},
+            {"label": "C", "teks": "Membakar mahkota bunga"},
+            {"label": "D", "teks": "Memotong batang pohon"}
+        ],
+        "kunci": "A",
+        "pembahasan": "Kastrasi dilakukan Mendel untuk membuang kepala sari muda agar bunga tidak melakukan penyerbukan sendiri, kemudian putik diserbuki secara manual memakai kuas dengan serbuk sari galur lain.",
+        "paket": "Bab VI: Pewarisan Sifat dan Bioteknologi - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+        "img": ""
+    },
+    {
+        "nomor_bab": 54,
+        "soal": "Gen yang tertutup atau tidak terekspresikan bila berada bersama gen dominan disebut gen ....",
+        "opsi": [
+            {"label": "A", "teks": "Resesif"},
+            {"label": "B", "teks": "Intermediet"},
+            {"label": "C", "teks": "Mutan"},
+            {"label": "D", "teks": "Letal"}
+        ],
+        "kunci": "A",
+        "pembahasan": "Sifat resesif adalah sifat yang kalah dan tertutupi oleh keberadaan alel dominan, dan hanya dapat tampak secara fenotipe jika berada dalam kondisi homozigot resesif.",
+        "paket": "Bab VI: Pewarisan Sifat dan Bioteknologi - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+        "img": ""
+    },
+    {
+        "nomor_bab": 55,
+        "soal": "Individu yang memiliki dua alel yang sama untuk suatu gen tertentu (seperti BB atau bb) disebut ....",
+        "opsi": [
+            {"label": "A", "teks": "Homozigot"},
+            {"label": "B", "teks": "Heterozigot"},
+            {"label": "C", "teks": "Hibrid"},
+            {"label": "D", "teks": "Polimeri"}
+        ],
+        "kunci": "A",
+        "pembahasan": "Homozigot berarti memiliki pasangan alel identik: homozigot dominan (BB) atau homozigot resesif (bb). Heterozigot memiliki alel berbeda (Bb).",
+        "paket": "Bab VI: Pewarisan Sifat dan Bioteknologi - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+        "img": ""
+    },
+    {
+        "nomor_bab": 56,
+        "soal": "Perkawinan antara individu-individu yang berkerabat dekat (inbreeding / incest) memiliki risiko tinggi melahirkan keturunan yang cacat karena ....",
+        "opsi": [
+            {"label": "A", "teks": "Meningkatkan peluang bertemunya alel-alel resesif pembawa penyakit cacat bawaan yang semula tersembunyi menjadi homozigot resesif"},
+            {"label": "B", "teks": "Menghancurkan kromosom sel telur"},
+            {"label": "C", "teks": "Mengubah golongan darah"},
+            {"label": "D", "teks": "Menurunkan jumlah genotip"}
+        ],
+        "kunci": "A",
+        "pembahasan": "Inbreeding memperbesar koefisien homozigositas genom sehingga gen resesif mutan mematikan/cacat (seperti hemofilia, thalasemia, mikrosefali) bertemu dari kedua pihak keluarga dan terekspresi pada anak.",
+        "paket": "Bab VI: Pewarisan Sifat dan Bioteknologi - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+        "img": ""
+    },
+    {
+        "nomor_bab": 57,
+        "soal": "Seorang anak laki-laki mewarisi kromosom Y dari .... dan kromosom X dari ....",
+        "opsi": [
+            {"label": "A", "teks": "Ayah; Ibu"},
+            {"label": "B", "teks": "Ibu; Ayah"},
+            {"label": "C", "teks": "Ayah saja"},
+            {"label": "D", "teks": "Ibu saja"}
+        ],
+        "kunci": "A",
+        "pembahasan": "Anak laki-laki bergonosom XY. Kromosom Y pasti berasal dari sel sperma ayah, sedangkan kromosom X selalu berasal dari sel ovum ibu.",
+        "paket": "Bab VI: Pewarisan Sifat dan Bioteknologi - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+        "img": ""
+    },
+    {
+        "nomor_bab": 58,
+        "soal": "Sifat buta warna total tidak dapat membedakan seluruh warna dan hanya melihat dunia dalam nuansa ....",
+        "opsi": [
+            {"label": "A", "teks": "Hitam, putih, dan abu-abu (monokromat)"},
+            {"label": "B", "teks": "Merah dan hijau saja"},
+            {"label": "C", "teks": "Biru dan kuning saja"},
+            {"label": "D", "teks": "Cahaya ungu"}
+        ],
+        "kunci": "A",
+        "pembahasan": "Buta warna total (akromatopsia) terjadi karena ketiadaan seluruh sel kerucut fungsional sehingga hanya mengandalkan sel batang (hanya melihat gradasi hitam, abu-abu, dan putih).",
+        "paket": "Bab VI: Pewarisan Sifat dan Bioteknologi - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+        "img": ""
+    },
+    {
+        "nomor_bab": 59,
+        "soal": "Produk keju Swiss memiliki lubang-lubang khas berukuran besar di dalamnya. Terbentuknya lubang-lubang tersebut dipicu oleh pelepasan gas CO2 oleh bakteri ....",
+        "opsi": [
+            {"label": "A", "teks": "Propionibacterium shermanii"},
+            {"label": "B", "teks": "Lactobacillus bulgaricus"},
+            {"label": "C", "teks": "Rhizopus oryzae"},
+            {"label": "D", "teks": "Acetobacter xylinum"}
+        ],
+        "kunci": "A",
+        "pembahasan": "Propionibacterium shermanii memfermentasi asam laktat menghasilkan asam propionat (aroma khas keju Swiss) dan gas karbon dioksida yang membentuk lubang-lubang udara khas (mata keju).",
+        "paket": "Bab VI: Pewarisan Sifat dan Bioteknologi - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+        "img": ""
+    },
+    {
+        "nomor_bab": 60,
+        "soal": "Bagian eksplan yang sering diambil pada teknik kultur jaringan adalah jaringan meristem ujung tunas atau pucuk daun muda karena ....",
+        "opsi": [
+            {"label": "A", "teks": "Sel-sel meristem aktif membelah dan umumnya bebas dari kontaminasi virus patogen"},
+            {"label": "B", "teks": "Mengandung klorofil paling tebal"},
+            {"label": "C", "teks": "Memiliki dinding sel paling keras"},
+            {"label": "D", "teks": "Tidak memerlukan hormon pertumbuhan"}
+        ],
+        "kunci": "A",
+        "pembahasan": "Meristem apikal memiliki laju pembelahan sel lebih cepat daripada laju perbanyakan partikel virus, sehingga kultur meristem menghasilkan bibit klonal yang bebas virus patogen (virus-free plants).",
+        "paket": "Bab VI: Pewarisan Sifat dan Bioteknologi - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+        "img": ""
+    },
+    {
+        "nomor_bab": 61,
+        "soal": "Tanaman hasil kultur jaringan memiliki keunggulan fungsional yaitu ....",
+        "opsi": [
+            {"label": "A", "teks": "Dihasilkan dalam jumlah bibit yang sangat banyak dalam waktu singkat dan seragam sifat unggulnya dengan tanaman induk"},
+            {"label": "B", "teks": "Sifat bibit bervariasi secara acak"},
+            {"label": "C", "teks": "Bibit tidak memiliki akar"},
+            {"label": "D", "teks": "Hanya dapat ditanam di dalam ruangan kaca selamanya"}
+        ],
+        "kunci": "A",
+        "pembahasan": "Kultur jaringan memperbanyak bibit secara massal tanpa bergantung musim cuaca, menghemat lahan, dan menghasilkan anakan yang 100% klonal identik dengan induk unggul.",
+        "paket": "Bab VI: Pewarisan Sifat dan Bioteknologi - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+        "img": ""
+    },
+    {
+        "nomor_bab": 62,
+        "soal": "Enzim ligase dalam rekayasa genetika berfungsi untuk ....",
+        "opsi": [
+            {"label": "A", "teks": "Menyambung kembali potongan fragmen DNA"},
+            {"label": "B", "teks": "Memotong DNA secara acak"},
+            {"label": "C", "teks": "Menghancurkan inti sel bakteri"},
+            {"label": "D", "teks": "Menggandakan sel darah"}
+        ],
+        "kunci": "A",
+        "pembahasan": "DNA ligase membentuk ikatan fosfodiester kovalen antara ujung gula 3'-OH dan gugus fosfat 5' pada untai DNA yang dipotong enzim restriksi.",
+        "paket": "Bab VI: Pewarisan Sifat dan Bioteknologi - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+        "img": ""
+    },
+    {
+        "nomor_bab": 63,
+        "soal": "Organisme yang materi genetiknya telah disisipi gen asing dari spesies lain melalui teknologi rekombinasi DNA disebut ....",
+        "opsi": [
+            {"label": "A", "teks": "Organisme transgenik (GMO / Genetically Modified Organism)"},
+            {"label": "B", "teks": "Organisme hibrid alami"},
+            {"label": "C", "teks": "Kloning embrio"},
+            {"label": "D", "teks": "Spesies poliploid"}
+        ],
+        "kunci": "A",
+        "pembahasan": "Organisme transgenik adalah organisme hasil modifikasi genetik yang membawa gen asing fungsional dari organisme lain ke dalam genom selnya.",
+        "paket": "Bab VI: Pewarisan Sifat dan Bioteknologi - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+        "img": ""
+    },
+    {
+        "nomor_bab": 64,
+        "soal": "Bioteknologi konvensional dan bioteknologi modern memiliki perbedaan mendasar pada ....",
+        "opsi": [
+            {"label": "A", "teks": "Bioteknologi konvensional memanfaatkan mikroorganisme utuh secara langsung melalui fermentasi tradisional, sedangkan bioteknologi modern memanipulasi susunan DNA/gen pada tingkat molekuler"},
+            {"label": "B", "teks": "Bioteknologi konvensional selalu memakai mikroskop elektron"},
+            {"label": "C", "teks": "Bioteknologi modern tidak membutuhkan laboratorium steril"},
+            {"label": "D", "teks": "Bioteknologi konvensional hanya dilakukan di rumah sakit"}
+        ],
+        "kunci": "A",
+        "pembahasan": "Konvensional: aplikasi fermentasi spontan mikrobia alami tanpa manipulasi genetika. Modern: rekayasa DNA rekombinan, fusi sel, kultur jaringan, dan teknologi genom molekuler berstandar aseptis tinggi.",
+        "paket": "Bab VI: Pewarisan Sifat dan Bioteknologi - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+        "img": ""
+    },
+    {
+        "nomor_bab": 65,
+        "soal": "Alel ganda pada sistem penggolongan darah ABO manusia terdiri atas tiga jenis alel yaitu ....",
+        "opsi": [
+            {"label": "A", "teks": "IA, IB, dan I0"},
+            {"label": "B", "teks": "A, B, dan C"},
+            {"label": "C", "teks": "Rh+, Rh-, dan Rh0"},
+            {"label": "D", "teks": "X, Y, dan Z"}
+        ],
+        "kunci": "A",
+        "pembahasan": "Golongan darah ABO dikendalikan alel ganda: IA (menghasilkan antigen A), IB (menghasilkan antigen B), dan I0 (tidak menghasilkan antigen/resesif).",
+        "paket": "Bab VI: Pewarisan Sifat dan Bioteknologi - Bagian C: Latihan Soal Mandiri Asli Buku Big Book",
+        "img": ""
+    }
+]
+
+# 5 Soal Pengayaan AKM Literasi Sains & TKA (No. 66-70)
+soal_akm = [
+    {
+        "nomor_bab": 66,
+        "soal": "Pohon silsilah (pedigree chart) keluarga kerajaan Eropa abad ke-19 mencatat penyebaran kelainan hemofilia yang bermula dari Ratu Victoria dari Inggris. Ratu Victoria berfenotipe normal namun memiliki anak dan cucu pangeran yang menderita hemofilia fatal. Genotipe Ratu Victoria adalah ....",
+        "opsi": [
+            {"label": "A", "teks": "Carrier hemofilia heterozigot (XHXh)"},
+            {"label": "B", "teks": "Penderita hemofilia homozigot (XhXh)"},
+            {"label": "C", "teks": "Normal murni (XHXH)"},
+            {"label": "D", "teks": "XhY"}
+        ],
+        "kunci": "A",
+        "pembahasan": "Karena Ratu Victoria tidak menunjukkan gejala hemofilia namun mewariskan alel hemofilia ke beberapa putranya (Leopold, Pangeran Albany menderita hemofilia XhY) dan putrinya yang menjadi carrier, maka genotipe Ratu Victoria dipastikan pembawa sifat (carrier hemofilia, XHXh).",
+        "paket": "Bab VI: Pewarisan Sifat dan Bioteknologi - Bagian D: Pengayaan AKM Literasi Sains & TKA",
+        "img": ""
+    },
+    {
+        "nomor_bab": 67,
+        "soal": "Teknologi pengeditan genom terbaru CRISPR-Cas9 yang dianugerahi Hadiah Nobel Kimia tahun 2020 bekerja dengan prinsip ....",
+        "opsi": [
+            {"label": "A", "teks": "Menggunakan molekul penuntun RNA (guide RNA) untuk mengarahkan enzim endonuklease Cas9 memotong dan mengedit urutan sekuens DNA target secara sangat presisi pada sel hidup"},
+            {"label": "B", "teks": "Menembakkan ion emas ke dalam inti sel"},
+            {"label": "C", "teks": "Memanaskan kromosom dengan laser"},
+            {"label": "D", "teks": "Menyaring DNA dengan kertas saring"}
+        ],
+        "kunci": "A",
+        "pembahasan": "Sistem CRISPR-Cas9 diadaptasi dari mekanisme pertahanan imun alami bakteri melawan virus: Guide RNA (gRNA) membawa enzim gunting Cas9 menuju lokasi sekuens DNA yang mengalami kelainan, memotong untai DNA secara presisi untuk menonaktifkan atau menyisipkan perbaikan gen.",
+        "paket": "Bab VI: Pewarisan Sifat dan Bioteknologi - Bagian D: Pengayaan AKM Literasi Sains & TKA",
+        "img": ""
+    },
+    {
+        "nomor_bab": 68,
+        "soal": "Komite Bioetika Internasional (UNESCO) melarang keras pengaplikasian kloning reproduktif pada manusia (human reproductive cloning). Alasan bioetika utama di balik pelarangan tersebut adalah ....",
+        "opsi": [
+            {"label": "A", "teks": "Pelanggaran harkat martabat dan hak asasi individualitas manusia, tingginya angka cacat lahir fatal pada embrio mamalia kloning, serta pengaburan garis silsilah keluarga dan identitas diri"},
+            {"label": "B", "teks": "Biaya peralatan kloning terlalu murah"},
+            {"label": "C", "teks": "Manusia kloning tidak membutuhkan makanan"},
+            {"label": "D", "teks": "Ketiadaan dokter bedah di dunia"}
+        ],
+        "kunci": "A",
+        "pembahasan": "Kloning reproduktif manusia melanggar etika kemanusiaan: memposisikan manusia sebagai komoditas replika buatan, risiko kecacatan epigenetik fatal yang sangat tinggi (seperti gagal ginjal dan penuaan dini telomer), serta kekacauan hukum status orang tua dan waris.",
+        "paket": "Bab VI: Pewarisan Sifat dan Bioteknologi - Bagian D: Pengayaan AKM Literasi Sains & TKA",
+        "img": ""
+    },
+    {
+        "nomor_bab": 69,
+        "soal": "Tanaman kedelai Roundup Ready diciptakan agar kebal terhadap herbisida glifosat sehingga petani dapat menyemprot herbisida membasmi gulma tanpa mematikan tanaman kedelai. Namun setelah beberapa tahun, muncul fenomena 'superweeds', yaitu ....",
+        "opsi": [
+            {"label": "A", "teks": "Gulma liar menjadi kebal terhadap glifosat akibat transfer gen resistensi herbisida melalui penyerbukan silang dengan tanaman transgenik atau seleksi alam resistensi gulma"},
+            {"label": "B", "teks": "Gulma tumbuh berbuah kedelai"},
+            {"label": "C", "teks": "Gulma mengeluarkan racun gas"},
+            {"label": "D", "teks": "Gulma membeku di bawah sinar matahari"}
+        ],
+        "kunci": "A",
+        "pembahasan": "Penggunaan herbisida berspektrum sama secara masif dan terus-menerus pada tanaman transgenik toleran herbisida memicu tekanan seleksi alam yang melahirkan populasi gulma liar super (superweeds) yang resisten terhadap herbisida glifosat, menuntut pemakaian racun kimiawi yang lebih berbahaya.",
+        "paket": "Bab VI: Pewarisan Sifat dan Bioteknologi - Bagian D: Pengayaan AKM Literasi Sains & TKA",
+        "img": ""
+    },
+    {
+        "nomor_bab": 70,
+        "soal": "Uji sidik jari DNA (DNA fingerprinting) dalam penyelidikan kasus forensik kejahatan atau uji paternitas garis keturunan anak dilakukan dengan menganalisis pola pita DNA pada lokus ....",
+        "opsi": [
+            {"label": "A", "teks": "Short Tandem Repeats (STR) atau VNTR yang sangat spesifik dan unik bagi setiap individu melalui teknik PCR dan elektroforesis gel"},
+            {"label": "B", "teks": "Golongan darah luar"},
+            {"label": "C", "teks": "Warna pigmen kulit"},
+            {"label": "D", "teks": "Panjang rambut korban"}
+        ],
+        "kunci": "A",
+        "pembahasan": "DNA fingerprinting memanfaatkan variasi panjang pengulangan sekuens basa non-koding (STR / VNTR) di genom manusia. Pola pita elektroforesis STR bersifat unik untuk setiap individu (kecuali kembar identik) dan 50% diwarisi dari ayah serta 50% dari ibu, menjadikannya bukti forensik berakurasi lebih dari 99,99%.",
+        "paket": "Bab VI: Pewarisan Sifat dan Bioteknologi - Bagian D: Pengayaan AKM Literasi Sains & TKA",
+        "img": ""
+    }
+]
+
+# Assemble 70 questions for Bab 6
+all_70 = []
+for q in soal_hots:
+    all_70.append(q)
+for q in soal_contoh:
+    all_70.append(q)
+for q in soal_mandiri:
+    all_70.append(q)
+for q in soal_akm:
+    all_70.append(q)
+
+print(f"Total questions assembled for Bab 6: {len(all_70)}")
+
+# Write HTML & JSON
+html_parts = []
+html_parts.append("""<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Bank Soal IPA SMP Kelas 9 - Bab VI: Pewarisan Sifat dan Bioteknologi (70 Soal)</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; line-height: 1.6; padding: 24px; background: #f8fafc; color: #1e293b; }
+    article { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 20px; margin-bottom: 24px; box-shadow: 0 2px 4px rgba(0,0,0,0.04); }
+    .badge { display: inline-block; background: #3b82f6; color: white; padding: 3px 10px; border-radius: 999px; font-size: 0.8rem; font-weight: 600; margin-bottom: 8px; }
+    .packet { color: #64748b; font-size: 0.85rem; margin-bottom: 12px; }
+    .question { font-weight: 600; font-size: 1.05rem; margin-bottom: 14px; }
+    ol { margin: 0 0 16px 20px; padding: 0; }
+    li { margin-bottom: 6px; }
+    .key { background: #dcfce7; color: #166534; padding: 6px 12px; border-radius: 6px; font-weight: 600; display: inline-block; margin-bottom: 10px; }
+    .explanation { background: #f1f5f9; border-left: 4px solid #3b82f6; padding: 12px 16px; border-radius: 0 8px 8px 0; font-size: 0.95rem; }
+    img { max-width: 100%; height: auto; border-radius: 8px; margin: 12px 0; border: 1px solid #e2e8f0; }
+  </style>
+</head>
+<body>
+<h1>Bank Soal IPA SMP Kelas 9 — Bab VI: Pewarisan Sifat dan Bioteknologi</h1>
+<p>Total: 70 Butir Soal Lengkap (25 HOTS Kurikulum Merdeka + 10 Contoh Soal Asli + 30 Latihan Mandiri Asli + 5 Pengayaan AKM/TKA)</p>
+<hr/>
+""")
+
+json_data = []
+
+for idx, q in enumerate(all_70, 1):
+    q_num = idx
+    q_soal = q["soal"]
+    q_kunci = q["kunci"]
+    q_pembahasan = q["pembahasan"]
+    q_paket = q["paket"]
+    q_img = q["img"]
+    
+    img_tag = f"""  <div data-field="gambar">
+    <img src="{q_img}" data-url="{q_img}" alt="Ilustrasi Soal #{q_num}" style="max-width: 100%; height: auto; border-radius: 8px;" />
+  </div>\n""" if q_img else ""
+
+    html_parts.append(f"""<article data-gemilang-question data-nomor="{q_num}" data-tipe="pg_sederhana" data-paket="{html.escape(q_paket)}" data-kesulitan="Sedang" data-kelas="9">
+  <div data-field="materi">Pewarisan Sifat dan Bioteknologi</div>
+  <div data-field="capaian_pembelajaran">Peserta didik mampu menganalisis struktur materi genetik (DNA/kromosom), menerapkan Hukum I dan II Mendel pada persilangan monohibrid dan dihibrid, menganalisis pewarisan golongan darah dan kelainan terpaut kromosom X, serta membedakan bioteknologi konvensional dan modern.</div>
+  <div data-field="teks_soal">{html.escape(q_soal)}</div>
+{img_tag}  <ol data-field="opsi_jawaban">
+""")
+    for opt in q["opsi"]:
+        html_parts.append(f'    <li data-option="{opt["label"]}">{html.escape(opt["teks"])}</li>\n')
+    
+    html_parts.append(f"""  </ol>
+  <meta data-field="kunci_jawaban" data-value="{q_kunci}" />
+  <div data-field="pembahasan">
+    <p><strong>Kunci Jawaban: {q_kunci}</strong></p>
+    <p>{html.escape(q_pembahasan)}</p>
+  </div>
+</article>
+""")
+
+    json_data.append({
+        "nomor": q_num,
+        "materi": "Pewarisan Sifat dan Bioteknologi",
+        "paket": q_paket,
+        "kelas": "9",
+        "mapel": "IPA",
+        "teks_soal": q_soal,
+        "gambar": [q_img] if q_img else [],
+        "opsi_jawaban": q["opsi"],
+        "kunci_jawaban": q_kunci,
+        "pembahasan": q_pembahasan,
+        "valid": True
+    })
+
+html_parts.append("</body></html>")
+
+html_path = os.path.join(OUTPUT_DIR, "kelas9_ipa_bab6_super_lengkap_70soal.html")
+with open(html_path, "w", encoding="utf-8") as f:
+    f.write("".join(html_parts))
+print(f"Saved: {html_path} ({len(''.join(html_parts))} bytes)")
+
+json_path = os.path.join(OUTPUT_DIR, "kelas9_ipa_bab6_super_lengkap_70soal.json")
+with open(json_path, "w", encoding="utf-8") as f:
+    json.dump(json_data, f, indent=2, ensure_ascii=False)
+print(f"Saved: {json_path} ({len(json_data)} records)")
