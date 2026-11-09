@@ -1,15 +1,19 @@
 // src/pages/student/tryout/JalurUjianAiPage.jsx
 // ============================================================
-// 🚀 JALUR UJIAN AI — EKSPEDISI KOSMIK BIMBEL GEMILANG
+// 🚀 JALUR UJIAN AI — PETA PERJALANAN KEMAMPUAN SISWA (BIMBEL GEMILANG)
 //
 // Karakteristik Utama:
-// 1. Khusus siswa jenjang akhir (Kelas 6 SD, 9 SMP, 12 SMA/SMK/UTBK).
-// 2. Format Peta Petualangan Berliku (Winding Game Path) ala Duolingo.
-// 3. Nuansa Cerah, Fun, Antariksa Kosmik (Astronot, Planet, Orbit, Roket).
-// 4. Progresi Bertahap Tanpa Deadline: Kuis selalu terbuka bertahap
-//    (Start -> Unit 1 -> Unit 2 -> Unit 3 -> Review AI).
-// 5. Ujian Serius & Pengawasan Online (Anti-Cheat, Timer Resmi).
-// 6. Bank Soal Terjaga: Paket otomatis disiapkan sebelum mulai.
+// 1. Mengukur kemampuan siswa dengan mengukur "jalan" masing-masing siswa
+//    (setiap siswa memiliki progres pengerjaan yang berbeda).
+// 2. Terhubung langsung ke Paket Try Out Otomatis dari Admin (tryout-otomatis):
+//    - TRY OUT PEMAHAMAN TKA SMP - Sabtu, 24 Okt (Start)
+//    - TRY OUT PEMAHAMAN TKA SMP - Minggu, 1 Nov (Unit 1)
+//    - TRY OUT PEMAHAMAN TKA SMP - Minggu, 8 Nov (Unit 2)
+//    - Paket otomatis berikutnya otomatis tersambung sebagai node baru!
+// 3. Tanpa Deadline: Seluruh tryout selalu terbuka bertahap sesuai keaktifan siswa.
+// 4. Desain visual Winding Path ala Duolingo Kosmik: Latar tosca cerah, fun,
+//    ramah, ada roket & astronot Gemilang mengintip di pojok layar.
+// 5. Analitik AI: Menganalisis akurasi, kekuatan subtes, dan kelemahan materi.
 // ============================================================
 
 import React, { useEffect, useState, useMemo } from 'react';
@@ -22,6 +26,7 @@ import {
   Flame, BarChart3, HelpCircle, X, Compass, ExternalLink,
 } from 'lucide-react';
 import { useProfilSiswa } from '../../../utils/profilSiswa';
+import { saringPaketUntukSiswa } from '../../../utils/cocokkanTargetPaket';
 import {
   deteksiJenjangUjianAkhir,
   getDaftarUnitJalurUjian,
@@ -37,55 +42,103 @@ export default function JalurUjianAiPage() {
     ? localStorage.getItem('studentId') || localStorage.getItem('studentNim') || ''
     : '';
 
-  // Deteksi jenjang ujian akhir siswa
+  // Deteksi jenjang ujian akhir siswa (Kelas 6 SD, 9 SMP, 12 SMA/UTBK)
   const targetJenjang = useMemo(() => deteksiJenjangUjianAkhir(profil), [profil]);
 
   const [loading, setLoading] = useState(true);
+  const [paketOtomatisDb, setPaketOtomatisDb] = useState([]);
   const [sesiList, setSesiList] = useState([]);
   const [unitTerpilih, setUnitTerpilih] = useState(null);
   const [modalReviewTerbuka, setModalReviewTerbuka] = useState(false);
   const [sedangMenyiapkan, setSedangMenyiapkan] = useState(false);
   const [pesanError, setPesanError] = useState('');
 
-  // Ambil daftar unit berdasarkan jenjang siswa
-  const daftarUnit = useMemo(() => {
-    return getDaftarUnitJalurUjian(targetJenjang?.jenjang || 'SMP');
-  }, [targetJenjang]);
-
-  // Muat histori sesi pengerjaan try out siswa
+  // 1. Tarik paket otomatis Firestore & sesi siswa
   useEffect(() => {
     let aktif = true;
-    async function muatSesi() {
-      if (!studentId) {
-        setLoading(false);
-        return;
-      }
+    async function muatData() {
       try {
-        const snap = await getDocs(
-          query(collection(db, 'tryout_sesi'), where('studentId', '==', studentId))
-        );
-        if (aktif) {
-          const list = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-          setSesiList(list);
-        }
+        const [snapPaket, snapSesi] = await Promise.all([
+          getDocs(query(collection(db, 'tryout_paket'), where('status', '==', 'aktif'))),
+          studentId ? getDocs(query(collection(db, 'tryout_sesi'), where('studentId', '==', studentId))) : { docs: [] },
+        ]);
+
+        if (!aktif) return;
+
+        const allPaket = snapPaket.docs.map((d) => ({ id: d.id, ...d.data() }));
+        // Saring paket yang sesuai untuk jenjang siswa
+        const paketSiswa = saringPaketUntukSiswa(allPaket, profil || { kelasSekolah: profil.kelas });
+
+        // Filter paket yang berasal dari generator otomatis AI / pemahaman
+        const paketAi = paketSiswa.filter((p) => {
+          const j = String(p.judul || '').toUpperCase();
+          return p.otomatis || p.jalurUjianAi || p.jenisUjian === 'TKA' || p.jenisUjian === 'SNBT/UTBK' || j.includes('PEMAHAMAN TKA') || j.includes('TRY OUT OTOMATIS');
+        });
+
+        // Urutkan dari paket paling awal (terlama) ke paling baru agar membentuk alur petualangan
+        paketAi.sort((a, b) => {
+          const ta = a.waktuBuka ? new Date(a.waktuBuka).getTime() : a.createdAt ? new Date(a.createdAt).getTime() : 0;
+          const tb = b.waktuBuka ? new Date(b.waktuBuka).getTime() : b.createdAt ? new Date(b.createdAt).getTime() : 0;
+          return ta - tb;
+        });
+
+        setPaketOtomatisDb(paketAi);
+        setSesiList(snapSesi.docs.map((d) => ({ id: d.id, ...d.data() })));
       } catch (err) {
-        console.error('Gagal memuat histori sesi try out:', err);
+        console.error('Gagal memuat paket jalur AI:', err);
       } finally {
         if (aktif) setLoading(false);
       }
     }
-    muatSesi();
+    muatData();
     return () => {
       aktif = false;
     };
-  }, [studentId]);
+  }, [studentId, profil]);
 
-  // Hitung status progresi (completed, current, locked)
+  // 2. Susun unit tahapan (jika ada di database, pakai paket otomatis asli dari admin; jika belum ada, pakai unit konfigurasi terverifikasi)
+  const daftarUnit = useMemo(() => {
+    if (paketOtomatisDb.length > 0) {
+      const units = paketOtomatisDb.map((p, idx) => {
+        const namaMapel = p.subtes?.[0]?.nama || (targetJenjang?.jenjang === 'SD' ? 'TKA SD' : targetJenjang?.jenjang === 'SMP' ? 'TKA SMP' : 'UTBK-SNBT');
+        return {
+          id: p.id,
+          paketIdAsli: p.id,
+          unitNomor: idx + 1,
+          judul: p.judul || `Tahap ${idx + 1}: Try Out Pemahaman`,
+          subjudul: p.deskripsi || `${p.totalSoal || p.daftarSoal?.length || 30} Butir Soal Terstandar`,
+          tipe: idx === 0 ? 'start' : 'unit',
+          mapel: namaMapel,
+          durasiMenit: p.durasiTotalMenit || p.durasiMenit || 60,
+          jumlahSoal: p.totalSoal || p.daftarSoal?.length || 30,
+          passingGrade: 60 + Math.min(idx * 5, 20),
+          xpReward: 150 + idx * 50,
+          icon: idx === 0 ? 'Rocket' : idx % 2 === 1 ? 'BookOpen' : 'Sparkles',
+          deskripsi: p.deskripsi || 'Simulasi ujian otomatis berbasis AI untuk menguji dan mengasah pemahamanmu.',
+        };
+      });
+
+      // Tambahkan node puncak: Review & Analisis AI
+      units.push({
+        id: 'unit-review-ai',
+        unitNomor: units.length + 1,
+        judul: 'Puncak Jalur: Analisis Kemampuan AI',
+        subjudul: 'Radar Penguasaan Materi, Kesiapan & Rekomendasi Belajar',
+        tipe: 'review',
+      });
+      return units;
+    }
+
+    // Fallback bila database baru kosong
+    return getDaftarUnitJalurUjian(targetJenjang?.jenjang || 'SMP');
+  }, [paketOtomatisDb, targetJenjang]);
+
+  // 3. Hitung status progresi personal siswa (setiap siswa memiliki jalan berbeda)
   const { unitList, totalUnit, selesaiCount, persentaseSelesai } = useMemo(() => {
     return hitungProgresiJalur(daftarUnit, sesiList);
   }, [daftarUnit, sesiList]);
 
-  // Handler klik unit di peta
+  // Handler klik node unit
   const handleKlikUnit = (unit) => {
     if (unit.tipe === 'review') {
       setModalReviewTerbuka(true);
@@ -94,24 +147,26 @@ export default function JalurUjianAiPage() {
     setUnitTerpilih(unit);
   };
 
-  // Handler mulai pengerjaan ujian
+  // Handler meluncurkan ujian simulasi
   const handleMulaiUjian = async (unit) => {
     if (!unit || unit.status === 'locked' || sedangMenyiapkan) return;
     setSedangMenyiapkan(true);
     setPesanError('');
     try {
-      // Pastikan paket tersedia di Firestore dan bank soal tidak kosong
-      await pastikanPaketUnitTersedia(db, unit, targetJenjang?.jenjang || 'SMP');
-      // Arahkan ke ruang pengerjaan try out resmi
-      navigate(`/siswa/tryout/${unit.id}?jalur=ai&unitNomor=${unit.unitNomor}`);
+      const targetPaketId = unit.paketIdAsli || unit.id;
+      // Jika paket belum ada di database, siapkan
+      if (!unit.paketIdAsli) {
+        await pastikanPaketUnitTersedia(db, unit, targetJenjang?.jenjang || 'SMP');
+      }
+      navigate(`/siswa/tryout/${targetPaketId}?jalur=ai&unitNomor=${unit.unitNomor}`);
     } catch (err) {
       console.error('Gagal menyiapkan ujian:', err);
-      setPesanError('Gagal menyiapkan paket simulasi. Silakan periksa koneksi dan coba lagi.');
+      setPesanError('Gagal membuka paket simulasi. Silakan periksa koneksi internet Anda.');
       setSedangMenyiapkan(false);
     }
   };
 
-  // JIKA SISWA BUKAN KELAS AKHIR: TAMPILKAN PEMBERITAHUAN RAMAH
+  // JIKA SISWA BUKAN KELAS AKHIR
   if (!targetJenjang) {
     return (
       <div style={st.bukanAkhirWrapper}>
@@ -126,7 +181,7 @@ export default function JalurUjianAiPage() {
             Halo <strong>{profil.nama || 'Siswa'}</strong>! Fitur <strong>Jalur Ujian AI</strong> ini dirancang khusus bagi sahabat kelas <strong>6 SD (TKA SD)</strong>, <strong>9 SMP (TKA SMP)</strong>, dan <strong>12 SMA/SMK (UTBK-SNBT)</strong> untuk simulasi kelulusan dan seleksi sekolah/kampus impian.
           </p>
           <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 12, padding: 14, marginBottom: 20, textAlign: 'left', fontSize: 13, color: '#166534' }}>
-            ✨ Untuk kelasmu (<strong>{profil.kelas || 'Reguler'}</strong>), kamu tetap bisa menikmati <strong>Latihan Harian AI</strong> dan <strong>Materi Modul E-Learning</strong> untuk memperkuat nilai harian!
+            ✨ Untuk kelasmu (<strong>{profil.kelas || 'Reguler'}</strong>), silakan nikmati menu <strong>Latihan Harian AI</strong> dan <strong>Materi Modul E-Learning</strong> untuk memperkuat nilai harian!
           </div>
           <button
             type="button"
@@ -140,14 +195,16 @@ export default function JalurUjianAiPage() {
     );
   }
 
+  // Hitung ketinggian dinamis peta berdasarkan jumlah unit
+  const tinggiMap = Math.max(760, unitList.length * 155 + 180);
+
   return (
     <div style={st.container}>
-      {/* Background dekorasi garis topografi kosmik */}
+      {/* Background garis topografi kosmik halus */}
       <div style={st.bgTopologyOverlay} aria-hidden="true" />
 
-      {/* HEADER ATAS: AVATAR, STATUS XP, & TOMBOL REVIEW AI */}
+      {/* HEADER ATAS: TOMBOL KEMBALI, BADGE JENJANG, AVATAR, & REVIEW AI */}
       <header style={st.headerBar}>
-        {/* Kiri: Tombol Back & Badge Jenjang */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <button
             type="button"
@@ -161,14 +218,13 @@ export default function JalurUjianAiPage() {
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               <span style={st.badgeJenjang}>{targetJenjang.labelBadge}</span>
               <span style={{ fontSize: 11, fontWeight: 700, color: '#115e59', background: '#ccfbf1', padding: '2px 8px', borderRadius: 99 }}>
-                {selesaiCount}/{totalUnit} Selesai
+                {selesaiCount}/{totalUnit} Misi Dituntaskan
               </span>
             </div>
             <h1 style={st.headerJudul}>{targetJenjang.subJudul}</h1>
           </div>
         </div>
 
-        {/* Kanan: Avatar & Tombol Review AI */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <button
             type="button"
@@ -177,7 +233,7 @@ export default function JalurUjianAiPage() {
             title="Buka Analisis Kemampuan Belajar AI"
           >
             <Brain size={16} color="#0d9488" />
-            <span>Review AI</span>
+            <span>Analisis AI</span>
           </button>
           <div style={st.avatarBulat} title={profil.nama}>
             {profil.nama ? profil.nama.charAt(0).toUpperCase() : 'S'}
@@ -185,14 +241,14 @@ export default function JalurUjianAiPage() {
         </div>
       </header>
 
-      {/* BAR PROGRES KELULUSAN */}
+      {/* BAR PROGRES JALUR KEMAMPUAN SISWA */}
       <div style={st.barProgresBungkus}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
           <span style={{ fontSize: 12, fontWeight: 800, color: '#0f766e', display: 'flex', alignItems: 'center', gap: 4 }}>
-            <Compass size={14} /> Ekspedisi Tanpa Deadline
+            <Compass size={14} /> Jalur Misi Mandiri (Tanpa Deadline)
           </span>
           <span style={{ fontSize: 12, fontWeight: 800, color: '#0d9488' }}>
-            {persentaseSelesai}% Misi Tuntas
+            {persentaseSelesai}% Selesai
           </span>
         </div>
         <div style={st.progressBarTrack}>
@@ -203,93 +259,105 @@ export default function JalurUjianAiPage() {
       {/* ============================================================ */}
       {/* 🗺️ PETA JALUR BERLIKU (WINDING GAME PATH) ALA DUOLINGO       */}
       {/* ============================================================ */}
-      <main style={st.mapStageWrapper}>
-        {/* SVG KURVA JALUR BERLIKU (DASHED WINDING PATH) */}
+      <main style={{ ...st.mapStageWrapper, height: tinggiMap }}>
+        {/* SVG KURVA JALUR BERLIKU PUTIH PUTUS-PUTUS TEBAL */}
         <svg
           style={st.svgJalur}
-          viewBox="0 0 360 820"
+          viewBox={`0 0 360 ${tinggiMap}`}
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
         >
-          {/* Jalur berliku menghubungkan Unit 1 (Start) di bawah ke Unit Review di atas */}
-          <path
-            d="M 180 730 C 120 680, 80 620, 95 550 C 110 470, 260 490, 265 410 C 270 330, 90 350, 95 270 C 100 190, 180 180, 180 110"
-            stroke="#ffffff"
-            strokeWidth="5"
-            strokeDasharray="9 9"
-            strokeLinecap="round"
-            opacity="0.9"
-          />
+          {/* Path berliku dinamis menghubungkan dari node bawah ke atas */}
+          {unitList.map((u, i) => {
+            if (i >= unitList.length - 1) return null;
+            // Node i ada di posisi (x1, y1), Node i+1 di (x2, y2)
+            const y1 = tinggiMap - 120 - i * 145;
+            const y2 = tinggiMap - 120 - (i + 1) * 145;
+            const x1 = i === 0 ? 180 : i % 2 === 1 ? 100 : 260;
+            const x2 = i + 1 === unitList.length - 1 ? 180 : (i + 1) % 2 === 1 ? 100 : 260;
+            const cx1 = x1;
+            const cy1 = (y1 + y2) / 2;
+            const cx2 = x2;
+            const cy2 = (y1 + y2) / 2;
+
+            return (
+              <path
+                key={u.id}
+                d={`M ${x1} ${y1} C ${cx1} ${cy1}, ${cx2} ${cy2}, ${x2} ${y2}`}
+                stroke="#ffffff"
+                strokeWidth="5"
+                strokeDasharray="9 9"
+                strokeLinecap="round"
+                opacity="0.92"
+              />
+            );
+          })}
         </svg>
 
-        {/* ORNAMEN PLANET KOSMIK DI SEKITAR JALUR */}
-        <div style={{ ...st.ornamenKosmik, top: '18%', right: '12%', transform: 'scale(1.1)' }}>
-          🪐
-        </div>
-        <div style={{ ...st.ornamenKosmik, top: '48%', left: '8%', transform: 'scale(0.9)' }}>
-          ⭐
-        </div>
-        <div style={{ ...st.ornamenKosmik, top: '65%', right: '14%', transform: 'scale(1.0)' }}>
-          ☄️
-        </div>
-        <div style={{ ...st.ornamenKosmik, top: '82%', left: '12%', transform: 'scale(0.8)' }}>
-          ✨
-        </div>
+        {/* ORNAMEN KOSMIK GEMILANG DI SEKITAR JALUR */}
+        <div style={{ ...st.ornamenKosmik, top: '15%', right: '12%' }}>🪐</div>
+        <div style={{ ...st.ornamenKosmik, top: '35%', left: '10%' }}>⭐</div>
+        <div style={{ ...st.ornamenKosmik, top: '55%', right: '14%' }}>☄️</div>
+        <div style={{ ...st.ornamenKosmik, top: '75%', left: '12%' }}>✨</div>
 
-        {/* DAFTAR NODE TAHAPAN (DIURUTKAN DARI ATAS KE BAWAH SECARA POSISI) */}
-        {/* Node 5: Review & Analisis AI (Paling Atas) */}
-        <div style={{ ...st.nodeContainer, top: 70, left: '50%', transform: 'translateX(-50%)' }}>
-          <button
-            type="button"
-            onClick={() => setModalReviewTerbuka(true)}
-            style={st.tombolCapsuleReview}
-          >
-            <Brain size={18} color="#0d9488" />
-            <span style={{ fontWeight: 800, fontSize: 13, color: '#0f766e' }}>Review AI</span>
-          </button>
-        </div>
+        {/* RENDER NODE-NODE BERTAHAP SECARA BERLIKU DARI BAWAH KE ATAS */}
+        {unitList.map((unit, idx) => {
+          const yPos = tinggiMap - 120 - idx * 145;
+          const isTopReview = unit.tipe === 'review';
+          const xPos = isTopReview ? '50%' : idx === 0 ? '50%' : idx % 2 === 1 ? '28%' : '72%';
 
-        {/* Node 4: Unit 4 (Kiri Atas) */}
-        {unitList[3] && (
-          <div style={{ ...st.nodeContainer, top: 230, left: '26%', transform: 'translateX(-50%)' }}>
-            <KomponenNodeUnit unit={unitList[3]} onKlik={handleKlikUnit} />
-          </div>
-        )}
+          if (isTopReview) {
+            return (
+              <div
+                key={unit.id}
+                style={{ ...st.nodeContainer, top: yPos - 20, left: xPos, transform: 'translateX(-50%)' }}
+              >
+                <button
+                  type="button"
+                  onClick={() => setModalReviewTerbuka(true)}
+                  style={st.tombolCapsuleReview}
+                >
+                  <Brain size={18} color="#0d9488" />
+                  <span style={{ fontWeight: 800, fontSize: 13, color: '#0f766e' }}>Review AI</span>
+                </button>
+              </div>
+            );
+          }
 
-        {/* Node 3: Unit 3 (Kanan Tengah) */}
-        {unitList[2] && (
-          <div style={{ ...st.nodeContainer, top: 370, left: '74%', transform: 'translateX(-50%)' }}>
-            <KomponenNodeUnit unit={unitList[2]} onKlik={handleKlikUnit} />
-          </div>
-        )}
+          if (idx === 0) {
+            return (
+              <div
+                key={unit.id}
+                style={{ ...st.nodeContainer, top: yPos - 45, left: xPos, transform: 'translateX(-50%)' }}
+              >
+                <KomponenNodeStart unit={unit} onKlik={handleKlikUnit} />
+              </div>
+            );
+          }
 
-        {/* Node 2: Unit 2 (Kiri Tengah) */}
-        {unitList[1] && (
-          <div style={{ ...st.nodeContainer, top: 510, left: '26%', transform: 'translateX(-50%)' }}>
-            <KomponenNodeUnit unit={unitList[1]} onKlik={handleKlikUnit} />
-          </div>
-        )}
-
-        {/* Node 1: Unit 1 / START (Paling Bawah - Oranye Hangat Besar) */}
-        {unitList[0] && (
-          <div style={{ ...st.nodeContainer, top: 670, left: '50%', transform: 'translateX(-50%)' }}>
-            <KomponenNodeStart unit={unitList[0]} onKlik={handleKlikUnit} />
-          </div>
-        )}
+          return (
+            <div
+              key={unit.id}
+              style={{ ...st.nodeContainer, top: yPos - 38, left: xPos, transform: 'translateX(-50%)' }}
+            >
+              <KomponenNodeUnit unit={unit} onKlik={handleKlikUnit} />
+            </div>
+          );
+        })}
 
         {/* MASKOT ASTRO GEMILANG MENGINTIP CERIA DI POJOK KANAN BAWAH */}
         <div style={st.maskotMengintip} title="Hai! Aku Master G, pemandumu di Jalur Ujian AI!">
           <div style={{ position: 'relative' }}>
-            <MaskotAstronot size={86} />
+            <MaskotAstronot size={88} />
             <div style={st.balonBicaraMaskot}>
-              Yuk taklukkan misi! 🚀
+              Ayo selesaikan misimu! 🚀
             </div>
           </div>
         </div>
       </main>
 
       {/* ============================================================ */}
-      {/* MODAL BOTTOM SHEET DETAIL UNIT                               */}
+      {/* MODAL SHEET DETAIL UNIT SIMULASI                             */}
       {/* ============================================================ */}
       {unitTerpilih && (
         <div style={st.overlayModal} onClick={() => setUnitTerpilih(null)}>
@@ -332,7 +400,6 @@ export default function JalurUjianAiPage() {
               {unitTerpilih.deskripsi}
             </p>
 
-            {/* INFO SPESIFIKASI MISI UJIAN */}
             <div style={st.gridSpesifikasi}>
               <div style={st.kotakSpek}>
                 <Timer size={18} color="#0d9488" />
@@ -364,7 +431,6 @@ export default function JalurUjianAiPage() {
               </div>
             </div>
 
-            {/* JIKA STATUS COMPLETED: TAMPILKAN SKOR HASIL */}
             {unitTerpilih.status === 'completed' && (
               <div style={st.kartuHasilSelesai}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -372,7 +438,7 @@ export default function JalurUjianAiPage() {
                   <div>
                     <div style={{ fontSize: 12, fontWeight: 700, color: '#92400e' }}>Misi Selesai Dikerjakan!</div>
                     <div style={{ fontSize: 18, fontWeight: 900, color: '#78350f' }}>
-                      Skor Perolehan: {unitTerpilih.skor}%
+                      Akurasi Skor: {unitTerpilih.skor}%
                     </div>
                   </div>
                 </div>
@@ -389,12 +455,11 @@ export default function JalurUjianAiPage() {
               </div>
             )}
 
-            {/* JIKA STATUS TERKUNCI */}
             {unitTerpilih.status === 'locked' && (
               <div style={st.kartuStatusLocked}>
                 <Lock size={20} color="#b45309" />
                 <span style={{ fontSize: 12.5, fontWeight: 700, color: '#92400e' }}>
-                  Unit ini masih terkunci! Selesaikan Unit {unitTerpilih.unitNomor - 1} terlebih dahulu untuk membuka tantangan ini.
+                  Unit ini masih terkunci! Selesaikan Tahap {unitTerpilih.unitNomor - 1} terlebih dahulu untuk membuka stage ini.
                 </span>
               </div>
             )}
@@ -405,7 +470,6 @@ export default function JalurUjianAiPage() {
               </div>
             )}
 
-            {/* TOMBOL AKSI UTAMA */}
             <div style={{ marginTop: 20 }}>
               {unitTerpilih.status === 'current' ? (
                 <button
@@ -415,7 +479,7 @@ export default function JalurUjianAiPage() {
                   style={st.btnLuncurkanUjian}
                 >
                   <Rocket size={20} />
-                  <span>{sedangMenyiapkan ? 'Menyiapkan Soal Bank...' : 'Luncurkan Simulasi Ujian 🚀'}</span>
+                  <span>{sedangMenyiapkan ? 'Menyiapkan Simulasi...' : 'Luncurkan Simulasi Ujian 🚀'}</span>
                 </button>
               ) : unitTerpilih.status === 'completed' ? (
                 <button
@@ -457,7 +521,7 @@ export default function JalurUjianAiPage() {
                     Analisis Kemampuan Belajar AI
                   </h3>
                   <div style={{ fontSize: 12, color: '#64748b', fontWeight: 600 }}>
-                    Tracking Otomatis Berdasarkan Simulasi {targetJenjang.namaUjian}
+                    Pelacakan Perkembangan Personal • {targetJenjang.namaUjian}
                   </div>
                 </div>
               </div>
@@ -470,7 +534,6 @@ export default function JalurUjianAiPage() {
               </button>
             </div>
 
-            {/* RINGKASAN PERFORMA */}
             <div style={st.kartuRingkasanPerform}>
               <div style={{ textAlign: 'center' }}>
                 <div style={{ fontSize: 11, fontWeight: 700, color: '#0d9488', textTransform: 'uppercase' }}>
@@ -480,15 +543,14 @@ export default function JalurUjianAiPage() {
                   {selesaiCount === 0 ? 'Belum Dimulai' : selesaiCount >= 3 ? 'Sangat Siap 🎯' : 'Tahap Berkembang 🌱'}
                 </div>
                 <div style={{ fontSize: 12, color: '#475569' }}>
-                  {selesaiCount} dari {totalUnit} Unit Ujian Diselesaikan
+                  {selesaiCount} dari {totalUnit} Misi Telah Ditaklukkan
                 </div>
               </div>
             </div>
 
-            {/* DETAIL PER UNIT */}
             <div style={{ marginBottom: 18 }}>
               <div style={{ fontSize: 13, fontWeight: 800, color: '#1e293b', marginBottom: 10 }}>
-                Histori Capaian Unit Misi:
+                Histori Capaian Jalur Misi:
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {unitList.filter((u) => u.tipe !== 'review').map((u) => (
@@ -518,7 +580,6 @@ export default function JalurUjianAiPage() {
               </div>
             </div>
 
-            {/* SARAN MATERI DARI AI */}
             <div style={st.kartuSaranAi}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
                 <Sparkles size={16} color="#8b5cf6" />
@@ -528,8 +589,8 @@ export default function JalurUjianAiPage() {
               </div>
               <p style={{ fontSize: 12.5, color: '#4c1d95', lineHeight: 1.5, margin: 0 }}>
                 {selesaiCount === 0
-                  ? 'Mulai pengerjaan Unit 1 (Start) untuk mengaktifkan AI Diagnostic Tracker yang membaca kekuatan & kelemahan belajarmu!'
-                  : 'Pertahankan akurasimu! Terus lanjutkan ke Unit berikutnya tanpa khawatir deadline untuk membuka prediksi kelulusan akurasi tinggi.'}
+                  ? 'Mulai pengerjaan Tahap 1 (Start) untuk mengaktifkan AI Tracker yang membaca kemampuan dan materi yang perlu kamu kuasai!'
+                  : 'Pertahankan konsistensimu! Terus lanjutkan tahap berikutnya tanpa khawatir deadline untuk mempertajam daya saing kelulusanmu.'}
               </p>
             </div>
 
@@ -538,7 +599,7 @@ export default function JalurUjianAiPage() {
               onClick={() => setModalReviewTerbuka(false)}
               style={st.btnTutupReview}
             >
-              Kembali ke Peta Ekspedisi
+              Kembali ke Peta Jalur
             </button>
           </div>
         </div>
@@ -580,13 +641,12 @@ function KomponenNodeStart({ unit, onKlik }) {
         </div>
       </button>
 
-      {/* LABEL DI BAWAH TOMBOL */}
       <div style={st.labelNodeBawah}>
-        <span style={{ fontWeight: 800, color: '#064e3b', fontSize: 12 }}>
-          {unit.judul.split(':')[0]}
+        <span style={{ fontWeight: 800, color: '#064e3b', fontSize: 11.5 }}>
+          {unit.judul.length > 24 ? unit.judul.slice(0, 24) + '...' : unit.judul}
         </span>
         {isCompleted && (
-          <span style={{ fontSize: 11, fontWeight: 700, color: '#047857', marginLeft: 4 }}>
+          <span style={{ fontSize: 11, fontWeight: 800, color: '#047857', marginLeft: 4 }}>
             ({unit.skor}%)
           </span>
         )}
@@ -596,7 +656,7 @@ function KomponenNodeStart({ unit, onKlik }) {
 }
 
 // ============================================================
-// KOMPONEN NODE UNIT (UNIT 1, UNIT 2, UNIT 3, UNIT 4)
+// KOMPONEN NODE UNIT TAHAP BERIKUTNYA
 // ============================================================
 function KomponenNodeUnit({ unit, onKlik }) {
   const isCompleted = unit.status === 'completed';
@@ -637,9 +697,8 @@ function KomponenNodeUnit({ unit, onKlik }) {
         </div>
       </button>
 
-      {/* LABEL DI BAWAH TOMBOL */}
       <div style={st.labelNodeBawah}>
-        <span style={{ fontWeight: 800, color: '#064e3b', fontSize: 11.5 }}>
+        <span style={{ fontWeight: 800, color: '#064e3b', fontSize: 11 }}>
           Unit {unit.unitNomor - 1}
         </span>
         {isCompleted && (
@@ -743,7 +802,7 @@ const st = {
     position: 'relative',
     zIndex: 10,
     margin: '12px 16px 0',
-    background: 'rgba(255, 255, 255, 0.9)',
+    background: 'rgba(255, 255, 255, 0.92)',
     borderRadius: 14,
     padding: '10px 14px',
     boxShadow: '0 4px 14px rgba(15, 118, 110, 0.15)',
@@ -764,7 +823,6 @@ const st = {
     position: 'relative',
     width: '100%',
     maxWidth: 420,
-    height: 800,
     margin: '0 auto',
   },
   svgJalur: {
@@ -804,11 +862,14 @@ const st = {
   },
   labelNodeBawah: {
     marginTop: 6,
-    background: 'rgba(255, 255, 255, 0.92)',
+    background: 'rgba(255, 255, 255, 0.94)',
     padding: '3px 10px',
     borderRadius: 99,
     boxShadow: '0 2px 6px rgba(0,0,0,0.1)',
     textAlign: 'center',
+    maxWidth: 140,
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
     whiteSpace: 'nowrap',
   },
   tombolCapsuleReview: {
@@ -849,7 +910,7 @@ const st = {
     boxShadow: '0 3px 8px rgba(0,0,0,0.12)',
     whiteSpace: 'nowrap',
   },
-  // Modal Sheet Styles
+  // Modal Styles
   overlayModal: {
     position: 'fixed',
     inset: 0,

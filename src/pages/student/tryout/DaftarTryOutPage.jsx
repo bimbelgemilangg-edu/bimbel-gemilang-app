@@ -76,6 +76,11 @@ export default function DaftarTryOutPage() {
         // data (array & string) yang sudah terlanjur ada di Firestore.
         paketList = saringPaketUntukSiswa(paketList, siswa);
 
+        // 📝 MENU KHUSUS TRY OUT AKBAR & UJIAN RESMI (MANUAL):
+        // Paket otomatis AI dipisahkan ke menu "Jalur Ujian AI" agar try out besar
+        // resmi (UTBK Akbar, ASPD, Ujian Sekolah) berdiri sendiri dan tidak rancu.
+        paketList = paketList.filter((p) => !p.otomatis && !p.jalurUjianAi);
+
         const snapSesi = await getDocs(query(collection(db, 'tryout_sesi'), where('studentId', '==', studentId)));
         const sesiPerPaket = {};
         snapSesi.forEach((d) => { sesiPerPaket[d.data().paketId] = d.data(); });

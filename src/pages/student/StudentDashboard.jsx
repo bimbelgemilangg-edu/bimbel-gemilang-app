@@ -728,7 +728,7 @@ const StudentDashboard = () => {
               if (!targetUjianAi) return null;
               return (
                 <div
-                  onClick={() => navigate('/siswa/tryout')}
+                  onClick={() => navigate('/siswa/jalur-ai')}
                   style={{
                     marginTop: 14,
                     background: 'linear-gradient(135deg, #14b8a6 0%, #0d9488 100%)',
@@ -743,7 +743,7 @@ const StudentDashboard = () => {
                     position: 'relative',
                     overflow: 'hidden',
                   }}
-                  title="Buka Try Out & Misi Ujian"
+                  title="Buka Peta Jalur Ujian AI"
                 >
                   <div style={{ position: 'relative', zIndex: 2 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>

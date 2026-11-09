@@ -68,7 +68,17 @@ const SidebarSiswa = ({ activeMenu, setActiveMenu, isOpen, setIsOpen }) => {
     {
       label: 'BELAJAR',
       items: [
-        { id: 'tryout', label: 'Try Out & Misi', icon: <Rocket size={18} />, path: '/siswa/tryout', color: '#f97316' },
+        // 🚀 Jalur Ujian AI: Simulasi otomatis bertahap dengan analitik kemampuan AI (khusus jenjang akhir)
+        ...(targetUjianAi ? [{
+          id: 'jalur-ai',
+          label: 'Jalur Ujian AI',
+          icon: <Rocket size={18} />,
+          path: '/siswa/jalur-ai',
+          color: '#0d9488',
+          badge: targetUjianAi.labelBadge,
+        }] : []),
+        // 📝 Try Out Akbar: Try out manual ujian besar resmi dari tentor / admin
+        { id: 'tryout', label: 'Try Out Akbar', icon: <Trophy size={18} />, path: '/siswa/tryout', color: '#f59e0b' },
         { id: 'latihan-harian', label: 'Latihan Harian', icon: <Flame size={18} />, path: '/siswa/latihan-harian', color: '#dc2626' },
         { id: 'belajar', label: 'Materi Belajar', icon: <Library size={18} />, path: '/siswa/belajar', color: '#1E9BF0', badge: 'BARU' },
         { id: 'materi', label: 'E-Learning', icon: <BookOpen size={18} />, path: '/siswa/materi', color: '#10b981' },
