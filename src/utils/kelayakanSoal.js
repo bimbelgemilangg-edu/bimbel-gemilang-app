@@ -83,7 +83,8 @@ export function alasanKelayakan(soal) {
   if (teks && RE_MENUNJUK_VISUAL.test(teks)) {
     const punyaGambar = (Array.isArray(soal.gambar) && soal.gambar.some((g) => g && (g.url || g.uploadedUrl || g.dataUrl)))
       || bermakna.some((o) => (typeof o === 'object' && (o.gambar || []).length));
-    const punyaTabel = (Array.isArray(soal.tabel_soal) && soal.tabel_soal.length)
+    const punyaTabel = (Boolean(soal.tabel_soal) && (Array.isArray(soal.tabel_soal) ? soal.tabel_soal.length > 0 : Boolean(soal.tabel_soal.header || soal.tabel_soal.baris)))
+      || (Boolean(soal.tabelSoal) && (Array.isArray(soal.tabelSoal) ? soal.tabelSoal.length > 0 : Boolean(soal.tabelSoal.header || soal.tabelSoal.baris)))
       || bermakna.some((o) => (typeof o === 'object' && (o.tabel || []).length));
     if (!punyaGambar && !punyaTabel) alasan.push('teks menunjuk gambar/grafik/tabel tetapi tidak ada visual yang terbawa');
   }

@@ -54,8 +54,22 @@ def render_html_article(q):
         lines.append(f'    {q["bacaan"]}')
         lines.append('  </div>')
 
+    # Ekstraksi Tabel jika ada di dalam teks_soal agar bersih dan terpisah di <div data-field="tabel_soal">
+    raw_teks = q["teks_soal"]
+    extracted_table = q.get('tabel_soal')
+    if not extracted_table and '<table' in raw_teks:
+        m_tbl = re.search(r'<table[\s\S]*?</table>', raw_teks, re.IGNORECASE)
+        if m_tbl:
+            extracted_table = m_tbl.group(0)
+            raw_teks = raw_teks.replace(extracted_table, '').strip()
+            raw_teks = re.sub(r'^(<br\s*/?>)+|(<br\s*/?>)+$', '', raw_teks).strip()
+
     # Teks Soal
-    lines.append(f'  <div data-field="teks_soal">{q["teks_soal"]}</div>')
+    lines.append(f'  <div data-field="teks_soal">{raw_teks}</div>')
+
+    # Tabel Soal (Jika ada)
+    if extracted_table:
+        lines.append(f'  <div data-field="tabel_soal">\n    {extracted_table}\n  </div>')
 
     # Gambar Soal
     if q.get('gambar'):
@@ -92,4 +106,4 @@ def render_html_article(q):
     lines.append('</article>\n')
     return '\n'.join(lines)
 
-print("Enhanced HTML Article Renderer Ready")
+print("Enhanced HTML Article Renderer with Table Separation Ready")

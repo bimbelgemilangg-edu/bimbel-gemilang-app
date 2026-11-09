@@ -1400,10 +1400,32 @@ export function normalizeSoal(qMasuk, idx) {
   // terlampir sama sekali. Sama semangatnya dengan Sinyal 5 (soal
   // yatim bacaan) tapi buat gambar -- soal yang butuh visual buat
   // dijawab, tapi visualnya hilang, otomatis tidak bisa dijawab siswa.
-  const menunjukGambarDiTeks = /\b(perhatikan|lihat|sesuai|berdasarkan)\s+(gambar|grafik|diagram)\b/i.test(teksSoal);
-  if (menunjukGambarDiTeks && gambar.length === 0) {
+  const menunjukGambarDiTeks = /\b(perhatikan|lihat|sesuai|berdasarkan)\s+(gambar|grafik|diagram)\b/i.test(teksSoal)
+    || /\b(gambar|grafik|diagram|bagan|denah|sketsa)\s+(berikut|di\s+bawah|di\s+atas|tersebut|ini)\b/i.test(teksSoal);
+  const adaGambarDiSoal = Array.isArray(gambar) && gambar.some(g => g && (g.url || g.dataUrl || g.uploadedUrl));
+  const adaGambarDiBacaan = Boolean(bacaan && Array.isArray(bacaan.gambar) && bacaan.gambar.some(g => g && (g.url || g.dataUrl || g.uploadedUrl)));
+  const adaGambarDiOpsi = opsiJawaban.some(opt => Array.isArray(opt.gambar) && opt.gambar.length > 0);
+  if (menunjukGambarDiTeks && !adaGambarDiSoal && !adaGambarDiBacaan && !adaGambarDiOpsi) {
     errors.push(
-      'Soal ini menunjuk "gambar/grafik/diagram" di teksnya, tapi TIDAK ADA gambar terlampir sama sekali. Upload gambar manual dulu di panel "Kelola Gambar", atau soal ini tidak akan bisa dijawab siswa.',
+      'Soal ini menunjuk "gambar/grafik/diagram" di teksnya, tapi TIDAK ADA gambar terlampir sama sekali. Lampirkan gambar di <div data-field="gambar"> atau upload manual di panel "Kelola Gambar".',
+    );
+  }
+
+  // 🔥 BARU: Sinyal 7b -- soal MENUNJUK tabel di teksnya ("Perhatikan tabel...", dst)
+  // TAPI TIDAK ADA tabel terlampir sama sekali.
+  const menunjukTabelDiTeks = /\b(perhatikan|lihat|sesuai|berdasarkan|pada)\s+tabel\b/i.test(teksSoal)
+    || /\btabel\s+(berikut|di\s+bawah|di\s+atas|tersebut|ini|data|nilai|distribusi|frekuensi|skor)\b/i.test(teksSoal);
+  const adaTabelDiSoal = Boolean(
+    (q.tabel_soal && (Array.isArray(q.tabel_soal) ? q.tabel_soal.length > 0 : Boolean(q.tabel_soal.header || q.tabel_soal.baris))) ||
+    (q.tabelSoal && (Array.isArray(q.tabelSoal) ? q.tabelSoal.length > 0 : Boolean(q.tabelSoal.header || q.tabelSoal.baris))) ||
+    (pernyataan && pernyataan.length > 0) ||
+    (tabelBenarSalah && tabelBenarSalah.length > 0) ||
+    (bacaan && bacaan.teks && bacaan.teks.includes('<table')) ||
+    teksSoal.includes('<table')
+  );
+  if (menunjukTabelDiTeks && !adaTabelDiSoal) {
+    errors.push(
+      'Soal ini menunjuk "tabel" di teksnya ("Perhatikan tabel..."), tapi TIDAK ADA tabel terlampir sama sekali! Lampirkan data tabel di <div data-field="tabel_soal"> atau di dalam wacana.',
     );
   }
 
@@ -2108,7 +2130,14 @@ function parseHTMLMaster(raw) {
       grup: bacaanNode.getAttribute('data-grup') || node.getAttribute('data-grup') || '',
     } : null;
     const keyRaw = node.getAttribute('data-kunci') || keyNode?.getAttribute?.('data-value') || keyNode?.textContent || '';
-    const tableSoal = tableQuestionNode ? parseHTMLTableElement(tableQuestionNode.querySelector('table') || tableQuestionNode) : null;
+    let tableSoal = tableQuestionNode ? parseHTMLTableElement(tableQuestionNode.querySelector('table') || tableQuestionNode) : null;
+    if (!tableSoal) {
+      // Auto-recovery: Jika tabel ada di dalam teks_soal atau di dalam article yang bukan tabel pernyataan/pasangan
+      const anyTable = node.querySelector('[data-field="teks_soal"] table, :scope > table:not([data-field="pernyataan"]):not([data-field="pasangan"]):not([data-field="tabel_benar_salah"])');
+      if (anyTable && !tfNode?.contains(anyTable) && !categoryNode?.contains(anyTable) && !matchingNode?.contains(anyTable)) {
+        tableSoal = parseHTMLTableElement(anyTable);
+      }
+    }
     const paketRaw = node.getAttribute('data-paket');
 
     // Analisis per-soal (bukan per-file): kesulitan WAJIB diisi AI per soal,
