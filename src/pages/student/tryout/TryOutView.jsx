@@ -68,6 +68,7 @@ import { hitungSkalaSesi } from '../../../utils/hitungSkalaSesi';
 import { pisahKodeSumber } from '../../../utils/strukturPembahasan';
 import RenderPembahasan from '../../../components/RenderPembahasan';
 import { teksSoalDari, kunciStimulus } from '../../../utils/fieldButirSoal';
+import { isPaketOtomatisAi } from '../../../utils/jalurUjianAiConfig';
 import { terapkanPotonganXP } from '../../../utils/potonganXPTryOut';
 import { acakSoalPerSiswa } from '../../../utils/acakSoalTryOut';
 import { tambahXpMingguan } from '../../../utils/mingguIni';
@@ -350,11 +351,7 @@ export default function TryOutView() {
         // Cek jadwal buka/deadline SEBELUM kasih tahap 'mulai'.
         // 🚀 PAKET OTOMATIS ADMIN & JALUR UJIAN: tanpa deadline kunci, selalu dapat dikerjakan siswa!
         const bebasDeadline = Boolean(
-          dataPaket.otomatis ||
-          dataPaket.jalurUjianAi ||
-          dataPaket.jenisUjian === 'TKA' ||
-          dataPaket.jenisUjian === 'SNBT/UTBK' ||
-          String(dataPaket.judul || '').toUpperCase().includes('PEMAHAMAN TKA') ||
+          isPaketOtomatisAi(dataPaket) ||
           searchParams.get('jalur') === 'ai'
         );
         if (!bebasDeadline) {

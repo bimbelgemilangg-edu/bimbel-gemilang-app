@@ -31,6 +31,7 @@ import {
 import { bangunDokumenTryOut } from '../../../utils/dokumenTryOut.js';
 import { saringPaketUntukSiswa } from '../../../utils/cocokkanTargetPaket.js';
 import { hitungTotalSkor } from '../../../utils/skorSoalTryOut.js';
+import { isPaketManual, deteksiJenjangUjianAkhir } from '../../../utils/jalurUjianAiConfig.js';
 
 const ms = (v) => (typeof v?.toDate === 'function' ? v.toDate().getTime() : v ? new Date(v).getTime() : null);
 const BULAN = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
@@ -182,13 +183,13 @@ export default function PapanJelajahPage({ studentId = '' }) {
         if (!hidup) return;
         setNama(dS.nama || dS.name || studentId);
         setKelas(dS.kelas || dS.kelasSekolah || '');
-        // 🔥 14 Okt 2026 (owner: "jangan semua tryout nyasar"): Papan Jelajah
-        // dulu menampilkan SEMUA paket aktif ke SEMUA siswa. Sekarang difilter
-        // target yang sama dengan Daftar Try Out lewat satu pintu util.
-        const paketAktif = saringPaketUntukSiswa(
+        // 🛡️ Saring paket aktif dan HANYA tampilkan paket manual resmi terjadwal.
+        // Paket otomatis AI telah dipisahkan secara rapi ke menu "Jalur Ujian AI".
+        const semuaPaketSiswa = saringPaketUntukSiswa(
           snapPaket.docs.map((d) => ({ id: d.id, ...d.data() })),
           dS,
         );
+        const paketAktif = semuaPaketSiswa.filter(isPaketManual);
         const sesiList = snapSesi.docs.map((d) => ({ id: d.id, ...d.data() }));
         setPaket(paketAktif);
         setSesi(sesiList);
@@ -280,6 +281,7 @@ export default function PapanJelajahPage({ studentId = '' }) {
     });
   }, [bulan, dokumenPerTanggal, kini]);
 
+  const targetUjianAi = useMemo(() => deteksiJenjangUjianAkhir({ kelasSekolah: kelas, kelas }), [kelas]);
   const paketUntukAnalitik = useMemo(() => [...paket, ...paketRiwayat], [paket, paketRiwayat]);
   const analitik = useMemo(() => hitungAnalitik(
     [...sesiPerPaket.values()].map((s) => {
@@ -394,12 +396,36 @@ export default function PapanJelajahPage({ studentId = '' }) {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {semuaDokumen.length > 0 ? (
                   <>
+                    {targetUjianAi && (
+                      <div style={{ ...st.kartu, background: 'linear-gradient(135deg, rgba(13,148,136,0.2) 0%, rgba(15,118,110,0.12) 100%)', border: '1px solid rgba(13,148,136,0.45)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
+                        <div>
+                          <div style={{ fontWeight: 800, fontSize: 13.5, color: '#2dd4bf', display: 'flex', alignItems: 'center', gap: 6 }}>
+                            <Rocket size={16} /> Jalur Ujian AI (Simulasi Bertingkat Tanpa Deadline)
+                          </div>
+                          <div style={{ fontSize: 12, color: '#ccfbf1', marginTop: 2 }}>
+                            Khusus simulasi otomatis AI bertahap dengan analisis kemampuan belajar, buka menu <strong>Jalur Ujian AI</strong>.
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => navigate('/siswa/jalur-ai')}
+                          style={{
+                            background: '#0d9488', color: '#fff', border: 'none', borderRadius: 10,
+                            padding: '8px 14px', fontWeight: 800, fontSize: 12, cursor: 'pointer',
+                            display: 'flex', alignItems: 'center', gap: 6,
+                          }}
+                        >
+                          <Rocket size={14} /> Buka Jalur AI
+                        </button>
+                      </div>
+                    )}
+
                     <div style={{ ...st.kartu, background: 'rgba(249,115,22,0.14)', border: '1px solid rgba(249,115,22,0.4)' }}>
                       <div style={{ fontWeight: 800, fontSize: 14.5, color: '#f97316', display: 'flex', alignItems: 'center', gap: 6 }}>
-                        <Rocket size={17} /> Seluruh Try Out Tersedia ({semuaDokumen.length} Misi Aktif)
+                        <CalendarDays size={17} /> Try Out Terjadwal & Ujian Akbar ({semuaDokumen.length} Paket Aktif)
                       </div>
                       <p style={{ ...st.deskripsi, marginTop: 4, color: '#eef1ff' }}>
-                        Tidak ada batas deadline! Seluruh try out pemahaman & simulasi dari sistem selalu terbuka dan dapat kamu kerjakan kapan saja secara bertahap:
+                        Daftar try out resmi terjadwal yang diterbitkan oleh admin atau tentor. Kerjakan sesuai jadwal pengerjaan yang tertera:
                       </p>
                     </div>
                     {semuaDokumen.map((d) => (

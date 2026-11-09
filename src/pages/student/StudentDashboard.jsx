@@ -724,7 +724,9 @@ const StudentDashboard = () => {
 
             {/* 🚀 BANNER JALUR UJIAN AI — Khusus Kelas 6 SD, 9 SMP, 12 SMA/UTBK (Tanpa Deadline) */}
             {(() => {
-              const targetUjianAi = deteksiJenjangUjianAkhir(studentProfile || { kelasSekolah: studentKelas });
+              const k = studentProfile?.kelas || studentProfile?.kelasSekolah || studentKelas || (typeof localStorage !== 'undefined' ? localStorage.getItem('studentGrade') || localStorage.getItem('studentKelas') : '');
+              const j = studentProfile?.jenjang || (typeof localStorage !== 'undefined' ? localStorage.getItem('studentGrade') : '');
+              const targetUjianAi = deteksiJenjangUjianAkhir({ ...studentProfile, kelas: k, jenjang: j });
               if (!targetUjianAi) return null;
               return (
                 <div
@@ -861,9 +863,14 @@ const StudentDashboard = () => {
 
         {(() => {
           const { level, xpProgress, xpKebutuhan } = hitungLevelDariXp(progresXp);
+          const kJenjang = studentProfile?.kelas || studentProfile?.kelasSekolah || studentKelas || (typeof localStorage !== 'undefined' ? localStorage.getItem('studentGrade') || localStorage.getItem('studentKelas') : '');
+          const jJenjang = studentProfile?.jenjang || (typeof localStorage !== 'undefined' ? localStorage.getItem('studentGrade') : '');
+          const cekAi = deteksiJenjangUjianAkhir({ ...studentProfile, kelas: kJenjang, jenjang: jJenjang });
+
           const menuBaru = [
+            ...(cekAi ? [{ key: 'jalur-ai', label: 'Jalur AI', emoji: '🚀', warna: '#ccfbf1', warnaTeks: '#0f766e', segeraHadir: false }] : []),
             { key: 'latihan', label: 'Latihan Harian', emoji: '📝', warna: '#ecfeff', warnaTeks: '#155e75', segeraHadir: false },
-            { key: 'tryout', label: 'TryOut', emoji: '🎯', warna: '#fef3c7', warnaTeks: '#92400e', segeraHadir: false },
+            { key: 'tryout', label: 'TryOut Terjadwal', emoji: '📅', warna: '#fef3c7', warnaTeks: '#92400e', segeraHadir: false },
             // 🔥 BARU: tile "Bank Soal" (placeholder "Segera") diganti jadi
             // pintu masuk Buku Interaktif Digital (rak -> daftar isi -> reader).
             { key: 'buku', label: 'Buku PDF Gemilang', emoji: '📙', warna: '#ffedd5', warnaTeks: '#9a3412', segeraHadir: false },
@@ -937,6 +944,8 @@ const StudentDashboard = () => {
                     onClick={() => {
                       if (m.key === 'kehadiran') {
                         attendanceRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                      } else if (m.key === 'jalur-ai') {
+                        navigate('/siswa/jalur-ai');
                       } else if (m.key === 'latihan') {
                         navigate('/siswa/latihan-harian');
                       } else if (m.key === 'tryout') {

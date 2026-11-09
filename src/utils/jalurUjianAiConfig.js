@@ -138,6 +138,29 @@ export function deteksiJenjangUjianAkhir(siswaAtauKelas) {
 }
 
 /**
+ * Memeriksa apakah sebuah paket merupakan paket try out otomatis yang diterbitkan AI/sistem.
+ * Paket otomatis AI dialihkan ke menu "Jalur Ujian AI" (peta langkah kemampuan tanpa deadline).
+ * Paket manual (ujian besar dari admin/guru) tetap di menu "Try Out Terjadwal" (dengan tanggal).
+ */
+export function isPaketOtomatisAi(paket) {
+  if (!paket) return false;
+  if (paket.jalurUjianAi === true) return true;
+  if (paket.otomatis === true) return true;
+  if (paket.sumber === 'mesin-otomatis') return true;
+  if (Boolean(paket.templateId)) return true;
+  const judul = String(paket.judul || '').toUpperCase();
+  if (judul.includes('PEMAHAMAN TKA') || judul.includes('TRY OUT OTOMATIS')) return true;
+  return false;
+}
+
+/**
+ * Memeriksa apakah sebuah paket merupakan paket manual terjadwal.
+ */
+export function isPaketManual(paket) {
+  return !isPaketOtomatisAi(paket);
+}
+
+/**
  * Daftar Unit Misi bertingkat berdasarkan jenjang siswa.
  * Format jalur: dari bawah (Start / Unit 1) ke atas (Unit 4 / Review).
  */
@@ -377,7 +400,8 @@ export function hitungProgresiJalur(daftarUnit = [], sesiList = []) {
   const sesiSelesaiMap = new Map();
   sesiList.forEach((s) => {
     if (s.status === 'selesai') {
-      sesiSelesaiMap.set(s.paketId, s);
+      if (s.paketId) sesiSelesaiMap.set(s.paketId, s);
+      if (s.tryoutId) sesiSelesaiMap.set(s.tryoutId, s);
       if (s.unitId) sesiSelesaiMap.set(s.unitId, s);
     }
   });
@@ -387,7 +411,7 @@ export function hitungProgresiJalur(daftarUnit = [], sesiList = []) {
 
   const unitWithStatus = daftarUnit.map((unit, idx) => {
     // Cek apakah unit ini sudah selesai
-    const sesi = sesiSelesaiMap.get(unit.id);
+    const sesi = sesiSelesaiMap.get(unit.id) || (unit.paketIdAsli ? sesiSelesaiMap.get(unit.paketIdAsli) : null);
     const sudahSelesai = Boolean(sesi);
 
     if (sudahSelesai) {

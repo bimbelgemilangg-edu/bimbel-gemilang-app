@@ -32,6 +32,7 @@ import {
   getDaftarUnitJalurUjian,
   hitungProgresiJalur,
   pastikanPaketUnitTersedia,
+  isPaketOtomatisAi,
 } from '../../../utils/jalurUjianAiConfig';
 import MaskotAstronot from '../../../components/MaskotAstronot';
 
@@ -43,7 +44,11 @@ export default function JalurUjianAiPage() {
     : '';
 
   // Deteksi jenjang ujian akhir siswa (Kelas 6 SD, 9 SMP, 12 SMA/UTBK)
-  const targetJenjang = useMemo(() => deteksiJenjangUjianAkhir(profil), [profil]);
+  const targetJenjang = useMemo(() => {
+    const k = profil.kelas || profil.kelasSekolah || (typeof localStorage !== 'undefined' ? localStorage.getItem('studentGrade') || localStorage.getItem('studentKelas') : '');
+    const j = profil.jenjang || (typeof localStorage !== 'undefined' ? localStorage.getItem('studentGrade') : '');
+    return deteksiJenjangUjianAkhir({ ...profil, kelas: k, jenjang: j });
+  }, [profil]);
 
   const [loading, setLoading] = useState(true);
   const [paketOtomatisDb, setPaketOtomatisDb] = useState([]);
@@ -67,13 +72,11 @@ export default function JalurUjianAiPage() {
 
         const allPaket = snapPaket.docs.map((d) => ({ id: d.id, ...d.data() }));
         // Saring paket yang sesuai untuk jenjang siswa
-        const paketSiswa = saringPaketUntukSiswa(allPaket, profil || { kelasSekolah: profil.kelas });
+        const kSiswa = profil.kelas || profil.kelasSekolah || (typeof localStorage !== 'undefined' ? localStorage.getItem('studentGrade') : '');
+        const paketSiswa = saringPaketUntukSiswa(allPaket, { ...profil, kelasSekolah: kSiswa, kelas: kSiswa });
 
-        // Filter paket yang berasal dari generator otomatis AI / pemahaman
-        const paketAi = paketSiswa.filter((p) => {
-          const j = String(p.judul || '').toUpperCase();
-          return p.otomatis || p.jalurUjianAi || p.jenisUjian === 'TKA' || p.jenisUjian === 'SNBT/UTBK' || j.includes('PEMAHAMAN TKA') || j.includes('TRY OUT OTOMATIS');
-        });
+        // Filter paket yang murni berasal dari generator otomatis AI / pemahaman
+        const paketAi = paketSiswa.filter(isPaketOtomatisAi);
 
         // Urutkan dari paket paling awal (terlama) ke paling baru agar membentuk alur petualangan
         paketAi.sort((a, b) => {
