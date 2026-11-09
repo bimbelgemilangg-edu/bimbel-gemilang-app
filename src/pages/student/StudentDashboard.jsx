@@ -19,7 +19,7 @@ import {
   Trophy, ArrowRight, AlertCircle, Award, Bell, Download,
   Trash2, FileQuestion, FileText, DollarSign, Sparkles, Inbox,
   Megaphone, RefreshCw, IdCard, Search, CheckCircle2, Bookmark,
-  Lightbulb, MessageCircle, XCircle
+  Lightbulb, MessageCircle, XCircle, Rocket,
 } from 'lucide-react';
 import {
   daftarBabSilabus,
