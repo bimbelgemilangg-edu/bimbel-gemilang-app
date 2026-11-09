@@ -103,7 +103,7 @@ SOAL_MATEMATIKA = [
         "cp": "Peserta didik dapat menghitung ukuran sebenarnya, keliling, dan luas ruangan pada denah berskala.",
         "teks_soal": "Perhatikan gambar denah rumah berikut!<br>Pilih lebih dari satu pernyataan berikut yang benar terkait dengan denah tersebut!",
         "gambar": {
-            "src": get_b64("q5_denah_rumah.jpeg"),
+            "src": get_b64("q5_denah_rumah.png"), "url": "/soal/tryout_tka_matematika_paket_a/q5_denah_rumah.png", "max_width": 520,
             "alt": "Denah rumah berskala 1 : 150 menunjukkan garasi ABCD di sudut kiri atas"
         },
         "opsi": [
@@ -164,7 +164,7 @@ SOAL_MATEMATIKA = [
         "cp": "Peserta didik dapat menghitung selisih harga pembayaran antara diskon tunggal dan diskon bertingkat.",
         "teks_soal": "Perhatikan tabel!<br><table border='1' cellpadding='6' style='border-collapse:collapse; margin:10px 0;'><thead><tr><th>Toko Arjuna</th><th>Toko Krisna</th></tr></thead><tbody><tr><td>Harga Rp210.000</td><td>Harga Rp200.000</td></tr><tr><td>Diskon 30%</td><td>Diskon 20% + 10%</td></tr></tbody></table>Selisih harga pembayaran untuk pembelian sebuah kaos di Toko Arjuna dan Toko Krisna adalah ….",
         "gambar": {
-            "src": get_b64("q8_kaos_diskon.jpeg"),
+            "src": get_b64("q8_kaos_diskon.png"), "url": "/soal/tryout_tka_matematika_paket_a/q8_kaos_diskon.png", "max_width": 260,
             "alt": "Kaos dan perbandingan diskon Toko Arjuna vs Toko Krisna"
         },
         "opsi": [
@@ -243,7 +243,7 @@ SOAL_MATEMATIKA = [
         "cp": "Peserta didik dapat mengalikan dua suku aljabar untuk menghitung luas daerah segitiga siku-siku.",
         "teks_soal": "Perhatikan gambar!<br>Luas daerah segitiga PQR adalah ….",
         "gambar": {
-            "src": get_b64("q12_segitiga_pqr.png"),
+            "src": get_b64("q12_segitiga_pqr.png"), "url": "/soal/tryout_tka_matematika_paket_a/q12_segitiga_pqr.png", "max_width": 320,
             "alt": "Segitiga PQR siku-siku di P dengan alas (x - 4) cm dan tinggi (2x + 6) cm"
         },
         "opsi": [
@@ -266,7 +266,7 @@ SOAL_MATEMATIKA = [
         "cp": "Peserta didik dapat menentukan rumus fungsi, nilai variabel domain, serta membedakan domain dan kodomain.",
         "teks_soal": "Perhatikan diagram panah suatu fungsi berikut!<br>Pilih lebih dari satu pernyataan berikut yang benar!",
         "gambar": {
-            "src": get_b64("q13_diagram_panah.png"),
+            "src": get_b64("q13_diagram_panah.png"), "url": "/soal/tryout_tka_matematika_paket_a/q13_diagram_panah.png", "max_width": 280,
             "alt": "Diagram panah f(x) = ax + b dari himpunan A {-4, q, 3} ke B {19, 4, -2, -8}"
         },
         "opsi": [
@@ -326,7 +326,7 @@ SOAL_MATEMATIKA = [
         "cp": "Peserta didik dapat menghitung sudut-sudut pada garis sejajar yang dipotong garis transversal.",
         "teks_soal": "Perhatikan gambar!<br>Tentukan benar atau salah untuk setiap pernyataan berikut terkait gambar tersebut:",
         "gambar": {
-            "src": get_b64("q16_garis_sudut.png"),
+            "src": get_b64("q16_garis_sudut.png"), "url": "/soal/tryout_tka_matematika_paket_a/q16_garis_sudut.png", "max_width": 360,
             "alt": "Dua garis sejajar dipotong dua transversal membentuk segitiga dengan sudut 125, 96, p, q, r"
         },
         "pernyataan": [
@@ -348,7 +348,7 @@ SOAL_MATEMATIKA = [
         "cp": "Peserta didik dapat menerapkan teorema Pythagoras dalam menghitung jarak vertikal dan ketinggian pesawat.",
         "teks_soal": "Perhatikan gambar!<br>Diketahui jarak dua tank (AB) adalah 240 m, jarak pandang pesawat C dengan tank A adalah 260 m, dan pesawat D dengan tank A adalah 300 m.<br>Tentukan benar atau salah setiap pernyataan berikut:",
         "gambar": {
-            "src": get_b64("q17_tank_pesawat.jpeg"),
+            "src": get_b64("q17_tank_pesawat.png"), "url": "/soal/tryout_tka_matematika_paket_a/q17_tank_pesawat.png", "max_width": 460,
             "alt": "Tank A dan B di tanah mendatar dengan pesawat C dan D tegak lurus di atas tank B"
         },
         "pernyataan": [
@@ -370,7 +370,7 @@ SOAL_MATEMATIKA = [
         "cp": "Peserta didik dapat mengidentifikasi sisi-sisi dan sudut-sudut yang bersesuaian pada dua segitiga kongruen.",
         "teks_soal": "Perhatikan gambar!<br>Diketahui segitiga ABC kongruen dengan segitiga DEF. Pernyataan berikut yang benar adalah ….",
         "gambar": {
-            "src": get_b64("q18_segitiga_kongruen.jpeg"),
+            "src": get_b64("q18_segitiga_kongruen.png"), "url": "/soal/tryout_tka_matematika_paket_a/q18_segitiga_kongruen.png", "max_width": 480,
             "alt": "Segitiga ABC dengan AB=9, AC=15, sudut B=101 dan segitiga DEF dengan FE=9, FD=11, sudut E=44, sudut D=35"
         },
         "opsi": [
@@ -393,7 +393,7 @@ SOAL_MATEMATIKA = [
         "cp": "Peserta didik dapat menentukan perbandingan sisi yang bersesuaian serta menghitung luas pada bangun persegipanjang sebangun.",
         "teks_soal": "Perhatikan gambar.<br>Pekarangan ABCD dan kolam BEFG berbentuk persegipanjang. Diketahui AD = 15 meter, GF = 1,5 meter, dan FE = 2 meter. Diketahui pekarangan ABCD dan kolam BEFG sebangun.<br>Pilihlah lebih dari satu pernyataan berikut yang benar!",
         "gambar": {
-            "src": get_b64("q19_kebun_kolam.jpeg"),
+            "src": get_b64("q19_kebun_kolam.png"), "url": "/soal/tryout_tka_matematika_paket_a/q19_kebun_kolam.png", "max_width": 420,
             "alt": "Pekarangan ABCD seluas kebun dan kolam BEFG sebangun"
         },
         "opsi": [
@@ -416,7 +416,7 @@ SOAL_MATEMATIKA = [
         "cp": "Peserta didik dapat menentukan koordinat titik asal hasil refleksi sumbu Y dan faktor skala dilatasi.",
         "teks_soal": "Perhatikan gambar berikut!<br>Trapesium A’B’C’D’ adalah bayangan dari trapesium ABCD setelah dicerminkan terhadap sumbu Y, kemudian trapesium A’B’C’D’ didilatasi dengan pusat O(0,0) dengan faktor skala $k$ memiliki bayangan akhir trapesium A”B”C”D”.<br>Pilih lebih dari satu pernyataan berikut yang benar!",
         "gambar": {
-            "src": get_b64("q20_koordinat_trapesium.png"),
+            "src": get_b64("q20_koordinat_trapesium.png"), "url": "/soal/tryout_tka_matematika_paket_a/q20_koordinat_trapesium.png", "max_width": 460,
             "alt": "Koordinat kartesius transformasi trapesium refleksi dan dilatasi"
         },
         "opsi": [
@@ -439,7 +439,7 @@ SOAL_MATEMATIKA = [
         "cp": "Peserta didik dapat menghitung keliling kolam gabungan jajargenjang dan belah ketupat.",
         "teks_soal": "Perhatikan gambar!<br>Kolam renang ABCDEF merupakan gabungan jajargenjang ABEF dan belah ketupat BCDE. Diketahui panjang AB = 15 meter, BD = 12 meter, dan EC = 16 meter. Keliling kolam renang tersebut adalah ….",
         "gambar": {
-            "src": get_b64("q21_kolam_renang.jpeg"),
+            "src": get_b64("q21_kolam_renang.png"), "url": "/soal/tryout_tka_matematika_paket_a/q21_kolam_renang.png", "max_width": 480,
             "alt": "Kolam renang ABCDEF gabungan jajargenjang dan belah ketupat"
         },
         "opsi": [
@@ -462,7 +462,7 @@ SOAL_MATEMATIKA = [
         "cp": "Peserta didik dapat menghitung luas daerah yang diarsir antara trapesium siku-siku dan juring lingkaran.",
         "teks_soal": "Perhatikan gambar trapesium siku-siku dan juring lingkaran!<br>Diketahui panjang $AB = 22\\text{ cm}$, $DC = 14\\text{ cm}$, dan $AD = 10\\text{ cm}$. Luas daerah yang diarsir adalah ….",
         "gambar": {
-            "src": get_b64("q22_highres.png"),
+            "src": get_b64("q22_trapesium_juring.png"), "url": "/soal/tryout_tka_matematika_paket_a/q22_trapesium_juring.png", "max_width": 400,
             "alt": "Trapesium siku-siku ABCD terpotong juring lingkaran dengan jari-jari r = 7 cm"
         },
         "opsi": [
@@ -485,7 +485,7 @@ SOAL_MATEMATIKA = [
         "cp": "Peserta didik dapat mengidentifikasi jaring-jaring prisma segitiga, limas, dan balok.",
         "teks_soal": "Perhatikan gambar jaring-jaring bangun ruang sisi datar berikut!<br>Tentukan benar atau salah untuk setiap pernyataan berikut:",
         "gambar": {
-            "src": get_b64("q23_jaring_jaring.png"),
+            "src": get_b64("q23_jaring_jaring.png"), "url": "/soal/tryout_tka_matematika_paket_a/q23_jaring_jaring.png", "max_width": 480,
             "alt": "Jaring-jaring (1) prisma segitiga, (2) limas segitiga, (3) balok"
         },
         "pernyataan": [
@@ -507,7 +507,7 @@ SOAL_MATEMATIKA = [
         "cp": "Peserta didik dapat menghitung luas atap rumah gabungan dua segitiga dan dua trapesium sama kaki.",
         "teks_soal": "Perhatikan gambar!<br>Pak Edi berencana membuat atap rumah dari genteng. Atap tersebut terbentuk dari dua segitiga sama kaki kongruen dan dua trapesium sama kaki kongruen. Jika diketahui panjang $AB = 8\\text{ m}$, $BC = 11\\text{ m}$, $DE = 5\\text{ m}$ dan $BE = 5\\text{ m}$, luas atap rumah adalah ….",
         "gambar": {
-            "src": get_b64("q24_atap_rumah.jpeg"),
+            "src": get_b64("q24_atap_rumah.png"), "url": "/soal/tryout_tka_matematika_paket_a/q24_atap_rumah.png", "max_width": 440,
             "alt": "Rumah dengan atap limas perisai terbentuk dari 2 segitiga dan 2 trapesium"
         },
         "opsi": [
@@ -530,7 +530,7 @@ SOAL_MATEMATIKA = [
         "cp": "Peserta didik dapat menghitung volume total gabungan kubus dan dua limas kongruen.",
         "teks_soal": "Perhatikan gambar!<br>Bangun tersebut terdiri dari kubus dan dua limas yang kongruen. Diketahui panjang $AB = 12\\text{ cm}$ dan panjang $JT = 30\\text{ cm}$. Volume bangun tersebut adalah ….",
         "gambar": {
-            "src": get_b64("q25_kubus_limas.png"),
+            "src": get_b64("q25_kubus_limas.png"), "url": "/soal/tryout_tka_matematika_paket_a/q25_kubus_limas.png", "max_width": 300,
             "alt": "Bangun ruang kubus dengan dua limas segiempat di atas dan bawahnya"
         },
         "opsi": [
@@ -553,7 +553,7 @@ SOAL_MATEMATIKA = [
         "cp": "Peserta didik dapat memecahkan masalah kontekstual kapasitas wadah gabungan tabung-kerucut dan gelas setengah bola.",
         "teks_soal": "Perhatikan gambar!<br>Sebuah tempat minum terbentuk dari gabungan tabung dan kerucut seperti pada gambar. Jika tempat minum tersebut berisi penuh sirup, banyaknya gelas setengah bola yang diperlukan untuk memindah semua sirup adalah ….",
         "gambar": {
-            "src": get_b64("q26_tempat_minum.jpeg"),
+            "src": get_b64("q26_tempat_minum.png"), "url": "/soal/tryout_tka_matematika_paket_a/q26_tempat_minum.png", "max_width": 320,
             "alt": "Tempat minum tabung diameter 24 cm tinggi 36 cm dan kerucut tinggi 12 cm serta gelas setengah bola diameter 12 cm"
         },
         "opsi": [
@@ -576,7 +576,7 @@ SOAL_MATEMATIKA = [
         "cp": "Peserta didik dapat menganalisis kenaikan data penjualan tertinggi pada diagram batang.",
         "teks_soal": "Perhatikan diagram berikut!<br>Kenaikan penjualan HP merk Apik tertinggi terjadi pada bulan ….",
         "gambar": {
-            "src": get_b64("q27_diagram_hp.png"),
+            "src": get_b64("q27_diagram_hp.png"), "url": "/soal/tryout_tka_matematika_paket_a/q27_diagram_hp.png", "max_width": 540,
             "alt": "Diagram batang penjualan HP Merk Apik bulan Juli sampai Desember"
         },
         "opsi": [
@@ -618,7 +618,7 @@ SOAL_MATEMATIKA = [
         "cp": "Peserta didik dapat menentukan peluang teoretik kejadian munculnya bilangan prima pada cakram putar berangka 1 sampai 8.",
         "teks_soal": "Perhatikan gambar!<br>Cakram putar (spiner) terbagi menjadi 8 bagian yang ukurannya sama besar dan masing-masing diberi nomor urut 1 sampai 8 seperti pada gambar. Jika cakram diputar undi maka peluang bilangan prima berhenti pada jarum penunjuk adalah ….",
         "gambar": {
-            "src": get_b64("q29_spinner.jpeg"),
+            "src": get_b64("q29_spinner.png"), "url": "/soal/tryout_tka_matematika_paket_a/q29_spinner.png", "max_width": 320,
             "alt": "Cakram putar spinner 8 bagian bernomor 1 sampai 8"
         },
         "opsi": [

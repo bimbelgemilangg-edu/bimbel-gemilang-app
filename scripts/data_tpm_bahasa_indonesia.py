@@ -58,7 +58,7 @@ SOAL_BAHASA_INDONESIA = [
         "cp": "Peserta didik dapat mengidentifikasi informasi tersurat tentang maskot fauna pada teks wacana.",
         "grup": "wacana_baluran",
         "bacaan_judul": "Petualangan di Afrika van Java",
-        "bacaan_gambar": {"src": get_b64("teks1_baluran.jpeg"), "alt": "Sabana Bekol Taman Nasional Baluran Situbondo"},
+        "bacaan_gambar": {"src": get_b64("teks1_baluran.png"), "url": "/soal/tryout_tpm_bindo_paket_b/teks1_baluran.png", "max_width": 480, "alt": "Sabana Bekol Taman Nasional Baluran Situbondo"},
         "bacaan": WACANA_1,
         "teks_soal": "Satwa apa yang menjadi maskot Taman Nasional Baluran?",
         "opsi": [
@@ -311,7 +311,7 @@ SOAL_BAHASA_INDONESIA = [
         "cp": "Peserta didik dapat mengidentifikasi kalimat opini pada teks ulasan film.",
         "grup": "wacana_superman",
         "bacaan_judul": "Superman: Kebangkitan dan Harapan dari Langit",
-        "bacaan_gambar": {"src": get_b64("teks5_superman.jpeg"), "alt": "Poster Film Superman 2025 disutradarai James Gunn"},
+        "bacaan_gambar": {"src": get_b64("teks5_superman.png"), "url": "/soal/tryout_tpm_bindo_paket_b/teks5_superman.png", "max_width": 260, "alt": "Poster Film Superman 2025 disutradarai James Gunn"},
         "bacaan": WACANA_5,
         "teks_soal": "Kalimat opini yang tepat berdasarkan teks tersebut adalah …",
         "opsi": [
@@ -375,7 +375,7 @@ SOAL_BAHASA_INDONESIA = [
         "cp": "Peserta didik dapat mengidentifikasi tindakan pelestarian lingkungan dari wacana infografis.",
         "grup": "wacana_lingkungan",
         "bacaan_judul": "Krisis Lingkungan dan Upaya Pelestarian Keseharian",
-        "bacaan_gambar": {"src": get_b64("teks6_infografis_lingkungan.jpeg"), "alt": "Infografis CNN Indonesia Lestarikan Lingkungan Lewat Keseharian"},
+        "bacaan_gambar": {"src": get_b64("teks6_infografis_lingkungan.png"), "url": "/soal/tryout_tpm_bindo_paket_b/teks6_infografis_lingkungan.png", "max_width": 560, "alt": "Infografis CNN Indonesia Lestarikan Lingkungan Lewat Keseharian"},
         "bacaan": WACANA_6_T1 + "<br><br>" + WACANA_6_T2,
         "teks_soal": "Berdasarkan teks 2, kegiatan yang termasuk melestarikan lingkungan adalah …",
         "opsi": [
@@ -439,7 +439,7 @@ SOAL_BAHASA_INDONESIA = [
         "cp": "Peserta didik dapat menyimpulkan amanat dan keteladanan menjaga kelestarian alam pada puisi.",
         "grup": "wacana_puisi",
         "bacaan_judul": "Elegi Hujan",
-        "bacaan_gambar": {"src": get_b64("teks7_puisi_elegi_hujan.jpeg"), "alt": "Karya Puisi Elegi Hujan berlatar suasana gerimis dan bunga berguguran"},
+        "bacaan_gambar": {"src": get_b64("teks7_puisi_elegi_hujan.png"), "url": "/soal/tryout_tpm_bindo_paket_b/teks7_puisi_elegi_hujan.png", "max_width": 560, "alt": "Karya Puisi Elegi Hujan berlatar suasana gerimis dan bunga berguguran"},
         "bacaan": WACANA_7,
         "teks_soal": "Keteladanan apa yang dapat kamu peroleh dari puisi “Elegi Hujan”?",
         "opsi": [
@@ -629,7 +629,7 @@ SOAL_BAHASA_INDONESIA = [
         "cp": "Peserta didik dapat mengidentifikasi istilah teknis yang tidak tepat penggunaannya dalam konteks kalimat pengolahan sampah.",
         "grup": "wacana_3r",
         "bacaan_judul": "Pentingnya Konsep 3R dalam Pemanfaatan Kembali Sampah",
-        "bacaan_gambar": {"src": get_b64("teks10_kerajinan_3r.jpeg"), "alt": "Pameran kerajinan produk daur ulang dari sampah plastik dan koran bekas"},
+        "bacaan_gambar": {"src": get_b64("teks10_kerajinan_3r.png"), "url": "/soal/tryout_tpm_bindo_paket_b/teks10_kerajinan_3r.png", "max_width": 460, "alt": "Pameran kerajinan produk daur ulang dari sampah plastik dan koran bekas"},
         "bacaan": WACANA_10,
         "teks_soal": "Istilah yang tidak sesuai dalam teks tersebut adalah ….",
         "opsi": [

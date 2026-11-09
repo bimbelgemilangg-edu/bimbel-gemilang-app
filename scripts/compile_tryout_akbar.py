@@ -35,7 +35,7 @@ def build_html_doc(title, subtitle, articles):
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       line-height: 1.6;
       color: #1e293b;
-      max-width: 900px;
+      max-width: 860px;
       margin: 0 auto;
       padding: 30px 20px;
       background-color: #f8fafc;
@@ -75,10 +75,14 @@ def build_html_doc(title, subtitle, articles):
       text-align: center;
       margin: 16px 0;
     }}
-    [data-field="gambar"] img {{
+    [data-field="gambar"] img, [data-field="bacaan"] img {{
       max-width: 100%;
+      height: auto;
+      object-fit: contain;
       border-radius: 8px;
       border: 1px solid #cbd5e1;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      background-color: #ffffff;
     }}
     ol[data-field="opsi_jawaban"] {{
       padding-left: 20px;
@@ -107,18 +111,23 @@ def build_html_doc(title, subtitle, articles):
     return header + "\n\n".join(articles) + footer
 
 def clean_for_json(q):
-    # Remove large base64 image data from JSON so file size stays lightweight if desired,
-    # or keep url as static path
     q_copy = dict(q)
     if 'bacaan_gambar' in q_copy and q_copy['bacaan_gambar']:
         src = q_copy['bacaan_gambar']['src']
         if src.startswith('data:'):
-            # retain only metadata and alt
-            q_copy['bacaan_gambar'] = {"alt": q_copy['bacaan_gambar'].get('alt', '')}
+            q_copy['bacaan_gambar'] = {
+                "url": q_copy['bacaan_gambar'].get('url', ''),
+                "alt": q_copy['bacaan_gambar'].get('alt', ''),
+                "max_width": q_copy['bacaan_gambar'].get('max_width', 520)
+            }
     if 'gambar' in q_copy and q_copy['gambar']:
         src = q_copy['gambar']['src']
         if src.startswith('data:'):
-            q_copy['gambar'] = {"alt": q_copy['gambar'].get('alt', '')}
+            q_copy['gambar'] = {
+                "url": q_copy['gambar'].get('url', ''),
+                "alt": q_copy['gambar'].get('alt', ''),
+                "max_width": q_copy['gambar'].get('max_width', 400)
+            }
     return q_copy
 
 def main():
@@ -128,7 +137,7 @@ def main():
     mat_articles = [render_html_article(q) for q in SOAL_MATEMATIKA]
     mat_html = build_html_doc(
         "Tryout Akbar SMP: Matematika - TKA 2 Paket A (Kota Yogyakarta)",
-        "30 Butir Soal Lengkap Sesuai Kurikulum Merdeka Fase D dengan Diagram, Grafik, dan Pembahasan Tuntas",
+        "30 Butir Soal Lengkap Sesuai Kurikulum Merdeka Fase D dengan Diagram, Grafik Presisi 300 DPI, dan Pembahasan Tuntas",
         mat_articles
     )
     mat_html_path = os.path.join(PUBLIC_DIR, "tryout_tka_matematika_paket_a_30soal.html")
@@ -145,7 +154,7 @@ def main():
     bin_articles = [render_html_article(q) for q in SOAL_BAHASA_INDONESIA]
     bin_html = build_html_doc(
         "Tryout Akbar SMP: Bahasa Indonesia - TPM 2 Paket B (Kota Yogyakarta)",
-        "30 Butir Soal Literasi Membaca Sesuai Kurikulum Merdeka Fase D dengan 10 Wacana Terintegrasi & Bebas Soal Yatim",
+        "30 Butir Soal Literasi Membaca Sesuai Kurikulum Merdeka Fase D dengan 10 Wacana Terintegrasi & Ilustrasi Presisi 300 DPI",
         bin_articles
     )
     bin_html_path = os.path.join(PUBLIC_DIR, "tryout_tpm_bindo_paket_b_30soal.html")
@@ -175,7 +184,7 @@ def main():
         json.dump([clean_for_json(q) for q in SOAL_MATEMATIKA] + [clean_for_json(q) for q in SOAL_BAHASA_INDONESIA], f, ensure_ascii=False, indent=2)
     print(f"Combined 60 Soal JSON written: {comb_json_path}")
 
-    print("\nAll 6 files successfully compiled!")
+    print("\nAll 6 files successfully recompiled with precise images!")
 
 if __name__ == '__main__':
     main()

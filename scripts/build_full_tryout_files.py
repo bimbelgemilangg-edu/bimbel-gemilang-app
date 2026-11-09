@@ -48,7 +48,9 @@ def render_html_article(q):
             lines.append(f'    <h3 style="margin-top:0; color:#0369a1;">{html.escape(q["bacaan_judul"])}</h3>')
         if q.get('bacaan_gambar'):
             bg = q['bacaan_gambar']
-            lines.append(f'    <div style="text-align:center; margin:10px 0;"><img src="{bg["src"]}" alt="{html.escape(bg.get("alt", ""))}" style="max-width:100%; border-radius:8px;" /></div>')
+            mw = bg.get('max_width', 520)
+            data_url_attr = f' data-url="{bg["url"]}"' if bg.get('url') else ''
+            lines.append(f'    <div style="text-align:center; margin:14px 0;"><img src="{bg["src"]}"{data_url_attr} alt="{html.escape(bg.get("alt", ""))}" style="max-width:{mw}px; width:100%; height:auto; border-radius:8px; border:1px solid #cbd5e1; box-shadow:0 2px 6px rgba(0,0,0,0.06); display:inline-block;" /></div>')
         lines.append(f'    {q["bacaan"]}')
         lines.append('  </div>')
 
@@ -58,8 +60,10 @@ def render_html_article(q):
     # Gambar Soal
     if q.get('gambar'):
         g = q['gambar']
-        lines.append('  <div data-field="gambar">')
-        lines.append(f'    <img src="{g["src"]}" alt="{html.escape(g.get("alt", ""))}" style="max-width:100%; border-radius:8px;" />')
+        mw = g.get('max_width', 400)
+        data_url_attr = f' data-url="{g["url"]}"' if g.get('url') else ''
+        lines.append('  <div data-field="gambar" style="text-align:center; margin:14px 0;">')
+        lines.append(f'    <img src="{g["src"]}"{data_url_attr} alt="{html.escape(g.get("alt", ""))}" style="max-width:{mw}px; width:100%; height:auto; border-radius:8px; border:1px solid #cbd5e1; box-shadow:0 2px 6px rgba(0,0,0,0.06); display:inline-block;" />')
         lines.append('  </div>')
 
     # Opsi Jawaban (untuk pg_sederhana & pg_kompleks)
@@ -88,4 +92,4 @@ def render_html_article(q):
     lines.append('</article>\n')
     return '\n'.join(lines)
 
-print("HTML Article Renderer Ready")
+print("Enhanced HTML Article Renderer Ready")
