@@ -38,6 +38,7 @@ export default function RendererEsai({
   modeTinjau = false,
   disabled = false,
   onKlikGambar = null,
+  sembunyikanKunci = false,
 }) {
   const [busyFoto, setBusyFoto] = useState(false);
   const [errorFoto, setErrorFoto] = useState('');
@@ -216,7 +217,7 @@ export default function RendererEsai({
           ) : (
             <span style={{ fontSize: 11.5, color: '#94a3b8' }}>Tidak ada foto jawaban.</span>
           )}
-          {soal.kunciJawaban && (
+          {soal.kunciJawaban && !sembunyikanKunci && (
             <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 10, padding: '8px 12px', fontSize: 12, color: '#166534' }}>
               💡 Jawaban rujukan/rubrik dari pembuat soal: <b>{soal.kunciJawaban}</b>
             </div>

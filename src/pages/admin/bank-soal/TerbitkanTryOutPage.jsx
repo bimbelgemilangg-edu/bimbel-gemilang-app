@@ -58,7 +58,7 @@ import { peringatanSesiBerjalan } from '../../../utils/pulihKirimHasilTryOut.js'
 import {
   ArrowLeft, Loader2, Send, ShoppingCart, Trash2, CheckCircle2, AlertTriangle,
   Timer, ShieldAlert, Camera, ListChecks, Layers, Folder, FolderOpen, ChevronDown, ChevronUp, ChevronRight, Sparkles,
-  Pencil, RotateCcw, Printer,
+  Pencil, RotateCcw, Printer, BookOpen,
 } from 'lucide-react';
 // 🔥 BARU (2026-10-08, permintaan owner sambil mengirim tangkapan layar
 // halaman ini: "selain terbit ke siswa aku mau kasih tombol print soal
@@ -576,6 +576,10 @@ export default function TerbitkanTryOutPage() {
   // 🔥 BARU: acak urutan soal per siswa -- beda siswa beda urutan
   // nomor (anti-nyontek liat jawaban nomor sekian dari teman sebelah).
   const [soalAcak, setSoalAcak] = useState(true);
+  // 🔥 BARU: Tampilkan Kunci Jawaban Benar & Pembahasan ke Siswa
+  // (bila false, siswa cuma lihat skor akhir & pilihan mereka; kunci/pembahasan disimpan buat dibahas tentor di kelas)
+  const [tampilkanKunci, setTampilkanKunci] = useState(true);
+  const [tampilkanPembahasan, setTampilkanPembahasan] = useState(true);
 
   const [menerbitkan, setMenerbitkan] = useState(false);
   const [hasil, setHasil] = useState(null);
@@ -792,6 +796,8 @@ export default function TerbitkanTryOutPage() {
     setAntiCheatAktif(p.antiCheatAktif !== false);
     setWajibKamera(!!p.wajibKamera);
     setSoalAcak(p.soalAcak !== false);
+    setTampilkanKunci(p.tampilkanKunci !== false);
+    setTampilkanPembahasan(p.tampilkanPembahasan !== false);
     setTentorPublish(p.tentorId || '');
     setKeranjang(new Map((p.daftarSoal || []).map((soal) => [soal.id, soal])));
     setKeranjangDibuka(true);
@@ -805,6 +811,8 @@ export default function TerbitkanTryOutPage() {
     setEditJudulAsli('');
     kosongkanKeranjang();
     setJudulTryOut('');
+    setTampilkanKunci(true);
+    setTampilkanPembahasan(true);
     setHasil(null);
   }, [kosongkanKeranjang]);
 
@@ -978,6 +986,8 @@ export default function TerbitkanTryOutPage() {
         antiCheatAktif,
         wajibKamera: antiCheatAktif ? wajibKamera : false,
         soalAcak,
+        tampilkanKunci,
+        tampilkanPembahasan,
         // 🔥 BARU: jadwal buka & deadline -- disimpan sebagai ISO string
         // (bukan Firestore Timestamp) biar gampang dibandingkan langsung
         // pakai `new Date()` di sisi siswa tanpa nunggu resolve dulu.
@@ -1136,6 +1146,16 @@ export default function TerbitkanTryOutPage() {
                         {jenisDari(p) === 'utbk' ? 'UTBK' : jenisDari(p) === 'tka' ? 'TKA' : 'KURIKULUM'}
                         {p.jenisUjian ? '' : ' (otomatis)'}
                       </span>
+                      {p.tampilkanKunci === false && (
+                        <span style={{ display: 'inline-block', marginLeft: 6, padding: '2px 7px', borderRadius: 12, background: '#fffbeb', border: '1px solid #fde68a', color: '#b45309', fontSize: 9.5, fontWeight: 800 }}>
+                          🔒 Kunci Ditutup
+                        </span>
+                      )}
+                      {p.tampilkanPembahasan === false && (
+                        <span style={{ display: 'inline-block', marginLeft: 6, padding: '2px 7px', borderRadius: 12, background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1e40af', fontSize: 9.5, fontWeight: 800 }}>
+                          🔒 Bahas Tentor
+                        </span>
+                      )}
                     </div>
                   </div>
                   <span style={{ fontSize: 11, fontWeight: 700, color: st.warna, whiteSpace: 'nowrap' }}>{st.label}</span>
@@ -1762,7 +1782,7 @@ export default function TerbitkanTryOutPage() {
             </div>
 
             {/* 🔥 ANTI-CHEAT */}
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 14, alignItems: 'center', padding: '8px 10px', backgroundColor: '#f9fafb', borderRadius: 8, marginBottom: 12 }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 14, alignItems: 'center', padding: '8px 10px', backgroundColor: '#f9fafb', borderRadius: 8, marginBottom: 10 }}>
               <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#374151' }}>
                 <input type="checkbox" checked={antiCheatAktif} onChange={(e) => setAntiCheatAktif(e.target.checked)} />
                 <ShieldAlert size={13} /> Deteksi kecurangan (tab/fullscreen)
@@ -1775,6 +1795,51 @@ export default function TerbitkanTryOutPage() {
                 <input type="checkbox" checked={soalAcak} onChange={(e) => setSoalAcak(e.target.checked)} />
                 <ListChecks size={13} /> Acak urutan soal (beda tiap siswa)
               </label>
+            </div>
+
+            {/* 📖 KONTROL KUNCI JAWABAN & PEMBAHASAN UNTUK SISWA */}
+            <div style={{
+              display: 'flex', flexDirection: 'column', gap: 8,
+              padding: '10px 12px',
+              backgroundColor: (!tampilkanKunci || !tampilkanPembahasan) ? '#fffbeb' : '#f0fdf4',
+              border: `1.5px solid ${(!tampilkanKunci || !tampilkanPembahasan) ? '#fde68a' : '#bbf7d0'}`,
+              borderRadius: 8,
+              marginBottom: 12,
+            }}>
+              <div style={{ fontSize: 12, fontWeight: 800, color: (!tampilkanKunci || !tampilkanPembahasan) ? '#92400e' : '#166534', display: 'flex', alignItems: 'center', gap: 6 }}>
+                <BookOpen size={14} /> Pengaturan Tinjauan Hasil Siswa (Kunci & Pembahasan)
+              </div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, alignItems: 'center' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#1e293b', fontWeight: 600, cursor: 'pointer' }}>
+                  <input
+                    type="checkbox"
+                    checked={tampilkanKunci}
+                    onChange={(e) => setTampilkanKunci(e.target.checked)}
+                    style={{ width: 16, height: 16, cursor: 'pointer' }}
+                  />
+                  <span>Tampilkan Kunci Jawaban Benar ke Siswa</span>
+                </label>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#1e293b', fontWeight: 600, cursor: 'pointer' }}>
+                  <input
+                    type="checkbox"
+                    checked={tampilkanPembahasan}
+                    onChange={(e) => setTampilkanPembahasan(e.target.checked)}
+                    style={{ width: 16, height: 16, cursor: 'pointer' }}
+                  />
+                  <span>Buka Pembahasan Soal Lengkap ke Siswa</span>
+                </label>
+              </div>
+              <div style={{ fontSize: 11, color: (!tampilkanKunci || !tampilkanPembahasan) ? '#b45309' : '#15803d', lineHeight: 1.5 }}>
+                {!tampilkanKunci && !tampilkanPembahasan ? (
+                  '🔒 Kunci & Pembahasan Dinonaktifkan: Siswa hanya melihat skor akhir tanpa mengetahui kunci jawaban benar dan tanpa teks pembahasan, agar dibahas bersama tentor di sesi kelas.'
+                ) : !tampilkanPembahasan ? (
+                  '💡 Siswa melihat kunci jawaban benar (tanda hijau/merah), tetapi teks pembahasan disembunyikan agar dibahas bersama tentor.'
+                ) : !tampilkanKunci ? (
+                  '💡 Kunci jawaban benar disembunyikan dari siswa.'
+                ) : (
+                  '✅ Normal: Siswa dapat melihat kunci jawaban benar dan pembahasan lengkap setelah selesai mengerjakan.'
+                )}
+              </div>
             </div>
 
             {/* ── HUBUNGKAN TENTOR (dipinta owner 2026-10): tentor terpilih

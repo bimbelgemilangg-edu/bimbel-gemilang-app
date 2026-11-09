@@ -33,7 +33,7 @@ function safeArray(v) {
   return [];
 }
 
-export default function RendererBenarSalah({ soal, jawabanTerpilih = [], onChange, modeTinjau = false, disabled = false }) {
+export default function RendererBenarSalah({ soal, jawabanTerpilih = [], onChange, modeTinjau = false, disabled = false, sembunyikanKunci = false }) {
   const baris = safeArray(pilihBarisBenarSalah(soal));
   // 🔥 BARU (bug ditemukan): dulu kolomnya HARDCODE cuma "Benar"/"Salah"
   // -- soal yang beneran kategorinya lebih dari 2 (mis. "Proses/
@@ -106,8 +106,12 @@ export default function RendererBenarSalah({ soal, jawabanTerpilih = [], onChang
               let tanda = '';
 
               if (modeTinjau) {
-                if (isKunci) { border = '#15803d'; bg = isDipilihSiswa ? '#15803d' : 'white'; tanda = isDipilihSiswa ? '✓' : (isKunci ? '•' : ''); }
-                if (isDipilihSiswa && !isKunci) { border = '#dc2626'; bg = '#dc2626'; tanda = '✕'; }
+                if (sembunyikanKunci) {
+                  if (isDipilihSiswa) { border = '#7c3aed'; bg = '#7c3aed'; tanda = '✓'; }
+                } else {
+                  if (isKunci) { border = '#15803d'; bg = isDipilihSiswa ? '#15803d' : 'white'; tanda = isDipilihSiswa ? '✓' : (isKunci ? '•' : ''); }
+                  if (isDipilihSiswa && !isKunci) { border = '#dc2626'; bg = '#dc2626'; tanda = '✕'; }
+                }
               } else if (isDipilihSiswa) {
                 border = '#7c3aed'; bg = '#7c3aed'; tanda = '✓';
               }

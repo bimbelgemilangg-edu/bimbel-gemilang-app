@@ -14,7 +14,7 @@
 import React from 'react';
 import { soalBelumDijawab } from '../../../utils/skorSoalTryOut';
 
-export default function RendererIsianSingkat({ soal, jawabanTerpilih = '', onChange, modeTinjau = false, disabled = false }) {
+export default function RendererIsianSingkat({ soal, jawabanTerpilih = '', onChange, modeTinjau = false, disabled = false, sembunyikanKunci = false }) {
   const tidakDijawab = modeTinjau && soalBelumDijawab(soal, jawabanTerpilih);
   const isNumerik = soal.tipe === 'numerik';
 
@@ -46,7 +46,7 @@ export default function RendererIsianSingkat({ soal, jawabanTerpilih = '', onCha
         )}
       </div>
 
-      {modeTinjau && (
+      {modeTinjau && !sembunyikanKunci && (
         <div style={{ marginTop: 10, fontSize: 12.5, color: '#16a34a', background: '#f0fdf4', borderRadius: 8, padding: '8px 12px' }}>
           ✔️ Kunci jawaban: <b>{soal.kunciJawaban}</b>{isNumerik && soal.satuanJawaban ? ` ${soal.satuanJawaban}` : ''}
         </div>

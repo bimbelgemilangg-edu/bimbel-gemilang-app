@@ -32,7 +32,7 @@ import { opsiTampilDari } from '../../../utils/bersihkanGlifKunci.js';
 // Satu fungsi, satu perilaku: renderer & skoring selalu sepakat.
 import { safeArray, kunciHurufPgKompleks } from '../../../utils/skoringSoalKompleks.js';
 
-export default function RendererPgKompleks({ soal, jawabanTerpilih = [], onChange, modeTinjau = false, disabled = false, onKlikGambar = null }) {
+export default function RendererPgKompleks({ soal, jawabanTerpilih = [], onChange, modeTinjau = false, disabled = false, onKlikGambar = null, sembunyikanKunci = false }) {
   const opsi = opsiTampilDari(soal);
   // 🔥 2026-11-03 (paket keluhan siswa): kunci dibakukan ke HURUF lewat
   // sumber kanonik yang sama dengan skoring (dialek angka "1,3" ikut) --
@@ -76,9 +76,15 @@ export default function RendererPgKompleks({ soal, jawabanTerpilih = [], onChang
         let ikon = null;
 
         if (modeTinjau) {
-          if (iniKunci && siswaCentang) { border = '#22c55e'; bg = '#f0fdf4'; ikon = '✔️'; } // benar
-          else if (!iniKunci && siswaCentang) { border = '#ef4444'; bg = '#fef2f2'; ikon = '✖️'; } // salah dicentang
-          else if (iniKunci && !siswaCentang) { border = '#22c55e'; bg = 'white'; ikon = '⬜'; } // kelewat, harusnya dicentang
+          if (sembunyikanKunci) {
+            border = siswaCentang ? '#7c3aed' : '#e2e8f0';
+            bg = siswaCentang ? '#f5f3ff' : 'white';
+            ikon = null;
+          } else {
+            if (iniKunci && siswaCentang) { border = '#22c55e'; bg = '#f0fdf4'; ikon = '✔️'; } // benar
+            else if (!iniKunci && siswaCentang) { border = '#ef4444'; bg = '#fef2f2'; ikon = '✖️'; } // salah dicentang
+            else if (iniKunci && !siswaCentang) { border = '#22c55e'; bg = 'white'; ikon = '⬜'; } // kelewat, harusnya dicentang
+          }
         } else if (siswaCentang) {
           border = '#7c3aed';
         }
@@ -96,11 +102,11 @@ export default function RendererPgKompleks({ soal, jawabanTerpilih = [], onChang
             }}
           >
             <span style={{
-              width: 22, height: 22, borderRadius: 6, border: `2px solid ${modeTinjau ? border : (siswaCentang ? '#7c3aed' : '#cbd5e1')}`,
+              width: 22, height: 22, borderRadius: 6, border: `2px solid ${modeTinjau && !sembunyikanKunci ? border : (siswaCentang ? '#7c3aed' : '#cbd5e1')}`,
               display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, flexShrink: 0,
-              background: !modeTinjau && siswaCentang ? '#7c3aed' : 'transparent', color: 'white',
+              background: (!modeTinjau || sembunyikanKunci) && siswaCentang ? '#7c3aed' : 'transparent', color: 'white',
             }}>
-              {!modeTinjau && siswaCentang ? '✓' : ''}
+              {(!modeTinjau || sembunyikanKunci) && siswaCentang ? '✓' : ''}
             </span>
             <span style={{ fontWeight: 700, color: '#64748b', width: 18, flexShrink: 0 }}>{huruf}.</span>
             <span style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -124,7 +130,7 @@ export default function RendererPgKompleks({ soal, jawabanTerpilih = [], onChang
                 </div>
               )}
             </span>
-            {modeTinjau && ikon && <span style={{ fontSize: 14 }}>{ikon}</span>}
+            {modeTinjau && !sembunyikanKunci && ikon && <span style={{ fontSize: 14 }}>{ikon}</span>}
           </button>
         );
       })}

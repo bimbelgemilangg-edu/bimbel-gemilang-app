@@ -1114,6 +1114,11 @@ export default function TryOutView() {
         />
 
         <div style={{ fontSize: 12.5, fontWeight: 800, color: '#fff', margin: '20px 0 10px', letterSpacing: 0.4 }}>📋 TINJAU JAWABAN</div>
+        {paket.tampilkanKunci === false && (
+          <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 12, padding: '12px 16px', marginBottom: 14, color: '#334155', fontSize: 12.5, lineHeight: 1.5 }}>
+            🔒 <b>Mode Pembahasan Bersama Tentor:</b> Kunci jawaban dan pembahasan untuk try out ini dinonaktifkan di aplikasi agar dapat dibahas bersama Tentor di kelas. Pilihan jawabanmu tetap tersimpan rapi di bawah.
+          </div>
+        )}
         {/* 🔥 ROMBAK (2026-10-12, arahan owner): evaluasi hanya terjadi bila
             siswa benar-benar melihat LETAK salahnya. Tombol ini menyusun
             daftar nomor salah + sidik jari kode sumbernya secara mekanis
@@ -1173,47 +1178,58 @@ export default function TryOutView() {
               />
               {s.tabelSoal && <RenderTable table={s.tabelSoal} />}
               <PenahanErrorSoal soalId={s.id}>
-                <RendererSoal soal={s} jawabanTerpilih={jawaban[s.id]} modeTinjau />
+                <RendererSoal
+                  soal={s}
+                  jawabanTerpilih={jawaban[s.id]}
+                  modeTinjau
+                  sembunyikanKunci={paket.tampilkanKunci === false}
+                />
               </PenahanErrorSoal>
-              {/* 🔥 ROMBAK (2026-10-12): soal SALAH mendapat pembahasan
-                  TERBUKA + pembanding jawabanmu-vs-kunci (inilah letak
-                  evaluasi); soal benar tetap terlipat supaya halaman tidak
-                  jadi gulungan panjang yang dilewati siswa. */}
-              {s.pembahasan && skor <= 0 && paket.tampilkanPembahasan !== false && (
-                <div style={{ marginTop: 10 }}>
-                  <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 6 }}>
-                    <span style={{ background: '#fef2f2', border: '1px solid #fecaca', color: '#991b1b', borderRadius: 999, padding: '2px 9px', fontSize: 11, fontWeight: 800 }}>
-                      jawabanmu: {belumDijawab ? '—' : 'lihat tandai merah di pilihan'}
-                    </span>
-                    <span style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', color: '#166534', borderRadius: 999, padding: '2px 9px', fontSize: 11, fontWeight: 800 }}>
-                      kunci: {kunciTampil(s.kunciJawaban)}
-                    </span>
-                  </div>
-                  <div style={{ background: '#f5f3ff', borderRadius: 8, padding: 10, fontSize: 12.5, color: '#4c1d95' }}>
+
+              {/* Status Jawaban & Kunci */}
+              {paket.tampilkanKunci !== false ? (
+                <div style={{ marginTop: 10, display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 6 }}>
+                  <span style={{ background: skor >= 0.99 ? '#f0fdf4' : '#fef2f2', border: skor >= 0.99 ? '1px solid #bbf7d0' : '1px solid #fecaca', color: skor >= 0.99 ? '#166534' : '#991b1b', borderRadius: 999, padding: '2px 9px', fontSize: 11, fontWeight: 800 }}>
+                    jawabanmu: {belumDijawab ? '—' : (skor >= 0.99 ? 'Benar' : 'Salah')}
+                  </span>
+                  <span style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', color: '#166534', borderRadius: 999, padding: '2px 9px', fontSize: 11, fontWeight: 800 }}>
+                    kunci: {kunciTampil(s.kunciJawaban)}
+                  </span>
+                </div>
+              ) : (
+                <div style={{ marginTop: 10, display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 6 }}>
+                  <span style={{ background: '#f8fafc', border: '1px solid #e2e8f0', color: '#475569', borderRadius: 999, padding: '2px 9px', fontSize: 11, fontWeight: 800 }}>
+                    jawabanmu telah tersimpan {belumDijawab ? '(tidak dijawab)' : ''}
+                  </span>
+                  <span style={{ background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1e40af', borderRadius: 999, padding: '2px 9px', fontSize: 11, fontWeight: 800 }}>
+                    🔒 Kunci & pembahasan dibahas bersama tentor di kelas
+                  </span>
+                </div>
+              )}
+
+              {/* Pembahasan Soal */}
+              {s.pembahasan && paket.tampilkanPembahasan !== false && (
+                skor <= 0 ? (
+                  <div style={{ background: '#f5f3ff', borderRadius: 8, padding: 10, fontSize: 12.5, color: '#4c1d95', marginTop: 8 }}>
                     <div style={{ fontWeight: 800, marginBottom: 4 }}>❗ Kamu salah di sini — simak pembahasannya:</div>
                     <RenderPembahasan teks={s.pembahasan} />
                   </div>
-                </div>
+                ) : (
+                  <details style={{ marginTop: 8 }}>
+                    <summary style={{ fontSize: 12.5, fontWeight: 800, color: '#3949AB', cursor: 'pointer' }}>
+                      Lihat pembahasan ▾
+                    </summary>
+                    <div style={{ marginTop: 6, background: '#f5f3ff', borderRadius: 8, padding: 10, fontSize: 12.5, color: '#4c1d95' }}>
+                      <RenderPembahasan teks={s.pembahasan} />
+                    </div>
+                  </details>
+                )
               )}
-              {/* 🔥 S3 (KEPUTUSAN FINAL 2026-10-12): try out formal TIDAK
-                  membuka pembahasan di layar siswa. Siswa membawa KODE PAKET
-                  ke tentor; pembahasan hidup di naskah kunci berlogo. */}
-              {s.pembahasan && skor <= 0 && paket.tampilkanPembahasan === false && (
-                <div style={{ marginTop: 10, background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 10, padding: '9px 12px', fontSize: 11.5, color: '#075985', lineHeight: 1.6 }}>
-                  💡 Pembahasan try out tidak dibuka di aplikasi. Catat nomor soal ini dan
-                  sebutkan kode paket <b>{kodePaketTampil(paket)}</b> ke tentormu untuk
-                  membahasnya bersama.
+
+              {s.pembahasan && paket.tampilkanPembahasan === false && (
+                <div style={{ marginTop: 8, background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 10, padding: '8px 12px', fontSize: 11.5, color: '#075985', lineHeight: 1.6 }}>
+                  💡 Pembahasan soal ini tidak dibuka di aplikasi agar dapat dibahas langsung bersama tentor di kelas. Catat nomor soal ini dan sebutkan kode paket <b>{kodePaketTampil(paket)}</b> saat sesi pembahasan.
                 </div>
-              )}
-              {s.pembahasan && skor > 0 && paket.tampilkanPembahasan !== false && (
-                <details style={{ marginTop: 10 }}>
-                  <summary style={{ fontSize: 12.5, fontWeight: 800, color: '#3949AB', cursor: 'pointer' }}>
-                    Lihat pembahasan ▾
-                  </summary>
-                  <div style={{ marginTop: 8, background: '#f5f3ff', borderRadius: 8, padding: 10, fontSize: 12.5, color: '#4c1d95' }}>
-                    <div style={{ marginTop: 4 }}><RenderPembahasan teks={s.pembahasan} /></div>
-                  </div>
-                </details>
               )}
             </div>
           );

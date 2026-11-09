@@ -13,7 +13,7 @@ import RenderMath from '../../../components/RenderMath';
 import { opsiTampilDari } from '../../../utils/bersihkanGlifKunci.js';
 import { GAYA_TEKS_OPSI } from '../../../styles/naskahSoal';
 
-export default function RendererPgSederhana({ soal, jawabanTerpilih = null, onChange, modeTinjau = false, disabled = false, onKlikGambar = null }) {
+export default function RendererPgSederhana({ soal, jawabanTerpilih = null, onChange, modeTinjau = false, disabled = false, onKlikGambar = null, sembunyikanKunci = false }) {
   const opsi = opsiTampilDari(soal);
   const indexBenar = cariIndexBenar(soal);
   const tidakDijawab = modeTinjau && soalBelumDijawab(soal, jawabanTerpilih);
@@ -45,9 +45,20 @@ export default function RendererPgSederhana({ soal, jawabanTerpilih = null, onCh
         let radio = { border: '#C7CBE0', dot: null, ikon: null };
 
         if (modeTinjau) {
-          if (i === indexBenar) { border = '#22c55e'; bg = '#f0fdf4'; radio = { border: '#22c55e', dot: '#22c55e', ikon: '✓' }; }
-          else if (dipilih) { border = '#ef4444'; bg = '#fef2f2'; radio = { border: '#ef4444', dot: '#ef4444', ikon: '✕' }; }
-          else radio = { border: '#d1d5db', dot: null, ikon: null };
+          if (sembunyikanKunci) {
+            // Mode Rahasia / Kunci Ditutup: Hanya tandai pilihan siswa secara netral (biru), tanpa hijau/merah
+            if (dipilih) {
+              border = '#3949AB';
+              bg = '#EEF0FB';
+              radio = { border: '#3949AB', dot: '#3949AB', ikon: null };
+            } else {
+              radio = { border: '#d1d5db', dot: null, ikon: null };
+            }
+          } else {
+            if (i === indexBenar) { border = '#22c55e'; bg = '#f0fdf4'; radio = { border: '#22c55e', dot: '#22c55e', ikon: '✓' }; }
+            else if (dipilih) { border = '#ef4444'; bg = '#fef2f2'; radio = { border: '#ef4444', dot: '#ef4444', ikon: '✕' }; }
+            else radio = { border: '#d1d5db', dot: null, ikon: null };
+          }
         } else if (dipilih) {
           border = '#3949AB';
           bg = '#EEF0FB';
