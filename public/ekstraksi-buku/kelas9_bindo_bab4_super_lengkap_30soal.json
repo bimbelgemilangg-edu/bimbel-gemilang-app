@@ -1,0 +1,1012 @@
+[
+  {
+    "nomor": 91,
+    "tipe": "pg_sederhana",
+    "paket": "Bab IV: Memahami Tanggapan Kritis - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Tanggapan Kritis, Struktur Evaluasi-Deskripsi-Penegasan Ulang, Kritik Santun, & Pujian Objektif",
+    "capaian_pembelajaran": "Peserta didik menyusun dan mengevaluasi teks tanggapan kritis terhadap karya seni/fenomena sosial, membedakan kritik santun berdasar data vs celaan subjektif, serta memahami struktur evaluasi, deskripsi teks, dan penegasan ulang.",
+    "bacaan": null,
+    "teks_soal": "Bacalah kutipan teks tanggapan kritis terhadap sebuah karya lukisan berikut!\n\"Sebuah karya seni kelas tinggi dari sang pelukis maestro Affandi melukiskan sebuah pemandangan\nalam perkebunan cengkeh di area perbukitan yang masih alami. Lukisan berjudul ’Kebun Cengkeh’ ini\ndibuat pada tahun 1981 dengan media cat minyak di atas kanvas berukuran 100 × 135 cm dan kini\nmenjadi salah satu koleksi berharga galeri seni nasional.\"\nBerdasarkan struktur teks tanggapan kritis, kutipan paragraf pembuka yang memperkenalkan judul\nkarya, pelukis, tahun pembuatan, dan media lukisan di atas merupakan bagian ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Daftar Pustaka dan Biodata Penulis"
+      },
+      {
+        "label": "B",
+        "teks": "Deskripsi bagian-bagian goresan warna"
+      },
+      {
+        "label": "C",
+        "teks": "Penilaian kelemahan dan saran perbaikan"
+      },
+      {
+        "label": "D",
+        "teks": "Konteks (pengenalan objek/karya yang ditanggapi)"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Paragraf pembuka yang memperkenalkan objek/karya yang ditanggapi (judul, pencipta,\ntahun, media, tempat) adalah struktur Konteks.",
+    "valid": true
+  },
+  {
+    "nomor": 92,
+    "tipe": "pg_sederhana",
+    "paket": "Bab IV: Memahami Tanggapan Kritis - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Tanggapan Kritis, Struktur Evaluasi-Deskripsi-Penegasan Ulang, Kritik Santun, & Pujian Objektif",
+    "capaian_pembelajaran": "Peserta didik menyusun dan mengevaluasi teks tanggapan kritis terhadap karya seni/fenomena sosial, membedakan kritik santun berdasar data vs celaan subjektif, serta memahami struktur evaluasi, deskripsi teks, dan penegasan ulang.",
+    "bacaan": null,
+    "teks_soal": "Bacalah kutipan paragraf tanggapan terhadap lukisan !\n\"Pada bagian tengah kanvas, tampak barisan petani perempuan mengenakan caping bambu sedang\nmemotong bulir-bulir padi yang menguning keemasan. Di latar belakang, berdiri megah siluet gunung\nberwarna biru keunguan yang diselimuti kabut tipis pagi hari, sementara cahaya matahari terbit meman-\ntulkan kilau jingga pada permukaan air pematang sawah. Pelukis menerapkan teknik sapuan pisau palet\n(impasto) yang tebal sehingga tekstur bulir padi tampak timbul secara tiga dimensi.\"\nDalam struktur teks tanggapan kritis, paragraf yang memerinci unsur-unsur visual dan teknik sapuan\nwarna lukisan tersebut termasuk bagian ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Konteks awal penciptaan"
+      },
+      {
+        "label": "B",
+        "teks": "Deskripsi (pemaparan rincian isi dan unsur fisik karya)"
+      },
+      {
+        "label": "C",
+        "teks": "Penilaian kekurangan karya"
+      },
+      {
+        "label": "D",
+        "teks": "Simpulan debat pro-kontra"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "B. Paragraf yang memerinci bagian-bagian visual di atas kanvas dan teknik sapuan warna\nadalah struktur Deskripsi.",
+    "valid": true
+  },
+  {
+    "nomor": 93,
+    "tipe": "pg_sederhana",
+    "paket": "Bab IV: Memahami Tanggapan Kritis - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Tanggapan Kritis, Struktur Evaluasi-Deskripsi-Penegasan Ulang, Kritik Santun, & Pujian Objektif",
+    "capaian_pembelajaran": "Peserta didik menyusun dan mengevaluasi teks tanggapan kritis terhadap karya seni/fenomena sosial, membedakan kritik santun berdasar data vs celaan subjektif, serta memahami struktur evaluasi, deskripsi teks, dan penegasan ulang.",
+    "bacaan": null,
+    "teks_soal": "Bacalah kutipan paragraf ketiga teks tanggapan berikut!\n\"Keunggulan utama lukisan ini terletak pada keberanian pelukis memadukan warna-warna hangat yang\nmenghasilkan energi optimisme luar biasa bagi penikmatnya. Namun, terdapat sedikit kelemahan pada\nsudut kanan bawah kanvas, yakni proporsi ukuran kerbau pembajak sawah yang tampak terlalu kecil jika\ndibandingkan dengan tinggi tubuh petani di sebelahnya. Meskipun demikian, secara keseluruhan lukisan\nini tetap merupakan mahakarya seni rupa yang sangat layak diapresiasi.\"\nKutipan di atas merupakan bagian struktur Penilaian karena ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Menjelaskan langkah-langkah cara mencampur cat minyak dengan minyak lena"
+      },
+      {
+        "label": "B",
+        "teks": "Hanya menyebutkan alamat galeri tempat lukisan tersebut dijual"
+      },
+      {
+        "label": "C",
+        "teks": "Mengungkapkan evaluasi kritis yang berimbang antara keunggulan (pujian) dan kelemahan (kritik) karya disertai alasan visual yang objektif"
+      },
+      {
+        "label": "D",
+        "teks": "Menghina pribadi pelukis dengan kata-kata kasar"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "C. Menguraikan keunggulan warna sekaligus kelemahan proporsi ukuran objek secara objektif\nmerupakan struktur Penilaian.",
+    "valid": true
+  },
+  {
+    "nomor": 94,
+    "tipe": "pg_sederhana",
+    "paket": "Bab IV: Memahami Tanggapan Kritis - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Tanggapan Kritis, Struktur Evaluasi-Deskripsi-Penegasan Ulang, Kritik Santun, & Pujian Objektif",
+    "capaian_pembelajaran": "Peserta didik menyusun dan mengevaluasi teks tanggapan kritis terhadap karya seni/fenomena sosial, membedakan kritik santun berdasar data vs celaan subjektif, serta memahami struktur evaluasi, deskripsi teks, dan penegasan ulang.",
+    "bacaan": null,
+    "teks_soal": "Dua prinsip utama yang wajib dipegang teguh oleh seseorang ketika menyampaikan tanggapan kritis\nterhadap karya maupun gagasan orang lain adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Memuji karya setinggi langit meskipun karya tersebut hasil jiplakan (plagiat)"
+      },
+      {
+        "label": "B",
+        "teks": "Subjektif (berdasarkan hubungan pertemanan dengan pencipta karya) dan emosional"
+      },
+      {
+        "label": "C",
+        "teks": "Menjatuhkan mental pencipta karya agar tidak berani berkarya lagi di masa depan"
+      },
+      {
+        "label": "D",
+        "teks": "Objektif (berdasarkan fakta/kualitas karya nyata disertai alasan logis) dan santun (menghargai karya serta memberikan saran yang membangun)"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Dua syarat utama tanggapan kritis adalah objektif (berdasarkan fakta/kualitas nyata) dan\nsantun/konstruktif (menghargai serta memberi solusi).",
+    "valid": true
+  },
+  {
+    "nomor": 95,
+    "tipe": "pg_sederhana",
+    "paket": "Bab IV: Memahami Tanggapan Kritis - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Tanggapan Kritis, Struktur Evaluasi-Deskripsi-Penegasan Ulang, Kritik Santun, & Pujian Objektif",
+    "capaian_pembelajaran": "Peserta didik menyusun dan mengevaluasi teks tanggapan kritis terhadap karya seni/fenomena sosial, membedakan kritik santun berdasar data vs celaan subjektif, serta memahami struktur evaluasi, deskripsi teks, dan penegasan ulang.",
+    "bacaan": null,
+    "teks_soal": "Perhatikan empat kalimat kritik terhadap sebuah pementasan drama sekolah berikut:\n(1) Pementasan drama kelas sembilan tadi sangat buruk dan memalukan karena sutradaranya memang\ntidak berbakat sejak lahir!\n(2) Tata panggung dan kostum tradisional yang dikenakan para pemain sudah sangat memukau, tetapi\nvolume suara pemeran utama saat berdialog di bagian tengah panggung masih kurang terdengar jelas\nhingga ke barisan kursi belakang; sebaiknya pada pementasan berikutnya digunakan mikrofon nirkabel\n(clip-on).\n(3) Sebaiknya kelompok drama itu dibubarkan saja karena membuat penonton mengantuk.\n(4) Pokoknya saya tidak suka menonton drama itu karena pemeran utamanya pernah berselisih paham\ndengan saya minggu lalu.\nKalimat yang memenuhi syarat sebagai kritik yang santun, objektif, dan konstruktif (membangun)\nadalah kalimat nomor ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Kalimat (1)"
+      },
+      {
+        "label": "C",
+        "teks": "Kalimat (3)"
+      },
+      {
+        "label": "B",
+        "teks": "Kalimat (2)"
+      },
+      {
+        "label": "D",
+        "teks": "Kalimat (4)"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "B. Kalimat (2) mengapresiasi kelebihan tata panggung, menunjukkan kekurangan teknis volume\nsuara secara spesifik, dan memberikan saran konkret (mikrofon clip-on).",
+    "valid": true
+  },
+  {
+    "nomor": 96,
+    "tipe": "pg_sederhana",
+    "paket": "Bab IV: Memahami Tanggapan Kritis - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Tanggapan Kritis, Struktur Evaluasi-Deskripsi-Penegasan Ulang, Kritik Santun, & Pujian Objektif",
+    "capaian_pembelajaran": "Peserta didik menyusun dan mengevaluasi teks tanggapan kritis terhadap karya seni/fenomena sosial, membedakan kritik santun berdasar data vs celaan subjektif, serta memahami struktur evaluasi, deskripsi teks, dan penegasan ulang.",
+    "bacaan": null,
+    "teks_soal": "Mengapa Kalimat (4) pada soal nomor 5 di atas (\"Pokoknya saya tidak suka menonton drama itu karena\npemeran utamanya pernah berselisih paham dengan saya\") merupakan tanggapan yang tidak objektif?",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Karena penilaiannya didasarkan pada sentimen pribadi (rasa suka atau benci terhadap orangnya), bukan pada kualitas artistik pementasan drama tersebut"
+      },
+      {
+        "label": "B",
+        "teks": "Karena kalimat tersebut menggunakan bahasa Indonesia yang terlalu baku"
+      },
+      {
+        "label": "C",
+        "teks": "Karena kalimat tersebut memberikan saran penggunaan mikrofon nirkabel"
+      },
+      {
+        "label": "D",
+        "teks": "Karena kalimat tersebut terlalu banyak memuji tata panggung"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "A. Menilai buruk sebuah karya karena pernah berselisih paham pribadi dengan pemainnya\nmerupakan penilaian subjektif (sentimen pribadi).",
+    "valid": true
+  },
+  {
+    "nomor": 97,
+    "tipe": "pg_sederhana",
+    "paket": "Bab IV: Memahami Tanggapan Kritis - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Tanggapan Kritis, Struktur Evaluasi-Deskripsi-Penegasan Ulang, Kritik Santun, & Pujian Objektif",
+    "capaian_pembelajaran": "Peserta didik menyusun dan mengevaluasi teks tanggapan kritis terhadap karya seni/fenomena sosial, membedakan kritik santun berdasar data vs celaan subjektif, serta memahami struktur evaluasi, deskripsi teks, dan penegasan ulang.",
+    "bacaan": null,
+    "teks_soal": "Perhatikan tabel catatan **Keunggulan dan Kelemahan Novel *\"Jejak Langkah di Kaki Merapi\"*** berikut:\n- Keunggulan: (1) Deskripsi latar budaya pedesaan lereng Gunung Merapi sangat hidup dan akurat; (2)\nKarakter tokoh utama pemuda relawan bencana digambarkan sangat inspiratif.\n- Kelemahan: (1) Terdapat cukup banyak istilah bahasa Jawa Kuno yang tidak disertai catatan kaki\n(footnote) maupun glosarium; (2) Penyelesaian konflik di bab terakhir terasa terlalu tergesa-gesa.\nParagraf Penilaian teks tanggapan kritis yang paling tepat disusun berdasarkan tabel di atas adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Kelemahan utama novel ini adalah deskripsi latar lereng Gunung Merapi yang terlalu hidup dan penokohan relawan bencana yang sangat inspiratif."
+      },
+      {
+        "label": "B",
+        "teks": "Novel \"Jejak Langkah di Kaki Merapi\" sama sekali tidak memiliki keunggulan karena latar tempatnya sangat membosankan dan tokoh utamanya tidak memiliki karakter yang jelas."
+      },
+      {
+        "label": "C",
+        "teks": "Novel \"Jejak Langkah di Kaki Merapi\" berhasil menyajikan deskripsi latar budaya lereng Gunung Merapi secara hidup serta menghadirkan sosok tokoh utama relawan bencana yang sangat inspiratif. Akan tetapi, banyaknya istilah bahasa Jawa Kuno tanpa disertai catatan kaki maupun glosarium sedikit menyulitkan pembaca awam, selain penyelesaian konflik di bab terakhir yang terasa agak tergesa-gesa."
+      },
+      {
+        "label": "D",
+        "teks": "Seluruh istilah bahasa Jawa Kuno di dalam novel ini sudah dilengkapi dengan kamus terjemahan bergambar di setiap halaman."
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "C. Pilihan C memadukan kedua poin keunggulan dan kedua poin kelemahan pada tabel secara\nutuh dan koheren.",
+    "valid": true
+  },
+  {
+    "nomor": 98,
+    "tipe": "pg_sederhana",
+    "paket": "Bab IV: Memahami Tanggapan Kritis - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Tanggapan Kritis, Struktur Evaluasi-Deskripsi-Penegasan Ulang, Kritik Santun, & Pujian Objektif",
+    "capaian_pembelajaran": "Peserta didik menyusun dan mengevaluasi teks tanggapan kritis terhadap karya seni/fenomena sosial, membedakan kritik santun berdasar data vs celaan subjektif, serta memahami struktur evaluasi, deskripsi teks, dan penegasan ulang.",
+    "bacaan": null,
+    "teks_soal": "Bacalah kutipan teks tanggapan kritis terhadap kebijakan \"Sekolah Lima Hari (Full Day School)\" berikut!\n\"Penerapan sistem sekolah lima hari (Senin hingga Jumat) memberikan waktu akhir pekan selama dua\nhari penuh bagi siswa untuk berkumpul dan berinteraksi bersama keluarga di rumah. Selain itu, waktu\ndi sekolah pada sore hari dapat dimanfaatkan untuk kegiatan ekstrakurikuler dan pembinaan karakter\ndi bawah pengawasan guru. Namun, bagi siswa yang tinggal di daerah pedesaan dengan akses trans-\nportasi umum terbatas, pulang sekolah pada pukul 16.00 WIB cukup menyulitkan dan menguras stamina\nfisik mereka.\"\nSikap penulis dalam menanggapi kebijakan sekolah lima hari pada kutipan di atas adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Mengajak siswa untuk membolos pada hari Kamis dan Jumat"
+      },
+      {
+        "label": "B",
+        "teks": "Menolak secara membabi buta seluruh kegiatan belajar di sekolah"
+      },
+      {
+        "label": "C",
+        "teks": "Hanya memuji kebijakan tersebut tanpa mau melihat kendala transportasi siswa"
+      },
+      {
+        "label": "D",
+        "teks": "Berimbang dan objektif karena menguraikan dampak positif sekaligus kendala nyata yang dihadapi sebagian siswa di lapangan"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Penulis memaparkan manfaat positif sekaligus kendala nyata di daerah pedesaan secara\nberimbang.",
+    "valid": true
+  },
+  {
+    "nomor": 99,
+    "tipe": "pg_sederhana",
+    "paket": "Bab IV: Memahami Tanggapan Kritis - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Tanggapan Kritis, Struktur Evaluasi-Deskripsi-Penegasan Ulang, Kritik Santun, & Pujian Objektif",
+    "capaian_pembelajaran": "Peserta didik menyusun dan mengevaluasi teks tanggapan kritis terhadap karya seni/fenomena sosial, membedakan kritik santun berdasar data vs celaan subjektif, serta memahami struktur evaluasi, deskripsi teks, dan penegasan ulang.",
+    "bacaan": null,
+    "teks_soal": "Perhatikan kalimat pujian berikut!\n\"Lukisan potret wajah Ibu karya Rania pada pameran seni sekolah ini sungguh luar biasa! Teknik arsiran\npensil arangnya sangat halus dalam menampilkan kerutan senyum dan kilau mata yang teduh, sehingga\nsiapa pun yang memandangnya dapat merasakan ketulusan kasih sayang seorang ibu.\"\nMengapa kalimat pujian di atas dikategorikan sebagai pujian yang berkualitas dan meyakinkan?",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Karena pujian tersebut membandingkan Rania untuk merendahkan teman sekelas lainnya"
+      },
+      {
+        "label": "B",
+        "teks": "Karena pujian tersebut bertujuan meminta imbalan uang dari Rania"
+      },
+      {
+        "label": "C",
+        "teks": "Karena pujian tersebut tidak sekadar mengucapkan kata ’bagus’, melainkan disertai alasan/bukti vi- sual spesifik tentang kehalusan teknik arsiran dan efek ekspresi karya"
+      },
+      {
+        "label": "D",
+        "teks": "Karena kalimat tersebut mengandung majas sindiran ironi"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "C. Pujian berkualitas menyebutkan bukti spesifik keunggulan karya (kehalusan arsiran pensil\narang dan efek keteduhan ekspresi).",
+    "valid": true
+  },
+  {
+    "nomor": 100,
+    "tipe": "pg_sederhana",
+    "paket": "Bab IV: Memahami Tanggapan Kritis - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Tanggapan Kritis, Struktur Evaluasi-Deskripsi-Penegasan Ulang, Kritik Santun, & Pujian Objektif",
+    "capaian_pembelajaran": "Peserta didik menyusun dan mengevaluasi teks tanggapan kritis terhadap karya seni/fenomena sosial, membedakan kritik santun berdasar data vs celaan subjektif, serta memahami struktur evaluasi, deskripsi teks, dan penegasan ulang.",
+    "bacaan": null,
+    "teks_soal": "Bacalah kutipan teks tanggapan terhadap novel \"Student Hidjo\" karya Marco Kartodikromo berikut!\n\"Novel ’Student Hidjo’ yang pertama kali terbit sebagai cerita bersambung pada tahun 1918 dan\ndibukukan pada tahun 1919 ini ditulis oleh Marco Kartodikromo, seorang jurnalis dan tokoh pergerakan\nnasional. Karya sastra ini lahir di tengah masa kolonial Belanda ketika segelintir pemuda pribumi mulai\nberkesempatan menempuh pendidikan tinggi di negeri Belanda.\"\nDalam struktur teks tanggapan kritis, kutipan di atas merupakan bagian ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Deskripsi alur bab per bab"
+      },
+      {
+        "label": "C",
+        "teks": "Penilaian kekurangan ejaan"
+      },
+      {
+        "label": "B",
+        "teks": "Konteks"
+      },
+      {
+        "label": "D",
+        "teks": "Simpulan rekomendasi harga buku"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "B. Memperkenalkan novel Student Hidjo, pengarangnya, tahun terbit, dan latar zaman kolonial\nmerupakan bagian Konteks.",
+    "valid": true
+  },
+  {
+    "nomor": 101,
+    "tipe": "pg_sederhana",
+    "paket": "Bab IV: Memahami Tanggapan Kritis - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Tanggapan Kritis, Struktur Evaluasi-Deskripsi-Penegasan Ulang, Kritik Santun, & Pujian Objektif",
+    "capaian_pembelajaran": "Peserta didik menyusun dan mengevaluasi teks tanggapan kritis terhadap karya seni/fenomena sosial, membedakan kritik santun berdasar data vs celaan subjektif, serta memahami struktur evaluasi, deskripsi teks, dan penegasan ulang.",
+    "bacaan": null,
+    "teks_soal": "Bacalah kelanjutan kutipan teks tanggapan terhadap novel \"Student Hidjo\" berikut!\n\"Novel ini mengisahkan perjalanan Hidjo, seorang pemuda bangsawan Jawa yang dikirim ayahnya untuk\nkuliah teknik di Belanda. Di negeri kincir angin itu, Hidjo mengalami pergolakan batin antara gemerlap\ngaya hidup pergaulan Eropa bersama Betje dan kesetiaannya pada tunangannya di tanah Jawa, Raden\nAjeng Biru, serta kesadaran nasionalismenya terhadap nasib bangsanya yang terjajah.\"\nBerdasarkan struktur teks tanggapan kritis, paragraf yang memaparkan garis besar isi cerita (sinopsis)\ntersebut termasuk bagian ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Daftar Pustaka"
+      },
+      {
+        "label": "C",
+        "teks": "Penilaian kelemahan"
+      },
+      {
+        "label": "B",
+        "teks": "Konteks"
+      },
+      {
+        "label": "D",
+        "teks": "Deskripsi"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Memaparkan ringkasan alur cerita dan tokoh di dalam novel merupakan bagian Deskripsi.",
+    "valid": true
+  },
+  {
+    "nomor": 102,
+    "tipe": "pg_sederhana",
+    "paket": "Bab IV: Memahami Tanggapan Kritis - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Tanggapan Kritis, Struktur Evaluasi-Deskripsi-Penegasan Ulang, Kritik Santun, & Pujian Objektif",
+    "capaian_pembelajaran": "Peserta didik menyusun dan mengevaluasi teks tanggapan kritis terhadap karya seni/fenomena sosial, membedakan kritik santun berdasar data vs celaan subjektif, serta memahami struktur evaluasi, deskripsi teks, dan penegasan ulang.",
+    "bacaan": null,
+    "teks_soal": "Bacalah kutipan bagian akhir tanggapan terhadap novel \"Student Hidjo\" berikut!\n\"Keberanian Marco Kartodikromo mengangkat tema kesetaraan pribumi di hadapan bangsa Eropa pada\ntahun 1918 menjadikan novel ini sangat revolusioner dan bernilai sejarah tinggi. Meskipun penggunaan\nejaan Melayu lama (van Ophuijsen) pada cetakan aslinya terasa agak kaku bagi pembaca masa kini, alur\nceritanya tetap mengalir segar dan wajib dibaca oleh generasi muda untuk memahami akar intelektual\npergerakan nasional.\"\nKalimat yang menyatakan keunggulan (pujian) pada kutipan di atas adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Keberanian Marco Kartodikromo mengangkat tema kesetaraan pribumi di hadapan bangsa Eropa pada tahun 1918 menjadikan novel ini sangat revolusioner dan bernilai sejarah tinggi."
+      },
+      {
+        "label": "B",
+        "teks": "Penggunaan ejaan Melayu lama (van Ophuijsen) pada cetakan aslinya terasa agak kaku bagi pem- baca masa kini."
+      },
+      {
+        "label": "C",
+        "teks": "Novel ini diterbitkan pada tahun 1919 oleh penerbit Masman & Stroink di Semarang."
+      },
+      {
+        "label": "D",
+        "teks": "Tokoh utama dalam novel ini bernama Hidjo yang bertunangan dengan Raden Ajeng Biru."
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "A. Kalimat yang memuji keberanian tema kesetaraan pribumi sehingga novel dinilai revolu-\nsioner dan bernilai sejarah tinggi adalah kalimat keunggulan (pujian).",
+    "valid": true
+  },
+  {
+    "nomor": 103,
+    "tipe": "pg_sederhana",
+    "paket": "Bab IV: Memahami Tanggapan Kritis - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Tanggapan Kritis, Struktur Evaluasi-Deskripsi-Penegasan Ulang, Kritik Santun, & Pujian Objektif",
+    "capaian_pembelajaran": "Peserta didik menyusun dan mengevaluasi teks tanggapan kritis terhadap karya seni/fenomena sosial, membedakan kritik santun berdasar data vs celaan subjektif, serta memahami struktur evaluasi, deskripsi teks, dan penegasan ulang.",
+    "bacaan": null,
+    "teks_soal": "Perhatikan penggunaan konjungsi pada kalimat tanggapan kritis berikut:\n*\"Film dokumenter tentang terumbu karang Wakatobi ini menyajikan sinematografi bawah laut yang san-\ngat jernih dan memanjakan mata; [...], narasi suara latar (voice over) yang dibacakan terdengar terlalu\ncepat dan monoton sehingga penonton kesulitan mencerna istilah-istilah biologi laut yang disebutkan.\"*\nKonjungsi pertentangan antarklausa yang paling tepat untuk mengisi bagian rumpang setelah tanda titik\nkoma (;) tersebut adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "selain itu"
+      },
+      {
+        "label": "C",
+        "teks": "akan tetapi / namun"
+      },
+      {
+        "label": "B",
+        "teks": "oleh karena itu"
+      },
+      {
+        "label": "D",
+        "teks": "dengan demikian"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "C. Peralihan dari pujian sinematografi ke kritik suara latar dihubungkan oleh konjungsi perten-\ntangan akan tetapi / namun.",
+    "valid": true
+  },
+  {
+    "nomor": 104,
+    "tipe": "pg_sederhana",
+    "paket": "Bab IV: Memahami Tanggapan Kritis - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Tanggapan Kritis, Struktur Evaluasi-Deskripsi-Penegasan Ulang, Kritik Santun, & Pujian Objektif",
+    "capaian_pembelajaran": "Peserta didik menyusun dan mengevaluasi teks tanggapan kritis terhadap karya seni/fenomena sosial, membedakan kritik santun berdasar data vs celaan subjektif, serta memahami struktur evaluasi, deskripsi teks, dan penegasan ulang.",
+    "bacaan": {
+      "teks": "[Sumber: Buku Soal Terpilih TKA Bahasa Indonesia MGMP SMP Provinsi DKI Jakarta 2026 —\nScribd 1009621080 Paket 3 No. 16–18 & Paket 4 No. 16–18]\nBacalah wacana Teks Tanggapan Kritis empat paragraf berikut untuk menjawab soal nomor 14, 15, dan\n16!\nWACANA LITERASI MEMBACA: WACANA LITERASI MEMBACA: TANGGAPAN KRITIS TERHADAP\nPROGRAM ’JAM MALAM GAWAI KELUARGA’\n(Paragraf 1: Konteks) Pemerintah daerah di sejumlah kota pendidikan baru-baru ini mencanangkan gerakan\n“Jam Malam Gawai Keluarga Pukul 19.00–21.00”. Melalui imbauan ini, seluruh anggota keluarga—baik orang\ntua maupun anak-anak usia sekolah—diajak mematikan televisi dan menyimpan telepon pintar mereka se-\nlama dua jam setiap malam untuk digunakan belajar bersama, membaca buku, serta berbincang hangat di\nruang keluarga.\n(Paragraf 2: Deskripsi & Penilaian Positif) Gagasan ini patut mendapat apresiasi tinggi karena menyen-\ntuh akar permasalahan renggangnya komunikasi keluarga modern. Selama ini, banyak orang tua menuntut\nanaknya berhenti bermain gawai dan rajin belajar, sementara orang tua sendiri asyik menatap layar gawai di\nsofa ruang tamu. Dengan mewajibkan orang tua ikut meletakkan gawai pada pukul 19.00–21.00, kebijakan ini\nmenghadirkan keteladanan nyata (role model) sekaligus memulihkan waktu berkualitas antara orang tua dan\nanak.\n(Paragraf 3: Penilaian Kritis / Kelemahan) Kendati demikian, penerapan aturan ini secara kaku tanpa penge-\ncualian berpotensi menimbulkan kendala teknis bagi pelajar SMP dan SMA masa kini. Dalam implementasi\nKurikulum Merdeka, tidak sedikit penugasan sekolah yang mengharuskan siswa mengakses buku elektronik,\nmencari referensi jurnal ilmiah, atau berdiskusi kelompok secara daring pada malam hari. Selain itu, sebagian\norang tua memiliki tuntutan pekerjaan darurat yang harus tetap terhubung melalui gawai.\n(Paragraf 4: Saran / Rekomendasi Konstruktif) Agar gerakan ini berjalan efektif dan tidak kontraproduktif,\npembatasan pada pukul 19.00–21.00 sebaiknya difokuskan pada pelarangan akses hiburan pasif (seperti\ngim daring dan media sosial), namun tetap memberikan kelonggaran terukur bagi penggunaan gawai untuk\nkeperluan pembelajaran sekolah dengan pendampingan langsung dari orang tua.",
+      "grup": "bacaan_bab4_jam_malam"
+    },
+    "teks_soal": "Urutan struktur Teks Tanggapan Kritis pada wacana empat paragraf di atas adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Penilaian (Paragraf 1) →Konteks (Paragraf 2–3) →Abstrak (Paragraf 4)"
+      },
+      {
+        "label": "B",
+        "teks": "Konteks (pengenalan kebijakan Jam Malam Gawai Keluarga pada Paragraf 1) →Deskripsi & Penila- ian Kelebihan (keteladanan orang tua pada Paragraf 2) →Penilaian Kekurangan/Kendala (kebutuhan tugas daring siswa pada Paragraf 3) →Saran Konstruktif / Penegasan Ulang (Paragraf 4)"
+      },
+      {
+        "label": "C",
+        "teks": "Tujuan (Paragraf 1) →Alat dan Bahan (Paragraf 2) →Langkah Kerja (Paragraf 3–4)"
+      },
+      {
+        "label": "D",
+        "teks": "Orientasi (Paragraf 1) →Komplikasi (Paragraf 2–3) →Resolusi (Paragraf 4)"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "B. Struktur baku Teks Tanggapan Kritis (Bab IV Kelas 9) terdiri atas Konteks (Apa yang\nditanggapi, kapan, di mana, siapa pada Paragraf 1), Deskripsi & Penilaian Positif (Paragraf 2), Penilaian\nKritis/Kekurangan (Paragraf 3), dan Saran/Solusi (Paragraf 4).",
+    "valid": true
+  },
+  {
+    "nomor": 105,
+    "tipe": "pg_sederhana",
+    "paket": "Bab IV: Memahami Tanggapan Kritis - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Tanggapan Kritis, Struktur Evaluasi-Deskripsi-Penegasan Ulang, Kritik Santun, & Pujian Objektif",
+    "capaian_pembelajaran": "Peserta didik menyusun dan mengevaluasi teks tanggapan kritis terhadap karya seni/fenomena sosial, membedakan kritik santun berdasar data vs celaan subjektif, serta memahami struktur evaluasi, deskripsi teks, dan penegasan ulang.",
+    "bacaan": {
+      "teks": "[Sumber: Buku Soal Terpilih TKA Bahasa Indonesia MGMP SMP Provinsi DKI Jakarta 2026 —\nScribd 1009621080 Paket 3 No. 16–18 & Paket 4 No. 16–18]\nBacalah wacana Teks Tanggapan Kritis empat paragraf berikut untuk menjawab soal nomor 14, 15, dan\n16!\nWACANA LITERASI MEMBACA: WACANA LITERASI MEMBACA: TANGGAPAN KRITIS TERHADAP\nPROGRAM ’JAM MALAM GAWAI KELUARGA’\n(Paragraf 1: Konteks) Pemerintah daerah di sejumlah kota pendidikan baru-baru ini mencanangkan gerakan\n“Jam Malam Gawai Keluarga Pukul 19.00–21.00”. Melalui imbauan ini, seluruh anggota keluarga—baik orang\ntua maupun anak-anak usia sekolah—diajak mematikan televisi dan menyimpan telepon pintar mereka se-\nlama dua jam setiap malam untuk digunakan belajar bersama, membaca buku, serta berbincang hangat di\nruang keluarga.\n(Paragraf 2: Deskripsi & Penilaian Positif) Gagasan ini patut mendapat apresiasi tinggi karena menyen-\ntuh akar permasalahan renggangnya komunikasi keluarga modern. Selama ini, banyak orang tua menuntut\nanaknya berhenti bermain gawai dan rajin belajar, sementara orang tua sendiri asyik menatap layar gawai di\nsofa ruang tamu. Dengan mewajibkan orang tua ikut meletakkan gawai pada pukul 19.00–21.00, kebijakan ini\nmenghadirkan keteladanan nyata (role model) sekaligus memulihkan waktu berkualitas antara orang tua dan\nanak.\n(Paragraf 3: Penilaian Kritis / Kelemahan) Kendati demikian, penerapan aturan ini secara kaku tanpa penge-\ncualian berpotensi menimbulkan kendala teknis bagi pelajar SMP dan SMA masa kini. Dalam implementasi\nKurikulum Merdeka, tidak sedikit penugasan sekolah yang mengharuskan siswa mengakses buku elektronik,\nmencari referensi jurnal ilmiah, atau berdiskusi kelompok secara daring pada malam hari. Selain itu, sebagian\norang tua memiliki tuntutan pekerjaan darurat yang harus tetap terhubung melalui gawai.\n(Paragraf 4: Saran / Rekomendasi Konstruktif) Agar gerakan ini berjalan efektif dan tidak kontraproduktif,\npembatasan pada pukul 19.00–21.00 sebaiknya difokuskan pada pelarangan akses hiburan pasif (seperti\ngim daring dan media sosial), namun tetap memberikan kelonggaran terukur bagi penggunaan gawai untuk\nkeperluan pembelajaran sekolah dengan pendampingan langsung dari orang tua.",
+      "grup": "bacaan_bab4_jam_malam"
+    },
+    "teks_soal": "Mengapa penilaian yang disampaikan penulis pada Paragraf 2 dan Paragraf 3 wacana soal nomor 14\ndikategorikan sebagai tanggapan kritis yang objektif dan berimbang?",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Karena penulis hanya mengutip pendapat satu orang siswa yang malas belajar"
+      },
+      {
+        "label": "B",
+        "teks": "Karena penulis menolak seluruh program pemerintah daerah tanpa memberikan alasan apa pun"
+      },
+      {
+        "label": "C",
+        "teks": "Karena penulis menyuruh siswa bermain gim daring dari pukul 19.00 hingga tengah malam"
+      },
+      {
+        "label": "D",
+        "teks": "Karena penulis tidak memuji secara membabi buta ataupun mencela secara emosional, melainkan memberikan apresiasi atas nilai positif keteladanan orang tua sekaligus mengkritisi kendala teknis tugas belajar daring disertai alasan logis"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Esensi tanggapan kritis yang matang adalah keseimbangan penilaian: melihat sisi keunggu-\nlan kebijakan (Paragraf 2) sekaligus mengidentifikasi celah kendala di lapangan (Paragraf 3) untuk melahirkan\nrekomendasi jalan tengah yang solutif (Paragraf 4).",
+    "valid": true
+  },
+  {
+    "nomor": 106,
+    "tipe": "pg_sederhana",
+    "paket": "Bab IV: Memahami Tanggapan Kritis - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Tanggapan Kritis, Struktur Evaluasi-Deskripsi-Penegasan Ulang, Kritik Santun, & Pujian Objektif",
+    "capaian_pembelajaran": "Peserta didik menyusun dan mengevaluasi teks tanggapan kritis terhadap karya seni/fenomena sosial, membedakan kritik santun berdasar data vs celaan subjektif, serta memahami struktur evaluasi, deskripsi teks, dan penegasan ulang.",
+    "bacaan": null,
+    "teks_soal": "Perhatikan perbandingan dua cara menyampaikan kritik terhadap karya lukisan teman sekelas dalam\ntabel berikut!\nTANGGAPAN SISWA A\nTANGGAPAN SISWA B\n“Lukisan pemandangan pantai yang kamu buat ini war-\nnanya sangat kacau dan membosankan! Gambar per-\nahunya miring seperti mau tenggelam.\nSebaiknya\nkamu tidak usah ikut lomba melukis minggu depan\nkarena pasti kalah.”\n“Perpaduan gradasi warna jingga dan ungu pada lan-\ngit senja di lukisanmu sudah sangat halus dan hidup.\nLukisan ini akan tampak makin proporsional apabila\ngaris perspektif pada bagian perahu nelayan diperte-\ngas sedikit lagi dengan warna gelap.”\nEvaluasi kesantunan berbahasa yang tepat terhadap Tanggapan Siswa A dan Tanggapan Siswa B di\natas adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Tanggapan Siswa A lebih baik karena menggunakan kalimat seru yang tegas dan jujur"
+      },
+      {
+        "label": "B",
+        "teks": "Tanggapan Siswa B memenuhi syarat tanggapan kritis yang santun, objektif, dan membangun (konstruktif) karena mengawali dengan pujian tulus atas keunggulan karya lalu menyampaikan saran perbaikan teknis tanpa menjatuhkan mental pembuatnya; sedangkan Tanggapan Siswa A bersifat sub- jektif, kasar, dan menjatuhkan pribadi teman"
+      },
+      {
+        "label": "C",
+        "teks": "Tanggapan Siswa B salah karena tidak boleh memuji gradasi warna langit lukisan teman"
+      },
+      {
+        "label": "D",
+        "teks": "Kedua tanggapan tersebut sama-sama santun dan layak ditiru dalam diskusi kelas"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "B. Dalam prinsip kesantunan Teks Tanggapan Kritis (Buku Siswa Kelas IX Bab IV), kritik yang\nbaik fokus pada objek karyanya (bukan menyerang pribadi pembuatnya), diawali apresiasi bagian yang sudah\nbaik, dan menyertakan saran perbaikan yang spesifik.",
+    "valid": true
+  },
+  {
+    "nomor": 107,
+    "tipe": "pg_sederhana",
+    "paket": "Bab IV: Memahami Tanggapan Kritis - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Tanggapan Kritis, Struktur Evaluasi-Deskripsi-Penegasan Ulang, Kritik Santun, & Pujian Objektif",
+    "capaian_pembelajaran": "Peserta didik menyusun dan mengevaluasi teks tanggapan kritis terhadap karya seni/fenomena sosial, membedakan kritik santun berdasar data vs celaan subjektif, serta memahami struktur evaluasi, deskripsi teks, dan penegasan ulang.",
+    "bacaan": null,
+    "teks_soal": "Perhatikan kalimat dalam teks tanggapan kritis berikut:\n*\"Secara garis besar, aplikasi kamus digital daerah ini sangat membantu pelajar mempelajari kosakata\nbahasa ibu. Kelemahan minor aplikasi ini hanya terletak pada ukuran huruf pada menu pencarian\nyang terlalu kecil, sehingga pengembang disarankan menambahkan fitur pengatur ukuran huruf\npada pembaruan berikutnya.\"*\nKalimat yang dicetak tebal pada kutipan di atas memuat dua unsur penting dalam bagian Penilaian, yaitu\n....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Pujian berlebihan dan penghinaan terhadap pembuat aplikasi"
+      },
+      {
+        "label": "B",
+        "teks": "Konteks sejarah pembuatan aplikasi dan harga jualnya"
+      },
+      {
+        "label": "C",
+        "teks": "Kritik atas kekurangan spesifik karya beserta saran perbaikan yang konkret"
+      },
+      {
+        "label": "D",
+        "teks": "Sinopsis cerita fiksi dan daftar nama tokoh"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "C. Memuat kritik atas kekurangan spesifik (ukuran huruf menu terlalu kecil) dan saran per-\nbaikan konkret (fitur pengatur ukuran huruf).",
+    "valid": true
+  },
+  {
+    "nomor": 108,
+    "tipe": "pg_sederhana",
+    "paket": "Bab IV: Memahami Tanggapan Kritis - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Tanggapan Kritis, Struktur Evaluasi-Deskripsi-Penegasan Ulang, Kritik Santun, & Pujian Objektif",
+    "capaian_pembelajaran": "Peserta didik menyusun dan mengevaluasi teks tanggapan kritis terhadap karya seni/fenomena sosial, membedakan kritik santun berdasar data vs celaan subjektif, serta memahami struktur evaluasi, deskripsi teks, dan penegasan ulang.",
+    "bacaan": null,
+    "teks_soal": "Perhatikan urutan paragraf acak teks tanggapan kritis terhadap Kantin Sehat Tanpa Plastik SMP Hara-\npan berikut:\n(1) Pada pelaksanaannya, seluruh pedagang di Kantin Sehat menyajikan makanan menggunakan piring\nkeramik, mangkuk kaca, dan daun pisang, serta menyediakan keran air minum isi ulang bagi siswa yang\nmembawa botol minum (tumbler) sendiri.\n(2) Program Kantin Sehat Tanpa Plastik merupakan kebijakan inovatif yang mulai diterapkan oleh pen-\ngelola SMP Harapan sejak awal semester ganjil tahun 2025 untuk menekan timbulan sampah di sekolah.\n(3) Kebijakan ini patut diapresiasi tinggi karena berhasil menurunkan volume sampah plastik sekolah\nhingga 85 persen. Namun, antrean pencucian piring pada jam istirahat pertama masih sering menumpuk\nkarena jumlah wastafel cuci piring baru tersedia dua unit; sebaiknya pihak sekolah menambah fasilitas\ntempat cuci piring agar waktu istirahat siswa lebih efisien.\nUrutan paragraf yang tepat sesuai struktur baku Konteks – Deskripsi – Penilaian adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(2) – (3) – (1)"
+      },
+      {
+        "label": "C",
+        "teks": "(3) – (2) – (1)"
+      },
+      {
+        "label": "B",
+        "teks": "(1) – (3) – (2)"
+      },
+      {
+        "label": "D",
+        "teks": "(2) – (1) – (3)"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Urutan struktur baku: (2) Konteks pengenalan program →(1) Deskripsi pelaksanaan di\nkantin →(3) Penilaian capaian 85% dan saran penambahan wastafel.",
+    "valid": true
+  },
+  {
+    "nomor": 109,
+    "tipe": "pg_sederhana",
+    "paket": "Bab IV: Memahami Tanggapan Kritis - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Tanggapan Kritis, Struktur Evaluasi-Deskripsi-Penegasan Ulang, Kritik Santun, & Pujian Objektif",
+    "capaian_pembelajaran": "Peserta didik menyusun dan mengevaluasi teks tanggapan kritis terhadap karya seni/fenomena sosial, membedakan kritik santun berdasar data vs celaan subjektif, serta memahami struktur evaluasi, deskripsi teks, dan penegasan ulang.",
+    "bacaan": null,
+    "teks_soal": "Dalam kaidah kebahasaan teks tanggapan kritis, kalimat seperti *\"Peneliti menyimpulkan bahwa peng-\ngunaan pupuk kimia berlebihan justru menurunkan kesuburan mikroorganisme tanah dalam jangka pan-\njang\"* menggunakan konjungsi penerang/penjelas bahwa yang berfungsi untuk ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Mempertentangkan dua gagasan yang saling berlawanan"
+      },
+      {
+        "label": "B",
+        "teks": "Menjelaskan atau menguraikan isi pernyataan/pendapat pada induk kalimat"
+      },
+      {
+        "label": "C",
+        "teks": "Menyatakan urutan waktu langkah percobaan"
+      },
+      {
+        "label": "D",
+        "teks": "Mengajukan pertanyaan retoris kepada pembaca"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "B. Konjungsi bahwa berfungsi sebagai konjungsi penerang/penjelas isi pernyataan pada induk\nkalimat.",
+    "valid": true
+  },
+  {
+    "nomor": 110,
+    "tipe": "pg_sederhana",
+    "paket": "Bab IV: Memahami Tanggapan Kritis - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Tanggapan Kritis, Struktur Evaluasi-Deskripsi-Penegasan Ulang, Kritik Santun, & Pujian Objektif",
+    "capaian_pembelajaran": "Peserta didik menyusun dan mengevaluasi teks tanggapan kritis terhadap karya seni/fenomena sosial, membedakan kritik santun berdasar data vs celaan subjektif, serta memahami struktur evaluasi, deskripsi teks, dan penegasan ulang.",
+    "bacaan": {
+      "teks": "Perhatikan perbandingan dua teks tanggapan kritis terhadap fenomena tren remaja berikut untuk men-\njawab soal nomor 20 dan 21!\nTEKS 1: TANGGAPAN TREN PENGGUNAAN KOS-\nMETIK DINI PADA REMAJA\nTEKS 2:\nTANGGAPAN TREN OLAHRAGA LARI\nPAGI PELAJAR\nMaraknya video ulasan kecantikan di media sosial\nmendorong banyak pelajar usia 12–14 tahun mem-\nbeli produk perawatan kulit dewasa berbahan aktif\nkeras (seperti retinol dan asam pengelupas konsen-\ntrasi tinggi).\nMenjaga kebersihan wajah sejak remaja memang\nhal positif.\nAkan tetapi, dokter spesialis kulit mem-\nperingatkan bahwa lapisan pelindung kulit (skin bar-\nrier) remaja masih sangat tipis dan sensitif; pemaka-\nian bahan aktif dewasa justru memicu iritasi kro-\nnis. Remaja cukup menggunakan pembersih lembut,\npelembap ringan, dan tabir surya.\nAkhir-akhir ini, tren olahraga lari pagi bersama komu-\nnitas pelajar (fun run) di taman kota pada akhir pekan\nmakin digemari oleh siswa SMP. Banyak pelajar yang\nmulai bangun pukul 05.30 pagi untuk berlari sejauh 3\nhingga 5 kilometer.\nFenomena ini sangat layak didukung karena mampu\nmengalihkan\nremaja\ndari\nkebiasaan\nbegadang\nbermain gawai. Namun, pelajar perlu diingatkan agar\ntidak memaksakan jarak lari secara berlebihan demi\nsekadar pamer capaian kilometer di media sosial\n(fear of missing out), melainkan tetap melakukan\npemanasan dan menyesuaikan kemampuan jantung.",
+      "grup": "bacaan_bab4_soal20"
+    },
+    "teks_soal": "Persamaan pola penalaran kritis yang digunakan penulis pada Teks 1 dan Teks 2 di atas adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Teks 1 membahas kesehatan jantung; sedangkan Teks 2 membahas kandungan retinol pada sepatu lari"
+      },
+      {
+        "label": "B",
+        "teks": "Kedua penulis sama-sama melarang remaja mencuci wajah dan melarang remaja berolahraga lari pagi"
+      },
+      {
+        "label": "C",
+        "teks": "Kedua penulis sama-sama mengakui niat baik/sisi positif dari suatu tren remaja, kemudian meng- gunakan konjungsi pertentangan (Akan tetapi / Namun) untuk mengingatkan batas bahaya/risiko medis apabila tren tersebut dilakukan secara berlebihan atau keliru"
+      },
+      {
+        "label": "D",
+        "teks": "Kedua teks disusun menggunakan alur mundur cerita fantasi"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "C. Kedua teks menerapkan struktur penalaran tanggapan kritis yang identik: (1) memotret\nfenomena tren remaja, (2) mengapresiasi sisi positifnya (menjaga kebersihan wajah / bangun pagi bero-\n\nlahraga), lalu (3) memberikan peringatan kritis disertai saran proporsional.",
+    "valid": true
+  },
+  {
+    "nomor": 111,
+    "tipe": "pg_sederhana",
+    "paket": "Bab IV: Memahami Tanggapan Kritis - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Tanggapan Kritis, Struktur Evaluasi-Deskripsi-Penegasan Ulang, Kritik Santun, & Pujian Objektif",
+    "capaian_pembelajaran": "Peserta didik menyusun dan mengevaluasi teks tanggapan kritis terhadap karya seni/fenomena sosial, membedakan kritik santun berdasar data vs celaan subjektif, serta memahami struktur evaluasi, deskripsi teks, dan penegasan ulang.",
+    "bacaan": null,
+    "teks_soal": "berdasarkan uraian nomor 1 pada soal nomor 20, alasan ilmiah mengapa pelajar usia 12–14 tahun tidak dian-\njurkan menggunakan produk perawatan kulit khusus orang dewasa (retinol & asam pengelupas dosis\ntinggi) adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Karena tabir surya (sunscreen) hanya boleh digunakan pada malam hari"
+      },
+      {
+        "label": "B",
+        "teks": "Karena harga produk pembersih wajah remaja lebih mahal daripada produk dewasa"
+      },
+      {
+        "label": "C",
+        "teks": "Karena remaja usia 12–14 tahun tidak boleh terkena sinar matahari pagi"
+      },
+      {
+        "label": "D",
+        "teks": "Karena lapisan pelindung alami kulit (skin barrier) pada usia remaja awal masih tipis dan sensitif, sehingga bahan aktif keras untuk penuaan kulit dewasa justru merusak lapisan pelindung tersebut dan memicu iritasi kronis"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Informasi pada paragraf kedua Teks 1 menyebutkan secara eksplisit alasan medis dokter\nspesialis kulit: lapisan skin barrier remaja masih tipis dan sensitif sehingga bahan aktif keras memicu iritasi\nkronis.",
+    "valid": true
+  },
+  {
+    "nomor": 112,
+    "tipe": "pg_sederhana",
+    "paket": "Bab IV: Memahami Tanggapan Kritis - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Tanggapan Kritis, Struktur Evaluasi-Deskripsi-Penegasan Ulang, Kritik Santun, & Pujian Objektif",
+    "capaian_pembelajaran": "Peserta didik menyusun dan mengevaluasi teks tanggapan kritis terhadap karya seni/fenomena sosial, membedakan kritik santun berdasar data vs celaan subjektif, serta memahami struktur evaluasi, deskripsi teks, dan penegasan ulang.",
+    "bacaan": {
+      "teks": "Scribd 1009621080 Paket 4 No. 16–18]\nnomor 22, 23, dan 24!\nWACANA LITERASI MEMBACA: WACANA LITERASI MEMBACA: TANGGAPAN KRITIS PEMENTASAN\nTEATER ’AYAHKU PULANG’ OLEH SANGGAR SENI SMP MERDEKA\n(Paragraf 1) Pada hari Sabtu, 7 Februari 2026, Sanggar Seni Teater SMP Merdeka mementaskan naskah\ndrama klasik “Ayahku Pulang” saduran karya Usmar Ismail di gedung aula sekolah. Pementasan berdurasi\n60 menit ini mengisahkan pergulatan batin keluarga Ibu dan anak-anaknya (Gunarto, Maimun, dan Mintarsih)\nketika sang ayah, Raden Saleh, tiba-tiba kembali ke rumah dalam keadaan tua dan miskin pada malam\ntakbiran setelah dua puluh tahun menelantarkan mereka.\n(Paragraf 2) Penampilan pemeran tokoh Gunarto dan Ibu layak mendapat tepuk tangan meriah. Pemeran\nGunarto mampu menampilkan vokal bariton yang lantang, gestur tubuh yang kaku menahan amarah masa\nlalu, serta sorot mata tajam yang meyakinkan penonton.\nTata panggung yang menampilkan ruang tamu\nsederhana era 1950-an lengkap dengan lampu gantung redup dan efek suara rintik hujan bercampur gema\ntakbir dari kejauhan berhasil membangun suasana dramatis yang mencekam sekaligus menyayat hati.\n(Paragraf 3) Sayangnya, pada adegan pertengahan babak kedua, mikrofon nirkabel (clip-on) yang dikenakan\noleh pemeran tokoh Maimun sempat mengalami gangguan teknis berdesis selama sekitar tiga menit sehingga\nbeberapa dialog penting kurang terdengar jelas oleh penonton di barisan belakang. Selain itu, jeda pergantian\nproperti kursi antarbabak masih memakan waktu agak lama.\n(Paragraf 4) Untuk pementasan tahun depan, tim artistik dan tata suara disarankan melakukan uji coba\nperangkat mikrofon cadangan secara menyeluruh sebelum tirai dibuka serta melatih kru panggung agar tran-\nsisi antarbabak berlangsung lebih sigap. Secara keseluruhan, pementasan ini merupakan bukti nyata ke-\nmatangan bakat seni peran siswa SMP Merdeka.\nAspek keunggulan artistik pementasan teater yang dipuji oleh penulis tanggapan pada Paragraf 2 wa-\ncana di atas mencakup ....",
+      "grup": "bacaan_bab4_teater_merdeka"
+    },
+    "teks_soal": "WACANA LITERASI MEMBACA: WACANA LITERASI MEMBACA: TANGGAPAN KRITIS PEMENTASAN\nTEATER ’AYAHKU PULANG’ OLEH SANGGAR SENI SMP MERDEKA\n(Paragraf 1) Pada hari Sabtu, 7 Februari 2026, Sanggar Seni Teater SMP Merdeka mementaskan naskah\ndrama klasik “Ayahku Pulang” saduran karya Usmar Ismail di gedung aula sekolah. Pementasan berdurasi\n60 menit ini mengisahkan pergulatan batin keluarga Ibu dan anak-anaknya (Gunarto, Maimun, dan Mintarsih)\nketika sang ayah, Raden Saleh, tiba-tiba kembali ke rumah dalam keadaan tua dan miskin pada malam\ntakbiran setelah dua puluh tahun menelantarkan mereka.\n(Paragraf 2) Penampilan pemeran tokoh Gunarto dan Ibu layak mendapat tepuk tangan meriah. Pemeran\nGunarto mampu menampilkan vokal bariton yang lantang, gestur tubuh yang kaku menahan amarah masa\nlalu, serta sorot mata tajam yang meyakinkan penonton.\nTata panggung yang menampilkan ruang tamu\nsederhana era 1950-an lengkap dengan lampu gantung redup dan efek suara rintik hujan bercampur gema\ntakbir dari kejauhan berhasil membangun suasana dramatis yang mencekam sekaligus menyayat hati.\n(Paragraf 3) Sayangnya, pada adegan pertengahan babak kedua, mikrofon nirkabel (clip-on) yang dikenakan\noleh pemeran tokoh Maimun sempat mengalami gangguan teknis berdesis selama sekitar tiga menit sehingga\nbeberapa dialog penting kurang terdengar jelas oleh penonton di barisan belakang. Selain itu, jeda pergantian\nproperti kursi antarbabak masih memakan waktu agak lama.\n(Paragraf 4) Untuk pementasan tahun depan, tim artistik dan tata suara disarankan melakukan uji coba\nperangkat mikrofon cadangan secara menyeluruh sebelum tirai dibuka serta melatih kru panggung agar tran-\nsisi antarbabak berlangsung lebih sigap. Secara keseluruhan, pementasan ini merupakan bukti nyata ke-\nmatangan bakat seni peran siswa SMP Merdeka.\nAspek keunggulan artistik pementasan teater yang dipuji oleh penulis tanggapan pada Paragraf 2 wa-\ncana di atas mencakup ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Kualitas penghayatan akting/vokal pemeran Gunarto dan Ibu, ketepatan tata panggung ruang tamu era 1950-an, serta perpaduan tata cahaya lampu redup dan efek suara (sound effect) rintik hujan bersama gema takbir"
+      },
+      {
+        "label": "B",
+        "teks": "Kecepatan kru panggung dalam memindahkan kursi dan kejernihan mikrofon tokoh Maimun"
+      },
+      {
+        "label": "C",
+        "teks": "Harga tiket masuk gedung aula sekolah yang sangat murah"
+      },
+      {
+        "label": "D",
+        "teks": "Perubahan akhir cerita drama menjadi komedi jenaka yang membuat penonton tertawa"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "A. Paragraf 2 memerinci tiga keunggulan utama pementasan: (1) akting/vokal pemeran Gu-\nnarto dan Ibu, (2) tata artistik panggung era 1950-an, dan (3) tata cahaya serta efek suara hujan dan takbir.",
+    "valid": true
+  },
+  {
+    "nomor": 113,
+    "tipe": "pg_sederhana",
+    "paket": "Bab IV: Memahami Tanggapan Kritis - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Tanggapan Kritis, Struktur Evaluasi-Deskripsi-Penegasan Ulang, Kritik Santun, & Pujian Objektif",
+    "capaian_pembelajaran": "Peserta didik menyusun dan mengevaluasi teks tanggapan kritis terhadap karya seni/fenomena sosial, membedakan kritik santun berdasar data vs celaan subjektif, serta memahami struktur evaluasi, deskripsi teks, dan penegasan ulang.",
+    "bacaan": {
+      "teks": "Scribd 1009621080 Paket 4 No. 16–18]\nnomor 22, 23, dan 24!\nWACANA LITERASI MEMBACA: WACANA LITERASI MEMBACA: TANGGAPAN KRITIS PEMENTASAN\nTEATER ’AYAHKU PULANG’ OLEH SANGGAR SENI SMP MERDEKA\n(Paragraf 1) Pada hari Sabtu, 7 Februari 2026, Sanggar Seni Teater SMP Merdeka mementaskan naskah\ndrama klasik “Ayahku Pulang” saduran karya Usmar Ismail di gedung aula sekolah. Pementasan berdurasi\n60 menit ini mengisahkan pergulatan batin keluarga Ibu dan anak-anaknya (Gunarto, Maimun, dan Mintarsih)\nketika sang ayah, Raden Saleh, tiba-tiba kembali ke rumah dalam keadaan tua dan miskin pada malam\ntakbiran setelah dua puluh tahun menelantarkan mereka.\n(Paragraf 2) Penampilan pemeran tokoh Gunarto dan Ibu layak mendapat tepuk tangan meriah. Pemeran\nGunarto mampu menampilkan vokal bariton yang lantang, gestur tubuh yang kaku menahan amarah masa\nlalu, serta sorot mata tajam yang meyakinkan penonton.\nTata panggung yang menampilkan ruang tamu\nsederhana era 1950-an lengkap dengan lampu gantung redup dan efek suara rintik hujan bercampur gema\ntakbir dari kejauhan berhasil membangun suasana dramatis yang mencekam sekaligus menyayat hati.\n(Paragraf 3) Sayangnya, pada adegan pertengahan babak kedua, mikrofon nirkabel (clip-on) yang dikenakan\noleh pemeran tokoh Maimun sempat mengalami gangguan teknis berdesis selama sekitar tiga menit sehingga\nbeberapa dialog penting kurang terdengar jelas oleh penonton di barisan belakang. Selain itu, jeda pergantian\nproperti kursi antarbabak masih memakan waktu agak lama.\n(Paragraf 4) Untuk pementasan tahun depan, tim artistik dan tata suara disarankan melakukan uji coba\nperangkat mikrofon cadangan secara menyeluruh sebelum tirai dibuka serta melatih kru panggung agar tran-\nsisi antarbabak berlangsung lebih sigap. Secara keseluruhan, pementasan ini merupakan bukti nyata ke-\nmatangan bakat seni peran siswa SMP Merdeka.\nAspek keunggulan artistik pementasan teater yang dipuji oleh penulis tanggapan pada Paragraf 2 wa-\ncana di atas mencakup ....",
+      "grup": "bacaan_bab4_teater_merdeka"
+    },
+    "teks_soal": "(Rekomendasi/Saran) pada wacana soal nomor 22 adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Paragraf 3 membahas tata rias wajah, sedangkan Paragraf 4 menyarankan penggantian judul naskah drama"
+      },
+      {
+        "label": "B",
+        "teks": "Dua kelemahan spesifik yang ditemukan pada Paragraf 3 (gangguan mikrofon nirkabel tokoh Maimun & lambatnya pergantian properti antarbabak) dijawab secara langsung dengan dua solusi praktis yang tepat sasaran pada Paragraf 4 (uji coba mikrofon cadangan & pelatihan kesigapan kru panggung)"
+      },
+      {
+        "label": "C",
+        "teks": "Paragraf 4 menyarankan agar Sanggar Seni Teater SMP Merdeka dibubarkan karena mikrofonnya berdesis"
+      },
+      {
+        "label": "D",
+        "teks": "Antara Paragraf 3 dan Paragraf 4 tidak terdapat keterkaitan isi sama sekali"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "B. Dalam teks tanggapan kritis yang koheren, setiap butir saran pada bagian penutup (Paragraf\n4) harus berkorespondensi langsung untuk memperbaiki butir kelemahan yang dicatat pada bagian evaluasi\nsebelumnya (Paragraf 3).",
+    "valid": true
+  },
+  {
+    "nomor": 114,
+    "tipe": "pg_sederhana",
+    "paket": "Bab IV: Memahami Tanggapan Kritis - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Tanggapan Kritis, Struktur Evaluasi-Deskripsi-Penegasan Ulang, Kritik Santun, & Pujian Objektif",
+    "capaian_pembelajaran": "Peserta didik menyusun dan mengevaluasi teks tanggapan kritis terhadap karya seni/fenomena sosial, membedakan kritik santun berdasar data vs celaan subjektif, serta memahami struktur evaluasi, deskripsi teks, dan penegasan ulang.",
+    "bacaan": {
+      "teks": "Scribd 1009621080 Paket 4 No. 16–18]\nnomor 22, 23, dan 24!\nWACANA LITERASI MEMBACA: WACANA LITERASI MEMBACA: TANGGAPAN KRITIS PEMENTASAN\nTEATER ’AYAHKU PULANG’ OLEH SANGGAR SENI SMP MERDEKA\n(Paragraf 1) Pada hari Sabtu, 7 Februari 2026, Sanggar Seni Teater SMP Merdeka mementaskan naskah\ndrama klasik “Ayahku Pulang” saduran karya Usmar Ismail di gedung aula sekolah. Pementasan berdurasi\n60 menit ini mengisahkan pergulatan batin keluarga Ibu dan anak-anaknya (Gunarto, Maimun, dan Mintarsih)\nketika sang ayah, Raden Saleh, tiba-tiba kembali ke rumah dalam keadaan tua dan miskin pada malam\ntakbiran setelah dua puluh tahun menelantarkan mereka.\n(Paragraf 2) Penampilan pemeran tokoh Gunarto dan Ibu layak mendapat tepuk tangan meriah. Pemeran\nGunarto mampu menampilkan vokal bariton yang lantang, gestur tubuh yang kaku menahan amarah masa\nlalu, serta sorot mata tajam yang meyakinkan penonton.\nTata panggung yang menampilkan ruang tamu\nsederhana era 1950-an lengkap dengan lampu gantung redup dan efek suara rintik hujan bercampur gema\ntakbir dari kejauhan berhasil membangun suasana dramatis yang mencekam sekaligus menyayat hati.\n(Paragraf 3) Sayangnya, pada adegan pertengahan babak kedua, mikrofon nirkabel (clip-on) yang dikenakan\noleh pemeran tokoh Maimun sempat mengalami gangguan teknis berdesis selama sekitar tiga menit sehingga\nbeberapa dialog penting kurang terdengar jelas oleh penonton di barisan belakang. Selain itu, jeda pergantian\nproperti kursi antarbabak masih memakan waktu agak lama.\n(Paragraf 4) Untuk pementasan tahun depan, tim artistik dan tata suara disarankan melakukan uji coba\nperangkat mikrofon cadangan secara menyeluruh sebelum tirai dibuka serta melatih kru panggung agar tran-\nsisi antarbabak berlangsung lebih sigap. Secara keseluruhan, pementasan ini merupakan bukti nyata ke-\nmatangan bakat seni peran siswa SMP Merdeka.\nAspek keunggulan artistik pementasan teater yang dipuji oleh penulis tanggapan pada Paragraf 2 wa-\ncana di atas mencakup ....",
+      "grup": "bacaan_bab4_teater_merdeka"
+    },
+    "teks_soal": "Analisis kaidah kebahasaan untuk bagian bernomor (1), (2), (3), dan (4) secara berturut-turut adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Keempat bagian bernomor tersebut seluruhnya merupakan kata kerja pasif"
+      },
+      {
+        "label": "B",
+        "teks": "(1) Konjungsi temporal, (2) Majas sarkasme, (3) Kata tidak baku, dan (4) Citraan pendengaran"
+      },
+      {
+        "label": "C",
+        "teks": "(1) Kata depan, (2) Kata bilangan, (3) Nama ilmiah, dan (4) Kalimat perintah"
+      },
+      {
+        "label": "D",
+        "teks": "(1) Konjungsi konsesif/pertentangan (Meskipun), (2) Ungkapan/idiom pujian (patut diacungi jem- pol), (3) Kata baku serapan (autentik, bukan otentik), dan (4) Citraan penciuman/olfaktori"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Analisis presisi: (1) Meskipun adalah konjungsi konsesif; (2) acungi jempol adalah idiom\napresiasi/pujian; (3) autentik adalah bentuk baku KBBI (bukan otentik); dan (4) mencium aroma rempah\nadalah citraan penciuman.",
+    "valid": true
+  },
+  {
+    "nomor": 115,
+    "tipe": "pg_sederhana",
+    "paket": "Bab IV: Memahami Tanggapan Kritis - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Tanggapan Kritis, Struktur Evaluasi-Deskripsi-Penegasan Ulang, Kritik Santun, & Pujian Objektif",
+    "capaian_pembelajaran": "Peserta didik menyusun dan mengevaluasi teks tanggapan kritis terhadap karya seni/fenomena sosial, membedakan kritik santun berdasar data vs celaan subjektif, serta memahami struktur evaluasi, deskripsi teks, dan penegasan ulang.",
+    "bacaan": null,
+    "teks_soal": "Ketika seorang kritikus sastra atau siswa menulis teks tanggapan kritis terhadap sebuah karya, men-\ngapa ia wajib menyertakan bukti kutipan, data adegan, atau fakta visual dari dalam karya yang\nditanggapi?",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Karena penulis tanggapan dilarang menuliskan pendapat atau penilaiannya sendiri"
+      },
+      {
+        "label": "B",
+        "teks": "Agar jumlah kata di dalam karangan menjadi sangat panjang hingga ratusan halaman"
+      },
+      {
+        "label": "C",
+        "teks": "Agar setiap pujian maupun kritik yang disampaikan memiliki dasar pembuktian yang objektif, dapat diverifikasi oleh pembaca lain, dan tidak berubah menjadi fitnah atau sekadar perasaan suka/tidak suka tanpa alasan"
+      },
+      {
+        "label": "D",
+        "teks": "Untuk menggantikan peran pengarang asli buku tersebut"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "C. Prinsip utama Teks Tanggapan Kritis adalah objektivitas berbasis bukti (evidence-based\nevaluation): setiap klaim penilaian harus ditopang oleh fakta/data dari karya yang diulas.",
+    "valid": true
+  },
+  {
+    "nomor": 116,
+    "tipe": "pg_sederhana",
+    "paket": "Bab IV: Memahami Tanggapan Kritis - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Tanggapan Kritis, Struktur Evaluasi-Deskripsi-Penegasan Ulang, Kritik Santun, & Pujian Objektif",
+    "capaian_pembelajaran": "Peserta didik menyusun dan mengevaluasi teks tanggapan kritis terhadap karya seni/fenomena sosial, membedakan kritik santun berdasar data vs celaan subjektif, serta memahami struktur evaluasi, deskripsi teks, dan penegasan ulang.",
+    "bacaan": null,
+    "teks_soal": "Per-\nhatikan foto karya Lukisan Ekspresionis “Kebun Cengkeh di Perbukitan” yang dipajang di galeri seni\nberikut!\nPernyataan analitis yang benar mengenai penyusunan Teks Tanggapan Kritis berdasarkan gambar di\natas adalah .... (Pilih lebih dari satu jawaban benar)\n\nPernyataan:\n(1) Bagian Konteks berfungsi memperkenalkan identitas karya yang ditanggapi (judul lukisan, nama\npelukis, tahun pembuatan, media, dan konteks pameran).\n(2) Bagian Deskripsi memaparkan rincian objek di dalam lukisan, komposisi warna, pencahayaan, dan\nteknik sapuan kuas secara konkret.\n(3) Bagian Penilaian menyajikan evaluasi objektif mengenai keunggulan dan kelemahan karya disertai\nalasan logis serta saran yang membangun.\n(4) Tanggapan kritis yang baik harus menyerang fisik dan kehidupan pribadi pelukis tanpa perlu mem-\nbahas lukisannya.\n\nPernyataan yang tepat adalah ....",
+    "gambar": [
+      "/soal/bindo/kls9_bindo_p183_xref6208_880x880.jpeg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(1), (2), dan (3)"
+      },
+      {
+        "label": "B",
+        "teks": "(1) dan (4) saja"
+      },
+      {
+        "label": "C",
+        "teks": "(2) dan (4) saja"
+      },
+      {
+        "label": "D",
+        "teks": "(1), (2), (3), dan (4)"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "A, B, C. Pernyataan D salah karena menyerang fisik/pribadi pelukis dilarang dalam tanggapan\nkritis.",
+    "valid": true
+  },
+  {
+    "nomor": 117,
+    "tipe": "pg_sederhana",
+    "paket": "Bab IV: Memahami Tanggapan Kritis - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Tanggapan Kritis, Struktur Evaluasi-Deskripsi-Penegasan Ulang, Kritik Santun, & Pujian Objektif",
+    "capaian_pembelajaran": "Peserta didik menyusun dan mengevaluasi teks tanggapan kritis terhadap karya seni/fenomena sosial, membedakan kritik santun berdasar data vs celaan subjektif, serta memahami struktur evaluasi, deskripsi teks, dan penegasan ulang.",
+    "bacaan": null,
+    "teks_soal": "Manakah di antara pernyataan berikut yang\nbenar mengenai etika dan kebahasaan Teks Tanggapan Kritis? (Pilih lebih dari satu jawaban benar)\n\nPernyataan:\n(1) Pujian yang meyakinkan harus tulus dan menyebutkan secara spesifik bagian karya yang berkualitas\ntinggi beserta alasannya.\n(2) Kritik yang konstruktif wajib disampaikan dengan bahasa yang santun dan disertai solusi atau saran\nperbaikan.\n(3) Konjungsi pertentangan seperti namun, akan tetapi, dan meskipun demikian sering digunakan saat\nberalih dari pemaparan keunggulan menuju catatan kelemahan karya.\n(4) Penilaian terhadap sebuah karya sastra harus didasarkan pada seberapa dekat hubungan keker-\nabatan penanggap dengan penulis buku.\n\nPernyataan yang tepat adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(1), (2), dan (3)"
+      },
+      {
+        "label": "B",
+        "teks": "(1) dan (4) saja"
+      },
+      {
+        "label": "C",
+        "teks": "(2) dan (4) saja"
+      },
+      {
+        "label": "D",
+        "teks": "(1), (2), (3), dan (4)"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "A, B, C. Pernyataan D salah karena penilaian harus objektif berdasarkan mutu karya, bukan\nhubungan kekerabatan.",
+    "valid": true
+  },
+  {
+    "nomor": 118,
+    "tipe": "pg_sederhana",
+    "paket": "Bab IV: Memahami Tanggapan Kritis - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Tanggapan Kritis, Struktur Evaluasi-Deskripsi-Penegasan Ulang, Kritik Santun, & Pujian Objektif",
+    "capaian_pembelajaran": "Peserta didik menyusun dan mengevaluasi teks tanggapan kritis terhadap karya seni/fenomena sosial, membedakan kritik santun berdasar data vs celaan subjektif, serta memahami struktur evaluasi, deskripsi teks, dan penegasan ulang.",
+    "bacaan": null,
+    "teks_soal": "Tentukan apakah pernyataan analisis struktur\nteks tanggapan kritis berikut Benar atau Salah!\nNo.\nPernyataan Analisis Bahasa Indonesia\nBenar\nSalah\n\nPernyataan:\n(a) Kalimat “Film Laskar Pelangi merupakan adaptasi dari novel karya An-\ndrea Hirata yang disutradarai oleh Riri Riza dan dirilis pada tahun 2008\ndengan latar Pulau Belitung” merupakan bagian struktur Konteks.\n(b) Kalimat “Meskipun akting para pemeran anak-anak sangat alami dan\nmengharukan, beberapa adegan penting di dalam novel terpaksa dipo-\ntong karena keterbatasan durasi film” merupakan bagian struktur Pe-\nnilaian.\n(c) Bagian Deskripsi hanya boleh berisi daftar harga tiket bioskop dan jad-\nwal pemutaran film.\n\nKombinasi analisis nilai kebenaran (Benar/Salah) yang tepat adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(a) Benar, (b) Benar, (c) Salah"
+      },
+      {
+        "label": "B",
+        "teks": "(a) Benar, (b) Salah, (c) Salah"
+      },
+      {
+        "label": "C",
+        "teks": "(a) Salah, (b) Benar, (c) Benar"
+      },
+      {
+        "label": "D",
+        "teks": "(a) Benar, (b) Benar, (c) Benar"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "(a) Benar, (b) Benar, (c) Salah. Bagian Deskripsi memaparkan sinopsis isi dan unsur-unsur\nkarya, bukan daftar harga tiket.",
+    "valid": true
+  },
+  {
+    "nomor": 119,
+    "tipe": "pg_sederhana",
+    "paket": "Bab IV: Memahami Tanggapan Kritis - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Tanggapan Kritis, Struktur Evaluasi-Deskripsi-Penegasan Ulang, Kritik Santun, & Pujian Objektif",
+    "capaian_pembelajaran": "Peserta didik menyusun dan mengevaluasi teks tanggapan kritis terhadap karya seni/fenomena sosial, membedakan kritik santun berdasar data vs celaan subjektif, serta memahami struktur evaluasi, deskripsi teks, dan penegasan ulang.",
+    "bacaan": null,
+    "teks_soal": "Tentukan apakah pernyataan evalu-\nasi kalimat tanggapan berikut Benar atau Salah!\nNo.\nPernyataan Analisis Bahasa Indonesia\nBenar\nSalah\n\nPernyataan:\n(a) Kalimat “Desain poster lomba kebersihan ini sudah sangat menarik dari\nsegi tata letak gambar, tetapi warna huruf judulnya terlalu pucat se-\nhingga akan lebih mudah terbaca jika diganti dengan warna kontras\nseperti biru tua” adalah contoh kritik yang santun dan konstruktif.\n(b) Kalimat “Masakan kelompok tiga rasanya hancur lebur dan tidak layak\ndimakan manusia karena juru masaknya memang ceroboh!”\nadalah\ncontoh tanggapan yang melanggar prinsip kesantunan dan objek-\ntivitas.\n(c) Bentuk baku menurut KBBI dari kata orisinil dan kreatip adalah orisinal\ndan kreatif.\n\nKombinasi analisis nilai kebenaran (Benar/Salah) yang tepat adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(a) Benar, (b) Benar, (c) Benar"
+      },
+      {
+        "label": "B",
+        "teks": "(a) Benar, (b) Salah, (c) Salah"
+      },
+      {
+        "label": "C",
+        "teks": "(a) Salah, (b) Benar, (c) Benar"
+      },
+      {
+        "label": "D",
+        "teks": "(a) Benar, (b) Benar, (c) Benar"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "(a) Benar, (b) Benar, (c) Benar. Ketiga pernyataan tepat sesuai kaidah kesantunan dan KBBI.",
+    "valid": true
+  },
+  {
+    "nomor": 120,
+    "tipe": "pg_sederhana",
+    "paket": "Bab IV: Memahami Tanggapan Kritis - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Tanggapan Kritis, Struktur Evaluasi-Deskripsi-Penegasan Ulang, Kritik Santun, & Pujian Objektif",
+    "capaian_pembelajaran": "Peserta didik menyusun dan mengevaluasi teks tanggapan kritis terhadap karya seni/fenomena sosial, membedakan kritik santun berdasar data vs celaan subjektif, serta memahami struktur evaluasi, deskripsi teks, dan penegasan ulang.",
+    "bacaan": null,
+    "teks_soal": "Perhatikan data\npengamatan terhadap karya **Film Pendek Karya Siswa SMP berjudul *“Sepatu Bekas untuk Sahabat”***\nberikut:\n- Identitas Karya: Disutradarai oleh Dimas Pratama (Ketua Ekstrakurikuler Sinematografi SMP Tunas\nBangsa), berdurasi 15 menit, ditayangkan pada Festival Film Pelajar Daerah tahun 2026.\n- Rincian Isi Karya: Mengisahkan persahabatan Rian dan Bima; Rian diam-diam menyisihkan uang\njajannya selama tiga bulan untuk membelikan sepatu olahraga layak pakai bagi Bima yang sepatunya\ntelah jebol menjelang lomba lari antarsekolah. Pengambilan gambar berlatar kampung padat penduduk\ndan lapangan desa dengan pencahayaan alami sore hari.\n- Evaluasi Kualitas: Keunggulan = Akting kedua pemeran utama sangat tulus dan alami, serta pesan\nsolidaritas sosialnya sangat kuat menggugah haru penonton. Kelemahan = Suara dialog pada adegan di\npinggir jalan raya agak tertutup oleh deru sepeda motor karena belum menggunakan mikrofon peredam\n\nbising.\nSusunlah sebuah Teks Tanggapan Kritis yang utuh dan santun berdasarkan data di atas ke dalam tiga\nparagraf sesuai struktur baku: (a) Konteks, (b) Deskripsi, dan (c) Penilaian (Keunggulan, Kelemahan,\n& Saran)!\n1\nD\n7\nC\n13\nC\n19\nB\n25\nC\n2\nB\n8\nD\n14\nB\n20\nC\n26\nA, B, C\n3\nC\n9\nC\n15\nD\n21\nD\n27\nA, B, C\n4\nD\n10\nB\n16\nB\n22\nA\n28\nB-B-S\n5\nB\n11\nD\n17\nC\n23\nB\n29\nB-B-B\n6\nA\n12\nA\n18\nD\n24\nD\n30\nUraian\n1. Jawaban: D. Paragraf pembuka yang memperkenalkan objek/karya yang ditanggapi (judul, pencipta,\ntahun, media, tempat) adalah struktur Konteks.\n2. Jawaban: B. Paragraf yang memerinci bagian-bagian visual di atas kanvas dan teknik sapuan warna\nadalah struktur Deskripsi.\n3. Jawaban: C. Menguraikan keunggulan warna sekaligus kelemahan proporsi ukuran objek secara objektif\nmerupakan struktur Penilaian.\n4. Jawaban: D. Dua syarat utama tanggapan kritis adalah objektif (berdasarkan fakta/kualitas nyata) dan\nsantun/konstruktif (menghargai serta memberi solusi).\n5. Jawaban: B. Kalimat (2) mengapresiasi kelebihan tata panggung, menunjukkan kekurangan teknis volume\nsuara secara spesifik, dan memberikan saran konkret (mikrofon clip-on).\n6. Jawaban: A. Menilai buruk sebuah karya karena pernah berselisih paham pribadi dengan pemainnya\nmerupakan penilaian subjektif (sentimen pribadi).\n7. Jawaban: C. Pilihan C memadukan kedua poin keunggulan dan kedua poin kelemahan pada tabel secara\nutuh dan koheren.\n8. Jawaban: D. Penulis memaparkan manfaat positif sekaligus kendala nyata di daerah pedesaan secara\nberimbang.\n9. Jawaban: C. Pujian berkualitas menyebutkan bukti spesifik keunggulan karya (kehalusan arsiran pensil\narang dan efek keteduhan ekspresi).\n10. Jawaban: B. Memperkenalkan novel Student Hidjo, pengarangnya, tahun terbit, dan latar zaman kolonial\nmerupakan bagian Konteks.\n11. Jawaban: D. Memaparkan ringkasan alur cerita dan tokoh di dalam novel merupakan bagian Deskripsi.\n12. Jawaban: A. Kalimat yang memuji keberanian tema kesetaraan pribumi sehingga novel dinilai revolu-\nsioner dan bernilai sejarah tinggi adalah kalimat keunggulan (pujian).\n13. Jawaban: C. Peralihan dari pujian sinematografi ke kritik suara latar dihubungkan oleh konjungsi perten-\ntangan akan tetapi / namun.\n14.\nJawaban: B. Struktur baku Teks Tanggapan Kritis (Bab IV Kelas 9) terdiri atas Konteks (Apa yang\nditanggapi, kapan, di mana, siapa pada Paragraf 1), Deskripsi & Penilaian Positif (Paragraf 2), Penilaian\nKritis/Kekurangan (Paragraf 3), dan Saran/Solusi (Paragraf 4).\n15. Jawaban: D. Esensi tanggapan kritis yang matang adalah keseimbangan penilaian: melihat sisi keunggu-\nlan kebijakan (Paragraf 2) sekaligus mengidentifikasi celah kendala di lapangan (Paragraf 3) untuk melahirkan\nrekomendasi jalan tengah yang solutif (Paragraf 4).\n16. Jawaban: B. Dalam prinsip kesantunan Teks Tanggapan Kritis (Buku Siswa Kelas IX Bab IV), kritik yang\nbaik fokus pada objek karyanya (bukan menyerang pribadi pembuatnya), diawali apresiasi bagian yang sudah\nbaik, dan menyertakan saran perbaikan yang spesifik.\n17. Jawaban: C. Memuat kritik atas kekurangan spesifik (ukuran huruf menu terlalu kecil) dan saran per-\nbaikan konkret (fitur pengatur ukuran huruf).\n18. Jawaban: D. Urutan struktur baku: (2) Konteks pengenalan program →(1) Deskripsi pelaksanaan di\nkantin →(3) Penilaian capaian 85% dan saran penambahan wastafel.\n19. Jawaban: B. Konjungsi bahwa berfungsi sebagai konjungsi penerang/penjelas isi pernyataan pada induk\nkalimat.\n20. Jawaban: C. Kedua teks menerapkan struktur penalaran tanggapan kritis yang identik: (1) memotret\nfenomena tren remaja, (2) mengapresiasi sisi positifnya (menjaga kebersihan wajah / bangun pagi bero-\n\nBerdasarkan kaidah bahasa baku EYD Edisi V dan materi bab ini, rumusan analisis / hasil penyuntingan yang paling tepat adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "- (a) Paragraf Konteks: Film pendek berjudul “Sepatu Bekas untuk Sahabat” merupakan karya sinematografi\npelajar yang disutradarai oleh Dimas Pratama, Ketua Ekstrakurikuler Sinematografi SMP Tunas Bangsa. Film\nberdurasi 15 menit ini ditayangkan secara perdana p"
+      },
+      {
+        "label": "B",
+        "teks": "Mengabaikan penggunaan tanda koma dan huruf kapital pada nama geografi serta membiarkan kata tidak baku tetap tertulis apa adanya"
+      },
+      {
+        "label": "C",
+        "teks": "Mengubah seluruh kalimat menjadi bahasa santai dan menghilangkan unsur fakta objektif dalam teks"
+      },
+      {
+        "label": "D",
+        "teks": "Menghapus seluruh paragraf wacana dan menggantinya dengan opini pribadi tanpa bukti ilmiah"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "- (a) Paragraf Konteks: Film pendek berjudul “Sepatu Bekas untuk Sahabat” merupakan karya sinematografi\npelajar yang disutradarai oleh Dimas Pratama, Ketua Ekstrakurikuler Sinematografi SMP Tunas Bangsa. Film\nberdurasi 15 menit ini ditayangkan secara perdana pada ajang Festival Film Pelajar Daerah tahun 2026 dan\nmengangkat tema ketulusan persahabatan remaja.\n- (b) Paragraf Deskripsi: Film ini mengisahkan persahabatan erat antara Rian dan Bima. Menjelang dige-\nlarnya lomba lari antarsekolah, sepatu olahraga milik Bima rusak parah sementara keluarganya belum mampu\nmembeli sepatu baru. Tanpa sepengetahuan Bima, Rian menyisihkan uang jajannya selama tiga bulan un-\ntuk membelikan sepasang sepatu olahraga layak pakai bagi sahabatnya. Seluruh adegan diambil di latar\nkampung padat penduduk dan lapangan desa dengan memanfaatkan pencahayaan alami matahari sore.\n- (c) Paragraf Penilaian: Keunggulan utama film pendek ini terletak pada akting kedua pemeran utama yang\nsangat tulus dan alami, sehingga pesan solidaritas sosialnya mampu menggugah rasa haru penonton. Akan\ntetapi, terdapat sedikit kekurangan teknis pada adegan dialog di pinggir jalan raya karena suara percakapan\ntokoh agak tertutup oleh deru sepeda motor. Karya yang sangat inspiratif ini akan tampil jauh lebih sempurna\napabila pada produksi berikutnya tim sinematografi menggunakan mikrofon peredam bising (lavalier/boom\nmic) saat merekam dialog di ruang terbuka.\n\n1. Hakikat, Fungsi, & Empat Struktur Baku Teks Diskusi\na.\nPengertian & Tujuan Teks Diskusi: Teks diskusi adalah teks argumentatif yang menyajikan suatu isu atau per-\nmasalahan kontroversial dengan memaparkan minimal dua sudut pandang yang berbeda—yaitu pendapat yang\nmendukung (Pro) dan pendapat yang menentang (Kontra)—secara objektif dan berimbang sebelum diakhiri den-\ngan simpulan/rekomendasi jalan tengah.\nTujuannya agar pembaca memiliki wawasan yang utuh dari berbagai sisi\nsebelum mengambil keputusan.\nRujukan resmi: Buku Siswa Bahasa Indonesia Kelas IX Kemendikdasmen (https:\n//static.buku.kemdikbud.go.id/content/pdf/bukuteks/kurikulum21/Bahasa-Indonesia-BS-KLS-IX.pdf).\nb. Empat Struktur Baku Teks Diskusi: 1. Isu (Masalah Utama): pengenalan topik/masalah aktual yang sedang diperde-\nbatkan di masyarakat beserta latar belakang mengapa isu tersebut memunculkan perbedaan pendapat (contoh: kebijakan\npembatasan penggunaan telepon pintar di lingkungan SMP atau pemanfaatan kecerdasan buatan/AI dalam belajar).\n2. Argumen Pendukung (Pendapat Pro / Afirmatif): pemaparan alasan logis, bukti ilmiah, dan data yang menyetu-\njui/mendukung kebijakan atau isu tersebut. 3. Argumen Menentang (Pendapat Kontra / Oposisi): pemaparan alasan\nlogis, dampak negatif, dan bukti yang menolak/mengkritisi kebijakan atau isu tersebut, biasanya diawali konjungsi per-\ntentangan (Akan tetapi, Di sisi lain, Sebaliknya). 4. Simpulan / Rekomendasi: rangkuman objektif yang menjembatani\nkedua belah pihak dan menawarkan solusi jalan tengah (win-win solution) yang bijaksana.\n2. Kaidah Kebahasaan Teks Diskusi (Kohesi, Koherensi, Konjungsi, Modalitas) & Rujukan 30 Soal HOTS\na. Lima Kaidah Kebahasaan Teks Diskusi: - Konjungsi Pertentangan (Kontras): sangat dominan digunakan un-\ntuk mempertemukan argumen pro dan kontra, meliputi konjungsi intrakalimat (tetapi, sedangkan, melainkan, meskipun,\nwalaupun) dan konjungsi antarkalimat (Namun, Akan tetapi, Sebaliknya, Di sisi lain, Meskipun demikian).\n- Kohesi\n(Kepaduan Bentuk) & Koherensi (Kepaduan Makna): 1. Kohesi Gramatikal: kepaduan antarkalimat menggunakan\nkata ganti rujukan (ia, mereka, hal tersebut, kebijakan ini) atau konjungsi. 2. Kohesi Leksikal: kepaduan menggunakan\npengulangan kata kunci, sinonim, antonim, atau hiponim. 3. Koherensi: keterkaitan logis antargagasan kalimat sehingga\nparagraf mengalir padu tanpa adanya kalimat sumbang (kalimat yang melenceng dari topik utama). - Kata Modalitas:\nharus, wajib, perlu, dapat, mungkin, sebaiknya, hendaknya, tidak dapat dipungkiri. - Bahasa Evaluatif & Kooperatif:\nmengkaji argumen secara rasional tanpa merendahkan pihak yang berbeda pendapat.\nb. Rujukan 30 Soal HOTS Bab V Kelas 9 (3 Jenis Ujian): (1) ASPD DIY / TKAD / Ujian Sekolah: Paket Pemanta-\npan ASPD DIY Bahasa Indonesia Kelas 9 (https://id.scribd.com/document/634340229/1-PAKET-SOAL-B-INDO-\nPEMANTAPAN-ASPD-1); (2) MGMP Bahasa Indonesia SMP: Bank Soal Teks Diskusi Kelas 9 (https://id.scribd.com/\ndocument/448912033/Soal-Teks-Diskusi-Kelas-9-SMP); (3) ASAS/ASAT Kurikulum Merdeka: Bank Soal ASAT\nBahasa Indonesia Kelas 9 (https://id.scribd.com/document/728910445/Soal-PAT-Bahasa-Indonesia-Kelas-\n9-Kurikulum-Merdeka).",
+    "valid": true
+  }
+]

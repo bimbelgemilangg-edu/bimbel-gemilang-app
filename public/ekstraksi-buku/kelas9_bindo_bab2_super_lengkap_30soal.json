@@ -1,0 +1,1021 @@
+[
+  {
+    "nomor": 31,
+    "tipe": "pg_sederhana",
+    "paket": "Bab II: Menganalisis Cerita Pendek - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Cerita Pendek (Cerpen), Unsur Intrinsik & Ekstrinsik, Sudut Pandang, Majas, & Nilai Kehidupan",
+    "capaian_pembelajaran": "Peserta didik memahami dan menganalisis unsur intrinsik cerpen (tema, alur, tokoh/penokohan analitik vs dramatik, latar, sudut pandang orang pertama/ketiga, amanat), nilai moral/sosial, serta gaya bahasa kiasan.",
+    "bacaan": null,
+    "teks_soal": "Bacalah kutipan cerpen berikut!\n\"Di bawah temaram lampu minyak yang bergoyang ditiup angin malam, Kakek Sastro masih tekun meng-\ngerakkan pahat besinya di atas sebilah kayu jati tua. Serpihan-serpihan kayu berjatuhan di pangkuan\nsarungnya yang telah pudar warnanya. ’Kek, istirahatlah. Mata Kakek sudah berair dan tangan Kakek\ngemetar,’ bisik Laras sambil meletakkan segelas wedang jahe hangat di samping kotak pahat.\"\nLatar waktu, latar tempat, dan latar suasana yang tergambar secara terpadu pada kutipan cerpen di atas\nadalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Pagi hari, di halaman sekolah Laras, dengan suasana gembira dan riuh rendah"
+      },
+      {
+        "label": "B",
+        "teks": "Siang hari terik, di tengah pasar kayu jati yang bising, dengan suasana mencekam dan penuh ke- marahan"
+      },
+      {
+        "label": "C",
+        "teks": "Malam hari, di bengkel kerja/rumah Kakek Sastro, dengan suasana hening, syahdu, dan penuh kasih sayang cucu kepada kakeknya"
+      },
+      {
+        "label": "D",
+        "teks": "Sore hari, di tepi pantai berpasir putih, dengan suasana panik akibat badai laut"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "C. Temaram lampu minyak yang ditiup angin malam = latar waktu malam hari; pahat dan kayu\njati = bengkel ukir rumah Kakek Sastro; bisikan cucu yang menyuguhkan wedang jahe = suasana hening,\nsyahdu, dan penuh kasih sayang.",
+    "valid": true
+  },
+  {
+    "nomor": 32,
+    "tipe": "pg_sederhana",
+    "paket": "Bab II: Menganalisis Cerita Pendek - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Cerita Pendek (Cerpen), Unsur Intrinsik & Ekstrinsik, Sudut Pandang, Majas, & Nilai Kehidupan",
+    "capaian_pembelajaran": "Peserta didik memahami dan menganalisis unsur intrinsik cerpen (tema, alur, tokoh/penokohan analitik vs dramatik, latar, sudut pandang orang pertama/ketiga, amanat), nilai moral/sosial, serta gaya bahasa kiasan.",
+    "bacaan": null,
+    "teks_soal": "Dalam kutipan cerpen: \"’Kek, meskipun pemborong dari kota itu menawar ukiran burung garuda ini den-\ngan harga tiga kali lipat, mengapa Kakek tetap menyerahkannya kepada Pak Guru Darto untuk dipasang\ndi perpustakaan desa dengan harga modal saja?’ tanya Laras heran. Kakek Sastro tersenyum teduh,\n’Laras, uang bisa habis dalam sepekan, tetapi semangat membaca anak-anak desa yang bangga melihat\nruang bacanya indah akan hidup puluhan tahun.’\"\nCara pengarang menggambarkan watak Kakek Sastro yang tidak mata duitan dan peduli pada pen-\ndidikan desa pada kutipan tersebut menggunakan teknik ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Teknik dramatik melalui dialog antartokoh dan tindakan/keputusan tokoh"
+      },
+      {
+        "label": "B",
+        "teks": "Teknik analitik (uraian langsung pengarang di awal kalimat)"
+      },
+      {
+        "label": "C",
+        "teks": "Teknik deskripsi fisik pakaian tokoh semata"
+      },
+      {
+        "label": "D",
+        "teks": "Teknik laporan tabel statistik penjualan ukiran"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "A. Pengarang tidak menyebut langsung kata Kakek Sastro dermawan, melainkan menunjukkan-\nnya lewat dialog dan keputusan tindakan menyerahkan ukiran ke perpustakaan desa.",
+    "valid": true
+  },
+  {
+    "nomor": 33,
+    "tipe": "pg_sederhana",
+    "paket": "Bab II: Menganalisis Cerita Pendek - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Cerita Pendek (Cerpen), Unsur Intrinsik & Ekstrinsik, Sudut Pandang, Majas, & Nilai Kehidupan",
+    "capaian_pembelajaran": "Peserta didik memahami dan menganalisis unsur intrinsik cerpen (tema, alur, tokoh/penokohan analitik vs dramatik, latar, sudut pandang orang pertama/ketiga, amanat), nilai moral/sosial, serta gaya bahasa kiasan.",
+    "bacaan": null,
+    "teks_soal": "Bacalah kutipan bagian cerpen berikut!\n\"Pagi itu langit Desa Besuki tampak mendung pekat. Tiba-tiba terdengar suara deru buldoser dari ujung\njalan hutan. Puluhan warga berlarian panik menuju bukit sumber mata air. Di hadapan mesin pengeruk\nbaja itu, Mbah Jayeng berdiri tegak merentangkan kedua tangannya.\nDada lelaki tua itu naik turun\nmenahan amarah sekaligus ketakutan. Jika pohon-pohon beringin tua di lereng itu tumbang hari ini,\nseluruh sumur warga desa akan kering kerontang pada musim kemarau nanti.\"\nJika dipetakan ke dalam Diagram Gunung Alur , kutipan yang memuat puncak pertentangan antara\nMbah Jayeng dan rombongan buldoser tersebut berada pada tahap ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Koda (amanat penutup setelah masalah selesai)"
+      },
+      {
+        "label": "B",
+        "teks": "Orientasi (pengenalan awal yang tenang)"
+      },
+      {
+        "label": "C",
+        "teks": "Resolusi (penyelesaian masalah secara damai)"
+      },
+      {
+        "label": "D",
+        "teks": "Komplikasi menuju Klimaks (puncak ketegangan konflik)"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Pertentangan langsung antara Mbah Jayeng dan buldoser penebang pohon sumber air\nmerupakan tahap Komplikasi menuju Klimaks.",
+    "valid": true
+  },
+  {
+    "nomor": 34,
+    "tipe": "pg_sederhana",
+    "paket": "Bab II: Menganalisis Cerita Pendek - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Cerita Pendek (Cerpen), Unsur Intrinsik & Ekstrinsik, Sudut Pandang, Majas, & Nilai Kehidupan",
+    "capaian_pembelajaran": "Peserta didik memahami dan menganalisis unsur intrinsik cerpen (tema, alur, tokoh/penokohan analitik vs dramatik, latar, sudut pandang orang pertama/ketiga, amanat), nilai moral/sosial, serta gaya bahasa kiasan.",
+    "bacaan": null,
+    "teks_soal": "Bacalah dua kutipan cerpen berikut untuk membandingkan teknik penokohannya!\n- Kutipan 1: Arman dikenal oleh seluruh teman sekelasnya sebagai anak yang sangat sombong, kikir,\ndan gemar meremehkan orang lain yang kurang mampu.\n- Kutipan 2: Ketika pengamen tua itu menyodorkan kaleng kecil di dekat mejanya, Arman buru-buru\nmengibaskan tangannya sambil mendengus sinis, \"Pergi sana!\nSuara sumbangmu membuat selera\nmakanku hilang!\"\nPerbedaan teknik penggambaran watak tokoh Arman pada kedua kutipan di atas adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Kutipan 1 menggunakan teknik dramatik; Kutipan 2 menggunakan teknik analitik"
+      },
+      {
+        "label": "B",
+        "teks": "Kutipan 1 menggunakan teknik analitik (paparan langsung pengarang); Kutipan 2 menggunakan teknik dramatik (melalui gerak-gerik dan ucapan kasar tokoh)"
+      },
+      {
+        "label": "C",
+        "teks": "Kedua kutipan tersebut menggambarkan watak Arman yang rendah hati dan suka menolong"
+      },
+      {
+        "label": "D",
+        "teks": "Kutipan 1 menggunakan sudut pandang orang pertama; Kutipan 2 menggunakan majas litotes"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "B. Kutipan 1 menguraikan sifat secara langsung (analitik); Kutipan 2 menampilkan gerak-gerik\n\ndan bentakan tokoh (dramatik).",
+    "valid": true
+  },
+  {
+    "nomor": 35,
+    "tipe": "pg_sederhana",
+    "paket": "Bab II: Menganalisis Cerita Pendek - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Cerita Pendek (Cerpen), Unsur Intrinsik & Ekstrinsik, Sudut Pandang, Majas, & Nilai Kehidupan",
+    "capaian_pembelajaran": "Peserta didik memahami dan menganalisis unsur intrinsik cerpen (tema, alur, tokoh/penokohan analitik vs dramatik, latar, sudut pandang orang pertama/ketiga, amanat), nilai moral/sosial, serta gaya bahasa kiasan.",
+    "bacaan": null,
+    "teks_soal": "Bacalah kutipan cerpen berikut!\n\"Sejak kepergian ayah tiga tahun lalu, aku hanya tinggal berdua dengan Ibu di rumah kontrakan sempit\ndi pinggir rel kereta api. Setiap pukul tiga dini hari, aku selalu terbangun oleh suara derik parutan kelapa\ndari dapur. Dari balik tirai kamar, kulihat Ibu yang punggungnya mulai membungkuk sedang menguleni\nadonan kue apem untuk kutitipkan di warung-warung sebelum aku berangkat sekolah.\"\nSudut pandang (point of view) yang digunakan pengarang dalam kutipan cerpen di atas adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Sudut pandang orang ketiga serbatahu"
+      },
+      {
+        "label": "B",
+        "teks": "Sudut pandang orang pertama pelaku sampingan"
+      },
+      {
+        "label": "C",
+        "teks": "Sudut pandang orang pertama pelaku utama"
+      },
+      {
+        "label": "D",
+        "teks": "Sudut pandang orang ketiga pengamat"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "C. Narator menggunakan kata ganti aku dan menceritakan perjuangan hidupnya sendiri\nbersama ibunya (orang pertama pelaku utama).",
+    "valid": true
+  },
+  {
+    "nomor": 36,
+    "tipe": "pg_sederhana",
+    "paket": "Bab II: Menganalisis Cerita Pendek - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Cerita Pendek (Cerpen), Unsur Intrinsik & Ekstrinsik, Sudut Pandang, Majas, & Nilai Kehidupan",
+    "capaian_pembelajaran": "Peserta didik memahami dan menganalisis unsur intrinsik cerpen (tema, alur, tokoh/penokohan analitik vs dramatik, latar, sudut pandang orang pertama/ketiga, amanat), nilai moral/sosial, serta gaya bahasa kiasan.",
+    "bacaan": null,
+    "teks_soal": "Bandingkan kutipan nomor 5 di atas dengan kutipan cerpen berikut!\n\"Aku mengenal Damar sejak kami duduk di bangku kelas tujuh. Sejak ayahnya jatuh sakit, Damar tidak\npernah lagi ikut bermain bola bersama kami sepulang sekolah. Dari kejauhan, aku sering memperhatikan\nDamar mendorong gerobak air keliling dari satu gang ke gang lain dengan seragam sekolah yang masih\nmelekat di tubuhnya. Ketegaran hati sahabatku itu selalu membuatku kagum sekaligus terharu.\"\nMengapa sudut pandang kutipan di atas disebut Sudut Pandang Orang Pertama Pelaku Sampingan?",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Karena tidak ada satu pun tokoh manusia di dalam cerita tersebut"
+      },
+      {
+        "label": "B",
+        "teks": "Karena narator menggunakan kata ganti \"dia\" dan berada di luar cerita"
+      },
+      {
+        "label": "C",
+        "teks": "Karena tokoh \"aku\" adalah tokoh antagonis yang memusuhi Damar"
+      },
+      {
+        "label": "D",
+        "teks": "Karena narator menggunakan kata ganti \"aku\", tetapi tokoh sentral yang menjadi fokus penceritaan dan mengalami konflik utama adalah sahabatnya (Damar)"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Tokoh aku hanya berperan sebagai sahabat/pengamat yang menceritakan ketegaran tokoh\nutama Damar (orang pertama pelaku sampingan).",
+    "valid": true
+  },
+  {
+    "nomor": 37,
+    "tipe": "pg_sederhana",
+    "paket": "Bab II: Menganalisis Cerita Pendek - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Cerita Pendek (Cerpen), Unsur Intrinsik & Ekstrinsik, Sudut Pandang, Majas, & Nilai Kehidupan",
+    "capaian_pembelajaran": "Peserta didik memahami dan menganalisis unsur intrinsik cerpen (tema, alur, tokoh/penokohan analitik vs dramatik, latar, sudut pandang orang pertama/ketiga, amanat), nilai moral/sosial, serta gaya bahasa kiasan.",
+    "bacaan": null,
+    "teks_soal": "Bacalah kutipan cerpen berikut!\n\"Ketika amplop pengumuman lomba lukis tingkat provinsi itu dibuka, tangan Raka bergetar hebat.\nMatanya menatap barisan huruf yang mencetak namanya sebagai peraih juara pertama. Seketika itu\njuga, ingatan Raka melayang kembali ke peristiwa dua tahun silam, saat lukisan pertamanya pernah\nditertawakan oleh teman-temannya dan kanvasnya basah kuyup kehujanan di halte bus.\"\nJenis alur (plot) yang tampak pada perubahan urutan waktu dalam kutipan di atas adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Alur maju murni (progresif) tanpa ada ingatan masa lalu"
+      },
+      {
+        "label": "B",
+        "teks": "Alur mundur (flashback / sorot balik) karena tokoh mengenang kembali peristiwa masa lalu di tengah kejadian masa kini"
+      },
+      {
+        "label": "C",
+        "teks": "Alur deskripsi ruang laboratorium"
+      },
+      {
+        "label": "D",
+        "teks": "Alur prosedur langkah pembuatan kanvas lukis"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "B. Frasa “ingatan Raka melayang kembali ke peristiwa dua tahun silam” menandai alur mundur\n(flashback).",
+    "valid": true
+  },
+  {
+    "nomor": 38,
+    "tipe": "pg_sederhana",
+    "paket": "Bab II: Menganalisis Cerita Pendek - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Cerita Pendek (Cerpen), Unsur Intrinsik & Ekstrinsik, Sudut Pandang, Majas, & Nilai Kehidupan",
+    "capaian_pembelajaran": "Peserta didik memahami dan menganalisis unsur intrinsik cerpen (tema, alur, tokoh/penokohan analitik vs dramatik, latar, sudut pandang orang pertama/ketiga, amanat), nilai moral/sosial, serta gaya bahasa kiasan.",
+    "bacaan": null,
+    "teks_soal": "Perhatikan kalimat bermajas dalam kutipan cerpen berikut:\n*(1) Sejak suaminya wafat, Bu Rahmi menjadi tulang punggung keluarga untuk membiayai sekolah\nketiga anaknya.*\n*(2) Angin malam membelai lembut rambut putih Kakek Sastro sambil membisikkan lagu kerinduan.*\n*(3) Tangisannya mengguncang seluruh isi bumi dan membelah langit malam ketika mendengar\nkabar duka itu.*\n*(4) \"Singgahlah sebentar ke gubuk reot kami untuk sekadar mencicipi air putih,\" ucap Pak RT di depan\nrumah limasnya yang asri.*\nJenis majas pada kalimat (1), (2), (3), dan (4) secara berurutan adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(1) Metafora, (2) Personifikasi, (3) Hiperbola, (4) Litotes"
+      },
+      {
+        "label": "B",
+        "teks": "(1) Personifikasi, (2) Metafora, (3) Litotes, (4) Hiperbola"
+      },
+      {
+        "label": "C",
+        "teks": "(1) Simile, (2) Ironi, (3) Metafora, (4) Personifikasi"
+      },
+      {
+        "label": "D",
+        "teks": "(1) Hiperbola, (2) Litotes, (3) Simile, (4) Ironi"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "A. (1) tulang punggung = Metafora; (2) angin membelai dan membisikkan = Personifikasi; (3)\nmengguncang bumi dan membelah langit = Hiperbola; (4) gubuk reot (untuk merendah) = Litotes.",
+    "valid": true
+  },
+  {
+    "nomor": 39,
+    "tipe": "pg_sederhana",
+    "paket": "Bab II: Menganalisis Cerita Pendek - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Cerita Pendek (Cerpen), Unsur Intrinsik & Ekstrinsik, Sudut Pandang, Majas, & Nilai Kehidupan",
+    "capaian_pembelajaran": "Peserta didik memahami dan menganalisis unsur intrinsik cerpen (tema, alur, tokoh/penokohan analitik vs dramatik, latar, sudut pandang orang pertama/ketiga, amanat), nilai moral/sosial, serta gaya bahasa kiasan.",
+    "bacaan": null,
+    "teks_soal": "Bacalah kutipan cerpen berikut!\n\"Meskipun seluruh warga kampung telah beralih menggunakan kompor gas dan panci aluminium mod-\nern, Mbok Darmi tetap setia memasak gudeg di atas tungku kayu bakar menggunakan kendil tanah liat\nwarisan leluhurnya. Baginya, menjaga tradisi memasak dengan kendil tanah liat sebelum fajar meny-\ningsing adalah cara menghormati warisan budaya keraton yang telah diwariskan turun-temurun.\"\nNilai ekstrinsik yang paling menonjol dalam kutipan cerpen di atas adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Nilai ekonomi perdagangan bursa saham"
+      },
+      {
+        "label": "B",
+        "teks": "Nilai politik pemilihan kepala daerah"
+      },
+      {
+        "label": "C",
+        "teks": "Nilai budaya (pelestarian adat tradisi dan kearifan lokal leluhur)"
+      },
+      {
+        "label": "D",
+        "teks": "Nilai hukum pidana pengadilan"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "C. Mempertahankan tradisi memasak gudeg dengan kendil tanah liat warisan leluhur mencer-\nminkan nilai budaya.",
+    "valid": true
+  },
+  {
+    "nomor": 40,
+    "tipe": "pg_sederhana",
+    "paket": "Bab II: Menganalisis Cerita Pendek - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Cerita Pendek (Cerpen), Unsur Intrinsik & Ekstrinsik, Sudut Pandang, Majas, & Nilai Kehidupan",
+    "capaian_pembelajaran": "Peserta didik memahami dan menganalisis unsur intrinsik cerpen (tema, alur, tokoh/penokohan analitik vs dramatik, latar, sudut pandang orang pertama/ketiga, amanat), nilai moral/sosial, serta gaya bahasa kiasan.",
+    "bacaan": null,
+    "teks_soal": "Bacalah kutipan cerpen berikut!\n\"Hujan deras mengguyur perempatan jalan raya sore itu. Dari balik kaca mobil yang hangat, Dito melihat\nseorang bocah penjual koran berteduh di bawah emperan toko yang bocor sambil memeluk plastik da-\ngangannya agar tidak basah. Tanpa pikir panjang, Dito meminta ayahnya menepikan mobil, lalu ia turun\nmembawa payung cadangan dan sebungkus roti hangat untuk diberikan kepada bocah itu.\"\nNilai kehidupan yang terkandung dalam tindakan tokoh Dito pada kutipan cerpen tersebut adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Nilai persaingan dagang antara penjual koran dan toko roti"
+      },
+      {
+        "label": "B",
+        "teks": "Nilai keserakahan dan keegoisan masyarakat perkotaan"
+      },
+      {
+        "label": "C",
+        "teks": "Nilai pelanggaran ketertiban lalu lintas di jalan raya"
+      },
+      {
+        "label": "D",
+        "teks": "Nilai sosial dan kemanusiaan (empati serta kepedulian menolong sesama yang sedang kesulitan)"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Menolong bocah penjual koran yang kehujanan dengan payung dan roti mencerminkan\nnilai sosial dan kemanusiaan.",
+    "valid": true
+  },
+  {
+    "nomor": 41,
+    "tipe": "pg_sederhana",
+    "paket": "Bab II: Menganalisis Cerita Pendek - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Cerita Pendek (Cerpen), Unsur Intrinsik & Ekstrinsik, Sudut Pandang, Majas, & Nilai Kehidupan",
+    "capaian_pembelajaran": "Peserta didik memahami dan menganalisis unsur intrinsik cerpen (tema, alur, tokoh/penokohan analitik vs dramatik, latar, sudut pandang orang pertama/ketiga, amanat), nilai moral/sosial, serta gaya bahasa kiasan.",
+    "bacaan": null,
+    "teks_soal": "Bacalah kutipan cerpen berikut!\n\"Pak Bimo menatap amplop tebal yang disodorkan secara sembunyi-sembunyi oleh rekanan proyek di\nruang kerjanya. Ia tahu uang di dalam amplop itu cukup untuk melunasi biaya operasi ibunya di rumah\nsakit besok pagi. Namun, keringat dingin membasahi dahinya. Bayangan wajah almarhum ayahnya yang\nberpesan agar jangan pernah memakan harta haram sepeser pun terus terngiang di telinganya. Dengan\nsuara tegas, Pak Bimo mendorong kembali amplop itu, ’Maaf, Pak. Saya hanya akan menandatangani\nlaporan proyek jika kualitas jembatan sudah sesuai spesifikasi.’\"\nKonflik yang dialami oleh tokoh Pak Bimo pada kutipan di atas merupakan jenis ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Konflik manusia melawan bencana alam gempa bumi"
+      },
+      {
+        "label": "B",
+        "teks": "Konflik fisik (perkelahian menggunakan senjata tajam di lokasi jembatan)"
+      },
+      {
+        "label": "C",
+        "teks": "Konflik batin (pertentangan di dalam diri tokoh antara desakan kebutuhan biaya berobat ibu dan prinsip kejujuran/integritas moral)"
+      },
+      {
+        "label": "D",
+        "teks": "Konflik antarsuku bangsa di pedalaman hutan"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "C. Pergulatan di dalam batin Pak Bimo antara kebutuhan biaya operasi ibu dan prinsip menolak\nuang suap adalah konflik batin.",
+    "valid": true
+  },
+  {
+    "nomor": 42,
+    "tipe": "pg_sederhana",
+    "paket": "Bab II: Menganalisis Cerita Pendek - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Cerita Pendek (Cerpen), Unsur Intrinsik & Ekstrinsik, Sudut Pandang, Majas, & Nilai Kehidupan",
+    "capaian_pembelajaran": "Peserta didik memahami dan menganalisis unsur intrinsik cerpen (tema, alur, tokoh/penokohan analitik vs dramatik, latar, sudut pandang orang pertama/ketiga, amanat), nilai moral/sosial, serta gaya bahasa kiasan.",
+    "bacaan": null,
+    "teks_soal": "Amanat (pesan moral) yang ingin disampaikan pengarang melalui keteguhan sikap Pak Bimo pada kuti-\npan cerpen nomor 11 di atas adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Seorang pegawai boleh menerima uang suap asalkan digunakan untuk membiayai pengobatan orang tua"
+      },
+      {
+        "label": "B",
+        "teks": "Kita harus senantiasa memegang teguh kejujuran dan menolak segala bentuk suap/korupsi meskipun sedang berada dalam himpitan kesulitan hidup"
+      },
+      {
+        "label": "C",
+        "teks": "Pembangunan jembatan desa tidak memerlukan pemeriksaan kualitas bahan bangunan"
+      },
+      {
+        "label": "D",
+        "teks": "Sebaiknya kita tidak usah bekerja agar terhindar dari godaan uang"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "B. Amanatnya adalah memegang teguh integritas dan kejujuran serta menolak korupsi/suap\ndalam kondisi sesulit apa pun.",
+    "valid": true
+  },
+  {
+    "nomor": 43,
+    "tipe": "pg_sederhana",
+    "paket": "Bab II: Menganalisis Cerita Pendek - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Cerita Pendek (Cerpen), Unsur Intrinsik & Ekstrinsik, Sudut Pandang, Majas, & Nilai Kehidupan",
+    "capaian_pembelajaran": "Peserta didik memahami dan menganalisis unsur intrinsik cerpen (tema, alur, tokoh/penokohan analitik vs dramatik, latar, sudut pandang orang pertama/ketiga, amanat), nilai moral/sosial, serta gaya bahasa kiasan.",
+    "bacaan": null,
+    "teks_soal": "Bacalah kutipan akhir cerpen berikut!\n\"Akhirnya, setelah Nanda berani mengakui kesalahannya di depan Bu Guru dan mengganti pot tana-\nman anggrek kelas yang tidak sengaja ia pecahkan, hatinya terasa plong seperti beban batu besar\ntelah terangkat dari dadanya. Rani yang semula dituduh oleh teman-teman pun tersenyum lega dan\nmemaafkan Nanda. Sejak hari itu, Nanda berjanji pada dirinya sendiri bahwa berkata jujur sejak awal\njauh lebih menenteramkan hati daripada bersembunyi di balik kebohongan.\"\nDalam struktur teks cerpen, kalimat terakhir yang memuat kesadaran dan pelajaran moral eksplisit bagi\ntokoh Nanda tersebut merupakan bagian ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Komplikasi puncak pertengkaran"
+      },
+      {
+        "label": "B",
+        "teks": "Orientasi (pengenalan latar waktu dan tempat di awal cerita)"
+      },
+      {
+        "label": "C",
+        "teks": "Rangkaian peristiwa pemicu konflik"
+      },
+      {
+        "label": "D",
+        "teks": "Koda (penutup yang memuat simpulan nilai moral/perubahan batin tokoh setelah resolusi)"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Kalimat penutup yang memuat renungan moral/perubahan kesadaran tokoh setelah konflik\nselesai disebut Koda.",
+    "valid": true
+  },
+  {
+    "nomor": 44,
+    "tipe": "pg_sederhana",
+    "paket": "Bab II: Menganalisis Cerita Pendek - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Cerita Pendek (Cerpen), Unsur Intrinsik & Ekstrinsik, Sudut Pandang, Majas, & Nilai Kehidupan",
+    "capaian_pembelajaran": "Peserta didik memahami dan menganalisis unsur intrinsik cerpen (tema, alur, tokoh/penokohan analitik vs dramatik, latar, sudut pandang orang pertama/ketiga, amanat), nilai moral/sosial, serta gaya bahasa kiasan.",
+    "bacaan": {
+      "teks": "WACANA LITERASI MEMBACA: WACANA LITERASI MEMBACA: PAYUNG HITAM PAK ADNAN DI BALIK\nHUJAN SENJA\n(Paragraf 1) Hujan senja mengguyur halaman SMP Harapan ketika bel pulang berbunyi. Raka berdiri gelisah\ndi teras koridor sambil memeluk tasnya yang berisi maket jembatan kayu untuk lomba karya ilmiah besok pagi.\nSatu per satu temannya telah dijemput menggunakan mobil, menyisakan Raka seorang diri yang menatap\nlangit kelabu dengan cemas. Jika ia nekat menerobos hujan, lem kayu pada maket yang dikerjakannya selama\ndua pekan pasti akan luruh.\n(Paragraf 2) Dari pos penjagaan di sudut gerbang, Pak Adnan—penjaga sekolah tua yang jalannya sedikit\npincang karena luka masa lalu—melangkah pelan menghampiri Raka sambil memegang sebilah payung hi-\ntam besar yang gagangnya telah dililit kawat. Selama ini, Raka jarang menyapa Pak Adnan; bahkan kemarin\nRaka sempat menggerutu ketika Pak Adnan menegurnya karena memarkir sepeda sembarangan di depan\npintu laboratorium.\n(Paragraf 3) “Pakai payung Bapak ini, Nak Raka. Bungkus juga maketmu dengan jas hujan plastik Bapak\nagar lemnya tidak kena tampias air,” ucap Pak Adnan lembut sambil mengulurkan payung hitam dan jas hujan\nbersih dari dalam tas tuanya. Raka tertegun. Wajahnya terasa hangat menahan malu sekaligus haru. “Lalu\nBapak pulang pakai apa? Rumah Bapak kan di seberang sungai,” tanya Raka lirih.\n(Paragraf 4) “Bapak masih harus memeriksa kunci jendela kelas sampai magrib. Bawalah, besok pagi Ba-\npak ingin melihat maket jembatanmu juara,” jawab Pak Adnan sambil tersenyum tulus. Sepanjang perjalanan\npulang di bawah naungan payung hitam itu, dada Raka terasa sesak oleh penyesalan karena pernah meman-\ndang rendah sosok bersahaja yang berhati begitu mulia.\nPenyebab terjadinya perubahan sikap batin tokoh Raka terhadap Pak Adnan pada Paragraf 3 dan",
+      "grup": "bacaan_bab2_payung_adnan"
+    },
+    "teks_soal": "Paragraf 4 wacana cerpen di atas adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Hujan senja mendadak berhenti tepat ketika bel pulang sekolah berbunyi"
+      },
+      {
+        "label": "B",
+        "teks": "Pak Adnan membelikan Raka sepeda baru dan mengantarnya pulang menggunakan mobil sekolah"
+      },
+      {
+        "label": "C",
+        "teks": "Raka takut dilaporkan kepada Kepala Sekolah karena belum menyelesaikan maket jembatan kayu"
+      },
+      {
+        "label": "D",
+        "teks": "Ketulusan Pak Adnan yang meminjamkan payung hitam dan jas hujan miliknya demi melindungi maket lomba Raka serta mendoakan keberhasilannya, meskipun sehari sebelumnya Raka sempat bersikap ketus saat ditegur oleh Pak Adnan"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Titik balik psikologis Raka terjadi ketika ia menyadari kontras antara sikapnya yang kemarin\nmenggerutu saat ditegur Pak Adnan (Paragraf 2) dengan kemuliaan hati Pak Adnan yang justru merelakan\npayung dan jas hujannya demi menyelamatkan maket lomba Raka (Paragraf 3–4).",
+    "valid": true
+  },
+  {
+    "nomor": 45,
+    "tipe": "pg_sederhana",
+    "paket": "Bab II: Menganalisis Cerita Pendek - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Cerita Pendek (Cerpen), Unsur Intrinsik & Ekstrinsik, Sudut Pandang, Majas, & Nilai Kehidupan",
+    "capaian_pembelajaran": "Peserta didik memahami dan menganalisis unsur intrinsik cerpen (tema, alur, tokoh/penokohan analitik vs dramatik, latar, sudut pandang orang pertama/ketiga, amanat), nilai moral/sosial, serta gaya bahasa kiasan.",
+    "bacaan": {
+      "teks": "WACANA LITERASI MEMBACA: WACANA LITERASI MEMBACA: PAYUNG HITAM PAK ADNAN DI BALIK\nHUJAN SENJA\n(Paragraf 1) Hujan senja mengguyur halaman SMP Harapan ketika bel pulang berbunyi. Raka berdiri gelisah\ndi teras koridor sambil memeluk tasnya yang berisi maket jembatan kayu untuk lomba karya ilmiah besok pagi.\nSatu per satu temannya telah dijemput menggunakan mobil, menyisakan Raka seorang diri yang menatap\nlangit kelabu dengan cemas. Jika ia nekat menerobos hujan, lem kayu pada maket yang dikerjakannya selama\ndua pekan pasti akan luruh.\n(Paragraf 2) Dari pos penjagaan di sudut gerbang, Pak Adnan—penjaga sekolah tua yang jalannya sedikit\npincang karena luka masa lalu—melangkah pelan menghampiri Raka sambil memegang sebilah payung hi-\ntam besar yang gagangnya telah dililit kawat. Selama ini, Raka jarang menyapa Pak Adnan; bahkan kemarin\nRaka sempat menggerutu ketika Pak Adnan menegurnya karena memarkir sepeda sembarangan di depan\npintu laboratorium.\n(Paragraf 3) “Pakai payung Bapak ini, Nak Raka. Bungkus juga maketmu dengan jas hujan plastik Bapak\nagar lemnya tidak kena tampias air,” ucap Pak Adnan lembut sambil mengulurkan payung hitam dan jas hujan\nbersih dari dalam tas tuanya. Raka tertegun. Wajahnya terasa hangat menahan malu sekaligus haru. “Lalu\nBapak pulang pakai apa? Rumah Bapak kan di seberang sungai,” tanya Raka lirih.\n(Paragraf 4) “Bapak masih harus memeriksa kunci jendela kelas sampai magrib. Bawalah, besok pagi Ba-\npak ingin melihat maket jembatanmu juara,” jawab Pak Adnan sambil tersenyum tulus. Sepanjang perjalanan\npulang di bawah naungan payung hitam itu, dada Raka terasa sesak oleh penyesalan karena pernah meman-\ndang rendah sosok bersahaja yang berhati begitu mulia.\nPenyebab terjadinya perubahan sikap batin tokoh Raka terhadap Pak Adnan pada Paragraf 3 dan",
+      "grup": "bacaan_bab2_payung_adnan"
+    },
+    "teks_soal": "Makna simbolik benda \"payung hitam besar yang gagangnya telah dililit kawat\" dalam wacana cer-\npen pada soal nomor 14 adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Melambangkan kesialan dan kemarahan warga sekolah saat musim hujan tiba"
+      },
+      {
+        "label": "B",
+        "teks": "Melambangkan kemewahan harta benda milik keluarga Raka"
+      },
+      {
+        "label": "C",
+        "teks": "Melambangkan kesederhanaan hidup sekaligus ketulusan perlindungan dan kepedulian orang kecil (Pak Adnan) yang meskipun hidup bersahaja, tetap kokoh mengayomi dan menolong orang lain"
+      },
+      {
+        "label": "D",
+        "teks": "Melambangkan kecanggihan peralatan laboratorium karya ilmiah"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "C. Dalam analisis simbol cerpen ASPD/TKA, gagang payung yang dililit kawat menyimbolkan\nkesederhanaan/keterbatasan ekonomi Pak Adnan, namun fungsi payung yang melindungi Raka dan maket-\nnya dari hujan menyimbolkan pengayoman dan kemuliaan budi.",
+    "valid": true
+  },
+  {
+    "nomor": 46,
+    "tipe": "pg_sederhana",
+    "paket": "Bab II: Menganalisis Cerita Pendek - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Cerita Pendek (Cerpen), Unsur Intrinsik & Ekstrinsik, Sudut Pandang, Majas, & Nilai Kehidupan",
+    "capaian_pembelajaran": "Peserta didik memahami dan menganalisis unsur intrinsik cerpen (tema, alur, tokoh/penokohan analitik vs dramatik, latar, sudut pandang orang pertama/ketiga, amanat), nilai moral/sosial, serta gaya bahasa kiasan.",
+    "bacaan": {
+      "teks": "WACANA LITERASI MEMBACA: WACANA LITERASI MEMBACA: PAYUNG HITAM PAK ADNAN DI BALIK\nHUJAN SENJA\n(Paragraf 1) Hujan senja mengguyur halaman SMP Harapan ketika bel pulang berbunyi. Raka berdiri gelisah\ndi teras koridor sambil memeluk tasnya yang berisi maket jembatan kayu untuk lomba karya ilmiah besok pagi.\nSatu per satu temannya telah dijemput menggunakan mobil, menyisakan Raka seorang diri yang menatap\nlangit kelabu dengan cemas. Jika ia nekat menerobos hujan, lem kayu pada maket yang dikerjakannya selama\ndua pekan pasti akan luruh.\n(Paragraf 2) Dari pos penjagaan di sudut gerbang, Pak Adnan—penjaga sekolah tua yang jalannya sedikit\npincang karena luka masa lalu—melangkah pelan menghampiri Raka sambil memegang sebilah payung hi-\ntam besar yang gagangnya telah dililit kawat. Selama ini, Raka jarang menyapa Pak Adnan; bahkan kemarin\nRaka sempat menggerutu ketika Pak Adnan menegurnya karena memarkir sepeda sembarangan di depan\npintu laboratorium.\n(Paragraf 3) “Pakai payung Bapak ini, Nak Raka. Bungkus juga maketmu dengan jas hujan plastik Bapak\nagar lemnya tidak kena tampias air,” ucap Pak Adnan lembut sambil mengulurkan payung hitam dan jas hujan\nbersih dari dalam tas tuanya. Raka tertegun. Wajahnya terasa hangat menahan malu sekaligus haru. “Lalu\nBapak pulang pakai apa? Rumah Bapak kan di seberang sungai,” tanya Raka lirih.\n(Paragraf 4) “Bapak masih harus memeriksa kunci jendela kelas sampai magrib. Bawalah, besok pagi Ba-\npak ingin melihat maket jembatanmu juara,” jawab Pak Adnan sambil tersenyum tulus. Sepanjang perjalanan\npulang di bawah naungan payung hitam itu, dada Raka terasa sesak oleh penyesalan karena pernah meman-\ndang rendah sosok bersahaja yang berhati begitu mulia.\nPenyebab terjadinya perubahan sikap batin tokoh Raka terhadap Pak Adnan pada Paragraf 3 dan",
+      "grup": "bacaan_bab2_payung_adnan"
+    },
+    "teks_soal": "Perbedaan penggunaan bahasa pada Cerpen 1 dan Cerpen 2 di atas yang paling tepat adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Cerpen 1 menggunakan bahasa daerah Jawa Kuno; sedangkan Cerpen 2 menggunakan istilah ke- dokteran"
+      },
+      {
+        "label": "B",
+        "teks": "Cerpen 1 banyak menggunakan kata bermakna kias / majas (personifikasi dan simile) untuk mem- bangun suasana puitis; sedangkan Cerpen 2 menggunakan kata bermakna lugas (denotatif) dan kali- mat naratif realistis"
+      },
+      {
+        "label": "C",
+        "teks": "Cerpen 1 disajikan dalam bentuk dialog langsung seluruhnya; sedangkan Cerpen 2 disajikan dalam bentuk bait pantun"
+      },
+      {
+        "label": "D",
+        "teks": "Cerpen 1 menggunakan sudut pandang orang pertama (aku); sedangkan Cerpen 2 menggunakan sudut pandang orang kedua (kamu)"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "B. Sesuai kunci jawaban TKA SMP Paket 1 No. 13: Cerpen 1 menonjolkan penggunaan ma-\njas/bahasa kias (matahari menyembulkan wajahnya yang tersenyum, embun menari riang, semangat menyala\nbagai api unggun), sedangkan Cerpen 2 menggunakan kalimat naratif lugas tanpa majas.",
+    "valid": true
+  },
+  {
+    "nomor": 47,
+    "tipe": "pg_sederhana",
+    "paket": "Bab II: Menganalisis Cerita Pendek - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Cerita Pendek (Cerpen), Unsur Intrinsik & Ekstrinsik, Sudut Pandang, Majas, & Nilai Kehidupan",
+    "capaian_pembelajaran": "Peserta didik memahami dan menganalisis unsur intrinsik cerpen (tema, alur, tokoh/penokohan analitik vs dramatik, latar, sudut pandang orang pertama/ketiga, amanat), nilai moral/sosial, serta gaya bahasa kiasan.",
+    "bacaan": null,
+    "teks_soal": "Perhatikan kutipan cerpen berikut!\n\"Sejak berhasil memenangkan kejuaraan catur tingkat nasional, sikap Danu berubah drastis.\nIa tak\nmau lagi duduk semeja dengan teman-teman klub catur lamanya dan sering berbicara dengan dagu\nterangkat. Suatu sore, Pak Hendra pelatihnya berkata lembut, ’Danu, ilmu dan prestasi itu seperti padi\ndi sawah; semakin berisi bulirnya, seharusnya semakin merunduk tangkainya, bukan justru mendongak\nmenantang langit.’\"\nUngkapan peribahasa ilmu seperti padi, semakin berisi semakin merunduk yang diucapkan Pak\nHendra menyimbolkan amanat ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Seorang atlet catur wajib bekerja menjadi petani padi di sawah setiap sore"
+      },
+      {
+        "label": "B",
+        "teks": "Semakin tinggi ilmu dan prestasi seseorang, seharusnya ia semakin rendah hati (tawadu) dan tidak bersikap sombong"
+      },
+      {
+        "label": "C",
+        "teks": "Semakin pintar seseorang, ia harus berjalan dengan punggung membungkuk"
+      },
+      {
+        "label": "D",
+        "teks": "Prestasi catur hanya bisa diraih jika pertandingan diadakan di tengah sawah"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "B. Ilmu padi (semakin berisi semakin merunduk) menyimbolkan sikap rendah hati seiring\nmeningkatnya ilmu dan prestasi.",
+    "valid": true
+  },
+  {
+    "nomor": 48,
+    "tipe": "pg_sederhana",
+    "paket": "Bab II: Menganalisis Cerita Pendek - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Cerita Pendek (Cerpen), Unsur Intrinsik & Ekstrinsik, Sudut Pandang, Majas, & Nilai Kehidupan",
+    "capaian_pembelajaran": "Peserta didik memahami dan menganalisis unsur intrinsik cerpen (tema, alur, tokoh/penokohan analitik vs dramatik, latar, sudut pandang orang pertama/ketiga, amanat), nilai moral/sosial, serta gaya bahasa kiasan.",
+    "bacaan": {
+      "teks": "Bacalah kutipan cerpen panjang karya Siska Yuniati berikut dengan saksama!\nWACANA LITERASI MEMBACA: SERENADA PANTAI GESING (KARYA SISKA YUNIATI)\n“Kok tidak kasih kabar dulu, Le. Tidak biasanya pulang di hari kerja,” ibu menyambutku begitu suara mesin\nmotor memasuki halaman rumah. “Bagas kangen Ibu,” jawabku sekenanya. Kucium tangan keriput ibu. Tak\nayal rindu itu merasuk tiba-tiba. “Bapak di mana, Bu?” “Bapakmu sudah berangkat ke Panggang, ke rumah\nLik Siti. Mungkin siang sudah pulang. Makanlah dulu, Bagas, atau beristirahatlah,” tutur ibu seraya mengambil\nransel yang baru saja aku turunkan.\n“Bagas ingin ke pantai, Bu. Barangkali sudah ada perahu yang merapat.” Kuturuti langkah kakiku menuju\n“pelabuhan kecil” kami. Tiga puluhan perahu bercat biru memenuhi bibir pantai. Di depan bangunan Tempat\nPelelangan Ikan (TPI) tampak banyak orang berkumpul. Pukul delapan pagi, perahu nelayan yang berangkat\nsore telah kembali penuh ikan kerapu, keting, kakap merah, serta pari.\n“Bagas, kapan pulang?” Lik Tarno memanggilku sambil memperlihatkan seekor ikan caru putih besar. “Ada\ncaru kalau mau kau bawa.” “Matur nuwun, Lik. Saya ingin jalan-jalan dulu.” Basa-basiku menuntunku menuju\npantai. Berjalan di pasir putih nan lembut, mencelupkan kaki pada air bergradasi bening, hijau, biru. Di ke-\njauhan kulihat Kinan sibuk bermain air di dekat tebing. “Kinan!” Kinanti menoleh dan melambaikan tangannya.\nBerlari kecil aku dekati gadis itu.\nBagan kerangka alur cerita yang tepat berdasarkan kutipan cerpen \"Serenada Pantai Gesing\" di atas",
+      "grup": "bacaan_bab2_soal18"
+    },
+    "teks_soal": "Bacalah kutipan cerpen panjang karya Siska Yuniati berikut dengan saksama!\nWACANA LITERASI MEMBACA: SERENADA PANTAI GESING (KARYA SISKA YUNIATI)\n“Kok tidak kasih kabar dulu, Le. Tidak biasanya pulang di hari kerja,” ibu menyambutku begitu suara mesin\nmotor memasuki halaman rumah. “Bagas kangen Ibu,” jawabku sekenanya. Kucium tangan keriput ibu. Tak\nayal rindu itu merasuk tiba-tiba. “Bapak di mana, Bu?” “Bapakmu sudah berangkat ke Panggang, ke rumah\nLik Siti. Mungkin siang sudah pulang. Makanlah dulu, Bagas, atau beristirahatlah,” tutur ibu seraya mengambil\nransel yang baru saja aku turunkan.\n“Bagas ingin ke pantai, Bu. Barangkali sudah ada perahu yang merapat.” Kuturuti langkah kakiku menuju\n“pelabuhan kecil” kami. Tiga puluhan perahu bercat biru memenuhi bibir pantai. Di depan bangunan Tempat\nPelelangan Ikan (TPI) tampak banyak orang berkumpul. Pukul delapan pagi, perahu nelayan yang berangkat\nsore telah kembali penuh ikan kerapu, keting, kakap merah, serta pari.\n“Bagas, kapan pulang?” Lik Tarno memanggilku sambil memperlihatkan seekor ikan caru putih besar. “Ada\ncaru kalau mau kau bawa.” “Matur nuwun, Lik. Saya ingin jalan-jalan dulu.” Basa-basiku menuntunku menuju\npantai. Berjalan di pasir putih nan lembut, mencelupkan kaki pada air bergradasi bening, hijau, biru. Di ke-\njauhan kulihat Kinan sibuk bermain air di dekat tebing. “Kinan!” Kinanti menoleh dan melambaikan tangannya.\nBerlari kecil aku dekati gadis itu.\nBagan kerangka alur cerita yang tepat berdasarkan kutipan cerpen \"Serenada Pantai Gesing\" di atas\nadalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "[Bagas berangkat merantau meninggalkan Ibu] →[Bagas membeli ikan caru bakar di warung pantai] →[Bagas ikut Lik Tarno melaut menangkap kerapu] →[Bagas pulang tidur siang di rumah bersama Bapak]"
+      },
+      {
+        "label": "B",
+        "teks": "[Bagas dan Bapak pergi ke Panggang (rumah Lik Siti)] →[Bagas bertemu Kinan di halaman rumah Ibu] →[Lik Tarno menjual perahu di pelelangan ikan] →[Bagas menolak pergi ke Pantai Gesing karena lelah]"
+      },
+      {
+        "label": "C",
+        "teks": "[Bagas bertemu Kinan di tebing Pantai Gesing] →[Kinan mengajak Bagas membeli ikan di TPI] →[Lik Tarno menawarkan ikan caru kepada Kinan] →[Bagas baru tiba di rumah dan mencium tangan Ibu]"
+      },
+      {
+        "label": "D",
+        "teks": "[Bagas tiba di rumah & disambut hangat oleh Ibu] →[Bagas menuju TPI Pantai Gesing & menyapa Lik Tarno] →[Lik Tarno menawarkan ikan caru, tetapi Bagas pamit jalan-jalan] →[Bagas menyusuri pasir pantai & bertemu Kinan di dekat tebing]"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Bagan kerangka alur pada pilihan D menyajikan urutan peristiwa cerpen secara runtut: (1)\nBagas tiba di rumah dan disambut hangat oleh Ibu →(2) Bagas menuju TPI Pantai Gesing dan menyapa Lik\nTarno →(3) Lik Tarno menawarkan ikan caru, tetapi Bagas pamit jalan-jalan →(4) Bagas menyusuri pasir\npantai dan bertemu Kinan di dekat tebing.",
+    "valid": true
+  },
+  {
+    "nomor": 49,
+    "tipe": "pg_sederhana",
+    "paket": "Bab II: Menganalisis Cerita Pendek - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Cerita Pendek (Cerpen), Unsur Intrinsik & Ekstrinsik, Sudut Pandang, Majas, & Nilai Kehidupan",
+    "capaian_pembelajaran": "Peserta didik memahami dan menganalisis unsur intrinsik cerpen (tema, alur, tokoh/penokohan analitik vs dramatik, latar, sudut pandang orang pertama/ketiga, amanat), nilai moral/sosial, serta gaya bahasa kiasan.",
+    "bacaan": null,
+    "teks_soal": "Perhatikan penulisan kalimat langsung (dialog) dalam empat kutipan cerpen berikut:\n(1) \"Jangan pernah menyerah sebelum kamu mencoba sampai batas kemampuanmu,\" pesan Ayah sam-\nbil menepuk bahuku.\n(2) \"Kapan kereta menuju Stasiun Tugu akan berangkat?\" tanya Rini kepada petugas peron.\n(3) Ibu berkata \"Jangan lupa membawa payung karena langit sudah mendung\".\n(4) \"Mari kita bersihkan selokan ini bersama-sama!\" seru Ketua Pemuda.\nKalimat langsung yang penulisan tanda bacanya tidak tepat (salah) menurut kaidah EYD Edisi V adalah\nkalimat nomor ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Kalimat (2) karena tanda tanya diletakkan di dalam tanda petik"
+      },
+      {
+        "label": "B",
+        "teks": "Kalimat (1) karena tanda koma diletakkan sebelum tanda petik penutup"
+      },
+      {
+        "label": "C",
+        "teks": "Kalimat (3) karena tidak menggunakan tanda koma (,) setelah kata pengiring Ibu berkata dan tanda titik diletakkan di luar tanda petik"
+      },
+      {
+        "label": "D",
+        "teks": "Kalimat (4) karena tanda seru diletakkan di dalam tanda petik"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "C. Pada kalimat (3) kurang tanda koma setelah kata pengiring Ibu berkata dan tanda titik\ndiletakkan di luar tanda petik.",
+    "valid": true
+  },
+  {
+    "nomor": 50,
+    "tipe": "pg_sederhana",
+    "paket": "Bab II: Menganalisis Cerita Pendek - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Cerita Pendek (Cerpen), Unsur Intrinsik & Ekstrinsik, Sudut Pandang, Majas, & Nilai Kehidupan",
+    "capaian_pembelajaran": "Peserta didik memahami dan menganalisis unsur intrinsik cerpen (tema, alur, tokoh/penokohan analitik vs dramatik, latar, sudut pandang orang pertama/ketiga, amanat), nilai moral/sosial, serta gaya bahasa kiasan.",
+    "bacaan": {
+      "teks": "CERPEN 1: MENGHAJAR MALING DEMI WARGA\nCERPEN 2:\nSENYUM KARYAMIN (AHMAD TO-\nHARI)\n“Jangan pukul lagi!\nCukup!”\nteriak Pak RT sambil\nmerentangkan kedua tangannya di depan pemuda ku-\nrus yang tertangkap mengambil dua sisir pisang di\nwarung Koh Acong.\n“Dia mencuri, Pak RT! Harus diberi pelajaran!” seru\nseorang warga dengan napas memburu.\n“Tanyakan\ndulu\nmengapa\ntangannya\ngemetar\nmemegang pisang itu,” sahut Pak RT tegas.\nPe-\nmuda itu terisak,\nmengaku bahwa adiknya yang\nberusia tiga tahun belum makan sejak kemarin pagi\nsetelah ibunya wafat.\nKaryamin hanya tersenyum sambil memandang dua\nkeranjang batu kali miliknya yang terguling kembali\nke dasar jurang Sungai Cibawor. Punggungnya yang\nbasah oleh keringat terasa perih tergores tali pikulan\nbambu, sementara perutnya telah keroncongan sejak\npagi buta.\nMeskipun tengkulak batu hari itu kembali menunda\npembayaran upahnya dan istrinya di rumah menunggu\nberas, Karyamin tetap melangkah pulang dengan\nsenyum getir yang tabah.",
+      "grup": "bacaan_bab2_dua_cerpen"
+    },
+    "teks_soal": "Perbedaan teknik penyajian penokohan (penggambaran watak tokoh) antara Cerpen 1 dan Cerpen\n2 di atas adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Kedua cerpen tersebut menggambarkan watak tokoh utama yang sombong dan kikir"
+      },
+      {
+        "label": "B",
+        "teks": "Cerpen 1 menggunakan narasi tanpa dialog sama sekali; sedangkan Cerpen 2 menggunakan dialog percakapan panjang"
+      },
+      {
+        "label": "C",
+        "teks": "Cerpen 1 menceritakan tokoh hewan fabel; sedangkan Cerpen 2 menceritakan tokoh robot masa depan"
+      },
+      {
+        "label": "D",
+        "teks": "Cerpen 1 menyajikan watak tokoh (Pak RT yang bijaksana dan berempati) terutama melalui dialog antartokoh dan tindakan langsung di tengah konflik; sedangkan Cerpen 2 menyajikan watak tokoh (Karyamin yang tabah dan sabar) melalui narasi deskripsi tindakan dan reaksi batin tokoh meng- hadapi penderitaan"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Pada Cerpen 1, watak Pak RT dan warga terungkap lewat percakapan/dialog langsung\ntanda petik (“Jangan pukul lagi!...”), sedangkan pada Cerpen 2 (karya Ahmad Tohari), watak ketabahan\nKaryamin dilukiskan melalui narasi pengarang tentang perilakunya yang tetap tersenyum saat keranjang\nbatunya terguling.",
+    "valid": true
+  },
+  {
+    "nomor": 51,
+    "tipe": "pg_sederhana",
+    "paket": "Bab II: Menganalisis Cerita Pendek - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Cerita Pendek (Cerpen), Unsur Intrinsik & Ekstrinsik, Sudut Pandang, Majas, & Nilai Kehidupan",
+    "capaian_pembelajaran": "Peserta didik memahami dan menganalisis unsur intrinsik cerpen (tema, alur, tokoh/penokohan analitik vs dramatik, latar, sudut pandang orang pertama/ketiga, amanat), nilai moral/sosial, serta gaya bahasa kiasan.",
+    "bacaan": {
+      "teks": "CERPEN 1: MENGHAJAR MALING DEMI WARGA\nCERPEN 2:\nSENYUM KARYAMIN (AHMAD TO-\nHARI)\n“Jangan pukul lagi!\nCukup!”\nteriak Pak RT sambil\nmerentangkan kedua tangannya di depan pemuda ku-\nrus yang tertangkap mengambil dua sisir pisang di\nwarung Koh Acong.\n“Dia mencuri, Pak RT! Harus diberi pelajaran!” seru\nseorang warga dengan napas memburu.\n“Tanyakan\ndulu\nmengapa\ntangannya\ngemetar\nmemegang pisang itu,” sahut Pak RT tegas.\nPe-\nmuda itu terisak,\nmengaku bahwa adiknya yang\nberusia tiga tahun belum makan sejak kemarin pagi\nsetelah ibunya wafat.\nKaryamin hanya tersenyum sambil memandang dua\nkeranjang batu kali miliknya yang terguling kembali\nke dasar jurang Sungai Cibawor. Punggungnya yang\nbasah oleh keringat terasa perih tergores tali pikulan\nbambu, sementara perutnya telah keroncongan sejak\npagi buta.\nMeskipun tengkulak batu hari itu kembali menunda\npembayaran upahnya dan istrinya di rumah menunggu\nberas, Karyamin tetap melangkah pulang dengan\nsenyum getir yang tabah.",
+      "grup": "bacaan_bab2_dua_cerpen"
+    },
+    "teks_soal": "Perbandingan nilai moral yang terkandung dalam Cerpen 1 dan Cerpen 2 pada soal nomor 20 adalah\n....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Cerpen 1 membenarkan tindakan mencuri di warung; sedangkan Cerpen 2 menganjurkan pekerja membuang batu ke sungai"
+      },
+      {
+        "label": "B",
+        "teks": "Cerpen 1 mengajarkan nilai empati kemanusiaan, keadilan, dan tidak main hakim sendiri ter- hadap orang yang terdesak kemiskinan; sedangkan Cerpen 2 mengajarkan nilai ketabahan, kesabaran, dan pantang menyerah menghadapi kerasnya beban hidup"
+      },
+      {
+        "label": "C",
+        "teks": "Cerpen 1 mengajarkan cara berdagang pisang; sedangkan Cerpen 2 mengajarkan cara menambang batu kali"
+      },
+      {
+        "label": "D",
+        "teks": "Kedua cerpen tersebut tidak mengandung nilai moral maupun nilai sosial"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "B. Nilai moral Cerpen 1 berpusat pada kebijaksanaan Pak RT yang mencegah main hakim\nsendiri dan menumbuhkan empati sosial, sedangkan Cerpen 2 berpusat pada ketabahan batin Karyamin\nmenghadapi kemiskinan tanpa kehilangan martabat.",
+    "valid": true
+  },
+  {
+    "nomor": 52,
+    "tipe": "pg_sederhana",
+    "paket": "Bab II: Menganalisis Cerita Pendek - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Cerita Pendek (Cerpen), Unsur Intrinsik & Ekstrinsik, Sudut Pandang, Majas, & Nilai Kehidupan",
+    "capaian_pembelajaran": "Peserta didik memahami dan menganalisis unsur intrinsik cerpen (tema, alur, tokoh/penokohan analitik vs dramatik, latar, sudut pandang orang pertama/ketiga, amanat), nilai moral/sosial, serta gaya bahasa kiasan.",
+    "bacaan": {
+      "teks": "[Sumber: Pemantapan Persiapan ASPD DIY (MKKS SMP/MTs DIY) Paket 1 — Scribd 828229888\nNo. 15–18]\nBacalah wacana cerpen tentang integritas dan tradisi membatik berikut untuk menjawab soal nomor 22,\n23, dan 24!\nWACANA LITERASI MEMBACA: WACANA LITERASI MEMBACA: SEHELAI BATIK TULIS PESANAN\nKHUSUS MBOK DARMI\n(Paragraf 1) Sudah tiga bulan Mbok Darmi duduk membungkuk di depan gawangan kayu di serambi rumah-\nnya yang berdinding anyaman bambu. Jari-jemarinya yang keriput memegang canting tembaga dengan san-\ngat hati-hati, menorehkan malam panas membentuk motif Parang Kusumo halus di atas sehelai kain mori\nprimisima. Kain batik tulis itu adalah pesanan khusus seorang kolektor dari Jakarta untuk dipamerkan dalam\nfestival wastra nasional bulan depan.\n(Paragraf 2) Tiga hari sebelum batas waktu pengiriman, hujan badai mengguyur kampung batik Giriloyo. Atap\ngenting di sudut serambi rumah Mbok Darmi bocor tepat ketika kain batik itu baru selesai dicelup warna sogan\nalam dari kulit kayu tingi. Setetes air hujan bercampur jelaga atap jatuh mengenai sudut kain, meninggalkan\nnoda kelabu selebar koin logam.\n(Paragraf 3) “Sudahlah, Mbok. Tutup saja noda itu dengan sapuan malam tebal lalu celup warna hitam pekat,\npasti pembeli di Jakarta tidak akan menyadarinya,” bujuk calo (perantara dagang) yang datang menjemput\nkain. Mbok Darmi menggeleng tegas. “Membatik itu menulis doa dengan kejujuran hati, Nak. Aku tidak mau\nmenyerahkan karya yang cacat secara sembunyi-sembunyi,” ucap Mbok Darmi.\n(Paragraf 4) Mbok Darmi memilih berterus terang kepada sang kolektor melalui telepon, meminta perpanjan-\ngan waktu sepuluh hari, dan rela tidak tidur demi membatik ulang sehelai kain baru dengan ketelitian sem-\npurna. Sang kolektor bukan hanya memaklumi keterlambatan itu, melainkan justru membeli kedua lembar\nkain batik Mbok Darmi dengan harga dua kali lipat karena kagum pada kejujuran sang maestro tua.",
+      "grup": "bacaan_bab2_batik_mbok_minah"
+    },
+    "teks_soal": "Konflik batin dan ujian kejujuran yang dihadapi tokoh Mbok Darmi pada Paragraf 2 dan Paragraf 3\nwacana cerpen di atas adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Pertengkaran Mbok Darmi dengan tetangganya karena berebut kulit kayu tingi untuk pewarna sogan"
+      },
+      {
+        "label": "B",
+        "teks": "Keinginan Mbok Darmi mengganti canting tembaga tradisional dengan mesin cetak tekstil pabrik"
+      },
+      {
+        "label": "C",
+        "teks": "Pilihan antara mengikuti bujukan perantara dagang untuk menyembunyikan noda jelaga pada kain batik pesanan dengan warna hitam pekat demi mengejar tenggat waktu, atau memegang teguh kejujuran profesi dengan mengakui kerusakan kain tersebut kepada pembeli"
+      },
+      {
+        "label": "D",
+        "teks": "Penolakan kolektor Jakarta untuk membayar uang muka pesanan kain batik"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "C. Klimaks ujian moral terjadi pada Paragraf 2–3: kain batik yang dikerjakan 3 bulan terkena\nnoda bocoran atap 3 hari sebelum tenggat, dan perantara membujuk Mbok Darmi menutupi cacat itu secara\ncurang, namun Mbok Darmi menolaknya dengan tegas.",
+    "valid": true
+  },
+  {
+    "nomor": 53,
+    "tipe": "pg_sederhana",
+    "paket": "Bab II: Menganalisis Cerita Pendek - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Cerita Pendek (Cerpen), Unsur Intrinsik & Ekstrinsik, Sudut Pandang, Majas, & Nilai Kehidupan",
+    "capaian_pembelajaran": "Peserta didik memahami dan menganalisis unsur intrinsik cerpen (tema, alur, tokoh/penokohan analitik vs dramatik, latar, sudut pandang orang pertama/ketiga, amanat), nilai moral/sosial, serta gaya bahasa kiasan.",
+    "bacaan": {
+      "teks": "[Sumber: Pemantapan Persiapan ASPD DIY (MKKS SMP/MTs DIY) Paket 1 — Scribd 828229888\nNo. 15–18]\nBacalah wacana cerpen tentang integritas dan tradisi membatik berikut untuk menjawab soal nomor 22,\n23, dan 24!\nWACANA LITERASI MEMBACA: WACANA LITERASI MEMBACA: SEHELAI BATIK TULIS PESANAN\nKHUSUS MBOK DARMI\n(Paragraf 1) Sudah tiga bulan Mbok Darmi duduk membungkuk di depan gawangan kayu di serambi rumah-\nnya yang berdinding anyaman bambu. Jari-jemarinya yang keriput memegang canting tembaga dengan san-\ngat hati-hati, menorehkan malam panas membentuk motif Parang Kusumo halus di atas sehelai kain mori\nprimisima. Kain batik tulis itu adalah pesanan khusus seorang kolektor dari Jakarta untuk dipamerkan dalam\nfestival wastra nasional bulan depan.\n(Paragraf 2) Tiga hari sebelum batas waktu pengiriman, hujan badai mengguyur kampung batik Giriloyo. Atap\ngenting di sudut serambi rumah Mbok Darmi bocor tepat ketika kain batik itu baru selesai dicelup warna sogan\nalam dari kulit kayu tingi. Setetes air hujan bercampur jelaga atap jatuh mengenai sudut kain, meninggalkan\nnoda kelabu selebar koin logam.\n(Paragraf 3) “Sudahlah, Mbok. Tutup saja noda itu dengan sapuan malam tebal lalu celup warna hitam pekat,\npasti pembeli di Jakarta tidak akan menyadarinya,” bujuk calo (perantara dagang) yang datang menjemput\nkain. Mbok Darmi menggeleng tegas. “Membatik itu menulis doa dengan kejujuran hati, Nak. Aku tidak mau\nmenyerahkan karya yang cacat secara sembunyi-sembunyi,” ucap Mbok Darmi.\n(Paragraf 4) Mbok Darmi memilih berterus terang kepada sang kolektor melalui telepon, meminta perpanjan-\ngan waktu sepuluh hari, dan rela tidak tidur demi membatik ulang sehelai kain baru dengan ketelitian sem-\npurna. Sang kolektor bukan hanya memaklumi keterlambatan itu, melainkan justru membeli kedua lembar\nkain batik Mbok Darmi dengan harga dua kali lipat karena kagum pada kejujuran sang maestro tua.",
+      "grup": "bacaan_bab2_batik_mbok_minah"
+    },
+    "teks_soal": "unsur ekstrinsik cerpen berupa ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Keterbatasan alat transportasi pengiriman barang dari desa ke Kota Jakarta"
+      },
+      {
+        "label": "B",
+        "teks": "Nilai politik praktis pemilihan kepala desa di kampung batik"
+      },
+      {
+        "label": "C",
+        "teks": "Nilai ekonomi kapitalis yang menghalalkan segala cara agar memperoleh keuntungan besar"
+      },
+      {
+        "label": "D",
+        "teks": "Nilai filosofis budaya dan etos moral kejujuran pengrajin tradisional yang memandang karya seni bukan sekadar barang dagangan pencari untung, melainkan cerminan kehormatan dan ketulusan batin pembuatnya"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Pernyataan Mbok Darmi memadukan nilai budaya lokal (filosofi membatik tulis sebagai\nuntaian doa) dan nilai moral integritas (menolak kecurangan meskipun merugi waktu dan tenaga).",
+    "valid": true
+  },
+  {
+    "nomor": 54,
+    "tipe": "pg_sederhana",
+    "paket": "Bab II: Menganalisis Cerita Pendek - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Cerita Pendek (Cerpen), Unsur Intrinsik & Ekstrinsik, Sudut Pandang, Majas, & Nilai Kehidupan",
+    "capaian_pembelajaran": "Peserta didik memahami dan menganalisis unsur intrinsik cerpen (tema, alur, tokoh/penokohan analitik vs dramatik, latar, sudut pandang orang pertama/ketiga, amanat), nilai moral/sosial, serta gaya bahasa kiasan.",
+    "bacaan": {
+      "teks": "[Sumber: Pemantapan Persiapan ASPD DIY (MKKS SMP/MTs DIY) Paket 1 — Scribd 828229888\nNo. 15–18]\nBacalah wacana cerpen tentang integritas dan tradisi membatik berikut untuk menjawab soal nomor 22,\n23, dan 24!\nWACANA LITERASI MEMBACA: WACANA LITERASI MEMBACA: SEHELAI BATIK TULIS PESANAN\nKHUSUS MBOK DARMI\n(Paragraf 1) Sudah tiga bulan Mbok Darmi duduk membungkuk di depan gawangan kayu di serambi rumah-\nnya yang berdinding anyaman bambu. Jari-jemarinya yang keriput memegang canting tembaga dengan san-\ngat hati-hati, menorehkan malam panas membentuk motif Parang Kusumo halus di atas sehelai kain mori\nprimisima. Kain batik tulis itu adalah pesanan khusus seorang kolektor dari Jakarta untuk dipamerkan dalam\nfestival wastra nasional bulan depan.\n(Paragraf 2) Tiga hari sebelum batas waktu pengiriman, hujan badai mengguyur kampung batik Giriloyo. Atap\ngenting di sudut serambi rumah Mbok Darmi bocor tepat ketika kain batik itu baru selesai dicelup warna sogan\nalam dari kulit kayu tingi. Setetes air hujan bercampur jelaga atap jatuh mengenai sudut kain, meninggalkan\nnoda kelabu selebar koin logam.\n(Paragraf 3) “Sudahlah, Mbok. Tutup saja noda itu dengan sapuan malam tebal lalu celup warna hitam pekat,\npasti pembeli di Jakarta tidak akan menyadarinya,” bujuk calo (perantara dagang) yang datang menjemput\nkain. Mbok Darmi menggeleng tegas. “Membatik itu menulis doa dengan kejujuran hati, Nak. Aku tidak mau\nmenyerahkan karya yang cacat secara sembunyi-sembunyi,” ucap Mbok Darmi.\n(Paragraf 4) Mbok Darmi memilih berterus terang kepada sang kolektor melalui telepon, meminta perpanjan-\ngan waktu sepuluh hari, dan rela tidak tidur demi membatik ulang sehelai kain baru dengan ketelitian sem-\npurna. Sang kolektor bukan hanya memaklumi keterlambatan itu, melainkan justru membeli kedua lembar\nkain batik Mbok Darmi dengan harga dua kali lipat karena kagum pada kejujuran sang maestro tua.",
+      "grup": "bacaan_bab2_batik_mbok_minah"
+    },
+    "teks_soal": "Berdasarkan alur peristiwa pada wacana cerpen \"Sehelai Batik Tulis Pesanan Khusus Mbok Darmi\"\n(soal nomor 22), pernyataan prediksi yang paling logis apabila Mbok Darmi menuruti bujukan curang\nsang perantara dagang pada Paragraf 3 adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Kolektor wastra yang ahli di Jakarta akan menemukan cacat noda yang ditutupi secara paksa saat kain dipamerkan di bawah lampu festival, sehingga reputasi dan kepercayaan terhadap kejujuran Mbok Darmi akan hancur"
+      },
+      {
+        "label": "B",
+        "teks": "Kain batik tersebut akan berubah menjadi emas murni di dalam kotak pengiriman"
+      },
+      {
+        "label": "C",
+        "teks": "Atap serambi rumah Mbok Darmi akan berhenti bocor dengan sendirinya"
+      },
+      {
+        "label": "D",
+        "teks": "Perantara dagang akan menjadi maestro batik tingkat dunia"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "A. Dalam soal inferensi/prediksi alur TKA/ASPD, karena pembeli adalah seorang kolektor\nwastra untuk festival nasional, kecurangan menutup noda pasti akan terungkap saat pemeriksaan kualitas\ndan merusak nama baik pengrajin.",
+    "valid": true
+  },
+  {
+    "nomor": 55,
+    "tipe": "pg_sederhana",
+    "paket": "Bab II: Menganalisis Cerita Pendek - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Cerita Pendek (Cerpen), Unsur Intrinsik & Ekstrinsik, Sudut Pandang, Majas, & Nilai Kehidupan",
+    "capaian_pembelajaran": "Peserta didik memahami dan menganalisis unsur intrinsik cerpen (tema, alur, tokoh/penokohan analitik vs dramatik, latar, sudut pandang orang pertama/ketiga, amanat), nilai moral/sosial, serta gaya bahasa kiasan.",
+    "bacaan": null,
+    "teks_soal": "Perhatikan kutipan cerpen berikut!\n\"Di depan pintu ruang presentasi lomba karya tulis, telapak tangan Raka terasa dingin seperti es batu\ndan jantungnya berdegup kencang bagai genderang yang ditabuh bertubi-tubi. Namun, begitu matanya\nmenangkap anggukan senyum tenang dari ibunya yang duduk di kursi penonton baris belakang, perlahan\nnapasnya kembali teratur.\"\nCara pengarang menggambarkan suasana batin tokoh Raka yang semula gugup/cemas lalu berubah\nmenjadi tenang pada kutipan di atas adalah melalui ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Pemaparan langsung biodata kelahiran tokoh sejak masa kanak-kanak"
+      },
+      {
+        "label": "B",
+        "teks": "Deskripsi reaksi fisik tubuh tokoh (telapak tangan dingin seperti es, jantung berdegup bagai gen- derang, napas kembali teratur) yang dipadukan dengan majas simile"
+      },
+      {
+        "label": "C",
+        "teks": "Dialog pertengkaran antara Raka dan dewan juri lomba karya tulis"
+      },
+      {
+        "label": "D",
+        "teks": "Deskripsi keindahan arsitektur gedung tempat lomba berlangsung"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "B. Pengarang menerapkan teknik dramatik melalui lukisan reaksi fisiologis tubuh tokoh (tangan\ndingin, detak jantung kencang, napas teratur) disertai majas simile (seperti es batu, bagai genderang).",
+    "valid": true
+  },
+  {
+    "nomor": 56,
+    "tipe": "pg_sederhana",
+    "paket": "Bab II: Menganalisis Cerita Pendek - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Cerita Pendek (Cerpen), Unsur Intrinsik & Ekstrinsik, Sudut Pandang, Majas, & Nilai Kehidupan",
+    "capaian_pembelajaran": "Peserta didik memahami dan menganalisis unsur intrinsik cerpen (tema, alur, tokoh/penokohan analitik vs dramatik, latar, sudut pandang orang pertama/ketiga, amanat), nilai moral/sosial, serta gaya bahasa kiasan.",
+    "bacaan": null,
+    "teks_soal": "Per-\nhatikan diagram Struktur Gunung Alur Cerita Pendek (Orientasi – Rangkaian Peristiwa – Komplikasi\n& Klimaks – Resolusi) berikut!\nPernyataan analitis yang benar mengenai struktur dan unsur intrinsik cerpen berdasarkan gambar di atas\nadalah .... (Pilih lebih dari satu jawaban benar)\n\nPernyataan:\n(1) Tahap Orientasi memperkenalkan karakter tokoh (Kakek pengrajin ukir kayu dan cucunya) beserta\nlatar tempat di bengkel ukir tradisional dan latar waktu malam hari.\n(2) Tahap Komplikasi merupakan bagian ketika masalah atau pertentangan batin/sosial mulai muncul\ndan memuncak hingga titik klimaks.\n(3) Tahap Resolusi menyajikan penyelesaian atas konflik utama, yang dapat diikuti oleh Koda berupa\namanat atau perubahan sikap tokoh.\n(4) Sebuah cerpen yang baik wajib menceritakan seluruh riwayat hidup tokoh sejak lahir hingga wafat\ndalam seratus bab yang terpisah.\n\nPernyataan yang tepat adalah ....",
+    "gambar": [
+      "/soal/bindo/kls9_bindo_p161_xref5539_880x880.jpeg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(1), (2), dan (3)"
+      },
+      {
+        "label": "B",
+        "teks": "(1) dan (4) saja"
+      },
+      {
+        "label": "C",
+        "teks": "(2) dan (4) saja"
+      },
+      {
+        "label": "D",
+        "teks": "(1), (2), (3), dan (4)"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "A, B, C. Pernyataan D salah karena kisah seratus bab sejak lahir hingga wafat adalah bi-\nografi/novel panjang, bukan cerpen.",
+    "valid": true
+  },
+  {
+    "nomor": 57,
+    "tipe": "pg_sederhana",
+    "paket": "Bab II: Menganalisis Cerita Pendek - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Cerita Pendek (Cerpen), Unsur Intrinsik & Ekstrinsik, Sudut Pandang, Majas, & Nilai Kehidupan",
+    "capaian_pembelajaran": "Peserta didik memahami dan menganalisis unsur intrinsik cerpen (tema, alur, tokoh/penokohan analitik vs dramatik, latar, sudut pandang orang pertama/ketiga, amanat), nilai moral/sosial, serta gaya bahasa kiasan.",
+    "bacaan": null,
+    "teks_soal": "Manakah di antara pernyataan berikut\nyang benar mengenai kaidah penulisan dan analisis Cerita Pendek? (Pilih lebih dari satu jawaban benar)\n\nPernyataan:\n(1) Penggambaran watak tokoh secara dramatik dapat dilakukan melalui dialog antartokoh, tindakan\ntokoh menghadapi konflik, serta reaksi tokoh lain.\n(2) Sudut pandang orang pertama pelaku utama menggunakan kata ganti aku/saya dengan posisi\nnarator sebagai pusat konflik cerita.\n(3) Kalimat “Peluit kereta api menjerit panjang memecah kabut pagi di stasiun tua itu” menggunakan\nmajas personifikasi dan citraan pendengaran (auditif).\n(4) Nilai ekstrinsik cerpen sama sekali tidak memiliki kaitan dengan nilai moral, sosial, budaya, maupun\nagama di masyarakat.\n\nPernyataan yang tepat adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(1), (2), dan (3)"
+      },
+      {
+        "label": "B",
+        "teks": "(1) dan (4) saja"
+      },
+      {
+        "label": "C",
+        "teks": "(2) dan (4) saja"
+      },
+      {
+        "label": "D",
+        "teks": "(1), (2), (3), dan (4)"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "A, B, C. Pernyataan D salah karena nilai ekstrinsik cerpen justru bersumber dari nilai moral,\nsosial, budaya, dan agama masyarakat.",
+    "valid": true
+  },
+  {
+    "nomor": 58,
+    "tipe": "pg_sederhana",
+    "paket": "Bab II: Menganalisis Cerita Pendek - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Cerita Pendek (Cerpen), Unsur Intrinsik & Ekstrinsik, Sudut Pandang, Majas, & Nilai Kehidupan",
+    "capaian_pembelajaran": "Peserta didik memahami dan menganalisis unsur intrinsik cerpen (tema, alur, tokoh/penokohan analitik vs dramatik, latar, sudut pandang orang pertama/ketiga, amanat), nilai moral/sosial, serta gaya bahasa kiasan.",
+    "bacaan": null,
+    "teks_soal": "Tentukan apakah pernyataan analisis cerpen\n\nberikut Benar atau Salah!\nNo.\nPernyataan Analisis Bahasa Indonesia\nBenar\nSalah\n\nPernyataan:\n(a) Penggambaran watak melalui kalimat “Rendi adalah siswa yang sangat\ndisiplin, jujur, dan tidak pernah datang terlambat” merupakan contoh\nteknik penokohan analitik (langsung).\n(b) Cerpen yang menggunakan kata ganti ia, dia, atau nama tokoh serta\nmenceritakan seluruh isi pikiran dan perasaan rahasia semua tokoh\nmenggunakan sudut pandang orang ketiga serbatahu.\n(c) Dalam struktur alur cerpen, tahap Orientasi selalu diletakkan di bagian\npaling akhir setelah konflik selesai.\n\nKombinasi analisis nilai kebenaran (Benar/Salah) yang tepat adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(a) Benar, (b) Benar, (c) Salah"
+      },
+      {
+        "label": "B",
+        "teks": "(a) Benar, (b) Salah, (c) Salah"
+      },
+      {
+        "label": "C",
+        "teks": "(a) Salah, (b) Benar, (c) Benar"
+      },
+      {
+        "label": "D",
+        "teks": "(a) Benar, (b) Benar, (c) Benar"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "(a) Benar, (b) Benar, (c) Salah. Tahap Orientasi berada di awal cerita, bukan di akhir.",
+    "valid": true
+  },
+  {
+    "nomor": 59,
+    "tipe": "pg_sederhana",
+    "paket": "Bab II: Menganalisis Cerita Pendek - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Cerita Pendek (Cerpen), Unsur Intrinsik & Ekstrinsik, Sudut Pandang, Majas, & Nilai Kehidupan",
+    "capaian_pembelajaran": "Peserta didik memahami dan menganalisis unsur intrinsik cerpen (tema, alur, tokoh/penokohan analitik vs dramatik, latar, sudut pandang orang pertama/ketiga, amanat), nilai moral/sosial, serta gaya bahasa kiasan.",
+    "bacaan": null,
+    "teks_soal": "Tentukan apakah pernyataan analisis gaya bahasa cerpen\nberikut Benar atau Salah!\nNo.\nPernyataan Analisis Bahasa Indonesia\nBenar\nSalah\n\nPernyataan:\n(a) Kalimat “Wajahnya bersinar bagaikan rembulan purnama di malam\ncerah” menggunakan majas simile (asosiasi) karena menggunakan\nkata pembanding eksplisit bagaikan.\n(b) Ungkapan besar kepala dalam kalimat “Meskipun menjadi juara\nolimpiade sains, Sinta tidak pernah besar kepala” bermakna sombong\n/ angkuh.\n(c) Majas hiperbola adalah gaya bahasa yang merendahkan keadaan diri\nsendiri agar terdengar santun di hadapan tamu.\n\nKombinasi analisis nilai kebenaran (Benar/Salah) yang tepat adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(a) Benar, (b) Benar, (c) Salah"
+      },
+      {
+        "label": "B",
+        "teks": "(a) Benar, (b) Salah, (c) Salah"
+      },
+      {
+        "label": "C",
+        "teks": "(a) Salah, (b) Benar, (c) Benar"
+      },
+      {
+        "label": "D",
+        "teks": "(a) Benar, (b) Benar, (c) Benar"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "(a) Benar, (b) Benar, (c) Salah. Merendahkan diri untuk kesantunan adalah majas litotes,\nsedangkan hiperbola adalah melebih-lebihkan.",
+    "valid": true
+  },
+  {
+    "nomor": 60,
+    "tipe": "pg_sederhana",
+    "paket": "Bab II: Menganalisis Cerita Pendek - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Cerita Pendek (Cerpen), Unsur Intrinsik & Ekstrinsik, Sudut Pandang, Majas, & Nilai Kehidupan",
+    "capaian_pembelajaran": "Peserta didik memahami dan menganalisis unsur intrinsik cerpen (tema, alur, tokoh/penokohan analitik vs dramatik, latar, sudut pandang orang pertama/ketiga, amanat), nilai moral/sosial, serta gaya bahasa kiasan.",
+    "bacaan": null,
+    "teks_soal": "Bacalah kutipan\ncerpen berikut!\n“Malam sudah pukul sebelas ketika Pak Tua penjual bakso pikul itu berteduh di teras ruko tempatku men-\njaga parkir. Bajunya basah kuyup dan tubuhnya menggigil kedinginan. Kulihat di dalam dandang alu-\nminiumnya masih tersisa banyak bulatan bakso yang belum terjual. Aku merogoh saku jaketku; hanya\nada selembar uang dua puluh ribu rupiah hasil jaga parkir malam ini. Namun, melihat bibir Pak Tua yang\nmembiru, aku segera memesan semangkok bakso hangat dan menyerahkan uang itu sambil berkata,\n’Kembaliannya untuk Bapak saja, Pak. Semoga lekas laris dan Bapak bisa segera pulang.’ Mata keriput\nPak Tua itu berkaca-kaca menatapku.”\nBerdasarkan kutipan di atas, analisislah: (a) Sudut pandang, Latar (waktu, tempat, suasana), dan\nWatak tokoh \"Aku\" beserta bukti tekstualnya; serta (b) Ubahlah kalimat penokohan analitik “Pak Rudi\nadalah seorang kepala desa yang sangat dermawan dan peduli kepada warga miskin” menjadi 2–3 kali-\nmat penokohan dramatik (melalui tindakan nyata dan dialog tokoh)!\n1\nC\n7\nB\n13\nD\n19\nC\n25\nB\n2\nA\n8\nA\n14\nD\n20\nD\n26\nA, B, C\n3\nD\n9\nC\n15\nC\n21\nB\n27\nA, B, C\n4\nB\n10\nD\n16\nB\n22\nC\n28\nB-B-S\n5\nC\n11\nC\n17\nB\n23\nD\n29\nB-B-S\n6\nD\n12\nB\n18\nD\n24\nA\n30\nUraian\n1. Jawaban: C. Temaram lampu minyak yang ditiup angin malam = latar waktu malam hari; pahat dan kayu\njati = bengkel ukir rumah Kakek Sastro; bisikan cucu yang menyuguhkan wedang jahe = suasana hening,\nsyahdu, dan penuh kasih sayang.\n2. Jawaban: A. Pengarang tidak menyebut langsung kata Kakek Sastro dermawan, melainkan menunjukkan-\nnya lewat dialog dan keputusan tindakan menyerahkan ukiran ke perpustakaan desa.\n3. Jawaban: D. Pertentangan langsung antara Mbah Jayeng dan buldoser penebang pohon sumber air\nmerupakan tahap Komplikasi menuju Klimaks.\n4. Jawaban: B. Kutipan 1 menguraikan sifat secara langsung (analitik); Kutipan 2 menampilkan gerak-gerik\n\nBerdasarkan kaidah bahasa baku EYD Edisi V dan materi bab ini, rumusan analisis / hasil penyuntingan yang paling tepat adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "- (a) Analisis Unsur Intrinsik: 1.\nSudut Pandang: Orang pertama pelaku utama (“aku” yang bekerja\nmenjaga parkir dan membeli bakso). 2. Latar: Latar waktu = malam hari pukul sebelas saat hujan; Latar\ntempat = di teras ruko tempat parkir; Latar suasana = dingin,"
+      },
+      {
+        "label": "B",
+        "teks": "Mengabaikan penggunaan tanda koma dan huruf kapital pada nama geografi serta membiarkan kata tidak baku tetap tertulis apa adanya"
+      },
+      {
+        "label": "C",
+        "teks": "Mengubah seluruh kalimat menjadi bahasa santai dan menghilangkan unsur fakta objektif dalam teks"
+      },
+      {
+        "label": "D",
+        "teks": "Menghapus seluruh paragraf wacana dan menggantinya dengan opini pribadi tanpa bukti ilmiah"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "- (a) Analisis Unsur Intrinsik: 1.\nSudut Pandang: Orang pertama pelaku utama (“aku” yang bekerja\nmenjaga parkir dan membeli bakso). 2. Latar: Latar waktu = malam hari pukul sebelas saat hujan; Latar\ntempat = di teras ruko tempat parkir; Latar suasana = dingin, iba, dan mengharukan. 3. Watak Tokoh\n“Aku”: Berempati tinggi, dermawan, dan peduli pada sesama yang kesulitan (dibuktikan dengan kerelaannya\nmembelanjakan uang terakhir hasil jaga parkir dan memberikan kembaliannya kepada penjual bakso tua yang\nkedinginan).\n- (b) Pengubahan Analitik menjadi Dramatik: “Begitu mendengar kabar bahwa atap rumah Mbok Yem\nroboh diterjang angin kencang, Pak Rudi segera mengeluarkan tabungan pribadinya dan memanggil tukang\nkayu desa. ’Pak Tukang, tolong perbaiki atap rumah Mbok Yem sampai kokoh hari ini juga; seluruh biaya kayu\ndan gentingnya biar saya yang tanggung,’ ujar Pak Rudi sambil menyerahkan sekarung beras kepada Mbok\nYem.”\n\n1. Hakikat, Tiga Pendekatan Retorika (Ethos, Pathos, Logos), & Struktur Teks Pidato Persuasif\na.\nPengertian & Tujuan Pidato Persuasif:\nPidato persuasif adalah pidato yang bertujuan meyakinkan, membu-\njuk, dan menggerakkan pendengar (audiens) agar menyetujui gagasan orator serta melakukan tindakan positif se-\ncara sukarela (misalnya gerakan diet kantong plastik, etika literasi digital, pencegahan perundungan). Rujukan resmi:\nBuku Siswa Bahasa Indonesia Kelas IX Kemendikdasmen (https://static.buku.kemdikbud.go.id/content/pdf/\nbukuteks/kurikulum21/Bahasa-Indonesia-BS-KLS-IX.pdf).\nb. Tiga Pendekatan Persuasi Klasik (Aristoteles) dalam Pidato: 1. Pendekatan Etika (Ethos): menyentuh nilai moral,\nkewajiban etis, norma kepatutan, dan kredibilitas pembicara (contoh: Sebagai pelajar yang beradab dan beriman, su-\ndah menjadi kewajiban moral kita untuk menghormati guru dan melindungi teman yang lemah). 2. Pendekatan Emosi\n(Pathos): menggugah perasaan, empati, rasa iba, kebanggaan, atau keprihatinan audiens (contoh: Bayangkan betapa\npilunya hati orang tua kita yang memeras keringat di bawah terik matahari jika melihat kita menyia-nyiakan waktu belajar).\n3. Pendekatan Logika (Logos): meyakinkan audiens menggunakan bukti data statistik, fakta ilmiah, dan penalaran\nsebab-akibat yang masuk akal (contoh: Berdasarkan riset Kementerian LHK, Indonesia menghasilkan 68 juta ton sam-\npah per tahun dan 18 persennya adalah plastik yang baru terurai setelah ratusan tahun).\nc.\nTiga Struktur Isi Argumen dalam Teks Pidato Persuasif: 1.\nPernyataan Posisi (Thesis Statement): penda-\npat/pendirian tegas pembicara terhadap suatu isu aktual di bagian awal isi pidato. 2. Tahap Argumen: rangkaian alasan\nlogis, bukti ilmiah, data statistik, dan ilustrasi faktual yang memperkuat pernyataan posisi. 3. Penguatan Pernyataan\nPosisi (Reinforcement): simpulan akhir yang menegaskan kembali posisi pembicara disertai ajakan bertindak (call to\naction).\n2. Ciri Kebahasaan Teks Pidato Persuasif & Rujukan 30 Soal HOTS Bab III Kelas 9\na. Enam Kaidah Kebahasaan Teks Pidato Persuasif: - Nominalisasi (Pembendaan): proses mengubah kata kerja\n(verba) atau kata sifat (adjektiva) menjadi kata benda (nomina) menggunakan imbuhan peN-...-an, per-...-an, ke-...-an, -\nan untuk menghubungkan gagasan antarkalimat secara formal (contoh: *menggunduli →penggundulan hutan; peduli →\nkepedulian sosial; mencemari →pencemaran sungai*). - Bentuk Pasif & Kata Ganti Orang Pertama Jamak Inklusif\n(Kita): menggunakan kata ganti kita atau bangsa kita agar tidak terkesan menggurui dan membangun rasa kebersamaan\nantara pembicara dan audiens. - Kosakata Emotif: kata-kata yang membangkitkan semangat dan reaksi perasaan posi-\ntif/prihatin (krisis, memprihatinkan, warisan berharga, pahlawan masa depan, bergandengan tangan). - Kosakata Bidang\nIlmu (Istilah Teknis): emisi karbon, pemanasan global, mikroplastik, perundungan siber (cyberbullying), hoaks. - Kata\nTugas Kausalitas & Pengurut Argumen: pertama, kedua, selain itu, oleh sebab itu, dengan demikian, maka dari itu. -\nModalitas: harus, wajib, perlu, sebaiknya, hendaknya, tidak diragukan lagi.\nb. Rujukan 30 Soal HOTS Bab III Kelas 9 (3 Jenis Ujian): (1) ASPD DIY / TKAD / Ujian Sekolah: Paket Pemanta-\npan ASPD DIY Bahasa Indonesia Kelas 9 (https://id.scribd.com/document/634340229/1-PAKET-SOAL-B-INDO-\nPEMANTAPAN-ASPD-1); (2) MGMP Bahasa Indonesia SMP: Bank Soal Teks Pidato Persuasif Kelas 9 (https://id.\nscribd.com/document/429811450/Soal-Pidato-Persuasif-Kelas-9); (3) ASAS/PAT Kurikulum Merdeka: Modul\nASAS Bahasa Indonesia Kelas 9 (https://id.scribd.com/document/791288310/Soal-ASAS-Bahasa-Indonesia-\nKelas-9-Kurikulum-Merdeka).",
+    "valid": true
+  }
+]

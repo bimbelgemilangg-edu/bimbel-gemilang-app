@@ -1,0 +1,1012 @@
+[
+  {
+    "nomor": 1,
+    "tipe": "pg_sederhana",
+    "paket": "Bab I: Menganalisis Teks Laporan - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Laporan Percobaan Ilmiah, Struktur Baku (Tujuan-Langkah-Hasil-Simpulan), & Kaidah Bahasa Objektif",
+    "capaian_pembelajaran": "Peserta didik menganalisis dan mengevaluasi informasi faktual, struktur teks laporan percobaan (tujuan, alat/bahan, langkah, hasil, simpulan), penggunaan istilah teknis ilmiah, dan penerapan ejaan baku EYD Edisi V.",
+    "bacaan": null,
+    "teks_soal": "Untuk lebih memahami sebuah teks laporan, kita dapat melihat dari gagasan pokok atau meringkas\nlaporan tersebut.\nTerdapat empat langkah yang dapat dilakukan untuk membuat ringkasan laporan,\nkecuali ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "membaca sebagian saja dari teks yang akan diringkas"
+      },
+      {
+        "label": "B",
+        "teks": "mencatat pokok-pokok gagasan yang menjadi inti teks"
+      },
+      {
+        "label": "C",
+        "teks": "merangkaikan kembali teks dengan kalimat sendiri secara ringkas berdasarkan pokok-pokok gagasan yang telah dicatat"
+      },
+      {
+        "label": "D",
+        "teks": "menyunting ringkasan, baik dari segi isi maupun bahasa"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "A. Untuk membuat ringkasan laporan yang akurat, pembaca wajib membaca dan memahami\nkeseluruhan isi teks secara utuh, bukan hanya membaca sebagian.",
+    "valid": true
+  },
+  {
+    "nomor": 2,
+    "tipe": "pg_sederhana",
+    "paket": "Bab I: Menganalisis Teks Laporan - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Laporan Percobaan Ilmiah, Struktur Baku (Tujuan-Langkah-Hasil-Simpulan), & Kaidah Bahasa Objektif",
+    "capaian_pembelajaran": "Peserta didik menganalisis dan mengevaluasi informasi faktual, struktur teks laporan percobaan (tujuan, alat/bahan, langkah, hasil, simpulan), penggunaan istilah teknis ilmiah, dan penerapan ejaan baku EYD Edisi V.",
+    "bacaan": null,
+    "teks_soal": "Bacalah penggalan teks laporan percobaan berikut!\n*Setelah langkah di atas selesai kamu lakukan, kamu berhasil membuat tinta rahasia yang tidak terlihat.\nKamu dapat menyampaikan pesan rahasia ini kepada teman-temanmu dengan cara menggunakan tinta\nyang tidak terlihat ini. Ini merupakan salah satu contoh reaksi kimia. Jus lemon merupakan senyawa\norganik yang bisa teroksidasi dan berubah warna menjadi cokelat ketika dipanaskan. Bahan yang di-\nencerkan ini membuat pesan sulit untuk dibaca. Dengan demikian, tidak seorang pun menyadari keber-\nadaan tulisan itu sampai dengan tulisan tersebut dipanaskan dengan cara mendekatkannya kepada bola\nlampu.*\nMakna kata organik pada penggalan teks laporan percobaan tersebut adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "mengenai benda selain manusia, hewan, dan tumbuhan"
+      },
+      {
+        "label": "B",
+        "teks": "berupa sesuatu yang bersifat tidak alami atau sintetis buatan pabrik"
+      },
+      {
+        "label": "C",
+        "teks": "berkaitan dengan zat atau senyawa yang berasal dari makhluk hidup"
+      },
+      {
+        "label": "D",
+        "teks": "berkaitan dengan logam berat dan batuan mineral anorganik"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "C. Dalam konteks kimia dan biologi pada laporan tersebut, organik bermakna berkaitan dengan\nzat atau senyawa yang berasal dari makhluk hidup (buah lemon).",
+    "valid": true
+  },
+  {
+    "nomor": 3,
+    "tipe": "pg_sederhana",
+    "paket": "Bab I: Menganalisis Teks Laporan - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Laporan Percobaan Ilmiah, Struktur Baku (Tujuan-Langkah-Hasil-Simpulan), & Kaidah Bahasa Objektif",
+    "capaian_pembelajaran": "Peserta didik menganalisis dan mengevaluasi informasi faktual, struktur teks laporan percobaan (tujuan, alat/bahan, langkah, hasil, simpulan), penggunaan istilah teknis ilmiah, dan penerapan ejaan baku EYD Edisi V.",
+    "bacaan": null,
+    "teks_soal": "Perhatikan kembali penggalan teks laporan percobaan Tinta Rahasia Jus Lemon pada soal nomor 2!\nInformasi yang tepat sesuai penggalan teks laporan tersebut adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Pembuatan tinta rahasia untuk menulis pesan bukan contoh reaksi kimia."
+      },
+      {
+        "label": "B",
+        "teks": "Jus lemon merupakan senyawa alami dari tumbuhan dan bisa berubah warna menjadi cokelat saat dipanaskan."
+      },
+      {
+        "label": "C",
+        "teks": "Pembuatan tinta rahasia sama sekali tidak membutuhkan pemanasan agar tulisan terlihat."
+      },
+      {
+        "label": "D",
+        "teks": "Tulisan tinta rahasia langsung berwarna hitam pekat sejak pertama kali digoreskan."
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "B. Sesuai isi laporan, jus lemon merupakan senyawa organik dari tumbuhan yang teroksidasi\ndan berubah warna menjadi cokelat ketika dipanaskan.",
+    "valid": true
+  },
+  {
+    "nomor": 4,
+    "tipe": "pg_sederhana",
+    "paket": "Bab I: Menganalisis Teks Laporan - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Laporan Percobaan Ilmiah, Struktur Baku (Tujuan-Langkah-Hasil-Simpulan), & Kaidah Bahasa Objektif",
+    "capaian_pembelajaran": "Peserta didik menganalisis dan mengevaluasi informasi faktual, struktur teks laporan percobaan (tujuan, alat/bahan, langkah, hasil, simpulan), penggunaan istilah teknis ilmiah, dan penerapan ejaan baku EYD Edisi V.",
+    "bacaan": null,
+    "teks_soal": "Bacalah penggalan teks laporan percobaan berikut!\n*Tujuan dari percobaan ini adalah untuk mengevaluasi perbedaan rasa, aroma, dan tingkat kesukaan\nantara dua varian minuman jeruk yang berbeda. Diharapkan laporan ini dapat memberikan informasi\nyang berguna dalam mengembangkan produk minuman jeruk yang lebih disukai oleh konsumen.*\nMakna kata konsumen yang bercetak tebal adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "bahan-bahan mentah untuk proses produksi"
+      },
+      {
+        "label": "B",
+        "teks": "alat laboratorium yang digunakan untuk memproduksi"
+      },
+      {
+        "label": "C",
+        "teks": "pabrik pembuat barang hasil produksi"
+      },
+      {
+        "label": "D",
+        "teks": "pemakai atau pengguna barang hasil produksi"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Menurut KBBI, konsumen adalah pemakai barang hasil produksi (bahan pakaian, makanan,\nminuman, dan sebagainya).",
+    "valid": true
+  },
+  {
+    "nomor": 5,
+    "tipe": "pg_sederhana",
+    "paket": "Bab I: Menganalisis Teks Laporan - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Laporan Percobaan Ilmiah, Struktur Baku (Tujuan-Langkah-Hasil-Simpulan), & Kaidah Bahasa Objektif",
+    "capaian_pembelajaran": "Peserta didik menganalisis dan mengevaluasi informasi faktual, struktur teks laporan percobaan (tujuan, alat/bahan, langkah, hasil, simpulan), penggunaan istilah teknis ilmiah, dan penerapan ejaan baku EYD Edisi V.",
+    "bacaan": null,
+    "teks_soal": "Cermatilah kalimat acak prosedur percobaan berikut!\nCara Membuat Hand Sanitizer Alami dari Daun Lidah Buaya\n(1) Berikutnya, tuang 150 mL alkohol berkadar 70% ke dalam gelas takar!\n(2) Campurkan gel lidah buaya dengan alkohol hingga menyatu!\n(3) Kupas daun lidah buaya yang telah dicuci bersih, lalu ambil daging gelnya!\n(4) Hand sanitizer alami siap dimasukkan ke botol semprot dan digunakan!\n(5) Haluskan gel lidah buaya dengan sendok/blender lalu tuang ke dalam gelas takar sebanyak 50 mL!\n(6) Diamkan campuran selama beberapa menit hingga gelembungnya hilang!\nUrutan langkah percobaan yang tepat dan logis adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(3) – (5) – (1) – (6) – (2) – (4)"
+      },
+      {
+        "label": "C",
+        "teks": "(1) – (3) – (5) – (2) – (6) – (4)"
+      },
+      {
+        "label": "B",
+        "teks": "(3) – (5) – (1) – (2) – (6) – (4)"
+      },
+      {
+        "label": "D",
+        "teks": "(5) – (3) – (1) – (2) – (4) – (6)"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "B. Urutan logis: (3) kupas & ambil gel →(5) haluskan 50 mL gel →(1) tuang 150 mL alkohol\n→(2) campurkan hingga menyatu →(6) diamkan beberapa menit →(4) siap digunakan.",
+    "valid": true
+  },
+  {
+    "nomor": 6,
+    "tipe": "pg_sederhana",
+    "paket": "Bab I: Menganalisis Teks Laporan - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Laporan Percobaan Ilmiah, Struktur Baku (Tujuan-Langkah-Hasil-Simpulan), & Kaidah Bahasa Objektif",
+    "capaian_pembelajaran": "Peserta didik menganalisis dan mengevaluasi informasi faktual, struktur teks laporan percobaan (tujuan, alat/bahan, langkah, hasil, simpulan), penggunaan istilah teknis ilmiah, dan penerapan ejaan baku EYD Edisi V.",
+    "bacaan": null,
+    "teks_soal": "Manakah di antara empat kalimat laporan percobaan berikut yang menggunakan kalimat pasif sesuai\nkaidah penulisan laporan ilmiah (fokus pada objek yang dikenai perlakuan)?",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Saya dan Budi sedang memasukkan ekstrak tahu putih ke dalam tabung reaksi sambil berbincang."
+      },
+      {
+        "label": "B",
+        "teks": "Masukkanlah ekstrak tahu putih ke dalam tabung reaksi lalu panaskan sekarang juga!"
+      },
+      {
+        "label": "C",
+        "teks": "Ekstrak tahu putih dimasukkan ke dalam tabung reaksi menggunakan pipet tetes, kemudian di- panaskan di atas pembakar spiritus selama dua menit."
+      },
+      {
+        "label": "D",
+        "teks": "Apakah kamu sudah memasukkan ekstrak tahu putih ke dalam tabung reaksi itu?"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "C. Kalimat pasif ilmiah menggunakan predikat berimbuhan di- (dimasukkan, dipanaskan) untuk\nmenonjolkan perlakuan pada objek.",
+    "valid": true
+  },
+  {
+    "nomor": 7,
+    "tipe": "pg_sederhana",
+    "paket": "Bab I: Menganalisis Teks Laporan - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Laporan Percobaan Ilmiah, Struktur Baku (Tujuan-Langkah-Hasil-Simpulan), & Kaidah Bahasa Objektif",
+    "capaian_pembelajaran": "Peserta didik menganalisis dan mengevaluasi informasi faktual, struktur teks laporan percobaan (tujuan, alat/bahan, langkah, hasil, simpulan), penggunaan istilah teknis ilmiah, dan penerapan ejaan baku EYD Edisi V.",
+    "bacaan": null,
+    "teks_soal": "Ubahlah kalimat prosedur aktif berikut menjadi kalimat pelaporan pasif yang baku untuk bagian metode\nlaporan percobaan:\n\"Praktikan mengoleskan sampel margarin dan minyak goreng pada permukaan kertas buram, lalu men-\njemurnya selama sepuluh menit.\"\nBentuk kalimat pasif ilmiah yang tepat adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Kertas buram mengoleskan dirinya sendiri dengan margarin dan minyak goreng."
+      },
+      {
+        "label": "B",
+        "teks": "Praktikan sedang mengoles-oleskan margarin di atas kertas buram selama sepuluh menit."
+      },
+      {
+        "label": "C",
+        "teks": "Oleskanlah margarin dan minyak goreng itu pada kertas buram hingga transparan!"
+      },
+      {
+        "label": "D",
+        "teks": "Sampel margarin dan minyak goreng dioleskan pada permukaan kertas buram, lalu dijemur selama sepuluh menit."
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Objek Sampel margarin dan minyak goreng ditarik ke posisi subjek diikuti verba pasif di-\noleskan ... lalu dijemur.",
+    "valid": true
+  },
+  {
+    "nomor": 8,
+    "tipe": "pg_sederhana",
+    "paket": "Bab I: Menganalisis Teks Laporan - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Laporan Percobaan Ilmiah, Struktur Baku (Tujuan-Langkah-Hasil-Simpulan), & Kaidah Bahasa Objektif",
+    "capaian_pembelajaran": "Peserta didik menganalisis dan mengevaluasi informasi faktual, struktur teks laporan percobaan (tujuan, alat/bahan, langkah, hasil, simpulan), penggunaan istilah teknis ilmiah, dan penerapan ejaan baku EYD Edisi V.",
+    "bacaan": null,
+    "teks_soal": "Bacalah kutipan laporan percobaan pembuatan pelangi dalam gelas berikut!\n(1) Siapkan gelas ukur tinggi, madu, sabun cuci piring cair hijau, air berwarna biru, minyak goreng kuning,\ndan alkohol merah. (2) Tuangkan madu terlebih dahulu ke dasar gelas tanpa mengenai dinding gelas.\n(3) Selanjutnya, alirkan sabun cuci piring, air berwarna, minyak goreng, dan alkohol secara berurutan\ndengan sangat perlahan melalui dinding gelas menggunakan sendok. (4) Kelima cairan tersebut tam-\npak terpisah membentuk lima lapisan warna yang tidak saling bercampur karena memiliki massa jenis\n(densitas) yang berbeda.\nKalimat yang menyatakan Hasil Percobaan pada kutipan di atas ditunjukkan oleh nomor ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Kalimat (1)"
+      },
+      {
+        "label": "C",
+        "teks": "Kalimat (2)"
+      },
+      {
+        "label": "B",
+        "teks": "Kalimat (4)"
+      },
+      {
+        "label": "D",
+        "teks": "Kalimat (3)"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "B. Kalimat (4) memaparkan keadaan akhir yang teramati setelah langkah kerja selesai, yaitu\nHasil Percobaan.",
+    "valid": true
+  },
+  {
+    "nomor": 9,
+    "tipe": "pg_sederhana",
+    "paket": "Bab I: Menganalisis Teks Laporan - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Laporan Percobaan Ilmiah, Struktur Baku (Tujuan-Langkah-Hasil-Simpulan), & Kaidah Bahasa Objektif",
+    "capaian_pembelajaran": "Peserta didik menganalisis dan mengevaluasi informasi faktual, struktur teks laporan percobaan (tujuan, alat/bahan, langkah, hasil, simpulan), penggunaan istilah teknis ilmiah, dan penerapan ejaan baku EYD Edisi V.",
+    "bacaan": null,
+    "teks_soal": "Perhatikan kalimat laporan percobaan berikut!\n*\"Ketika potongan kentang mentah direndam di dalam larutan garam pekat (hipertonik) selama 30 menit,\ntekstur kentang berubah menjadi lembek dan ukurannya menyusut karena molekul air keluar dari sel\nkentang melalui peristiwa osmosis.\"*\nKata hipertonik dan osmosis dalam kaidah kebahasaan teks laporan percobaan disebut sebagai ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Istilah teknis / kosakata ilmiah bidang biologi-kimia"
+      },
+      {
+        "label": "B",
+        "teks": "Majas personifikasi dan majas hiperbola"
+      },
+      {
+        "label": "C",
+        "teks": "Kata sapaan kekerabatan dan pronomina persona"
+      },
+      {
+        "label": "D",
+        "teks": "Kata tidak baku yang harus dihapus dari laporan"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "A. Hipertonik dan osmosis adalah istilah teknis ilmiah bidang biologi-kimia.",
+    "valid": true
+  },
+  {
+    "nomor": 10,
+    "tipe": "pg_sederhana",
+    "paket": "Bab I: Menganalisis Teks Laporan - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Laporan Percobaan Ilmiah, Struktur Baku (Tujuan-Langkah-Hasil-Simpulan), & Kaidah Bahasa Objektif",
+    "capaian_pembelajaran": "Peserta didik menganalisis dan mengevaluasi informasi faktual, struktur teks laporan percobaan (tujuan, alat/bahan, langkah, hasil, simpulan), penggunaan istilah teknis ilmiah, dan penerapan ejaan baku EYD Edisi V.",
+    "bacaan": null,
+    "teks_soal": "Perhatikan kutipan catatan acak hasil praktikum \"Uji Kandungan Vitamin C pada Sari Buah\" menggu-\nnakan tetesan larutan Iodin (Betadine) berikut:\n- Sari Jeruk Nipis: membutuhkan 6 tetes untuk menjernihkan larutan iodin.\n- Sari Jambu Biji Merah: membutuhkan 3 tetes untuk menjernihkan larutan iodin.\n- Sari Tomat: membutuhkan 11 tetes untuk menjernihkan larutan iodin.\n- Minuman Kemasan Rasa Jeruk: membutuhkan 24 tetes untuk menjernihkan larutan iodin.\n(Catatan prinsip ilmiah: Semakin sedikit jumlah tetesan sari buah yang dibutuhkan untuk menjernihkan\nwarna cokelat iodin, semakin tinggi kadar vitamin C di dalamnya).\nParagraf Simpulan laporan percobaan yang paling akurat berdasarkan data di atas adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Sari jambu biji merah tidak mengandung vitamin C sama sekali karena hanya membutuhkan 3 tetes."
+      },
+      {
+        "label": "B",
+        "teks": "Minuman kemasan rasa jeruk memiliki kandungan vitamin C paling tinggi karena membutuhkan jumlah tetesan paling banyak yaitu 24 tetes."
+      },
+      {
+        "label": "C",
+        "teks": "Dari keempat sampel yang diuji, sari jambu biji merah memiliki kandungan vitamin C paling tinggi (hanya membutuhkan 3 tetes), diikuti sari jeruk nipis (6 tetes), sari tomat (11 tetes), sedangkan minuman kemasan rasa jeruk memiliki kadar vitamin C paling rendah (24 tetes)."
+      },
+      {
+        "label": "D",
+        "teks": "Keempat jenis minuman tersebut memiliki kadar vitamin C yang sama persis."
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "C. Semakin sedikit tetesan yang diperlukan, semakin tinggi kadar vitamin C: jambu biji merah\n(3 tetes) tertinggi, minuman kemasan (24 tetes) terendah.",
+    "valid": true
+  },
+  {
+    "nomor": 11,
+    "tipe": "pg_sederhana",
+    "paket": "Bab I: Menganalisis Teks Laporan - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Laporan Percobaan Ilmiah, Struktur Baku (Tujuan-Langkah-Hasil-Simpulan), & Kaidah Bahasa Objektif",
+    "capaian_pembelajaran": "Peserta didik menganalisis dan mengevaluasi informasi faktual, struktur teks laporan percobaan (tujuan, alat/bahan, langkah, hasil, simpulan), penggunaan istilah teknis ilmiah, dan penerapan ejaan baku EYD Edisi V.",
+    "bacaan": null,
+    "teks_soal": "Dalam penulisan bagian Alat dan Bahan teks laporan percobaan, mengapa penulis wajib mencan-\ntumkan kata bilangan (numeralia) dan satuan ukuran yang pasti (misalnya 3 buah tabung reaksi,\n5 mL larutan Benedict, 10 gram kacang tanah)?",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Untuk menyembunyikan rahasia percobaan agar tidak bisa ditiru oleh kelompok lain"
+      },
+      {
+        "label": "B",
+        "teks": "Agar halaman laporan percobaan terlihat lebih penuh dan tebal"
+      },
+      {
+        "label": "C",
+        "teks": "Karena aturan puisi rakyat mewajibkan adanya angka di setiap larik"
+      },
+      {
+        "label": "D",
+        "teks": "Agar percobaan tersebut bersifat terukur dan dapat diulangi (reproducible) oleh peneliti lain dengan kondisi dan takaran yang sama"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Takaran kuantitatif yang presisi menjamin percobaan bersifat terukur dan dapat diulangi\n(reproducible) oleh peneliti lain.",
+    "valid": true
+  },
+  {
+    "nomor": 12,
+    "tipe": "pg_sederhana",
+    "paket": "Bab I: Menganalisis Teks Laporan - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Laporan Percobaan Ilmiah, Struktur Baku (Tujuan-Langkah-Hasil-Simpulan), & Kaidah Bahasa Objektif",
+    "capaian_pembelajaran": "Peserta didik menganalisis dan mengevaluasi informasi faktual, struktur teks laporan percobaan (tujuan, alat/bahan, langkah, hasil, simpulan), penggunaan istilah teknis ilmiah, dan penerapan ejaan baku EYD Edisi V.",
+    "bacaan": null,
+    "teks_soal": "Perhatikan empat kalimat berikut:\n(1) Larutan ekstrak apel berubah warna menjadi merah bata setelah dipanaskan bersama lima tetes\nreagen Benedict.\n(2) Menurut perasaan saya, warna ungu pada tabung reaksi kedua terlihat sangat romantis dan mene-\nnangkan jiwa.\n(3) Suhu air di dalam gelas beker meningkat dari 27◦C menjadi 85◦C setelah dipanaskan selama empat\nmenit.\n(4) Kertas buram yang diolesi mentega tampak transparan ketika diterawang ke arah cahaya lampu.\nKalimat yang melanggar prinsip keobjektifan bahasa laporan percobaan ilmiah adalah kalimat nomor ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Kalimat (3)"
+      },
+      {
+        "label": "C",
+        "teks": "Kalimat (2)"
+      },
+      {
+        "label": "B",
+        "teks": "Kalimat (1)"
+      },
+      {
+        "label": "D",
+        "teks": "Kalimat (4)"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "C. Kalimat (2) mengandung kesan emosional subjektif (sangat romantis dan menenangkan\njiwa) yang tidak ilmiah.",
+    "valid": true
+  },
+  {
+    "nomor": 13,
+    "tipe": "pg_sederhana",
+    "paket": "Bab I: Menganalisis Teks Laporan - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Laporan Percobaan Ilmiah, Struktur Baku (Tujuan-Langkah-Hasil-Simpulan), & Kaidah Bahasa Objektif",
+    "capaian_pembelajaran": "Peserta didik menganalisis dan mengevaluasi informasi faktual, struktur teks laporan percobaan (tujuan, alat/bahan, langkah, hasil, simpulan), penggunaan istilah teknis ilmiah, dan penerapan ejaan baku EYD Edisi V.",
+    "bacaan": null,
+    "teks_soal": "Bacalah paragraf laporan percobaan pembuatan Tapai Singkong (Fermentasi) berikut!\n\"Singkong yang telah dikupas, dicuci bersih, dan dikukus hingga matang didinginkan terlebih dahulu\ndi atas tampah bersih. Setelah singkong benar-benar dingin, ragi tapai (Saccharomyces cerevisiae)\nditaburkan secara merata, lalu singkong ditutup rapat menggunakan daun pisang selama 48 jam. Hasil-\nnya, tekstur singkong menjadi empuk, berair, beraroma harum khas alkohol ringan, dan berasa manis.\"\nMengapa dalam prosedur ilmiah tersebut singkong kukus harus didinginkan terlebih dahulu sebelum\nditaburi ragi?",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Agar daun pisang pembungkus singkong berubah warna menjadi biru tua"
+      },
+      {
+        "label": "B",
+        "teks": "Karena mikroorganisme jamur ragi (Saccharomyces cerevisiae) akan mati apabila ditaburkan pada singkong yang masih bersuhu panas tinggi, sehingga proses fermentasi gagal berlangsung"
+      },
+      {
+        "label": "C",
+        "teks": "Supaya singkong berubah kembali menjadi keras dan mentah seperti semula"
+      },
+      {
+        "label": "D",
+        "teks": "Karena ragi tapai hanya bisa bekerja di dalam lemari pembeku (freezer) bersuhu di bawah nol derajat"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "B. Ragi tapai berisi mikroorganisme hidup (Saccharomyces cerevisiae) yang akan mati jika\nterkena suhu panas tinggi singkong yang baru dikukus.",
+    "valid": true
+  },
+  {
+    "nomor": 14,
+    "tipe": "pg_sederhana",
+    "paket": "Bab I: Menganalisis Teks Laporan - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Laporan Percobaan Ilmiah, Struktur Baku (Tujuan-Langkah-Hasil-Simpulan), & Kaidah Bahasa Objektif",
+    "capaian_pembelajaran": "Peserta didik menganalisis dan mengevaluasi informasi faktual, struktur teks laporan percobaan (tujuan, alat/bahan, langkah, hasil, simpulan), penggunaan istilah teknis ilmiah, dan penerapan ejaan baku EYD Edisi V.",
+    "bacaan": {
+      "teks": "[Sumber: Buku Soal Terpilih TKA Bahasa Indonesia MGMP SMP Provinsi DKI Jakarta 2026 —\nScribd 1009621080 Paket 3 No. 10–12 & ASPD DIY]\nBacalah wacana Teks Laporan Percobaan Ilmiah empat paragraf berikut untuk menjawab soal nomor 14\ndan 15!\nWACANA LITERASI MEMBACA: WACANA LITERASI MEMBACA: LAPORAN PERCOBAAN PENGARUH\nINTENSITAS CAHAYA TERHADAP PERTUMBUHAN KECAMBAH KACANG HIJAU (VIGNA RADIATA)\n(Paragraf 1: Tujuan & Hipotesis) Percobaan ini dilakukan untuk menganalisis pengaruh perbedaan inten-\nsitas cahaya matahari terhadap kecepatan pertambahan tinggi batang dan ciri morfologi daun kecambah\nkacang hijau (Vigna radiata). Hipotesis yang diajukan adalah kecambah di tempat gelap akan tumbuh lebih\ncepat tinggi akibat kerja hormon auksin yang tidak terhambat cahaya, namun kondisi daunnya akan pucat\nkekuningan (etiolasi).\n(Paragraf 2: Alat, Bahan, & Metode) Sebanyak 20 butir biji kacang hijau berkualitas baik direndam dalam air\nhangat selama 2 jam, lalu ditanam pada dua gelas plastik berisi kapas basah (masing-masing 10 biji). Pot A\ndiletakkan di dekat jendela yang terkena cahaya matahari pagi secara langsung, sedangkan Pot B diletakkan\ndi dalam kotak kardus tertutup rapat (kondisi gelap). Kedua pot disiram dengan 15 mL air bersih setiap pagi\nselama 7 hari, dan tinggi batang diukur menggunakan mistar milimeter.\n(Paragraf 3: Hasil Pengamatan) Pada hari ke-7, rata-rata tinggi kecambah pada Pot A (Terang) menca-\npai 11, 4 cm dengan ciri batang kokoh, tegak, berdiameter tebal, serta daun berwarna hijau segar karena\npembentukan klorofil berlangsung optimal. Sebaliknya, rata-rata tinggi kecambah pada Pot B (Gelap) men-\ncapai 22, 8 cm (dua kali lipat Pot A), tetapi batangnya tampak kurus, rapuh, melengkung lemah, dan daunnya\nberukuran kecil berwarna kuning pucat.\n(Paragraf 4: Simpulan) Berdasarkan data hasil percobaan tersebut, hipotesis terbukti benar. Ketiadaan\ncahaya pada Pot B memicu hormon auksin memanjangkan sel batang secara cepat (etiolasi), namun cahaya\nmatahari pada Pot A mutlak diperlukan tanaman untuk membentuk klorofil dan jaringan batang yang sehat.",
+      "grup": "bacaan_bab1_uji_percobaan"
+    },
+    "teks_soal": "Berdasarkan Paragraf 2 dan Paragraf 3 wacana laporan percobaan di atas, pasangan variabel bebas\n(perlakuan yang dibedakan), variabel terikat (hasil yang diukur), dan variabel kontrol (perlakuan\nyang disamakan) yang tepat adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Variabel bebas: mistar milimeter; Variabel terikat: kotak kardus; Variabel kontrol: hormon auksin"
+      },
+      {
+        "label": "B",
+        "teks": "Variabel bebas: intensitas cahaya (tempat terang vs gelap); Variabel terikat: tinggi batang dan warna/morfologi daun kecambah; Variabel kontrol: jumlah biji (10 butir/pot), media kapas basah, dan volume penyiraman (15 mL/hari)"
+      },
+      {
+        "label": "C",
+        "teks": "Variabel bebas: volume air 15 mL; Variabel terikat: jenis gelas plastik; Variabel kontrol: tinggi batang 22, 8 cm"
+      },
+      {
+        "label": "D",
+        "teks": "Percobaan di atas tidak menggunakan variabel kontrol sama sekali"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "B. Dalam metode ilmiah laporan percobaan: faktor yang sengaja dibuat berbeda antara Pot A\ndan Pot B adalah intensitas cahaya (variabel bebas); faktor yang diamati/diukur akibat perlakuan itu adalah\ntinggi batang dan kondisi daun (variabel terikat); sedangkan faktor yang dijaga sama persis adalah jumlah\nbiji, media kapas, dan volume air 15 mL (variabel kontrol).",
+    "valid": true
+  },
+  {
+    "nomor": 15,
+    "tipe": "pg_sederhana",
+    "paket": "Bab I: Menganalisis Teks Laporan - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Laporan Percobaan Ilmiah, Struktur Baku (Tujuan-Langkah-Hasil-Simpulan), & Kaidah Bahasa Objektif",
+    "capaian_pembelajaran": "Peserta didik menganalisis dan mengevaluasi informasi faktual, struktur teks laporan percobaan (tujuan, alat/bahan, langkah, hasil, simpulan), penggunaan istilah teknis ilmiah, dan penerapan ejaan baku EYD Edisi V.",
+    "bacaan": {
+      "teks": "[Sumber: Buku Soal Terpilih TKA Bahasa Indonesia MGMP SMP Provinsi DKI Jakarta 2026 —\nScribd 1009621080 Paket 3 No. 10–12 & ASPD DIY]\nBacalah wacana Teks Laporan Percobaan Ilmiah empat paragraf berikut untuk menjawab soal nomor 14\ndan 15!\nWACANA LITERASI MEMBACA: WACANA LITERASI MEMBACA: LAPORAN PERCOBAAN PENGARUH\nINTENSITAS CAHAYA TERHADAP PERTUMBUHAN KECAMBAH KACANG HIJAU (VIGNA RADIATA)\n(Paragraf 1: Tujuan & Hipotesis) Percobaan ini dilakukan untuk menganalisis pengaruh perbedaan inten-\nsitas cahaya matahari terhadap kecepatan pertambahan tinggi batang dan ciri morfologi daun kecambah\nkacang hijau (Vigna radiata). Hipotesis yang diajukan adalah kecambah di tempat gelap akan tumbuh lebih\ncepat tinggi akibat kerja hormon auksin yang tidak terhambat cahaya, namun kondisi daunnya akan pucat\nkekuningan (etiolasi).\n(Paragraf 2: Alat, Bahan, & Metode) Sebanyak 20 butir biji kacang hijau berkualitas baik direndam dalam air\nhangat selama 2 jam, lalu ditanam pada dua gelas plastik berisi kapas basah (masing-masing 10 biji). Pot A\ndiletakkan di dekat jendela yang terkena cahaya matahari pagi secara langsung, sedangkan Pot B diletakkan\ndi dalam kotak kardus tertutup rapat (kondisi gelap). Kedua pot disiram dengan 15 mL air bersih setiap pagi\nselama 7 hari, dan tinggi batang diukur menggunakan mistar milimeter.\n(Paragraf 3: Hasil Pengamatan) Pada hari ke-7, rata-rata tinggi kecambah pada Pot A (Terang) menca-\npai 11, 4 cm dengan ciri batang kokoh, tegak, berdiameter tebal, serta daun berwarna hijau segar karena\npembentukan klorofil berlangsung optimal. Sebaliknya, rata-rata tinggi kecambah pada Pot B (Gelap) men-\ncapai 22, 8 cm (dua kali lipat Pot A), tetapi batangnya tampak kurus, rapuh, melengkung lemah, dan daunnya\nberukuran kecil berwarna kuning pucat.\n(Paragraf 4: Simpulan) Berdasarkan data hasil percobaan tersebut, hipotesis terbukti benar. Ketiadaan\ncahaya pada Pot B memicu hormon auksin memanjangkan sel batang secara cepat (etiolasi), namun cahaya\nmatahari pada Pot A mutlak diperlukan tanaman untuk membentuk klorofil dan jaringan batang yang sehat.",
+      "grup": "bacaan_bab1_uji_percobaan"
+    },
+    "teks_soal": "Mengapa kecambah kacang hijau pada Pot B (Tempat Gelap) tumbuh jauh lebih tinggi (22, 8 cm) diband-\ningkan Pot A (Tempat Terang) (11, 4 cm), tetapi batangnya justru lemah dan daunnya kuning pucat?",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Karena Pot B disiram dengan air sebanyak 100 liter setiap pagi"
+      },
+      {
+        "label": "B",
+        "teks": "Karena kecambah di dalam kotak kardus memakan kertas kardus sebagai sumber vitamin"
+      },
+      {
+        "label": "C",
+        "teks": "Karena cahaya matahari pada Pot A meracuni akar tanaman kacang hijau"
+      },
+      {
+        "label": "D",
+        "teks": "Karena di tempat gelap hormon auksin bekerja memanjangkan sel batang secara cepat tanpa terham- bat sinar matahari, namun tanaman tidak dapat membentuk zat hijau daun (klorofil) untuk berfotosintesis sehingga mengalami gejala etiolasi"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Paragraf 1, 3, dan 4 menjelaskan bahwa ketiadaan cahaya membuat hormon auksin bek-\nerja maksimum memanjangkan batang, namun tanpa cahaya tanaman gagal menyintesis klorofil sehingga\ndaunnya pucat kekuningan dan batangnya rapuh (etiolasi).",
+    "valid": true
+  },
+  {
+    "nomor": 16,
+    "tipe": "pg_sederhana",
+    "paket": "Bab I: Menganalisis Teks Laporan - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Laporan Percobaan Ilmiah, Struktur Baku (Tujuan-Langkah-Hasil-Simpulan), & Kaidah Bahasa Objektif",
+    "capaian_pembelajaran": "Peserta didik menganalisis dan mengevaluasi informasi faktual, struktur teks laporan percobaan (tujuan, alat/bahan, langkah, hasil, simpulan), penggunaan istilah teknis ilmiah, dan penerapan ejaan baku EYD Edisi V.",
+    "bacaan": {
+      "teks": "Perhatikan perbandingan dua teks laporan pengamatan fenomena sains berikut!\nTEKS 1: PERCOBAAN SIMULASI EROSI TANAH\nLONGSOR\nTEKS 2: PERCOBAAN DAYA SERAP INFILTRASI\nBANJIR\nDua buah baki miring (30◦) diisi tanah gembur dengan\nvolume yang sama. Baki 1 ditanami rumput rapat di\npermukaannya, sedangkan Baki 2 dibiarkan berupa\ntanah gundul tanpa tanaman.\nKetika kedua baki disiram air sebanyak 1 liter meng-\ngunakan gembor dari bagian atas, air limpasan dari\nBaki 1 tampak jernih dan tanah tetap stabil karena\ndicengkeram serabut akar rumput. Sebaliknya, pada\nBaki 2 terjadi guguran tanah longsor dan air limpasan-\nnya sangat keruh berlumpur.\nTiga buah tabung silinder transparan diisi dengan tiga\njenis lapisan permukaan yang berbeda:\nTabung 1\nberisi tanah humus berpori, Tabung 2 berisi pasir\nkerikil, dan Tabung 3 ditutup lapisan semen kedap air.\nSaat masing-masing tabung dituangi 500 mL air se-\ncara bersamaan, Tabung 1 dan Tabung 2 mampu\nmenyerap (infiltrasi) air ke lapisan bawah dalam waktu\nkurang dari 45 detik, sedangkan pada Tabung 3 selu-\nruh air menggenang di permukaan atas.",
+      "grup": "bacaan_bab1_soal16"
+    },
+    "teks_soal": "Persamaan metode penyajian laporan dan perbedaan fokus fenomena hidrologi yang dibuktikan oleh\nTeks 1 dan Teks 2 di atas adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Persamaan: keduanya membuktikan bahwa semen kedap air paling baik untuk menyerap air hujan; Perbedaan: Teks 1 memakai tabung, sedangkan Teks 2 memakai baki"
+      },
+      {
+        "label": "B",
+        "teks": "Persamaan: keduanya merupakan teks cerita fantasi; Perbedaan: Teks 1 membahas gunung berapi, sedangkan Teks 2 membahas gelombang tsunami"
+      },
+      {
+        "label": "C",
+        "teks": "Persamaan: keduanya melaporkan hasil uji coba pembanding (komparatif) secara objektif menggu- nakan kalimat pasif ilmiah; Perbedaan: Teks 1 membuktikan peran perakaran vegetasi dalam mena- han erosi dan tanah longsor pada lereng miring, sedangkan Teks 2 membuktikan pengaruh porositas tutupan lahan terhadap daya serap (infiltrasi) air untuk mencegah genangan banjir"
+      },
+      {
+        "label": "D",
+        "teks": "Kedua teks tersebut menggunakan majas personifikasi dan tidak mencantumkan takaran air"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "C. Kedua teks sama-sama menyajikan eksperimen terkontrol yang membandingkan perlakuan\nobjek menggunakan kalimat pasif (diisi, ditanami, disiram, dituangi), namun Teks 1 menguji pencegahan\nlongsor oleh akar rumput pada kemiringan 30◦, sedangkan Teks 2 menguji laju infiltrasi air pada tanah/pasir\nvs lapisan beton kedap air.",
+    "valid": true
+  },
+  {
+    "nomor": 17,
+    "tipe": "pg_sederhana",
+    "paket": "Bab I: Menganalisis Teks Laporan - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Laporan Percobaan Ilmiah, Struktur Baku (Tujuan-Langkah-Hasil-Simpulan), & Kaidah Bahasa Objektif",
+    "capaian_pembelajaran": "Peserta didik menganalisis dan mengevaluasi informasi faktual, struktur teks laporan percobaan (tujuan, alat/bahan, langkah, hasil, simpulan), penggunaan istilah teknis ilmiah, dan penerapan ejaan baku EYD Edisi V.",
+    "bacaan": null,
+    "teks_soal": "Dalam percobaan elektromagnetik di atas, kelompok praktikan mencatat data berikut:\n- Jumlah lilitan kawat 10 lilitan →menarik 3 klip kertas.\n- Jumlah lilitan kawat 20 lilitan →menarik 7 klip kertas.\n- Jumlah lilitan kawat 30 lilitan →menarik 12 klip kertas.\nPernyataan Simpulan yang tepat berdasarkan data tabel hasil percobaan tersebut adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Banyaknya lilitan kawat sama sekali tidak memengaruhi jumlah klip kertas yang menempel"
+      },
+      {
+        "label": "B",
+        "teks": "Jumlah lilitan kawat tembaga berbanding terbalik dengan kekuatan magnet pada paku besi"
+      },
+      {
+        "label": "C",
+        "teks": "Paku besi dengan 10 lilitan kawat memiliki kekuatan magnet paling besar dibandingkan 30 lilitan"
+      },
+      {
+        "label": "D",
+        "teks": "Semakin banyak jumlah lilitan kawat tembaga pada paku besi, semakin kuat gaya magnet (medan elektromagnetik) yang dihasilkan sehingga semakin banyak klip kertas yang dapat ditarik"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Data menunjukkan hubungan berbanding lurus: 10 →3, 20 →7, 30 →12 klip kertas.",
+    "valid": true
+  },
+  {
+    "nomor": 18,
+    "tipe": "pg_sederhana",
+    "paket": "Bab I: Menganalisis Teks Laporan - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Laporan Percobaan Ilmiah, Struktur Baku (Tujuan-Langkah-Hasil-Simpulan), & Kaidah Bahasa Objektif",
+    "capaian_pembelajaran": "Peserta didik menganalisis dan mengevaluasi informasi faktual, struktur teks laporan percobaan (tujuan, alat/bahan, langkah, hasil, simpulan), penggunaan istilah teknis ilmiah, dan penerapan ejaan baku EYD Edisi V.",
+    "bacaan": null,
+    "teks_soal": "Perhatikan kalimat laporan percobaan berikut!\n*\"Setelah ditetesi larutan cuka makan, warna ekstrak bunga sepatu berubah menjadi merah cerah,\nsedangkan setelah ditetesi larutan air kapur sirih, warnanya berubah menjadi hijau keruh.\"*\nPasangan antonim (lawan kata) dari kata cerah dan keruh dalam konteks pengamatan larutan kimia\nberturut-turut adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "terang dan kotor"
+      },
+      {
+        "label": "C",
+        "teks": "merah dan biru"
+      },
+      {
+        "label": "B",
+        "teks": "pudar/kusam dan jernih/bening"
+      },
+      {
+        "label": "D",
+        "teks": "cair dan padat"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "B. Antonim cerah (warna) adalah pudar/kusam, sedangkan antonim keruh (cairan) adalah\njernih/bening.",
+    "valid": true
+  },
+  {
+    "nomor": 19,
+    "tipe": "pg_sederhana",
+    "paket": "Bab I: Menganalisis Teks Laporan - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Laporan Percobaan Ilmiah, Struktur Baku (Tujuan-Langkah-Hasil-Simpulan), & Kaidah Bahasa Objektif",
+    "capaian_pembelajaran": "Peserta didik menganalisis dan mengevaluasi informasi faktual, struktur teks laporan percobaan (tujuan, alat/bahan, langkah, hasil, simpulan), penggunaan istilah teknis ilmiah, dan penerapan ejaan baku EYD Edisi V.",
+    "bacaan": null,
+    "teks_soal": "Mengapa di dalam teks laporan percobaan hasil praktikum sering disertakan foto dokumentasi asli,\ntabel pengamatan, dan grafik?",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Sebagai bukti empiris yang autentik serta memudahkan pembaca melihat pola perbandingan data dan perubahan variabel secara visual"
+      },
+      {
+        "label": "B",
+        "teks": "Untuk menghiasi halaman laporan agar menyerupai majalah komik hiburan"
+      },
+      {
+        "label": "C",
+        "teks": "Agar penulis tidak perlu menuliskan bagian simpulan dan langkah kerja"
+      },
+      {
+        "label": "D",
+        "teks": "Karena tabel dan grafik dapat menggantikan seluruh alat laboratorium"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "A. Foto, tabel, dan grafik menjadi bukti empiris autentik serta mempermudah pembacaan pola\ndata.",
+    "valid": true
+  },
+  {
+    "nomor": 20,
+    "tipe": "pg_sederhana",
+    "paket": "Bab I: Menganalisis Teks Laporan - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Laporan Percobaan Ilmiah, Struktur Baku (Tujuan-Langkah-Hasil-Simpulan), & Kaidah Bahasa Objektif",
+    "capaian_pembelajaran": "Peserta didik menganalisis dan mengevaluasi informasi faktual, struktur teks laporan percobaan (tujuan, alat/bahan, langkah, hasil, simpulan), penggunaan istilah teknis ilmiah, dan penerapan ejaan baku EYD Edisi V.",
+    "bacaan": null,
+    "teks_soal": "Perhatikan perbandingan tiga jenis teks ilmiah yang sering membingungkan siswa dalam tabel berikut!\nTEKS PROSEDUR vs TEKS LHO\nTEKS LAPORAN PERCOBAAN\nTeks Prosedur: Berisi petunjuk langkah-langkah cara\nmembuat atau melakukan sesuatu menggunakan kali-\nmat perintah (imperatif) agar pembaca berhasil\nmempraktikkannya (belum ada hasil uji coba).\nTeks LHO: Berisi deskripsi klasifikasi dan ciri-ciri\nsuatu objek alam/sosial apa adanya berdasarkan\npengamatan\nlangsung\ntanpa\nmemberikan\nper-\nlakuan/intervensi percobaan.\nTeks Laporan Percobaan: Berisi paparan lengkap\nmulai dari tujuan/hipotesis, alat dan bahan, prosedur\nperlakuan eksperimen terhadap variabel, hingga data\ntabel hasil pengamatan dan simpulan pembuk-\ntian hipotesis setelah percobaan selesai dilakukan\n(banyak menggunakan kalimat pasif ilmiah).\nBerdasarkan tabel perbandingan di atas, manakah di antara kalimat berikut yang merupakan ciri khas\nbagian Langkah Kerja pada Teks Laporan Percobaan (bukan Teks Prosedur biasa)?",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "\"Teteskanlah 5 tetes larutan Biuret ke dalam tabung reaksimu sekarang juga, jangan sampai tumpah!\""
+      },
+      {
+        "label": "B",
+        "teks": "\"Sebanyak 5 tetes larutan reagen Biuret diteteskan ke dalam tabung reaksi berisi ekstrak putih telur, lalu tabung dikocok perlahan hingga terjadi perubahan warna.\""
+      },
+      {
+        "label": "C",
+        "teks": "\"Putih telur merupakan bagian cairan bening di dalam telur unggas yang mengelilingi kuning telur.\""
+      },
+      {
+        "label": "D",
+        "teks": "\"Menurut pendapat saya, telur ayam kampung rasanya lebih gurih jika digoreng dengan mentega.\""
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "B. Dalam Teks Laporan Percobaan, langkah kerja melaporkan tindakan eksperimen yang\ntelah dikenakan pada objek sehingga lazim ditulis dalam bentuk kalimat deklaratif pasif (diteteskan, dikocok),\nberbeda dengan teks prosedur yang menggunakan kalimat perintah langsung (Teteskanlah...!).",
+    "valid": true
+  },
+  {
+    "nomor": 21,
+    "tipe": "pg_sederhana",
+    "paket": "Bab I: Menganalisis Teks Laporan - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Laporan Percobaan Ilmiah, Struktur Baku (Tujuan-Langkah-Hasil-Simpulan), & Kaidah Bahasa Objektif",
+    "capaian_pembelajaran": "Peserta didik menganalisis dan mengevaluasi informasi faktual, struktur teks laporan percobaan (tujuan, alat/bahan, langkah, hasil, simpulan), penggunaan istilah teknis ilmiah, dan penerapan ejaan baku EYD Edisi V.",
+    "bacaan": {
+      "teks": "WACANA LITERASI MEMBACA: WACANA LITERASI MEMBACA: OBSERVASI DAN UJI KEASAMAN AIR\nKAWAH PUTIH GUNUNG PATUHA\n(Paragraf 1) Kawah Putih yang terletak di puncak Gunung Patuha, Kabupaten Bandung, Jawa Barat, meru-\npakan sebuah danau kawah vulkanik pada ketinggian 2.434 meter di atas permukaan laut (mdpl). Danau\nkawah ini terbentuk akibat letusan gunung berapi pada abad ke-10 hingga ke-12. Keunikan utama Kawah\nPutih adalah warna air danaunya yang dapat berubah-ubah mulai dari putih kehijauan, biru susu, hingga\ncokelat sesuai dengan konsentrasi belerang (sulfur), suhu air, dan cuaca di sekitarnya.\n(Paragraf 2) Tim kelompok ilmiah remaja melakukan pengujian derajat keasaman (pH) dan kandungan min-\neral pada tiga sampel air yang diambil dari tepi danau kawah menggunakan kertas indikator universal dan\npH meter digital. Hasil pengukuran menunjukkan bahwa air Kawah Putih memiliki nilai pH berkisar antara\n0, 5 hingga 1, 3 dengan suhu air permukaan 22◦C–26◦C serta bau gas hidrogen sulfida (H2S) yang cukup\nmenyengat.\n(Paragraf 3) Ketika selembar daun segar dan sepotong logam seng dicelupkan ke dalam sampel air kawah se-\nlama 30 menit di laboratorium lapangan, permukaan daun mengalami pelayuan kecokelatan dan permukaan\nlogam seng mulai menunjukkan reaksi korosi (pengikisan) disertai gelembung gas halus. Hal ini membuktikan\nbahwa air Kawah Putih bersifat sangat asam kuat karena tingginya kandungan asam sulfat (H2SO4) dan\nasam klorida (HCl) alami dari aktivitas fumarol dasar kawah.\n(Paragraf 4) Berdasarkan hasil pengujian tersebut, disimpulkan bahwa meskipun panorama Kawah Putih\nsangat indah untuk objek fotografi dan geowisata, wisatawan dilarang keras berenang atau membasuh wajah\nmenggunakan air danau kawah serta disarankan mengenakan masker pelindung pernapasan saat berada di\ntepi kawah lebih dari 15 menit.\nFakta hasil pengujian laboratorium yang membuktikan bahwa air Kawah Putih Gunung Patuha bersifat",
+      "grup": "bacaan_bab1_kawah_putih"
+    },
+    "teks_soal": "sangat asam kuat terdapat pada ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Air Kawah Putih memiliki nilai pH 14 yang bersifat basa kuat seperti air sabun"
+      },
+      {
+        "label": "B",
+        "teks": "Paragraf 1, yakni letak Kawah Putih pada ketinggian 2.434 mdpl"
+      },
+      {
+        "label": "C",
+        "teks": "Paragraf 4, yakni keindahan panorama Kawah Putih untuk objek fotografi"
+      },
+      {
+        "label": "D",
+        "teks": "Paragraf 2 dan Paragraf 3, yakni nilai pengukuran pH berkisar 0, 5–1, 3 (jauh di bawah pH netral 7) serta terjadinya reaksi korosi pada logam seng dan pelayuan daun saat dicelupkan selama 30 menit"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Bukti kuantitatif dan eksperimental sifat asam kuat air kawah dipaparkan pada Paragraf\n2 (nilai pH 0,5–1,3) dan Paragraf 3 (uji celup 30 menit yang memicu korosi logam seng akibat kandungan\nH2SO4 dan HCl).",
+    "valid": true
+  },
+  {
+    "nomor": 22,
+    "tipe": "pg_sederhana",
+    "paket": "Bab I: Menganalisis Teks Laporan - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Laporan Percobaan Ilmiah, Struktur Baku (Tujuan-Langkah-Hasil-Simpulan), & Kaidah Bahasa Objektif",
+    "capaian_pembelajaran": "Peserta didik menganalisis dan mengevaluasi informasi faktual, struktur teks laporan percobaan (tujuan, alat/bahan, langkah, hasil, simpulan), penggunaan istilah teknis ilmiah, dan penerapan ejaan baku EYD Edisi V.",
+    "bacaan": {
+      "teks": "WACANA LITERASI MEMBACA: WACANA LITERASI MEMBACA: OBSERVASI DAN UJI KEASAMAN AIR\nKAWAH PUTIH GUNUNG PATUHA\n(Paragraf 1) Kawah Putih yang terletak di puncak Gunung Patuha, Kabupaten Bandung, Jawa Barat, meru-\npakan sebuah danau kawah vulkanik pada ketinggian 2.434 meter di atas permukaan laut (mdpl). Danau\nkawah ini terbentuk akibat letusan gunung berapi pada abad ke-10 hingga ke-12. Keunikan utama Kawah\nPutih adalah warna air danaunya yang dapat berubah-ubah mulai dari putih kehijauan, biru susu, hingga\ncokelat sesuai dengan konsentrasi belerang (sulfur), suhu air, dan cuaca di sekitarnya.\n(Paragraf 2) Tim kelompok ilmiah remaja melakukan pengujian derajat keasaman (pH) dan kandungan min-\neral pada tiga sampel air yang diambil dari tepi danau kawah menggunakan kertas indikator universal dan\npH meter digital. Hasil pengukuran menunjukkan bahwa air Kawah Putih memiliki nilai pH berkisar antara\n0, 5 hingga 1, 3 dengan suhu air permukaan 22◦C–26◦C serta bau gas hidrogen sulfida (H2S) yang cukup\nmenyengat.\n(Paragraf 3) Ketika selembar daun segar dan sepotong logam seng dicelupkan ke dalam sampel air kawah se-\nlama 30 menit di laboratorium lapangan, permukaan daun mengalami pelayuan kecokelatan dan permukaan\nlogam seng mulai menunjukkan reaksi korosi (pengikisan) disertai gelembung gas halus. Hal ini membuktikan\nbahwa air Kawah Putih bersifat sangat asam kuat karena tingginya kandungan asam sulfat (H2SO4) dan\nasam klorida (HCl) alami dari aktivitas fumarol dasar kawah.\n(Paragraf 4) Berdasarkan hasil pengujian tersebut, disimpulkan bahwa meskipun panorama Kawah Putih\nsangat indah untuk objek fotografi dan geowisata, wisatawan dilarang keras berenang atau membasuh wajah\nmenggunakan air danau kawah serta disarankan mengenakan masker pelindung pernapasan saat berada di\ntepi kawah lebih dari 15 menit.\nFakta hasil pengujian laboratorium yang membuktikan bahwa air Kawah Putih Gunung Patuha bersifat",
+      "grup": "bacaan_bab1_kawah_putih"
+    },
+    "teks_soal": "Berdasarkan wacana laporan pada soal nomor 21, hubungan sebab-akibat yang mendasari rekomendasi\nkeselamatan bagi wisatawan pada Paragraf 4 adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Karena di dalam danau kawah terdapat banyak buaya muara yang berbahaya bagi perenang"
+      },
+      {
+        "label": "B",
+        "teks": "Karena air danau memiliki keasaman ekstrem (extpH0, 5ext−−1, 3) yang korosif terhadap jaringan kulit/mata dan kawah mengeluarkan uap gas belerang (extH2extS) yang menyengat, wisatawan dilarang berenang/membasuh wajah serta dianjurkan memakai masker"
+      },
+      {
+        "label": "C",
+        "teks": "Karena suhu air danau mencapai 100◦extC (mendidih) sepanjang waktu"
+      },
+      {
+        "label": "D",
+        "teks": "Karena wisatawan dilarang membawa kamera fotografi ke kawasan Gunung Patuha"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "B. Rekomendasi keselamatan pada Paragraf 4 diturunkan secara logis dari temuan Paragraf 2\ndan 3: sifat asam korosif air kawah (pH 0, 5–1, 3) membahayakan kulit/mata jika dipakai berenang/membasuh\nwajah, dan gas H2S memerlukan masker pelindung pernapasan.",
+    "valid": true
+  },
+  {
+    "nomor": 23,
+    "tipe": "pg_sederhana",
+    "paket": "Bab I: Menganalisis Teks Laporan - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Laporan Percobaan Ilmiah, Struktur Baku (Tujuan-Langkah-Hasil-Simpulan), & Kaidah Bahasa Objektif",
+    "capaian_pembelajaran": "Peserta didik menganalisis dan mengevaluasi informasi faktual, struktur teks laporan percobaan (tujuan, alat/bahan, langkah, hasil, simpulan), penggunaan istilah teknis ilmiah, dan penerapan ejaan baku EYD Edisi V.",
+    "bacaan": {
+      "teks": "WACANA LITERASI MEMBACA: WACANA LITERASI MEMBACA: OBSERVASI DAN UJI KEASAMAN AIR\nKAWAH PUTIH GUNUNG PATUHA\n(Paragraf 1) Kawah Putih yang terletak di puncak Gunung Patuha, Kabupaten Bandung, Jawa Barat, meru-\npakan sebuah danau kawah vulkanik pada ketinggian 2.434 meter di atas permukaan laut (mdpl). Danau\nkawah ini terbentuk akibat letusan gunung berapi pada abad ke-10 hingga ke-12. Keunikan utama Kawah\nPutih adalah warna air danaunya yang dapat berubah-ubah mulai dari putih kehijauan, biru susu, hingga\ncokelat sesuai dengan konsentrasi belerang (sulfur), suhu air, dan cuaca di sekitarnya.\n(Paragraf 2) Tim kelompok ilmiah remaja melakukan pengujian derajat keasaman (pH) dan kandungan min-\neral pada tiga sampel air yang diambil dari tepi danau kawah menggunakan kertas indikator universal dan\npH meter digital. Hasil pengukuran menunjukkan bahwa air Kawah Putih memiliki nilai pH berkisar antara\n0, 5 hingga 1, 3 dengan suhu air permukaan 22◦C–26◦C serta bau gas hidrogen sulfida (H2S) yang cukup\nmenyengat.\n(Paragraf 3) Ketika selembar daun segar dan sepotong logam seng dicelupkan ke dalam sampel air kawah se-\nlama 30 menit di laboratorium lapangan, permukaan daun mengalami pelayuan kecokelatan dan permukaan\nlogam seng mulai menunjukkan reaksi korosi (pengikisan) disertai gelembung gas halus. Hal ini membuktikan\nbahwa air Kawah Putih bersifat sangat asam kuat karena tingginya kandungan asam sulfat (H2SO4) dan\nasam klorida (HCl) alami dari aktivitas fumarol dasar kawah.\n(Paragraf 4) Berdasarkan hasil pengujian tersebut, disimpulkan bahwa meskipun panorama Kawah Putih\nsangat indah untuk objek fotografi dan geowisata, wisatawan dilarang keras berenang atau membasuh wajah\nmenggunakan air danau kawah serta disarankan mengenakan masker pelindung pernapasan saat berada di\ntepi kawah lebih dari 15 menit.\nFakta hasil pengujian laboratorium yang membuktikan bahwa air Kawah Putih Gunung Patuha bersifat",
+      "grup": "bacaan_bab1_kawah_putih"
+    },
+    "teks_soal": "Ciri kebahasaan teks laporan ilmiah yang menonjol pada kalimat \"Ketika selembar daun segar dan\nsepotong logam seng dicelupkan ke dalam sampel air kawah selama 30 menit...\" (Paragraf 3 soal\nnomor 21) adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Penggunaan kalimat tanya retoris dan kata sapaan kekerabatan"
+      },
+      {
+        "label": "B",
+        "teks": "Penggunaan majas hiperbola dan kata ganti orang pertama tunggal (aku)"
+      },
+      {
+        "label": "C",
+        "teks": "Penggunaan konjungsi temporal (Ketika), kata bilangan/kuantitas satuan waktu (30 menit), serta kata kerja pasif (dicelupkan) yang menitikberatkan objek pengamatan"
+      },
+      {
+        "label": "D",
+        "teks": "Penggunaan bahasa pergaulan remaja yang tidak baku"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "C. Kalimat tersebut memadukan konjungsi penunjuk waktu (Ketika), verba pasif berawalan di-\n(dicelupkan), dan ukuran kuantitatif presisi (selama 30 menit).",
+    "valid": true
+  },
+  {
+    "nomor": 24,
+    "tipe": "pg_sederhana",
+    "paket": "Bab I: Menganalisis Teks Laporan - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Laporan Percobaan Ilmiah, Struktur Baku (Tujuan-Langkah-Hasil-Simpulan), & Kaidah Bahasa Objektif",
+    "capaian_pembelajaran": "Peserta didik menganalisis dan mengevaluasi informasi faktual, struktur teks laporan percobaan (tujuan, alat/bahan, langkah, hasil, simpulan), penggunaan istilah teknis ilmiah, dan penerapan ejaan baku EYD Edisi V.",
+    "bacaan": null,
+    "teks_soal": "Perhatikan kutipan paragraf laporan percobaan pembuatan Baterai Alami dari Buah Jeruk Nipis yang\nmasih mengandung 4 kata tidak baku berikut!\n*\"Berdasarkan hasil praktek di laboratorium, tim kami melakukan analisa terhadap nyala lampu LED\nmerah. Hipotesa awal terbukti benar bahwa rangkaian seri empat buah jeruk nipis menghasilkan tegan-\ngan listrik yang lebih stabil karena sistim aliran elektron antara lempeng tembaga dan paku seng berjalan\nlancar.\"*\nPerbaikan keempat kata bercetak tebal tersebut menjadi kata baku sesuai KBBI adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "praktik, analisa, hipotesis, sistim"
+      },
+      {
+        "label": "B",
+        "teks": "praktikum, analitis, hipotesa, sistimatika"
+      },
+      {
+        "label": "C",
+        "teks": "praktek, analisis, hipotesa, sistem"
+      },
+      {
+        "label": "D",
+        "teks": "praktik, analisis, hipotesis, sistem"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Sesuai pedoman penyerapan istilah ilmiah dalam KBBI Edisi V/VI: practice →praktik\n(bukan praktek), analysis →analisis (bukan analisa), hypothesis →hipotesis (bukan hipotesa), dan system\n→sistem (bukan sistim).",
+    "valid": true
+  },
+  {
+    "nomor": 25,
+    "tipe": "pg_sederhana",
+    "paket": "Bab I: Menganalisis Teks Laporan - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Laporan Percobaan Ilmiah, Struktur Baku (Tujuan-Langkah-Hasil-Simpulan), & Kaidah Bahasa Objektif",
+    "capaian_pembelajaran": "Peserta didik menganalisis dan mengevaluasi informasi faktual, struktur teks laporan percobaan (tujuan, alat/bahan, langkah, hasil, simpulan), penggunaan istilah teknis ilmiah, dan penerapan ejaan baku EYD Edisi V.",
+    "bacaan": null,
+    "teks_soal": "Perhatikan tabel data hasil percobaan Daya Hantar Listrik Larutan Elektrolit dan Nonelektrolit berikut!\n- Larutan Garam Dapur (NaCl): Lampu menyala terang, gelembung gas pada elektroda banyak.\n- Larutan Asam Cuka (CH3COOH): Lampu redup/mati, gelembung gas pada elektroda sedikit.\n- Larutan Gula Pasir (C12H22O11): Lampu mati, gelembung gas pada elektroda tidak ada.\nKalimat Simpulan Laporan Percobaan yang paling akurat merangkum seluruh data tabel di atas adalah\n....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Berdasarkan hasil percobaan, larutan garam dapur merupakan elektrolit kuat (lampu menyala terang & banyak gelembung), larutan asam cuka merupakan elektrolit lemah (lampu redup/mati & sedikit gelembung), sedangkan larutan gula pasir merupakan larutan nonelektrolit yang tidak menghantarkan arus listrik (lampu mati & tanpa gelembung)"
+      },
+      {
+        "label": "B",
+        "teks": "Seluruh larutan yang diuji di laboratorium dapat menyalakan lampu pijar dengan sangat terang"
+      },
+      {
+        "label": "C",
+        "teks": "Larutan gula pasir merupakan penghantar listrik terbaik dibandingkan larutan garam dapur"
+      },
+      {
+        "label": "D",
+        "teks": "Gelembung gas pada elektroda hanya muncul apabila lampu alat uji dilepas dari kabelnya"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "A. Simpulan laporan percobaan wajib merangkum dan mengklasifikasikan seluruh data hasil\npengamatan secara akurat: NaCl = elektrolit kuat, asam cuka = elektrolit lemah, dan larutan gula = nonelek-\n\ntrolit.",
+    "valid": true
+  },
+  {
+    "nomor": 26,
+    "tipe": "pg_sederhana",
+    "paket": "Bab I: Menganalisis Teks Laporan - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Laporan Percobaan Ilmiah, Struktur Baku (Tujuan-Langkah-Hasil-Simpulan), & Kaidah Bahasa Objektif",
+    "capaian_pembelajaran": "Peserta didik menganalisis dan mengevaluasi informasi faktual, struktur teks laporan percobaan (tujuan, alat/bahan, langkah, hasil, simpulan), penggunaan istilah teknis ilmiah, dan penerapan ejaan baku EYD Edisi V.",
+    "bacaan": null,
+    "teks_soal": "Perhatikan foto hasil praktikum laboratorium Uji Kandungan Gizi Makanan (Tabung 1: Uji Lugol Biru\nKehitaman, Tabung 2: Uji Biuret Ungu, Tabung 3: Uji Benedict Merah Bata) berikut!\nPernyataan analitis yang benar mengenai struktur dan isi Teks Laporan Percobaan berdasarkan gambar\ndi atas adalah .... (Pilih lebih dari satu jawaban benar)\n\nPernyataan:\n(1) Perubahan warna biru kehitaman pada uji Lugol membuktikan adanya kandungan amilum, warna\nungu pada uji Biuret membuktikan adanya protein, dan endapan merah bata pada uji Benedict membuk-\ntikan adanya glukosa.\n(2) Tabel pengamatan dan grafik pertumbuhan kecambah ditempatkan pada bagian struktur Hasil Per-\ncobaan untuk menyajikan data kuantitatif dan kualitatif secara objektif.\n(3) Bagian Simpulan harus dirumuskan berdasarkan opini imajinatif penulis meskipun bertentangan\ndengan data tabel hasil pengamatan.\n(4) Penggunaan kalimat pasif (seperti larutan ditetesi, tabung dipanaskan) lazim digunakan dalam la-\nporan percobaan untuk menonjolkan perlakuan terhadap objek pengamatan.\n\nPernyataan yang tepat adalah ....",
+    "gambar": [
+      "/soal/bindo/kls9_bindo_p149_xref5173_880x880.jpeg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(1), (2), dan (3)"
+      },
+      {
+        "label": "B",
+        "teks": "(1) dan (4) saja"
+      },
+      {
+        "label": "C",
+        "teks": "(2) dan (4) saja"
+      },
+      {
+        "label": "D",
+        "teks": "(1), (2), (3), dan (4)"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "A, B, D. Pernyataan C salah karena simpulan ilmiah tidak boleh didasarkan pada opini imaji-\nnatif yang bertentangan dengan data.",
+    "valid": true
+  },
+  {
+    "nomor": 27,
+    "tipe": "pg_sederhana",
+    "paket": "Bab I: Menganalisis Teks Laporan - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Laporan Percobaan Ilmiah, Struktur Baku (Tujuan-Langkah-Hasil-Simpulan), & Kaidah Bahasa Objektif",
+    "capaian_pembelajaran": "Peserta didik menganalisis dan mengevaluasi informasi faktual, struktur teks laporan percobaan (tujuan, alat/bahan, langkah, hasil, simpulan), penggunaan istilah teknis ilmiah, dan penerapan ejaan baku EYD Edisi V.",
+    "bacaan": null,
+    "teks_soal": "Manakah di antara pernyataan\nberikut yang merupakan ciri baku Teks Laporan Percobaan? (Pilih lebih dari satu jawaban benar)\n\nPernyataan:\n(1) Memuat lima struktur utama secara sistematis: Tujuan, Alat dan Bahan, Langkah-Langkah Kerja,\nHasil Percobaan, dan Simpulan.\n(2) Menggunakan istilah teknis ilmiah (reagen, indikator, ekstrak, etiolasi) serta kata bilangan dan sat-\nuan ukuran yang presisi.\n(3) Menggunakan gaya bahasa majas hiperbola dan alur kilas balik untuk menciptakan ketegangan\nemosional pembaca.\n(4) Menyajikan fakta hasil uji coba secara jujur apa adanya tanpa memanipulasi angka pengamatan.\n\nPernyataan yang tepat adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(1), (2), dan (3)"
+      },
+      {
+        "label": "B",
+        "teks": "(1) dan (4) saja"
+      },
+      {
+        "label": "C",
+        "teks": "(2) dan (4) saja"
+      },
+      {
+        "label": "D",
+        "teks": "(1), (2), (3), dan (4)"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "A, B, D. Pernyataan C salah karena majas hiperbola dan alur kilas balik adalah ciri karya fiksi.",
+    "valid": true
+  },
+  {
+    "nomor": 28,
+    "tipe": "pg_sederhana",
+    "paket": "Bab I: Menganalisis Teks Laporan - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Laporan Percobaan Ilmiah, Struktur Baku (Tujuan-Langkah-Hasil-Simpulan), & Kaidah Bahasa Objektif",
+    "capaian_pembelajaran": "Peserta didik menganalisis dan mengevaluasi informasi faktual, struktur teks laporan percobaan (tujuan, alat/bahan, langkah, hasil, simpulan), penggunaan istilah teknis ilmiah, dan penerapan ejaan baku EYD Edisi V.",
+    "bacaan": null,
+    "teks_soal": "Tentukan apakah pernyataan analisis laporan\npercobaan berikut Benar atau Salah!\nNo.\nPernyataan Analisis Bahasa Indonesia\nBenar\nSalah\n\nPernyataan:\n(a) Bahan makanan yang meninggalkan noda transparan (tembus pan-\ndang) setelah dioleskan dan dikeringkan pada kertas buram terbukti\npositif mengandung lemak.\n(b) Daftar rincian seperti 5 buah tabung reaksi, 1 buah rak tabung, 1 buah\npipet tetes, dan 10 mL larutan Biuret ditulis pada bagian struktur Sim-\npulan.\n(c) Kalimat “Campurkan 50 mL air hangat dengan 1 sendok teh ragi in-\nstan, lalu diamkan selama 10 menit hingga berbuih” merupakan kali-\nmat pada bagian Langkah-Langkah Kerja.\n\nKombinasi analisis nilai kebenaran (Benar/Salah) yang tepat adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(a) Benar, (b) Salah, (c) Benar"
+      },
+      {
+        "label": "B",
+        "teks": "(a) Benar, (b) Salah, (c) Salah"
+      },
+      {
+        "label": "C",
+        "teks": "(a) Salah, (b) Benar, (c) Benar"
+      },
+      {
+        "label": "D",
+        "teks": "(a) Benar, (b) Benar, (c) Benar"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "(a) Benar, (b) Salah, (c) Benar. Daftar alat dan reagen ditulis pada bagian Alat dan Bahan,\nbukan Simpulan.",
+    "valid": true
+  },
+  {
+    "nomor": 29,
+    "tipe": "pg_sederhana",
+    "paket": "Bab I: Menganalisis Teks Laporan - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Laporan Percobaan Ilmiah, Struktur Baku (Tujuan-Langkah-Hasil-Simpulan), & Kaidah Bahasa Objektif",
+    "capaian_pembelajaran": "Peserta didik menganalisis dan mengevaluasi informasi faktual, struktur teks laporan percobaan (tujuan, alat/bahan, langkah, hasil, simpulan), penggunaan istilah teknis ilmiah, dan penerapan ejaan baku EYD Edisi V.",
+    "bacaan": null,
+    "teks_soal": "Tentukan apakah pernyataan\nkaidah kebahasaan laporan percobaan berikut Benar atau Salah!\nNo.\nPernyataan Analisis Bahasa Indonesia\nBenar\nSalah\n\nPernyataan:\n(a) Bentuk baku menurut KBBI dari kata praktek, hipotesa, analisa, dan\nsistim berturut-turut adalah praktik, hipotesis, analisis, dan sistem.\n(b) Nama ilmiah tanaman kacang hijau dalam teks laporan percobaan di-\ntulis dengan huruf miring menjadi Vigna radiata (huruf awal kata per-\ntama kapital, kata kedua kecil).\n(c) Dalam teks laporan percobaan, penulis dianjurkan mengganti angka\nhasil pengukuran suhu termometer dengan kata kira-kira lumayan\nhangat.\n\nKombinasi analisis nilai kebenaran (Benar/Salah) yang tepat adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(a) Benar, (b) Benar, (c) Salah"
+      },
+      {
+        "label": "B",
+        "teks": "(a) Benar, (b) Salah, (c) Salah"
+      },
+      {
+        "label": "C",
+        "teks": "(a) Salah, (b) Benar, (c) Benar"
+      },
+      {
+        "label": "D",
+        "teks": "(a) Benar, (b) Benar, (c) Benar"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "(a) Benar, (b) Benar, (c) Salah. Suhu hasil pengukuran termometer harus ditulis dengan\nangka derajat yang presisi, bukan kata kira-kira.",
+    "valid": true
+  },
+  {
+    "nomor": 30,
+    "tipe": "pg_sederhana",
+    "paket": "Bab I: Menganalisis Teks Laporan - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Laporan Percobaan Ilmiah, Struktur Baku (Tujuan-Langkah-Hasil-Simpulan), & Kaidah Bahasa Objektif",
+    "capaian_pembelajaran": "Peserta didik menganalisis dan mengevaluasi informasi faktual, struktur teks laporan percobaan (tujuan, alat/bahan, langkah, hasil, simpulan), penggunaan istilah teknis ilmiah, dan penerapan ejaan baku EYD Edisi V.",
+    "bacaan": null,
+    "teks_soal": "Kelompok\n1 melakukan praktikum uji kandungan gizi terhadap 4 sampel makanan (Tepung Terigu, Tempe Kukus,\nMadu Murni, dan Kemiri Halus) dan memperoleh data mentah berikut: - Tepung Terigu: + Lugol →\nBiru kehitaman; + Biuret →Biru muda; + Benedict →Biru; Kertas buram →Tidak transparan. - Tempe\nKukus: + Lugol →Kuning kecokelatan; + Biuret →Ungu pekat; + Benedict →Biru; Kertas buram →\nTidak transparan. - Madu Murni: + Lugol →Cokelat; + Biuret →Biru muda; + Benedict (dipanaskan)\n→Merah bata; Kertas buram →Tidak transparan. - Kemiri Halus: + Lugol →Cokelat; + Biuret →Biru\nmuda; + Benedict →Biru; Dioleskan pada kertas buram →Sangat transparan.\nSusunlah: (a) Paragraf Hasil Percobaan yang memaparkan data keempat sampel tersebut menggunakan\nkalimat pasif ilmiah yang efektif; dan (b) Paragraf Simpulan yang menjawab kandungan zat gizi masing-\nmasing bahan makanan beserta fungsinya bagi tubuh!\n1\nA\n7\nD\n13\nB\n19\nA\n25\nA\n2\nC\n8\nB\n14\nB\n20\nB\n26\nA, B, D\n3\nB\n9\nA\n15\nD\n21\nD\n27\nA, B, D\n4\nD\n10\nC\n16\nC\n22\nB\n28\nB-S-B\n5\nB\n11\nD\n17\nD\n23\nC\n29\nB-B-S\n6\nC\n12\nC\n18\nB\n24\nD\n30\nUraian\n\nBerdasarkan kaidah bahasa baku EYD Edisi V dan materi bab ini, rumusan analisis / hasil penyuntingan yang paling tepat adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "- (a) Paragraf Hasil Percobaan:\nBerdasarkan pengujian laboratorium terhadap empat sampel bahan\nmakanan, diperoleh hasil bahwa ekstrak tepung terigu mengalami perubahan warna menjadi biru kehitaman\nsetelah ditetesi reagen Lugol. Selanjutnya, ekstrak tempe kukus"
+      },
+      {
+        "label": "B",
+        "teks": "Mengabaikan penggunaan tanda koma dan huruf kapital pada nama geografi serta membiarkan kata tidak baku tetap tertulis apa adanya"
+      },
+      {
+        "label": "C",
+        "teks": "Mengubah seluruh kalimat menjadi bahasa santai dan menghilangkan unsur fakta objektif dalam teks"
+      },
+      {
+        "label": "D",
+        "teks": "Menghapus seluruh paragraf wacana dan menggantinya dengan opini pribadi tanpa bukti ilmiah"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "- (a) Paragraf Hasil Percobaan:\nBerdasarkan pengujian laboratorium terhadap empat sampel bahan\nmakanan, diperoleh hasil bahwa ekstrak tepung terigu mengalami perubahan warna menjadi biru kehitaman\nsetelah ditetesi reagen Lugol. Selanjutnya, ekstrak tempe kukus berubah warna menjadi ungu pekat ketika\nditetesi larutan Biuret. Sementara itu, larutan madu murni menghasilkan endapan berwarna merah bata sete-\nlah ditetesi reagen Benedict dan dipanaskan di atas pembakar spiritus. Adapun sampel kemiri halus yang\ndioleskan pada permukaan kertas buram meninggalkan noda yang sangat transparan (tembus pandang).\n- (b) Paragraf Simpulan: Berdasarkan data hasil percobaan tersebut, dapat disimpulkan bahwa tepung\nterigu positif mengandung amilum (karbohidrat kompleks) sebagai sumber energi utama, tempe kukus positif\nmengandung protein sebagai zat pembangun dan pengganti sel tubuh yang rusak, madu murni positif men-\ngandung glukosa (gula sederhana) sebagai sumber energi instan, serta kemiri positif mengandung lemak\nsebagai cadangan energi dan pelarut vitamin A, D, E, dan K.\n\n1. Hakikat serta Unsur Intrinsik & Ekstrinsik Cerita Pendek (Cerpen)\na.\nPengertian & Ciri Cerita Pendek (Cerpen): Cerpen adalah karya sastra prosa fiksi naratif yang memusatkan\npenceritaan pada satu peristiwa/konflik pokok yang dialami tokoh utama,\nhabis dibaca dalam sekali duduk\n(±500–10.000 kata), serta meninggalkan kesan tunggal yang mendalam. Rujukan resmi: Buku Siswa Bahasa Indone-\nsia Kelas IX Kemendikdasmen (https://static.buku.kemdikbud.go.id/content/pdf/bukuteks/kurikulum21/\nBahasa-Indonesia-BS-KLS-IX.pdf).\nb.\nDua Teknik Penggambaran Watak Tokoh (Penokohan): 1.\nTeknik Analitik (Langsung / Uraian Pengarang):\npengarang menyebutkan secara langsung sifat tokoh di dalam narasi (contoh: Pak Hasan adalah seorang pengrajin kayu\nyang sangat jujur, penyabar, dan dermawan). 2. Teknik Dramatik (Tidak Langsung): pengarang menyiratkan watak tokoh\nmelalui: (a) dialog antartokoh, (b) tindakan/perilaku tokoh saat menghadapi masalah, (c) jalan pikiran/perasaan batin\ntokoh, (d) reaksi/ucapan tokoh lain, dan (e) deskripsi fisik/lingkungan tempat tinggal tokoh.\nc. Empat Variasi Sudut Pandang (Point of View): - Orang Pertama Pelaku Utama: narator menggunakan kata ganti\naku/saya dan menjadi tokoh sentral dalam konflik cerita. - Orang Pertama Pelaku Sampingan: narator menggunakan\nkata ganti aku/saya, tetapi hanya berperan sebagai saksi/teman yang menceritakan kisah hidup tokoh utama lain. - Orang\nKetiga Serbatahu: narator di luar cerita menyebut ia, dia, nama tokoh dan mengetahui seluruh isi hati, pikiran terdalam,\nserta masa lalu semua tokoh. - Orang Ketiga Pengamat (Terbatas): narator hanya melaporkan apa yang tampak oleh\nmata dan terdengar oleh telinga dari luar tanpa masuk ke pikiran seluruh tokoh.\n2. Struktur Diagram Gunung Alur Cerpen, Majas, Nilai Ekstrinsik, & Rujukan 30 Soal HOTS\na. Struktur Teks Cerpen (Diagram Gunung Alur): 1. Orientasi: pengenalan tokoh, latar tempat, waktu, dan suasana\nawal cerita. 2. Rangkaian Peristiwa: tahapan kejadian awal yang mulai menggerakkan alur menuju munculnya masalah.\n3. Komplikasi: munculnya pertentangan/konflik (batin maupun fisik) yang kian meruncing hingga mencapai titik puncak\nketegangan (Klimaks). 4. Resolusi (Peleraian): terurainya ketegangan dan ditemukannya jalan keluar atas konflik utama.\n5. Koda (Amanat Penutup — Opsional): renungan akhir atau perubahan sikap tokoh di penghujung cerita.\nb. Gaya Bahasa (Majas) & Nilai Ekstrinsik dalam Cerpen: - Majas Perbandingan: Personifikasi (benda mati bert-\ningkah seperti manusia), Metafora (perbandingan langsung/ungkapan, mis. tulang punggung keluarga), Simile/Asosiasi\n(perbandingan eksplisit dengan seperti, bagai, laksana, bak). - Majas Pertentangan & Penegasan: Hiperbola (melebih-\nlebihkan), Litotes (merendahkan diri untuk kesantunan, mis. mampirlah ke gubuk kami), Ironi (sindiran halus berlawanan\nfakta), klimaks/antiklimaks, repetisi. - Nilai Ekstrinsik Cerpen: Nilai Moral (baik-buruk akhlak individu), Nilai Sosial\n(kepedulian dan hubungan antarsesama), Nilai Budaya (adat istiadat/tradisi leluhur), Nilai Religius/Agama (ibadah dan\nketuhanan).\nc. Rujukan 30 Soal HOTS Bab II Kelas 9 (3 Jenis Ujian): (1) ASPD DIY / TKAD / Ujian Sekolah: Paket Peman-\ntapan ASPD DIY Bahasa Indonesia Kelas 9 (https://id.scribd.com/document/634340229/1-PAKET-SOAL-B-INDO-\nPEMANTAPAN-ASPD-1); (2) MGMP Bahasa Indonesia SMP: Bank Soal Teks Cerita Pendek Kelas 9 (https://id.scribd.\ncom/document/436829115/Soal-Teks-Cerpen-Kelas-9-SMP); (3) ASAS/PAT Kurikulum Merdeka: Naskah ASAS Ba-\nhasa Indonesia Kelas 9 (https://id.scribd.com/document/791288310/Soal-ASAS-Bahasa-Indonesia-Kelas-9-\nKurikulum-Merdeka).",
+    "valid": true
+  }
+]

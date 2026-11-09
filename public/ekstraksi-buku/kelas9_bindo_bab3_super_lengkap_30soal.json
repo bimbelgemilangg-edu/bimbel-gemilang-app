@@ -1,0 +1,1020 @@
+[
+  {
+    "nomor": 61,
+    "tipe": "pg_sederhana",
+    "paket": "Bab III: Memahami Pidato Persuasif - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Pidato Persuasif, Tiga Pendekatan Retorika (Ethos, Pathos, Logos), Struktur Pidato, & Diksi Emotif",
+    "capaian_pembelajaran": "Peserta didik memahami struktur isi pidato persuasif (pernyataan posisi, tahap argumen, penguatan posisi), menerapkan pendekatan retorika (etika, emosi, logika), dan menganalisis kalimat ajakan/persuasif.",
+    "bacaan": null,
+    "teks_soal": "Dalam menyampaikan pidato persuasif di depan warga sekolah , seorang pembicara yang baik perlu\nmemadukan tiga pendekatan persuasi Aristoteles, yaitu Ethos (Etika), Pathos (Emosi), dan Logos\n(Logika). Manakah di antara kutipan kalimat pidato berikut yang menggunakan Pendekatan Logika\n(Logos)?",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Berdasarkan data Dinas Lingkungan Hidup tahun ini, satu siswa rata-rata menghasilkan dua botol plastik sekali pakai per hari; artinya dengan 800 siswa, sekolah kita menyumbang 1.600 botol sampah plastik setiap hari jika kita tidak beralih menggunakan tumbler."
+      },
+      {
+        "label": "B",
+        "teks": "Bayangkan betapa sedih dan hancurnya perasaan penyu-penyu kecil di lautan yang menangis kesak- itan karena hidungnya tertusuk sedotan plastik kita!"
+      },
+      {
+        "label": "C",
+        "teks": "Sebagai insan beragama yang menjunjung tinggi amanah Tuhan sebagai khalifah di bumi, membuang sampah sembarangan adalah perbuatan yang melanggar etika kesopanan."
+      },
+      {
+        "label": "D",
+        "teks": "Saya berdiri di podium ini karena ditunjuk oleh wali kelas sembilan untuk membacakan pengumuman libur sekolah."
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "A. Pendekatan Logos (Logika) meyakinkan audiens melalui bukti data terukur dan perhitungan\nsebab-akibat logis (800 siswa × 2 botol = 1.600 botol/hari).",
+    "valid": true
+  },
+  {
+    "nomor": 62,
+    "tipe": "pg_sederhana",
+    "paket": "Bab III: Memahami Pidato Persuasif - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Pidato Persuasif, Tiga Pendekatan Retorika (Ethos, Pathos, Logos), Struktur Pidato, & Diksi Emotif",
+    "capaian_pembelajaran": "Peserta didik memahami struktur isi pidato persuasif (pernyataan posisi, tahap argumen, penguatan posisi), menerapkan pendekatan retorika (etika, emosi, logika), dan menganalisis kalimat ajakan/persuasif.",
+    "bacaan": null,
+    "teks_soal": "Bacalah kutipan teks pidato persuasif berikut!\n\"Teman-teman yang saya cintai, coba pejamkan mata sejenak dan bayangkan jika adik kandung kita\nsendiri yang menjadi korban perundungan (bullying). Bayangkan betapa perih dan hancurnya hati seo-\nrang anak yang setiap pagi melangkah ke gerbang sekolah dengan tubuh gemetar ketakutan, menangis\nsendirian di sudut kamar mandi karena diejek dan dikucilkan oleh teman-temannya. Tegakah kita mem-\nbiarkan senyum mereka direnggut oleh candaan yang kejam?\"\nPendekatan persuasi yang ditonjolkan oleh pembicara pada kutipan di atas adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Pendekatan Komersial karena menawarkan harga barang dagangan"
+      },
+      {
+        "label": "B",
+        "teks": "Pendekatan Logika (Logos) karena menyajikan rumus matematika dan tabel statistik"
+      },
+      {
+        "label": "C",
+        "teks": "Pendekatan Prosedur karena menjelaskan langkah-langkah membuat laporan penelitian"
+      },
+      {
+        "label": "D",
+        "teks": "Pendekatan Emosi (Pathos) karena menggugah rasa iba, empati, dan kepekaan perasaan terdalam audiens"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Mengajak audiens membayangkan pedihnya hati adik yang gemetar ketakutan dan menangis\nkarena dirundung merupakan pendekatan Pathos (Emosi).",
+    "valid": true
+  },
+  {
+    "nomor": 63,
+    "tipe": "pg_sederhana",
+    "paket": "Bab III: Memahami Pidato Persuasif - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Pidato Persuasif, Tiga Pendekatan Retorika (Ethos, Pathos, Logos), Struktur Pidato, & Diksi Emotif",
+    "capaian_pembelajaran": "Peserta didik memahami struktur isi pidato persuasif (pernyataan posisi, tahap argumen, penguatan posisi), menerapkan pendekatan retorika (etika, emosi, logika), dan menganalisis kalimat ajakan/persuasif.",
+    "bacaan": null,
+    "teks_soal": "Bacalah kutipan pidato persuasif berikut!\n\"Hadirin yang berbahagia, menyontek saat ujian bukan sekadar pelanggaran tata tertib sekolah,\nmelainkan pengkhianatan terhadap nilai kejujuran dan harga diri kita sebagai pelajar Indonesia. Bangsa\nyang besar hanya dapat dibangun oleh generasi yang menjunjung tinggi integritas moral dan tanggung\njawab etis sejak di bangku sekolah.\"\nKutipan pidato di atas menggunakan Pendekatan Etika (Ethos) karena ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Menampilkan grafik persentase kelulusan siswa selama lima tahun terakhir"
+      },
+      {
+        "label": "B",
+        "teks": "Mengajak audiens bertindak benar dengan berpijak pada nilai moral, kejujuran, integritas, dan kewa- jiban etis sebagai pelajar"
+      },
+      {
+        "label": "C",
+        "teks": "Menggunakan lelucon jenaka untuk membuat seluruh penonton tertawa"
+      },
+      {
+        "label": "D",
+        "teks": "Mempromosikan produk alat tulis merek tertentu menjelang ujian"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "B. Menekankan nilai kejujuran, integritas moral, dan kewajiban etis pelajar merupakan pen-\ndekatan Ethos (Etika).",
+    "valid": true
+  },
+  {
+    "nomor": 64,
+    "tipe": "pg_sederhana",
+    "paket": "Bab III: Memahami Pidato Persuasif - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Pidato Persuasif, Tiga Pendekatan Retorika (Ethos, Pathos, Logos), Struktur Pidato, & Diksi Emotif",
+    "capaian_pembelajaran": "Peserta didik memahami struktur isi pidato persuasif (pernyataan posisi, tahap argumen, penguatan posisi), menerapkan pendekatan retorika (etika, emosi, logika), dan menganalisis kalimat ajakan/persuasif.",
+    "bacaan": null,
+    "teks_soal": "Berdasarkan poster kampanye (Bawa Tumbler Sendiri, Gunakan Tas Belanja Kain, Tolak Sedotan Plas-\ntik), kalimat Penguatan Pernyataan Posisi (Simpulan & Ajakan) pidato persuasif yang paling tepat dan\nselaras adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Dengan demikian, masalah sampah plastik di lautan tidak ada hubungannya dengan kebiasaan be- lanja warga sekolah."
+      },
+      {
+        "label": "B",
+        "teks": "Oleh sebab itu, marilah kita meminta pabrik plastik untuk memproduksi lebih banyak sedotan warna- warni setiap hari."
+      },
+      {
+        "label": "C",
+        "teks": "Oleh karena itu, melalui gerakan sekolah bebas plastik ini, marilah kita mulai langkah nyata hari ini juga dengan membawa tumbler minum sendiri, menggunakan tas belanja kain, dan menolak sedotan plastik sekali pakai demi masa depan bumi kita yang lestari!"
+      },
+      {
+        "label": "D",
+        "teks": "Sekian pidato yang dapat saya sampaikan, semoga kita semua mendapat nilai seratus dalam ujian matematika."
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "C. Kalimat penguatan posisi merangkum kembali pesan poster menjadi ajakan bertindak nyata\n(membawa tumbler, memakai tas kain, menolak sedotan plastik).",
+    "valid": true
+  },
+  {
+    "nomor": 65,
+    "tipe": "pg_sederhana",
+    "paket": "Bab III: Memahami Pidato Persuasif - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Pidato Persuasif, Tiga Pendekatan Retorika (Ethos, Pathos, Logos), Struktur Pidato, & Diksi Emotif",
+    "capaian_pembelajaran": "Peserta didik memahami struktur isi pidato persuasif (pernyataan posisi, tahap argumen, penguatan posisi), menerapkan pendekatan retorika (etika, emosi, logika), dan menganalisis kalimat ajakan/persuasif.",
+    "bacaan": null,
+    "teks_soal": "Dalam struktur teks isi Pidato Persuasif, bagian awal yang memaparkan pandangan, sikap, atau\npendirian tegas pembicara terhadap suatu permasalahan aktual (misalnya: \"Menurut pandangan saya,\npembatasan penggunaan gawai pada jam belajar malam sangat penting diterapkan demi menjaga kual-\nitas tidur dan konsentrasi belajar remaja\") disebut bagian ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Salam Penutup dan Permohonan Maaf"
+      },
+      {
+        "label": "B",
+        "teks": "Tahap Argumen Statistik"
+      },
+      {
+        "label": "C",
+        "teks": "Penguatan Pernyataan Posisi"
+      },
+      {
+        "label": "D",
+        "teks": "Pernyataan Posisi (Thesis Statement)"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Pendirian tegas pembicara terhadap isu di awal isi pidato disebut Pernyataan Posisi (Thesis\nStatement).",
+    "valid": true
+  },
+  {
+    "nomor": 66,
+    "tipe": "pg_sederhana",
+    "paket": "Bab III: Memahami Pidato Persuasif - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Pidato Persuasif, Tiga Pendekatan Retorika (Ethos, Pathos, Logos), Struktur Pidato, & Diksi Emotif",
+    "capaian_pembelajaran": "Peserta didik memahami struktur isi pidato persuasif (pernyataan posisi, tahap argumen, penguatan posisi), menerapkan pendekatan retorika (etika, emosi, logika), dan menganalisis kalimat ajakan/persuasif.",
+    "bacaan": null,
+    "teks_soal": "Bacalah dua kalimat pidato berikut untuk mengamati kaidah Nominalisasi (Pembendaan)!\n- Kalimat 1: *Jika masyarakat terus menebang hutan secara liar di daerah hulu, bencana tanah longsor\nakan mengancam desa kita.*\n- Kalimat 2: *Penebangan hutan secara liar tersebut harus segera dihentikan melalui penegakan hukum\ndan reboisasi terpadu.*\nProses perubahan kata kerja menebang pada Kalimat 1 menjadi kata benda penebangan pada awal\nKalimat 2 dalam kaidah kebahasaan teks pidato persuasif disebut ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Majas personifikasi yang menghidupkan benda mati"
+      },
+      {
+        "label": "B",
+        "teks": "Nominalisasi (pembendaan) yang berfungsi mengaitkan informasi kalimat sebelumnya ke kalimat berikutnya secara ringkas dan formal"
+      },
+      {
+        "label": "C",
+        "teks": "Kata sapaan kekerabatan dalam surat pribadi"
+      },
+      {
+        "label": "D",
+        "teks": "Kalimat interogatif retoris"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "B. Perubahan verba menebang menjadi nomina penebangan adalah proses nominalisasi\n(pembendaan).",
+    "valid": true
+  },
+  {
+    "nomor": 67,
+    "tipe": "pg_sederhana",
+    "paket": "Bab III: Memahami Pidato Persuasif - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Pidato Persuasif, Tiga Pendekatan Retorika (Ethos, Pathos, Logos), Struktur Pidato, & Diksi Emotif",
+    "capaian_pembelajaran": "Peserta didik memahami struktur isi pidato persuasif (pernyataan posisi, tahap argumen, penguatan posisi), menerapkan pendekatan retorika (etika, emosi, logika), dan menganalisis kalimat ajakan/persuasif.",
+    "bacaan": null,
+    "teks_soal": "Manakah di antara deretan kata berimbuhan berikut yang seluruhnya merupakan hasil proses Nomi-\nnalisasi (kata benda turunan)?",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "pemberdayaan, pelestarian, kesehatan, kesadaran, kemandirian"
+      },
+      {
+        "label": "B",
+        "teks": "memberdayakan, melestarikan, menyehatkan, menyadari, mandiri"
+      },
+      {
+        "label": "C",
+        "teks": "berdaya, lestari, sehat, sadar, diri"
+      },
+      {
+        "label": "D",
+        "teks": "diberdayakan, dilestarikan, disehatkan, disadari, dimandirikan"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "A. Pemberdayaan, pelestarian, kesehatan, kesadaran, kemandirian seluruhnya berkelas kata\nbenda (nomina turunan).",
+    "valid": true
+  },
+  {
+    "nomor": 68,
+    "tipe": "pg_sederhana",
+    "paket": "Bab III: Memahami Pidato Persuasif - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Pidato Persuasif, Tiga Pendekatan Retorika (Ethos, Pathos, Logos), Struktur Pidato, & Diksi Emotif",
+    "capaian_pembelajaran": "Peserta didik memahami struktur isi pidato persuasif (pernyataan posisi, tahap argumen, penguatan posisi), menerapkan pendekatan retorika (etika, emosi, logika), dan menganalisis kalimat ajakan/persuasif.",
+    "bacaan": null,
+    "teks_soal": "Mengapa di dalam teks pidato persuasif seorang orator lebih dianjurkan menggunakan pronomina (kata\nganti) \"kita\" daripada kata ganti \"kalian\" atau \"Anda\" saat mengajak audiens memperbaiki suatu kebi-\nasaan?",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Karena kata \"kita\" berarti pembicara tidak ikut bertanggung jawab melaksanakan ajakan tersebut"
+      },
+      {
+        "label": "B",
+        "teks": "Karena kata \"kalian\" hanya boleh digunakan di dalam naskah puisi lama syair"
+      },
+      {
+        "label": "C",
+        "teks": "Karena kata ganti \"kita\" bersifat inklusif (mencakup pembicara dan pendengar sekaligus) sehingga membangun rasa solidaritas bersama dan tidak terkesan menggurui atau menyalahkan audiens"
+      },
+      {
+        "label": "D",
+        "teks": "Karena KBBI telah menghapus kata ganti \"kalian\" dan \"Anda\" dari bahasa Indonesia"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "C. Pronomina inklusif kita merangkul pembicara dan pendengar dalam satu kesatuan tanggung\njawab sehingga tidak menggurui.",
+    "valid": true
+  },
+  {
+    "nomor": 69,
+    "tipe": "pg_sederhana",
+    "paket": "Bab III: Memahami Pidato Persuasif - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Pidato Persuasif, Tiga Pendekatan Retorika (Ethos, Pathos, Logos), Struktur Pidato, & Diksi Emotif",
+    "capaian_pembelajaran": "Peserta didik memahami struktur isi pidato persuasif (pernyataan posisi, tahap argumen, penguatan posisi), menerapkan pendekatan retorika (etika, emosi, logika), dan menganalisis kalimat ajakan/persuasif.",
+    "bacaan": null,
+    "teks_soal": "Perhatikan kalimat-kalimat pidato berikut!\n(1) Sebagian besar remaja menghabiskan waktu rata-rata 4 jam sehari di depan layar gawai.\n(2) Marilah kita bijak membatasi waktu bermain media sosial agar masa depan cemerlang yang kita\nimpikan tidak hancur sia-sia oleh kecanduan layar semu!\n(3) Perpustakaan sekolah dibuka mulai pukul 07.00 hingga pukul 15.00 WIB setiap hari kerja.\n(4) Kegiatan ekstrakurikuler pramuka dilaksanakan setiap hari Jumat sore di lapangan utama.\nKalimat yang menggunakan kosakata emotif dan kalimat persuasif paling kuat untuk menggugah ke-\nsadaran pendengar adalah kalimat nomor ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Kalimat (4)"
+      },
+      {
+        "label": "C",
+        "teks": "Kalimat (3)"
+      },
+      {
+        "label": "B",
+        "teks": "Kalimat (1)"
+      },
+      {
+        "label": "D",
+        "teks": "Kalimat (2)"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Kalimat (2) menggunakan kosakata emotif (masa depan cemerlang, hancur sia-sia, kecand-\nuan layar semu) dan ajakan marilah kita.",
+    "valid": true
+  },
+  {
+    "nomor": 70,
+    "tipe": "pg_sederhana",
+    "paket": "Bab III: Memahami Pidato Persuasif - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Pidato Persuasif, Tiga Pendekatan Retorika (Ethos, Pathos, Logos), Struktur Pidato, & Diksi Emotif",
+    "capaian_pembelajaran": "Peserta didik memahami struktur isi pidato persuasif (pernyataan posisi, tahap argumen, penguatan posisi), menerapkan pendekatan retorika (etika, emosi, logika), dan menganalisis kalimat ajakan/persuasif.",
+    "bacaan": null,
+    "teks_soal": "Bacalah kutipan pidato persuasif berikut!\n\"Hadirin yang saya hormati, [...] kita telah mengetahui bahwa asap rokok mengandung lebih dari 4.000\nzat kimia berbahaya bagi perokok aktif maupun pasif. [...], masih banyak tempat umum yang belum\nmenyediakan kawasan bebas asap rokok secara tegas. [...], marilah kita dukung gerakan rumah dan\nsekolah bebas asap rokok mulai hari ini.\"\nKata tugas (konjungsi) yang paling tepat untuk melengkapi ketiga bagian rumpang pada kutipan pidato\ndi atas adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "walaupun, Karena, Melainkan"
+      },
+      {
+        "label": "C",
+        "teks": "sebagaimana, Namun, Oleh karena itu"
+      },
+      {
+        "label": "B",
+        "teks": "seandainya, Sehingga, Padahal"
+      },
+      {
+        "label": "D",
+        "teks": "tetapi, Sedangkan, Sebelum"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "C. Sebagaimana (mengacu fakta yang diketahui) →Namun (pertentangan) →Oleh karena\nitu (simpulan ajakan).",
+    "valid": true
+  },
+  {
+    "nomor": 71,
+    "tipe": "pg_sederhana",
+    "paket": "Bab III: Memahami Pidato Persuasif - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Pidato Persuasif, Tiga Pendekatan Retorika (Ethos, Pathos, Logos), Struktur Pidato, & Diksi Emotif",
+    "capaian_pembelajaran": "Peserta didik memahami struktur isi pidato persuasif (pernyataan posisi, tahap argumen, penguatan posisi), menerapkan pendekatan retorika (etika, emosi, logika), dan menganalisis kalimat ajakan/persuasif.",
+    "bacaan": null,
+    "teks_soal": "Perhatikan kutipan struktur Tahap Argumen dalam pidato persuasif bertema \"Gerakan Literasi 15 Menit\nSebelum Belajar\" berikut!\n\"Membaca buku selama lima belas menit setiap pagi terbukti memberikan dampak luar biasa bagi\nperkembangan kognitif siswa.\nPertama, kebiasaan membaca rutin memperkaya perbendaharaan\nkosakata dan melatih daya nalar kritis dalam memahami berbagai teks pelajaran. Kedua, penelitian\nneurosains menunjukkan bahwa membaca buku cetak sebelum jam pelajaran membantu menenangkan\ngelombang otak sehingga fokus belajar siswa meningkat hingga 35 persen.\"\nKekuatan utama paragraf Tahap Argumen di atas terletak pada ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Penggunaan kata-kata makian untuk memaksa siswa membaca buku"
+      },
+      {
+        "label": "B",
+        "teks": "Penyajian alasan yang terstruktur (Pertama, Kedua) disertai hubungan sebab-akibat logis dan dukun- gan bukti ilmiah"
+      },
+      {
+        "label": "C",
+        "teks": "Penyajian alur cerita fantasi tentang perpustakaan ajaib di negeri awan"
+      },
+      {
+        "label": "D",
+        "teks": "Penggunaan bahasa daerah kuno yang tidak dipahami oleh siswa SMP"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "B. Argumen disusun sistematis dengan penanda urutan (Pertama, Kedua), penalaran kausal-\nitas, dan bukti riset neurosains (35%).",
+    "valid": true
+  },
+  {
+    "nomor": 72,
+    "tipe": "pg_sederhana",
+    "paket": "Bab III: Memahami Pidato Persuasif - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Pidato Persuasif, Tiga Pendekatan Retorika (Ethos, Pathos, Logos), Struktur Pidato, & Diksi Emotif",
+    "capaian_pembelajaran": "Peserta didik memahami struktur isi pidato persuasif (pernyataan posisi, tahap argumen, penguatan posisi), menerapkan pendekatan retorika (etika, emosi, logika), dan menganalisis kalimat ajakan/persuasif.",
+    "bacaan": null,
+    "teks_soal": "Perhatikan empat kalimat pidato berikut:\n(1) Kita harus segera menghentikan kebiasaan membuang sisa makanan di piring karena jutaan saudara\nkita di belahan bumi lain masih mengalami kelaparan.\n(2) Sampah organik sisa sayuran dapat diolah menjadi pupuk kompos cair yang menyuburkan tanaman\nsekolah.\n(3) Pemerintah daerah sebaiknya memperbanyak jalur sepeda yang aman bagi para pelajar.\n(4) Setiap warga negara wajib menjaga kerukunan antarumat beragama demi keutuhan NKRI.\nKata-kata bercetak tebal (harus, dapat, sebaiknya, wajib) dalam kaidah kebahasaan pidato persuasif\ndisebut sebagai kata modalitas, yang berfungsi untuk ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Mengubah kalimat berita menjadi kalimat tanya"
+      },
+      {
+        "label": "B",
+        "teks": "Menggantikan fungsi tanda baca titik dan koma di akhir kalimat"
+      },
+      {
+        "label": "C",
+        "teks": "Menunjukkan latar tempat dan latar waktu terjadinya cerita pendek"
+      },
+      {
+        "label": "D",
+        "teks": "Menyatakan tingkat kepastian, keharusan, kemungkinan, atau rekomendasi sikap pembicara terhadap suatu tindakan"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Kata modalitas (harus, dapat, sebaiknya, wajib) menyatakan derajat keharusan, kemungki-\nnan, atau rekomendasi.",
+    "valid": true
+  },
+  {
+    "nomor": 73,
+    "tipe": "pg_sederhana",
+    "paket": "Bab III: Memahami Pidato Persuasif - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Pidato Persuasif, Tiga Pendekatan Retorika (Ethos, Pathos, Logos), Struktur Pidato, & Diksi Emotif",
+    "capaian_pembelajaran": "Peserta didik memahami struktur isi pidato persuasif (pernyataan posisi, tahap argumen, penguatan posisi), menerapkan pendekatan retorika (etika, emosi, logika), dan menganalisis kalimat ajakan/persuasif.",
+    "bacaan": null,
+    "teks_soal": "Bacalah kutipan pembuka pidato berikut!\n\"Segala puji dan syukur marilah kita panjatkan ke hadirat Tuhan Yang Maha Esa karena atas limpahan\nrahmat dan karunia-Nya, pada pagi yang cerah ini kita dapat berkumpul di Aula SMP Negeri 1 dalam\nrangka memperingati Hari Sumpah Pemuda dalam keadaan sehat walafiat.\"\nKutipan materi merupakan bagian pembuka pidato yang disebut ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Ucapan puji syukur kepada Tuhan Yang Maha Esa"
+      },
+      {
+        "label": "B",
+        "teks": "Salam pembuka dan sapaan kehormatan"
+      },
+      {
+        "label": "C",
+        "teks": "Pernyataan posisi (tesis argumen)"
+      },
+      {
+        "label": "D",
+        "teks": "Simpulan dan permohonan maaf"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "A. Kalimat tersebut memanjatkan puji dan syukur ke hadirat Tuhan Yang Maha Esa.",
+    "valid": true
+  },
+  {
+    "nomor": 74,
+    "tipe": "pg_sederhana",
+    "paket": "Bab III: Memahami Pidato Persuasif - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Pidato Persuasif, Tiga Pendekatan Retorika (Ethos, Pathos, Logos), Struktur Pidato, & Diksi Emotif",
+    "capaian_pembelajaran": "Peserta didik memahami struktur isi pidato persuasif (pernyataan posisi, tahap argumen, penguatan posisi), menerapkan pendekatan retorika (etika, emosi, logika), dan menganalisis kalimat ajakan/persuasif.",
+    "bacaan": {
+      "teks": "PIDATO 1:\nFENOMENA BUDAYA POP ASING DI\nKALANGAN REMAJA\nPIDATO 2: INOVASI KREATIF MELESTARIKAN BU-\nDAYA NUSANTARA\nRekan-rekan pelajar sekalian, arus globalisasi infor-\nmasi saat ini membuat budaya populer mancane-\ngara—mulai dari musik K-Pop, drama asing, hingga\ngaya busana luar negeri—masuk begitu deras ke ru-\nang gawai kita.\nMengapresiasi karya seni bangsa\nlain tentu sah-sah saja sebagai bagian dari pergaulan\ndunia yang terbuka.\nNamun, jangan sampai kekaguman yang berlebihan\nmembuat kita menjadi generasi yang asing di tanah\nair sendiri: hafal ratusan lirik lagu bahasa asing, tetapi\ncanggung ketika diminta menyanyikan satu tembang\ndaerah atau mengenakan batik kebanggaan bangsa!\nHadirin pemuda harapan bangsa, melestarikan bu-\ndaya tradisional Indonesia di abad ke-21 tidak cukup\nhanya dengan menyimpannya di balik etalase kaca\nmuseum.\nBudaya daerah akan tetap hidup apabila\nkita berani mengemasnya secara kreatif mengikuti\nperkembangan zaman.\nLihatlah\nbagaimana\nkelompok\nmusisi\nmuda\nmemadukan tabuhan gamelan dan angklung dengan\naransemen musik modern, atau bagaimana pelajar\nSMK merancang jaket kasual bermotif tenun ikat\nNusantara hingga diminati pasar dunia!\nMari kita",
+      "grup": "bacaan_bab3_budaya_pop"
+    },
+    "teks_soal": "buktikan bahwa mencintai budaya lokal itu keren dan\nmembanggakan!\nHubungan gagasan utama antara Pidato 1 dan Pidato 2 di atas adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Pidato 1 dan Pidato 2 membahas topik pertanian padi sawah di pedesaan"
+      },
+      {
+        "label": "B",
+        "teks": "Pidato 1 mengajak remaja melupakan budaya Indonesia; sedangkan Pidato 2 mengajak remaja menutup seluruh museum budaya"
+      },
+      {
+        "label": "C",
+        "teks": "Pidato 1 menyadarkan pendengar tentang ancaman lunturnya jati diri budaya lokal akibat konsumsi budaya asing yang berlebihan (identifikasi masalah/tantangan); sedangkan Pidato 2 menawarkan solusi konkret pelestarian budaya Nusantara melalui inovasi kreatif generasi muda (tawaran solusi/aksi)"
+      },
+      {
+        "label": "D",
+        "teks": "Kedua pidato tersebut melarang pelajar mempelajari bahasa asing di sekolah"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "C. Kedua pidato saling melengkapi secara dialektis: Pidato 1 menggugah kesadaran kritis\nagar apresiasi budaya pop asing tidak menggerus identitas lokal, sedangkan Pidato 2 memberikan jalan\nkeluar praktis (memadukan gamelan/angklung/tenun ikat ke dalam karya kreatif modern).",
+    "valid": true
+  },
+  {
+    "nomor": 75,
+    "tipe": "pg_sederhana",
+    "paket": "Bab III: Memahami Pidato Persuasif - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Pidato Persuasif, Tiga Pendekatan Retorika (Ethos, Pathos, Logos), Struktur Pidato, & Diksi Emotif",
+    "capaian_pembelajaran": "Peserta didik memahami struktur isi pidato persuasif (pernyataan posisi, tahap argumen, penguatan posisi), menerapkan pendekatan retorika (etika, emosi, logika), dan menganalisis kalimat ajakan/persuasif.",
+    "bacaan": {
+      "teks": "PIDATO 1:\nFENOMENA BUDAYA POP ASING DI\nKALANGAN REMAJA\nPIDATO 2: INOVASI KREATIF MELESTARIKAN BU-\nDAYA NUSANTARA\nRekan-rekan pelajar sekalian, arus globalisasi infor-\nmasi saat ini membuat budaya populer mancane-\ngara—mulai dari musik K-Pop, drama asing, hingga\ngaya busana luar negeri—masuk begitu deras ke ru-\nang gawai kita.\nMengapresiasi karya seni bangsa\nlain tentu sah-sah saja sebagai bagian dari pergaulan\ndunia yang terbuka.\nNamun, jangan sampai kekaguman yang berlebihan\nmembuat kita menjadi generasi yang asing di tanah\nair sendiri: hafal ratusan lirik lagu bahasa asing, tetapi\ncanggung ketika diminta menyanyikan satu tembang\ndaerah atau mengenakan batik kebanggaan bangsa!\nHadirin pemuda harapan bangsa, melestarikan bu-\ndaya tradisional Indonesia di abad ke-21 tidak cukup\nhanya dengan menyimpannya di balik etalase kaca\nmuseum.\nBudaya daerah akan tetap hidup apabila\nkita berani mengemasnya secara kreatif mengikuti\nperkembangan zaman.\nLihatlah\nbagaimana\nkelompok\nmusisi\nmuda\nmemadukan tabuhan gamelan dan angklung dengan\naransemen musik modern, atau bagaimana pelajar\nSMK merancang jaket kasual bermotif tenun ikat\nNusantara hingga diminati pasar dunia!\nMari kita",
+      "grup": "bacaan_bab3_budaya_pop"
+    },
+    "teks_soal": "muda memadukan tabuhan gamelan...\") adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Kedua pidato tersebut menggunakan ancaman kekerasan fisik terhadap pendengar"
+      },
+      {
+        "label": "B",
+        "teks": "Pidato 1 menonjolkan pendekatan Pathos (menggugah perasaan/emosi harga diri kebangsaan); sedangkan Pidato 2 menonjolkan pendekatan Logos (menyajikan bukti nyata/fakta keberhasilan in- ovasi budaya) yang dipadukan dengan semangat optimisme"
+      },
+      {
+        "label": "C",
+        "teks": "Pidato 1 menggunakan rumus matematika; sedangkan Pidato 2 menggunakan kutipan pasal undang- undang pajak"
+      },
+      {
+        "label": "D",
+        "teks": "Kedua pidato tidak menggunakan pendekatan persuasi sama sekali"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "B. Dalam retorika pidato persuasif Kelas 9: menyentuh rasa malu/bangga sebagai anak\nbangsa (asing di tanah air sendiri) adalah pendekatan Pathos (emosi), sedangkan menyodorkan bukti empiris\nkeberhasilan musisi gamelan dan desainer tenun muda adalah pendekatan Logos (logika bukti).",
+    "valid": true
+  },
+  {
+    "nomor": 76,
+    "tipe": "pg_sederhana",
+    "paket": "Bab III: Memahami Pidato Persuasif - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Pidato Persuasif, Tiga Pendekatan Retorika (Ethos, Pathos, Logos), Struktur Pidato, & Diksi Emotif",
+    "capaian_pembelajaran": "Peserta didik memahami struktur isi pidato persuasif (pernyataan posisi, tahap argumen, penguatan posisi), menerapkan pendekatan retorika (etika, emosi, logika), dan menganalisis kalimat ajakan/persuasif.",
+    "bacaan": {
+      "teks": "PIDATO 1:\nFENOMENA BUDAYA POP ASING DI\nKALANGAN REMAJA\nPIDATO 2: INOVASI KREATIF MELESTARIKAN BU-\nDAYA NUSANTARA\nRekan-rekan pelajar sekalian, arus globalisasi infor-\nmasi saat ini membuat budaya populer mancane-\ngara—mulai dari musik K-Pop, drama asing, hingga\ngaya busana luar negeri—masuk begitu deras ke ru-\nang gawai kita.\nMengapresiasi karya seni bangsa\nlain tentu sah-sah saja sebagai bagian dari pergaulan\ndunia yang terbuka.\nNamun, jangan sampai kekaguman yang berlebihan\nmembuat kita menjadi generasi yang asing di tanah\nair sendiri: hafal ratusan lirik lagu bahasa asing, tetapi\ncanggung ketika diminta menyanyikan satu tembang\ndaerah atau mengenakan batik kebanggaan bangsa!\nHadirin pemuda harapan bangsa, melestarikan bu-\ndaya tradisional Indonesia di abad ke-21 tidak cukup\nhanya dengan menyimpannya di balik etalase kaca\nmuseum.\nBudaya daerah akan tetap hidup apabila\nkita berani mengemasnya secara kreatif mengikuti\nperkembangan zaman.\nLihatlah\nbagaimana\nkelompok\nmusisi\nmuda\nmemadukan tabuhan gamelan dan angklung dengan\naransemen musik modern, atau bagaimana pelajar\nSMK merancang jaket kasual bermotif tenun ikat\nNusantara hingga diminati pasar dunia!\nMari kita",
+      "grup": "bacaan_bab3_budaya_pop"
+    },
+    "teks_soal": "Pidato 1 dan Pidato 2 di soal nomor 14 ditunjukkan oleh deretan kata ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "di, ke, dari, pada (seluruhnya kata depan/preposisi)"
+      },
+      {
+        "label": "B",
+        "teks": "menyanyikan, mengenakan, menyimpannya, mengemasnya (seluruhnya kata kerja aktif transitif)"
+      },
+      {
+        "label": "C",
+        "teks": "musik, gamelan, angklung, jaket (seluruhnya kata benda konkret dasar, bukan hasil proses pem- bendaan imbuhan)"
+      },
+      {
+        "label": "D",
+        "teks": "pergaulan, kekaguman, perkembangan, menggunakan →yang merupakan nominalisasi murni adalah pergaulan (bergaul + per-an), kekaguman (kagum + ke-an), dan perkembangan (berkembang + per-an)"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Nominalisasi dalam kaidah kebahasaan Pidato Persuasif Kelas 9 adalah pembentukan kata\nbenda abstrak dari verba/adjektiva menggunakan konfiks ke-an, peN-an, per-an, seperti kagum →kekagu-\nman, bergaul →pergaulan, dan berkembang →perkembangan.",
+    "valid": true
+  },
+  {
+    "nomor": 77,
+    "tipe": "pg_sederhana",
+    "paket": "Bab III: Memahami Pidato Persuasif - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Pidato Persuasif, Tiga Pendekatan Retorika (Ethos, Pathos, Logos), Struktur Pidato, & Diksi Emotif",
+    "capaian_pembelajaran": "Peserta didik memahami struktur isi pidato persuasif (pernyataan posisi, tahap argumen, penguatan posisi), menerapkan pendekatan retorika (etika, emosi, logika), dan menganalisis kalimat ajakan/persuasif.",
+    "bacaan": null,
+    "teks_soal": "Perhatikan kalimat dalam teks pidato berikut:\n*\"Kerusakan ekosistem sungai di kota kita bukanlah masalah yang muncul secara tiba-tiba, melainkan\nakibat dari pencemaran limbah rumah tangga dan pembuangan sampah yang dilakukan secara terus-\nmenerus selama bertahun-tahun.\"*\nCiri kebahasaan pidato persuasif yang tampak pada kata-kata bercetak tebal di atas adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Penggunaan nominalisasi (pencemaran, pembuangan) dan bentuk kata kerja pasif (dilakukan)"
+      },
+      {
+        "label": "B",
+        "teks": "Penggunaan kata ganti orang pertama tunggal (aku) dan majas ironi"
+      },
+      {
+        "label": "C",
+        "teks": "Penggunaan kalimat langsung dialog antartokoh fiksi"
+      },
+      {
+        "label": "D",
+        "teks": "Penggunaan istilah kuliner tradisional"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "A. Pencemaran dan pembuangan adalah nominalisasi; dilakukan adalah bentuk pasif.",
+    "valid": true
+  },
+  {
+    "nomor": 78,
+    "tipe": "pg_sederhana",
+    "paket": "Bab III: Memahami Pidato Persuasif - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Pidato Persuasif, Tiga Pendekatan Retorika (Ethos, Pathos, Logos), Struktur Pidato, & Diksi Emotif",
+    "capaian_pembelajaran": "Peserta didik memahami struktur isi pidato persuasif (pernyataan posisi, tahap argumen, penguatan posisi), menerapkan pendekatan retorika (etika, emosi, logika), dan menganalisis kalimat ajakan/persuasif.",
+    "bacaan": {
+      "teks": "[Sumber: Soal TPM ASPD 3 Kota Yogyakarta Paket B — Scribd 783340477 No. 27]\nBacalah ilustrasi kampanye kesehatan masyarakat berikut dengan saksama!\nWACANA LITERASI MEMBACA: ILUSTRASI BAHAYA ASAP ROKOK BAGI PEROKOK AKTIF DAN PASIF\nMerokok merupakan kegiatan yang berdampak buruk tidak hanya bagi diri sendiri, tetapi juga orang lain\nbaik dalam waktu singkat maupun jangka panjang. Di dalam rokok terkandung lebih dari 4.000 jenis bahan\nkimia yang berbahaya bagi tubuh. Penyakit paru-paru menjadi risiko pertama akibat rokok: asap rokok yang\ndiisap menyebabkan paru-paru mengalami radang, bronkitis, dan pneumonia. Zat nikotin dalam rokok juga\nmenyebabkan kerusakan sel-sel dalam organ paru-paru yang dapat berakibat fatal yaitu kanker paru-paru.\nTidak hanya berdampak pada perokok aktif, perokok pasif juga memiliki risiko penyakit jantung karena terjadi\nkerusakan pada pembuluh darah yang disebabkan oleh asap rokok. Demi menjaga kesehatan, sebaiknya\njangan merokok!",
+      "grup": "bacaan_bab3_bahaya_rokok"
+    },
+    "teks_soal": "Poster cetak yang paling tepat berdasarkan ilustrasi tersebut adalah ....",
+    "gambar": [
+      "/soal/bindo/kls9_bindo_p170_xref5819_880x880.jpeg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Pilihan A sesuai wacana dan kaidah kebahasaan"
+      },
+      {
+        "label": "B",
+        "teks": "Pilihan B kurang tepat sesuai konteks teks"
+      },
+      {
+        "label": "C",
+        "teks": "Pilihan C tidak didukung oleh data bacaan"
+      },
+      {
+        "label": "D",
+        "teks": "Pilihan D bertentangan dengan isi teks"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "B. Poster pada gambar B sesuai dengan isi ilustrasi: memuat informasi lebih dari 4.000 zat\nkimia berbahaya, dampak radang paru/bronkitis/pneumonia/kanker paru bagi perokok aktif, risiko kerusakan\npembuluh darah dan penyakit jantung bagi perokok pasif, serta imbauan berhenti merokok.",
+    "valid": true
+  },
+  {
+    "nomor": 79,
+    "tipe": "pg_sederhana",
+    "paket": "Bab III: Memahami Pidato Persuasif - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Pidato Persuasif, Tiga Pendekatan Retorika (Ethos, Pathos, Logos), Struktur Pidato, & Diksi Emotif",
+    "capaian_pembelajaran": "Peserta didik memahami struktur isi pidato persuasif (pernyataan posisi, tahap argumen, penguatan posisi), menerapkan pendekatan retorika (etika, emosi, logika), dan menganalisis kalimat ajakan/persuasif.",
+    "bacaan": {
+      "teks": "[Sumber: Soal TPM ASPD 3 Kota Yogyakarta Paket B — Scribd 783340477 No. 27]\nBacalah ilustrasi kampanye kesehatan masyarakat berikut dengan saksama!\nWACANA LITERASI MEMBACA: ILUSTRASI BAHAYA ASAP ROKOK BAGI PEROKOK AKTIF DAN PASIF\nMerokok merupakan kegiatan yang berdampak buruk tidak hanya bagi diri sendiri, tetapi juga orang lain\nbaik dalam waktu singkat maupun jangka panjang. Di dalam rokok terkandung lebih dari 4.000 jenis bahan\nkimia yang berbahaya bagi tubuh. Penyakit paru-paru menjadi risiko pertama akibat rokok: asap rokok yang\ndiisap menyebabkan paru-paru mengalami radang, bronkitis, dan pneumonia. Zat nikotin dalam rokok juga\nmenyebabkan kerusakan sel-sel dalam organ paru-paru yang dapat berakibat fatal yaitu kanker paru-paru.\nTidak hanya berdampak pada perokok aktif, perokok pasif juga memiliki risiko penyakit jantung karena terjadi\nkerusakan pada pembuluh darah yang disebabkan oleh asap rokok. Demi menjaga kesehatan, sebaiknya\njangan merokok!",
+      "grup": "bacaan_bab3_bahaya_rokok"
+    },
+    "teks_soal": "Fungsi penggunaan pertanyaan retoris (pertanyaan yang tidak membutuhkan jawaban lisan langsung\ndari audiens) dalam pidato persuasif adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Menghentikan jalannya acara pidato agar segera diadakan sesi tanya jawab kuis"
+      },
+      {
+        "label": "B",
+        "teks": "Menguji hafalan materi ujian seluruh penonton satu per satu di atas panggung"
+      },
+      {
+        "label": "C",
+        "teks": "Menunjukkan bahwa pembicara lupa materi pidatonya dan meminta bantuan penonton"
+      },
+      {
+        "label": "D",
+        "teks": "Menggugah kesadaran batin dan menuntun pikiran audiens agar secara otomatis menyetujui argumen yang disampaikan pembicara"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Pertanyaan retoris menggugah kesadaran batin dan mengarahkan audiens agar menyetujui\nargumen pembicara.",
+    "valid": true
+  },
+  {
+    "nomor": 80,
+    "tipe": "pg_sederhana",
+    "paket": "Bab III: Memahami Pidato Persuasif - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Pidato Persuasif, Tiga Pendekatan Retorika (Ethos, Pathos, Logos), Struktur Pidato, & Diksi Emotif",
+    "capaian_pembelajaran": "Peserta didik memahami struktur isi pidato persuasif (pernyataan posisi, tahap argumen, penguatan posisi), menerapkan pendekatan retorika (etika, emosi, logika), dan menganalisis kalimat ajakan/persuasif.",
+    "bacaan": {
+      "teks": "WACANA LITERASI MEMBACA: WACANA LITERASI MEMBACA: PIDATO PERSUASIF ’SARING SE-\nBELUM SHARING, BERPIKIR SEBELUM MENGETIK’\n(Paragraf 1: Pernyataan Posisi) Hadirin dan rekan-rekan pelajar yang saya kasihi, jempol kita di atas pa-\npan ketik gawai hari ini memiliki kekuatan yang sama tajamnya dengan lidah di masa lalu. Jika dulu pepatah\nmengatakan “Mulutmu adalah harimaumu”, maka di era digital ini berlaku prinsip “Jarimu adalah harimaumu”.\nSaya berdiri di sini dengan satu keyakinan tegas: perundungan siber (cyberbullying) bukanlah sekadar can-\ndaan di kolom komentar, melainkan kekerasan mental yang harus kita hentikan bersama.\n(Paragraf 2: Tahap Argumen) Mengapa kita harus menghentikan budaya mencela di media sosial? Pertama,\nsecara ilmiah psikologis, satu kalimat hinaan yang diketik dalam waktu sepuluh detik dapat meninggalkan\ntrauma kecemasan dan depresi bertahun-tahun bagi korbannya. Laporan Komisi Perlindungan Anak mencatat\nratusan kasus pelajar kehilangan semangat sekolah akibat perundungan di grup percakapan dan media sosial.\nKedua, secara hukum, jejak digital tidak mudah terhapus dan setiap tindakan penghinaan di ruang siber\nmemiliki konsekuensi hukum dalam Undang-Undang Informasi dan Transaksi Elektronik (UU ITE).\n(Paragraf 3: Penguatan Pernyataan Posisi) Oleh karena itu, sebelum menekan tombol kirim pada kolom\nkomentar, terapkanlah rumus emas THINK: apakah kalimat kita True (benar), Helpful (membantu), Inspiring\n(menginspirasi), Necessary (penting), dan Kind (santun)? Marilah kita jadikan akun media sosial kita sebagai\ntaman penyebar semangat dan karya positif, bukan ladang kebencian!\nUrutan struktur Isi Pidato Persuasif Ekspositoris yang tampak jelas pada Paragraf 1, Paragraf 2, dan",
+      "grup": "bacaan_bab3_saring_sharing"
+    },
+    "teks_soal": "Paragraf 3 wacana di atas adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Abstrak (Paragraf 1) →Orientasi (Paragraf 2) →Krisis (Paragraf 3)"
+      },
+      {
+        "label": "B",
+        "teks": "Pernyataan Posisi (pendirian tegas orator menolak cyberbullying pada Paragraf 1) →Tahap Argu- men (alasan psikologis, data Komisi Perlindungan Anak, & dasar hukum UU ITE pada Paragraf 2) → Penguatan Pernyataan Posisi (simpulan ajakan rumus THINK pada Paragraf 3)"
+      },
+      {
+        "label": "C",
+        "teks": "Tujuan (Paragraf 1) →Alat dan Bahan (Paragraf 2) →Hasil Percobaan (Paragraf 3)"
+      },
+      {
+        "label": "D",
+        "teks": "Identifikasi (Paragraf 1) →Deskripsi Bagian (Paragraf 2) →Koda (Paragraf 3)"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "B. Sesuai Buku Siswa Bahasa Indonesia Kelas IX Bab III, struktur isi pidato persuasif terdiri\natas: (1) Pernyataan Posisi (pendapat/sikap awal penulis terhadap isu), (2) Tahap Argumen (serangkaian\nalasan logis disertai data/bukti), dan (3) Penguatan Pernyataan Posisi (penegasan kembali simpulan dan\nseruan bertindak).",
+    "valid": true
+  },
+  {
+    "nomor": 81,
+    "tipe": "pg_sederhana",
+    "paket": "Bab III: Memahami Pidato Persuasif - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Pidato Persuasif, Tiga Pendekatan Retorika (Ethos, Pathos, Logos), Struktur Pidato, & Diksi Emotif",
+    "capaian_pembelajaran": "Peserta didik memahami struktur isi pidato persuasif (pernyataan posisi, tahap argumen, penguatan posisi), menerapkan pendekatan retorika (etika, emosi, logika), dan menganalisis kalimat ajakan/persuasif.",
+    "bacaan": {
+      "teks": "WACANA LITERASI MEMBACA: WACANA LITERASI MEMBACA: PIDATO PERSUASIF ’SARING SE-\nBELUM SHARING, BERPIKIR SEBELUM MENGETIK’\n(Paragraf 1: Pernyataan Posisi) Hadirin dan rekan-rekan pelajar yang saya kasihi, jempol kita di atas pa-\npan ketik gawai hari ini memiliki kekuatan yang sama tajamnya dengan lidah di masa lalu. Jika dulu pepatah\nmengatakan “Mulutmu adalah harimaumu”, maka di era digital ini berlaku prinsip “Jarimu adalah harimaumu”.\nSaya berdiri di sini dengan satu keyakinan tegas: perundungan siber (cyberbullying) bukanlah sekadar can-\ndaan di kolom komentar, melainkan kekerasan mental yang harus kita hentikan bersama.\n(Paragraf 2: Tahap Argumen) Mengapa kita harus menghentikan budaya mencela di media sosial? Pertama,\nsecara ilmiah psikologis, satu kalimat hinaan yang diketik dalam waktu sepuluh detik dapat meninggalkan\ntrauma kecemasan dan depresi bertahun-tahun bagi korbannya. Laporan Komisi Perlindungan Anak mencatat\nratusan kasus pelajar kehilangan semangat sekolah akibat perundungan di grup percakapan dan media sosial.\nKedua, secara hukum, jejak digital tidak mudah terhapus dan setiap tindakan penghinaan di ruang siber\nmemiliki konsekuensi hukum dalam Undang-Undang Informasi dan Transaksi Elektronik (UU ITE).\n(Paragraf 3: Penguatan Pernyataan Posisi) Oleh karena itu, sebelum menekan tombol kirim pada kolom\nkomentar, terapkanlah rumus emas THINK: apakah kalimat kita True (benar), Helpful (membantu), Inspiring\n(menginspirasi), Necessary (penting), dan Kind (santun)? Marilah kita jadikan akun media sosial kita sebagai\ntaman penyebar semangat dan karya positif, bukan ladang kebencian!\nUrutan struktur Isi Pidato Persuasif Ekspositoris yang tampak jelas pada Paragraf 1, Paragraf 2, dan",
+      "grup": "bacaan_bab3_saring_sharing"
+    },
+    "teks_soal": "Pada Paragraf 2 wacana pidato soal nomor 20, orator memperkuat argumennya dengan mengutip La-\nporan Komisi Perlindungan Anak dan Undang-Undang ITE. Penggunaan rujukan lembaga resmi dan\npayung hukum tersebut menerapkan prinsip persuasi ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Majas hiperbola yang tidak memiliki dasar kenyataan"
+      },
+      {
+        "label": "B",
+        "teks": "Kebohongan publik (manipulasi data) untuk menakut-nakuti siswa"
+      },
+      {
+        "label": "C",
+        "teks": "Ethos (kredibilitas/kewibawaan sumber otoritatif) dan Logos (penalaran logis berbasis fakta dan aturan hukum)"
+      },
+      {
+        "label": "D",
+        "teks": "Gaya bahasa komedi tunggal untuk menghibur penonton"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "C. Merujuk lembaga kredibel (Komisi Perlindungan Anak) dan undang-undang resmi (UU ITE)\nmembangun kredibilitas/otoritas moral-hukum (Ethos) sekaligus bukti faktual-rasional (Logos).",
+    "valid": true
+  },
+  {
+    "nomor": 82,
+    "tipe": "pg_sederhana",
+    "paket": "Bab III: Memahami Pidato Persuasif - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Pidato Persuasif, Tiga Pendekatan Retorika (Ethos, Pathos, Logos), Struktur Pidato, & Diksi Emotif",
+    "capaian_pembelajaran": "Peserta didik memahami struktur isi pidato persuasif (pernyataan posisi, tahap argumen, penguatan posisi), menerapkan pendekatan retorika (etika, emosi, logika), dan menganalisis kalimat ajakan/persuasif.",
+    "bacaan": {
+      "teks": "WACANA LITERASI MEMBACA: WACANA LITERASI MEMBACA: PIDATO PERSUASIF ’SARING SE-\nBELUM SHARING, BERPIKIR SEBELUM MENGETIK’\n(Paragraf 1: Pernyataan Posisi) Hadirin dan rekan-rekan pelajar yang saya kasihi, jempol kita di atas pa-\npan ketik gawai hari ini memiliki kekuatan yang sama tajamnya dengan lidah di masa lalu. Jika dulu pepatah\nmengatakan “Mulutmu adalah harimaumu”, maka di era digital ini berlaku prinsip “Jarimu adalah harimaumu”.\nSaya berdiri di sini dengan satu keyakinan tegas: perundungan siber (cyberbullying) bukanlah sekadar can-\ndaan di kolom komentar, melainkan kekerasan mental yang harus kita hentikan bersama.\n(Paragraf 2: Tahap Argumen) Mengapa kita harus menghentikan budaya mencela di media sosial? Pertama,\nsecara ilmiah psikologis, satu kalimat hinaan yang diketik dalam waktu sepuluh detik dapat meninggalkan\ntrauma kecemasan dan depresi bertahun-tahun bagi korbannya. Laporan Komisi Perlindungan Anak mencatat\nratusan kasus pelajar kehilangan semangat sekolah akibat perundungan di grup percakapan dan media sosial.\nKedua, secara hukum, jejak digital tidak mudah terhapus dan setiap tindakan penghinaan di ruang siber\nmemiliki konsekuensi hukum dalam Undang-Undang Informasi dan Transaksi Elektronik (UU ITE).\n(Paragraf 3: Penguatan Pernyataan Posisi) Oleh karena itu, sebelum menekan tombol kirim pada kolom\nkomentar, terapkanlah rumus emas THINK: apakah kalimat kita True (benar), Helpful (membantu), Inspiring\n(menginspirasi), Necessary (penting), dan Kind (santun)? Marilah kita jadikan akun media sosial kita sebagai\ntaman penyebar semangat dan karya positif, bukan ladang kebencian!\nUrutan struktur Isi Pidato Persuasif Ekspositoris yang tampak jelas pada Paragraf 1, Paragraf 2, dan",
+      "grup": "bacaan_bab3_saring_sharing"
+    },
+    "teks_soal": "Fungsi penggunaan transformasi peribahasa tersebut dalam pembukaan isi pidato adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Mengkritik peribahasa lama karena dianggap sudah salah ejaan"
+      },
+      {
+        "label": "B",
+        "teks": "Mengajak pendengar memelihara harimau sumatra di rumah masing-masing"
+      },
+      {
+        "label": "C",
+        "teks": "Membuktikan bahwa manusia zaman sekarang tidak lagi berbicara menggunakan mulut"
+      },
+      {
+        "label": "D",
+        "teks": "Mengaitkan kearifan lokal yang sudah akrab di benak pendengar (Mulutmu harimaumu) dengan kon- teks masalah baru di zaman modern (ketikan jari di media sosial) sehingga pesan pidato langsung men- gena dan mudah diingat"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Menyandingkan peribahasa lama (Mulutmu harimaumu) dengan adaptasi kontekstual era\nsiber (Jarimu harimaumu) menciptakan jembatan asosiasi yang kuat dan memikat perhatian audiens.",
+    "valid": true
+  },
+  {
+    "nomor": 83,
+    "tipe": "pg_sederhana",
+    "paket": "Bab III: Memahami Pidato Persuasif - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Pidato Persuasif, Tiga Pendekatan Retorika (Ethos, Pathos, Logos), Struktur Pidato, & Diksi Emotif",
+    "capaian_pembelajaran": "Peserta didik memahami struktur isi pidato persuasif (pernyataan posisi, tahap argumen, penguatan posisi), menerapkan pendekatan retorika (etika, emosi, logika), dan menganalisis kalimat ajakan/persuasif.",
+    "bacaan": null,
+    "teks_soal": "Perhatikan perbandingan dua paragraf penutup pidato berikut!\n\nPENUTUP PIDATO A\nPENUTUP PIDATO B\nDemikianlah beberapa hal yang dapat saya sam-\npaikan mengenai pentingnya gerakan menanam po-\nhon di lingkungan sekolah.\nSatu pohon yang kita\ntanam hari ini adalah sejuta oksigen bagi adik-adik ke-\nlas kita di masa depan. Mohon maaf apabila terdapat\ntutur kata yang kurang berkenan di hati hadirin. Terima\nkasih, selamat pagi!\nPokoknya\nkalian\nsemua\nwajib\nmenanam\npohon\nsekarang juga tanpa terkecuali! Kalau ada yang tidak\nmau menanam pohon, berarti kalian adalah siswa\nyang malas dan tidak tahu diri.\nPidato saya sudah\nsangat sempurna dan tidak mungkin ada kesalahan\nsedikit pun. Sekian!\nMengapa Penutup Pidato A dinilai jauh lebih persuasif dan santun dibandingkan Penutup Pidato B?",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Karena Penutup A merangkum inti pesan secara inspiratif, menggunakan kata ganti inklusif (kita), serta menyampaikan permohonan maaf dengan rendah hati; sedangkan Penutup B bersifat memaksa secara kasar, menyerang pribadi pendengar (tidak tahu diri), dan arogan"
+      },
+      {
+        "label": "B",
+        "teks": "Karena Penutup B menggunakan kalimat yang lebih panjang dan lebih baku daripada Penutup A"
+      },
+      {
+        "label": "C",
+        "teks": "Karena pidato persuasif mengharuskan pembicara memarahi pendengar di bagian akhir"
+      },
+      {
+        "label": "D",
+        "teks": "Kedua penutup pidato tersebut sama-sama tidak santun"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "A. Persuasi bekerja melalui ajakan yang menghargai martabat pendengar (santun, merangkul\ndengan kata kita, dan rendah hati memohon maaf seperti pada Penutup A), bukan melalui paksaan kasar dan\npenghinaan (ad hominem) seperti pada Penutup B.",
+    "valid": true
+  },
+  {
+    "nomor": 84,
+    "tipe": "pg_sederhana",
+    "paket": "Bab III: Memahami Pidato Persuasif - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Pidato Persuasif, Tiga Pendekatan Retorika (Ethos, Pathos, Logos), Struktur Pidato, & Diksi Emotif",
+    "capaian_pembelajaran": "Peserta didik memahami struktur isi pidato persuasif (pernyataan posisi, tahap argumen, penguatan posisi), menerapkan pendekatan retorika (etika, emosi, logika), dan menganalisis kalimat ajakan/persuasif.",
+    "bacaan": null,
+    "teks_soal": "Perhatikan kalimat pidato berikut!\n*\"Keberhasilan program perpustakaan ramah anak ini sangat ditentukan oleh partisipasi aktif seluruh\nsiswa, koleksi buku yang bermutu, serta kreatifitas pengurus dalam menyelenggarakan bedah buku\nsecara kontinyu.\"*\nDua kata serapan yang penulisannya tidak baku pada kalimat di atas beserta perbaikan bakunya menu-\nrut KBBI adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "partisipasi (baku: partisipatif) dan koleksi (baku: kolektif)"
+      },
+      {
+        "label": "B",
+        "teks": "kreatifitas (baku: kreativitas) dan kontinyu (baku: kontinu)"
+      },
+      {
+        "label": "C",
+        "teks": "program (baku: progrem) dan aktif (baku: aktip)"
+      },
+      {
+        "label": "D",
+        "teks": "Seluruh kata serapan pada kalimat di atas sudah ditulis secara baku"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "B. Menurut kaidah penyerapan kata asing dalam KBBI: kata sifat kreatif ketika mendapat\nakhiran serapan -itas berubah huruf f menjadi v (kreativitas), dan kata continue diserap menjadi kontinu\n(bukan kontinyu).",
+    "valid": true
+  },
+  {
+    "nomor": 85,
+    "tipe": "pg_sederhana",
+    "paket": "Bab III: Memahami Pidato Persuasif - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Pidato Persuasif, Tiga Pendekatan Retorika (Ethos, Pathos, Logos), Struktur Pidato, & Diksi Emotif",
+    "capaian_pembelajaran": "Peserta didik memahami struktur isi pidato persuasif (pernyataan posisi, tahap argumen, penguatan posisi), menerapkan pendekatan retorika (etika, emosi, logika), dan menganalisis kalimat ajakan/persuasif.",
+    "bacaan": null,
+    "teks_soal": "Dalam kalimat pidato: *\"Pembangunan karakter jujur dan pembentukan disiplin diri sejak bangku SMP\nmerupakan kunci kemajuan suatu bangsa. Bangsa ini tidak akan runtuh oleh musuh dari luar selama\npemuda di dalamnya memegang teguh kejujuran,\"* kohesi antarkalimat dibangun melalui ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Kalimat pertama dan kalimat kedua tidak memiliki hubungan makna sama sekali"
+      },
+      {
+        "label": "B",
+        "teks": "Penggunaan kata ganti orang kedua (engkau, dikau) dan majas ironi"
+      },
+      {
+        "label": "C",
+        "teks": "Penggunaan kalimat perintah larangan (janganlah) pada kedua kalimat"
+      },
+      {
+        "label": "D",
+        "teks": "Nominalisasi (pembangunan, pembentukan, kemajuan) pada kalimat pertama serta repetisi (pen- gulangan kata kunci) bangsa dan kejujuran/jujur yang mengikat kedua kalimat secara padu"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Kepaduan (kohesi) kutipan pidato tersebut tampak dari penggunaan tiga bentuk nomi-\nnalisasi (pembangunan, pembentukan, kemajuan) di kalimat pertama, lalu diikat ke kalimat kedua dengan\npengulangan kata kunci Bangsa ini dan kejujuran.",
+    "valid": true
+  },
+  {
+    "nomor": 86,
+    "tipe": "pg_sederhana",
+    "paket": "Bab III: Memahami Pidato Persuasif - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Pidato Persuasif, Tiga Pendekatan Retorika (Ethos, Pathos, Logos), Struktur Pidato, & Diksi Emotif",
+    "capaian_pembelajaran": "Peserta didik memahami struktur isi pidato persuasif (pernyataan posisi, tahap argumen, penguatan posisi), menerapkan pendekatan retorika (etika, emosi, logika), dan menganalisis kalimat ajakan/persuasif.",
+    "bacaan": null,
+    "teks_soal": "Perhatikan poster kampanye lingkungan “Kurangi Sampah Plastik Sekali Pakai!” yang digunakan se-\nbagai alat bantu visual pidato persuasif berikut!\nPernyataan analitis yang benar mengenai penyusunan dan penyampaian Pidato Persuasif berdasarkan\ngambar di atas adalah .... (Pilih lebih dari satu jawaban benar)\n\nPernyataan:\n(1) Menampilkan poster/infografis saat berpidato memperkuat pendekatan Logika (Logos) dan Emosi\n(Pathos) secara visual sehingga pesan ajakan lebih mudah diingat audiens.\n(2) Tiga langkah konkret pada poster (Bawa Tumbler Sendiri, Gunakan Tas Belanja Kain, Tolak Se-\ndotan Plastik) sangat tepat dimasukkan ke dalam bagian Penguatan Pernyataan Posisi sebagai ajakan\nbertindak (call to action).\n(3) Struktur isi argumen pidato persuasif terdiri atas Pernyataan Posisi, Tahap Argumen, dan Pen-\nguatan Pernyataan Posisi.\n(4) Seorang orator yang baik wajib menggunakan kata-kata kasar dan menyalahkan audiens agar\npenonton merasa takut.\n\nPernyataan yang tepat adalah ....",
+    "gambar": [
+      "/soal/bindo/kls9_bindo_p172_xref5873_880x880.jpeg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(1), (2), dan (3)"
+      },
+      {
+        "label": "B",
+        "teks": "(1) dan (4) saja"
+      },
+      {
+        "label": "C",
+        "teks": "(2) dan (4) saja"
+      },
+      {
+        "label": "D",
+        "teks": "(1), (2), (3), dan (4)"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "A, B, C. Pernyataan D salah karena pidato persuasif harus disampaikan secara santun dan\nmenghargai audiens.",
+    "valid": true
+  },
+  {
+    "nomor": 87,
+    "tipe": "pg_sederhana",
+    "paket": "Bab III: Memahami Pidato Persuasif - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Pidato Persuasif, Tiga Pendekatan Retorika (Ethos, Pathos, Logos), Struktur Pidato, & Diksi Emotif",
+    "capaian_pembelajaran": "Peserta didik memahami struktur isi pidato persuasif (pernyataan posisi, tahap argumen, penguatan posisi), menerapkan pendekatan retorika (etika, emosi, logika), dan menganalisis kalimat ajakan/persuasif.",
+    "bacaan": null,
+    "teks_soal": "Manakah di antara pernyataan\nberikut yang benar mengenai karakteristik Teks Pidato Persuasif? (Pilih lebih dari satu jawaban benar)\n\nPernyataan:\n(1) Pendekatan Ethos memengaruhi audiens melalui nilai etika, moral, dan kredibilitas; Pathos meng-\ngugah emosi dan empati; sedangkan Logos menggunakan bukti data dan penalaran logis.\n(2) Penggunaan nominalisasi (pembendaan) seperti pengurangan, pelestarian, pemberdayaan mem-\nbantu mengaitkan gagasan antarkalimat secara padat dan formal.\n(3) Penggunaan pronomina inklusif kita menciptakan rasa kebersamaan antara pembicara dan pen-\ndengar.\n(4) Teks pidato persuasif dilarang mencantumkan fakta ilmiah maupun angka statistik.\n\nPernyataan yang tepat adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(1), (2), dan (3)"
+      },
+      {
+        "label": "B",
+        "teks": "(1) dan (4) saja"
+      },
+      {
+        "label": "C",
+        "teks": "(2) dan (4) saja"
+      },
+      {
+        "label": "D",
+        "teks": "(1), (2), (3), dan (4)"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "A, B, C. Pernyataan D salah karena fakta ilmiah dan data statistik justru sangat penting untuk\nmemperkuat pendekatan Logos.",
+    "valid": true
+  },
+  {
+    "nomor": 88,
+    "tipe": "pg_sederhana",
+    "paket": "Bab III: Memahami Pidato Persuasif - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Pidato Persuasif, Tiga Pendekatan Retorika (Ethos, Pathos, Logos), Struktur Pidato, & Diksi Emotif",
+    "capaian_pembelajaran": "Peserta didik memahami struktur isi pidato persuasif (pernyataan posisi, tahap argumen, penguatan posisi), menerapkan pendekatan retorika (etika, emosi, logika), dan menganalisis kalimat ajakan/persuasif.",
+    "bacaan": null,
+    "teks_soal": "Tentukan apakah pernyataan analisis pendekatan\npidato persuasif berikut Benar atau Salah!\nNo.\nPernyataan Analisis Bahasa Indonesia\nBenar\nSalah\n\nPernyataan:\n(a) Kalimat “Menurut laporan WHO, kurangnya aktivitas fisik pada remaja\nmeningkatkan risiko obesitas dan penyakit metabolik hingga 40 persen”\nmerupakan penerapan pendekatan Logika (Logos).\n(b) Kalimat “Bukankah hati kita trenyuh melihat adik-adik di daerah kek-\neringan harus berjalan kaki lima kilometer hanya untuk mendapatkan\nseember air bersih?”\nmerupakan penerapan pendekatan Emosi\n(Pathos).\n(c) Bagian Pernyataan Posisi selalu diletakkan di bagian paling akhir\npidato setelah salam penutup.\n\nKombinasi analisis nilai kebenaran (Benar/Salah) yang tepat adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(a) Benar, (b) Benar, (c) Salah"
+      },
+      {
+        "label": "B",
+        "teks": "(a) Benar, (b) Salah, (c) Salah"
+      },
+      {
+        "label": "C",
+        "teks": "(a) Salah, (b) Benar, (c) Benar"
+      },
+      {
+        "label": "D",
+        "teks": "(a) Benar, (b) Benar, (c) Benar"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "(a) Benar, (b) Benar, (c) Salah. Pernyataan Posisi berada di awal bagian isi pidato, bukan\nsetelah salam penutup.",
+    "valid": true
+  },
+  {
+    "nomor": 89,
+    "tipe": "pg_sederhana",
+    "paket": "Bab III: Memahami Pidato Persuasif - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Pidato Persuasif, Tiga Pendekatan Retorika (Ethos, Pathos, Logos), Struktur Pidato, & Diksi Emotif",
+    "capaian_pembelajaran": "Peserta didik memahami struktur isi pidato persuasif (pernyataan posisi, tahap argumen, penguatan posisi), menerapkan pendekatan retorika (etika, emosi, logika), dan menganalisis kalimat ajakan/persuasif.",
+    "bacaan": null,
+    "teks_soal": "Tentukan apakah pernyataan\nkaidah kebahasaan pidato persuasif berikut Benar atau Salah!\nNo.\nPernyataan Analisis Bahasa Indonesia\nBenar\nSalah\n\nPernyataan:\n(a) Kata pencemaran, pembakaran, dan kesehatan merupakan contoh\nkata benda hasil proses nominalisasi.\n(b) Kata harus, wajib, sebaiknya, dan hendaknya merupakan kata modali-\ntas yang menyatakan keharusan atau rekomendasi dalam kalimat per-\nsuasif.\n(c) Penggunaan kata ganti kalian semua yang bodoh lebih dianjurkan\ndalam pidato persuasif daripada kata ganti marilah kita bersama-sama.\n\nKombinasi analisis nilai kebenaran (Benar/Salah) yang tepat adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(a) Benar, (b) Benar, (c) Salah"
+      },
+      {
+        "label": "B",
+        "teks": "(a) Benar, (b) Salah, (c) Salah"
+      },
+      {
+        "label": "C",
+        "teks": "(a) Salah, (b) Benar, (c) Benar"
+      },
+      {
+        "label": "D",
+        "teks": "(a) Benar, (b) Benar, (c) Benar"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "(a) Benar, (b) Benar, (c) Salah. Pidato persuasif wajib menghindari kata-kata penghinaan.",
+    "valid": true
+  },
+  {
+    "nomor": 90,
+    "tipe": "pg_sederhana",
+    "paket": "Bab III: Memahami Pidato Persuasif - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Pidato Persuasif, Tiga Pendekatan Retorika (Ethos, Pathos, Logos), Struktur Pidato, & Diksi Emotif",
+    "capaian_pembelajaran": "Peserta didik memahami struktur isi pidato persuasif (pernyataan posisi, tahap argumen, penguatan posisi), menerapkan pendekatan retorika (etika, emosi, logika), dan menganalisis kalimat ajakan/persuasif.",
+    "bacaan": null,
+    "teks_soal": "Sekolah Anda sedang menggalakkan program “Gerakan Bijak Bermedia Sosial & Stop Perundungan\nSiber (Cyberbullying)”.\nSusunlah kutipan isi Teks Pidato Persuasif yang memuat tiga bagian struktur isi secara padu: (a) Perny-\nataan Posisi (1–2 kalimat tegas); (b) Tahap Argumen yang memadukan pendekatan Etika (Ethos),\nEmosi (Pathos), dan Logika (Logos); serta (c) Penguatan Pernyataan Posisi yang menggunakan\npronomina inklusif kita, kata nominalisasi, dan kalimat ajakan konkret!\n\nBerdasarkan kaidah bahasa baku EYD Edisi V dan materi bab ini, rumusan analisis / hasil penyuntingan yang paling tepat adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "- (a) Pernyataan Posisi: Rekan-rekan pelajar yang saya banggakan, ruang media sosial seharusnya menjadi\nwadah kolaborasi karya dan inspirasi positif, bukan arena perundungan siber (cyberbullying) yang merusak\nkesehatan mental generasi muda kita.\n- (b) Tahap Ar"
+      },
+      {
+        "label": "B",
+        "teks": "Mengabaikan penggunaan tanda koma dan huruf kapital pada nama geografi serta membiarkan kata tidak baku tetap tertulis apa adanya"
+      },
+      {
+        "label": "C",
+        "teks": "Mengubah seluruh kalimat menjadi bahasa santai dan menghilangkan unsur fakta objektif dalam teks"
+      },
+      {
+        "label": "D",
+        "teks": "Menghapus seluruh paragraf wacana dan menggantinya dengan opini pribadi tanpa bukti ilmiah"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "- (a) Pernyataan Posisi: Rekan-rekan pelajar yang saya banggakan, ruang media sosial seharusnya menjadi\nwadah kolaborasi karya dan inspirasi positif, bukan arena perundungan siber (cyberbullying) yang merusak\nkesehatan mental generasi muda kita.\n- (b) Tahap Argumen (Ethos, Pathos, Logos): *Sebagai pelajar Indonesia yang beradab dan menjunjung\nnilai Pancasila, sudah menjadi kewajiban moral kita untuk menjaga adab bertutur kata baik di dunia nyata\nmaupun di kolom komentar digital (Ethos). Berdasarkan survei keamanan digital nasional, lebih dari 45\npersen remaja mengaku pernah mengalami perundungan siber berupa komentar kasar dan penyebaran foto\ntanpa izin yang menyebabkan penurunan prestasi belajar secara drastis (Logos). Bayangkan betapa hancur\ndan tertekannya perasaan seorang sahabat kita yang kehilangan rasa percaya diri dan mengurung diri di\nkamar hanya karena sebaris komentar penghinaan yang diketik tanpa berpikir panjang (Pathos).*\n- (c) Penguatan Pernyataan Posisi: *Oleh karena itu, pencegahan perundungan siber dan penciptaan\nekosistem digital yang sehat harus dimulai dari jempol kita sendiri. Marilah kita berkomitmen menggunakan\nmedia sosial secara santun, menghentikan segala bentuk komentar kebencian, dan saling mendukung karya\npositif teman-teman kita mulai hari ini!*\n\n1. Hakikat, Syarat Utama, & Tiga Struktur Baku Teks Tanggapan Kritis\na. Pengertian & Fungsi Teks Tanggapan Kritis: Teks tanggapan kritis adalah teks yang berisi penilaian, ulasan, pu-\njian, maupun kritik disertai alasan dan bukti yang logis terhadap suatu karya (lukisan, novel, film, pementasan drama)\natau fenomena/kebijakan di masyarakat.\nDua syarat mutlak dalam menyampaikan tanggapan kritis adalah objektif\n(berdasarkan fakta dan kualitas karya nyata, bukan suka/tidak suka terhadap pribadi penciptanya) serta santun dan\nkonstruktif (menggunakan bahasa yang menghargai dan memberikan saran perbaikan yang membangun). Rujukan\nresmi: Buku Siswa Bahasa Indonesia Kelas IX Kemendikdasmen (https://static.buku.kemdikbud.go.id/content/\npdf/bukuteks/kurikulum21/Bahasa-Indonesia-BS-KLS-IX.pdf).\nb. Tiga Struktur Baku Teks Tanggapan Kritis (Model Lukisan Affandi / Novel Student Hidjo): 1. Konteks (Pen-\ngenalan Karya / Isu): menjawab pertanyaan Apa yang ditanggapi? Siapa penciptanya? Kapan dan di mana karya itu\ndibuat/dipamerkan?\n(contoh: memperkenalkan lukisan ekspresionisme “Kebun Cengkeh” karya maestro Affandi atau\nnovel “Student Hidjo” karya Marco Kartodikromo). 2. Deskripsi Karya (Ringkasan Isi / Unsur Visual): memaparkan\nsecara terperinci bagian-bagian karya, teknik pembuatan, komposisi warna, goresan kuas, atau alur isi karya sehingga\npembaca mendapatkan gambaran utuh tentang objek yang ditanggapi. 3. Penilaian (Evaluasi Keunggulan, Kelemahan,\n& Saran): mengemukakan penilaian kritis berupa kelebihan/keunggulan (pujian) dan kekurangan/kelemahan (kritik)\nkarya secara berimbang disertai alasan logis serta rekomendasi perbaikan.\n2. Pujian Objektif vs Kritik Santun, Kebahasaan Evaluatif, & Rujukan 30 Soal HOTS Bab IV Kelas 9\na. Kaidah Menyampaikan Pujian dan Kritik yang Baik: - Pujian yang Baik: tulus, jujur, fokus pada keunggulan spesifik\nkarya/tindakan, dan tidak menjilat atau berlebihan (contoh: Komposisi gradasi warna jingga dan emas pada lukisan panen\nraya ini sangat hidup sehingga berhasil memancarkan kehangatan suasana pedesaan Nusantara). - Kritik yang Santun &\nKonstruktif: tidak menghina fisik/pribadi pencipta (ad hominem), menunjukkan bagian yang kurang tepat secara spesifik,\ndan selalu menyertakan solusi/saran perbaikan (contoh: Akan tetapi, proporsi anatomi tangan petani di sudut kiri kanvas\ntampak sedikit kaku; karya ini akan tampak jauh lebih sempurna apabila lekukan jari dan bayangan lengannya diperhalus).\nb. Kaidah Kebahasaan Teks Tanggapan Kritis: - Kalimat Evaluatif / Penilaian: menggunakan kata sifat penilaian\n(memukau, harmonis, orisinal, monoton, kurang proporsional). - Konjungsi Pertentangan & Penjelasan: akan tetapi,\nnamun, meskipun demikian, bahwa, karena. - Kata Rujukan & Rekomendasi: karya tersebut, lukisan ini, sebaiknya,\nalangkah lebih baik jika.\nc. Rujukan 30 Soal HOTS Bab IV Kelas 9 (3 Jenis Ujian): (1) ASPD DIY / TKAD / Ujian Sekolah: Paket Pemanta-\npan ASPD DIY Bahasa Indonesia Kelas 9 (https://id.scribd.com/document/634340229/1-PAKET-SOAL-B-INDO-\nPEMANTAPAN-ASPD-1); (2) MGMP Bahasa Indonesia SMP: Bank Soal Teks Tanggapan Kritis Kelas 9 (https://id.\nscribd.com/document/441892310/Soal-Teks-Tanggapan-Kritis-Kelas-9); (3) ASAS/ASAT Kurikulum Merdeka:\nBank Soal PAT/ASAT Bahasa Indonesia Kelas 9 (https://id.scribd.com/document/728910445/Soal-PAT-Bahasa-\nIndonesia-Kelas-9-Kurikulum-Merdeka).",
+    "valid": true
+  }
+]

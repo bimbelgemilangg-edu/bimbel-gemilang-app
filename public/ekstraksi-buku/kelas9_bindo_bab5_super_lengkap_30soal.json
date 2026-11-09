@@ -1,0 +1,1024 @@
+[
+  {
+    "nomor": 121,
+    "tipe": "pg_sederhana",
+    "paket": "Bab V: Menyajikan Teks Diskusi - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Diskusi, Struktur Isu-Argumen Pro-Argumen Kontra-Simpulan, Konjungsi Pertentangan, & Sikap Moderat",
+    "capaian_pembelajaran": "Peserta didik memahami struktur teks diskusi (isu kontroversial, argumen mendukung/pro, argumen menentang/kontra, simpulan jalan tengah), menggunakan konjungsi perlawanan antarkalimat, serta merumuskan rekomendasi berimbang.",
+    "bacaan": null,
+    "teks_soal": "Perhatikan kutipan teks berikut!\n(1) Pendidikan dan sekolah merupakan dua elemen yang saling berkaitan dan membentuk fondasi utama\ndalam pembangunan individu dan masyarakat. (2) Sekolah menjadi panggung utama bagi proses pen-\ndidikan dan keduanya saling melengkapi untuk membentuk dasar bagi perkembangan manusia. (3)\nUntuk memberikan layanan pendidikan yang baik untuk siswa, fasilitas menjadi faktor penting dalam\nmemberikan kenyamanan saat pengajaran di kelas. (4) Apabila fasilitas terpenuhi, proses penyerapan\nmateri pun dapat berjalan lancar.\nKalimat pengandaian (kondisional) dalam kutipan di atas ditunjukkan oleh kalimat bernomor ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(1)"
+      },
+      {
+        "label": "C",
+        "teks": "(3)"
+      },
+      {
+        "label": "B",
+        "teks": "(2)"
+      },
+      {
+        "label": "D",
+        "teks": "(4)"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Kalimat (4) diawali dengan konjungsi pengandaian/syarat Apabila (\"Apabila fasilitas ter-\npenuhi, proses penyerapan materi pun dapat berjalan lancar.\").",
+    "valid": true
+  },
+  {
+    "nomor": 122,
+    "tipe": "pg_sederhana",
+    "paket": "Bab V: Menyajikan Teks Diskusi - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Diskusi, Struktur Isu-Argumen Pro-Argumen Kontra-Simpulan, Konjungsi Pertentangan, & Sikap Moderat",
+    "capaian_pembelajaran": "Peserta didik memahami struktur teks diskusi (isu kontroversial, argumen mendukung/pro, argumen menentang/kontra, simpulan jalan tengah), menggunakan konjungsi perlawanan antarkalimat, serta merumuskan rekomendasi berimbang.",
+    "bacaan": null,
+    "teks_soal": "Perhatikan kutipan teks diskusi berikut!\nMeskipun teknologi membawa kemudahan akses informasi dan konektivitas, kecanduan HP dapat memi-\nliki dampak serius, baik secara fisik maupun mental. Dari segi fisik, penggunaan HP yang berlebihan da-\npat memengaruhi postur tubuh menjadi kurang baik serta menyebabkan masalah tulang belakang, leher,\ndan mata. Sementara itu, dari segi mental, generasi Z berpotensi terkena kecemasan dan depresi. [...]\nArgumen penguat yang tepat untuk mengisi bagian rumpang di akhir paragraf di atas adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Perbandingan diri yang konstan dengan kehidupan sempurna yang ditampilkan orang lain di media sosial juga dapat meningkatkan tekanan mental."
+      },
+      {
+        "label": "B",
+        "teks": "Layar telepon pintar terbuat dari kaca keras yang dilapisi pelindung antigores."
+      },
+      {
+        "label": "C",
+        "teks": "Harga telepon pintar di pasar elektronik mengalami penurunan setiap akhir tahun."
+      },
+      {
+        "label": "D",
+        "teks": "Banyak pelajar menggunakan kalkulator di dalam telepon pintar untuk menghitung belanjaan."
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "A. Kalimat sebelum bagian rumpang membahas dampak mental (kecemasan dan depresi), se-\nhingga kalimat penguat yang paling koheren adalah perbandingan sosial di media sosial yang meningkatkan\ntekanan mental (Opsi A).",
+    "valid": true
+  },
+  {
+    "nomor": 123,
+    "tipe": "pg_sederhana",
+    "paket": "Bab V: Menyajikan Teks Diskusi - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Diskusi, Struktur Isu-Argumen Pro-Argumen Kontra-Simpulan, Konjungsi Pertentangan, & Sikap Moderat",
+    "capaian_pembelajaran": "Peserta didik memahami struktur teks diskusi (isu kontroversial, argumen mendukung/pro, argumen menentang/kontra, simpulan jalan tengah), menggunakan konjungsi perlawanan antarkalimat, serta merumuskan rekomendasi berimbang.",
+    "bacaan": {
+      "teks": "(1) Dalam mencukupi kebutuhan energi sehari-hari, warga Indonesia sering mengonsumsi nasi putih. (2)\nNasi telah menjadi teman akrab bagi warga Indonesia. (3) Salah satu jenis pangan ini memiliki dampak\npositif dan negatif bagi tubuh, tergantung pada jumlah konsumsi, jenis nasi, dan pola makan secara\nkeseluruhan.\n(4) Berdasarkan dampak positifnya, terdapat tiga manfaat utama. (5) Pertama, nasi menjadi sumber\nenergi utama karena kandungan karbohidrat kompleksnya. (6) Kedua, nasi mengandung nutrisi penting\nseperti vitamin B, mineral, dan serat. (7) Nasi merah dan nasi cokelat memiliki lebih banyak serat dari-\npada nasi putih. (8) Ketiga, serat dalam nasi membantu menjaga kesehatan saluran pencernaan. (9)\n[...]\n(10) Selain dampak positif, nasi juga dapat memberikan dampak negatif bagi tubuh. (11) Pertama, men-\ngonsumsi nasi secara berlebihan akan menyebabkan kenaikan berat badan. (12) Kedua, nasi putih\nmemiliki indeks glikemik tinggi sehingga dapat memicu lonjakan gula darah.\n(13) Ketiga, beberapa\nmetode pemrosesan nasi putih dapat menyebabkan hilangnya nutrisi.",
+      "grup": "bacaan_bab5_konsumsi_nasi"
+    },
+    "teks_soal": "Fokus pembahasan utama (isu) yang terdapat dalam teks diskusi tersebut adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Cara menanam padi organik di lahan sawah irigasi"
+      },
+      {
+        "label": "B",
+        "teks": "Dampak positif dan negatif dalam mengonsumsi nasi bagi kesehatan tubuh"
+      },
+      {
+        "label": "C",
+        "teks": "Sejarah masuknya tanaman padi ke wilayah Asia Tenggara"
+      },
+      {
+        "label": "D",
+        "teks": "Perbandingan harga beras merah dan beras putih di pasar tradisional"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "B. Paragraf pertama menetapkan isu dampak positif dan negatif konsumsi nasi, paragraf ke-\ndua menguraikan argumen dampak positif (kalimat 4–8), dan paragraf ketiga menguraikan dampak negatif\n(kalimat 10–13).",
+    "valid": true
+  },
+  {
+    "nomor": 124,
+    "tipe": "pg_sederhana",
+    "paket": "Bab V: Menyajikan Teks Diskusi - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Diskusi, Struktur Isu-Argumen Pro-Argumen Kontra-Simpulan, Konjungsi Pertentangan, & Sikap Moderat",
+    "capaian_pembelajaran": "Peserta didik memahami struktur teks diskusi (isu kontroversial, argumen mendukung/pro, argumen menentang/kontra, simpulan jalan tengah), menggunakan konjungsi perlawanan antarkalimat, serta merumuskan rekomendasi berimbang.",
+    "bacaan": {
+      "teks": "(1) Dalam mencukupi kebutuhan energi sehari-hari, warga Indonesia sering mengonsumsi nasi putih. (2)\nNasi telah menjadi teman akrab bagi warga Indonesia. (3) Salah satu jenis pangan ini memiliki dampak\npositif dan negatif bagi tubuh, tergantung pada jumlah konsumsi, jenis nasi, dan pola makan secara\nkeseluruhan.\n(4) Berdasarkan dampak positifnya, terdapat tiga manfaat utama. (5) Pertama, nasi menjadi sumber\nenergi utama karena kandungan karbohidrat kompleksnya. (6) Kedua, nasi mengandung nutrisi penting\nseperti vitamin B, mineral, dan serat. (7) Nasi merah dan nasi cokelat memiliki lebih banyak serat dari-\npada nasi putih. (8) Ketiga, serat dalam nasi membantu menjaga kesehatan saluran pencernaan. (9)\n[...]\n(10) Selain dampak positif, nasi juga dapat memberikan dampak negatif bagi tubuh. (11) Pertama, men-\ngonsumsi nasi secara berlebihan akan menyebabkan kenaikan berat badan. (12) Kedua, nasi putih\nmemiliki indeks glikemik tinggi sehingga dapat memicu lonjakan gula darah.\n(13) Ketiga, beberapa\nmetode pemrosesan nasi putih dapat menyebabkan hilangnya nutrisi.",
+      "grup": "bacaan_bab5_konsumsi_nasi"
+    },
+    "teks_soal": "Berdasarkan teks diskusi Mengonsumsi Nasi pada soal nomor 3, paragraf Simpulan yang paling tepat\nuntuk menutup kedua sisi pembahasan (positif dan negatif) pada kutipan di atas adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Nasi putih tidak boleh dimakan sama sekali oleh warga Indonesia karena selalu menyebabkan penyakit berbahaya."
+      },
+      {
+        "label": "B",
+        "teks": "Mengonsumsi nasi memiliki dampak positif dan negatif; oleh karena itu, memilih jenis nasi yang tepat, mengontrol porsi, dan menjaga keseimbangan lauk-sayur dapat membantu kita memperoleh manfaat kesehatan nasi tanpa menimbulkan risiko."
+      },
+      {
+        "label": "C",
+        "teks": "Semua orang wajib makan nasi putih lima piring setiap kali makan agar tubuh tidak kekurangan kar- bohidrat."
+      },
+      {
+        "label": "D",
+        "teks": "Proses memasak nasi menggunakan penanak nasi listrik membutuhkan waktu sekitar tiga puluh menit."
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "B. Simpulan teks diskusi wajib merangkum sisi positif dan negatif secara berimbang serta\nmemberikan rekomendasi jalan tengah (mengontrol porsi dan memilih jenis nasi secara seimbang).",
+    "valid": true
+  },
+  {
+    "nomor": 125,
+    "tipe": "pg_sederhana",
+    "paket": "Bab V: Menyajikan Teks Diskusi - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Diskusi, Struktur Isu-Argumen Pro-Argumen Kontra-Simpulan, Konjungsi Pertentangan, & Sikap Moderat",
+    "capaian_pembelajaran": "Peserta didik memahami struktur teks diskusi (isu kontroversial, argumen mendukung/pro, argumen menentang/kontra, simpulan jalan tengah), menggunakan konjungsi perlawanan antarkalimat, serta merumuskan rekomendasi berimbang.",
+    "bacaan": {
+      "teks": "(1) Dalam mencukupi kebutuhan energi sehari-hari, warga Indonesia sering mengonsumsi nasi putih. (2)\nNasi telah menjadi teman akrab bagi warga Indonesia. (3) Salah satu jenis pangan ini memiliki dampak\npositif dan negatif bagi tubuh, tergantung pada jumlah konsumsi, jenis nasi, dan pola makan secara\nkeseluruhan.\n(4) Berdasarkan dampak positifnya, terdapat tiga manfaat utama. (5) Pertama, nasi menjadi sumber\nenergi utama karena kandungan karbohidrat kompleksnya. (6) Kedua, nasi mengandung nutrisi penting\nseperti vitamin B, mineral, dan serat. (7) Nasi merah dan nasi cokelat memiliki lebih banyak serat dari-\npada nasi putih. (8) Ketiga, serat dalam nasi membantu menjaga kesehatan saluran pencernaan. (9)\n[...]\n(10) Selain dampak positif, nasi juga dapat memberikan dampak negatif bagi tubuh. (11) Pertama, men-\ngonsumsi nasi secara berlebihan akan menyebabkan kenaikan berat badan. (12) Kedua, nasi putih\nmemiliki indeks glikemik tinggi sehingga dapat memicu lonjakan gula darah.\n(13) Ketiga, beberapa\nmetode pemrosesan nasi putih dapat menyebabkan hilangnya nutrisi.",
+      "grup": "bacaan_bab5_konsumsi_nasi"
+    },
+    "teks_soal": "pengandaian lanjutan yang paling tepat untuk mengisi bagian rumpang pada kalimat (9) adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Di banyak negara Eropa, roti gandum lebih sering dikonsumsi daripada nasi putih."
+      },
+      {
+        "label": "B",
+        "teks": "Seseorang yang alergi terhadap ikan laut tetap dapat memakan nasi goreng."
+      },
+      {
+        "label": "C",
+        "teks": "Harga beras basmati di swalayan lebih mahal daripada beras lokal."
+      },
+      {
+        "label": "D",
+        "teks": "Jika seseorang dapat mengonsumsi nasi dengan kadar/porsi yang tepat, kandungan seratnya dapat membantu mengendalikan berat badan."
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Kalimat (8) membahas manfaat serat dalam nasi, sehingga kalimat (9) yang paling koheren\ndan berbentuk pengandaian (Jika...) adalah kalimat pada opsi D.",
+    "valid": true
+  },
+  {
+    "nomor": 126,
+    "tipe": "pg_sederhana",
+    "paket": "Bab V: Menyajikan Teks Diskusi - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Diskusi, Struktur Isu-Argumen Pro-Argumen Kontra-Simpulan, Konjungsi Pertentangan, & Sikap Moderat",
+    "capaian_pembelajaran": "Peserta didik memahami struktur teks diskusi (isu kontroversial, argumen mendukung/pro, argumen menentang/kontra, simpulan jalan tengah), menggunakan konjungsi perlawanan antarkalimat, serta merumuskan rekomendasi berimbang.",
+    "bacaan": null,
+    "teks_soal": "Perhatikan kalimat-kalimat dalam teks diskusi berikut:\n(1) Sebagian warga mendukung pembangunan pabrik tekstil di desa karena membuka lapangan kerja\nbaru, sedangkan sebagian warga lainnya menolak karena khawatir limbah cairnya mencemari sungai\nirigasi.\n(2) Kantin sekolah telah menyediakan tempat sampah terpilah. Akan tetapi, masih banyak siswa yang\nmencampur sampah organik dan plastik dalam satu tong.\n(3) Kecerdasan buatan (Artificial Intelligence) memang mempermudah pencarian informasi, tetapi keter-\ngantungan berlebihan dapat menumpulkan daya kritis siswa.\n(4) Meskipun demikian, pemanfaatan teknologi tetap dapat berjalan positif apabila diiringi literasi etika\ndigital yang kuat.\nManakah di antara kata bercetak tebal di atas yang merupakan konjungsi pertentangan antarkalimat\n(ditulis di awal kalimat baru dan diikuti tanda koma)?",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Hanya kata sedangkan pada kalimat (1)"
+      },
+      {
+        "label": "B",
+        "teks": "sedangkan pada kalimat (1) dan tetapi pada kalimat (3)"
+      },
+      {
+        "label": "C",
+        "teks": "Akan tetapi pada kalimat (2) dan Meskipun demikian pada kalimat (4)"
+      },
+      {
+        "label": "D",
+        "teks": "Hanya kata tetapi pada kalimat (3)"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "C. Akan tetapi dan Meskipun demikian merupakan konjungsi antarkalimat yang diletakkan di\nawal kalimat baru dan diikuti tanda koma.",
+    "valid": true
+  },
+  {
+    "nomor": 127,
+    "tipe": "pg_sederhana",
+    "paket": "Bab V: Menyajikan Teks Diskusi - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Diskusi, Struktur Isu-Argumen Pro-Argumen Kontra-Simpulan, Konjungsi Pertentangan, & Sikap Moderat",
+    "capaian_pembelajaran": "Peserta didik memahami struktur teks diskusi (isu kontroversial, argumen mendukung/pro, argumen menentang/kontra, simpulan jalan tengah), menggunakan konjungsi perlawanan antarkalimat, serta merumuskan rekomendasi berimbang.",
+    "bacaan": null,
+    "teks_soal": "Bacalah paragraf teks diskusi berikut untuk menguji kepaduan maknanya (koherensi):\n\"(1) Pemberian pekerjaan rumah (PR) kepada siswa SMP masih menjadi perdebatan di kalangan pen-\ndidik. (2) Pihak yang setuju berpendapat bahwa PR melatih kemandirian belajar, tanggung jawab waktu,\ndan pengulangan materi yang telah diajarkan di kelas. (3) Selain itu, melalui pengerjaan PR, orang tua\ndi rumah dapat ikut memantau perkembangan pemahaman akademik putra-putrinya. (4) Kemarin sore\ntim basket SMP Harapan berhasil mengalahkan SMP Pelita dengan skor tipis 42-40 di gedung olahraga\nkabupaten. (5) Sebaliknya, pihak yang menolak menilai bahwa PR yang terlalu banyak justru mengurangi\nwaktu istirahat dan waktu bermain anak setelah seharian belajar di sekolah.\"\nAgar paragraf teks diskusi di atas menjadi koheren (padu secara makna), kalimat sumbang yang harus\ndihilangkan adalah kalimat nomor ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Kalimat (5)"
+      },
+      {
+        "label": "C",
+        "teks": "Kalimat (2)"
+      },
+      {
+        "label": "B",
+        "teks": "Kalimat (1)"
+      },
+      {
+        "label": "D",
+        "teks": "Kalimat (4)"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Kalimat (4) membahas skor pertandingan basket yang sama sekali tidak berkaitan dengan\ntopik pemberian PR (kalimat sumbang).",
+    "valid": true
+  },
+  {
+    "nomor": 128,
+    "tipe": "pg_sederhana",
+    "paket": "Bab V: Menyajikan Teks Diskusi - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Diskusi, Struktur Isu-Argumen Pro-Argumen Kontra-Simpulan, Konjungsi Pertentangan, & Sikap Moderat",
+    "capaian_pembelajaran": "Peserta didik memahami struktur teks diskusi (isu kontroversial, argumen mendukung/pro, argumen menentang/kontra, simpulan jalan tengah), menggunakan konjungsi perlawanan antarkalimat, serta merumuskan rekomendasi berimbang.",
+    "bacaan": null,
+    "teks_soal": "Perhatikan kutipan paragraf berikut untuk menganalisis kohesi gramatikal:\n*\"Kementerian Pendidikan terus mendorong pelaksanaan Asesmen Nasional Berbasis Komputer\n(ANBK) di seluruh jenjang sekolah. Program tersebut dirancang bukan untuk menghukum sekolah,\nmelainkan untuk memetakan mutu literasi, numerasi, dan karakter siswa secara nasional. Melalui evalu-\nasi ini, pemerintah daerah dapat menyusun kebijakan perbaikan kualitas pengajaran secara lebih tepat\nsasaran.\"*\nFrasa bercetak tebal (Program tersebut dan evaluasi ini) yang merujuk kembali pada konsep Asesmen\nNasional Berbasis Komputer (ANBK) di kalimat pertama berfungsi sebagai penanda ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Majas hiperbola yang melebih-lebihkan kenyataan"
+      },
+      {
+        "label": "B",
+        "teks": "Kalimat perintah imperatif dalam teks prosedur"
+      },
+      {
+        "label": "C",
+        "teks": "Kohesi gramatikal rujukan (referensi anaforis) yang menjaga kepaduan bentuk antarkalimat"
+      },
+      {
+        "label": "D",
+        "teks": "Kesalahan pemborosan kata yang harus dihapus"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "C. Frasa Program tersebut dan evaluasi ini merujuk ke belakang (anaforis) pada ANBK sebagai\npenanda kohesi gramatikal.",
+    "valid": true
+  },
+  {
+    "nomor": 129,
+    "tipe": "pg_sederhana",
+    "paket": "Bab V: Menyajikan Teks Diskusi - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Diskusi, Struktur Isu-Argumen Pro-Argumen Kontra-Simpulan, Konjungsi Pertentangan, & Sikap Moderat",
+    "capaian_pembelajaran": "Peserta didik memahami struktur teks diskusi (isu kontroversial, argumen mendukung/pro, argumen menentang/kontra, simpulan jalan tengah), menggunakan konjungsi perlawanan antarkalimat, serta merumuskan rekomendasi berimbang.",
+    "bacaan": null,
+    "teks_soal": "Bacalah paragraf Argumen Pendukung (Pro) tentang \"Kewajiban Mengikuti Ekstrakurikuler Pramuka di\nSMP\" berikut!\n\"Pihak yang mendukung kebijakan ini menegaskan bahwa kegiatan kepramukaan merupakan wahana\npendidikan karakter yang tidak tergantikan oleh pelajaran di dalam ruang kelas.\nMelalui kegiatan\nberkemah, tali-temali, dan penjelajahan regu, siswa dilatih untuk mandiri, disiplin, bekerja sama dalam\ntim, serta memiliki kepedulian sosial terhadap lingkungan sekitar.\"\nKalimat Argumen Menentang (Kontra) yang paling tepat dan logis untuk menyandingkan paragraf di\natas dalam teks diskusi adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Selain itu, kegiatan pramuka juga sangat menyenangkan karena siswa dapat bernyanyi bersama di sekitar api unggun."
+      },
+      {
+        "label": "B",
+        "teks": "Namun, sebagian orang tua dan siswa berpendapat bahwa sifat wajib pada kegiatan pramuka sore hari sering kali berbenturan dengan jadwal bimbingan belajar akademik maupun pengembangan bakat spesifik siswa di bidang olahraga dan seni."
+      },
+      {
+        "label": "C",
+        "teks": "Oleh karena itu, seluruh mata pelajaran matematika dan bahasa Indonesia sebaiknya diganti dengan kegiatan berkemah setiap hari."
+      },
+      {
+        "label": "D",
+        "teks": "Pramuka Indonesia menggunakan seragam berwarna cokelat muda dan cokelat tua lengkap dengan setangan leher merah putih."
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "B. Argumen Kontra menyandingkan manfaat pramuka dengan kendala benturan jadwal sore\nhari menggunakan konjungsi Namun,.",
+    "valid": true
+  },
+  {
+    "nomor": 130,
+    "tipe": "pg_sederhana",
+    "paket": "Bab V: Menyajikan Teks Diskusi - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Diskusi, Struktur Isu-Argumen Pro-Argumen Kontra-Simpulan, Konjungsi Pertentangan, & Sikap Moderat",
+    "capaian_pembelajaran": "Peserta didik memahami struktur teks diskusi (isu kontroversial, argumen mendukung/pro, argumen menentang/kontra, simpulan jalan tengah), menggunakan konjungsi perlawanan antarkalimat, serta merumuskan rekomendasi berimbang.",
+    "bacaan": null,
+    "teks_soal": "Bacalah kutipan teks diskusi tentang \"Konsumsi Mi Instan di Kalangan Pelajar\" berikut!\n(1) Mi instan telah menjadi salah satu makanan favorit remaja karena rasanya yang gurih, harganya ter-\njangkau, dan cara penyajiannya sangat praktis hanya dalam waktu tiga menit. (2) Bagi siswa yang tinggal\ndi asrama atau orang tuanya sibuk bekerja, mi instan sering menjadi penyelamat saat lapar melanda. (3)\nAkan tetapi, para ahli gizi memperingatkan bahwa konsumsi mi instan setiap hari tanpa tambahan sayur\ndan protein sangat berisiko bagi kesehatan karena tingginya kadar natrium (garam) pada bumbunya serta\nrendahnya kandungan serat dan vitamin. (4) Oleh sebab itu, mi instan tetap boleh dikonsumsi sesekali\nsecara bijak dengan membatasi porsi bumbunya serta selalu menambahkan sayuran hijau dan sebutir\ntelur rebus.\nPemetaan struktur teks diskusi yang tepat untuk keempat kalimat pada paragraf di atas adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Kalimat (1) hingga (4) merupakan teks prosedur langkah memasak mi instan di dapur"
+      },
+      {
+        "label": "B",
+        "teks": "Kalimat (1) Simpulan; Kalimat (2) Argumen Kontra; Kalimat (3) Argumen Pro; Kalimat (4) Isu"
+      },
+      {
+        "label": "C",
+        "teks": "Keempat kalimat tersebut seluruhnya merupakan Argumen Kontra yang melarang produksi mi instan"
+      },
+      {
+        "label": "D",
+        "teks": "Kalimat (1) Isu & latar belakang; Kalimat (2) Argumen Pro; Kalimat (3) Argumen Kontra; Kalimat (4) Simpulan/Saran jalan tengah"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Kalimat (1) Isu →Kalimat (2) Argumen Pro →Kalimat (3) Argumen Kontra →Kalimat (4)\nSimpulan jalan tengah.",
+    "valid": true
+  },
+  {
+    "nomor": 131,
+    "tipe": "pg_sederhana",
+    "paket": "Bab V: Menyajikan Teks Diskusi - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Diskusi, Struktur Isu-Argumen Pro-Argumen Kontra-Simpulan, Konjungsi Pertentangan, & Sikap Moderat",
+    "capaian_pembelajaran": "Peserta didik memahami struktur teks diskusi (isu kontroversial, argumen mendukung/pro, argumen menentang/kontra, simpulan jalan tengah), menggunakan konjungsi perlawanan antarkalimat, serta merumuskan rekomendasi berimbang.",
+    "bacaan": null,
+    "teks_soal": "Dalam memimpin sebuah diskusi kelas atau diskusi panel, tugas utama seorang Moderator adalah\n....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Membuka diskusi, memperkenalkan topik dan narasumber, mengatur lalu lintas pembicaraan secara adil dan netral (tidak memihak Pro maupun Kontra), menjaga ketertiban waktu, serta merangkum hasil diskusi di akhir acara"
+      },
+      {
+        "label": "B",
+        "teks": "Memihak secara terang-terangan kepada Tim Pro dan mematikan mikrofon milik Tim Kontra"
+      },
+      {
+        "label": "C",
+        "teks": "Memarahi peserta diskusi yang mengajukan pertanyaan kritis"
+      },
+      {
+        "label": "D",
+        "teks": "Menggantikan seluruh narasumber untuk berpidato sendirian selama dua jam penuh"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "A. Moderator bertugas memandu jalannya diskusi secara adil, netral, tertib waktu, dan\nmerangkum hasil diskusi.",
+    "valid": true
+  },
+  {
+    "nomor": 132,
+    "tipe": "pg_sederhana",
+    "paket": "Bab V: Menyajikan Teks Diskusi - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Diskusi, Struktur Isu-Argumen Pro-Argumen Kontra-Simpulan, Konjungsi Pertentangan, & Sikap Moderat",
+    "capaian_pembelajaran": "Peserta didik memahami struktur teks diskusi (isu kontroversial, argumen mendukung/pro, argumen menentang/kontra, simpulan jalan tengah), menggunakan konjungsi perlawanan antarkalimat, serta merumuskan rekomendasi berimbang.",
+    "bacaan": null,
+    "teks_soal": "Sementara itu, tugas seorang Notulis (Sekretaris Diskusi) dalam sebuah forum diskusi resmi adalah\n....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Memutuskan siapa pemenang perkelahian di antara peserta diskusi"
+      },
+      {
+        "label": "B",
+        "teks": "Menyediakan hidangan makanan ringan dan minuman bagi para penonton"
+      },
+      {
+        "label": "C",
+        "teks": "Mencatat secara cermat identitas jalannya diskusi, pokok-pokok argumen dari pihak pendukung maupun penentang, daftar pertanyaan peserta beserta tanggapannya, serta rumusan simpulan akhir diskusi"
+      },
+      {
+        "label": "D",
+        "teks": "Menghapus seluruh pendapat peserta yang tidak sesuai dengan pendapat pribadi notulis"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "C. Notulis bertugas mencatat jalannya diskusi, pokok argumen kedua pihak, tanya jawab, dan\nsimpulan akhir.",
+    "valid": true
+  },
+  {
+    "nomor": 133,
+    "tipe": "pg_sederhana",
+    "paket": "Bab V: Menyajikan Teks Diskusi - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Diskusi, Struktur Isu-Argumen Pro-Argumen Kontra-Simpulan, Konjungsi Pertentangan, & Sikap Moderat",
+    "capaian_pembelajaran": "Peserta didik memahami struktur teks diskusi (isu kontroversial, argumen mendukung/pro, argumen menentang/kontra, simpulan jalan tengah), menggunakan konjungsi perlawanan antarkalimat, serta merumuskan rekomendasi berimbang.",
+    "bacaan": null,
+    "teks_soal": "Perhatikan etika menyampaikan sanggahan atau ketidaksetujuan dalam forum diskusi lisan berikut! Man-\nakah kalimat sanggahan yang paling santun, objektif, dan sesuai etika berdiskusi?",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "\"Pokoknya usulan kelompok kami yang paling benar dan kelompok lain wajib mengikuti kemauan kami!\""
+      },
+      {
+        "label": "B",
+        "teks": "\"Pendapat Penyaji tadi sangat konyol dan tidak masuk akal sama sekali karena tidak pernah belanja di kantin!\""
+      },
+      {
+        "label": "C",
+        "teks": "\"Saya menolak keras seluruh isi makalah Penyaji karena suara Penyaji kurang keras saat berbicara!\""
+      },
+      {
+        "label": "D",
+        "teks": "\"Terima kasih atas kesempatan yang diberikan Moderator. Saya menghargai gagasan Penyaji men- genai penghapusan kantin plastik, tetapi menurut hemat saya waktu transisi satu minggu terlalu singkat bagi pedagang kecil; alangkah baiknya jika diberikan masa sosialisasi dan pendampingan selama satu bulan terlebih dahulu.\""
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Sanggahan disampaikan dengan menghargai pendapat penyaji terlebih dahulu, lalu menge-\nmukakan alasan logis dan solusi alternatif secara santun.",
+    "valid": true
+  },
+  {
+    "nomor": 134,
+    "tipe": "pg_sederhana",
+    "paket": "Bab V: Menyajikan Teks Diskusi - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Diskusi, Struktur Isu-Argumen Pro-Argumen Kontra-Simpulan, Konjungsi Pertentangan, & Sikap Moderat",
+    "capaian_pembelajaran": "Peserta didik memahami struktur teks diskusi (isu kontroversial, argumen mendukung/pro, argumen menentang/kontra, simpulan jalan tengah), menggunakan konjungsi perlawanan antarkalimat, serta merumuskan rekomendasi berimbang.",
+    "bacaan": {
+      "teks": "TEKS 1: ARGUMEN MENDUKUNG (PRO) PENG-\nGUNAAN AI\nTEKS 2: ARGUMEN MENENTANG / KRITIS (KON-\nTRA) PENGGUNAAN AI\nKehadiran teknologi Kecerdasan Buatan (Artificial In-\ntelligence / AI) memberikan peluang pemerataan kual-\nitas belajar bagi siswa SMP di berbagai daerah. Siswa\nyang kesulitan memahami penjelasan di kelas kini da-\npat menggunakan aplikasi AI sebagai tutor mandiri di\nrumah untuk meminta contoh soal latihan, memeriksa\nkesalahan tata bahasa karangan, atau merangkum\nbacaan panjang.\nSelama digunakan sebagai alat bantu pendamping\nberpikir, AI terbukti meningkatkan efisiensi belajar dan\nliterasi digital pelajar di abad ke-21.\nDi balik kemudahannya, penggunaan aplikasi AI tanpa\npengawasan ketat justru mengancam daya pikir kri-\ntis dan kejujuran akademik pelajar SMP. Banyak guru\nmengeluhkan siswa yang menyerahkan tugas esai\nhasil buatan AI secara instan tanpa memahami isinya\nsama sekali.\nSelain\nmenumpulkan\nketerampilan\nmenulis\ndan\nbernalar mandiri (cognitive offloading), informasi yang\ndihasilkan oleh mesin AI terkadang mengandung\nkekeliruan fakta (halusinasi data) yang berbahaya jika\nditelan mentah-mentah oleh siswa.",
+      "grup": "bacaan_bab5_diskusi_ai"
+    },
+    "teks_soal": "Pernyataan yang paling tepat membandingkan fokus argumen pada Teks 1 dan Teks 2 di atas adalah\n....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Kedua teks tersebut memiliki argumen yang sama persis dan tidak menunjukkan perbedaan sudut pandang"
+      },
+      {
+        "label": "B",
+        "teks": "Teks 1 menolak penggunaan komputer di sekolah; sedangkan Teks 2 mewajibkan seluruh siswa mengerjakan ujian menggunakan AI"
+      },
+      {
+        "label": "C",
+        "teks": "Teks 1 membahas sejarah penemuan listrik; sedangkan Teks 2 membahas cara memperbaiki layar gawai yang pecah"
+      },
+      {
+        "label": "D",
+        "teks": "Teks 1 (Pihak Pro) menyoroti manfaat AI sebagai tutor mandiri yang meningkatkan efisiensi belajar dan pemerataan akses ilmu; sedangkan Teks 2 (Pihak Kontra) menyoroti risiko penurunan daya nalar mandiri (cognitive offloading), pelanggaran kejujuran akademik, dan potensi kekeliruan data (halusinasi) jika AI digunakan tanpa kendali"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Sesuai esensi Teks Diskusi (Bab V Kelas 9), Teks 1 memaparkan argumen pendukung\n(Pro) dari sisi efisiensi dan tutor mandiri, sedangkan Teks 2 memaparkan argumen penentang/pengimbang\n(Kontra) dari sisi etika kejujuran, ketumpulan nalar, dan risiko halusinasi data AI.",
+    "valid": true
+  },
+  {
+    "nomor": 135,
+    "tipe": "pg_sederhana",
+    "paket": "Bab V: Menyajikan Teks Diskusi - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Diskusi, Struktur Isu-Argumen Pro-Argumen Kontra-Simpulan, Konjungsi Pertentangan, & Sikap Moderat",
+    "capaian_pembelajaran": "Peserta didik memahami struktur teks diskusi (isu kontroversial, argumen mendukung/pro, argumen menentang/kontra, simpulan jalan tengah), menggunakan konjungsi perlawanan antarkalimat, serta merumuskan rekomendasi berimbang.",
+    "bacaan": {
+      "teks": "TEKS 1: ARGUMEN MENDUKUNG (PRO) PENG-\nGUNAAN AI\nTEKS 2: ARGUMEN MENENTANG / KRITIS (KON-\nTRA) PENGGUNAAN AI\nKehadiran teknologi Kecerdasan Buatan (Artificial In-\ntelligence / AI) memberikan peluang pemerataan kual-\nitas belajar bagi siswa SMP di berbagai daerah. Siswa\nyang kesulitan memahami penjelasan di kelas kini da-\npat menggunakan aplikasi AI sebagai tutor mandiri di\nrumah untuk meminta contoh soal latihan, memeriksa\nkesalahan tata bahasa karangan, atau merangkum\nbacaan panjang.\nSelama digunakan sebagai alat bantu pendamping\nberpikir, AI terbukti meningkatkan efisiensi belajar dan\nliterasi digital pelajar di abad ke-21.\nDi balik kemudahannya, penggunaan aplikasi AI tanpa\npengawasan ketat justru mengancam daya pikir kri-\ntis dan kejujuran akademik pelajar SMP. Banyak guru\nmengeluhkan siswa yang menyerahkan tugas esai\nhasil buatan AI secara instan tanpa memahami isinya\nsama sekali.\nSelain\nmenumpulkan\nketerampilan\nmenulis\ndan\nbernalar mandiri (cognitive offloading), informasi yang\ndihasilkan oleh mesin AI terkadang mengandung\nkekeliruan fakta (halusinasi data) yang berbahaya jika\nditelan mentah-mentah oleh siswa.",
+      "grup": "bacaan_bab5_diskusi_ai"
+    },
+    "teks_soal": "rumusan simpulan yang paling tepat adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Seluruh sekolah harus menutup akses internet selamanya agar tidak ada siswa yang mengenal teknologi AI"
+      },
+      {
+        "label": "B",
+        "teks": "Teknologi AI tidak perlu dilarang secara total, tetapi penggunaannya oleh pelajar SMP wajib diatur melalui pedoman etika akademik yang jelas: AI boleh dimanfaatkan sebagai sarana diskusi konsep dan latihan mandiri, namun tugas menulis serta ujian evaluasi tetap harus dikerjakan sendiri oleh siswa disertai verifikasi kebenaran sumber buku"
+      },
+      {
+        "label": "C",
+        "teks": "Siswa dibebaskan menyalin seluruh pekerjaan rumah dari AI tanpa perlu membaca buku pelajaran lagi"
+      },
+      {
+        "label": "D",
+        "teks": "Guru tidak perlu lagi memeriksa tugas karangan siswa karena mesin AI tidak pernah berbuat salah"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "B. Simpulan teks diskusi yang baik bersifat imparsial (tidak berat sebelah) dan menyintesis\nkedua kubu: mengakomodasi manfaat AI sebagai mitra belajar konsep (Teks 1) sekaligus menerapkan rambu-\nrambu kejujuran akademik dan verifikasi sumber untuk mencegah kemalasan berpikir (Teks 2).",
+    "valid": true
+  },
+  {
+    "nomor": 136,
+    "tipe": "pg_sederhana",
+    "paket": "Bab V: Menyajikan Teks Diskusi - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Diskusi, Struktur Isu-Argumen Pro-Argumen Kontra-Simpulan, Konjungsi Pertentangan, & Sikap Moderat",
+    "capaian_pembelajaran": "Peserta didik memahami struktur teks diskusi (isu kontroversial, argumen mendukung/pro, argumen menentang/kontra, simpulan jalan tengah), menggunakan konjungsi perlawanan antarkalimat, serta merumuskan rekomendasi berimbang.",
+    "bacaan": {
+      "teks": "TEKS 1: ARGUMEN MENDUKUNG (PRO) PENG-\nGUNAAN AI\nTEKS 2: ARGUMEN MENENTANG / KRITIS (KON-\nTRA) PENGGUNAAN AI\nKehadiran teknologi Kecerdasan Buatan (Artificial In-\ntelligence / AI) memberikan peluang pemerataan kual-\nitas belajar bagi siswa SMP di berbagai daerah. Siswa\nyang kesulitan memahami penjelasan di kelas kini da-\npat menggunakan aplikasi AI sebagai tutor mandiri di\nrumah untuk meminta contoh soal latihan, memeriksa\nkesalahan tata bahasa karangan, atau merangkum\nbacaan panjang.\nSelama digunakan sebagai alat bantu pendamping\nberpikir, AI terbukti meningkatkan efisiensi belajar dan\nliterasi digital pelajar di abad ke-21.\nDi balik kemudahannya, penggunaan aplikasi AI tanpa\npengawasan ketat justru mengancam daya pikir kri-\ntis dan kejujuran akademik pelajar SMP. Banyak guru\nmengeluhkan siswa yang menyerahkan tugas esai\nhasil buatan AI secara instan tanpa memahami isinya\nsama sekali.\nSelain\nmenumpulkan\nketerampilan\nmenulis\ndan\nbernalar mandiri (cognitive offloading), informasi yang\ndihasilkan oleh mesin AI terkadang mengandung\nkekeliruan fakta (halusinasi data) yang berbahaya jika\nditelan mentah-mentah oleh siswa.",
+      "grup": "bacaan_bab5_diskusi_ai"
+    },
+    "teks_soal": "Konjungsi penanda beralihnya sudut pandang dari argumen pendukung ke argumen penentang\n(konjungsi pertentangan antarkalimat/antarparagraf) yang tepat digunakan untuk menghubungkan\nTeks 1 dan Teks 2 pada soal nomor 14 adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Selain itu, / Di samping itu, / Tambahan pula,"
+      },
+      {
+        "label": "B",
+        "teks": "Oleh karena itu, / Dengan demikian, / Jadi,"
+      },
+      {
+        "label": "C",
+        "teks": "Di sisi lain, / Akan tetapi, / Namun, / Sebaliknya,"
+      },
+      {
+        "label": "D",
+        "teks": "Pertama, / Kemudian, / Setelah itu,"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "C. Dalam Teks Diskusi, peralihan dari paragraf Argumen Pendukung (Pro) ke paragraf Argu-\nmen Penentang (Kontra) ditandai oleh konjungsi pertentangan/perbandingan kontras seperti Di sisi lain, Akan\ntetapi, Namun, atau Sebaliknya.",
+    "valid": true
+  },
+  {
+    "nomor": 137,
+    "tipe": "pg_sederhana",
+    "paket": "Bab V: Menyajikan Teks Diskusi - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Diskusi, Struktur Isu-Argumen Pro-Argumen Kontra-Simpulan, Konjungsi Pertentangan, & Sikap Moderat",
+    "capaian_pembelajaran": "Peserta didik memahami struktur teks diskusi (isu kontroversial, argumen mendukung/pro, argumen menentang/kontra, simpulan jalan tengah), menggunakan konjungsi perlawanan antarkalimat, serta merumuskan rekomendasi berimbang.",
+    "bacaan": null,
+    "teks_soal": "Perhatikan kutipan teks dan diagram Peta Pikiran \"Cara Mengatasi Stres\" berikut!\nStres adalah respons fisik dan mental terhadap tekanan eksternal. Agar mampu mengatasi stres, Anda\nbisa melakukan langkah-langkah yang terdiri dari: (1) mengenali pemicu stres, (2) mengendalikan hal\nyang bisa dikontrol oleh diri sendiri, (3) melakukan meditasi, dan (4) menetapkan tujuan yang realistis.\nBerdasarkan kutipan teks dan peta pikiran di atas, hubungan gagasan utama dan keempat cabang\nlangkah mengatasi stres yang tepat adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Topik pusat \"Resep Makanan Sehat\" dengan empat cabang bumbu dapur"
+      },
+      {
+        "label": "B",
+        "teks": "Topik pusat \"Penyebab Stres\" dengan dua cabang: memarahi teman dan membolos sekolah"
+      },
+      {
+        "label": "C",
+        "teks": "Topik pusat \"Jenis Olahraga\" dengan tiga cabang: lari cepat, renang, dan lompat jauh"
+      },
+      {
+        "label": "D",
+        "teks": "Topik pusat \"Cara Mengatasi Stres\" dengan empat cabang: (1) Mengenali pemicu stres, (2) Mengen- dalikan hal yang bisa dikontrol, (3) Melakukan meditasi & relaksasi, dan (4) Menetapkan tujuan yang realistis"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Menggabungkan Meskipun dan tetapi sekaligus membuat kedua klausa menjadi anak\nkalimat (tanpa induk kalimat).",
+    "valid": true
+  },
+  {
+    "nomor": 138,
+    "tipe": "pg_sederhana",
+    "paket": "Bab V: Menyajikan Teks Diskusi - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Diskusi, Struktur Isu-Argumen Pro-Argumen Kontra-Simpulan, Konjungsi Pertentangan, & Sikap Moderat",
+    "capaian_pembelajaran": "Peserta didik memahami struktur teks diskusi (isu kontroversial, argumen mendukung/pro, argumen menentang/kontra, simpulan jalan tengah), menggunakan konjungsi perlawanan antarkalimat, serta merumuskan rekomendasi berimbang.",
+    "bacaan": {
+      "teks": "Bacalah wacana kesehatan lingkungan sekolah berikut dengan saksama!\nWACANA LITERASI MEMBACA: PENERAPAN PERILAKU HIDUP BERSIH DAN SEHAT (PHBS) DI SEKO-\nLAH\nPenerapan Perilaku Hidup Bersih dan Sehat (PHBS) di sekolah merupakan langkah penting untuk mencip-\ntakan lingkungan belajar yang sehat bagi seluruh warga sekolah. Menurut Kementerian Kesehatan RI, PHBS\nperlu diterapkan karena sekolah merupakan tempat yang rentan terhadap penularan penyakit. Tanpa ke-\nbiasaan mencuci tangan dengan sabun, menjaga kebersihan jamban, memilih makanan sehat, rutin bero-\nlahraga, serta mengelola sampah dengan benar, risiko penyakit seperti diare, ISPA, dan infeksi kulit dapat\nmeningkat. Kondisi tersebut tentu dapat mengganggu proses belajar siswa. Selain mencegah penyakit dan\npenularannya, penerapan PHBS juga berperan dalam meningkatkan konsentrasi belajar, membentuk perilaku\npositif, serta mendukung perkembangan fisik dan mental murid.",
+      "grup": "bacaan_bab5_soal18"
+    },
+    "teks_soal": "Bagan klasifikasi informasi yang paling sesuai dengan bagian-bagian penting teks di atas adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "[Risiko Tanpa PHBS: Diare, ISPA, infeksi kulit ] →[Perilaku PHBS: Meningkatkan konsentrasi bela- jar & perilaku positif ] →[Manfaat PHBS: Cuci tangan pakai sabun, jaga jamban, olahraga ]"
+      },
+      {
+        "label": "B",
+        "teks": "[Risiko Tanpa PHBS: Mencegah penularan penyakit & meningkatkan konsentrasi ] →[Perilaku PHBS: Cuci tangan pakai sabun & kelola sampah ] →[Manfaat PHBS: Menimbulkan penyakit diare, ISPA, dan infeksi kulit ]"
+      },
+      {
+        "label": "C",
+        "teks": "[Risiko Tanpa PHBS: Meningkatnya penyakit diare, ISPA, & infeksi kulit yang mengganggu belajar ] →[Perilaku PHBS: Cuci tangan pakai sabun, jaga kebersihan jamban, pilih makanan sehat, olahraga, & kelola sampah ] →[Manfaat PHBS: Mencegah penyakit, meningkatkan konsentrasi belajar, perilaku positif, & fisik-mental sehat ]"
+      },
+      {
+        "label": "D",
+        "teks": "[Risiko Tanpa PHBS: Mengelola sampah dengan benar ] →[Perilaku PHBS: Cuci tangan pakai sabun & menginfeksi kulit ] →[Manfaat PHBS: Meningkatkan risiko diare dan ISPA di sekolah ]"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "C. Bagan pada pilihan C mengklasifikasikan ketiga komponen teks PHBS secara tepat: (1)\nRisiko tanpa PHBS: diare, ISPA, dan infeksi kulit; (2) Perilaku PHBS: cuci tangan dengan sabun, menjaga\nkebersihan jamban, memilih makanan sehat, rutin berolahraga, dan mengelola sampah; serta (3) Manfaat\nPHBS: mencegah penyakit, meningkatkan konsentrasi belajar, membentuk perilaku positif, dan mendukung\nperkembangan fisik-mental murid.",
+    "valid": true
+  },
+  {
+    "nomor": 139,
+    "tipe": "pg_sederhana",
+    "paket": "Bab V: Menyajikan Teks Diskusi - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Diskusi, Struktur Isu-Argumen Pro-Argumen Kontra-Simpulan, Konjungsi Pertentangan, & Sikap Moderat",
+    "capaian_pembelajaran": "Peserta didik memahami struktur teks diskusi (isu kontroversial, argumen mendukung/pro, argumen menentang/kontra, simpulan jalan tengah), menggunakan konjungsi perlawanan antarkalimat, serta merumuskan rekomendasi berimbang.",
+    "bacaan": null,
+    "teks_soal": "Perhatikan paragraf berikut untuk menganalisis kohesi leksikal:\n*\"Keberadaan taman kota memberikan banyak manfaat ekologis dan sosial bagi warga perkotaan. Pepo-\nhonan rindang di ruang terbuka hijau tersebut berfungsi menyerap polusi udara dan menurunkan suhu\nlingkungan. Selain itu, paru-paru kota ini juga menjadi tempat rekreasi murah meriah bagi keluarga di\nakhir pekan.\"*\nPenggunaan frasa taman kota, ruang terbuka hijau, dan paru-paru kota secara bergantian untuk\nmerujuk pada konsep yang sama tanpa menimbulkan kebosanan pengulangan kata merupakan bentuk\n....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Kesalahan penulisan huruf kapital"
+      },
+      {
+        "label": "B",
+        "teks": "Kalimat sumbang yang merusak koherensi paragraf"
+      },
+      {
+        "label": "C",
+        "teks": "Kohesi leksikal melalui sinonim/ungkapan sepadan"
+      },
+      {
+        "label": "D",
+        "teks": "Majas ironi untuk menyindir pemerintah kota"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "C. Mengganti taman kota dengan sinonim/ungkapan sepadan (ruang terbuka hijau, paru-paru\nkota) merupakan kohesi leksikal.",
+    "valid": true
+  },
+  {
+    "nomor": 140,
+    "tipe": "pg_sederhana",
+    "paket": "Bab V: Menyajikan Teks Diskusi - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Diskusi, Struktur Isu-Argumen Pro-Argumen Kontra-Simpulan, Konjungsi Pertentangan, & Sikap Moderat",
+    "capaian_pembelajaran": "Peserta didik memahami struktur teks diskusi (isu kontroversial, argumen mendukung/pro, argumen menentang/kontra, simpulan jalan tengah), menggunakan konjungsi perlawanan antarkalimat, serta merumuskan rekomendasi berimbang.",
+    "bacaan": {
+      "teks": "WACANA LITERASI MEMBACA: WACANA LITERASI MEMBACA: DISKUSI KEBIJAKAN SEKOLAH LIMA\nHARI (SENIN–JUMAT) BAGI PELAJAR SMP\n(Paragraf 1: Isu / Masalah) Penerapan sistem Sekolah Lima Hari (Fullday School), di mana kegiatan belajar-\nmengajar berlangsung dari hari Senin hingga Jumat pukul 07.00 sampai 15.30 WIB dan hari Sabtu–Minggu\nlibur penuh, masih menjadi topik diskusi hangat di kalangan pendidik, orang tua, serta pelajar SMP.\n(Paragraf 2: Argumen Mendukung / Pro) Pihak yang mendukung kebijakan ini berpendapat bahwa penam-\nbahan jam berada di sekolah pada hari Senin–Jumat memungkinkan penguatan pendidikan karakter, kegiatan\nekstrakurikuler, dan bimbingan belajar terpantau langsung oleh guru. Selain itu, libur akhir pekan selama dua\nhari penuh (Sabtu dan Minggu) memberikan waktu berkualitas yang lebih panjang bagi siswa untuk berkumpul\nbersama keluarga yang orang tuanya juga bekerja lima hari sepekan.\n(Paragraf 3: Argumen Menentang / Kontra) Sebaliknya, pihak yang keberatan menilai bahwa durasi belajar\nhingga pukul 15.30 sore membuat fisik dan mental remaja mengalami kelelahan kognitif (burnout), terutama\npada jam-jam pelajaran terakhir setelah pukul 13.30. Di daerah pedesaan atau pinggiran kota, kepulangan\nsore hari juga mengurangi waktu siswa untuk mengikuti pendidikan keagamaan nonformal di masyarakat\n(seperti TPQ/madrasah diniyah) serta menguras biaya uang saku makan siang.\n(Paragraf 4: Simpulan / Saran) Mengingat kondisi geografis dan sosial-ekonomi setiap daerah berbeda-\nbeda, kebijakan Sekolah Lima Hari sebaiknya tidak dipaksakan secara seragam. Sekolah yang menerapkan\nsistem lima hari wajib menata jadwal pelajaran sore dengan kegiatan praktik/ekstrakurikuler yang menye-\nnangkan (bukan teori berat) serta bekerja sama dengan lembaga keagamaan masyarakat setempat.",
+      "grup": "bacaan_bab5_gawai_kelas"
+    },
+    "teks_soal": "Alasan logis yang dikemukakan oleh pihak penentang (kontra) pada Paragraf 3 terhadap penerapan\nsistem Sekolah Lima Hari adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Siswa SMP tidak menyukai hari libur akhir pekan"
+      },
+      {
+        "label": "B",
+        "teks": "Libur pada hari Sabtu dan Minggu membuat siswa terlalu lama berkumpul bersama orang tua di rumah"
+      },
+      {
+        "label": "C",
+        "teks": "Kegiatan ekstrakurikuler di sekolah diawasi secara langsung oleh guru pembina"
+      },
+      {
+        "label": "D",
+        "teks": "Durasi belajar hingga pukul 15.30 sore berisiko memicu kelelahan fisik dan penurunan konsentrasi (burnout) pada jam-jam terakhir, mengurangi waktu kegiatan keagamaan sore di masyarakat, serta menambah beban uang saku makan siang siswa"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Paragraf 3 (Argumen Kontra) merinci tiga keberatan utama: (1) kelelahan kognitif setelah\npukul 13.30, (2) berkurangnya waktu mengikuti pendidikan keagamaan nonformal sore hari di masyarakat,\ndan (3) bertambahnya pengeluaran makan siang.",
+    "valid": true
+  },
+  {
+    "nomor": 141,
+    "tipe": "pg_sederhana",
+    "paket": "Bab V: Menyajikan Teks Diskusi - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Diskusi, Struktur Isu-Argumen Pro-Argumen Kontra-Simpulan, Konjungsi Pertentangan, & Sikap Moderat",
+    "capaian_pembelajaran": "Peserta didik memahami struktur teks diskusi (isu kontroversial, argumen mendukung/pro, argumen menentang/kontra, simpulan jalan tengah), menggunakan konjungsi perlawanan antarkalimat, serta merumuskan rekomendasi berimbang.",
+    "bacaan": {
+      "teks": "WACANA LITERASI MEMBACA: WACANA LITERASI MEMBACA: DISKUSI KEBIJAKAN SEKOLAH LIMA\nHARI (SENIN–JUMAT) BAGI PELAJAR SMP\n(Paragraf 1: Isu / Masalah) Penerapan sistem Sekolah Lima Hari (Fullday School), di mana kegiatan belajar-\nmengajar berlangsung dari hari Senin hingga Jumat pukul 07.00 sampai 15.30 WIB dan hari Sabtu–Minggu\nlibur penuh, masih menjadi topik diskusi hangat di kalangan pendidik, orang tua, serta pelajar SMP.\n(Paragraf 2: Argumen Mendukung / Pro) Pihak yang mendukung kebijakan ini berpendapat bahwa penam-\nbahan jam berada di sekolah pada hari Senin–Jumat memungkinkan penguatan pendidikan karakter, kegiatan\nekstrakurikuler, dan bimbingan belajar terpantau langsung oleh guru. Selain itu, libur akhir pekan selama dua\nhari penuh (Sabtu dan Minggu) memberikan waktu berkualitas yang lebih panjang bagi siswa untuk berkumpul\nbersama keluarga yang orang tuanya juga bekerja lima hari sepekan.\n(Paragraf 3: Argumen Menentang / Kontra) Sebaliknya, pihak yang keberatan menilai bahwa durasi belajar\nhingga pukul 15.30 sore membuat fisik dan mental remaja mengalami kelelahan kognitif (burnout), terutama\npada jam-jam pelajaran terakhir setelah pukul 13.30. Di daerah pedesaan atau pinggiran kota, kepulangan\nsore hari juga mengurangi waktu siswa untuk mengikuti pendidikan keagamaan nonformal di masyarakat\n(seperti TPQ/madrasah diniyah) serta menguras biaya uang saku makan siang.\n(Paragraf 4: Simpulan / Saran) Mengingat kondisi geografis dan sosial-ekonomi setiap daerah berbeda-\nbeda, kebijakan Sekolah Lima Hari sebaiknya tidak dipaksakan secara seragam. Sekolah yang menerapkan\nsistem lima hari wajib menata jadwal pelajaran sore dengan kegiatan praktik/ekstrakurikuler yang menye-\nnangkan (bukan teori berat) serta bekerja sama dengan lembaga keagamaan masyarakat setempat.",
+      "grup": "bacaan_bab5_gawai_kelas"
+    },
+    "teks_soal": "Berdasarkan Paragraf 4 wacana pada soal nomor 20, solusi praktis yang direkomendasikan penulis\nuntuk mengatasi masalah kelelahan kognitif siswa pada jam pelajaran sore (setelah pukul 13.30)\nadalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Menata jadwal pelajaran pada siang menjelang sore hari dengan kegiatan praktik, proyek kolaboratif, seni, olahraga, atau ekstrakurikuler yang menyenangkan dan aktif bergerak, bukan memadatkannya dengan mata pelajaran teori hafalan/hitungan berat"
+      },
+      {
+        "label": "B",
+        "teks": "Menghapus seluruh jam istirahat makan siang dan ibadah agar siswa pulang pukul 11.00 pagi"
+      },
+      {
+        "label": "C",
+        "teks": "Memberikan hukuman fisik kepada siswa yang mengantuk pada pukul 15.00 sore"
+      },
+      {
+        "label": "D",
+        "teks": "Mewajibkan siswa masuk sekolah tujuh hari penuh dari Senin sampai Minggu"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "A. Pada Paragraf 4, penulis memberikan rekomendasi jalan tengah yang aplikatif: mengisi jam\nsore dengan kegiatan praktik/ekstrakurikuler yang menyenangkan serta bersinergi dengan lembaga keaga-\nmaan lokal.",
+    "valid": true
+  },
+  {
+    "nomor": 142,
+    "tipe": "pg_sederhana",
+    "paket": "Bab V: Menyajikan Teks Diskusi - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Diskusi, Struktur Isu-Argumen Pro-Argumen Kontra-Simpulan, Konjungsi Pertentangan, & Sikap Moderat",
+    "capaian_pembelajaran": "Peserta didik memahami struktur teks diskusi (isu kontroversial, argumen mendukung/pro, argumen menentang/kontra, simpulan jalan tengah), menggunakan konjungsi perlawanan antarkalimat, serta merumuskan rekomendasi berimbang.",
+    "bacaan": {
+      "teks": "WACANA LITERASI MEMBACA: WACANA LITERASI MEMBACA: DISKUSI KEBIJAKAN SEKOLAH LIMA\nHARI (SENIN–JUMAT) BAGI PELAJAR SMP\n(Paragraf 1: Isu / Masalah) Penerapan sistem Sekolah Lima Hari (Fullday School), di mana kegiatan belajar-\nmengajar berlangsung dari hari Senin hingga Jumat pukul 07.00 sampai 15.30 WIB dan hari Sabtu–Minggu\nlibur penuh, masih menjadi topik diskusi hangat di kalangan pendidik, orang tua, serta pelajar SMP.\n(Paragraf 2: Argumen Mendukung / Pro) Pihak yang mendukung kebijakan ini berpendapat bahwa penam-\nbahan jam berada di sekolah pada hari Senin–Jumat memungkinkan penguatan pendidikan karakter, kegiatan\nekstrakurikuler, dan bimbingan belajar terpantau langsung oleh guru. Selain itu, libur akhir pekan selama dua\nhari penuh (Sabtu dan Minggu) memberikan waktu berkualitas yang lebih panjang bagi siswa untuk berkumpul\nbersama keluarga yang orang tuanya juga bekerja lima hari sepekan.\n(Paragraf 3: Argumen Menentang / Kontra) Sebaliknya, pihak yang keberatan menilai bahwa durasi belajar\nhingga pukul 15.30 sore membuat fisik dan mental remaja mengalami kelelahan kognitif (burnout), terutama\npada jam-jam pelajaran terakhir setelah pukul 13.30. Di daerah pedesaan atau pinggiran kota, kepulangan\nsore hari juga mengurangi waktu siswa untuk mengikuti pendidikan keagamaan nonformal di masyarakat\n(seperti TPQ/madrasah diniyah) serta menguras biaya uang saku makan siang.\n(Paragraf 4: Simpulan / Saran) Mengingat kondisi geografis dan sosial-ekonomi setiap daerah berbeda-\nbeda, kebijakan Sekolah Lima Hari sebaiknya tidak dipaksakan secara seragam. Sekolah yang menerapkan\nsistem lima hari wajib menata jadwal pelajaran sore dengan kegiatan praktik/ekstrakurikuler yang menye-\nnangkan (bukan teori berat) serta bekerja sama dengan lembaga keagamaan masyarakat setempat.",
+      "grup": "bacaan_bab5_gawai_kelas"
+    },
+    "teks_soal": "Perhatikan perbandingan dua teks eksposisi/diskusi mengenai Ujian Standar Daerah (TKA / ASPD)\nberikut!\nPENDAPAT A\nPENDAPAT B\nPelaksanaan\nTes\nKemampuan\nAkademik\nDaerah\n(TKAD / ASPD) sangat diperlukan sebagai alat ukur\nstandar yang objektif untuk memetakan mutu capa-\nian literasi dan numerasi antar-sekolah. Tanpa adanya\ntolok ukur standar yang adil, proses seleksi peneri-\nmaan murid baru ke jenjang SMA/SMK melalui jalur\nprestasi nilai rapor rawan mengalami ketimpangan\nstandar penilaian antar-sekolah.\nPenyelenggaraan ujian standar di akhir jenjang SMP\nperlu diimbangi dengan penilaian portofolio bakat dan\nprestasi nonakademik siswa selama tiga tahun belajar.\nJika kelulusan atau seleksi hanya bertumpu pada skor\nujian tertulis semata, siswa akan mengalami tekanan\npsikologis (stres ujian) dan kecerdasan majemuk di\nbidang seni, olahraga, maupun kepemimpinan men-\njadi kurang terwadahi.\nPernyataan sintesis yang paling tepat menggabungkan kedua pendapat di atas secara proporsional\nadalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Seluruh bentuk ujian tertulis maupun penilaian rapor di sekolah harus dihapuskan sama sekali"
+      },
+      {
+        "label": "B",
+        "teks": "Tes Kemampuan Akademik Daerah (TKAD/ASPD) tetap penting dipertahankan sebagai instrumen pemetaan mutu literasi-numerasi yang objektif dan adil antar-sekolah, namun penggunaannya dalam se- leksi jenjang berikutnya perlu dikombinasikan secara proporsional dengan rekam jejak rapor dan porto- folio prestasi bakat siswa"
+      },
+      {
+        "label": "C",
+        "teks": "Siswa yang berbakat di bidang olahraga dan seni tidak perlu belajar membaca dan berhitung"
+      },
+      {
+        "label": "D",
+        "teks": "Kedua pendapat di atas saling membatalkan sehingga tidak ada simpulan yang dapat ditarik"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "B. Sintesis objektif menggabungkan keunggulan Pendapat A (standar ukur objektif literasi-\nnumerasi untuk keadilan antar-sekolah) dengan perhatian Pendapat B (kombinasi proporsional dengan rapor\ndan portofolio bakat nonakademik).",
+    "valid": true
+  },
+  {
+    "nomor": 143,
+    "tipe": "pg_sederhana",
+    "paket": "Bab V: Menyajikan Teks Diskusi - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Diskusi, Struktur Isu-Argumen Pro-Argumen Kontra-Simpulan, Konjungsi Pertentangan, & Sikap Moderat",
+    "capaian_pembelajaran": "Peserta didik memahami struktur teks diskusi (isu kontroversial, argumen mendukung/pro, argumen menentang/kontra, simpulan jalan tengah), menggunakan konjungsi perlawanan antarkalimat, serta merumuskan rekomendasi berimbang.",
+    "bacaan": null,
+    "teks_soal": "Dalam sebuah forum diskusi panel kelas IX mengenai topik \"Perlukah Kantin Sekolah Menerapkan Pem-\nbayaran Non-Tunai (Cashless / QRIS) Sepenuhnya?\", Moderator melihat dua kelompok siswa mulai\nsaling memotong pembicaraan dengan nada suara tinggi. Tindakan dan kalimat yang paling tepat diu-\ncapkan oleh Moderator adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Melarang seluruh peserta diskusi berbicara hingga jam pelajaran berakhir"
+      },
+      {
+        "label": "B",
+        "teks": "Ikut berteriak membela salah satu kelompok yang merupakan teman sebangkunya"
+      },
+      {
+        "label": "C",
+        "teks": "Meninggalkan ruang kelas tanpa menutup jalannya diskusi"
+      },
+      {
+        "label": "D",
+        "teks": "Mengetuk meja secara sopan untuk menenangkan forum, lalu berkata: \"Rekan-rekan peserta diskusi yang saya hormati, mohon menyampaikan tanggapan secara bergiliran setelah dipersilakan dan tetap berfokus pada argumen manfaat serta kendala pembayaran non-tunai, bukan menyerang pribadi lawan bicara.\""
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Tugas utama moderator dalam diskusi adalah menjaga ketertiban lalu lintas pembicaraan,\nbersikap netral (tidak memihak), dan mengingatkan peserta agar berargumen secara santun fokus pada\npokok persoalan.",
+    "valid": true
+  },
+  {
+    "nomor": 144,
+    "tipe": "pg_sederhana",
+    "paket": "Bab V: Menyajikan Teks Diskusi - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Diskusi, Struktur Isu-Argumen Pro-Argumen Kontra-Simpulan, Konjungsi Pertentangan, & Sikap Moderat",
+    "capaian_pembelajaran": "Peserta didik memahami struktur teks diskusi (isu kontroversial, argumen mendukung/pro, argumen menentang/kontra, simpulan jalan tengah), menggunakan konjungsi perlawanan antarkalimat, serta merumuskan rekomendasi berimbang.",
+    "bacaan": null,
+    "teks_soal": "Perhatikan penggunaan kata modalitas dan kosakata evaluatif pada kalimat teks diskusi berikut!\n*\"Pihak komite sekolah meyakini bahwa penyediaan loker penyimpanan ponsel di setiap kelas di-\npastikan mampu meningkatkan fokus menyimak siswa, meskipun pihak siswa mengkhawatirkan ke-\nsulitan menghubungi orang tua saat jadwal jemputan berubah mendadak.\"*\nFungsi kata bercetak tebal (meyakini, dipastikan, mengkhawatirkan) dalam kaidah kebahasaan Teks\nDiskusi adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Sebagai konjungsi pengurut waktu dalam cerita pendek"
+      },
+      {
+        "label": "B",
+        "teks": "Sebagai kata kerja tindakan fisik untuk memukul benda keras"
+      },
+      {
+        "label": "C",
+        "teks": "Sebagai verba mental dan penanda modalitas sikap yang menunjukkan derajat keyakinan, kepas- tian, atau kekhawatiran masing-masing pihak (pro dan kontra) terhadap isu yang didiskusikan"
+      },
+      {
+        "label": "D",
+        "teks": "Sebagai kata sapaan kekerabatan dalam surat pribadi"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "C. Dalam kaidah kebahasaan Teks Diskusi (Bab V Kelas 9), kata-kata seperti meyakini,\nmengkhawatirkan, menilai, berpendapat adalah verba mental, sedangkan dipastikan, mungkin, seharusnya,\nperlu adalah penanda modalitas derajat kepastian argumen.",
+    "valid": true
+  },
+  {
+    "nomor": 145,
+    "tipe": "pg_sederhana",
+    "paket": "Bab V: Menyajikan Teks Diskusi - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Diskusi, Struktur Isu-Argumen Pro-Argumen Kontra-Simpulan, Konjungsi Pertentangan, & Sikap Moderat",
+    "capaian_pembelajaran": "Peserta didik memahami struktur teks diskusi (isu kontroversial, argumen mendukung/pro, argumen menentang/kontra, simpulan jalan tengah), menggunakan konjungsi perlawanan antarkalimat, serta merumuskan rekomendasi berimbang.",
+    "bacaan": null,
+    "teks_soal": "Perhatikan empat kalimat berikut!\n(1) \"Banyak pakar gizi menyarankan pembatasan konsumsi mi instan maksimal satu bungkus per\nminggu.\"\n(2) \"Namun, bagi anak kos dan pekerja malam, mi instan tetap menjadi pilihan praktis yang\nmengenyangkan.\"\n(3) \"Di satu sisi, kandungan natrium pada bumbu mi instan yang tinggi dapat memicu hipertensi jika\ndikonsumsi setiap hari.\"\n(4) \"Oleh sebab itu, bijaklah mengatur frekuensi konsumsi mi instan serta tambahkan sayuran hijau dan\ntelur rebus untuk melengkapi gizinya.\"\nUrutan kalimat tersebut agar membentuk paragraf Teks Diskusi yang runtut dan koheren adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(4) – (2) – (1) – (3)"
+      },
+      {
+        "label": "C",
+        "teks": "(2) – (4) – (3) – (1)"
+      },
+      {
+        "label": "B",
+        "teks": "(1) – (3) – (2) – (4)"
+      },
+      {
+        "label": "D",
+        "teks": "(3) – (4) – (1) – (2)"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "B. Urutan logis: Kalimat (1) memperkenalkan isu saran pakar gizi →Kalimat (3) menguraikan\nalasan medis pembatasan tersebut (Di satu sisi, kandungan natrium...) →Kalimat (2) menghadirkan sudut\n\npandang pembanding (Namun, bagi anak kos...) →Kalimat (4) menutup dengan simpulan/rekomendasi\nseimbang (Oleh sebab itu...).",
+    "valid": true
+  },
+  {
+    "nomor": 146,
+    "tipe": "pg_sederhana",
+    "paket": "Bab V: Menyajikan Teks Diskusi - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Diskusi, Struktur Isu-Argumen Pro-Argumen Kontra-Simpulan, Konjungsi Pertentangan, & Sikap Moderat",
+    "capaian_pembelajaran": "Peserta didik memahami struktur teks diskusi (isu kontroversial, argumen mendukung/pro, argumen menentang/kontra, simpulan jalan tengah), menggunakan konjungsi perlawanan antarkalimat, serta merumuskan rekomendasi berimbang.",
+    "bacaan": null,
+    "teks_soal": "Perhatikan\ngrafik batang Survei Aturan Pembatasan HP di Sekolah (400 Responden: Pro 54%, Kontra 36%,\nNetral 10%) berikut!\nPernyataan analitis yang benar mengenai penyusunan Teks Diskusi dan pelaksanaan forum diskusi\nberdasarkan gambar di atas adalah .... (Pilih lebih dari satu jawaban benar)\n\nPernyataan:\n(1) Struktur baku Teks Diskusi terdiri atas empat bagian: Isu (Masalah), Argumen Pendukung (Pro),\nArgumen Menentang (Kontra), dan Simpulan/Rekomendasi.\n(2) Data grafik hasil survei (54% Pro Bersyarat vs 36% Kontra) dapat diintegrasikan ke dalam teks\ndiskusi untuk memperkuat objektivitas kedua sudut pandang.\n(3) Dalam diskusi panel, Moderator bertugas mengatur jalannya diskusi secara adil dan netral di antara\nTim Pro dan Tim Kontra.\n(4) Teks diskusi yang baik hanya boleh memuat pendapat Tim Pro dan wajib menghapus seluruh pen-\ndapat Tim Kontra.\n\nPernyataan yang tepat adalah ....",
+    "gambar": [
+      "/soal/bindo/kls9_bindo_p195_xref6559_880x880.jpeg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(1), (2), dan (3)"
+      },
+      {
+        "label": "B",
+        "teks": "(1) dan (4) saja"
+      },
+      {
+        "label": "C",
+        "teks": "(2) dan (4) saja"
+      },
+      {
+        "label": "D",
+        "teks": "(1), (2), (3), dan (4)"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "A, B, C. Pernyataan D salah karena teks diskusi wajib menyajikan argumen Pro dan Kontra\nsecara berimbang.",
+    "valid": true
+  },
+  {
+    "nomor": 147,
+    "tipe": "pg_sederhana",
+    "paket": "Bab V: Menyajikan Teks Diskusi - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Diskusi, Struktur Isu-Argumen Pro-Argumen Kontra-Simpulan, Konjungsi Pertentangan, & Sikap Moderat",
+    "capaian_pembelajaran": "Peserta didik memahami struktur teks diskusi (isu kontroversial, argumen mendukung/pro, argumen menentang/kontra, simpulan jalan tengah), menggunakan konjungsi perlawanan antarkalimat, serta merumuskan rekomendasi berimbang.",
+    "bacaan": null,
+    "teks_soal": "Manakah di antara pernyataan\nberikut yang benar mengenai kaidah kebahasaan Teks Diskusi? (Pilih lebih dari satu jawaban benar)\n\nPernyataan:\n(1) Konjungsi pertentangan seperti namun, akan tetapi, sebaliknya, di sisi lain, dan sedangkan digu-\nnakan untuk mempertemukan argumen pendukung dan argumen penentang.\n(2) Paragraf yang koheren memiliki keterpaduan makna antarkalimat yang logis dan bebas dari kalimat\nsumbang.\n(3) Penggunaan kata ganti rujukan (hal tersebut, kebijakan ini, mereka) merupakan penanda kohesi\ngramatikal.\n(4) Gabungan dua konjungsi “Walaupun ..., tetapi ...” dalam satu kalimat merupakan struktur kalimat\nbaku yang sangat dianjurkan dalam EYD Edisi V.\n\nPernyataan yang tepat adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(1), (2), dan (3)"
+      },
+      {
+        "label": "B",
+        "teks": "(1) dan (4) saja"
+      },
+      {
+        "label": "C",
+        "teks": "(2) dan (4) saja"
+      },
+      {
+        "label": "D",
+        "teks": "(1), (2), (3), dan (4)"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "A, B, C. Pernyataan D salah karena gabungan Walaupun ..., tetapi ... tidak baku.",
+    "valid": true
+  },
+  {
+    "nomor": 148,
+    "tipe": "pg_sederhana",
+    "paket": "Bab V: Menyajikan Teks Diskusi - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Diskusi, Struktur Isu-Argumen Pro-Argumen Kontra-Simpulan, Konjungsi Pertentangan, & Sikap Moderat",
+    "capaian_pembelajaran": "Peserta didik memahami struktur teks diskusi (isu kontroversial, argumen mendukung/pro, argumen menentang/kontra, simpulan jalan tengah), menggunakan konjungsi perlawanan antarkalimat, serta merumuskan rekomendasi berimbang.",
+    "bacaan": null,
+    "teks_soal": "Tentukan apakah pernyataan analisis struktur teks\ndiskusi berikut Benar atau Salah!\nNo.\nPernyataan Analisis Bahasa Indonesia\nBenar\nSalah\n\nPernyataan:\n(a) Paragraf yang memaparkan manfaat ujian berbasis komputer karena\nmenghemat jutaan lembar kertas dan mempercepat koreksi nilai meru-\npakan bagian Argumen Pendukung (Pro).\n(b) Paragraf yang memaparkan kendala ujian berbasis komputer di daerah\n3T akibat belum meratanya jaringan listrik dan internet merupakan\nbagian Argumen Menentang (Kontra).\n(c) Bagian Isu selalu diletakkan di paragraf paling akhir sebagai penutup\nteks diskusi.\n\nKombinasi analisis nilai kebenaran (Benar/Salah) yang tepat adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(a) Benar, (b) Benar, (c) Salah"
+      },
+      {
+        "label": "B",
+        "teks": "(a) Benar, (b) Salah, (c) Salah"
+      },
+      {
+        "label": "C",
+        "teks": "(a) Salah, (b) Benar, (c) Benar"
+      },
+      {
+        "label": "D",
+        "teks": "(a) Benar, (b) Benar, (c) Benar"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "(a) Benar, (b) Benar, (c) Salah. Bagian Isu selalu berada di paragraf awal pembuka teks\ndiskusi.",
+    "valid": true
+  },
+  {
+    "nomor": 149,
+    "tipe": "pg_sederhana",
+    "paket": "Bab V: Menyajikan Teks Diskusi - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Diskusi, Struktur Isu-Argumen Pro-Argumen Kontra-Simpulan, Konjungsi Pertentangan, & Sikap Moderat",
+    "capaian_pembelajaran": "Peserta didik memahami struktur teks diskusi (isu kontroversial, argumen mendukung/pro, argumen menentang/kontra, simpulan jalan tengah), menggunakan konjungsi perlawanan antarkalimat, serta merumuskan rekomendasi berimbang.",
+    "bacaan": null,
+    "teks_soal": "Tentukan apakah pernyataan kaidah\nkebahasaan dan etika diskusi berikut Benar atau Salah!\nNo.\nPernyataan Analisis Bahasa Indonesia\nBenar\nSalah\n\nPernyataan:\n(a) Dalam menyampaikan sanggahan pada forum diskusi, peserta wajib\nmenggunakan bahasa yang santun, tidak memotong pembicaraan se-\ncara kasar, dan menyertakan alasan yang logis.\n(b) Bentuk baku menurut KBBI dari kata resiko, aktifitas, dan konsekwensi\nadalah risiko, aktivitas, dan konsekuensi.\n(c) Kalimat sumbang (kalimat yang tidak berkaitan dengan topik utama)\nsangat diperlukan di setiap paragraf teks diskusi agar paragraf menjadi\nkoheren.\n\nKombinasi analisis nilai kebenaran (Benar/Salah) yang tepat adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(a) Benar, (b) Benar, (c) Salah"
+      },
+      {
+        "label": "B",
+        "teks": "(a) Benar, (b) Salah, (c) Salah"
+      },
+      {
+        "label": "C",
+        "teks": "(a) Salah, (b) Benar, (c) Benar"
+      },
+      {
+        "label": "D",
+        "teks": "(a) Benar, (b) Benar, (c) Benar"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "(a) Benar, (b) Benar, (c) Salah. Kalimat sumbang justru merusak koherensi paragraf.",
+    "valid": true
+  },
+  {
+    "nomor": 150,
+    "tipe": "pg_sederhana",
+    "paket": "Bab V: Menyajikan Teks Diskusi - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Diskusi, Struktur Isu-Argumen Pro-Argumen Kontra-Simpulan, Konjungsi Pertentangan, & Sikap Moderat",
+    "capaian_pembelajaran": "Peserta didik memahami struktur teks diskusi (isu kontroversial, argumen mendukung/pro, argumen menentang/kontra, simpulan jalan tengah), menggunakan konjungsi perlawanan antarkalimat, serta merumuskan rekomendasi berimbang.",
+    "bacaan": null,
+    "teks_soal": "Di sekolah-\nsekolah saat ini sedang hangat diperdebatkan kebijakan “Pelarangan Membawa Kendaraan Bermotor\nbagi Siswa SMP ke Sekolah”.\nSusunlah sebuah Teks Diskusi yang objektif, kohesif, dan koheren mengenai topik tersebut ke dalam em-\npat bagian struktur lengkap: (a) Isu, (b) Argumen Pendukung / Pro Kebijakan Larangan, (c) Argumen\nMenentang / Keberatan Sebagian Orang Tua & Siswa (awali dengan konjungsi pertentangan), dan (d)\nSimpulan & Rekomendasi Jalan Tengah!\n1\nD\n7\nD\n13\nD\n19\nC\n25\nB\n2\nA\n8\nC\n14\nD\n20\nD\n26\nA, B, C\n3\nB\n9\nB\n15\nB\n21\nA\n27\nA, B, C\n4\nB\n10\nD\n16\nC\n22\nB\n28\nB-B-S\n5\nD\n11\nA\n17\nD\n23\nD\n29\nB-B-S\n6\nC\n12\nC\n18\nC\n24\nC\n30\nUraian\n1. Jawaban: D. Kalimat (4) diawali dengan konjungsi pengandaian/syarat Apabila (\"Apabila fasilitas ter-\npenuhi, proses penyerapan materi pun dapat berjalan lancar.\").\n2. Jawaban: A. Kalimat sebelum bagian rumpang membahas dampak mental (kecemasan dan depresi), se-\nhingga kalimat penguat yang paling koheren adalah perbandingan sosial di media sosial yang meningkatkan\ntekanan mental (Opsi A).\n\nBerdasarkan kaidah bahasa baku EYD Edisi V dan materi bab ini, rumusan analisis / hasil penyuntingan yang paling tepat adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "- (a) Isu: Kebijakan pelarangan membawa sepeda motor ke sekolah bagi siswa SMP kembali menjadi perbin-\ncangan hangat di antara pihak sekolah, kepolisian, dan orang tua wali murid.\n- (b) Argumen Pendukung (Pro Larangan): Pihak sekolah dan kepolisian mendukung p"
+      },
+      {
+        "label": "B",
+        "teks": "Mengabaikan penggunaan tanda koma dan huruf kapital pada nama geografi serta membiarkan kata tidak baku tetap tertulis apa adanya"
+      },
+      {
+        "label": "C",
+        "teks": "Mengubah seluruh kalimat menjadi bahasa santai dan menghilangkan unsur fakta objektif dalam teks"
+      },
+      {
+        "label": "D",
+        "teks": "Menghapus seluruh paragraf wacana dan menggantinya dengan opini pribadi tanpa bukti ilmiah"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "- (a) Isu: Kebijakan pelarangan membawa sepeda motor ke sekolah bagi siswa SMP kembali menjadi perbin-\ncangan hangat di antara pihak sekolah, kepolisian, dan orang tua wali murid.\n- (b) Argumen Pendukung (Pro Larangan): Pihak sekolah dan kepolisian mendukung penuh larangan terse-\nbut karena siswa SMP rata-rata berusia 12 hingga 15 tahun sehingga belum memenuhi syarat usia minimal\n17 tahun untuk memiliki Surat Izin Mengemudi (SIM C) sesuai Undang-Undang Lalu Lintas. Selain itu, ke-\nmatangan emosi remaja usia SMP yang belum stabil di jalan raya terbukti menjadi salah satu faktor tingginya\nangka kecelakaan lalu lintas di kalangan pelajar.\n- (c) Argumen Menentang (Kontra / Keberatan): Akan tetapi, sebagian orang tua dan siswa yang tinggal\ndi daerah pinggiran dengan jarak rumah lebih dari tujuh kilometer dari sekolah merasa keberatan. Mereka\nberalasan bahwa belum tersedianya angkutan umum pedesaan yang melewati jalur sekolah serta kesibukan\norang tua yang harus berangkat kerja pagi-pagi membuat sepeda motor menjadi satu-satunya moda trans-\nportasi agar anak tidak terlambat tiba di sekolah.\n- (d) Simpulan & Rekomendasi Jalan Tengah: Berdasarkan kedua sudut pandang tersebut, keselamatan\njiwa pelajar dan kepatuhan hukum tetap tidak boleh dikompromikan. Sebagai solusi jalan tengah, larangan\nmembawa sepeda motor bagi siswa SMP harus tetap ditegakkan secara konsisten, diimbangi dengan penye-\ndiaan layanan bus sekolah gratis oleh pemerintah daerah, pengorganisasian jemputan kolektif komite orang\ntua, serta kampanye bersepeda kayuh bagi siswa yang rumahnya berjarak dekat.\n\n1. Hakikat & Struktur Rubrik Surat Pembaca serta Surat Dinas/Resmi\na. Pengertian, Fungsi, & Struktur Surat Pembaca di Media Massa: Surat pembaca adalah surat terbuka yang ditulis\noleh warga masyarakat dan dimuat pada rubrik khusus di media massa (surat kabar cetak maupun portal berita dar-\ning) untuk menyampaikan keluhan layanan publik, saran pembangunan, apresiasi/ucapan terima kasih, atau klari-\nfikasi/tanggapan kepada instansi terkait. - Lima Struktur Surat Pembaca: (1) Judul / Kepala Surat yang singkat dan\nmewakili pokok masalah (contoh: “Lampu Penerangan Jalan di Jalan Kenanga Padam Sejak Dua Pekan Lalu”); (2) Pem-\nbuka (sapaan kepada redaksi dan pengantar topik); (3) Isi Pokok Surat (pemaparan fakta lokasi, waktu kejadian, dan\ndampak masalah secara jelas, objektif, dan santun); (4) Penutup (harapan tindakan nyata dan ucapan terima kasih); serta\n(5) Identitas Pengirim (nama lengkap dan alamat/domisili yang jelas).\nb. Tujuh Kaidah Baku Penyuntingan Surat Dinas/Resmi (Ujian Sekolah / ASPD): 1. Kepala Surat (Kop Surat): nama\ninstansi ditulis dengan huruf kapital, diikuti alamat lengkap, nomor telepon, pos-el, dan kode pos (tanpa disingkat seperti\nJln. atau Telp. dalam badan kalimat resmi). 2. Penulisan Tempat & Tanggal Surat: apabila di bagian atas surat sudah\nterdapat Kop Surat yang mencantumkan nama kota, maka penulisan tanggal surat tidak perlu lagi mencantumkan\nnama kota (cukup: 14 Mei 2026, nama bulan diawali huruf kapital, tanpa tanda titik di akhir). 3. Nomor, Lampiran, dan\nHal: kata Lampiran ditulis lengkap (misal: Satu berkas, bukan angka 1 berkas), dan Hal menjelaskan inti surat secara\nringkas. 4. Alamat Tujuan Surat: diawali Yth. (tanpa kata Kepada di depannya). Jika diikuti sapaan Bapak/Ibu, wajib\ndiikuti nama orang (Yth. Bapak Drs. Haryono); jika diikuti nama jabatan, tidak memakai kata Bapak/Ibu (Yth. Kepala Dinas\nLingkungan Hidup Kabupaten Bantul). Baris nama kota tujuan tidak memakai kata depan di atau tanda titik (Yogyakarta,\nbukan di Yogyakarta.).\n2. Penyuntingan Kalimat Penutup Surat, Kata Baku KBBI, & Rujukan 30 Soal HOTS Bab VI Kelas 9\na. Kalimat Penutup Surat Resmi yang Baku & Efektif: - Salah (Tidak Baku / Pleonasme): 1. *Atas perhatiannya, kami\nhaturkan banyak-banyak terima kasih. (Akhiran -nya adalah kata ganti orang ketiga dan banyak-banyak* berlebihan). 2.\n*Demikian surat ini kami sampaikan, atas kerja sama Bapak/Ibu diucapkan terima kasih. (Pasif diucapkan* tidak jelas\npelakunya). - Benar (Baku & Efektif): Atas perhatian dan kerja sama Bapak/Ibu, kami ucapkan terima kasih. (Tanda\nkoma wajib diletakkan setelah anak kalimat yang mendahului induk kalimat).\nb. Daftar Kata Baku vs Tidak Baku KBBI yang Sering Diujikan dalam Penyuntingan Surat: - Baku: izin, ijazah, jadwal,\nkuitansi, legalisasi, fotokopi, meterai, tanda tangan (tanpa imbuhan), menandatangani (serangkai), bertanggung jawab,\npertanggungjawaban, silakan, sekadar, mengubah, memengaruhi, menyukseskan, menerapkan, negeri, cendera mata. -\nTidak Baku: ijin, ijasah, jadual, kwitansi, legalisir, foto copy, materai, tandatangan, menanda tangani, bertanggungjawab,\nsilahkan, sekedar, merubah, mempengaruhi, mensukseskan, negri, cinderamata.\nc.\nRujukan 30 Soal HOTS Bab VI Kelas 9 (3 Jenis Ujian): (1) ASPD DIY / TKAD / Ujian Sekolah: Paket Pe-\nmantapan ASPD DIY Bahasa Indonesia Kelas 9 (https://id.scribd.com/document/634340229/1-PAKET-SOAL-B-\nINDO-PEMANTAPAN-ASPD-1); (2) MGMP Bahasa Indonesia SMP: Bank Soal Penyuntingan Surat Dinas & EYD Ke-\nlas 9 (https://id.scribd.com/document/501294810/Soal-Penyuntingan-Surat-Dinas-dan-EYD-Kelas-9); (3)\nASAS/ASAT Kurikulum Merdeka:\nBank Soal PAT/ASAT Bahasa Indonesia Kelas 9 (https://id.scribd.com/\ndocument/728910445/Soal-PAT-Bahasa-Indonesia-Kelas-9-Kurikulum-Merdeka).",
+    "valid": true
+  }
+]
