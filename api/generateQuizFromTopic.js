@@ -114,9 +114,15 @@ import {
 // akun baru → 404 yang DITELAN diam-diam). Sekarang logika model/error-nya
 // hidup di modul murni lib/modelPilih.js dan eksekusinya menumpang rantai
 // callAIWithFallback yang sudah terbukti — satu sumber kebenaran.
-import { rantaiModelPilih, uraiBalasanPilihAi, teksErrorAi } from '../lib/modelPilih.js';
+import {
+  rantaiModelPilih, uraiBalasanPilihAi, teksErrorAi
+} from '../lib/modelPilih.js';
 import { MAPEL_UTBK } from '../src/utils/mesinTaksonomiSoal.js';
 import { blokPromptUtbk } from '../lib/promptUtbk.js';
+import {
+  SILABUS_KURIKULUM_MERDEKA,
+  normalisasiKodeMapel,
+} from '../src/utils/silabusKurikulumMerdeka.js';
 
 export const maxDuration = 60;
 
@@ -1196,13 +1202,90 @@ function escapeXml(value = '') {
 }
 
 // ============================================================
+// KURIKULUM MERDEKA SYLLABUS RESOLVER
+// ============================================================
+
+export function cariKonteksSilabusKurikulum({ topic, mapel, kelas }) {
+  const normMapel = normalisasiKodeMapel(mapel);
+  const kStr = String(kelas || '').replace(/[^0-9]/g, '');
+  if (!kStr || !['7', '8', '9'].includes(kStr)) return null;
+
+  const dataMapel = SILABUS_KURIKULUM_MERDEKA?.smp?.[kStr]?.[normMapel];
+  if (!dataMapel) return null;
+
+  const allBabs = [...(dataMapel['1'] || []), ...(dataMapel['2'] || [])];
+  const tLower = String(topic || '').toLowerCase().trim();
+
+  // Priority 1: Full / substring title match
+  for (const b of allBabs) {
+    const j = b.judul.toLowerCase();
+    const cleanJ = j.replace(/^(?:bab\s*[0-9ivx]+|chapter\s*[0-9ivx]+)\s*:\s*/i, '');
+    if (cleanJ && (cleanJ.includes(tLower) || tLower.includes(cleanJ) || j.includes(tLower) || tLower.includes(j))) {
+      return b;
+    }
+  }
+
+  // Priority 2: Keyword overlap in title
+  const tWords = tLower
+    .split(/[^a-zA-Z0-9]+/)
+    .filter((w) => w.length > 3 && !['kelas', 'smp', 'materi', 'soal', 'latihan', 'kurikulum'].includes(w));
+  let bestB = null;
+  let bestScore = 0;
+  for (const b of allBabs) {
+    const jWords = new Set(b.judul.toLowerCase().split(/[^a-zA-Z0-9]+/));
+    const score = tWords.filter((w) => jWords.has(w)).length;
+    if (score > bestScore) {
+      bestScore = score;
+      bestB = b;
+    }
+  }
+  if (bestScore > 0) return bestB;
+
+  // Priority 3: Chapter number match (e.g. "Bab 2", "Chapter 3")
+  const mNum = tLower.match(/\b(?:bab|chapter)\s*([0-9]+|[ivx]+)\b/i);
+  if (mNum) {
+    const num = mNum[1].toLowerCase();
+    for (const b of allBabs) {
+      if (new RegExp(`\\b(?:bab|chapter)\\s*${num}\\b`, 'i').test(b.judul)) {
+        return b;
+      }
+    }
+  }
+
+  // Priority 4: Sub-bab keyword match (highest score)
+  let bestSubB = null;
+  let bestSubScore = 0;
+  for (const b of allBabs) {
+    const combinedSub = (b.subBab || []).join(' ').toLowerCase();
+    const score = tWords.filter((w) => combinedSub.includes(w)).length;
+    if (score > bestSubScore) {
+      bestSubScore = score;
+      bestSubB = b;
+    }
+  }
+  if (bestSubScore > 0) return bestSubB;
+
+  return null;
+}
+
+// ============================================================
 // COMPETENCY ENGINE
 // ============================================================
 
 function getCompetencyTemplates(
   mapel,
   topic,
+  kelas = '',
 ) {
+  // Cek silabus resmi Kurikulum Merdeka SMP
+  const silabusMatch = cariKonteksSilabusKurikulum({ topic, mapel, kelas });
+  if (silabusMatch && Array.isArray(silabusMatch.subBab) && silabusMatch.subBab.length > 0) {
+    return [
+      ...silabusMatch.subBab,
+      `Capaian Pembelajaran: ${silabusMatch.cp || 'Pemahaman konsep dan aplikasi Kurikulum Merdeka'}`,
+    ];
+  }
+
   const m =
     normalizeText(mapel);
 
@@ -1419,6 +1502,7 @@ function buildCurriculumBlueprint({
     getCompetencyTemplates(
       safeMapel,
       safeTopic,
+      safeKelas,
     );
 
   const difficulties =
@@ -3679,6 +3763,20 @@ function buildUserPrompt({
     `MODE: ${currentMode}`,
 
     `ARAHAN GURU: ${arahan}`,
+
+    ...(() => {
+      const match = cariKonteksSilabusKurikulum({ topic, mapel, kelas });
+      if (!match) return [];
+      return [
+        '',
+        'REFERENSI RESMI KURIKULUM MERDEKA BIMBEL GEMILANG (FASE D SMP):',
+        `• Bab Terverifikasi: ${match.judul}`,
+        `• Capaian Pembelajaran (CP): ${match.cp}`,
+        `• Cakupan Sub-Materi Wajib: ${match.subBab.join(' | ')}`,
+        '• PEDOMAN MUTLAK: Seluruh butir soal WAJIB berakar kuat dan selaras dengan materi Kurikulum Merdeka Fase D di atas. DILARANG membuat soal di luar cakupan sub-bab atau mengambil materi jenjang SMA.',
+        '',
+      ];
+    })(),
 
     '',
 

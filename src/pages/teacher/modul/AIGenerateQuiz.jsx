@@ -17,7 +17,14 @@ import {
   ShieldCheck,
   Image as ImageIcon,
   CheckCircle2,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react';
+import {
+  SILABUS_KURIKULUM_MERDEKA,
+  normalisasiKodeMapel,
+  namaMapelLengkap,
+} from '../../../utils/silabusKurikulumMerdeka';
 
 // ============================================================
 // QUESTION TYPES
@@ -499,6 +506,15 @@ const AIGenerateQuiz = ({
     uiMode,
     setUiMode,
   ] = useState('simpel');
+
+  // Silabus Kurikulum Merdeka SMP Quick-Select
+  const [showSmpPicker, setShowSmpPicker] = useState(false);
+  const [selectedSmpKelas, setSelectedSmpKelas] = useState('7');
+  const [selectedSmpMapel, setSelectedSmpMapel] = useState(() => {
+    const norm = normalisasiKodeMapel(subject || '');
+    return ['ips', 'ipa', 'bing', 'bind', 'mtk'].includes(norm) ? norm : 'ips';
+  });
+  const [selectedBabObj, setSelectedBabObj] = useState(null);
 
   // ==========================================================
   // TOGGLE TYPE
@@ -1063,30 +1079,217 @@ const AIGenerateQuiz = ({
                 styles.field
               }
             >
-              <label
-                style={
-                  styles.label
-                }
-              >
-                TOPIK / MATERI
-                <span
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6, flexWrap: 'wrap', gap: 6 }}>
+                <label
                   style={
-                    styles.required
+                    styles.label
                   }
                 >
-                  *
-                </span>
-              </label>
+                  TOPIK / MATERI
+                  <span
+                    style={
+                      styles.required
+                    }
+                  >
+                    *
+                  </span>
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setShowSmpPicker(!showSmpPicker)}
+                  style={{
+                    background: showSmpPicker ? '#dbeafe' : '#f8fafc',
+                    color: '#2563eb',
+                    border: '1px solid #bfdbfe',
+                    borderRadius: 8,
+                    padding: '4px 10px',
+                    fontSize: 11.5,
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 5,
+                    boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
+                  }}
+                >
+                  <BookOpen size={13} />
+                  {showSmpPicker ? 'Tutup Pilihan Silabus' : '📚 Pilih dari Silabus Kurikulum Merdeka SMP'}
+                </button>
+              </div>
+
+              {/* Kurikulum Merdeka SMP Quick Selector */}
+              {showSmpPicker && (
+                <div style={{
+                  background: '#f8fafc',
+                  border: '1.5px solid #93c5fd',
+                  borderRadius: 12,
+                  padding: 14,
+                  marginBottom: 12,
+                }}>
+                  <div style={{ fontSize: 12, fontWeight: 800, color: '#1e40af', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <Sparkles size={14} color="#2563eb" />
+                    <span>Silabus Resmi Kurikulum Merdeka SMP (Fase D)</span>
+                  </div>
+
+                  {/* Filter Kelas */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: '#475569' }}>Kelas:</span>
+                    {['7', '8', '9'].map((k) => (
+                      <button
+                        key={k}
+                        type="button"
+                        onClick={() => setSelectedSmpKelas(k)}
+                        style={{
+                          background: selectedSmpKelas === k ? '#2563eb' : '#ffffff',
+                          color: selectedSmpKelas === k ? '#ffffff' : '#334155',
+                          border: `1px solid ${selectedSmpKelas === k ? '#2563eb' : '#cbd5e1'}`,
+                          borderRadius: 6,
+                          padding: '3px 10px',
+                          fontSize: 11.5,
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                        }}
+                      >
+                        Kelas {k}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Filter Mapel */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10, flexWrap: 'wrap' }}>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: '#475569' }}>Mapel:</span>
+                    {[
+                      { code: 'ips', label: 'IPS' },
+                      { code: 'ipa', label: 'IPA' },
+                      { code: 'bing', label: 'B. Inggris' },
+                      { code: 'bind', label: 'B. Indonesia' },
+                      { code: 'mtk', label: 'Matematika' },
+                    ].map((m) => (
+                      <button
+                        key={m.code}
+                        type="button"
+                        onClick={() => setSelectedSmpMapel(m.code)}
+                        style={{
+                          background: selectedSmpMapel === m.code ? '#0284c7' : '#ffffff',
+                          color: selectedSmpMapel === m.code ? '#ffffff' : '#334155',
+                          border: `1px solid ${selectedSmpMapel === m.code ? '#0284c7' : '#cbd5e1'}`,
+                          borderRadius: 6,
+                          padding: '3px 10px',
+                          fontSize: 11,
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                        }}
+                      >
+                        {m.label}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Daftar Bab Per Semester */}
+                  <div style={{ maxHeight: 220, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    {(() => {
+                      const dataMapel = SILABUS_KURIKULUM_MERDEKA?.smp?.[selectedSmpKelas]?.[selectedSmpMapel] || {};
+                      const s1 = dataMapel['1'] || [];
+                      const s2 = dataMapel['2'] || [];
+                      const all = [
+                        ...s1.map((b) => ({ ...b, sem: '1' })),
+                        ...s2.map((b) => ({ ...b, sem: '2' })),
+                      ];
+
+                      if (all.length === 0) {
+                        return <div style={{ fontSize: 11.5, color: '#64748b' }}>Belum ada data silabus untuk pilihan ini.</div>;
+                      }
+
+                      return all.map((bab) => {
+                        const isSelected = selectedBabObj?.id === bab.id || topic === bab.judul;
+                        return (
+                          <div
+                            key={bab.id}
+                            onClick={() => {
+                              setSelectedBabObj(bab);
+                              setTopic(bab.judul);
+                              setKelas(`Kelas ${selectedSmpKelas} SMP`);
+                              if (Array.isArray(bab.subBab) && bab.subBab.length > 0) {
+                                setArahan(`Fokus Kurikulum Merdeka Fase D: ${bab.subBab.join(', ')}. CP: ${bab.cp || ''}`);
+                              }
+                              setShowSmpPicker(false);
+                            }}
+                            style={{
+                              background: isSelected ? '#eff6ff' : '#ffffff',
+                              border: `1.5px solid ${isSelected ? '#3b82f6' : '#e2e8f0'}`,
+                              borderRadius: 8,
+                              padding: '8px 10px',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              gap: 2,
+                              transition: 'all .1s ease',
+                            }}
+                          >
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6 }}>
+                              <div style={{ fontSize: 12, fontWeight: 700, color: '#0f172a' }}>
+                                {bab.judul}
+                              </div>
+                              <span style={{
+                                fontSize: 9.5,
+                                fontWeight: 700,
+                                background: bab.sem === '1' ? '#fef3c7' : '#e0e7ff',
+                                color: bab.sem === '1' ? '#92400e' : '#3730a3',
+                                padding: '1px 6px',
+                                borderRadius: 4,
+                                whiteSpace: 'nowrap',
+                              }}>
+                                Sem {bab.sem}
+                              </span>
+                            </div>
+                            {bab.subBab && (
+                              <div style={{ fontSize: 10.5, color: '#64748b', lineHeight: 1.3 }}>
+                                {bab.subBab.slice(0, 3).join(' • ')}{bab.subBab.length > 3 ? ' ...' : ''}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      });
+                    })()}
+                  </div>
+                </div>
+              )}
+
+              {selectedBabObj && (
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  background: '#f0fdf4',
+                  border: '1px solid #bbf7d0',
+                  borderRadius: 8,
+                  padding: '6px 10px',
+                  marginBottom: 8,
+                  fontSize: 11.5,
+                  color: '#166534',
+                }}>
+                  <CheckCircle2 size={13} color="#16a34a" />
+                  <span>Tersinkron Silabus Resmi: <b>{selectedBabObj.judul}</b> ({namaMapelLengkap(selectedSmpMapel)} SMP Kelas {selectedSmpKelas})</span>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedBabObj(null)}
+                    style={{ marginLeft: 'auto', background: 'transparent', border: 'none', color: '#166534', cursor: 'pointer', fontWeight: 700, fontSize: 12 }}
+                  >
+                    ✕
+                  </button>
+                </div>
+              )}
 
               <input
                 value={topic}
-                onChange={(event) =>
+                onChange={(event) => {
                   setTopic(
                     event.target
                       .value
-                  )
-                }
-                placeholder="Contoh: TKA Matematika — Pecahan"
+                  );
+                  setSelectedBabObj(null);
+                }}
+                placeholder="Contoh: Bab 1: Keluarga Awal Kehidupan"
                 style={
                   styles.input
                 }
