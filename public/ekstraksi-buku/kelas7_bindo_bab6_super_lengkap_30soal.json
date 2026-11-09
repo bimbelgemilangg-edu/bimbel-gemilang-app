@@ -1,0 +1,994 @@
+[
+  {
+    "nomor": 1,
+    "nomor_global": 151,
+    "bab_angka": 6,
+    "bab_nama": "Bab VI: Sampaikan Melalui Surat",
+    "materi": "Surat Pribadi, Surat Dinas Resmi, Pronomina Sapaan, & Penyuntingan Kalimat Baku",
+    "paket": "Bab VI: Sampaikan Melalui Surat - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Berdasarkan pengamatan terhadap tata letak visual dan struktur kedua surat , tiga unsur struktur yang\nwajib ada pada Surat Resmi/Dinas tetapi tidak terdapat pada Surat Pribadi adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Kepala/kop surat berlogo instansi, nomor surat, serta lampiran dan hal/perihal"
+      },
+      {
+        "label": "B",
+        "teks": "Tanggal pembuatan surat, salam pembuka, dan nama pengirim surat"
+      },
+      {
+        "label": "C",
+        "teks": "Paragraf pembuka, paragraf isi, dan paragraf penutup surat"
+      },
+      {
+        "label": "D",
+        "teks": "Salam penutup dan tanda tangan penulis surat"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "A. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.",
+    "valid": true
+  },
+  {
+    "nomor": 2,
+    "nomor_global": 152,
+    "bab_angka": 6,
+    "bab_nama": "Bab VI: Sampaikan Melalui Surat",
+    "materi": "Surat Pribadi, Surat Dinas Resmi, Pronomina Sapaan, & Penyuntingan Kalimat Baku",
+    "paket": "Bab VI: Sampaikan Melalui Surat - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Bacalah kutipan surat pribadi berikut!\nMalang, 7 November 2026\nUntuk Sahabatku, Dinda\ndi Makassar\nHalo Dinda, apa kabarmu di Makassar? Semoga kamu dan keluarga selalu sehat dan bahagia, ya!\nSejak kamu pindah sekolah semester lalu, aku sering rindu saat-saat kita belajar kelompok dan berlatih\ntari tradisional bersama di aula sekolah. Liburan akhir tahun nanti, keluargaku berencana mengunjungi\nPaman di Makassar. Apakah kita bisa bertemu dan jalan-jalan ke Pantai Losari bersama?\nTujuan utama penulis mengirim surat pribadi di atas beserta suasana perasaan yang tergambar di dalam-\nnya adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Melaporkan kerusakan fasilitas umum di Pantai Losari kepada pemerintah daerah; suasana marah"
+      },
+      {
+        "label": "B",
+        "teks": "Mengundang sahabatnya menghadiri rapat resmi pengurus OSIS di Kabupaten Malang; suasana"
+      },
+      {
+        "label": "C",
+        "teks": "Mengungkapkan kerinduan kepada sahabat lama sekaligus menanyakan rencana pertemuan saat"
+      },
+      {
+        "label": "D",
+        "teks": "Mengajukan permohonan izin tidak masuk sekolah kepada wali kelas; suasana resmi"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "C. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.",
+    "valid": true
+  },
+  {
+    "nomor": 3,
+    "nomor_global": 153,
+    "bab_angka": 6,
+    "bab_nama": "Bab VI: Sampaikan Melalui Surat",
+    "materi": "Surat Pribadi, Surat Dinas Resmi, Pronomina Sapaan, & Penyuntingan Kalimat Baku",
+    "paket": "Bab VI: Sampaikan Melalui Surat - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Pada selembar surat resmi yang telah memiliki Kepala Surat (Kop Surat) lengkap dengan alamat kota\ninstansi (misalnya: SMP NEGERI 1 NUSANTARA, Jalan Pendidikan Nomor 10, Surabaya), bagaimana\ncara penulisan tanggal surat yang paling baku menurut pedoman tata naskah dinas dan EYD Edisi V?",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Ditulis dengan huruf kecil pada awal nama bulan: 7 november 2026"
+      },
+      {
+        "label": "B",
+        "teks": "Ditulis lengkap dengan nama kota yang diulang dan diakhiri tanda titik: Surabaya, 7 November 2026."
+      },
+      {
+        "label": "C",
+        "teks": "Ditulis menggunakan angka semua dan garis miring: Surabaya: 07/11/2026"
+      },
+      {
+        "label": "D",
+        "teks": "Ditulis tanggal, nama bulan lengkap dengan huruf, dan tahun tanpa mencantumkan kembali nama"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.",
+    "valid": true
+  },
+  {
+    "nomor": 4,
+    "nomor_global": 154,
+    "bab_angka": 6,
+    "bab_nama": "Bab VI: Sampaikan Melalui Surat",
+    "materi": "Surat Pribadi, Surat Dinas Resmi, Pronomina Sapaan, & Penyuntingan Kalimat Baku",
+    "paket": "Bab VI: Sampaikan Melalui Surat - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Mengapa pada surat resmi yang sudah dilengkapi Kop Surat tidak perlu lagi mencantumkan nama kota\ndi depan tanggal surat?",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Karena surat resmi tidak boleh diketahui berasal dari kota mana"
+      },
+      {
+        "label": "B",
+        "teks": "Karena nama kota kedudukan instansi sudah tercantum secara jelas pada bagian Kop Surat, sehingga"
+      },
+      {
+        "label": "C",
+        "teks": "Karena aturan pos melarang penulisan nama kota di seluruh wilayah Indonesia"
+      },
+      {
+        "label": "D",
+        "teks": "Karena tanggal surat pada surat resmi hanya boleh diisi dengan nama hari"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "B. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.",
+    "valid": true
+  },
+  {
+    "nomor": 5,
+    "nomor_global": 155,
+    "bab_angka": 6,
+    "bab_nama": "Bab VI: Sampaikan Melalui Surat",
+    "materi": "Surat Pribadi, Surat Dinas Resmi, Pronomina Sapaan, & Penyuntingan Kalimat Baku",
+    "paket": "Bab VI: Sampaikan Melalui Surat - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Perhatikan empat variasi penulisan Nomor, Lampiran, dan Hal pada surat dinas berikut:\n(1) Nomor : 045/OSIS-SMPN1/XI/2026\nLampiran: Satu berkas\nHal : Permohonan Izin Kegiatan\n(2) No. : 045/OSIS-SMPN1/XI/2026.\nLamp. : 1 (satu) berkas.\nPerihal : Permohonan izin kegiatan.\n(3) Nomor : 045/OSIS-SMPN1/XI/2026\nLampiran: - (ketika tidak ada lampiran, tetap ditulis tanda hubung)\n(4) Nomor: 045 / OSIS / 2026; Lampiran: Dua Lembar; Hal: Undangan.\nPenulisan yang paling baku dan sesuai pedoman EYD Edisi V dalam Surat Dinas ditunjukkan oleh\nnomor ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Nomor (3) karena tanda hubung wajib ditulis meskipun tidak ada lampiran"
+      },
+      {
+        "label": "B",
+        "teks": "Nomor (2) karena wajib disingkat dan diakhiri tanda titik di setiap baris"
+      },
+      {
+        "label": "C",
+        "teks": "Nomor (1) (kata Nomor, Lampiran, Hal ditulis utuh tanpa disingkat, jumlah lampiran ditulis dengan"
+      },
+      {
+        "label": "D",
+        "teks": "Nomor (4) karena semua bagian harus digabung dalam satu baris panjang"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "C. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.",
+    "valid": true
+  },
+  {
+    "nomor": 6,
+    "nomor_global": 156,
+    "bab_angka": 6,
+    "bab_nama": "Bab VI: Sampaikan Melalui Surat",
+    "materi": "Surat Pribadi, Surat Dinas Resmi, Pronomina Sapaan, & Penyuntingan Kalimat Baku",
+    "paket": "Bab VI: Sampaikan Melalui Surat - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Dalam penyuntingan Alamat Tujuan Surat Dinas, kaidah EYD Edisi V menetapkan bahwa kata depan\nKepada tidak perlu dicantumkan sebelum Yth., kata sapaan Bapak/Ibu hanya dipakai jika diikuti nama\ndiri orang (bukan nama jabatan), dan akhir alamat tidak diberi tanda titik. Manakah penulisan alamat\ntujuan surat dinas di bawah ini yang 100% baku?",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Yth. Kepala Dinas Lingkungan Hidup Kota Yogyakarta\nJalan Kenari Nomor 56"
+      },
+      {
+        "label": "B",
+        "teks": "Kepada Yth. Bapak Kepala Dinas Lingkungan Hidup Kota Yogyakarta.\nJl. Kenari No. 56."
+      },
+      {
+        "label": "C",
+        "teks": "Yth: Ibu Kepala Sekolah SMPN 2 Bandung."
+      },
+      {
+        "label": "D",
+        "teks": "Kepada: Yth. Bapak Drs. Hendra Wijaya."
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "A. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.",
+    "valid": true
+  },
+  {
+    "nomor": 7,
+    "nomor_global": 157,
+    "bab_angka": 6,
+    "bab_nama": "Bab VI: Sampaikan Melalui Surat",
+    "materi": "Surat Pribadi, Surat Dinas Resmi, Pronomina Sapaan, & Penyuntingan Kalimat Baku",
+    "paket": "Bab VI: Sampaikan Melalui Surat - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Apabila alamat tujuan surat dinas ditujukan langsung dengan menyebut nama orang beserta gelarnya\n(bukan langsung nama jabatannya), manakah penulisan yang tepat menurut kaidah EYD Edisi V?",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Kepada Bapak Rahmat Hidayat, M.Pd."
+      },
+      {
+        "label": "B",
+        "teks": "Kepada Yth. Drs. Rahmat Hidayat, M.Pd\nKepala Sekolah SMP Tunas Harapan."
+      },
+      {
+        "label": "C",
+        "teks": "Yth. Bapak Kepala Sekolah Drs. Rahmat Hidayat M.Pd."
+      },
+      {
+        "label": "D",
+        "teks": "Yth. Bapak Drs. Rahmat Hidayat, M.Pd.\nKepala SMP Tunas Harapan\nJalan Melati Nomor 12"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.",
+    "valid": true
+  },
+  {
+    "nomor": 8,
+    "nomor_global": 158,
+    "bab_angka": 6,
+    "bab_nama": "Bab VI: Sampaikan Melalui Surat",
+    "materi": "Surat Pribadi, Surat Dinas Resmi, Pronomina Sapaan, & Penyuntingan Kalimat Baku",
+    "paket": "Bab VI: Sampaikan Melalui Surat - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Perhatikan kutipan pemerincian jadwal kegiatan di dalam bagian Isi Surat Undangan Resmi OSIS\nberikut!\nSehubungan dengan akan dilaksanakannya rapat persiapan Pentas Seni Tahunan, kami mengundang\nSaudara untuk hadir pada\nhari, tanggal : Sabtu, 14 November 2026\nwaktu : pukul 09.00 s.d. 11.30 WIB\ntempat : Ruang Multimedia SMP Pelita Bangsa\nacara : Pembentukan Panitia Pentas Seni\nMengapa kata hari, tanggal, waktu, tempat, dan acara pada pemerincian di atas ditulis dengan huruf\nawal kecil (tidak kapital)?",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Karena penulis surat lupa menekan tombol huruf kapital pada papan ketik komputer"
+      },
+      {
+        "label": "B",
+        "teks": "Karena keempat rincian tersebut merupakan kelanjutan langsung dari kalimat pengantar \"...hadir"
+      },
+      {
+        "label": "C",
+        "teks": "Karena nama hari Sabtu dan bulan November juga harus ditulis dengan huruf kecil"
+      },
+      {
+        "label": "D",
+        "teks": "Karena seluruh isi surat resmi tidak boleh menggunakan huruf kapital sama sekali"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "B. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.",
+    "valid": true
+  },
+  {
+    "nomor": 9,
+    "nomor_global": 159,
+    "bab_angka": 6,
+    "bab_nama": "Bab VI: Sampaikan Melalui Surat",
+    "materi": "Surat Pribadi, Surat Dinas Resmi, Pronomina Sapaan, & Penyuntingan Kalimat Baku",
+    "paket": "Bab VI: Sampaikan Melalui Surat - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Perhatikan kalimat penutup surat dinas yang sering ditemukan salah kaprah di masyarakat berikut:\n\"Demikian surat undangan ini kami sampaikan. Atas perhatiannya dan kehadirannya, kami haturkan\nbanyak-banyak terima kasih.\"\nMengapa kalimat penutup di atas dinilai tidak baku / tidak efektif, dan bagaimanakah perbaikannya\nyang paling tepat?",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Kalimat penutup surat dinas seharusnya menggunakan bahasa pergaulan remaja"
+      },
+      {
+        "label": "B",
+        "teks": "Kata terima kasih seharusnya ditulis serangkai menjadi terimakasih; Perbaikan: \"Atas perhatiannya"
+      },
+      {
+        "label": "C",
+        "teks": "Akhiran -nya mengacu pada orang ketiga (bukan orang kedua yang disapa) dan frasa banyak-banyak\nterima kasih berlebihan; Perbaikan: \"Demikian surat undangan ini kami sampaikan. Atas perhatian dan"
+      },
+      {
+        "label": "D",
+        "teks": "Kalimat penutup surat dinas wajib diakhiri dengan tanda seru (!)"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "C. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.",
+    "valid": true
+  },
+  {
+    "nomor": 10,
+    "nomor_global": 160,
+    "bab_angka": 6,
+    "bab_nama": "Bab VI: Sampaikan Melalui Surat",
+    "materi": "Surat Pribadi, Surat Dinas Resmi, Pronomina Sapaan, & Penyuntingan Kalimat Baku",
+    "paket": "Bab VI: Sampaikan Melalui Surat - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Dalam surat pribadi yang ditulis oleh seorang adik kepada kakaknya yang sedang kuliah di luar kota,\nterdapat kalimat: *\"Minggu depan Ibu akan mengirim paket rendang kesukaan Kakak, jadi pastikan\nKakak ada di tempat kos, ya!\"* Mengapa kata Ibu dan Kakak di tengah kalimat tersebut wajib ditulis\ndengan huruf awal kapital?",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Karena kata kekerabatan (Ibu, Kakak) tersebut digunakan sebagai kata sapaan dan pengacuan lang-"
+      },
+      {
+        "label": "B",
+        "teks": "Karena semua kata benda di dalam surat pribadi harus diawali dengan huruf kapital"
+      },
+      {
+        "label": "C",
+        "teks": "Karena kata Ibu dan Kakak merupakan nama kota dan provinsi di Indonesia"
+      },
+      {
+        "label": "D",
+        "teks": "Karena terletak tepat setelah tanda titik di awal paragraf"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "A. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.",
+    "valid": true
+  },
+  {
+    "nomor": 11,
+    "nomor_global": 161,
+    "bab_angka": 6,
+    "bab_nama": "Bab VI: Sampaikan Melalui Surat",
+    "materi": "Surat Pribadi, Surat Dinas Resmi, Pronomina Sapaan, & Penyuntingan Kalimat Baku",
+    "paket": "Bab VI: Sampaikan Melalui Surat - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Bandingkan penggunaan kata kekerabatan pada empat kalimat berikut!\nManakah di antara kalimat\nberikut yang menggunakan huruf kapital pada kata sapaan secara tepat menurut EYD Edisi V?",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Kalimat A dan C keduanya benar (huruf kapital dipakai saat menyapa langsung, dan huruf kecil saat"
+      },
+      {
+        "label": "B",
+        "teks": "\"Apakah paman sudah menerima surat yang saya kirimkan pekan lalu?\" tanya Riko kepada Pa-"
+      },
+      {
+        "label": "C",
+        "teks": "Semua kakak dan adik saya sedang berkunjung ke rumah bapak guru."
+      },
+      {
+        "label": "D",
+        "teks": "\"Apakah Paman sudah menerima surat yang saya kirimkan pekan lalu?\" tanya Riko kepada pa-"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.",
+    "valid": true
+  },
+  {
+    "nomor": 12,
+    "nomor_global": 162,
+    "bab_angka": 6,
+    "bab_nama": "Bab VI: Sampaikan Melalui Surat",
+    "materi": "Surat Pribadi, Surat Dinas Resmi, Pronomina Sapaan, & Penyuntingan Kalimat Baku",
+    "paket": "Bab VI: Sampaikan Melalui Surat - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Perhatikan penggunaan pronomina persona (kata ganti orang) kami dan kita pada dua kalimat surat\nberikut:\n- Kalimat 1: *Sehubungan dengan kegiatan Kemah Bakti, kami selaku pengurus OSIS memohon izin\npenggunaan lapangan sekolah kepada Bapak Kepala Sekolah.*\n- Kalimat 2: *Wahai sahabatku Rina, saat liburan nanti kita akan memancing ikan bersama di kolam\nbelakang rumah Kakek.*\nPerbedaan fungsi makna pronomina kami (Kalimat 1) dan kita (Kalimat 2) adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Kami merupakan kata ganti orang ketiga tunggal; sedangkan kita merupakan kata ganti orang kedua"
+      },
+      {
+        "label": "B",
+        "teks": "Kami bersifat eksklusif (hanya mencakup pihak pengirim surat/OSIS, tidak termasuk Kepala Sekolah\nyang diajak bicara); sedangkan kita bersifat inklusif (mencakup pengirim surat sekaligus penerima surat"
+      },
+      {
+        "label": "C",
+        "teks": "Kami hanya boleh digunakan dalam surat pribadi; sedangkan kita hanya untuk surat lamaran kerja"
+      },
+      {
+        "label": "D",
+        "teks": "Keduanya memiliki arti dan cakupan yang sama persis tanpa perbedaan"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "B. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.",
+    "valid": true
+  },
+  {
+    "nomor": 13,
+    "nomor_global": 163,
+    "bab_angka": 6,
+    "bab_nama": "Bab VI: Sampaikan Melalui Surat",
+    "materi": "Surat Pribadi, Surat Dinas Resmi, Pronomina Sapaan, & Penyuntingan Kalimat Baku",
+    "paket": "Bab VI: Sampaikan Melalui Surat - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Perhatikan daftar kata yang sering digunakan dalam penulisan surat dinas berikut:\n(1) ijin, praktek, apotik, sekertaris, jadual\n(2) izin, praktik, apotek, sekretaris, jadwal\n(3) narasumber, kerja sama, terima kasih, tanda tangan\n(4) nara sumber, kerjasama, terimakasih, tandatangan\nKelompok kata yang penulisannya 100% baku sesuai Kamus Besar Bahasa Indonesia (KBBI) Edisi VI\ndan EYD Edisi V adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Kelompok (1) dan kelompok (4)"
+      },
+      {
+        "label": "C",
+        "teks": "Kelompok (2) dan kelompok (3)"
+      },
+      {
+        "label": "B",
+        "teks": "Kelompok (1) dan kelompok (3)"
+      },
+      {
+        "label": "D",
+        "teks": "Kelompok (2) dan kelompok (4)"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "C. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.",
+    "valid": true
+  },
+  {
+    "nomor": 14,
+    "nomor_global": 164,
+    "bab_angka": 6,
+    "bab_nama": "Bab VI: Sampaikan Melalui Surat",
+    "materi": "Surat Pribadi, Surat Dinas Resmi, Pronomina Sapaan, & Penyuntingan Kalimat Baku",
+    "paket": "Bab VI: Sampaikan Melalui Surat - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Bacalah perbandingan dua teks surat utuh berikut dengan saksama untuk menjawab soal nomor 14, 15,\ndan 16!\nTEKS 1: SURAT PRIBADI\nTEKS 2: SURAT RESMI / DINAS OSIS\nYogyakarta, 14 Februari 2026\nSahabatku Rania yang baik,\ndi Kota Malang\nHalo Rania, apa kabarmu dan keluarga di Malang?\nSemoga kamu selalu sehat dan tetap semangat\nmenyambut ujian semester genap, ya!\nSejak kamu\npindah sekolah ke Malang semester lalu, suasana klub\nbaca perpustakaan kita terasa sepi tanpa candaanmu.\nOh iya, bulan depan sekolahku akan mengadakan\nkunjungan studi budaya ke Museum Angkut dan Kam-\npung Warna-Warni Jodipan di Malang. Kalau jadwal-\nnya sudah pasti, bolehkah aku mampir ke rumahmu\nuntuk menyerahkan buku kumpulan cerpen karya\nanggota klub kita?\nSekian dulu surat dariku. Jangan lupa balas surat ini,\nya! Salam hangat untuk Ayah dan Ibumu.\nSahabatmu yang selalu merindukanmu,\nNadia Putri\nORGANISASI SISWA INTRA SEKOLAH (OSIS)\nSMP NEGERI 2 YOGYAKARTA\nJalan Panembahan Senopati Nomor 18, Yogyakarta\nNomor: 018/OSIS-SMPN2/II/2026\n14 Februari 2026\nHal: Permohonan Izin Kunjungan Studi Literasi\nYth. Kepala Dinas Perpustakaan dan Arsip Daerah\ndi Yogyakarta\nDengan hormat,\nDalam rangka meningkatkan minat baca dan keter-\nampilan literasi pengurus OSIS SMP Negeri 2 Yo-\ngyakarta masa bakti 2025/2026, kami bermaksud\nmengadakan kegiatan Kunjungan Studi Literasi pada:\nhari, tanggal : Sabtu, 28 Februari 2026\nwaktu : pukul 08.30 s.d. 11.30 WIB\njumlah peserta : 35 orang siswa dan 3 guru pendamp-\ning.\nSehubungan dengan hal tersebut, kami memohon izin\nuntuk mengunjungi ruang koleksi langka dan layanan\ndigital di Grhatama Pustaka. Atas perhatian dan izin\nyang Bapak/Ibu berikan, kami ucapkan terima kasih.\nPerbedaan unsur struktur dan ragam bahasa antara Teks 1 dan Teks 2 di atas yang paling tepat\nadalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Teks 1 menggunakan bahasa hukum yang kaku; sedangkan Teks 2 menggunakan bahasa gaul re-"
+      },
+      {
+        "label": "B",
+        "teks": "Teks 1 wajib menggunakan stempel basah kepala sekolah; sedangkan Teks 2 ditulis di atas kartu pos"
+      },
+      {
+        "label": "C",
+        "teks": "Teks 1 (Surat Pribadi) tidak memiliki kepala surat (kop), nomor surat, dan perihal, serta menggu-\n\nnakan kata ganti orang pertama tunggal (aku) dan ragam bahasa akrab; sedangkan Teks 2 (Surat\nDinas/Resmi) wajib mencantumkan kop lembaga, nomor surat, dan hal, serta menggunakan kata ganti"
+      },
+      {
+        "label": "D",
+        "teks": "Kedua surat di atas sama-sama tidak mencantumkan tanggal penulisan surat dan tujuan penerima"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "C. Perbedaan mendasar kedua surat terlihat jelas pada tabel: Teks 1 (Surat Pribadi Nadia\nkepada Rania) tanpa kop/nomor surat dan memakai sapaan akrab (Halo Rania, aku, kamu), sedangkan Teks\n2 (Surat Dinas OSIS) memakai kop resmi, nomor surat, hal, dan bahasa baku (Dengan hormat, kami).",
+    "valid": true
+  },
+  {
+    "nomor": 15,
+    "nomor_global": 165,
+    "bab_angka": 6,
+    "bab_nama": "Bab VI: Sampaikan Melalui Surat",
+    "materi": "Surat Pribadi, Surat Dinas Resmi, Pronomina Sapaan, & Penyuntingan Kalimat Baku",
+    "paket": "Bab VI: Sampaikan Melalui Surat - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Berdasarkan Teks 1 dan Teks 2 pada soal nomor 14, perbandingan tujuan komunikasi kedua surat\ntersebut adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Teks 1 bertujuan melamar pekerjaan di Kota Malang; sedangkan Teks 2 bertujuan meminjam uang"
+      },
+      {
+        "label": "B",
+        "teks": "Teks 1 bertujuan menjalin silaturahmi personal, menanyakan kabar sahabat, dan menyampaikan\nrencana berkunjung ke rumah Rania; sedangkan Teks 2 bertujuan menyampaikan permohonan izin"
+      },
+      {
+        "label": "C",
+        "teks": "Teks 1 bertujuan menegur Rania karena pindah sekolah; sedangkan Teks 2 bertujuan mengundang"
+      },
+      {
+        "label": "D",
+        "teks": "Kedua surat tersebut sama-sama bertujuan memesan kamar penginapan wisata di Kota Malang"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "B. Isi Teks 1 bersifat personal (menanyakan kabar dan rencana mampir saat studi budaya\nke Malang), sedangkan isi Teks 2 bersifat organisatoris/kedinasan (memohon izin kunjungan studi literasi ke\nDinas Perpustakaan).",
+    "valid": true
+  },
+  {
+    "nomor": 16,
+    "nomor_global": 166,
+    "bab_angka": 6,
+    "bab_nama": "Bab VI: Sampaikan Melalui Surat",
+    "materi": "Surat Pribadi, Surat Dinas Resmi, Pronomina Sapaan, & Penyuntingan Kalimat Baku",
+    "paket": "Bab VI: Sampaikan Melalui Surat - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Perhatikan penulisan tanggal surat dan alamat tujuan surat pada Teks 2 di soal nomor 14:\n- Tanggal surat ditulis: 14 Februari 2026 (tanpa nama kota di depannya)\n- Alamat tujuan ditulis: Yth. Kepala Dinas Perpustakaan dan Arsip Daerah (tanpa kata \"Kepada\" dan\ntanpa kata sapaan \"Bapak/Ibu\" di depan nama jabatan)\nAlasan kedua penulisan pada Teks 2 tersebut sudah sangat tepat dan baku sesuai kaidah EYD Edisi\nV adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Karena tanggal surat pada surat resmi wajib ditulis dengan angka Romawi seluruhnya"
+      },
+      {
+        "label": "B",
+        "teks": "Karena surat dinas dilarang mencantumkan nama kota di bagian mana pun"
+      },
+      {
+        "label": "C",
+        "teks": "Karena Kepala Dinas Perpustakaan bukan seorang pejabat pemerintah"
+      },
+      {
+        "label": "D",
+        "teks": "Nama kota (Yogyakarta) tidak perlu ditulis ulang di depan tanggal surat karena sudah tercantum pada\nKepala Surat (Kop Surat), sedangkan kata \"Kepada\" tidak diperlukan karena \"Yth.\" sudah bermakna"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Dalam tata naskah surat dinas baku: (1) jika surat sudah berkop lembaga yang memuat\nnama kota, tanggal surat tidak perlu diawali nama kota lagi; (2) alamat tujuan langsung menggunakan Yth.\ndiikuti nama jabatan tanpa kata depan Kepada dan tanpa sapaan Bapak/Ibu.",
+    "valid": true
+  },
+  {
+    "nomor": 17,
+    "nomor_global": 167,
+    "bab_angka": 6,
+    "bab_nama": "Bab VI: Sampaikan Melalui Surat",
+    "materi": "Surat Pribadi, Surat Dinas Resmi, Pronomina Sapaan, & Penyuntingan Kalimat Baku",
+    "paket": "Bab VI: Sampaikan Melalui Surat - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Perhatikan penulisan Salam Pembuka dan Salam Penutup pada surat resmi berikut!\nTanda baca\nyang wajib dibubuhkan tepat di akhir ungkapan salam pembuka (Dengan hormat) dan salam penutup\n(Hormat kami) serta penulisan huruf pada kata kedua adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Diakhiri tanda titik dua (:) dan ditulis kapital semua: DENGAN HORMAT:"
+      },
+      {
+        "label": "B",
+        "teks": "Diakhiri tanda titik (.) dan kata kedua ditulis dengan huruf kapital: Dengan Hormat. dan Hormat"
+      },
+      {
+        "label": "C",
+        "teks": "Diakhiri tanda koma (,) dan kata kedua ditulis dengan huruf awal kecil: Dengan hormat, dan Hormat"
+      },
+      {
+        "label": "D",
+        "teks": "Diakhiri tanda seru (!) tanpa tanda koma: Dengan hormat!"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "C. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.",
+    "valid": true
+  },
+  {
+    "nomor": 18,
+    "nomor_global": 168,
+    "bab_angka": 6,
+    "bab_nama": "Bab VI: Sampaikan Melalui Surat",
+    "materi": "Surat Pribadi, Surat Dinas Resmi, Pronomina Sapaan, & Penyuntingan Kalimat Baku",
+    "paket": "Bab VI: Sampaikan Melalui Surat - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Pada bagian bawah kanan dan kiri lembar pengesahan surat resmi organisasi siswa (OSIS), terdapat\nblok tanda tangan Ketua OSIS, Sekretaris OSIS, serta blok pengesahan Mengetahui, Kepala Sekolah.\nMengapa surat keluar yang diterbitkan oleh pengurus OSIS wajib diketahui dan ditandatangani oleh\nPembina OSIS / Kepala Sekolah?",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Sebagai pengganti nomor surat dan lampiran di bagian atas"
+      },
+      {
+        "label": "B",
+        "teks": "Karena Ketua OSIS dan Sekretaris OSIS dilarang menuliskan nama mereka di dalam surat"
+      },
+      {
+        "label": "C",
+        "teks": "Agar surat tersebut berubah menjadi surat pribadi milik kepala sekolah"
+      },
+      {
+        "label": "D",
+        "teks": "Sebagai bukti keabsahan hukum dan pertanggungjawaban resmi bahwa kegiatan organisasi siswa"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.",
+    "valid": true
+  },
+  {
+    "nomor": 19,
+    "nomor_global": 169,
+    "bab_angka": 6,
+    "bab_nama": "Bab VI: Sampaikan Melalui Surat",
+    "materi": "Surat Pribadi, Surat Dinas Resmi, Pronomina Sapaan, & Penyuntingan Kalimat Baku",
+    "paket": "Bab VI: Sampaikan Melalui Surat - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Perhatikan bagian paling bawah sebelah kiri dari selembar surat dinas yang bertuliskan:\nTembusan:\n1. Kepala Dinas Pendidikan Kabupaten Sleman\n2. Wakil Kepala Sekolah Bidang Kesiswaan\nFungsi pencantuman bagian Tembusan pada surat dinas tersebut adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Mencantumkan daftar pustaka buku yang dikutip oleh sekretaris"
+      },
+      {
+        "label": "B",
+        "teks": "Menunjukkan daftar nama orang yang menolak kegiatan di dalam surat"
+      },
+      {
+        "label": "C",
+        "teks": "Memberitahukan kepada penerima surat bahwa salinan surat tersebut juga dikirimkan kepada pihak-"
+      },
+      {
+        "label": "D",
+        "teks": "Menggantikan alamat tujuan utama surat di bagian atas"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "C. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.",
+    "valid": true
+  },
+  {
+    "nomor": 20,
+    "nomor_global": 170,
+    "bab_angka": 6,
+    "bab_nama": "Bab VI: Sampaikan Melalui Surat",
+    "materi": "Surat Pribadi, Surat Dinas Resmi, Pronomina Sapaan, & Penyuntingan Kalimat Baku",
+    "paket": "Bab VI: Sampaikan Melalui Surat - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Bacalah wacana korespondensi surat-menyurat komunitas lingkungan berikut untuk menjawab soal\nnomor 20, 21, dan 22!\nWACANA LITERASI MEMBACA: WACANA LITERASI MEMBACA: KORESPONDENSI KOMUNITAS\nPELAJAR SAHABAT MANGROVE\n(Paragraf 1) Pada awal bulan Maret 2026, Komunitas Pelajar Sahabat Mangrove SMP Negeri 1 Bantul meren-\ncanakan kegiatan Kemah Bakti Pesisir di kawasan Hutan Mangrove Baros, Kecamatan Kretek, Kabupaten\nBantul. Kegiatan ini bertujuan menanam 1.000 bibit bakau (Rhizophora) sekaligus membersihkan sampah\nplastik yang tersangkut di akar-akar mangrove pascabanjir kiriman dari hulu Sungai Opak.\n(Paragraf 2) Untuk menyukseskan kegiatan tersebut, Ketua Panitia menugaskan sekretaris menyusun dua\njenis surat yang berbeda sasaran. Surat pertama adalah Surat Resmi Permohonan Bantuan Bibit yang\nditujukan kepada Kepala Balai Pengelolaan Daerah Aliran Sungai dan Hutan Lindung (BPDASHL) Serayu\nOpak Progo. Surat kedua adalah Surat Terbuka/Pribadi Ajakan Kolaborasi yang dikirimkan kepada sahabat\npena mereka, Komunitas Pecinta Alam SMP Tunas Harapan di Sleman.\n(Paragraf 3) Dalam draf surat resmi kepada Kepala BPDASHL, sekretaris menulis kalimat penutup: “Atas\nperhatiannya dan bantuan bibitnya yang Bapak berikan, sebelum dan sesudahnya kami haturkan beribu-ribu\nterima kasih.”\nGuru pembina bahasa Indonesia yang memeriksa draf tersebut segera meminta sekretaris\nmenyunting kalimat penutup itu karena mengandung empat kesalahan ketidakefektifan kalimat dan ketidak-\nbakuan sapaan.\nMengapa Ketua Panitia pada Paragraf 2 wacana di atas harus membedakan jenis surat yang dikirimkan\nkepada Kepala BPDASHL dan kepada sahabat pena Komunitas SMP Tunas Harapan?",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Karena Kepala BPDASHL tidak bisa membaca surat yang diketik dengan komputer"
+      },
+      {
+        "label": "B",
+        "teks": "Karena Kepala BPDASHL merupakan pimpinan instansi pemerintah resmi sehingga harus dihubungi\ndengan Surat Dinas/Resmi yang berstruktur formal dan berbahasa baku, sedangkan sahabat pena"
+      },
+      {
+        "label": "C",
+        "teks": "Karena sahabat pena di Sleman wajib dikirimi surat yang ditempeli materai sepuluh ribu rupiah"
+      },
+      {
+        "label": "D",
+        "teks": "Karena surat resmi tidak boleh menyebutkan jumlah bibit pohon bakau yang dibutuhkan"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "B. Pemilihan jenis dan ragam bahasa surat ditentukan oleh hubungan antara pengirim dan\npenerima serta sifat urusannya: urusan kedinasan ke instansi pemerintah (BPDASHL) wajib menggunakan\nsurat resmi, sedangkan komunikasi antarsahabat pena dapat menggunakan surat pribadi/komunitas.",
+    "valid": true
+  },
+  {
+    "nomor": 21,
+    "nomor_global": 171,
+    "bab_angka": 6,
+    "bab_nama": "Bab VI: Sampaikan Melalui Surat",
+    "materi": "Surat Pribadi, Surat Dinas Resmi, Pronomina Sapaan, & Penyuntingan Kalimat Baku",
+    "paket": "Bab VI: Sampaikan Melalui Surat - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Perhatikan kalimat penutup draf surat resmi yang dikoreksi oleh guru pembina pada Paragraf 3 wacana\nsoal nomor 20:\n\"Atas perhatiannya dan bantuan bibitnya yang Bapak berikan, sebelum dan sesudahnya kami haturkan\nberibu-ribu terima kasih.\"\nHasil penyuntingan (perbaikan) kalimat penutup surat dinas tersebut yang paling efektif, santun, dan\nbaku sesuai EYD Edisi V adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "\"Demikianlah surat ini kami buat, terima kasih atas perhatiannya sebelum dan sesudahnya.\""
+      },
+      {
+        "label": "B",
+        "teks": "\"Atas perhatiannya Bapak Kepala Balai, kami mengucapkan banyak-banyak terima kasih sekali.\""
+      },
+      {
+        "label": "C",
+        "teks": "\"Atas perhatian dan bantuan bibit yang Bapak/Ibu berikan, kami ucapkan terima kasih.\""
+      },
+      {
+        "label": "D",
+        "teks": "\"Atas bantuan bibitnya mereka, kami haturkan terima kasih yang sebesar-besarnya.\""
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "C. Kesalahan kalimat asli adalah: (1) akhiran -nya pada perhatiannya/bibitnya adalah kata ganti\norang ketiga (padahal surat berbicara langsung kepada orang kedua/penerima), (2) frasa sebelum dan sesu-\ndahnya mubazir, dan (3) frasa haturkan beribu-ribu terima kasih hiperbolis/tidak baku. Perbaikan bakunya:\n“Atas perhatian dan bantuan bibit yang Bapak/Ibu berikan, kami ucapkan terima kasih.”",
+    "valid": true
+  },
+  {
+    "nomor": 22,
+    "nomor_global": 172,
+    "bab_angka": 6,
+    "bab_nama": "Bab VI: Sampaikan Melalui Surat",
+    "materi": "Surat Pribadi, Surat Dinas Resmi, Pronomina Sapaan, & Penyuntingan Kalimat Baku",
+    "paket": "Bab VI: Sampaikan Melalui Surat - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Jika Komunitas Pecinta Alam SMP Tunas Harapan di Sleman ingin menulis paragraf isi surat balasan\nyang menyatakan kesediaan bergabung dalam Kemah Bakti Pesisir pada wacana soal nomor 20, kali-\nmat balasan yang paling santun dan logis adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "\"Mengapa kalian tidak menanam pohon bakau sendiri saja tanpa mengajak sekolah lain?\""
+      },
+      {
+        "label": "B",
+        "teks": "\"Kami menolak hadir karena pantai di Bantul terlalu jauh dari Kabupaten Sleman.\""
+      },
+      {
+        "label": "C",
+        "teks": "\"Harap kalian segera mengirimkan uang konsumsi kepada kami sebelum acara dimulai.\""
+      },
+      {
+        "label": "D",
+        "teks": "\"Kami sangat antusias menerima undangan kolaborasi dari teman-teman Sahabat Mangrove SMPN\n1 Bantul. Insyaallah 15 anggota komunitas kami siap hadir di Hutan Mangrove Baros pada jadwal yang"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Kalimat D menunjukkan apresiasi yang hangat, menyatakan kesediaan hadir secara konkret\n(15 anggota), serta mendukung tujuan kegiatan secara kolaboratif.",
+    "valid": true
+  },
+  {
+    "nomor": 23,
+    "nomor_global": 173,
+    "bab_angka": 6,
+    "bab_nama": "Bab VI: Sampaikan Melalui Surat",
+    "materi": "Surat Pribadi, Surat Dinas Resmi, Pronomina Sapaan, & Penyuntingan Kalimat Baku",
+    "paket": "Bab VI: Sampaikan Melalui Surat - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Perhatikan perbandingan dua kutipan bagian isi surat resmi yang salah satunya masih mengandung\nkesalahan ejaan berikut!\nKUTIPAN SURAT RESMI A\nKUTIPAN SURAT RESMI B\nSehubungan dengan akan dilaksanakannya kegiatan\nKemah Literasi Semester Genap, kami mengharap\nkehadiran Bapak/Ibu Wali Murid Kelas VII pada:\nhari, tanggal : Sabtu, 21 Februari 2026\nwaktu : pukul 09.00 s.d. 11.00 WIB\ntempat : Aula Utama SMP Negeri 1 Sleman\nacara : Sosialisasi Program Literasi Sekolah.\nSehubungan dengan akan dilaksanakannya kegiatan\nKemah Literasi Semester Genap, kami mengharap\nkehadiran Bapak/Ibu Wali Murid Kelas VII pada:\nHari, Tanggal : sabtu, 21 februari 2026\nWaktu : Pukul 09:00 s/d 11:00 WIB\nTempat : aula utama smp negeri 1 sleman\nAcara : Sosialisasi Program Literasi Sekolah.\nAnalisis perbandingan kaidah ejaan dan tanda baca (EYD Edisi V) yang benar terhadap kedua kutipan\nsurat resmi di atas adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Kutipan A sudah 100% baku karena rincian pemerian (hari, tanggal, waktu, tempat, acara) ditulis\ndengan huruf awal kecil sebagai kelanjutan kalimat di atasnya, nama hari/bulan/gedung diawali huruf\nkapital (Sabtu, 21 Februari 2026, Aula Utama SMP Negeri 1 Sleman), tanda waktu memakai titik\n(09.00), dan singkatan sampai dengan ditulis s.d.; sedangkan Kutipan B salah pada keenam kaidah"
+      },
+      {
+        "label": "B",
+        "teks": "Kutipan B sudah 100% baku karena nama hari dan bulan wajib ditulis dengan huruf kecil (sabtu, 21"
+      },
+      {
+        "label": "C",
+        "teks": "Kedua kutipan salah karena nama sekolah tidak boleh ditulis dengan huruf kapital"
+      },
+      {
+        "label": "D",
+        "teks": "Kedua kutipan sudah benar karena aturan ejaan tidak berlaku di dalam surat undangan resmi"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "A. Sesuai EYD Edisi V: (1) kata rincian setelah titik dua yang belum berakhir titik diawali huruf\nkecil (hari, tanggal; waktu; tempat), (2) nama hari, bulan, dan nama diri lembaga diawali huruf kapital, (3)\npemisah jam dan menit memakai tanda titik (09.00), dan (4) singkatan sampai dengan adalah s.d. (bukan\ns/d).",
+    "valid": true
+  },
+  {
+    "nomor": 24,
+    "nomor_global": 174,
+    "bab_angka": 6,
+    "bab_nama": "Bab VI: Sampaikan Melalui Surat",
+    "materi": "Surat Pribadi, Surat Dinas Resmi, Pronomina Sapaan, & Penyuntingan Kalimat Baku",
+    "paket": "Bab VI: Sampaikan Melalui Surat - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Perhatikan bagian pengirim dan tanda tangan pada kaki surat dinas OSIS berikut!\nKetua Panitia mengenakan tanda tangan di sebelah kanan, Sekretaris di sebelah kiri, dan di bagian\nbawah tengah tercantum \"Mengetahui, Kepala SMP Negeri 1 Bantul\" beserta tanda tangan dan stem-\npel sekolah.\nFungsi pencantuman tanda tangan Kepala Sekolah dan stempel resmi pada surat dinas OSIS yang\ndikirim ke pihak luar sekolah adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Sekadar untuk memenuhi ruang kosong di bagian bawah kertas surat"
+      },
+      {
+        "label": "B",
+        "teks": "Sebagai bukti pengesahan, wewenang hukum, dan pertanggungjawaban resmi dari pimpinan satuan"
+      },
+      {
+        "label": "C",
+        "teks": "Agar Kepala Sekolah ikut menjadi anggota panitia seksi perlengkapan"
+      },
+      {
+        "label": "D",
+        "teks": "Sebagai pengganti perangko pengiriman surat di kantor pos"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "B. OSIS adalah organisasi intra sekolah di bawah pembinaan Kepala Sekolah; setiap surat\nkeluar ke instansi eksternal wajib disahkan oleh Kepala Sekolah dan dibubuhi stempel resmi sebagai bukti\nlegalitas institusi.",
+    "valid": true
+  },
+  {
+    "nomor": 25,
+    "nomor_global": 175,
+    "bab_angka": 6,
+    "bab_nama": "Bab VI: Sampaikan Melalui Surat",
+    "materi": "Surat Pribadi, Surat Dinas Resmi, Pronomina Sapaan, & Penyuntingan Kalimat Baku",
+    "paket": "Bab VI: Sampaikan Melalui Surat - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Di era komunikasi digital, banyak pelajar mengirim pesan permohonan izin atau konsultasi tugas kepada\nguru melalui aplikasi pesan singkat (WhatsApp) atau surat elektronik (email). Urutan etika pesan singkat\nresmi kepada guru yang paling santun adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Menggunakan huruf kapital seluruhnya (P, BU SAYA MAU TANYA TUGAS) agar cepat dibaca oleh"
+      },
+      {
+        "label": "B",
+        "teks": "Langsung mengirim berkas tugas tanpa teks pengantar dan tanpa menyebutkan nama siswa pada"
+      },
+      {
+        "label": "C",
+        "teks": "Menanyakan keperluan terlebih dahulu, lalu menebak-nebak apakah guru masih ingat nama pengirim"
+      },
+      {
+        "label": "D",
+        "teks": "Salam pembuka & sapaan hormat →Permohonan maaf mengganggu waktu →Memperke-\nnalkan identitas diri (nama lengkap & kelas) →Menyampaikan maksud/keperluan secara jelas"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Etika korespondensi digital kepada guru tetap memegang prinsip kesantunan surat resmi:\ndibuka dengan salam dan permohonan maaf, menyebutkan nama lengkap serta kelas, menyampaikan keper-\nluan dengan bahasa baku, dan ditutup ucapan terima kasih.",
+    "valid": true
+  },
+  {
+    "nomor": 26,
+    "nomor_global": 176,
+    "bab_angka": 6,
+    "bab_nama": "Bab VI: Sampaikan Melalui Surat",
+    "materi": "Surat Pribadi, Surat Dinas Resmi, Pronomina Sapaan, & Penyuntingan Kalimat Baku",
+    "paket": "Bab VI: Sampaikan Melalui Surat - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Per-\nhatikan foto dokumen Surat Dinas Resmi SMP Negeri 1 Bantul (Undangan Rapat OSIS) berikut!\nPernyataan analitis yang benar mengenai perbandingan struktur, bahasa, dan fungsi kedua jenis surat\npada gambar di atas adalah .... (Pilih lebih dari satu jawaban benar)\n\nPernyataan:\n(1) Surat resmi menggunakan ragam bahasa Indonesia baku sesuai EYD Edisi V dan dilengkapi kop\nsurat, nomor surat, hal, serta stempel/tanda tangan pejabat berwenang.\n(2) Surat pribadi menggunakan ragam bahasa yang lebih cair, akrab, dan ekspresif sesuai hubungan\nkedekatan antara pengirim dan penerima, namun tetap menjaga etika kesopanan.\n(3) Baik surat resmi maupun surat pribadi sama-sama mencantumkan tanggal penulisan surat, ala-\nmat/nama penerima, salam pembuka, isi, salam penutup, dan identitas pengirim.\n(4) Surat pribadi kepada sahabat wajib mencantumkan nomor surat organisasi, stempel dinas pemer-\nintah, dan daftar tembusan kepala dinas.\n\nPernyataan yang tepat adalah ....",
+    "gambar": [
+      "/soal/bindo/kls7_bindo_p71_xref2271_880x880.jpeg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(1), (2), dan (3)"
+      },
+      {
+        "label": "B",
+        "teks": "(1) dan (4) saja"
+      },
+      {
+        "label": "C",
+        "teks": "(2) dan (4) saja"
+      },
+      {
+        "label": "D",
+        "teks": "(1), (2), (3), dan (4)"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "✓A, ✓B, ✓C — Kaidah surat resmi (A), surat pribadi (B), dan persamaan unsur dasar\nkeduanya (C) seluruhnya benar.",
+    "valid": true
+  },
+  {
+    "nomor": 27,
+    "nomor_global": 177,
+    "bab_angka": 6,
+    "bab_nama": "Bab VI: Sampaikan Melalui Surat",
+    "materi": "Surat Pribadi, Surat Dinas Resmi, Pronomina Sapaan, & Penyuntingan Kalimat Baku",
+    "paket": "Bab VI: Sampaikan Melalui Surat - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Evaluasilah penulisan\nbagian-bagian surat dinas berikut! Penulisan yang telah baku dan tepat sesuai EYD Edisi V adalah ....\n\nPernyataan:\n(1) Penulisan alamat tujuan: Yth. Kepala SMP Negeri 1 Surabaya (tanpa kata Kepada, tanpa sapaan\nBapak/Ibu di depan jabatan, dan tanpa titik di akhir).\n(2) Penulisan kalimat penutup: Atas perhatian dan kerja sama Bapak/Ibu, kami ucapkan terima\nkasih.\n(3) Penulisan tanggal surat pada kertas berkop resmi: 10 November 2026 (nama bulan ditulis dengan\nhuruf kapital awal dan tanpa mengulang nama kota).\n(4) Penulisan lampiran: Lamp. : 2 (Dua) Berkas. (menggunakan singkatan, angka dan huruf sekaligus,\nserta tanda titik di akhir).\n\nPernyataan yang tepat adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(1), (2), dan (3)"
+      },
+      {
+        "label": "B",
+        "teks": "(1) dan (4) saja"
+      },
+      {
+        "label": "C",
+        "teks": "(2) dan (4) saja"
+      },
+      {
+        "label": "D",
+        "teks": "(1), (2), (3), dan (4)"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "✓A, ✓B, ✓C — Alamat tujuan (A), kalimat penutup (B), dan tanggal surat berkop (C)\nsudah baku sesuai EYD V.",
+    "valid": true
+  },
+  {
+    "nomor": 28,
+    "nomor_global": 178,
+    "bab_angka": 6,
+    "bab_nama": "Bab VI: Sampaikan Melalui Surat",
+    "materi": "Surat Pribadi, Surat Dinas Resmi, Pronomina Sapaan, & Penyuntingan Kalimat Baku",
+    "paket": "Bab VI: Sampaikan Melalui Surat - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Berilah tanda\n\ncentang (✓) pada kolom Benar atau Salah untuk setiap pernyataan berikut!\nNo.\nPernyataan Analisis Bahasa Indonesia\nBenar\nSalah\n\nPernyataan:\n(a) Surat permohonan peminjaman gedung aula yang dikirimkan oleh Ke-\ntua OSIS kepada Kepala Sekolah termasuk jenis Surat Resmi / Dinas.\n(b) Pada surat resmi yang tidak menyertakan berkas tambahan apa pun,\nbagian Lampiran sebaiknya tidak perlu ditulis sama sekali.\n(c) Bagian Kop Surat (Kepala Surat) merupakan unsur wajib yang harus\nselalu dibuat ketika seseorang menulis surat pribadi kepada neneknya\ndi desa.\n\nKombinasi analisis nilai kebenaran (Benar/Salah) yang tepat adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(a) Benar, (b) Benar, (c) Salah"
+      },
+      {
+        "label": "B",
+        "teks": "(a) Benar, (b) Salah, (c) Salah"
+      },
+      {
+        "label": "C",
+        "teks": "(a) Salah, (b) Benar, (c) Benar"
+      },
+      {
+        "label": "D",
+        "teks": "(a) Benar, (b) Benar, (c) Benar"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "(a) Benar, (b) Benar, (c) Salah — (c) Salah, karena surat pribadi kepada keluarga tidak\nmenggunakan kop surat instansi.",
+    "valid": true
+  },
+  {
+    "nomor": 29,
+    "nomor_global": 179,
+    "bab_angka": 6,
+    "bab_nama": "Bab VI: Sampaikan Melalui Surat",
+    "materi": "Surat Pribadi, Surat Dinas Resmi, Pronomina Sapaan, & Penyuntingan Kalimat Baku",
+    "paket": "Bab VI: Sampaikan Melalui Surat - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Evaluasilah kebenaran\npernyataan kaidah kebahasaan surat berikut!\nNo.\nPernyataan Analisis Bahasa Indonesia\nBenar\nSalah\n\nPernyataan:\n(a) Kata sapaan kekerabatan seperti Bapak, Ibu, Kakak, Paman wajib di-\nawali huruf kapital apabila dipakai untuk menyapa langsung penerima\nsurat.\n(b) Kata izin, praktik, jadwal, sekretaris, apotek, dan narasumber meru-\npakan bentuk kata baku menurut Kamus Besar Bahasa Indonesia\n(KBBI).\n(c) Pronomina kami bersifat inklusif (mencakup orang yang diajak bicara),\nsedangkan pronomina kita bersifat eksklusif (tidak mencakup lawan\nbicara).\n\nKombinasi analisis nilai kebenaran (Benar/Salah) yang tepat adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(a) Benar, (b) Benar, (c) Salah"
+      },
+      {
+        "label": "B",
+        "teks": "(a) Benar, (b) Salah, (c) Salah"
+      },
+      {
+        "label": "C",
+        "teks": "(a) Salah, (b) Benar, (c) Benar"
+      },
+      {
+        "label": "D",
+        "teks": "(a) Benar, (b) Benar, (c) Benar"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "(a) Benar, (b) Benar, (c) Salah — (c) Salah, karena yang bersifat inklusif adalah kita, sedan-\ngkan kami bersifat eksklusif.",
+    "valid": true
+  },
+  {
+    "nomor": 30,
+    "nomor_global": 180,
+    "bab_angka": 6,
+    "bab_nama": "Bab VI: Sampaikan Melalui Surat",
+    "materi": "Surat Pribadi, Surat Dinas Resmi, Pronomina Sapaan, & Penyuntingan Kalimat Baku",
+    "paket": "Bab VI: Sampaikan Melalui Surat - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Pengu-\nrus OSIS SMP Tunas Mulia Yogyakarta menyusun draf surat undangan rapat persiapan Pameran Karya\nProyek Penguatan Profil Pelajar Pancasila (P5) yang masih mengandung 5 kesalahan tata naskah/ejaan\nberikut: 1. Tanggal surat (padahal sudah ada kop surat Yogyakarta): Yogyakarta, 12 Nopember 2026.\n2. Alamat tujuan: Kepada Yth. Bapak/Ibu Pembina Ekstrakurikuler. 3. Kata tidak baku pada paragraf\nisi: *¨...kami memohon kehadiran Bapak/Ibu untuk membimbing praktek pameran dan menyusun jad-\nual kegiatan...¨* 4. Kalimat penutup: Ätas perhatiannya diucapkan banyak terima kasih.¨ Manakah hasil\npenyuntingan menyeluruh keempat bagian surat dinas tersebut yang 100% baku sesuai EYD Edisi V\ndan KBBI?\nA. (1) Tanggal: 12 November 2026; (2) Alamat: Yth. Pembina Ekstrakurikuler SMP Tunas Mulia; (3)\nKata baku: praktik dan jadwal; (4) Penutup: Ätas perhatian dan kehadiran Bapak/Ibu, kami ucapkan\nterima kasih.¨\nB. (1) Tanggal: Yogyakarta, 12 November 2026.; (2) Alamat: Kepada: Yth.\nBapak Pembina Ek-\nstrakurikuler; (3) Kata baku: praktek dan jadual; (4) Penutup: Ätas perhatiannya kami haturkan teri-\nmakasih.¨\nC. (1) Tanggal: 12-11-2026; (2) Alamat: Yth.\nBapak/Ibu Pembina.; (3) Kata baku: praktikum dan\npenjadwalan; (4) Penutup: ¨Sekian dan terima kasih banyak-banyak.¨\nD. Keempat bagian pada draf awal tersebut sudah benar seluruhnya sehingga tidak memerlukan perbaikan\napa pun\n1\nA\n7\nD\n13\nC\n19\nC\n25\nD\n2\nC\n8\nB\n14\nC\n20\nB\n26\nABC\n3\nD\n9\nC\n15\nB\n21\nC\n27\nABC\n4\nB\n10\nA\n16\nD\n22\nD\n28\nBBS\n5\nC\n11\nD\n17\nC\n23\nA\n29\nBBS\n6\nA\n12\nB\n18\nD\n24\nB\n30\nA\n1. Jawaban: A. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.\n\nBerdasarkan kaidah bahasa baku EYD Edisi V dan materi bab ini, rumusan analisis / hasil penyuntingan yang paling tepat adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "A — Pilihan A memperbaiki kelima kesalahan sesuai pedoman EYD Edisi V dalam Surat\nDinas dan KBBI. (Rujukan: https://id.scribd.com/document/885224230/Soal-Ulangan-Harian-Bab-\nVI-Surat-KM-BI-Kelas-VII)."
+      },
+      {
+        "label": "B",
+        "teks": "Mengabaikan penggunaan tanda koma dan huruf kapital pada nama geografi serta membiarkan kata tidak baku tetap tertulis apa adanya"
+      },
+      {
+        "label": "C",
+        "teks": "Mengubah seluruh kalimat menjadi bahasa gaul dan menyatukan semua kata depan di dengan kata tempat"
+      },
+      {
+        "label": "D",
+        "teks": "Menghapus seluruh paragraf wacana dan menggantinya dengan daftar harga menu makanan"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "A — Pilihan A memperbaiki kelima kesalahan sesuai pedoman EYD Edisi V dalam Surat\nDinas dan KBBI. (Rujukan: https://id.scribd.com/document/885224230/Soal-Ulangan-Harian-Bab-\nVI-Surat-KM-BI-Kelas-VII).",
+    "valid": true
+  }
+]

@@ -1,0 +1,996 @@
+[
+  {
+    "nomor": 1,
+    "nomor_global": 91,
+    "bab_angka": 4,
+    "bab_nama": "Bab IV: Aksi Nyata Pelindung Bumi",
+    "materi": "Teks Berita (Cetak & Digital), Piramida Terbalik, Unsur ADIKSIMBA, & Anti-Hoaks",
+    "paket": "Bab IV: Aksi Nyata Pelindung Bumi - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Bacalah kutipan teras berita (lead) berikut!\n\"BANDUNG — Sebanyak 150 pelajar SMP dan pemuda yang tergabung dalam komunitas River War-\nriors menggelar aksi bersih-bersih sampah plastik di bantaran Sungai Cikapundung, Kota Bandung,\npada Minggu (5/11/2026) pagi. Dalam kegiatan yang berlangsung selama empat jam tersebut, para\nsukarelawan berhasil mengumpulkan 1,2 ton sampah kemasan plastik sekali pakai.\"\nUrutan unsur berita (ADIKSIMBA) yang terkandung dalam kalimat pertama kutipan teras berita di atas\nadalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Apa – Mengapa – Kapan – Siapa"
+      },
+      {
+        "label": "C",
+        "teks": "Kapan – Di mana – Mengapa – Bagaimana"
+      },
+      {
+        "label": "B",
+        "teks": "Mengapa – Bagaimana – Siapa – Apa"
+      },
+      {
+        "label": "D",
+        "teks": "Siapa – Apa – Di mana – Kapan"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.",
+    "valid": true
+  },
+  {
+    "nomor": 2,
+    "nomor_global": 92,
+    "bab_angka": 4,
+    "bab_nama": "Bab IV: Aksi Nyata Pelindung Bumi",
+    "materi": "Teks Berita (Cetak & Digital), Piramida Terbalik, Unsur ADIKSIMBA, & Anti-Hoaks",
+    "paket": "Bab IV: Aksi Nyata Pelindung Bumi - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Dalam teks berita Buku Siswa berjudul \"Gerakan Pasukan Muda Pelindung Bumi\", dikisahkan kakak-\nberadik Aeshnina (Nina) dan Prigi Arisandi bersama komunitas pemuda ekologis melakukan pemantauan\nkualitas air sungai dan menyuarakan penghentian impor sampah plastik. Unsur Mengapa (Why) yang\nmelatarbelakangi aksi para pemuda pelindung bumi tersebut adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Karena para pelajar ingin mencari ikan hias langka untuk dijual ke pasar malam"
+      },
+      {
+        "label": "B",
+        "teks": "Karena pencemaran sampah plastik dan limbah mikroplastik di aliran sungai telah mengancam eko-"
+      },
+      {
+        "label": "C",
+        "teks": "Karena pemerintah daerah mewajibkan penutupan seluruh jembatan penyeberangan sungai"
+      },
+      {
+        "label": "D",
+        "teks": "Karena sungai-sungai di Pulau Jawa telah membeku menjadi lapisan es tebal"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "B. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.",
+    "valid": true
+  },
+  {
+    "nomor": 3,
+    "nomor_global": 93,
+    "bab_angka": 4,
+    "bab_nama": "Bab IV: Aksi Nyata Pelindung Bumi",
+    "materi": "Teks Berita (Cetak & Digital), Piramida Terbalik, Unsur ADIKSIMBA, & Anti-Hoaks",
+    "paket": "Bab IV: Aksi Nyata Pelindung Bumi - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Penulisan teks berita jurnalistik menerapkan pola struktur Piramida Terbalik (Judul →Teras Berita/Lead\n→Isi Berita/Body →Ekor Berita/Tail). Alasan utama para jurnalis menempatkan informasi paling penting\npada bagian Teras Berita (Lead) di paragraf pertama adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Agar pembaca yang memiliki waktu terbatas dapat langsung menangkap inti berita pada paragraf"
+      },
+      {
+        "label": "B",
+        "teks": "Agar pembaca merasa bingung dan terpaksa membaca berita dari kalimat paling bawah ke atas"
+      },
+      {
+        "label": "C",
+        "teks": "Karena bagian isi dan ekor berita hanya berisi daftar iklan lowongan pekerjaan"
+      },
+      {
+        "label": "D",
+        "teks": "Karena teras berita merupakan satu-satunya bagian yang boleh memuat opini pribadi wartawan"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "A. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.",
+    "valid": true
+  },
+  {
+    "nomor": 4,
+    "nomor_global": 94,
+    "bab_angka": 4,
+    "bab_nama": "Bab IV: Aksi Nyata Pelindung Bumi",
+    "materi": "Teks Berita (Cetak & Digital), Piramida Terbalik, Unsur ADIKSIMBA, & Anti-Hoaks",
+    "paket": "Bab IV: Aksi Nyata Pelindung Bumi - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Perhatikan empat paragraf berita tentang penanaman mangrove berikut:\n- Paragraf 1: Memuat waktu, lokasi, pihak penyelenggara (Dinas Lingkungan Hidup & 300 siswa SMP),\nserta jumlah 5.000 bibit mangrove yang ditanam di Pantai Tirang.\n- Paragraf 2: Menguraikan penyebab abrasi pantai sepanjang 2 km selama lima tahun terakhir dan\nkutipan Kepala DLH tentang fungsi sabuk hijau mangrove.\n- Paragraf 3: Menjelaskan teknik penanaman bibit mangrove dengan sistem rumpun berjarak rapat agar\ntahan gelombang.\n- Paragraf 4: Menyebutkan bahwa seusai acara, para siswa menikmati hidangan bubur kacang hijau\nbersama di balai desa.\nBerdasarkan struktur piramida terbalik, Paragraf 4 dikategorikan sebagai Ekor Berita (Tail) karena ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Merupakan judul berita yang dicetak dengan huruf berukuran paling besar"
+      },
+      {
+        "label": "B",
+        "teks": "Memuat inti persoalan paling krusial yang menentukan keselamatan garis pantai"
+      },
+      {
+        "label": "C",
+        "teks": "Memuat informasi tambahan yang bersifat pelengkap sehingga apabila paragraf tersebut dihilangkan,"
+      },
+      {
+        "label": "D",
+        "teks": "Memuat unsur Mengapa dan Bagaimana terjadinya bencana abrasi"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "C. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.",
+    "valid": true
+  },
+  {
+    "nomor": 5,
+    "nomor_global": 95,
+    "bab_angka": 4,
+    "bab_nama": "Bab IV: Aksi Nyata Pelindung Bumi",
+    "materi": "Teks Berita (Cetak & Digital), Piramida Terbalik, Unsur ADIKSIMBA, & Anti-Hoaks",
+    "paket": "Bab IV: Aksi Nyata Pelindung Bumi - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Berdasarkan perbandingan kedua media berita di atas dan materi Buku Siswa \"Saatnya Melirik Hutan\nKalteng yang Rapuh\", keunggulan spesifik yang dimiliki oleh portal berita daring (elektronik) diband-\ningkan surat kabar cetak adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Seluruh berita yang dimuat di internet dijamin 100% bebas dari judul clickbait"
+      },
+      {
+        "label": "B",
+        "teks": "Tidak memerlukan perangkat gawai maupun jaringan listrik/internet untuk membacanya"
+      },
+      {
+        "label": "C",
+        "teks": "Hanya terbit satu kali setiap pagi dan tidak pernah bisa dikomentari oleh pembaca"
+      },
+      {
+        "label": "D",
+        "teks": "Memiliki fitur tautan (hyperlink) ke berita terkait, dapat menyematkan video/audio interaktif, serta dapat"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.",
+    "valid": true
+  },
+  {
+    "nomor": 6,
+    "nomor_global": 96,
+    "bab_angka": 4,
+    "bab_nama": "Bab IV: Aksi Nyata Pelindung Bumi",
+    "materi": "Teks Berita (Cetak & Digital), Piramida Terbalik, Unsur ADIKSIMBA, & Anti-Hoaks",
+    "paket": "Bab IV: Aksi Nyata Pelindung Bumi - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Pada tayangan berita televisi (audiovisual), selain menyimak suara pembaca berita (news anchor) di\nstudio dan reporter di lokasi kejadian, pemirsa juga melihat pita tulisan yang bergerak terus-menerus\ndi bagian bawah layar televisi yang memuat ringkasan berita terkini lainnya. Unsur visual pada berita\ntelevisi tersebut dinamakan ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Teras berita cetak (printed lead)"
+      },
+      {
+        "label": "C",
+        "teks": "Kolom tajuk rencana (editorial)"
+      },
+      {
+        "label": "B",
+        "teks": "Teks berjalan (running text / news ticker)"
+      },
+      {
+        "label": "D",
+        "teks": "Daftar pustaka (bibliografi)"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "B. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.",
+    "valid": true
+  },
+  {
+    "nomor": 7,
+    "nomor_global": 97,
+    "bab_angka": 4,
+    "bab_nama": "Bab IV: Aksi Nyata Pelindung Bumi",
+    "materi": "Teks Berita (Cetak & Digital), Piramida Terbalik, Unsur ADIKSIMBA, & Anti-Hoaks",
+    "paket": "Bab IV: Aksi Nyata Pelindung Bumi - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Bacalah dua kutipan teks berita bertema banjir berikut!\nTeks Berita 1:\nBanjir setinggi 80 sentimeter merendam tiga desa di Kecamatan Cisarua sejak Selasa (3/11) dini hari.\nSebanyak 420 warga terpaksa mengungsi ke aula gedung olahraga kecamatan. BPBD setempat telah\nmendirikan dapur umum dan menyalurkan bantuan selimut serta obat-obatan.\nTeks Berita 2:\nAlih fungsi lahan hutan lindung di kawasan hulu Sungai Cisarua menjadi perkebunan sayur semusim\nditengarai menjadi pemicu utama banjir bandang pekan ini. Hilangnya pohon berakar tunggang membuat\nair hujan lebat langsung melimpas ke hilir. Pemerintah daerah kini mulai melakukan reboisasi 50 hektare\nlahan kritis.\nPerbedaan fokus penyajian informasi antara Teks Berita 1 dan Teks Berita 2 adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Teks Berita 1 merupakan cerita fantasi imajinatif; Teks Berita 2 merupakan puisi rakyat"
+      },
+      {
+        "label": "B",
+        "teks": "Teks Berita 1 membahas cara menanam pohon di hutan; Teks Berita 2 membahas jumlah tenda"
+      },
+      {
+        "label": "C",
+        "teks": "Teks Berita 1 berfokus pada dampak banjir dan penanganan pengungsi (Apa & Siapa); Teks Berita 2"
+      },
+      {
+        "label": "D",
+        "teks": "Kedua teks berita tersebut memiliki isi dan urutan kalimat yang sama persis"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "C. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.",
+    "valid": true
+  },
+  {
+    "nomor": 8,
+    "nomor_global": 98,
+    "bab_angka": 4,
+    "bab_nama": "Bab IV: Aksi Nyata Pelindung Bumi",
+    "materi": "Teks Berita (Cetak & Digital), Piramida Terbalik, Unsur ADIKSIMBA, & Anti-Hoaks",
+    "paket": "Bab IV: Aksi Nyata Pelindung Bumi - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Bacalah kutipan teks berita eksplanasi lingkungan berikut!\n*\"Laju deforestasi hutan hujan tropis dan pengeringan lahan gambut di Kalimantan Tengah\nmeningkatkan risiko kebakaran hutan saat musim kemarau. Oleh karena itu, program restorasi gambut\nmelalui pembangunan sekat kanal sangat mendesak dilakukan untuk menjaga kelembapan ekosistem.\"*\nMakna istilah teknis deforestasi dan restorasi menurut KBBI pada kutipan di atas berturut-turut adalah\n....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Penebangan/penggundulan hutan secara masif; pemulihan/pengembalian ekosistem ke kondisi sem-"
+      },
+      {
+        "label": "B",
+        "teks": "Penanaman kembali hutan yang gundul; pembakaran lahan gambut untuk industri"
+      },
+      {
+        "label": "C",
+        "teks": "Pengukuran curah hujan harian; pemindahan penduduk dari desa ke kota"
+      },
+      {
+        "label": "D",
+        "teks": "Pengolahan sampah plastik menjadi kerajinan; penjualan kayu gelondongan ke luar negeri"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "A. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.",
+    "valid": true
+  },
+  {
+    "nomor": 9,
+    "nomor_global": 99,
+    "bab_angka": 4,
+    "bab_nama": "Bab IV: Aksi Nyata Pelindung Bumi",
+    "materi": "Teks Berita (Cetak & Digital), Piramida Terbalik, Unsur ADIKSIMBA, & Anti-Hoaks",
+    "paket": "Bab IV: Aksi Nyata Pelindung Bumi - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Perhatikan empat kalimat dalam teks berita berikut:\n(1) Hujan deras mengguyur kawasan Puncak Bogor sejak pukul 14.00 WIB.\n(2) Debit air Sungai Ciliwung meningkat drastis sehingga pintu air Katulampa berstatus Siaga 2.\n(3) Petugas gabungan menyiagakan perahu karet di titik-titik rawan genangan.\n(4) Beberapa ruas jalan protokol ditutup sementara karena tergenang air setinggi 40 cm.\nPasangan kalimat yang merupakan kalimat tunggal (hanya terdiri atas satu klausa) adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Kalimat (3) dan kalimat (4)"
+      },
+      {
+        "label": "C",
+        "teks": "Kalimat (2) dan kalimat (4)"
+      },
+      {
+        "label": "B",
+        "teks": "Kalimat (1) dan kalimat (2)"
+      },
+      {
+        "label": "D",
+        "teks": "Kalimat (1) dan kalimat (3)"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.",
+    "valid": true
+  },
+  {
+    "nomor": 10,
+    "nomor_global": 100,
+    "bab_angka": 4,
+    "bab_nama": "Bab IV: Aksi Nyata Pelindung Bumi",
+    "materi": "Teks Berita (Cetak & Digital), Piramida Terbalik, Unsur ADIKSIMBA, & Anti-Hoaks",
+    "paket": "Bab IV: Aksi Nyata Pelindung Bumi - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Perhatikan kalimat majemuk berikut!\n*(1) Ribuan ikan di danau itu mati mendadak sebab kadar oksigen terlarut menurun drastis akibat limbah\npabrik.*\n*(2) Para relawan mengumpulkan sampah plastik di pantai, kemudian mereka memilahnya berdasarkan\njenis polimer di bank sampah.*\nJenis konjungsi (kata penghubung) yang bercetak tebal pada kalimat (1) dan kalimat (2) berturut-turut\nadalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Konjungsi kronologis dan konjungsi pertentangan"
+      },
+      {
+        "label": "B",
+        "teks": "Konjungsi kausalitas (sebab-akibat) dan konjungsi kronologis (urutan waktu)"
+      },
+      {
+        "label": "C",
+        "teks": "Konjungsi pemilihan dan konjungsi perbandingan"
+      },
+      {
+        "label": "D",
+        "teks": "Konjungsi syarat dan konjungsi tujuan"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "B. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.",
+    "valid": true
+  },
+  {
+    "nomor": 11,
+    "nomor_global": 101,
+    "bab_angka": 4,
+    "bab_nama": "Bab IV: Aksi Nyata Pelindung Bumi",
+    "materi": "Teks Berita (Cetak & Digital), Piramida Terbalik, Unsur ADIKSIMBA, & Anti-Hoaks",
+    "paket": "Bab IV: Aksi Nyata Pelindung Bumi - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Perhatikan foto jurnalistik kegiatan pelestarian lingkungan pesisir dan kutipan berita berikut!\n*\"Ini sarana untuk menumbuhkan semangat konservasi terhadap ekosistem mangrove kepada generasi\nmuda,\" jelas Trialaksita Sari Priska, Menteri Sekretaris KeSEMaT.*\nArti kosakata ekosistem menurut KBBI pada kutipan berita di atas adalah ....",
+    "gambar": [
+      "/soal/bindo/kls7_bindo_p43_xref1384_880x880.jpeg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "daftar harga bibit tanaman pelindung pantai di koperasi nelayan"
+      },
+      {
+        "label": "B",
+        "teks": "kumpulan batu karang di dasar samudra yang tidak dihuni makhluk hidup"
+      },
+      {
+        "label": "C",
+        "teks": "kesatuan fungsional antara makhluk hidup dengan lingkungannya yang di dalamnya terdapat hubun-"
+      },
+      {
+        "label": "D",
+        "teks": "proses penguapan air laut menjadi awan mendung pada musim hujan"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "C. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.",
+    "valid": true
+  },
+  {
+    "nomor": 12,
+    "nomor_global": 102,
+    "bab_angka": 4,
+    "bab_nama": "Bab IV: Aksi Nyata Pelindung Bumi",
+    "materi": "Teks Berita (Cetak & Digital), Piramida Terbalik, Unsur ADIKSIMBA, & Anti-Hoaks",
+    "paket": "Bab IV: Aksi Nyata Pelindung Bumi - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Dalam teks berita, wartawan harus membedakan secara tegas antara fakta (kenyataan yang telah terjadi\ndan terverifikasi data) dan opini/pendapat narasumber. Perhatikan empat kalimat berikut:\n(1) Berdasarkan data BMKG, suhu rata-rata permukaan bumi pada tahun 2025 mengalami kenaikan\nsebesar 1, 2◦C dibanding era praindustri.\n(2) Sebanyak 45 sekolah menengah pertama di Kabupaten Sleman menerima penghargaan Sekolah\nAdiwiyata tingkat provinsi pada Rabu (4/11).\n(3) Menurut pengamat lingkungan, banjir di kawasan perkotaan kemungkinan besar masih akan berulang\ntahun depan apabila kesadaran warga membuang sampah masih rendah.\n(4) Kami memperkirakan proyek pengolahan sampah menjadi energi listrik di kota ini akan rampung\nsekitar dua tahun lagi.\nPasangan kalimat yang merupakan fakta ditunjukkan oleh nomor ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(1) dan (2)"
+      },
+      {
+        "label": "C",
+        "teks": "(2) dan (4)"
+      },
+      {
+        "label": "B",
+        "teks": "(1) dan (3)"
+      },
+      {
+        "label": "D",
+        "teks": "(3) dan (4)"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "A. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.",
+    "valid": true
+  },
+  {
+    "nomor": 13,
+    "nomor_global": 103,
+    "bab_angka": 4,
+    "bab_nama": "Bab IV: Aksi Nyata Pelindung Bumi",
+    "materi": "Teks Berita (Cetak & Digital), Piramida Terbalik, Unsur ADIKSIMBA, & Anti-Hoaks",
+    "paket": "Bab IV: Aksi Nyata Pelindung Bumi - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Seorang jurnalis pelajar SMP meliput kegiatan dan mewawancarai ketua panitia yang berkata: \"Kami\nmenargetkan penanaman sepuluh ribu bibit bakau tahun ini untuk melindungi tambak warga dari abrasi.\"\nApabila pernyataan narasumber tersebut ditulis dalam bentuk kalimat tidak langsung di dalam berita,\nrumusan yang tepat adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Apakah ketua panitia sudah menanam sepuluh ribu bibit bakau di tambak warga tahun ini?"
+      },
+      {
+        "label": "B",
+        "teks": "Ketua panitia berkata, \"Kami menargetkan penanaman sepuluh ribu bibit bakau tahun ini untuk melin-"
+      },
+      {
+        "label": "C",
+        "teks": "Menurut saya sendiri sebagai wartawan, sebaiknya warga menanam sepuluh ribu bibit bakau di tam-"
+      },
+      {
+        "label": "D",
+        "teks": "Ketua panitia menyatakan bahwa pihaknya menargetkan penanaman sepuluh ribu bibit bakau tahun"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.",
+    "valid": true
+  },
+  {
+    "nomor": 14,
+    "nomor_global": 104,
+    "bab_angka": 4,
+    "bab_nama": "Bab IV: Aksi Nyata Pelindung Bumi",
+    "materi": "Teks Berita (Cetak & Digital), Piramida Terbalik, Unsur ADIKSIMBA, & Anti-Hoaks",
+    "paket": "Bab IV: Aksi Nyata Pelindung Bumi - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Bacalah wacana teks berita empat paragraf yang diadaptasi dari harian Kompas berikut untuk menjawab\nsoal nomor 14 dan 15!\n\nWACANA LITERASI MEMBACA: WACANA LITERASI MEMBACA: KETULUSAN ITU MASIH ADA DI\nBOROBUDUR MARATHON\n(Paragraf 1) MAGELANG, KOMPAS — Ajang lari tahunan Bank Jateng Borobudur Marathon dan Borobudur\nFun Run kembali digelar dengan meriah di kawasan Taman Lumbini, Candi Borobudur, Kabupaten Magelang,\nJawa Tengah, Minggu (1/12/2024). Lebih dari sepuluh ribu pelari dari berbagai daerah di Indonesia dan\nmancanegara memadati jalur lintasan pedesaan yang asri sejak pukul 05.00 WIB.\n(Paragraf 2) Selain menguji ketahanan fisik para pelari melewati tanjakan perbukitan Menoreh, penyeleng-\ngaraan tahun ini mengusung kampanye “Lari Tanpa Jejak Sampah Plastik”. Panitia bersama 450 relawan\npelajar SMP dan SMA setempat menyediakan stasiun pengisian air minum isi ulang (water station) menggu-\nnakan gelas kertas ramah lingkungan serta menempatkan keranjang pilah sampah di setiap dua kilometer\nlintasan.\n(Paragraf 3) Di sepanjang jalur desa, ratusan warga lokal menyambut para pelari dengan ketulusan luar biasa.\nAnak-anak dan ibu-ibu desa berbaris di tepi jalan sambil menyuguhkan potongan buah pisang, jeruk, serta\ntabuhan kesenian tradisional secara cuma-cuma untuk menyemangati pelari yang mulai kelelahan.\n(Paragraf 4) “Kami sangat terharu melihat keramahan warga desa dan kedisiplinan pelari yang membuang\ngelas kertas tepat di keranjang daur ulang. Ini membuktikan bahwa olahraga wisata dapat berjalan selaras\ndengan pelestarian lingkungan,” ujar Koordinator Relawan Lingkungan seusai acara.\nKelengkapan unsur ADIKSIMBA (5W + 1H) pada Paragraf 1 (Teras Berita / Lead) wacana di atas\nadalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Mengapa: karena jalan desa rusak; Bagaimana: acara dibatalkan akibat hujan deras"
+      },
+      {
+        "label": "B",
+        "teks": "Apa: Ajang Borobudur Marathon & Fun Run; Di mana: kawasan Taman Lumbini, Candi Borobudur,\nKabupaten Magelang; Kapan: Minggu (1/12/2024) sejak pukul 05.00 WIB; Siapa: lebih dari 10.000"
+      },
+      {
+        "label": "C",
+        "teks": "Apa: Lomba balap sepeda; Di mana: Kota Semarang; Kapan: Senin malam"
+      },
+      {
+        "label": "D",
+        "teks": "Paragraf 1 hanya memuat kutipan opini koordinator relawan tanpa mencantumkan waktu dan lokasi"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "B. Teras berita (Paragraf 1) memuat unsur terpenting secara padat: Apa (Borobudur Marathon\n& Fun Run), Di mana (Taman Lumbini Candi Borobudur, Magelang), Kapan (Minggu, 1/12/2024 pukul 05.00\nWIB), dan Siapa (lebih dari 10.000 pelari).",
+    "valid": true
+  },
+  {
+    "nomor": 15,
+    "nomor_global": 105,
+    "bab_angka": 4,
+    "bab_nama": "Bab IV: Aksi Nyata Pelindung Bumi",
+    "materi": "Teks Berita (Cetak & Digital), Piramida Terbalik, Unsur ADIKSIMBA, & Anti-Hoaks",
+    "paket": "Bab IV: Aksi Nyata Pelindung Bumi - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Berdasarkan wacana berita pada soal nomor 14, aksi nyata pelestarian lingkungan yang dilakukan pani-\ntia bersama relawan pelajar pada Paragraf 2 serta dampak positifnya pada Paragraf 4 adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Mengganti lomba lari marathon menjadi lomba membakar sampah plastik di lapangan"
+      },
+      {
+        "label": "B",
+        "teks": "Membagikan jutaan botol plastik sekali pakai kepada penonton di sepanjang jalan desa"
+      },
+      {
+        "label": "C",
+        "teks": "Menutup seluruh akses jalan desa agar warga lokal tidak boleh menonton"
+      },
+      {
+        "label": "D",
+        "teks": "Menyediakan stasiun air minum dengan gelas kertas ramah lingkungan dan keranjang pilah sampah\nsetiap 2 km, sehingga para pelari disiplin membuang gelas tepat pada tempat daur ulang dan jalur desa"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Paragraf 2 menjelaskan penyediaan gelas kertas ramah lingkungan dan keranjang pilah\nsampah oleh 450 relawan pelajar, yang berdampak langsung pada kedisiplinan pelari menjaga kebersihan\njalur desa (Paragraf 4).",
+    "valid": true
+  },
+  {
+    "nomor": 16,
+    "nomor_global": 106,
+    "bab_angka": 4,
+    "bab_nama": "Bab IV: Aksi Nyata Pelindung Bumi",
+    "materi": "Teks Berita (Cetak & Digital), Piramida Terbalik, Unsur ADIKSIMBA, & Anti-Hoaks",
+    "paket": "Bab IV: Aksi Nyata Pelindung Bumi - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Cermatilah perbandingan dua teks berita lingkungan berikut!\nBERITA 1: JAKARTA UTARA BANJIR IMBAS HU-\nJAN TINGGI\nBERITA 2: REBOISASI KUNCI CEGAH BANJIR DI\nDOMPU\nJAKARTA\n—\nBadan\nPenanggulangan\nBencana\nDaerah (BPBD) DKI Jakarta melaporkan sebanyak\n2 Rukun Tetangga (RT) dan 4 ruas jalan di wilayah\nJakarta Utara tergenang banjir setinggi 30 hingga 50\nsentimeter pada Selasa (28/1/2025) pagi.\nKepala Pelaksana BPBD menjelaskan bahwa genan-\ngan tersebut dipicu oleh curah hujan berintensitas\nekstrem sejak Senin malam serta meluapnya salu-\nran drainase mikro yang tersumbat endapan lumpur.\nPetugas gabungan telah dikerahkan untuk menyedot\ngenangan menggunakan pompa portabel.\nDOMPU — Pemerintah Kabupaten Dompu, Nusa\nTenggara Barat, bersama komunitas pemuda pelin-\ndung bumi menggelar aksi penanaman 15.000 bibit\npohon kemiri dan mahoni di kawasan hulu Daerah Ali-\nran Sungai (DAS) Laju pada Sabtu (1/2/2025).\nKepala Dinas Lingkungan Hidup Kabupaten Dompu\nmenegaskan bahwa gerakan reboisasi hulu sungai\nini merupakan langkah mitigasi jangka panjang untuk\nmemulihkan daya serap tanah dan mencegah beru-\nlangnya siklus banjir bandang lima tahunan.\nPersamaan topik dan perbedaan fokus pemberitaan antara Berita 1 dan Berita 2 di atas adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Persamaan: keduanya merupakan berita bohong (hoaks); Perbedaan: Berita 1 ditulis dengan bahasa"
+      },
+      {
+        "label": "B",
+        "teks": "Persamaan: keduanya membahas bencana gunung meletus; Perbedaan: Berita 1 terjadi di NTB,"
+      },
+      {
+        "label": "C",
+        "teks": "Persamaan: keduanya mengangkat topik permasalahan bencana banjir; Perbedaan: Berita 1 mem-\nfokuskan pada dampak kejadian banjir dan penanganan darurat saat bencana terjadi, sedangkan"
+      },
+      {
+        "label": "D",
+        "teks": "Persamaan: keduanya melaporkan kekeringan lahan pertanian; Perbedaan: Berita 1 tentang pem-"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "C. Kedua berita sama-sama bertopik banjir, namun Berita 1 memberitakan peristiwa genangan\nbanjir yang sedang terjadi beserta penyedotan darurat oleh BPBD, sedangkan Berita 2 memberitakan aksi\npencegahan (reboisasi 15.000 pohon) di kawasan hulu DAS.",
+    "valid": true
+  },
+  {
+    "nomor": 17,
+    "nomor_global": 107,
+    "bab_angka": 4,
+    "bab_nama": "Bab IV: Aksi Nyata Pelindung Bumi",
+    "materi": "Teks Berita (Cetak & Digital), Piramida Terbalik, Unsur ADIKSIMBA, & Anti-Hoaks",
+    "paket": "Bab IV: Aksi Nyata Pelindung Bumi - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Perhatikan judul-judul berita berikut:\n(1) Siswa SMPN 2 Yogyakarta Raih Medali Emas Olimpiade Sains Nasional 2026\n(2) BMKG Peringatkan Potensi Cuaca Ekstrem di Pesisir Selatan Jawa Pekan Ini\n(3) Anda Tidak Akan Percaya! Hal Aneh Ini Terjadi Saat Petani Membelah Buah Semangka!\n(4) Pemerintah Kota Surabaya Tambah 25 Armada Bus Listrik Ramah Lingkungan\nJudul berita nomor (3) kurang baik digunakan dalam penulisan berita jurnalistik standar karena ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Terlalu jelas menyebutkan unsur Siapa, Apa, dan Di mana pada judul berita"
+      },
+      {
+        "label": "B",
+        "teks": "Bersifat clickbait (umpan klik) yang menyembunyikan informasi inti dan hanya memancing rasa pe-"
+      },
+      {
+        "label": "C",
+        "teks": "Menggunakan kata kerja aktif yang singkat dan padat"
+      },
+      {
+        "label": "D",
+        "teks": "Mengangkat topik kebijakan transportasi ramah lingkungan"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "B. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.",
+    "valid": true
+  },
+  {
+    "nomor": 18,
+    "nomor_global": 108,
+    "bab_angka": 4,
+    "bab_nama": "Bab IV: Aksi Nyata Pelindung Bumi",
+    "materi": "Teks Berita (Cetak & Digital), Piramida Terbalik, Unsur ADIKSIMBA, & Anti-Hoaks",
+    "paket": "Bab IV: Aksi Nyata Pelindung Bumi - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Bacalah dua teks berita sains dan kesehatan berikut dengan saksama!\nTEKS BERITA 1 (IDN TIMES)\nTEKS BERITA 2 (KOMPAS.COM)\nHipertensi paru adalah penyakit berbahaya yang ser-\ning luput dari perhatian karena gejalanya samar,\nseperti cepat lelah, napas terengah setelah aktivitas\nringan, atau jantung berdebar.\nAkibatnya, banyak\norang baru menyadari ketika fungsi jantung mulai ter-\nganggu. Wakil Ketua Hipertensi Paru Indonesia, dr.\nHarry Sakti Muliawan, mengatakan hipertensi paru\nditandai tekanan darah tinggi pada pembuluh darah\nparu sehingga memaksa jantung kanan bekerja lebih\nkeras memompa darah ke paru-paru.\nOtak manusia selalu berubah dari lahir sampai mema-\nsuki usia lanjut melalui beberapa fase penting. Peneli-\ntian dari University of Cambridge dalam jurnal Na-\nture Communications menemukan bahwa perubahan\notak tidak berjalan halus dan stabil, melainkan terus\nmelakukan penyesuaian ulang dengan memperkuat\ndan melemahkan koneksi sel saraf.\nPenelitian Dr.\nAlexa Mousley ini melibatkan pemindaian otak pada\n4.000 orang hingga usia 90 tahun dan menunjukkan\nfase penting di usia 9, 32, 66, dan 83 tahun.\nBagan alur pokok berita yang paling sesuai dengan bagian-bagian penting Teks Berita 2 adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "[Manusia berubah sepanjang hidup melalui fase penting] →[Perubahan otak terjadi karena\nmenyesuaikan perkembangan fisik] →[Diperoleh dari pemindaian otak pada 4.000 orang hingga"
+      },
+      {
+        "label": "B",
+        "teks": "[Otak manusia berubah sepanjang hidup melalui fase penting perkembangan (9, 32, 66, 83\ntahun)] →[Perubahan otak terjadi karena terus menyesuaikan dan mengubah koneksi sel saraf]"
+      },
+      {
+        "label": "C",
+        "teks": "[Otak manusia tidak berubah sepanjang hidup melalui fase penting] →[Perkembangan otak\nterjadi karena harus mengubah koneksi sel saraf] →[Diperoleh dari pemindaian otak pada 4.000"
+      },
+      {
+        "label": "D",
+        "teks": "[Manusia tidak berubah sepanjang hidup melalui fase penting] →[Perubahan otak terjadi\nkarena menyesuaikan koneksi sel saraf] →[Diperoleh dari pemindaian otak pada 4.000 orang"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "B. Bagan alur pada pilihan B memuat ketiga pokok informasi Teks Berita 2 secara presisi: (1)\nOtak manusia berubah sepanjang hidup melalui fase penting perkembangan (9, 32, 66, 83 tahun); (2) Peruba-\nhan otak terjadi karena terus menyesuaikan dan mengubah koneksi sel saraf; dan (3) Penelitian diperoleh dari\npemindaian otak pada 4.000 orang hingga usia 90 tahun.",
+    "valid": true
+  },
+  {
+    "nomor": 19,
+    "nomor_global": 109,
+    "bab_angka": 4,
+    "bab_nama": "Bab IV: Aksi Nyata Pelindung Bumi",
+    "materi": "Teks Berita (Cetak & Digital), Piramida Terbalik, Unsur ADIKSIMBA, & Anti-Hoaks",
+    "paket": "Bab IV: Aksi Nyata Pelindung Bumi - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Bacalah paragraf berita yang susunan kalimatnya masih acak berikut:\n(1) Kebakaran tersebut diduga dipicu oleh hubungan arus pendek listrik pada gudang penyimpanan\nkertas bekas.\n(2) Sebanyak enam unit mobil pemadam kebakaran dikerahkan ke lokasi dan api berhasil dipadamkan\ndua jam kemudian.\n(3) Sebuah gudang daur ulang kertas di Kawasan Industri Rungkut, Surabaya, terbakar hebat pada\nKamis (6/11) sore.\n(4) Tidak ada korban jiwa dalam peristiwa ini, namun kerugian materiil ditaksir mencapai Rp150 juta.\nUrutan kalimat yang tepat agar membentuk teks berita berstruktur Piramida Terbalik (Teras Berita →Isi\nPenyebab & Penanganan →Ekor/Dampak) adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(4) – (2) – (1) – (3)"
+      },
+      {
+        "label": "C",
+        "teks": "(3) – (1) – (2) – (4)"
+      },
+      {
+        "label": "B",
+        "teks": "(1) – (4) – (2) – (3)"
+      },
+      {
+        "label": "D",
+        "teks": "(2) – (3) – (4) – (1)"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "C. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.",
+    "valid": true
+  },
+  {
+    "nomor": 20,
+    "nomor_global": 110,
+    "bab_angka": 4,
+    "bab_nama": "Bab IV: Aksi Nyata Pelindung Bumi",
+    "materi": "Teks Berita (Cetak & Digital), Piramida Terbalik, Unsur ADIKSIMBA, & Anti-Hoaks",
+    "paket": "Bab IV: Aksi Nyata Pelindung Bumi - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Perhatikan perbandingan dua teks berita literasi digital dan penangkalan hoaks berikut untuk menjawab\nsoal nomor 20 dan 21!\nBERITA 1: TIGA LANGKAH CEGAH HOAKS\nBERITA 2: KENALI TRIK ’TOO GOOD TO BE TRUE’\nJAKARTA — Kementerian Komunikasi dan Digital\n(Komdigi) mengajak para pelajar SMP di seluruh In-\ndonesia menerapkan tiga langkah verifikasi sederhana\nsebelum membagikan informasi bencana di media\nsosial.\nPertama, periksa kredibilitas situs berita dan pastikan\nberasal dari lembaga resmi.\nKedua, bandingkan isi\nberita dengan minimal dua media arus utama lainnya.\nKetiga, periksa keaslian foto menggunakan fitur pen-\ncari gambar terbalik (reverse image search) agar tidak\ntertipu foto lama yang diunggah ulang.\nSURABAYA — Pakar literasi digital Universitas Air-\nlangga mengingatkan masyarakat agar mewaspadai\npenyebaran berita palsu (disinformasi) yang menggu-\nnakan trik psikologis “Too Good to Be True” (terlalu in-\ndah untuk menjadi kenyataan) atau judul sensasional\nyang memancing kemarahan (clickbait).\nDalam\nlokakarya\npelajar\ndi\nSurabaya,\nKamis\n(6/2/2025),\nia\nmencontohkan\nbanyaknya\ntautan\npalsu pembagian hadiah kuota gratis yang ternyata\nbertujuan mencuri data pribadi pengguna.\nPerbedaan cara penyajian isi antara Berita 1 dan Berita 2 di atas adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Berita 1 diawali dengan unsur Mengapa; sedangkan Berita 2 diawali dengan unsur Bagaimana"
+      },
+      {
+        "label": "B",
+        "teks": "Berita 1 menyajikan urutan langkah teknis memverifikasi kebenaran berita secara sistematis;\nsedangkan Berita 2 menyajikan penjelasan ciri-ciri psikologis pesan penipuan/disinformasi beserta"
+      },
+      {
+        "label": "C",
+        "teks": "Berita 1 mengajak pelajar menyebarkan hoaks; sedangkan Berita 2 mengajak pelajar mengklik tautan"
+      },
+      {
+        "label": "D",
+        "teks": "Berita 1 menggunakan bahasa daerah; sedangkan Berita 2 menggunakan bahasa asing seluruhnya"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "B. Berita 1 menguraikan tahapan prosedural cara mengecek keaslian berita/foto (cek situs\nresmi, bandingkan media, reverse image search), sedangkan Berita 2 menguraikan modus psikologis pem-\nbuat disinformasi (trik Too Good to Be True dan clickbait pencurian data).",
+    "valid": true
+  },
+  {
+    "nomor": 21,
+    "nomor_global": 111,
+    "bab_angka": 4,
+    "bab_nama": "Bab IV: Aksi Nyata Pelindung Bumi",
+    "materi": "Teks Berita (Cetak & Digital), Piramida Terbalik, Unsur ADIKSIMBA, & Anti-Hoaks",
+    "paket": "Bab IV: Aksi Nyata Pelindung Bumi - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Berdasarkan sintesis Berita 1 dan Berita 2 pada soal nomor 20, sikap kritis yang paling tepat dilakukan\nseorang siswa SMP ketika menerima pesan berantai di grup WhatsApp berisi \"Banjir Bandang Hari Ini\nMenghanyutkan Jembatan Kota + Tautan Klaim Bantuan Kuota 100 GB\" adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Menghapus aplikasi peramban internet dan memarahi pengirim pesan dengan kata-kata kasar"
+      },
+      {
+        "label": "B",
+        "teks": "Langsung meneruskan pesan tersebut ke seluruh grup keluarga agar menjadi orang pertama yang"
+      },
+      {
+        "label": "C",
+        "teks": "Mengeklik tautan bantuan kuota dan mengisi kata sandi email pribadi"
+      },
+      {
+        "label": "D",
+        "teks": "Menahan diri untuk tidak langsung meneruskan pesan, tidak mengeklik tautan mencurigakan (too\ngood to be true), serta memeriksa kebenaran foto dan informasi banjir tersebut melalui situs resmi"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Sikap literasi digital yang menggabungkan kedua berita adalah tidak mengeklik tautan\niming-iming hadiah berlebihan (Berita 2) serta memverifikasi foto dan kabar bencana ke lembaga resmi/media\nkredibel sebelum membagikannya (Berita 1).",
+    "valid": true
+  },
+  {
+    "nomor": 22,
+    "nomor_global": 112,
+    "bab_angka": 4,
+    "bab_nama": "Bab IV: Aksi Nyata Pelindung Bumi",
+    "materi": "Teks Berita (Cetak & Digital), Piramida Terbalik, Unsur ADIKSIMBA, & Anti-Hoaks",
+    "paket": "Bab IV: Aksi Nyata Pelindung Bumi - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Bacalah perbandingan dua kutipan teks berita bencana hidrometeorologi berikut!\n\nBERITA 1: BANJIR GENANGI 28 RT DI JAKARTA\nBERITA 2:\nLONGSOR DI KAWASAN TELAGA\nSARANGAN\nHujan deras yang mengguyur wilayah Jabodetabek\nselama enam jam berturut-turut menyebabkan Sungai\nCiliwung meluap pada Rabu (5/2/2025).\nAkibatnya,\nsebanyak 28 RT di Jakarta Timur dan Jakarta Sela-\ntan terendam banjir dengan ketinggian air mencapai\n80 sentimeter.\nSebanyak 320 warga terpaksa mengungsi ke aula\nkelurahan terdekat sambil menunggu surutnya genan-\ngan.\nCuaca ekstrem disertai hujan lebat dan angin kencang\nmemicu terjadinya tanah longsor di tebing jalur lingkar\nkawasan wisata Telaga Sarangan, Kabupaten Mage-\ntan, Jawa Timur, pada Kamis (6/2/2025) sore.\nMaterial tanah dan batu menutup separuh badan jalan\nsepanjang 15 meter. Beruntung tidak ada korban jiwa\ndalam peristiwa tersebut karena petugas kehutanan\ntelah menutup jalur wisata satu jam sebelum longsor\nterjadi.\nPersamaan unsur penyebab (Why) dan perbedaan dampak kejadian (How) dari kedua kutipan berita\ndi atas adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Persamaan penyebab: keduanya dipicu oleh gempa bumi tektonik; Perbedaan dampak: Berita 1"
+      },
+      {
+        "label": "B",
+        "teks": "Persamaan penyebab: keduanya dipicu oleh faktor cuaca ekstrem berupa hujan deras/lebat; Perbe-\ndaan dampak: Berita 1 mengakibatkan meluapnya sungai hingga merendam 28 RT dan 320 warga\nmengungsi, sedangkan Berita 2 mengakibatkan tebing longsor menutup separuh jalan wisata tanpa kor-"
+      },
+      {
+        "label": "C",
+        "teks": "Persamaan penyebab: keduanya disebabkan oleh kemarau panjang; Perbedaan dampak: Berita 1"
+      },
+      {
+        "label": "D",
+        "teks": "Kedua berita memiliki lokasi kejadian, tanggal kejadian, dan jumlah pengungsi yang sama persis"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "B. Kedua peristiwa bencana hidrometeorologi tersebut sama-sama disebabkan oleh curah\nhujan deras/cuaca ekstrem, tetapi berbeda bentuk bencana dan dampaknya: banjir luapan sungai yang mem-\nbuat 320 warga mengungsi (Berita 1) vs tanah longsor penutup jalan tanpa korban jiwa (Berita 2).",
+    "valid": true
+  },
+  {
+    "nomor": 23,
+    "nomor_global": 113,
+    "bab_angka": 4,
+    "bab_nama": "Bab IV: Aksi Nyata Pelindung Bumi",
+    "materi": "Teks Berita (Cetak & Digital), Piramida Terbalik, Unsur ADIKSIMBA, & Anti-Hoaks",
+    "paket": "Bab IV: Aksi Nyata Pelindung Bumi - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Bacalah wacana teks berita empat paragraf berikut untuk menjawab soal nomor 23, 24, dan 25!\nWACANA LITERASI MEMBACA: WACANA LITERASI MEMBACA: RESPONS CEPAT PENANGANAN\nDARURAT LONGSOR DI CISARUA\n(Paragraf 1) BANDUNG BARAT — Kementerian Pekerjaan Umum (PU) melalui Balai Besar Pelaksanaan\nJalan Nasional (BBPJN) bergerak cepat menangani bencana tanah longsor yang memutus akses jalan\npenghubung Kecamatan Cisarua dan Kecamatan Parongpong, Kabupaten Bandung Barat, pada Minggu\n(9/2/2025) dini hari. Longsor terjadi setelah hujan berintensitas tinggi mengguyur kawasan lereng Gunung\nBurangrang sejak Sabtu petang.\n(Paragraf 2) Tiga unit alat berat berupa ekskavator dan wheel loader langsung diterjunkan ke lokasi bencana\nsejak pukul 06.30 WIB untuk menyingkirkan material tanah, batu besar, serta rumpun bambu yang menutup\nbadan jalan sepanjang 25 meter dengan ketebalan mencapai 3 meter.\n(Paragraf 3) “Kami memprioritaskan pembukaan satu lajur darurat terlebih dahulu agar mobil ambulans dan\ntruk logistik pangan warga desa dapat melintas sebelum sore hari,” kata Kepala Satuan Kerja BBPJN Jawa\nBarat saat ditemui di lokasi penanganan, Minggu siang.\n(Paragraf 4) Selain membersihkan material longsoran, tim teknis juga memasang bronjong kawat penahan\ntebing dan terpal kedap air di bagian mahkota lereng guna mencegah terjadinya longsor susulan apabila hujan\nkembali turun. Masyarakat diimbau tetap waspada saat melintasi jalur perbukitan.\nPernyataan yang sesuai dengan isi Paragraf 2 dan Paragraf 4 pada wacana berita di atas adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Longsor di lereng Gunung Burangrang disebabkan oleh letusan kawah gunung berapi aktif"
+      },
+      {
+        "label": "B",
+        "teks": "Jalan penghubung Cisarua–Parongpong sengaja ditutup permanen selama lima tahun karena tidak"
+      },
+      {
+        "label": "C",
+        "teks": "Tim BBPJN menerjunkan tiga unit alat berat untuk membersihkan material longsor sepanjang 25\nmeter serta memasang bronjong kawat dan terpal kedap air di mahkota lereng untuk mencegah longsor"
+      },
+      {
+        "label": "D",
+        "teks": "Warga desa menolak bantuan pembukaan jalur darurat untuk mobil ambulans dan truk logistik"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "C. Paragraf 2 menyebutkan pengerahan 3 unit alat berat untuk menyingkirkan material sep-\nanjang 25 meter, dan Paragraf 4 menyebutkan pemasangan bronjong kawat serta terpal kedap air untuk\nmencegah longsor susulan.",
+    "valid": true
+  },
+  {
+    "nomor": 24,
+    "nomor_global": 114,
+    "bab_angka": 4,
+    "bab_nama": "Bab IV: Aksi Nyata Pelindung Bumi",
+    "materi": "Teks Berita (Cetak & Digital), Piramida Terbalik, Unsur ADIKSIMBA, & Anti-Hoaks",
+    "paket": "Bab IV: Aksi Nyata Pelindung Bumi - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Dalam struktur Piramida Terbalik Teks Berita pada wacana soal nomor 23, alasan Paragraf 1 ditem-\npatkan sebagai Kepala Berita (Lead) dan Paragraf 4 ditempatkan sebagai Ekor Berita adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Struktur piramida terbalik mewajibkan penulis meletakkan nama lokasi dan tanggal kejadian di kalimat"
+      },
+      {
+        "label": "B",
+        "teks": "Paragraf 1 berisi informasi yang paling tidak penting; sedangkan Paragraf 4 berisi judul berita"
+      },
+      {
+        "label": "C",
+        "teks": "Jika Paragraf 4 dipotong oleh editor karena keterbatasan ruang halaman koran, pembaca tidak akan"
+      },
+      {
+        "label": "D",
+        "teks": "Paragraf 1 memuat informasi inti yang paling penting (peristiwa penanganan longsor oleh Kemente-\nrian PU di Cisarua, waktu, lokasi, dan penyebab utama); sedangkan Paragraf 4 memuat informasi tam-"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Prinsip piramida terbalik menempatkan fakta terpenting (ADIKSIMBA utama) di Paragraf 1\n(Kepala Berita), rincian operasional dan kutipan narasumber di Paragraf 2–3 (Tubuh Berita), serta informasi\npendukung/imbauan di Paragraf 4 (Ekor Berita).",
+    "valid": true
+  },
+  {
+    "nomor": 25,
+    "nomor_global": 115,
+    "bab_angka": 4,
+    "bab_nama": "Bab IV: Aksi Nyata Pelindung Bumi",
+    "materi": "Teks Berita (Cetak & Digital), Piramida Terbalik, Unsur ADIKSIMBA, & Anti-Hoaks",
+    "paket": "Bab IV: Aksi Nyata Pelindung Bumi - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Perhatikan kalimat langsung pada Paragraf 3 wacana soal nomor 23:\n\"Kami memprioritaskan pembukaan satu lajur darurat terlebih dahulu agar mobil ambulans dan truk lo-\ngistik pangan warga desa dapat melintas sebelum sore hari,\" kata Kepala Satuan Kerja BBPJN Jawa\nBarat.\nJika kalimat langsung tersebut diubah menjadi kalimat tidak langsung yang baku, rumusan yang tepat\nadalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Kepala Satuan Kerja BBPJN Jawa Barat mengatakan bahwa pihaknya memprioritaskan pembukaan\nsatu lajur darurat terlebih dahulu agar mobil ambulans dan truk logistik pangan warga desa dapat melin-"
+      },
+      {
+        "label": "B",
+        "teks": "Kepala Satuan Kerja BBPJN Jawa Barat mengatakan bahwa: \"Kami memprioritaskan pembukaan"
+      },
+      {
+        "label": "C",
+        "teks": "Menurut Kepala Satuan Kerja BBPJN Jawa Barat, saya memprioritaskan pembukaan satu lajur darurat"
+      },
+      {
+        "label": "D",
+        "teks": "Kepala Satuan Kerja BBPJN Jawa Barat bertanya apakah mereka memprioritaskan pembukaan satu"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "A. Saat mengubah kalimat langsung menjadi tidak langsung, tanda petik dua dihilangkan,\nditambahkan konjungsi bahwa, dan kata ganti orang pertama jamak (Kami) diubah menjadi kata ganti orang\nketiga (pihaknya/mereka).",
+    "valid": true
+  },
+  {
+    "nomor": 26,
+    "nomor_global": 116,
+    "bab_angka": 4,
+    "bab_nama": "Bab IV: Aksi Nyata Pelindung Bumi",
+    "materi": "Teks Berita (Cetak & Digital), Piramida Terbalik, Unsur ADIKSIMBA, & Anti-Hoaks",
+    "paket": "Bab IV: Aksi Nyata Pelindung Bumi - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Perhatikan diagram Struktur Piramida Terbalik Teks Berita berikut!\nPernyataan analitis yang benar mengenai karakteristik media berita dan literasi verifikasi informasi\nberdasarkan gambar di atas adalah .... (Pilih lebih dari satu jawaban benar)\n\nPernyataan:\n(1) Baik berita di surat kabar cetak maupun di portal berita daring yang kredibel wajib mematuhi kode\netik jurnalistik dan memuat unsur faktual ADIKSIMBA (5W+1H).\n(2) Keunggulan berita digital daring antara lain kemudahan pencarian arsip berita, adanya tautan ru-\njukan (hyperlink), serta kemampuan menyematkan foto/video beresolusi tinggi.\n(3) Pembaca yang cerdas selalu memeriksa alamat situs (URL), tanggal pemuatan, keaslian foto, dan\nkredibilitas narasumber untuk membedakan berita valid dari berita bohong (hoaks).\n(4) Berita yang disebarkan melalui pesan berantai tanpa nama penulis dan tanpa sumber media resmi\nlebih dapat dipercaya daripada berita surat kabar nasional.\n\nPernyataan yang tepat adalah ....",
+    "gambar": [
+      "/soal/bindo/kls7_bindo_p48_xref1515_880x880.jpeg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(1), (2), dan (3)"
+      },
+      {
+        "label": "B",
+        "teks": "(1) dan (4) saja"
+      },
+      {
+        "label": "C",
+        "teks": "(2) dan (4) saja"
+      },
+      {
+        "label": "D",
+        "teks": "(1), (2), (3), dan (4)"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "✓A,\n✓B,\n✓C — Kepatuhan pada ADIKSIMBA (A), keunggulan fitur daring (B), dan\nverifikasi anti-hoaks (C) seluruhnya benar.",
+    "valid": true
+  },
+  {
+    "nomor": 27,
+    "nomor_global": 117,
+    "bab_angka": 4,
+    "bab_nama": "Bab IV: Aksi Nyata Pelindung Bumi",
+    "materi": "Teks Berita (Cetak & Digital), Piramida Terbalik, Unsur ADIKSIMBA, & Anti-Hoaks",
+    "paket": "Bab IV: Aksi Nyata Pelindung Bumi - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Evaluasilah pernyataan mengenai\nstruktur dan kaidah kebahasaan teks berita berikut! Pernyataan yang tepat adalah ....\n\nPernyataan:\n(1) Teras berita (lead) terletak pada paragraf pertama dan memuat rangkuman fakta terpenting agar\npembaca segera mengetahui inti peristiwa.\n(2) Penggunaan konjungsi kausalitas (karena, sebab, sehingga) dalam bagian Isi Berita berfungsi\nmenjelaskan hubungan sebab-akibat terjadinya suatu peristiwa.\n(3) Kutipan pernyataan narasumber di dalam teks berita berfungsi memperkuat keakuratan dan objek-\ntivitas laporan jurnalistik.\n(4) Bagian Ekor Berita (tail) wajib diletakkan paling atas sebelum judul berita karena memuat informasi\npaling krusial.\n\nPernyataan yang tepat adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(1), (2), dan (3)"
+      },
+      {
+        "label": "B",
+        "teks": "(1) dan (4) saja"
+      },
+      {
+        "label": "C",
+        "teks": "(2) dan (4) saja"
+      },
+      {
+        "label": "D",
+        "teks": "(1), (2), (3), dan (4)"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "✓A, ✓B, ✓C — Letak teras berita (A), fungsi konjungsi kausalitas (B), dan fungsi kutipan\nnarasumber (C) benar. Ekor berita terletak di bagian paling akhir, bukan paling atas (D salah).",
+    "valid": true
+  },
+  {
+    "nomor": 28,
+    "nomor_global": 118,
+    "bab_angka": 4,
+    "bab_nama": "Bab IV: Aksi Nyata Pelindung Bumi",
+    "materi": "Teks Berita (Cetak & Digital), Piramida Terbalik, Unsur ADIKSIMBA, & Anti-Hoaks",
+    "paket": "Bab IV: Aksi Nyata Pelindung Bumi - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Berilah tanda centang\n(✓) pada kolom Benar atau Salah untuk setiap pernyataan berikut!\nNo.\nPernyataan Analisis Bahasa Indonesia\nBenar\nSalah\n\nPernyataan:\n(a) Unsur Mengapa (Why) dan Bagaimana (How) umumnya diuraikan\nsecara lebih rinci pada bagian Isi Berita (Body).\n(b) Kalimat “Menurut perkiraan saya, mungkin besok sore hujan akan turun\ndi sekitar bukit ini” merupakan kalimat fakta empiris yang sudah pasti\nterjadi.\n(c) Berita eksplanasi lingkungan tidak hanya melaporkan kejadian, tetapi\njuga menjelaskan proses ilmiah terjadinya suatu fenomena alam atau\nlingkungan.\n\nKombinasi analisis nilai kebenaran (Benar/Salah) yang tepat adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(a) Benar, (b) Salah, (c) Benar"
+      },
+      {
+        "label": "B",
+        "teks": "(a) Benar, (b) Salah, (c) Salah"
+      },
+      {
+        "label": "C",
+        "teks": "(a) Salah, (b) Benar, (c) Benar"
+      },
+      {
+        "label": "D",
+        "teks": "(a) Benar, (b) Benar, (c) Benar"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "(a) Benar, (b) Salah, (c) Benar — (b) Salah, karena kalimat yang mengandung kata perkiraan\ndan mungkin besok adalah kalimat opini/prediksi, bukan fakta.",
+    "valid": true
+  },
+  {
+    "nomor": 29,
+    "nomor_global": 119,
+    "bab_angka": 4,
+    "bab_nama": "Bab IV: Aksi Nyata Pelindung Bumi",
+    "materi": "Teks Berita (Cetak & Digital), Piramida Terbalik, Unsur ADIKSIMBA, & Anti-Hoaks",
+    "paket": "Bab IV: Aksi Nyata Pelindung Bumi - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Evaluasilah\nkebenaran pernyataan berikut!\nNo.\nPernyataan Analisis Bahasa Indonesia\nBenar\nSalah\n\nPernyataan:\n(a) Kalimat “Siswa SMPN 1 menanam bibit pohon bakau di tepi pantai”\nmerupakan kalimat tunggal karena hanya memiliki satu pola klausa (S–\nP–O–K).\n(b) Judul berita yang ditulis dengan huruf kapital semua dan disertai an-\ncaman “SEBARKAN ATAU CELAKA!” merupakan salah satu ciri khas\npesan hoaks.\n(c) Prinsip cover both sides dalam jurnalistik berarti wartawan hanya boleh\nmewawancarai satu pihak yang paling disukainya saja.\n\nKombinasi analisis nilai kebenaran (Benar/Salah) yang tepat adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(a) Benar, (b) Benar, (c) Salah"
+      },
+      {
+        "label": "B",
+        "teks": "(a) Benar, (b) Salah, (c) Salah"
+      },
+      {
+        "label": "C",
+        "teks": "(a) Salah, (b) Benar, (c) Benar"
+      },
+      {
+        "label": "D",
+        "teks": "(a) Benar, (b) Benar, (c) Benar"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "(a) Benar, (b) Benar, (c) Salah — (c) Salah, karena cover both sides justru mewajibkan\npeliputan dari kedua belah pihak secara berimbang.",
+    "valid": true
+  },
+  {
+    "nomor": 30,
+    "nomor_global": 120,
+    "bab_angka": 4,
+    "bab_nama": "Bab IV: Aksi Nyata Pelindung Bumi",
+    "materi": "Teks Berita (Cetak & Digital), Piramida Terbalik, Unsur ADIKSIMBA, & Anti-Hoaks",
+    "paket": "Bab IV: Aksi Nyata Pelindung Bumi - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Seorang siswa\nanggota ekstrakurikuler jurnalistik mengumpulkan catatan fakta lapangan berikut: - Apa: Peluncuran pro-\ngram ¨Kantin Sekolah Nol Sampah Plastik (Zero Waste Canteen)¨. - Siapa: Kepala SMP Negeri 1 Nu-\nsantara bersama pengurus OSIS dan seluruh pengelola kantin. - Di mana: Aula Utama SMP Negeri 1\nNusantara, Kabupaten Malang. - Kapan: Senin, 9 November 2026 pagi. - Mengapa & Bagaimana: Untuk\nmenekan timbulan 50 kg sampah plastik harian di sekolah dengan mewajibkan penggunaan piring/gelas\nguna ulang dan membawa botol minum (tumbler). Manakah rumusan paragraf Teras Berita (Lead) yang\npaling tepat, padat, objektif, dan sesuai kaidah jurnalistik berdasarkan data lapangan tersebut?\nA. MALANG — Kepala SMP Negeri 1 Nusantara bersama pengurus OSIS dan pengelola kantin resmi\nmeluncurkan program ¨Kantin Sekolah Nol Sampah Plastik¨di Aula Utama SMP Negeri 1 Nusantara, Kabu-\npaten Malang, pada Senin (9/11/2026) pagi. Program ini diterapkan untuk menekan timbulan 50 kilogram\nsampah plastik harian melalui penggunaan wadah makan guna ulang.\nB. Pada suatu hari yang cerah di Kabupaten Malang, tampak sebuah sekolah yang sangat indah dan\nmemiliki aula yang luas tempat berkumpulnya para siswa dan guru yang ramah.\nC. Siapkan botol minum isi ulang dan kotak makan dari rumah, cuci bersih dengan sabun, lalu masukkan\nke dalam tas sekolah sebelum berangkat pagi!\nD. Menurut kabar burung yang belum jelas sumbernya, seluruh kantin di dunia akan ditutup mulai besok\npagi tanpa alasan yang jelas!\n\nBerdasarkan kaidah bahasa baku EYD Edisi V dan materi bab ini, rumusan analisis / hasil penyuntingan yang paling tepat adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "A — Pilihan A merangkum seluruh unsur inti ADIKSIMBA ke dalam teras berita jurnal-\nistik yang objektif dan baku. (Rujukan: https://id.scribd.com/document/835971329/25-Soal-Teks-\nBerita-Kelas-7-SMP-Kurikulum-Merdeka)."
+      },
+      {
+        "label": "B",
+        "teks": "Mengabaikan penggunaan tanda koma dan huruf kapital pada nama geografi serta membiarkan kata tidak baku tetap tertulis apa adanya"
+      },
+      {
+        "label": "C",
+        "teks": "Mengubah seluruh kalimat menjadi bahasa gaul dan menyatukan semua kata depan di dengan kata tempat"
+      },
+      {
+        "label": "D",
+        "teks": "Menghapus seluruh paragraf wacana dan menggantinya dengan daftar harga menu makanan"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "A — Pilihan A merangkum seluruh unsur inti ADIKSIMBA ke dalam teras berita jurnal-\nistik yang objektif dan baku. (Rujukan: https://id.scribd.com/document/835971329/25-Soal-Teks-\nBerita-Kelas-7-SMP-Kurikulum-Merdeka).",
+    "valid": true
+  }
+]

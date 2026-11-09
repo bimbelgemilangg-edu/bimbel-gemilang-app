@@ -1,0 +1,996 @@
+[
+  {
+    "nomor": 1,
+    "nomor_global": 31,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Berkelana di Dunia Imajinasi",
+    "materi": "Teks Cerita Fantasi, Puisi Rakyat (Pantun, Gurindam, Syair), & Majas Sarkasme",
+    "paket": "Bab II: Berkelana di Dunia Imajinasi - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Perhatikan puisi rakyat berikut!\nAyam panggang ayam kalasan\nBanyak menunggu pelanggan setia\nAyam habis tinggallah paru\nTiada pengalaman ada batasan\nCarilah sampai ke ujung dunia\nAgar hidupmu penuh cerita baru\nPuisi tersebut termasuk ke dalam jenis puisi rakyat ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "talibun"
+      },
+      {
+        "label": "C",
+        "teks": "karmina"
+      },
+      {
+        "label": "B",
+        "teks": "seloka"
+      },
+      {
+        "label": "D",
+        "teks": "gurindam"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "A. Talibun adalah puisi rakyat yang terdiri atas jumlah baris genap lebih dari empat (pada soal\nini 6 baris: 3 baris sampiran dan 3 baris isi dengan rima a-b-c-a-b-c).",
+    "valid": true
+  },
+  {
+    "nomor": 2,
+    "nomor_global": 32,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Berkelana di Dunia Imajinasi",
+    "materi": "Teks Cerita Fantasi, Puisi Rakyat (Pantun, Gurindam, Syair), & Majas Sarkasme",
+    "paket": "Bab II: Berkelana di Dunia Imajinasi - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Perhatikan ciri-ciri puisi rakyat berikut!\n- Setiap bait terdiri atas empat larik\n- Setiap larik terdiri atas 8–14 suku kata\n- Keempat lariknya merupakan isi\n- Berima a-a-a-a\n- Menggunakan bahasa kiasan\nCiri-ciri tersebut termasuk ke dalam jenis puisi rakyat yang disebut ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "gurindam"
+      },
+      {
+        "label": "C",
+        "teks": "pantun"
+      },
+      {
+        "label": "B",
+        "teks": "syair"
+      },
+      {
+        "label": "D",
+        "teks": "mantra"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "B. Syair terdiri atas 4 larik per bait, bersuku kata 8–14, berima akhir a-a-a-a, dan seluruh\nlariknya merupakan isi.",
+    "valid": true
+  },
+  {
+    "nomor": 3,
+    "nomor_global": 33,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Berkelana di Dunia Imajinasi",
+    "materi": "Teks Cerita Fantasi, Puisi Rakyat (Pantun, Gurindam, Syair), & Majas Sarkasme",
+    "paket": "Bab II: Berkelana di Dunia Imajinasi - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Perhatikan ilustrasi berikut!\nSeo Tae Joe sedang menulis salah satu jenis puisi rakyat. Puisi rakyat yang ditulis oleh Seo Tae Joe\nterdiri atas dua larik. Pada larik pertama, ia menuliskan sebuah sampiran, sedangkan di larik kedua, Seo\nTae Joe menulis isi puisi rakyat yang berisi nasihat kepada anak muda agar menggunakan media sosial\ndengan bijak. Ia pun tak lupa untuk menyamakan rima pada setiap akhir larik dari puisi yang ia buat.\nBerdasarkan ciri-cirinya, puisi rakyat apa yang ditulis oleh Seo Tae Joe?",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "syair"
+      },
+      {
+        "label": "C",
+        "teks": "gurindam"
+      },
+      {
+        "label": "B",
+        "teks": "seloka"
+      },
+      {
+        "label": "D",
+        "teks": "karmina"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Karmina (pantun kilat) terdiri atas dua larik dalam satu bait, larik pertama merupakan sampi-\nran, larik kedua merupakan isi, dan berima a-a.",
+    "valid": true
+  },
+  {
+    "nomor": 4,
+    "nomor_global": 34,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Berkelana di Dunia Imajinasi",
+    "materi": "Teks Cerita Fantasi, Puisi Rakyat (Pantun, Gurindam, Syair), & Majas Sarkasme",
+    "paket": "Bab II: Berkelana di Dunia Imajinasi - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Perhatikan puisi rakyat berikut!\nPandai-pandai menjaga iman\nAgar dunia akhirat nanti aman\nTak luputlah dirimu beribadah\nTiada hidup yang tak berkah\nPuisi rakyat tersebut termasuk ke dalam jenis puisi rakyat ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "karmina"
+      },
+      {
+        "label": "C",
+        "teks": "gurindam"
+      },
+      {
+        "label": "B",
+        "teks": "talibun"
+      },
+      {
+        "label": "D",
+        "teks": "syair"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "C. Gurindam terdiri atas dua larik per bait berima a-a yang kedua lariknya merupakan isi dan\nmembentuk hubungan syarat/sebab-akibat.",
+    "valid": true
+  },
+  {
+    "nomor": 5,
+    "nomor_global": 35,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Berkelana di Dunia Imajinasi",
+    "materi": "Teks Cerita Fantasi, Puisi Rakyat (Pantun, Gurindam, Syair), & Majas Sarkasme",
+    "paket": "Bab II: Berkelana di Dunia Imajinasi - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Perhatikan puisi rakyat berikut!\nKasih sayang sepanjang masa\nPatut bersyukur cintai orang tua\nJangan pernah sakiti hatinya\n[...]\nLarik yang tepat untuk melengkapi bait puisi rakyat tersebut adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Jika kamu mau terluka"
+      },
+      {
+        "label": "C",
+        "teks": "Sepanjang usia selalu menduga"
+      },
+      {
+        "label": "B",
+        "teks": "Jika tidak ingin berumah neraka"
+      },
+      {
+        "label": "D",
+        "teks": "Tak pernah tahu pikiran sesama"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "B. Larik \"Jika tidak ingin berumah neraka\" melanjutkan pesan nasihat berbakti kepada orang\ntua secara koheren dan berima akhir -a.",
+    "valid": true
+  },
+  {
+    "nomor": 6,
+    "nomor_global": 36,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Berkelana di Dunia Imajinasi",
+    "materi": "Teks Cerita Fantasi, Puisi Rakyat (Pantun, Gurindam, Syair), & Majas Sarkasme",
+    "paket": "Bab II: Berkelana di Dunia Imajinasi - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Perhatikan pantun rumpang berikut!\nMinum jamu berdaun kering\n[...]\n[...]\nFokus hilang, mata pun rusak\nLarik yang tepat untuk melengkapi pantun yang rumpang tersebut adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Diminum janganlah sering-sering / Fokuslah jika sedang memasak"
+      },
+      {
+        "label": "B",
+        "teks": "Kepala pusing, dada sesak / Bunyi telepon tiada berdering"
+      },
+      {
+        "label": "C",
+        "teks": "Tangkap ikan gunakan jaring / Orang tua jangan pernah dibentak"
+      },
+      {
+        "label": "D",
+        "teks": "Saat diminum perlu ditenggak / Jika kamu kecanduan gim daring"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Agar berima silang a-b-a-b (kering - ditenggak - daring - rusak) dan bermakna logis, larik\nkedua adalah Saat diminum perlu ditenggak (sampiran) dan larik ketiga Jika kamu kecanduan gim daring\n(isi).",
+    "valid": true
+  },
+  {
+    "nomor": 7,
+    "nomor_global": 37,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Berkelana di Dunia Imajinasi",
+    "materi": "Teks Cerita Fantasi, Puisi Rakyat (Pantun, Gurindam, Syair), & Majas Sarkasme",
+    "paket": "Bab II: Berkelana di Dunia Imajinasi - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Perhatikan ilustrasi berikut!\nBoo Dee Man mendapat tugas dari sekolah untuk membuat puisi rakyat yang terdiri atas dua larik. Larik\npertama merupakan sampiran, sedangkan larik kedua merupakan isi. Tiap larik memuat minimal 8 suku\nkata dan maksimal 12 suku kata. Tiap akhir larik memiliki bunyi yang sama. Tema yang diminta berkaitan\ndengan imbauan untuk makan makanan sehat.\nDi antara empat pilihan jawaban berikut, manakah puisi rakyat yang sesuai dengan isi ilustrasi tersebut?",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Air keran selalu menetes / Kurangi gula, jauhkan diabetes"
+      },
+      {
+        "label": "B",
+        "teks": "Ayo makan makanan sehat / Jangan lupa pula beristirahat"
+      },
+      {
+        "label": "C",
+        "teks": "Sayur buah mari konsumsi / Jika tidak mau rugi di kemudian hari"
+      },
+      {
+        "label": "D",
+        "teks": "Satu kaki melangkah ke depan / Stop minyak, kita bebas dari kolesterol"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "A. Pilihan A terdiri atas 2 larik (sampiran dan isi bertema makan sehat), 9–10 suku kata per\nlarik, dan berima sama (-tes).",
+    "valid": true
+  },
+  {
+    "nomor": 8,
+    "nomor_global": 38,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Berkelana di Dunia Imajinasi",
+    "materi": "Teks Cerita Fantasi, Puisi Rakyat (Pantun, Gurindam, Syair), & Majas Sarkasme",
+    "paket": "Bab II: Berkelana di Dunia Imajinasi - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Perhatikan ilustrasi dan kutipan cerita fantasi berikut!\nDi sebuah desa kecil yang tersembunyi di tengah hutan, hiduplah seorang anak laki-laki bernama Rizky.\nHari itu, ketika matahari terbenam, Rizky mendengar suara aneh dari dalam hutan yang belum pernah\nia dengar sebelumnya. Dengan penuh rasa ingin tahu, Rizky memutuskan untuk mengikuti suara itu. Ia\nmelintasi hutan yang gelap dan lebat, melewati bebatuan besar, hingga akhirnya sampai di sebuah gua\nmisterius. Di dalam gua, Rizky menemukan makhluk ajaib berkepala burung dan tubuh ikan. Makhluk\nitu sedang duduk di atas batu dan bercerita tentang dunia di bawah laut yang penuh dengan keindahan\nyang tak terbayangkan.\nTema cerita fantasi tersebut adalah ....",
+    "gambar": [
+      "/soal/bindo/kls7_bindo_p19_xref589_880x880.jpeg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "perjalanan Rizky di hutan dan bawah laut"
+      },
+      {
+        "label": "B",
+        "teks": "keajaiban di dalam hutan yang lebat"
+      },
+      {
+        "label": "C",
+        "teks": "penemuan makhluk ajaib di dalam gua"
+      },
+      {
+        "label": "D",
+        "teks": "petualangan makhluk ajaib di hutan dan bawah laut"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "C. Inti rangkaian peristiwa cerita tersebut berpusat pada penemuan makhluk ajaib berkepala\nburung dan bertubuh ikan oleh Rizky di dalam gua misterius.",
+    "valid": true
+  },
+  {
+    "nomor": 9,
+    "nomor_global": 39,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Berkelana di Dunia Imajinasi",
+    "materi": "Teks Cerita Fantasi, Puisi Rakyat (Pantun, Gurindam, Syair), & Majas Sarkasme",
+    "paket": "Bab II: Berkelana di Dunia Imajinasi - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Berdasarkan kutipan cerita fantasi Rizky pada soal nomor 8, latar waktu yang tergambar dalam cerita\ntersebut adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "dini hari"
+      },
+      {
+        "label": "C",
+        "teks": "siang hari"
+      },
+      {
+        "label": "B",
+        "teks": "pagi hari"
+      },
+      {
+        "label": "D",
+        "teks": "malam hari"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Keterangan \"ketika matahari terbenam\" yang dilanjutkan dengan perjalanan melintasi \"hutan\nyang gelap\" menunjukkan latar waktu malam hari.",
+    "valid": true
+  },
+  {
+    "nomor": 10,
+    "nomor_global": 40,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Berkelana di Dunia Imajinasi",
+    "materi": "Teks Cerita Fantasi, Puisi Rakyat (Pantun, Gurindam, Syair), & Majas Sarkasme",
+    "paket": "Bab II: Berkelana di Dunia Imajinasi - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Sudut pandang yang tergambar dalam kutipan cerita fantasi Rizky pada soal nomor 8 adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "sudut pandang orang pertama"
+      },
+      {
+        "label": "B",
+        "teks": "sudut pandang orang kedua"
+      },
+      {
+        "label": "C",
+        "teks": "sudut pandang orang ketiga"
+      },
+      {
+        "label": "D",
+        "teks": "sudut pandang campuran orang pertama dan kedua"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "C. Narator menceritakan tokoh dengan menyebut nama Rizky dan kata ganti orang ketiga ia.",
+    "valid": true
+  },
+  {
+    "nomor": 11,
+    "nomor_global": 41,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Berkelana di Dunia Imajinasi",
+    "materi": "Teks Cerita Fantasi, Puisi Rakyat (Pantun, Gurindam, Syair), & Majas Sarkasme",
+    "paket": "Bab II: Berkelana di Dunia Imajinasi - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Perhatikan cerita fantasi berikut!\n(1) Di sebuah dunia paralel bernama Dunia B, terdapat seorang anak lelaki bernama Yofi yang berusia\n12 tahun. (2) Yofi memiliki sebuah kekuatan ajaib untuk memanipulasi waktu. (3) Dunia B sangatlah\nberbeda dari dunia kita, yaitu berbagai makhluk mitologi hidup dan berkembang bersama manusia. (4)\nYofi tinggal di sebuah kastel kuno yang megah di tengah kota bersejarah.\n(5) Suatu hari, sebuah masalah besar muncul di Dunia B. Sebuah pintu gerbang misterius tiba-tiba\nmuncul dan mulai melepaskan monster-monster ke dunia mereka. (6) Yofi memutuskan untuk menggu-\nnakan kekuatannya untuk memanipulasi waktu dan menghentikan monster-monster itu sebelum mereka\nmerusak Dunia B. (7) Dengan bantuan teman-temannya, Yofi berusaha menutup pintu gerbang secepat\nmungkin dan mengusir semua monster kembali. (8) Peristiwa tersebut menjadi buah bibir di lingkungan\nkastel.\nApa saja unsur intrinsik yang terdapat dalam cerita tersebut?",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Tokoh utama cerita adalah Yofi; latar cerita di Dunia B; tema cerita adalah pertempuran antara manusia"
+      },
+      {
+        "label": "B",
+        "teks": "Tokoh utama cerita adalah Dunia B; latar cerita adalah Yofi; tema cerita adalah pertempuran antara"
+      },
+      {
+        "label": "C",
+        "teks": "Tokoh utama cerita adalah Yofi; latar cerita adalah sebuah kastel kuno; tema cerita adalah pertempu-"
+      },
+      {
+        "label": "D",
+        "teks": "Tokoh utama cerita adalah monster; latar cerita di bumi; dan alur cerita mundur."
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "A. Tokoh utamanya Yofi, latar utamanya Dunia B, temanya pertempuran melawan monster dari\ngerbang misterius, dan alurnya maju.",
+    "valid": true
+  },
+  {
+    "nomor": 12,
+    "nomor_global": 42,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Berkelana di Dunia Imajinasi",
+    "materi": "Teks Cerita Fantasi, Puisi Rakyat (Pantun, Gurindam, Syair), & Majas Sarkasme",
+    "paket": "Bab II: Berkelana di Dunia Imajinasi - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Perhatikan kembali kutipan cerita fantasi Dunia B pada soal nomor 11! Kalimat bermajas metafora\nterdapat pada kalimat nomor ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(2)"
+      },
+      {
+        "label": "C",
+        "teks": "(6)"
+      },
+      {
+        "label": "B",
+        "teks": "(5)"
+      },
+      {
+        "label": "D",
+        "teks": "(8)"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Pada kalimat (8) terdapat ungkapan buah bibir yang merupakan majas metafora dengan\nmakna bahan pembicaraan banyak orang.",
+    "valid": true
+  },
+  {
+    "nomor": 13,
+    "nomor_global": 43,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Berkelana di Dunia Imajinasi",
+    "materi": "Teks Cerita Fantasi, Puisi Rakyat (Pantun, Gurindam, Syair), & Majas Sarkasme",
+    "paket": "Bab II: Berkelana di Dunia Imajinasi - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Unsur kebahasaan yang terdapat dalam kutipan cerita fantasi Dunia B pada soal nomor 11 adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "kalimat bermajas sarkasme"
+      },
+      {
+        "label": "C",
+        "teks": "kalimat langsung berdialog"
+      },
+      {
+        "label": "B",
+        "teks": "konjungsi pada kalimat tidak langsung"
+      },
+      {
+        "label": "D",
+        "teks": "kata seru penunjuk keterkejutan"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "B. Kutipan tersebut disajikan dalam kalimat berita tidak langsung yang dihubungkan oleh\nberbagai konjungsi (yaitu, dan, untuk, sebelum).",
+    "valid": true
+  },
+  {
+    "nomor": 14,
+    "nomor_global": 44,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Berkelana di Dunia Imajinasi",
+    "materi": "Teks Cerita Fantasi, Puisi Rakyat (Pantun, Gurindam, Syair), & Majas Sarkasme",
+    "paket": "Bab II: Berkelana di Dunia Imajinasi - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Bacalah wacana cerita fantasi panjang berikut dengan saksama untuk menjawab soal nomor 14 dan 15!\nWACANA LITERASI MEMBACA: WACANA LITERASI MEMBACA: PAHLAWAN NEGERI SERINDIT\n(Paragraf 1) Di sebuah gugusan kepulauan hijau bernama Negeri Serindit, hiduplah empat sahabat penjaga\nhutan: Pelawan yang memiliki kekuatan menyembuhkan luka tanaman, Nyatoh yang mampu berkomunikasi\ndengan angin laut, Meranti yang sanggup memanggil akar-akar raksasa dari perut bumi, dan Bulin yang\nmemiliki perisai kayu sekeras baja. Selama ratusan tahun, keempat penjaga ini merawat keseimbangan alam\nNegeri Serindit agar tetap lestari.\n(Paragraf 2) Suatu pagi yang kelabu, langit di ufuk barat mendadak berubah menjadi ungu pekat. Sebuah\nkapal besi raksasa yang menyemburkan asap beracun berlabuh di pesisir pulau. Dari atas geladak kapal,\nmuncullah Kapten Hitam bersama pasukan mesin pengeruknya.\nMereka menebang pepohonan tua dan\nmenyedot pasir timah di dasar sungai menggunakan meriam penyedot energi hingga air sungai berubah\nkeruh dan ikan-ikan mengapung tak bernyawa.\n(Paragraf 3) Melihat kehancuran itu, Bulin maju menahan semburan meriam energi dengan perisai kayunya,\nsementara Nyatoh meniupkan badai angin kencang untuk menghalau asap beracun agar tidak meracuni desa.\nMeranti mengentakkan kedua telapak tangannya ke tanah hingga sulur-sulur akar raksasa menjalar cepat\nmengikat roda-roda mesin pengeruk Kapten Hitam sampai lumpuh tak bergerak.\n(Paragraf 4) Setelah Kapten Hitam dan armadanya berhasil diusir kembali ke laut lepas, Pelawan menaburkan\nserbuk cahaya keemasan di atas tanah yang terluka. Dalam sekejap, tunas-tunas hijau kembali tumbuh dan\nair sungai kembali mengalir jernih. Keempat sahabat itu berjanji akan terus bersatu menjaga Negeri Serindit\ndari segala bentuk keserakahan.\n\nBerdasarkan wacana cerita fantasi \"Pahlawan Negeri Serindit\" di atas, peristiwa yang menunjukkan\nbagian Klimaks (Puncak Konflik) sekaligus membuktikan keajaiban tokoh cerita fantasi terdapat pada\n....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Paragraf 1, ketika empat sahabat hidup damai menjaga keseimbangan alam Negeri Serindit"
+      },
+      {
+        "label": "B",
+        "teks": "Paragraf 2, ketika langit berubah mendung di ufuk barat"
+      },
+      {
+        "label": "C",
+        "teks": "Paragraf 3, ketika Bulin menahan meriam energi dengan perisai kayu, Nyatoh meniupkan badai angin,\ndan Meranti memanggil sulur akar raksasa dari perut bumi untuk melumpuhkan mesin pengeruk Kapten"
+      },
+      {
+        "label": "D",
+        "teks": "Paragraf 4, ketika keempat sahabat berjanji menjaga Negeri Serindit"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "C. Puncak ketegangan (klimaks) sekaligus bukti kesaktian/keajaiban tokoh terletak pada Para-\ngraf 3 saat keempat penjaga hutan mengerahkan kekuatan magis mereka (perisai kayu baja, badai angin,\ndan sulur akar raksasa) melawan mesin pengeruk Kapten Hitam.",
+    "valid": true
+  },
+  {
+    "nomor": 15,
+    "nomor_global": 45,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Berkelana di Dunia Imajinasi",
+    "materi": "Teks Cerita Fantasi, Puisi Rakyat (Pantun, Gurindam, Syair), & Majas Sarkasme",
+    "paket": "Bab II: Berkelana di Dunia Imajinasi - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Nilai moral (amanat) dan keterkaitan isi cerita fantasi \"Pahlawan Negeri Serindit\" pada soal nomor 14\ndengan kehidupan nyata saat ini adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Tokoh Pelawan, Nyatoh, Meranti, dan Bulin (nama pohon khas Bangka Belitung) melambangkan pent-\ningnya kolaborasi menjaga kelestarian hutan dan sungai dari kerusakan akibat penambangan liar yang"
+      },
+      {
+        "label": "B",
+        "teks": "Kita harus membangun kapal besi raksasa untuk mengeruk seluruh pasir timah di dasar sungai tanpa"
+      },
+      {
+        "label": "C",
+        "teks": "Setiap warga desa wajib mempelajari ilmu sihir agar dapat terbang ke atas awan"
+      },
+      {
+        "label": "D",
+        "teks": "Hutan hanya boleh dimasuki oleh empat orang penjaga dan tertutup bagi masyarakat umum"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "A. Nama keempat tokoh (Pelawan, Nyatoh, Meranti, Bulin) diambil dari nama pohon endemik\nhutan Indonesia; kisah perjuangan mereka melawan Kapten Hitam merefleksikan pesan ekologis agar manu-\nsia bersatu melindungi hutan dan sungai dari eksploitasi tambang yang merusak alam.",
+    "valid": true
+  },
+  {
+    "nomor": 16,
+    "nomor_global": 46,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Berkelana di Dunia Imajinasi",
+    "materi": "Teks Cerita Fantasi, Puisi Rakyat (Pantun, Gurindam, Syair), & Majas Sarkasme",
+    "paket": "Bab II: Berkelana di Dunia Imajinasi - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Bacalah perbandingan dua kutipan cerita fantasi berikut dengan saksama!\nTEKS 1: ARIA DAN BURUNG LUMOS\nTEKS 2: DETEKTIF MAX DI KOTA KABUT\nAria adalah seorang gadis berusia dua belas tahun\nyang memiliki mata sebening kristal dan hati yang san-\ngat lembut. Sejak kecil, ia tinggal bersama neneknya\ndi tepi Hutan Bisikan.\nBerbeda dengan anak-anak\nseusianya, Aria dianugerahi kemampuan langka untuk\nmemahami bahasa hewan dan tumbuhan.\nSahabat terdekatnya adalah Lumos, seekor burung\nberbulu perak berkilau yang sayapnya dapat meman-\ncarkan cahaya hangat di tengah kegelapan malam.\nSuara dentuman keras tiba-tiba mengguncang menara\njam tua di jantung Kota Kabut tepat pada pukul dua be-\nlas malam! Jarum jam raksasa itu mendadak berputar\nmundur dengan kecepatan tinggi, membuat seluruh\nwarga kota panik karena bayangan tubuh mereka tiba-\ntiba terlepas dan berlarian sendiri.\nDetektif Max segera menyambar jubah dimensi mi-\nliknya dan berlari menembus lorong waktu untuk\nmenghentikan pencuri bayangan itu.\nPerbedaan pola pengembangan bagian awal (orientasi) kedua kutipan cerita fantasi di atas adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Teks 1 dikembangkan dari penyelesaian masalah (resolusi); sedangkan Teks 2 dikembangkan dari"
+      },
+      {
+        "label": "B",
+        "teks": "Teks 1 dikembangkan dari deskripsi pengenalan tokoh dan keistimewaan wataknya; sedan-\ngkan Teks 2 dikembangkan dari pengenalan konflik/kejadian mengejutkan (langsung menyajikan"
+      },
+      {
+        "label": "C",
+        "teks": "Teks 1 menggunakan alur mundur (kilas balik); sedangkan Teks 2 menggunakan bahasa Melayu"
+      },
+      {
+        "label": "D",
+        "teks": "Teks 1 berlatar masa depan antariksa; sedangkan Teks 2 berlatar dasar samudra"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "B. Pada Teks 1, orientasi dibuka dengan memperkenalkan sosok tokoh Aria dan sahabatnya\nLumos (pengenalan tokoh); sedangkan pada Teks 2, cerita langsung dibuka dengan insiden mengejutkan\ndentuman menara jam dan jarum waktu yang berputar mundur (pengenalan konflik).",
+    "valid": true
+  },
+  {
+    "nomor": 17,
+    "nomor_global": 47,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Berkelana di Dunia Imajinasi",
+    "materi": "Teks Cerita Fantasi, Puisi Rakyat (Pantun, Gurindam, Syair), & Majas Sarkasme",
+    "paket": "Bab II: Berkelana di Dunia Imajinasi - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Perhatikan penggalan cerita fantasi Dewi Bulan berikut!\n(1) Wulan mengamati pantulan bulan di permukaan air di tepi danau. (2) \"Si... siapa kamu?\" tanya\nWulan dengan perasaan takut. (3) \"Aku adalah Dewi Bulan. Aku ada di sini untuk membantu menyem-\nbuhkanmu,\" ucap Dewi Bulan lembut. (4) Ketika bangun tidur, Wulan mendapati dirinya telah berpindah\nke ranjang kamarnya di rumah dan saat becermin wajahnya telah sembuh seperti sedia kala berkat air\nsakti Dewi Bulan.\nKeajaiban tokoh dan peristiwa supranatural pada kutipan di atas tampak paling menonjol pada bagian\nnomor ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(1)"
+      },
+      {
+        "label": "C",
+        "teks": "(3)"
+      },
+      {
+        "label": "B",
+        "teks": "(2)"
+      },
+      {
+        "label": "D",
+        "teks": "(4)"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Bagian (4) menampilkan kemustahilan/keajaiban khas cerita fantasi, yaitu perpindahan\ntempat secara ajaib saat tertidur dan kesembuhan seketika berkat air sakti Dewi Bulan.",
+    "valid": true
+  },
+  {
+    "nomor": 18,
+    "nomor_global": 48,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Berkelana di Dunia Imajinasi",
+    "materi": "Teks Cerita Fantasi, Puisi Rakyat (Pantun, Gurindam, Syair), & Majas Sarkasme",
+    "paket": "Bab II: Berkelana di Dunia Imajinasi - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Perhatikan cerita fantasi \"Tamasya ke Bulan\" berikut!\n- (Paragraf 1) Rista hidup di laboratorium ayahnya. Setiap hari dia berbincang-bincang dengan seekor\nmerpati putih.\n- (Paragraf 2) Merpati membujuk Rista menaburkan Bubuk Pembesar Badan agar mereka bisa terbang\nke bulan.\n- (Paragraf 3) Rista menaburkan bubuk itu hingga tubuh merpati membesar seperti burung Garuda\nbersayap baja.\n- (Paragraf 4) Di bulan, mereka mendarat di tepi danau berwarna jingga yang dihuni ikan-ikan bersayap.\nDalam struktur teks cerita fantasi, bagian Orientasi terletak pada ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Paragraf 1"
+      },
+      {
+        "label": "C",
+        "teks": "Paragraf 3"
+      },
+      {
+        "label": "B",
+        "teks": "Paragraf 2"
+      },
+      {
+        "label": "D",
+        "teks": "Paragraf 4"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "A. Paragraf 1 memperkenalkan tokoh cerita (Rista dan merpati) serta latar tempat awal (labo-\nratorium).",
+    "valid": true
+  },
+  {
+    "nomor": 19,
+    "nomor_global": 49,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Berkelana di Dunia Imajinasi",
+    "materi": "Teks Cerita Fantasi, Puisi Rakyat (Pantun, Gurindam, Syair), & Majas Sarkasme",
+    "paket": "Bab II: Berkelana di Dunia Imajinasi - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Perhatikan kutipan cerita fantasi berikut!\n(1) Seli mengayunkan tangan ke depan, membuat petir biru. (2) Retakan itu memanjang. (3) Butuh\nwaktu empat kali pukulan hingga tiang itu roboh, berdebam menimpa sebelahnya. (4) Aku dan Seli\nsegera melompat mundur, menghindar dari guguran kristal. (5) Lima menit kemudian, dengan napas\ntersengal, kami berhasil menyingkirkan tiga tiang kristal.\nBukti latar suasana genting dan menegangkan pada kutipan cerita fantasi tersebut ditunjukkan oleh\nkalimat nomor ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(1) dan (2)"
+      },
+      {
+        "label": "C",
+        "teks": "(2) dan (5)"
+      },
+      {
+        "label": "B",
+        "teks": "(3) dan (4)"
+      },
+      {
+        "label": "D",
+        "teks": "(1) dan (5)"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "B. Kalimat (3) dan (4) melukiskan suasana genting saat tiang kristal roboh berdebam dan\ntokoh harus melompat mundur menghindari guguran kristal.",
+    "valid": true
+  },
+  {
+    "nomor": 20,
+    "nomor_global": 50,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Berkelana di Dunia Imajinasi",
+    "materi": "Teks Cerita Fantasi, Puisi Rakyat (Pantun, Gurindam, Syair), & Majas Sarkasme",
+    "paket": "Bab II: Berkelana di Dunia Imajinasi - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Perhatikan perbandingan dua teks cerita fantasi berikut untuk menjawab soal nomor 20 dan 21!\nTEKS 1:\nPERMATA CAHAYA DI HUTAN TER-\nLARANG\nTEKS 2: RAHASIA KERAJAAN AWAN\nDesa Lembah Sunyi dilanda musim dingin abadi sete-\nlah Permata Cahaya dicuri oleh Raksasa Kabut. Tana-\nman membeku dan warga desa mulai jatuh sakit.\nArya, seorang pemuda penggembala yang pemberani,\nmemutuskan masuk ke Hutan Terlarang seorang diri\nmeskipun banyak monster bayangan mengadang.\nDi puncak Tebing Es, Arya rela menyerahkan kalung\npusaka peninggalan ayahnya demi menebus Permata\nCahaya. Berkat ketulusan dan pengorbanannya, es\nyang menyelimuti desanya mencair dan matahari kem-\nbali bersinar.\nKerajaan Awan terancam runtuh ke bumi karena\nKristal Angin Penyangga mulai retak.\nPutri Aurora\ntidak tinggal diam melihat rakyatnya ketakutan. Den-\ngan menunggangi Pegasus Putih, ia terbang menem-\nbus Badai Petir menuju Gua Langit ketujuh untuk men-\ncari Air Mata Bintang.\nMeskipun sayap Pegasus terluka oleh sambaran kilat\ndan Aurora harus mengorbankan mahkota emasnya\nke dalam kawah bintang, ia berhasil membawa pulang\nAir Mata Bintang dan menyelamatkan negerinya.\nPersamaan unsur intrinsik (tema dan watak tokoh utama) pada kedua teks cerita fantasi di atas\nadalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Kedua teks menggunakan sudut pandang orang pertama pelaku sampingan dan berakhir dengan"
+      },
+      {
+        "label": "B",
+        "teks": "Kedua teks mengangkat tema keserakahan mengumpulkan harta karun dengan tokoh utama yang"
+      },
+      {
+        "label": "C",
+        "teks": "Kedua teks mengangkat tema persaingan dagang di pasar tradisional dengan latar waktu zaman"
+      },
+      {
+        "label": "D",
+        "teks": "Kedua teks mengangkat tema keberanian dan rela berkorban demi menyelamatkan orang banyak,\ndengan tokoh utama (Arya dan Putri Aurora) yang berwatak pemberani, pantang menyerah, dan tidak"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Baik Arya (Teks 1) maupun Putri Aurora (Teks 2) menunjukkan watak pemberani dan\nrela mengorbankan benda berharga miliknya (kalung pusaka ayah / mahkota emas) demi menyelamatkan\ndesa/kerajaan mereka dari bencana.",
+    "valid": true
+  },
+  {
+    "nomor": 21,
+    "nomor_global": 51,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Berkelana di Dunia Imajinasi",
+    "materi": "Teks Cerita Fantasi, Puisi Rakyat (Pantun, Gurindam, Syair), & Majas Sarkasme",
+    "paket": "Bab II: Berkelana di Dunia Imajinasi - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Perbedaan latar tempat dan jenis tokoh pendamping/lawan antara Teks 1 dan Teks 2 pada soal\nnomor 20 adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Teks 1 merupakan cerita fantasi lintas waktu masa depan; sedangkan Teks 2 merupakan teks laporan"
+      },
+      {
+        "label": "B",
+        "teks": "Teks 1 berlatar di dasar laut; sedangkan Teks 2 berlatar di ruang laboratorium sekolah"
+      },
+      {
+        "label": "C",
+        "teks": "Teks 1 berlatar di daratan (Desa Lembah Sunyi, Hutan Terlarang, Tebing Es) dengan rintangan Rak-\nsasa Kabut; sedangkan Teks 2 berlatar di angkasa (Kerajaan Awan, Badai Petir, Gua Langit) dengan"
+      },
+      {
+        "label": "D",
+        "teks": "Teks 1 tidak memiliki konflik; sedangkan Teks 2 tidak memiliki resolusi"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "C. Latar tempat Teks 1 berada di daratan bumi (Desa Lembah Sunyi dan Hutan Terlarang),\nsedangkan Teks 2 berada di angkasa (Kerajaan Awan dan Gua Langit ketujuh) bersama kuda bersayap\nPegasus Putih.",
+    "valid": true
+  },
+  {
+    "nomor": 22,
+    "nomor_global": 52,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Berkelana di Dunia Imajinasi",
+    "materi": "Teks Cerita Fantasi, Puisi Rakyat (Pantun, Gurindam, Syair), & Majas Sarkasme",
+    "paket": "Bab II: Berkelana di Dunia Imajinasi - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Bacalah perbandingan dua cerita fantasi lintas ruang dan waktu berikut untuk menjawab soal nomor 22\ndan 23!\nCERITA FANTASI 1: DIRA DI HUTAN LUMINA\nCERITA FANTASI 2: NARA DI DUNIA ASTRAL\nSaat sedang berkemah di kaki Gunung Gede, Dira\ntidak sengaja menyentuh batang pohon beringin kem-\nbar yang bercahaya biru. Seketika tubuhnya tersedot\nmasuk ke Hutan Lumina, sebuah dunia paralel tempat\nseluruh pepohonan terbuat dari kristal bercahaya dan\nkupu-kupu berbicara dalam bahasa manusia.\nUntuk kembali ke perkemahannya, Dira harus memec-\nahkan tiga teka-teki penjaga gerbang kristal sebelum\nbulan purnama tenggelam.\nDi Kerajaan Astral tempat planet-planet mengapung\ndi lautan kabut ungu, Pangeran Nara sedang berlatih\nmengendalikan tongkat gravitasi di Akademi Sihir Zo-\ndia. Di dunia itu, tidak ada mobil, pesawat, ataupun\nbangunan bumi; seluruh penduduk berpindah antar-\nplanet menggunakan perahu cahaya.\nKetika batu inti matahari padam, Nara bersama guru\nsihirnya melakukan perjalanan melintasi tiga galaksi\nuntuk menyalakan kembali api kosmik.\nBerdasarkan kesesuaiannya dengan kehidupan nyata dan latar tempatnya, perbedaan jenis cerita fantasi\npada kedua teks di atas adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Cerita Fantasi 1 adalah teks biografi tokoh sejarah; sedangkan Cerita Fantasi 2 adalah teks eks-"
+      },
+      {
+        "label": "B",
+        "teks": "Cerita Fantasi 1 adalah fantasi irisan dan latar lintas ruang/dua dunia (masih menyebut tempat\nnyata Gunung Gede sebelum masuk ke Hutan Lumina); sedangkan Cerita Fantasi 2 adalah fantasi"
+      },
+      {
+        "label": "C",
+        "teks": "Cerita Fantasi 1 adalah fantasi total; sedangkan Cerita Fantasi 2 adalah fantasi irisan yang berlatar"
+      },
+      {
+        "label": "D",
+        "teks": "Keduanya merupakan cerita nonfiksi ilmiah yang bebas dari unsur kemustahilan"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "B. Cerita Fantasi 1 memadukan dunia nyata (berkemah di Gunung Gede) dengan dunia\nkhayalan (Hutan Lumina) sehingga tergolong fantasi irisan berlatar lintas ruang; sedangkan Cerita Fantasi\n2 seluruh nama tempat dan objeknya (Kerajaan Astral, Akademi Zodia) tidak ada di dunia nyata sehingga\ntergolong fantasi total.",
+    "valid": true
+  },
+  {
+    "nomor": 23,
+    "nomor_global": 53,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Berkelana di Dunia Imajinasi",
+    "materi": "Teks Cerita Fantasi, Puisi Rakyat (Pantun, Gurindam, Syair), & Majas Sarkasme",
+    "paket": "Bab II: Berkelana di Dunia Imajinasi - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Perhatikan perbandingan dua bait puisi rakyat berikut!\nPUISI RAKYAT 1\nPUISI RAKYAT 2\nPergi melaut membawa jala,\nJala ditebar di tepi karang.\nBarang siapa rajin bekerja,\nHidupnya makmur dikenang orang.\nApabila dengki sudah merajai hati,\nniscaya hilanglah segala budi pekerti.\nBarang siapa meninggalkan sembahyang,\nseperti rumah tiada bertiang.\nPerbedaan karakteristik struktur fisik dan keterikatan kaidah antara Puisi Rakyat 1 dan Puisi Rakyat 2\ndi atas adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Puisi Rakyat 1 berasal dari sastra Barat; sedangkan Puisi Rakyat 2 berasal dari sastra Jepang"
+      },
+      {
+        "label": "B",
+        "teks": "Puisi Rakyat 1 berbentuk syair bersajak a-a-a-a; sedangkan Puisi Rakyat 2 berbentuk puisi bebas"
+      },
+      {
+        "label": "C",
+        "teks": "Puisi Rakyat 1 tidak memiliki sampiran; sedangkan Puisi Rakyat 2 memiliki 4 baris sampiran"
+      },
+      {
+        "label": "D",
+        "teks": "Puisi Rakyat 1 berbentuk pantun (4 baris per bait, bersajak a-b-a-b, baris 1–2 sampiran dan baris\n3–4 isi); sedangkan Puisi Rakyat 2 berbentuk gurindam (2 baris per bait, bersajak kembar a-a, baris 1"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Puisi Rakyat 1 memenuhi ciri pantun (4 larik, rima akhir a-b-a-b: jala-karang-bekerja-orang,\nlarik 1-2 sampiran dan 3-4 isi), sedangkan Puisi Rakyat 2 memenuhi ciri gurindam (2 larik per bait, rima a-a:\nhati-pekerti, hubungan syarat dan akibat).",
+    "valid": true
+  },
+  {
+    "nomor": 24,
+    "nomor_global": 54,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Berkelana di Dunia Imajinasi",
+    "materi": "Teks Cerita Fantasi, Puisi Rakyat (Pantun, Gurindam, Syair), & Majas Sarkasme",
+    "paket": "Bab II: Berkelana di Dunia Imajinasi - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Bacalah wacana cerita fantasi berlatar kearifan lokal berikut untuk menjawab soal nomor 24 dan 25!\nWACANA LITERASI MEMBACA: WACANA LITERASI MEMBACA: SATAM, SI PEMBERANI DARI KAKI\nGUNUNG MARAS\n(Paragraf 1) Di sebuah lembah hijau di kaki Gunung Maras, hiduplah seorang pemuda bernama Satam.\nSuatu malam, hujan meteor jatuh menghantam puncak gunung dan menyisakan sebutir batu hitam berkilau\nyang berdenyut hangat. Ketika Satam memungut batu meteorit itu, seberkas cahaya keemasan meresap\nke telapak tangannya dan memberinya kemampuan mendengar rintihan pohon-pohon hutan yang sedang\nterluka.\n(Paragraf 2) Sepekan kemudian, gerombolan Monster Asap Kelabu muncul dari balik rawa kering. Monster-\nmonster itu menyemburkan hawa panas yang membuat ladang lada warga mengering dan mata air desa\nmenyusut drastis. Para tetua desa panik karena senjata biasa menembus tubuh asap monster tersebut tanpa\nmelukainya sedikit pun.\n(Paragraf 3) Satam tidak menyerah. Ia teringat pesan bijak kakeknya bahwa kekuatan batu satam hanya akan\nbekerja jika dipadukan dengan kesabaran dan kearifan menjaga mata air. Satam mendaki ke Hulu Sungai\nMaras, menancapkan batu hitam itu ke celah batu cadas, lalu memanjatkan doa perlindungan alam. Seketika\nair terjun berkilau perak mengalir deras, menyapu bersih Monster Asap Kelabu hingga lenyap menjadi embun\npagi yang menyuburkan kembali ladang lada warga.\nPenyebab utama konflik (komplikasi) dan cara penyelesaian konflik (resolusi) dalam wacana cerita\nfantasi di atas adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Penyebab konflik: Satam kehilangan batu hitam di pasar; Resolusi: Satam membeli senjata besi"
+      },
+      {
+        "label": "B",
+        "teks": "Penyebab konflik: kemunculan Monster Asap Kelabu yang mengeringkan ladang lada dan mata air\ndesa; Resolusi: Satam memadukan kekuatan batu meteorit hitam dengan kearifan menjaga hulu sungai"
+      },
+      {
+        "label": "C",
+        "teks": "Penyebab konflik: warga desa menebang pohon lada; Resolusi: warga pindah ke pulau lain"
+      },
+      {
+        "label": "D",
+        "teks": "Penyebab konflik: hujan meteor menghancurkan rumah warga; Resolusi: Monster Asap Kelabu"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "B. Komplikasi muncul pada Paragraf 2 ketika Monster Asap Kelabu mengeringkan ladang lada\ndan mata air desa; resolusi dicapai pada Paragraf 3 saat Satam menancapkan batu satam di Hulu Sungai\nMaras hingga memancarkan air terjun perak yang menyapu monster tersebut.",
+    "valid": true
+  },
+  {
+    "nomor": 25,
+    "nomor_global": 55,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Berkelana di Dunia Imajinasi",
+    "materi": "Teks Cerita Fantasi, Puisi Rakyat (Pantun, Gurindam, Syair), & Majas Sarkasme",
+    "paket": "Bab II: Berkelana di Dunia Imajinasi - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Bukti bahwa tokoh Satam pada wacana soal nomor 24 memiliki watak bijaksana dan tidak gegabah\nditunjukkan oleh tindakan ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Ia langsung menyerang Monster Asap Kelabu dengan pedang besi seorang diri"
+      },
+      {
+        "label": "B",
+        "teks": "Ia mengingat pesan kakeknya bahwa kekuatan batu satam harus dipadukan dengan kesabaran serta"
+      },
+      {
+        "label": "C",
+        "teks": "Ia menyembunyikan batu meteorit hitam di bawah bantal dan tidur sepanjang hari"
+      },
+      {
+        "label": "D",
+        "teks": "Ia menjual batu meteorit hitam kepada pedagang asing dengan harga mahal"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "B. Pada Paragraf 3, Satam tidak menyerang secara membabi buta karena senjata biasa tidak\nmempan; ia mengingat petuah bijak kakeknya untuk menuju Hulu Sungai Maras dan memulihkan mata air.",
+    "valid": true
+  },
+  {
+    "nomor": 26,
+    "nomor_global": 56,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Berkelana di Dunia Imajinasi",
+    "materi": "Teks Cerita Fantasi, Puisi Rakyat (Pantun, Gurindam, Syair), & Majas Sarkasme",
+    "paket": "Bab II: Berkelana di Dunia Imajinasi - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Perhatikan\nilustrasi adegan cerita fantasi Yofi di Kastel Kuno Dunia B saat Menutup Pintu Gerbang Dimensi\nberikut!\nBerdasarkan cerita fantasi Dunia B dan ilustrasi di atas, pernyataan yang benar mengenai ciri umum dan\nstruktur teks cerita fantasi adalah .... (Pilih lebih dari satu jawaban benar)\n\nPernyataan:\n(1) Cerita fantasi mengandung unsur keajaiban/kemustahilan (seperti kekuatan Yofi memanipulasi\nwaktu dan munculnya pintu gerbang monster).\n(2) Adegan munculnya pintu gerbang misterius dan pertempuran Yofi bersama teman-temannya untuk\nmenutup gerbang tersebut merupakan bagian struktur Komplikasi.\n(3) Latar Dunia B tempat manusia hidup berdampingan dengan makhluk mitologi merupakan contoh\npenerapan cerita fantasi total.\n(4) Cerita fantasi wajib ditulis menggunakan format kop surat resmi dan tabel hasil uji laboratorium.\n\nPernyataan yang tepat adalah ....",
+    "gambar": [
+      "/soal/bindo/kls7_bindo_p24_xref690_880x880.jpeg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(1), (2), dan (3)"
+      },
+      {
+        "label": "B",
+        "teks": "(1) dan (4) saja"
+      },
+      {
+        "label": "C",
+        "teks": "(2) dan (4) saja"
+      },
+      {
+        "label": "D",
+        "teks": "(1), (2), (3), dan (4)"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "A, B, C. Cerita Dunia B memuat keajaiban waktu, komplikasi gerbang monster, dan latar\nfantasi total. Pernyataan D salah.",
+    "valid": true
+  },
+  {
+    "nomor": 27,
+    "nomor_global": 57,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Berkelana di Dunia Imajinasi",
+    "materi": "Teks Cerita Fantasi, Puisi Rakyat (Pantun, Gurindam, Syair), & Majas Sarkasme",
+    "paket": "Bab II: Berkelana di Dunia Imajinasi - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Manakah di antara pernyataan berikut yang benar mengenai karakteristik Puisi Rakyat Nusantara? (Pilih\nlebih dari satu jawaban benar)\n\nPernyataan:\n(1) Pantun terdiri atas 4 larik per bait, berima silang a-b-a-b, dengan larik 1–2 berupa sampiran dan\nlarik 3–4 berupa isi.\n(2) Gurindam terdiri atas 2 larik per bait, berima kembar a-a, dan kedua lariknya merupakan isi yang\nberhubungan sebab-akibat.\n(3) Syair terdiri atas 4 larik per bait, berima rata a-a-a-a, dan keempat lariknya merupakan kesatuan isi.\n(4) Karmina adalah puisi rakyat yang terdiri atas 12 larik per bait tanpa sampiran.\n\nPernyataan yang tepat adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(1), (2), dan (3)"
+      },
+      {
+        "label": "B",
+        "teks": "(1) dan (4) saja"
+      },
+      {
+        "label": "C",
+        "teks": "(2) dan (4) saja"
+      },
+      {
+        "label": "D",
+        "teks": "(1), (2), (3), dan (4)"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "A, B, C. Pernyataan D salah karena karmina hanya terdiri atas 2 larik (pantun kilat).",
+    "valid": true
+  },
+  {
+    "nomor": 28,
+    "nomor_global": 58,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Berkelana di Dunia Imajinasi",
+    "materi": "Teks Cerita Fantasi, Puisi Rakyat (Pantun, Gurindam, Syair), & Majas Sarkasme",
+    "paket": "Bab II: Berkelana di Dunia Imajinasi - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Tentukan apakah perny-\nataan analisis puisi rakyat berikut Benar atau Salah!\nNo.\nPernyataan Analisis Bahasa Indonesia\nBenar\nSalah\n\nPernyataan:\n(a) Puisi rakyat yang terdiri atas 6 larik dalam satu bait (3 larik sampiran\ndan 3 larik isi) dengan rima a-b-c-a-b-c disebut talibun.\n(b) Puisi dua larik “Air keran selalu menetes / Kurangi gula, jauhkan dia-\nbetes” merupakan contoh karmina karena larik pertama adalah sam-\npiran dan larik kedua adalah isi berima a-a.\n(c) Gurindam “Barang siapa mengenal yang empat, maka ia itulah orang\nyang makrifat” memiliki sampiran pada baris pertamanya.\n\nKombinasi analisis nilai kebenaran (Benar/Salah) yang tepat adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(a) Benar, (b) Benar, (c) Salah"
+      },
+      {
+        "label": "B",
+        "teks": "(a) Benar, (b) Salah, (c) Salah"
+      },
+      {
+        "label": "C",
+        "teks": "(a) Salah, (b) Benar, (c) Benar"
+      },
+      {
+        "label": "D",
+        "teks": "(a) Benar, (b) Benar, (c) Benar"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "(a) Benar, (b) Benar, (c) Salah. Gurindam tidak memiliki sampiran; kedua barisnya adalah isi.",
+    "valid": true
+  },
+  {
+    "nomor": 29,
+    "nomor_global": 59,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Berkelana di Dunia Imajinasi",
+    "materi": "Teks Cerita Fantasi, Puisi Rakyat (Pantun, Gurindam, Syair), & Majas Sarkasme",
+    "paket": "Bab II: Berkelana di Dunia Imajinasi - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Tentukan apakah perny-\nataan analisis cerita fantasi berikut Benar atau Salah!\nNo.\nPernyataan Analisis Bahasa Indonesia\nBenar\nSalah\n\nPernyataan:\n(a) Ungkapan buah bibir pada kalimat “Peristiwa tersebut menjadi buah\nbibir di lingkungan kastel” merupakan contoh majas metafora.\n(b) Kalimat “Para sayuran menyerbu kota kecil di Gunung Fuji” menggu-\nnakan majas personifikasi.\n(c) Cerita fantasi yang menggunakan kata ganti ia dan menyebut nama\ntokoh Rizky menggunakan sudut pandang orang pertama pelaku\nutama.\n\nKombinasi analisis nilai kebenaran (Benar/Salah) yang tepat adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(a) Benar, (b) Benar, (c) Salah"
+      },
+      {
+        "label": "B",
+        "teks": "(a) Benar, (b) Salah, (c) Salah"
+      },
+      {
+        "label": "C",
+        "teks": "(a) Salah, (b) Benar, (c) Benar"
+      },
+      {
+        "label": "D",
+        "teks": "(a) Benar, (b) Benar, (c) Benar"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "(a) Benar, (b) Benar, (c) Salah. Penyebutan nama tokoh dan kata ganti ia adalah sudut\npandang orang ketiga.",
+    "valid": true
+  },
+  {
+    "nomor": 30,
+    "nomor_global": 60,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Berkelana di Dunia Imajinasi",
+    "materi": "Teks Cerita Fantasi, Puisi Rakyat (Pantun, Gurindam, Syair), & Majas Sarkasme",
+    "paket": "Bab II: Berkelana di Dunia Imajinasi - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Ker-\njakan kedua tugas penulisan kreatif berikut:\n(a) Buatlah 1 bait Pantun Nasihat Belajar (4 baris, rima a-b-a-b, 8–12 suku kata/baris) dan 1 bait\nGurindam Kejujuran (2 baris, rima a-a)!\n(b) Ubahlah kalimat langsung berikut menjadi kalimat tidak langsung yang baku: “Mao berseru dengan\npenuh semangat, ’Jangan menyerah, Yari! Kita pasti bisa mengalahkan raksasa bayangan ini bersama-\nsama!’ ”\n\nBerdasarkan kaidah bahasa baku EYD Edisi V dan materi bab ini, rumusan analisis / hasil penyuntingan yang paling tepat adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "- (a) Pantun: Pergi ke pasar membeli duku (10) / Jangan lupa membeli pepaya (10) / Rajin-rajinlah membaca\nbuku (10) / Agar kelak hidupmu mulia (10). Gurindam: Apabila perkataan selalu jujur / Niscaya nama baik\ntak akan luntur.\n- (b) Kalimat Tidak Langsung: Mao"
+      },
+      {
+        "label": "B",
+        "teks": "Mengabaikan penggunaan tanda koma dan huruf kapital pada nama geografi serta membiarkan kata tidak baku tetap tertulis apa adanya"
+      },
+      {
+        "label": "C",
+        "teks": "Mengubah seluruh kalimat menjadi bahasa gaul dan menyatukan semua kata depan di dengan kata tempat"
+      },
+      {
+        "label": "D",
+        "teks": "Menghapus seluruh paragraf wacana dan menggantinya dengan daftar harga menu makanan"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "- (a) Pantun: Pergi ke pasar membeli duku (10) / Jangan lupa membeli pepaya (10) / Rajin-rajinlah membaca\nbuku (10) / Agar kelak hidupmu mulia (10). Gurindam: Apabila perkataan selalu jujur / Niscaya nama baik\ntak akan luntur.\n- (b) Kalimat Tidak Langsung: Mao berseru dengan penuh semangat agar Yari tidak menyerah karena\nmereka pasti bisa mengalahkan raksasa bayangan itu bersama-sama.",
+    "valid": true
+  }
+]

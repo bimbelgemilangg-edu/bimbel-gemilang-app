@@ -1,0 +1,1000 @@
+[
+  {
+    "nomor": 1,
+    "nomor_global": 61,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Hal yang Baik bagi Tubuh",
+    "materi": "Teks Prosedur, Infografik Kesehatan, Kalimat Imperatif Inversi, & Adverbia",
+    "paket": "Bab III: Hal yang Baik bagi Tubuh - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Pada Buku Siswa Bab III disajikan dua infografik berdampingan, yaitu Infografik 1 (Tip Waktu Makan\nIdeal) yang memuat jadwal jam makan beserta langkah mengatur jeda waktu makan, dan Infografik\n2 (Lebih Baik Bawa Bekal) yang memuat alasan hemat uang dan higienis. Manakah di antara kedua\ninfografik tersebut yang dapat dikategorikan sebagai Teks Prosedur, dan apakah alasannya?",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Kedua infografik tersebut merupakan teks cerita fantasi lintas waktu"
+      },
+      {
+        "label": "B",
+        "teks": "Infografik 2 (Lebih Baik Bawa Bekal), karena tidak memuat langkah-langkah cara melakukan sesuatu"
+      },
+      {
+        "label": "C",
+        "teks": "Infografik 1 (Tip Waktu Makan Ideal), karena menyajikan panduan tahapan tindakan dan aturan waktu"
+      },
+      {
+        "label": "D",
+        "teks": "Tidak ada satu pun yang berkaitan dengan kesehatan tubuh remaja"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "C. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.",
+    "valid": true
+  },
+  {
+    "nomor": 2,
+    "nomor_global": 62,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Hal yang Baik bagi Tubuh",
+    "materi": "Teks Prosedur, Infografik Kesehatan, Kalimat Imperatif Inversi, & Adverbia",
+    "paket": "Bab III: Hal yang Baik bagi Tubuh - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Berdasarkan infografik \"Tip Waktu Makan Ideal\", sarapan pagi dianjurkan dilakukan pada pukul 07.00–\n08.00 (sekitar 30 menit setelah bangun tidur), makan siang pada pukul 12.30–14.00 (dengan jeda 4\njam dari sarapan), dan makan malam pada pukul 18.00–19.00 (minimal 3 jam sebelum tidur). Mengapa\nmakan malam tidak dianjurkan dilakukan tepat sesaat sebelum tidur malam?",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Karena waktu terbaik untuk makan besar tiga piring adalah pukul 23.30 malam"
+      },
+      {
+        "label": "B",
+        "teks": "Karena pada malam hari seluruh kandungan vitamin di dalam nasi dan sayuran berubah menjadi"
+      },
+      {
+        "label": "C",
+        "teks": "Agar seseorang merasa sangat lapar pada tengah malam dan tidak bisa tidur"
+      },
+      {
+        "label": "D",
+        "teks": "Agar sistem pencernaan tubuh memiliki waktu yang cukup untuk mengolah makanan secara optimal"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.",
+    "valid": true
+  },
+  {
+    "nomor": 3,
+    "nomor_global": 63,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Hal yang Baik bagi Tubuh",
+    "materi": "Teks Prosedur, Infografik Kesehatan, Kalimat Imperatif Inversi, & Adverbia",
+    "paket": "Bab III: Hal yang Baik bagi Tubuh - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Perhatikan infografis kesehatan \"Isi Piringku: Porsi Sekali Makan\" berikut!\nDalam teks prosedur dan kampanye kesehatan, informasi panduan porsi makan seimbang yang disajikan\nmelalui perpaduan gambar ilustrasi dan tulisan singkat seperti di atas disebut ....",
+    "gambar": [
+      "/soal/bindo/kls7_bindo_p29_xref886_880x880.jpeg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "novel fiksi"
+      },
+      {
+        "label": "C",
+        "teks": "surat pribadi"
+      },
+      {
+        "label": "B",
+        "teks": "infografik"
+      },
+      {
+        "label": "D",
+        "teks": "puisi prismatis"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "B. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.",
+    "valid": true
+  },
+  {
+    "nomor": 4,
+    "nomor_global": 64,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Hal yang Baik bagi Tubuh",
+    "materi": "Teks Prosedur, Infografik Kesehatan, Kalimat Imperatif Inversi, & Adverbia",
+    "paket": "Bab III: Hal yang Baik bagi Tubuh - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Perhatikan prosedur pembuatan Minuman Tradisional Wedang Jahe Serai Madu berikut:\n(1) Bakar 2 ruas jahe merah yang telah dicuci bersih, lalu memarkan.\n(2) Rebus jahe memar dan 1 batang serai di dalam 400 mL air hingga mendidih dan air menyusut menjadi\nsekitar 300 mL.\n(3) Matikan api kompor, saring air rebusan ke dalam cangkir, dan diamkan selama 5 menit hingga\nsuhunya hangat kuku (±45◦C).\n(4) Tambahkan 2 sendok makan madu murni, aduk rata, dan sajikan hangat.\nApa konsekuensi ilmiah yang akan terjadi apabila seseorang mengubah urutan langkah dengan mema-\nsukkan madu murni langsung ke dalam panci saat air sedang mendidih (100◦C) pada langkah (2)?",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Suhu air yang terlalu panas (mendidih) akan merusak kandungan enzim dan nutrisi alami di dalam"
+      },
+      {
+        "label": "B",
+        "teks": "Air rebusan jahe akan langsung membeku menjadi es batu di dalam panci"
+      },
+      {
+        "label": "C",
+        "teks": "Batang serai dan jahe merah akan berubah menjadi bubuk cokelat"
+      },
+      {
+        "label": "D",
+        "teks": "Cangkir kaca akan memuai menjadi dua kali lebih besar"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "A. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.",
+    "valid": true
+  },
+  {
+    "nomor": 5,
+    "nomor_global": 65,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Hal yang Baik bagi Tubuh",
+    "materi": "Teks Prosedur, Infografik Kesehatan, Kalimat Imperatif Inversi, & Adverbia",
+    "paket": "Bab III: Hal yang Baik bagi Tubuh - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Perhatikan kalimat-kalimat langkah prosedur pembuatan Jus Alpukat Kurma Sehat yang disusun se-\ncara acak berikut:\n(1) Tuangkan jus yang telah lembut ke dalam gelas saji dan minuman sehat siap dinikmati!\n(2) Belah buah alpukat matang menjadi dua bagian, buang bijinya, lalu keruk daging buahnya menggu-\nnakan sendok.\n(3) Nyalakan mesin blender dan haluskan seluruh bahan selama kurang lebih 1 menit hingga bertekstur\nlembut.\n(4) Masukkan daging buah alpukat, 5 butir kurma tanpa biji, dan 200 mL susu rendah lemak ke dalam\ntabung blender.\nUrutan langkah prosedur yang paling runtut dan logis adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(4) – (2) – (1) – (3)"
+      },
+      {
+        "label": "C",
+        "teks": "(2) – (4) – (3) – (1)"
+      },
+      {
+        "label": "B",
+        "teks": "(1) – (3) – (2) – (4)"
+      },
+      {
+        "label": "D",
+        "teks": "(2) – (3) – (4) – (1)"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "C. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.",
+    "valid": true
+  },
+  {
+    "nomor": 6,
+    "nomor_global": 66,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Hal yang Baik bagi Tubuh",
+    "materi": "Teks Prosedur, Infografik Kesehatan, Kalimat Imperatif Inversi, & Adverbia",
+    "paket": "Bab III: Hal yang Baik bagi Tubuh - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Dalam struktur teks prosedur cara membuat makanan sehat, bagian Alat dan Bahan harus ditulis den-\ngan rincian ukuran atau takaran yang akurat (misalnya 250 gram tepung gandum utuh, 2 siung bawang\nputih, 1/2 sendok teh garam). Tujuan pencantuman ukuran yang spesifik tersebut adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Sebagai pengganti langkah-langkah pembuatan sehingga bagian langkah kerja dapat dihapus"
+      },
+      {
+        "label": "B",
+        "teks": "Agar halaman buku resep tampak lebih penuh oleh angka-angka"
+      },
+      {
+        "label": "C",
+        "teks": "Untuk mempersulit pembaca sehingga tidak ada yang berhasil mencoba resep tersebut"
+      },
+      {
+        "label": "D",
+        "teks": "Agar pembaca dapat menakar komposisi bahan secara tepat sehingga hasil masakan memiliki rasa"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.",
+    "valid": true
+  },
+  {
+    "nomor": 7,
+    "nomor_global": 67,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Hal yang Baik bagi Tubuh",
+    "materi": "Teks Prosedur, Infografik Kesehatan, Kalimat Imperatif Inversi, & Adverbia",
+    "paket": "Bab III: Hal yang Baik bagi Tubuh - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Berdasarkan gambar komposisi Isi Piringku pada kotak bekal di atas (nasi/karbohidrat, ikan pang-\ngang/protein, tumis sayuran hijau, dan buah pepaya/pisang), kalimat anjuran/saran dalam teks prosedur\npenyusunan bekal sekolah yang paling santun dan efektif adalah ....",
+    "gambar": [
+      "/soal/bindo/kls7_bindo_p29_xref886_880x880.jpeg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Jangan pernah membawa buah dan sayur ke sekolah karena akan memenuhi tas punggung!"
+      },
+      {
+        "label": "B",
+        "teks": "Sebaiknya susunlah porsi sayuran hijau dan buah-buahan segar memenuhi separuh kotak makan"
+      },
+      {
+        "label": "C",
+        "teks": "Apakah kalian sudah pernah melihat ikan bakar dan buah pepaya di pasar tradisional?"
+      },
+      {
+        "label": "D",
+        "teks": "Kotak makan ini berwarna biru muda dengan pegangan berwarna jingga di bagian depannya."
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "B. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.",
+    "valid": true
+  },
+  {
+    "nomor": 8,
+    "nomor_global": 68,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Hal yang Baik bagi Tubuh",
+    "materi": "Teks Prosedur, Infografik Kesehatan, Kalimat Imperatif Inversi, & Adverbia",
+    "paket": "Bab III: Hal yang Baik bagi Tubuh - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Perhatikan empat kalimat dalam teks prosedur berikut:\n(1) Kupaslah kulit buah mangga yang telah dicuci bersih menggunakan pisau tajam!\n(2) Jangan menambahkan pemanis buatan secara berlebihan ke dalam minuman buah!\n(3) Sebaiknya gunakan air matang suhu ruang untuk melarutkan bubuk agar-agar.\n(4) Buah mangga mengandung vitamin C dan antioksidan yang tinggi.\nPasangan kalimat yang merupakan kalimat perintah (imperatif) dan kalimat larangan berturut-turut\nadalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Kalimat (3) dan kalimat (4)"
+      },
+      {
+        "label": "C",
+        "teks": "Kalimat (1) dan kalimat (2)"
+      },
+      {
+        "label": "B",
+        "teks": "Kalimat (2) dan kalimat (3)"
+      },
+      {
+        "label": "D",
+        "teks": "Kalimat (4) dan kalimat (1)"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "C. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.",
+    "valid": true
+  },
+  {
+    "nomor": 9,
+    "nomor_global": 69,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Hal yang Baik bagi Tubuh",
+    "materi": "Teks Prosedur, Infografik Kesehatan, Kalimat Imperatif Inversi, & Adverbia",
+    "paket": "Bab III: Hal yang Baik bagi Tubuh - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Apabila kalimat deklaratif: \"Anda mengaduk adonan bubur kacang hijau secara perlahan hingga santan\nmeresap\" diubah menjadi kalimat perintah (imperatif) berpola inversi (Predikat mendahului Sub-\njek/Objek), maka kalimat perubahannya yang tepat adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Aduklah adonan bubur kacang hijau secara perlahan hingga santan meresap!"
+      },
+      {
+        "label": "B",
+        "teks": "Apakah Anda sudah mengaduk adonan bubur kacang hijau secara perlahan?"
+      },
+      {
+        "label": "C",
+        "teks": "Adonan bubur kacang hijau tidak pernah diaduk oleh siapa pun."
+      },
+      {
+        "label": "D",
+        "teks": "Saya melihat adonan bubur kacang hijau di atas meja makan."
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "A. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.",
+    "valid": true
+  },
+  {
+    "nomor": 10,
+    "nomor_global": 70,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Hal yang Baik bagi Tubuh",
+    "materi": "Teks Prosedur, Infografik Kesehatan, Kalimat Imperatif Inversi, & Adverbia",
+    "paket": "Bab III: Hal yang Baik bagi Tubuh - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Dalam tata bahasa Indonesia, kalimat inversi memiliki pola Predikat (P) terletak di depan Subjek (S).\nManakah di antara kalimat instruksi prosedur berikut yang merupakan kalimat inversi (P–S)?",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Minuman tradisional beras kencur sangat bermanfaat bagi kebugaran tubuh."
+      },
+      {
+        "label": "B",
+        "teks": "Ibu memotong buah semangka di atas talenan kayu."
+      },
+      {
+        "label": "C",
+        "teks": "Para siswa kelas tujuh sedang berolahraga di lapangan sekolah."
+      },
+      {
+        "label": "D",
+        "teks": "Masukkan potongan es batu dan perasan jeruk nipis ke dalam gelas saji."
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.",
+    "valid": true
+  },
+  {
+    "nomor": 11,
+    "nomor_global": 71,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Hal yang Baik bagi Tubuh",
+    "materi": "Teks Prosedur, Infografik Kesehatan, Kalimat Imperatif Inversi, & Adverbia",
+    "paket": "Bab III: Hal yang Baik bagi Tubuh - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Bacalah kalimat langkah prosedur pembuatan Es Kelapa Jeruk berikut!\n*\"Peraslah buah jeruk manis dengan menggunakan alat pemeras kayu agar bijinya tidak ikut masuk\nke dalam gelas.\"*\nFrasa bercetak tebal (dengan menggunakan alat pemeras kayu) dan klausa (agar bijinya tidak ikut\nmasuk ke dalam gelas) pada kalimat tersebut berturut-turut merupakan adverbia (keterangan) ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Keterangan waktu dan keterangan tempat"
+      },
+      {
+        "label": "C",
+        "teks": "Keterangan cara dan keterangan kuantitas"
+      },
+      {
+        "label": "B",
+        "teks": "Keterangan alat dan keterangan tujuan"
+      },
+      {
+        "label": "D",
+        "teks": "Keterangan syarat dan keterangan sebab"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "B. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.",
+    "valid": true
+  },
+  {
+    "nomor": 12,
+    "nomor_global": 72,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Hal yang Baik bagi Tubuh",
+    "materi": "Teks Prosedur, Infografik Kesehatan, Kalimat Imperatif Inversi, & Adverbia",
+    "paket": "Bab III: Hal yang Baik bagi Tubuh - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Perhatikan kalimat-kalimat prosedur yang mengandung adverbia (kata keterangan) berikut:\n(1) Kukuslah adonan bolu pisang selama 30 menit dengan api sedang.\n(2) Aduklah campuran tepung dan telur secara perlahan menggunakan spatula.\n(3) Jika permukaan kue sudah kecokelatan, angkatlah loyang dari dalam panci kukusan.\n(4) Olesi permukaan loyang dengan sedikit mentega.\nKalimat yang menggunakan keterangan cara dan keterangan syarat berturut-turut ditunjukkan oleh\nnomor ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(1) dan (4)"
+      },
+      {
+        "label": "C",
+        "teks": "(2) dan (3)"
+      },
+      {
+        "label": "B",
+        "teks": "(1) dan (2)"
+      },
+      {
+        "label": "D",
+        "teks": "(3) dan (4)"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "C. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.",
+    "valid": true
+  },
+  {
+    "nomor": 13,
+    "nomor_global": 73,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Hal yang Baik bagi Tubuh",
+    "materi": "Teks Prosedur, Infografik Kesehatan, Kalimat Imperatif Inversi, & Adverbia",
+    "paket": "Bab III: Hal yang Baik bagi Tubuh - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Dalam penulisan teks prosedur yang efektif, sering dilakukan pelesapan (penghilangan unsur kata/frasa\nyang sama yang sudah disebutkan pada klausa sebelumnya) agar kalimat tidak bertele-tele. Perhatikan\ndraf belum efektif berikut:\n\"Potonglah tempe membentuk dadu kecil. Setelah tempe dipotong membentuk dadu kecil, rendamlah\npotongan tempe berbentuk dadu kecil itu di dalam bumbu bawang putih. Kemudian, gorenglah potongan\ntempe berbentuk dadu kecil yang sudah direndam itu hingga matang.\"\nPerbaikan kalimat tersebut dengan menerapkan teknik pelesapan dan konjungsi kronologis yang tepat\nadalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Potonglah tempe membentuk dadu kecil, lalu rendam di dalam bumbu bawang putih, kemudian goreng"
+      },
+      {
+        "label": "B",
+        "teks": "Potonglah tempe membentuk dadu kecil dan tempe dadu kecil itu jangan direndam maupun digoreng."
+      },
+      {
+        "label": "C",
+        "teks": "Tempe adalah makanan tradisional Indonesia yang terbuat dari fermentasi kacang kedelai."
+      },
+      {
+        "label": "D",
+        "teks": "Siapkan tempe, bawang putih, garam, dan minyak goreng secukupnya di dapur."
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "A. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.",
+    "valid": true
+  },
+  {
+    "nomor": 14,
+    "nomor_global": 74,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Hal yang Baik bagi Tubuh",
+    "materi": "Teks Prosedur, Infografik Kesehatan, Kalimat Imperatif Inversi, & Adverbia",
+    "paket": "Bab III: Hal yang Baik bagi Tubuh - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Bacalah wacana teks prosedur lengkap berikut untuk menjawab soal nomor 14 dan 15!\nWACANA LITERASI MEMBACA: WACANA LITERASI MEMBACA: CARA MEMBUAT KONTEN EDUKASI\nKESEHATAN DI YOUTUBE SHORTS\n(Tujuan) YouTube Shorts merupakan fitur video pendek berdurasi maksimal 60 detik dengan format vertikal\n(9 : 16) yang sangat efektif digunakan pelajar untuk membagikan tip kesehatan dan resep makanan bergizi.\nAgar video edukasi yang kamu buat menarik dan bermanfaat, ikutilah prosedur pembuatan berikut secara\nruntut!\n(Langkah-Langkah Prosedur:)\n(1) Tentukan satu topik kesehatan yang spesifik dan bermanfaat bagi remaja, misalnya “3 Langkah Membuat\nInfused Water Buah Lokal”.\n(2) Susunlah naskah singkat (script) yang terdiri atas kalimat pembuka yang memikat (hook pada 3 detik\npertama), isi langkah-langkah, dan kalimat ajakan penutup.\n(3) Siapkan bahan makanan sehat serta ponsel berkamera dengan pencahayaan ruangan yang terang dan\nsuara yang jernih (bebas bising).\n(4) Rekam setiap tahapan pembuatan secara vertikal (9 : 16) dengan sudut pengambilan gambar yang jelas\nmemperlihatkan objek.\n(5) Sunting (edit) rekaman video dengan memotong jeda yang terlalu panjang, lalu tambahkan teks takarir\n(caption) agar penonton tetap dapat memahami isi video meskipun tanpa suara.\n(6) Unggah video melalui aplikasi YouTube, tuliskan judul yang informatif beserta tagar (#HidupSehat #Re-\nsepRemaja), lalu tekan tombol Publikasikan.\nManfaat utama melaksanakan Langkah (2) dan Langkah (5) secara cermat pada teks prosedur di atas\nadalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Naskah singkat dengan hook 3 detik pertama membuat alur penyampaian runtut dan langsung\n\nmenarik perhatian penonton, sedangkan penambahan takarir (caption) membantu penonton memahami"
+      },
+      {
+        "label": "B",
+        "teks": "Video akan otomatis berdurasi 3 jam dan tidak memerlukan koneksi internet saat diunggah"
+      },
+      {
+        "label": "C",
+        "teks": "Penonton tidak perlu membaca judul video karena gambar video sengaja dibuat kabur"
+      },
+      {
+        "label": "D",
+        "teks": "Pembuat konten tidak perlu menyiapkan bahan makanan sehat pada Langkah (3)"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "A. Langkah (2) memastikan isi video terstruktur dan memikat sejak 3 detik pertama, sedan-\ngkan Langkah (5) (pemotongan jeda dan pemberian takarir/caption) meningkatkan keterbacaan visual bagi\npenonton.",
+    "valid": true
+  },
+  {
+    "nomor": 15,
+    "nomor_global": 75,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Hal yang Baik bagi Tubuh",
+    "materi": "Teks Prosedur, Infografik Kesehatan, Kalimat Imperatif Inversi, & Adverbia",
+    "paket": "Bab III: Hal yang Baik bagi Tubuh - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Apabila seorang siswa melewatkan Langkah (3) pada teks prosedur di soal nomor 14 dan langsung\nmerekam di ruangan yang gelap serta bising, dampak logis yang akan terjadi terhadap hasil konten\nadalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Kamera ponsel akan otomatis mengubah format video dari vertikal menjadi horizontal"
+      },
+      {
+        "label": "B",
+        "teks": "Visual bahan makanan tidak terlihat jelas dan suara penjelasan prosedur tertutup oleh kebisingan"
+      },
+      {
+        "label": "C",
+        "teks": "Durasi video akan bertambah menjadi 120 menit secara otomatis"
+      },
+      {
+        "label": "D",
+        "teks": "Akun YouTube siswa akan langsung mendapatkan penghargaan jutaan pelanggan dalam satu detik"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "B. Langkah (3) mengatur kesiapan bahan, pencahayaan terang, dan kejernihan audio;\nmengabaikannya mengakibatkan kualitas visual gelap dan suara bising sehingga informasi prosedur tidak\nterbaca/terdengar jelas.",
+    "valid": true
+  },
+  {
+    "nomor": 16,
+    "nomor_global": 76,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Hal yang Baik bagi Tubuh",
+    "materi": "Teks Prosedur, Infografik Kesehatan, Kalimat Imperatif Inversi, & Adverbia",
+    "paket": "Bab III: Hal yang Baik bagi Tubuh - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Perhatikan perbandingan dua teks bertema pola makan remaja berikut untuk menjawab soal nomor 16!\nTEKS 1: POLA MAKAN SEHAT BAGI REMAJA\nTEKS 2: DAMPAK POLA MAKAN TIDAK SEHAT\nMasa remaja merupakan periode pertumbuhan pe-\nsat yang membutuhkan asupan gizi seimbang. Untuk\nmenjaga kebugaran tubuh dan konsentrasi belajar di\nsekolah, remaja dianjurkan menerapkan panduan Isi\nPiringku setiap kali makan.\nPertama, isilah setengah bagian piring dengan sayur-\nmayur dan buah-buahan segar sebagai sumber vita-\nmin serta serat. Kedua, isilah setengah bagian sisanya\ndengan makanan pokok sumber karbohidrat kompleks\ndan lauk-pauk kaya protein. Ketiga, minumlah air putih\nminimal 8 gelas sehari dan batasi konsumsi minuman\nberpemanis buatan.\nKebiasaan mengonsumsi makanan cepat saji (junk\nfood) yang tinggi lemak jenuh, garam natrium, dan\ngula tambahan kini kian marak di kalangan remaja\nperkotaan. Banyak pelajar melewatkan sarapan pagi,\nlalu menggantinya dengan minuman boba manis dan\ncamilan gorengan berkalori tinggi.\nAkibat pola makan yang tidak terkontrol tersebut,\nangka kejadian obesitas dini, resistansi insulin, dan\nrisiko penyakit diabetes melitus tipe 2 pada kelompok\nusia remaja meningkat tajam dalam lima tahun ter-\nakhir.\nPerbedaan pola penyajian isi dan fokus informasi antara Teks 1 dan Teks 2 di atas adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Teks 1 melarang remaja mengonsumsi sayur dan buah; sedangkan Teks 2 menganjurkan remaja"
+      },
+      {
+        "label": "B",
+        "teks": "Teks 1 menyajikan cerita imajinasi tentang makanan ajaib; sedangkan Teks 2 menyajikan daftar harga"
+      },
+      {
+        "label": "C",
+        "teks": "Teks 1 menggunakan ragam bahasa santai; sedangkan Teks 2 menggunakan bentuk puisi rakyat"
+      },
+      {
+        "label": "D",
+        "teks": "Teks 1 menyajikan langkah-langkah/panduan prosedural mengatur porsi makan sehat (pertama,\nkedua, ketiga); sedangkan Teks 2 menyajikan hubungan kausalitas (sebab-akibat) mengenai dampak"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Teks 1 disusun dengan pola panduan bertahap/prosedural (Pertama, Kedua, Ketiga) untuk\nmempraktikkan gizi seimbang, sedangkan Teks 2 disusun dengan pola eksposisi sebab-akibat (Akibat pola\nmakan yang tidak terkontrol tersebut...) yang menguraikan risiko obesitas dan diabetes.",
+    "valid": true
+  },
+  {
+    "nomor": 17,
+    "nomor_global": 77,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Hal yang Baik bagi Tubuh",
+    "materi": "Teks Prosedur, Infografik Kesehatan, Kalimat Imperatif Inversi, & Adverbia",
+    "paket": "Bab III: Hal yang Baik bagi Tubuh - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Pada kalimat prosedur: *\"Campurkan tepung beras, gula aren cair, dan santan hangat, lalu uleni adonan\nhingga kalis\"*, makna istilah teknis kuliner \"kalis\" menurut Kamus Besar Bahasa Indonesia (KBBI)\nadalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Kondisi bahan makanan yang sudah basi dan berjamur"
+      },
+      {
+        "label": "B",
+        "teks": "Kondisi adonan yang hangus terbakar hingga berwarna hitam legam"
+      },
+      {
+        "label": "C",
+        "teks": "Kondisi cairan yang membeku keras seperti batu es di dalam lemari pendingin"
+      },
+      {
+        "label": "D",
+        "teks": "Kondisi adonan yang sudah tercampur sempurna, elastis, dan tidak lengket lagi di tangan maupun di"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.",
+    "valid": true
+  },
+  {
+    "nomor": 18,
+    "nomor_global": 78,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Hal yang Baik bagi Tubuh",
+    "materi": "Teks Prosedur, Infografik Kesehatan, Kalimat Imperatif Inversi, & Adverbia",
+    "paket": "Bab III: Hal yang Baik bagi Tubuh - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Bacalah wacana laporan kesehatan empat paragraf berikut dengan saksama:\n\nWACANA LITERASI MEMBACA: POLA HIDUP SEHAT BERDASARKAN DATA WHO 2025\n(Paragraf 1) Menurut laporan terbaru WHO tahun 2025, sekitar 75% penyebab kematian di seluruh dunia berasal dari penyakit tidak menular (PTM) seperti jantung, kanker, gangguan pernapasan kronis, dan diabetes. Data tersebut menunjukkan bahwa masalah kesehatan global kini lebih banyak disebabkan oleh gaya hidup, bukan semata-mata karena infeksi.\n(Paragraf 2) WHO menyebutkan ada empat faktor utama penyebab meningkatnya penyakit tidak menular, yaitu merokok, kurang olahraga, pola makan tidak sehat, dan konsumsi alkohol. Dari kebiasaan ini timbul tekanan darah tinggi, gula darah berlebih, obesitas, serta kolesterol tinggi.\n(Paragraf 3) Untuk mengurangi risiko tersebut, WHO menganjurkan langkah pencegahan: (1) berhenti merokok dan menjauhi asap rokok; (2) beraktivitas fisik minimal 150 menit setiap minggu; (3) mengonsumsi makanan bergizi seimbang (buah, sayur, protein sehat); dan (4) membatasi alkohol.\n(Paragraf 4) Sayangnya, banyak negara belum maksimal menjalankan program pencegahan karena keterbatasan fasilitas dan kurangnya edukasi. Oleh karena itu, pola hidup sehat memerlukan dukungan kolaboratif dari pemerintah, sekolah, tenaga medis, dan komunitas.\n\nBagan alur konsep visual yang paling tepat merangkum isi teks empat paragraf di atas adalah ....",
+    "gambar": [
+      "/soal/bindo/kls7_bindo_p33_xref967_880x880.jpeg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Bagan alur komprehensif: Faktor Risiko PTM penyebab 75% kematian (merokok, kurang gerak, pola makan buruk, alkohol) -> Gejala Awal -> 4 Langkah Pencegahan Individu WHO -> Dukungan Kolaborasi Multisektoral"
+      },
+      {
+        "label": "B",
+        "teks": "Bagan yang hanya memuat faktor penyakit menular infeksi bakteri tanpa memuat langkah pencegahan"
+      },
+      {
+        "label": "C",
+        "teks": "Bagan yang menyatakan bahwa konsumsi rokok dan alkohol adalah gaya hidup sehat untuk memperpanjang usia"
+      },
+      {
+        "label": "D",
+        "teks": "Bagan fasilitas gedung rumah sakit tanpa memuat data persentase dan faktor risiko gaya hidup"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "A. Bagan pada gambar A secara akurat merangkum alur isi ke-4 paragraf teks: (1) Faktor\nRisiko PTM penyebab 75% kematian (merokok, kurang olahraga, pola makan buruk, alkohol); (2) Langkah\nPencegahan Individu (stop rokok, olahraga ≥150 menit/minggu, gizi seimbang); dan (3) Dukungan Lintas\nSektor (kolaborasi pemerintah, sekolah, medis, dan komunitas).",
+    "valid": true
+  },
+  {
+    "nomor": 19,
+    "nomor_global": 79,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Hal yang Baik bagi Tubuh",
+    "materi": "Teks Prosedur, Infografik Kesehatan, Kalimat Imperatif Inversi, & Adverbia",
+    "paket": "Bab III: Hal yang Baik bagi Tubuh - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Manakah di antara empat kalimat instruksi prosedur berikut yang menggunakan pasangan akhiran -i dan\n-kan secara tepat dan baku?",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Tuangkan air hangat ke dalam mangkuk, lalu taburi permukaan bubur dengan bawang goreng!"
+      },
+      {
+        "label": "B",
+        "teks": "Tuangi air hangat ke dalam mangkuk, lalu taburkan permukaan bubur dengan bawang goreng!"
+      },
+      {
+        "label": "C",
+        "teks": "Masukkan gelas ke dalam air kelapa, lalu cucikan tanganmu dengan sabun!"
+      },
+      {
+        "label": "D",
+        "teks": "Garamkan sayur sop itu secukupnya, lalu cicipkan kuahnya dengan sendok!"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "A. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.",
+    "valid": true
+  },
+  {
+    "nomor": 20,
+    "nomor_global": 80,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Hal yang Baik bagi Tubuh",
+    "materi": "Teks Prosedur, Infografik Kesehatan, Kalimat Imperatif Inversi, & Adverbia",
+    "paket": "Bab III: Hal yang Baik bagi Tubuh - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Cermatilah perbandingan dua teks berikut!\n\nTEKS 1: PERAN HUTAN MANGROVE\nTEKS 2: DAUR ULANG BOTOL PLASTIK MENJADI\nPOT\nHutan mangrove memiliki peran ekologis yang san-\ngat vital di kawasan pesisir pantai.\nAkar-akar po-\nhon bakau yang rapat dan kokoh berfungsi menahan\nhempasan gelombang laut sehingga mampu mence-\ngah terjadinya abrasi pantai. Selain itu, serasah daun\nmangrove yang jatuh ke air menjadi sumber nutrisi\nbagi biota laut seperti kepiting, udang, dan ikan kecil.\nBotol plastik bekas air mineral dapat diolah men-\njadi pot tanaman gantung yang cantik melalui taha-\npan sederhana. Pertama, cucilah botol plastik hingga\nbersih dan lepaskan label kemasannya. Kedua, po-\ntonglah bagian tengah badan botol secara mendatar\nmenggunakan pisau pemotong (cutter) dengan hati-\nhati. Ketiga, lubangi bagian bawah botol untuk salu-\nran air, masukkan media tanah kompos, lalu tanamlah\nbibit tanaman hias.\nPerbedaan jenis teks dan pola pengembangan paragraf pada kedua teks di atas adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Teks 1 menggunakan kalimat perintah (imperatif); sedangkan Teks 2 menggunakan kalimat berita"
+      },
+      {
+        "label": "B",
+        "teks": "Teks 1 merupakan teks prosedur pembuatan hutan; sedangkan Teks 2 merupakan teks cerita pendek"
+      },
+      {
+        "label": "C",
+        "teks": "Teks 1 merupakan teks eksposisi/deskripsi yang dikembangkan dengan pola rincian fungsi\nekologis; sedangkan Teks 2 merupakan teks prosedur yang dikembangkan dengan pola urutan"
+      },
+      {
+        "label": "D",
+        "teks": "Kedua teks tersebut sama-sama merupakan teks ulasan film fiksi ilmiah"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "C. Teks 1 memaparkan fungsi hutan mangrove secara deskriptif-ekspositoris, sedangkan\nTeks 2 memaparkan langkah-langkah kronologis (Pertama, Kedua, Ketiga) menggunakan kalimat perintah\n(cucilah, potonglah, lubangi) yang merupakan ciri khas teks prosedur.",
+    "valid": true
+  },
+  {
+    "nomor": 21,
+    "nomor_global": 81,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Hal yang Baik bagi Tubuh",
+    "materi": "Teks Prosedur, Infografik Kesehatan, Kalimat Imperatif Inversi, & Adverbia",
+    "paket": "Bab III: Hal yang Baik bagi Tubuh - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Bacalah wacana teks prosedur pemeliharaan ternak perah berikut untuk menjawab soal nomor 21 dan\n22!\nWACANA LITERASI MEMBACA: WACANA LITERASI MEMBACA: PROSEDUR MEMBERI MAKAN DAN\nMINUM SAPI PERAH SECARA SEHAT\n(Pengantar) Kualitas dan kuantitas susu segar yang dihasilkan oleh sapi perah sangat bergantung pada\nketepatan prosedur pemberian pakan dan air minum setiap hari. Peternak wajib memperhatikan keseimban-\ngan nutrisi antara pakan hijauan dan pakan penguat (konsentrat).\n(Prosedur Pelaksanaan:)\n(1) Bersihkan palung tempat pakan dan wadah air minum sapi setiap pagi pukul 06.00 menggunakan sikat\ndan air mengalir agar bebas dari sisa pakan basi yang berjamur.\n(2) Berikan pakan konsentrat (campuran dedak, bungkil kelapa, dan mineral) terlebih dahulu sebanyak 3–4\nkg per ekor sebelum pemerahan pagi dimulai.\n(3) Layukan rumput gajah segar di tempat teduh selama 3–4 jam sebelum diberikan kepada sapi untuk men-\ngurangi kadar air berlebih dan mencegah penyakit kembung (bloat).\n(4) Cacahlah rumput yang telah dilayukan menjadi ukuran 5–10 cm, lalu berikan sebanyak 10% dari bobot\ntubuh sapi secara bertahap pada pagi, siang, dan sore hari.\n(5) Sediakan air minum bersih secara ad libitum (tersedia terus-menerus tanpa batas) di dalam kandang\nkarena sapi perah membutuhkan 4–5 liter air untuk menghasilkan 1 liter susu segar.\nMengapa pada Langkah (3) rumput gajah segar tidak boleh langsung diberikan begitu selesai dipotong,\nmelainkan harus dilayukan terlebih dahulu selama 3–4 jam?",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Agar warna rumput berubah menjadi hitam dan keras seperti kayu"
+      },
+      {
+        "label": "B",
+        "teks": "Untuk mengurangi kadar air berlebih dan embun pagi pada rumput basah sehingga sapi terhindar dari"
+      },
+      {
+        "label": "C",
+        "teks": "Supaya sapi perah tidak mau makan sama sekali sepanjang hari"
+      },
+      {
+        "label": "D",
+        "teks": "Untuk menghilangkan seluruh kandungan serat dan vitamin di dalam rumput"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "B. Sesuai informasi tersurat pada Langkah (3), pelayuan rumput segar selama 3–4 jam\nbertujuan mengurangi kadar air berlebih agar sapi tidak mengalami penyakit perut kembung (bloat).",
+    "valid": true
+  },
+  {
+    "nomor": 22,
+    "nomor_global": 82,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Hal yang Baik bagi Tubuh",
+    "materi": "Teks Prosedur, Infografik Kesehatan, Kalimat Imperatif Inversi, & Adverbia",
+    "paket": "Bab III: Hal yang Baik bagi Tubuh - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Berdasarkan wacana prosedur pada soal nomor 21, analisis kuantitatif dan kaidah kebahasaan yang\ntepat apabila seekor sapi perah berbobot 400 kg mampu menghasilkan 15 liter susu segar per hari\nadalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Sapi tersebut hanya diberi pakan konsentrat tanpa rumput hijauan sama sekali"
+      },
+      {
+        "label": "B",
+        "teks": "Sapi tersebut hanya membutuhkan 4 kg rumput dan 1 liter air minum per hari; sedangkan seluruh"
+      },
+      {
+        "label": "C",
+        "teks": "Sapi tersebut tidak boleh diberi air minum pada siang hari; sedangkan kata \"3–4 jam\" merupakan"
+      },
+      {
+        "label": "D",
+        "teks": "Sapi tersebut membutuhkan sekitar 40 kg rumput hijauan (10% × 400 kg) dan 60–75 liter air minum\nbersih per hari; sedangkan kata \"Bersihkan\", \"Berikan\", \"Layukan\", dan \"Cacahlah\" merupakan verba"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Berdasarkan Langkah (4), kebutuhan rumput hijauan adalah 10% × 400 kg = 40 kg, dan\nberdasarkan Langkah (5), kebutuhan air untuk 15 liter susu adalah 15 × (4–5 liter) = 60–75 liter. Setiap\nlangkah juga diawali kata kerja perintah (imperatif).",
+    "valid": true
+  },
+  {
+    "nomor": 23,
+    "nomor_global": 83,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Hal yang Baik bagi Tubuh",
+    "materi": "Teks Prosedur, Infografik Kesehatan, Kalimat Imperatif Inversi, & Adverbia",
+    "paket": "Bab III: Hal yang Baik bagi Tubuh - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Perhatikan perbandingan dua teks prosedur pembuatan minuman tradisional berikut!\nPROSEDUR 1: WEDANG JAHE SERAI HANGAT\nPROSEDUR 2:\nINFUSED WATER TIMUN JERUK\nNIPIS\nBahan: 2 rimpang jahe merah, 2 batang serai, 50 g\ngula aren, dan 500 mL air.\nLangkah Kerja:\n1. Cuci bersih jahe merah dan batang serai, lalu bakar\njahe sebentar di atas bara api.\n2.\nMemarkan (geprek) jahe dan serai hingga aro-\nmanya keluar.\n3. Rebus 500 mL air bersama jahe, serai, dan irisan\ngula aren dengan api kecil selama 15 menit hingga\nmendidih dan air menyusut sedikit.\n4. Saring ke dalam cangkir dan sajikan selagi hangat.\nBahan: 1 buah mentimun segar, 1 buah jeruk nipis, 5\nlembar daun mint, dan 600 mL air matang dingin.\nLangkah Kerja:\n1. Cuci bersih mentimun, jeruk nipis, dan daun mint di\nbawah air mengalir.\n2. Iris tipis mentimun dan jeruk nipis beserta kulitnya,\nlalu buang biji jeruk nipis agar air tidak terasa pahit.\n3. Masukkan irisan mentimun, jeruk nipis, dan daun\nmint ke dalam botol kaca berisi 600 mL air matang.\n4. Tutup rapat botol dan simpan di dalam kulkas se-\nlama 4–6 jam sebelum diminum.\nPersamaan kaidah kebahasaan dan perbedaan teknik pengolahan utama antara Prosedur 1 dan Prose-\ndur 2 di atas adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Persamaan: keduanya digoreng dengan minyak kelapa; Perbedaan: Prosedur 1 disajikan beku,"
+      },
+      {
+        "label": "B",
+        "teks": "Persamaan: keduanya menggunakan kalimat imperatif, ukuran bahan yang akurat, dan adverbia\nwaktu; Perbedaan: Prosedur 1 menggunakan teknik pemanasan/perebusan (ekstraksi panas) selama\n15 menit, sedangkan Prosedur 2 menggunakan teknik perendaman dingin (maserasi dingin) di dalam"
+      },
+      {
+        "label": "C",
+        "teks": "Persamaan: keduanya tidak menggunakan air sama sekali; Perbedaan: Prosedur 1 untuk obat luar,"
+      },
+      {
+        "label": "D",
+        "teks": "Persamaan:\nkeduanya menggunakan bahan pengawet sintetis; Perbedaan:\nProsedur 1 tanpa"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "B. Kedua teks prosedur sama-sama menerapkan kalimat perintah (imperatif) dan takaran\nbahan presisi, namun berbeda teknik ekstraksinya: Wedang Jahe Serai direbus dengan api kecil selama 15\nmenit, sedangkan Infused Water direndam dalam air matang dingin di kulkas selama 4–6 jam.",
+    "valid": true
+  },
+  {
+    "nomor": 24,
+    "nomor_global": 84,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Hal yang Baik bagi Tubuh",
+    "materi": "Teks Prosedur, Infografik Kesehatan, Kalimat Imperatif Inversi, & Adverbia",
+    "paket": "Bab III: Hal yang Baik bagi Tubuh - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Bacalah petunjuk prosedur pembuatan Pupuk Kompos Organik dari Sampah Daun Sekolah yang\ndisusun secara acak berikut!\n(1) Tutup rapat tong komposter dengan terpal atau penutup plastik, lalu periksa kelembapan serta aduk\ntumpukan daun setiap 7 hari sekali.\n(2) Siapkan tong komposter berlubang aerasi, sampah daun kering sekolah, kotoran ternak matang,\nserta larutan bioaktivator EM4 yang telah dicampur air gula merah.\n(3) Setelah 4–6 minggu, kompos yang telah berubah warna menjadi cokelat kehitaman, bertekstur gem-\nbur seperti tanah, dan tidak berbau menyengat siap dipanen untuk memupuk taman sekolah.\n(4) Cacahlah sampah daun kering menjadi potongan kecil berukuran 2–3 cm agar proses penguraian\noleh mikroorganisme berlangsung lebih cepat.\n(5) Masukkan cacahan daun kering dan kotoran ternak secara berlapis ke dalam tong komposter sambil\ndisemprot larutan EM4 hingga lembap merata.\nUrutan langkah teks prosedur yang tepat dan logis adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(4) – (2) – (1) – (3) – (5)"
+      },
+      {
+        "label": "C",
+        "teks": "(2) – (4) – (5) – (1) – (3)"
+      },
+      {
+        "label": "B",
+        "teks": "(2) – (1) – (4) – (5) – (3)"
+      },
+      {
+        "label": "D",
+        "teks": "(5) – (4) – (2) – (1) – (3)"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "C. Urutan prosedur yang logis dimulai dari menyiapkan alat dan bahan (2), mencacah daun\nkering menjadi ukuran kecil (4), memasukkan bahan secara berlapis sambil disemprot EM4 (5), menutup\nrapat dan mengaduk setiap pekan (1), hingga memanen kompos matang setelah 4–6 minggu (3).",
+    "valid": true
+  },
+  {
+    "nomor": 25,
+    "nomor_global": 85,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Hal yang Baik bagi Tubuh",
+    "materi": "Teks Prosedur, Infografik Kesehatan, Kalimat Imperatif Inversi, & Adverbia",
+    "paket": "Bab III: Hal yang Baik bagi Tubuh - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Perhatikan pengubahan bentuk paragraf naratif menjadi kalimat perintah (imperatif) dengan pele-\nsapan objek pada teks prosedur berikut!\n\"Setelah kalian memotong buah pisang ambon menjadi bentuk dadu kecil, kalian harus memasukkan\npotongan buah pisang ambon tersebut ke dalam mangkuk saji, lalu kalian menuangkan dua sendok\nmakan yoghurt tawar di atas potongan buah pisang ambon itu.\"\nHasil konversi menjadi langkah prosedur yang paling efektif, hemat kata (menerapkan pelesapan), dan\nsesuai kaidah bahasa Indonesia adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Apakah kalian sudah memotong buah pisang ambon dan menuangkan yoghurt tawar di atasnya?"
+      },
+      {
+        "label": "B",
+        "teks": "Kalian memotong buah pisang ambon itu, kemudian buah pisang ambon itu dimasukkan oleh kalian"
+      },
+      {
+        "label": "C",
+        "teks": "Sebaiknya buah pisang ambon jangan dipotong-potong apabila tidak ada mangkuk saji di dapur!"
+      },
+      {
+        "label": "D",
+        "teks": "Potonglah pisang ambon berbentuk dadu kecil, masukkan ke dalam mangkuk saji, lalu tuangkan dua"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Kalimat D mengubah kalimat naratif menjadi kalimat imperatif aktif (Potonglah..., ma-\nsukkan..., lalu tuangkan...) sekaligus menerapkan pelesapan objek (potongan pisang ambon tidak diulang-\nulang pada klausa kedua dan ketiga, cukup digantikan kata rujukan di atasnya).",
+    "valid": true
+  },
+  {
+    "nomor": 26,
+    "nomor_global": 86,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Hal yang Baik bagi Tubuh",
+    "materi": "Teks Prosedur, Infografik Kesehatan, Kalimat Imperatif Inversi, & Adverbia",
+    "paket": "Bab III: Hal yang Baik bagi Tubuh - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Perhatikan foto\ntabel Informasi Nilai Gizi pada Kemasan Susu Cair UHT (Takaran Saji 250 mL) berikut!\nPernyataan yang benar mengenai literasi membaca label gizi dan prosedur penyajian makanan/minuman\nsehat berdasarkan gambar di atas adalah .... (Pilih lebih dari satu jawaban benar)\n\nPernyataan:\n(1) Membaca tabel Informasi Nilai Gizi (takaran saji, jumlah kalori, dan kandungan gula/natrium) mem-\nbantu konsumen mengontrol asupan gula harian agar terhindar dari risiko obesitas dan diabetes.\n(2) Mengolah minuman segar sendiri menggunakan air kelapa muda dan buah jeruk asli lebih menye-\nhatkan karena bebas dari bahan pengawet dan pemanis sintetis.\n(3) Dalam teks prosedur pembuatan makanan sehat, pencantuman takaran bahan dan waktu pengola-\nhan yang jelas menentukan keberhasilan dan keamanan hasil olahan.\n(4) Semakin tinggi kandungan gula tambahan dan pengawet buatan pada kemasan minuman, semakin\nbaik minuman tersebut dikonsumsi setiap jam oleh pelajar.\n\nPernyataan yang tepat adalah ....",
+    "gambar": [
+      "/soal/bindo/kls7_bindo_p36_xref1051_880x880.jpeg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(1), (2), dan (3)"
+      },
+      {
+        "label": "B",
+        "teks": "(1) dan (4) saja"
+      },
+      {
+        "label": "C",
+        "teks": "(2) dan (4) saja"
+      },
+      {
+        "label": "D",
+        "teks": "(1), (2), (3), dan (4)"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "✓A, ✓B, ✓C — Membaca tabel nilai gizi (A), memilih bahan alami (B), dan ketepatan\ntakaran prosedur (C) seluruhnya benar.",
+    "valid": true
+  },
+  {
+    "nomor": 27,
+    "nomor_global": 87,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Hal yang Baik bagi Tubuh",
+    "materi": "Teks Prosedur, Infografik Kesehatan, Kalimat Imperatif Inversi, & Adverbia",
+    "paket": "Bab III: Hal yang Baik bagi Tubuh - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Evaluasilah pernyataan kaidah keba-\nhasaan teks prosedur berikut! Pernyataan yang tepat adalah ....\n\nPernyataan:\n(1) Kalimat ¨Rebuslah kacang hijau di dalam air mendidih selama 20 menit!¨ merupakan kalimat imperatif\nberpola inversi yang dilengkapi keterangan tempat dan waktu.\n(2) Kata keterangan alat ditandai dengan penggunaan preposisi dengan atau menggunakan yang diikuti\nnama benda alat (contoh: aduk dengan sendok kayu).\n(3) Konjungsi kronologis seperti pertama, kemudian, selanjutnya, setelah itu, dan akhirnya berfungsi\nmenjaga keruntutan urutan langkah prosedur.\n(4) Bagian Alat dan Bahan wajib ditulis dalam bentuk cerita dongeng imajinatif yang menggunakan\nmajas sarkasme.\n\nPernyataan yang tepat adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(1), (2), dan (3)"
+      },
+      {
+        "label": "B",
+        "teks": "(1) dan (4) saja"
+      },
+      {
+        "label": "C",
+        "teks": "(2) dan (4) saja"
+      },
+      {
+        "label": "D",
+        "teks": "(1), (2), (3), dan (4)"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "✓A, ✓B, ✓C — Kalimat imperatif inversi (A), keterangan alat (B), dan konjungsi kronologis\n(C) benar.",
+    "valid": true
+  },
+  {
+    "nomor": 28,
+    "nomor_global": 88,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Hal yang Baik bagi Tubuh",
+    "materi": "Teks Prosedur, Infografik Kesehatan, Kalimat Imperatif Inversi, & Adverbia",
+    "paket": "Bab III: Hal yang Baik bagi Tubuh - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Berilah tanda centang\n(✓) pada kolom Benar atau Salah untuk setiap pernyataan berikut!\nNo.\nPernyataan Analisis Bahasa Indonesia\nBenar\nSalah\n\nPernyataan:\n(a) Urutan langkah-langkah di dalam teks prosedur bersifat sistematis dan\nkronologis sehingga tidak boleh dipertukarkan secara acak.\n(b) Teks prosedur tentang cara melakukan gerakan senam peregangan di\nkelas tidak wajib mencantumkan bagian struktur Bahan-Bahan.\n(c) Infografis yang hanya berisi daftar harga diskon pakaian di toko\nswalayan tanpa petunjuk langkah-langkah disebut teks prosedur pem-\nbuatan.\n\nKombinasi analisis nilai kebenaran (Benar/Salah) yang tepat adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(a) Benar, (b) Benar, (c) Salah"
+      },
+      {
+        "label": "B",
+        "teks": "(a) Benar, (b) Salah, (c) Salah"
+      },
+      {
+        "label": "C",
+        "teks": "(a) Salah, (b) Benar, (c) Benar"
+      },
+      {
+        "label": "D",
+        "teks": "(a) Benar, (b) Benar, (c) Benar"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "(a) Benar, (b) Benar, (c) Salah — (c) Salah, karena daftar harga diskon toko tanpa langkah\nkerja adalah iklan komersial, bukan teks prosedur.",
+    "valid": true
+  },
+  {
+    "nomor": 29,
+    "nomor_global": 89,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Hal yang Baik bagi Tubuh",
+    "materi": "Teks Prosedur, Infografik Kesehatan, Kalimat Imperatif Inversi, & Adverbia",
+    "paket": "Bab III: Hal yang Baik bagi Tubuh - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Evaluasilah\nkebenaran pernyataan kaidah bahasa prosedur berikut!\nNo.\nPernyataan Analisis Bahasa Indonesia\nBenar\nSalah\n\nPernyataan:\n(a) Kalimat “Jangan memotong buah di atas permukaan kaca yang licin!”\ntermasuk jenis kalimat larangan dalam teks prosedur.\n(b) Pada kalimat “Taburi roti dengan wijen”, akhiran -i digunakan secara\ntepat karena objek setelahnya (roti) adalah sasaran yang diam/diberi\nsesuatu.\n(c) Frasa “secara merata” dan “dengan hati-hati” merupakan contoh ad-\nverbia (kata keterangan) penunjuk tempat.\n\nKombinasi analisis nilai kebenaran (Benar/Salah) yang tepat adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(a) Benar, (b) Benar, (c) Salah"
+      },
+      {
+        "label": "B",
+        "teks": "(a) Benar, (b) Salah, (c) Salah"
+      },
+      {
+        "label": "C",
+        "teks": "(a) Salah, (b) Benar, (c) Benar"
+      },
+      {
+        "label": "D",
+        "teks": "(a) Benar, (b) Benar, (c) Benar"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "(a) Benar, (b) Benar, (c) Salah — (c) Salah, karena secara merata dan dengan hati-hati\nadalah adverbia keterangan cara, bukan keterangan tempat.",
+    "valid": true
+  },
+  {
+    "nomor": 30,
+    "nomor_global": 90,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Hal yang Baik bagi Tubuh",
+    "materi": "Teks Prosedur, Infografik Kesehatan, Kalimat Imperatif Inversi, & Adverbia",
+    "paket": "Bab III: Hal yang Baik bagi Tubuh - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "Bahasa Indonesia",
+    "teks_soal": "Kementerian\nKesehatan RI menetapkan batas aman konsumsi gula tambahan harian maksimal 50 gram/hari (setara\n4 sendok makan). Rina memeriksa tabel Informasi Nilai Gizi pada sebotol minuman teh kemasan ukuran\n500 mL yang tertulis: Takaran Saji = 250 mL, Jumlah Sajian per Kemasan = 2, Gula per Takaran\nSaji = 22 gram. Apabila Rina meminum habis 1 botol penuh (500 mL) minuman kemasan tersebut saat\nistirahat siang, lalu sore harinya ia ingin membuat Infused Water Lemon Timun sendiri di rumah sesuai\nprosedur sehat, manakah perhitungan asupan gula dan rumusan langkah prosedur yang paling tepat?\nA. Dari 1 botol (2 sajian), Rina telah mengonsumsi 2 × 22 g = 44 gram gula (88% batas harian); oleh\nkarena itu, prosedur pembuatan Infused Water yang tepat adalah: Ïris tipis 1 buah lemon dan 1/2 buah\nmentimun segar, masukkan ke dalam botol berisi 500 mL air matang tanpa tambahan gula pasir, lalu\nsimpan di lemari pendingin selama 2–4 jam sebelum diminum.¨\nB. Dari 1 botol penuh, Rina hanya mengonsumsi 11 gram gula; prosedur yang tepat adalah menambahkan\n10 sendok makan gula pasir ke dalam botol Infused Water\nC. Dari 1 botol penuh, Rina mengonsumsi 22 gram gula; prosedur yang tepat adalah merebus buah lemon\ndan mentimun bersama minyak goreng hingga kering\nD. Label nilai gizi menunjukkan minuman tersebut mengandung 0 gram gula sehingga Rina tidak perlu\nminum air putih lagi sepanjang minggu\n\nBerdasarkan kaidah bahasa baku EYD Edisi V dan materi bab ini, rumusan analisis / hasil penyuntingan yang paling tepat adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "A — Karena 1 kemasan (500 mL) berisi 2 takaran saji (masing-masing 250 mL), maka kan-\ndungan gula 1 botol penuh = 2 × 22 gram = 44 gram (88% dari batas 50 g/hari). Oleh sebab itu, prosedur\npembuatan Infused Water wajib dibuat tanpa tambahan gula pasir. (Rujuka"
+      },
+      {
+        "label": "B",
+        "teks": "Mengabaikan penggunaan tanda koma dan huruf kapital pada nama geografi serta membiarkan kata tidak baku tetap tertulis apa adanya"
+      },
+      {
+        "label": "C",
+        "teks": "Mengubah seluruh kalimat menjadi bahasa gaul dan menyatukan semua kata depan di dengan kata tempat"
+      },
+      {
+        "label": "D",
+        "teks": "Menghapus seluruh paragraf wacana dan menggantinya dengan daftar harga menu makanan"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "A — Karena 1 kemasan (500 mL) berisi 2 takaran saji (masing-masing 250 mL), maka kan-\ndungan gula 1 botol penuh = 2 × 22 gram = 44 gram (88% dari batas 50 g/hari). Oleh sebab itu, prosedur\npembuatan Infused Water wajib dibuat tanpa tambahan gula pasir. (Rujukan: https://id.scribd.com/\ndocument/942372455/Soal-Kumpulan-Teks-Prosedur).",
+    "valid": true
+  }
+]
