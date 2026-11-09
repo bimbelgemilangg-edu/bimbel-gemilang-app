@@ -25,7 +25,7 @@ os.makedirs(OUTPUT_DIR, exist_ok=True)
 soal_hots = [
     {
         "nomor_bab": 1,
-        "soal": "Perhatikan gambar hasil percobaan pertumbuhan kecambah kacang hijau pada Pot A (diletakkan di dalam lemari gelap) dan Pot B (diletakkan di dekat jendela yang terkena sinar matahari)! Kecambah pada Pot A tumbuh jauh lebih cepat tinggi namun berbatang pucat kurus dan mudah patah (fenomena etiolasi), sedangkan kecambah pada Pot B tumbuh lebih lambat namun berbatang tebal kokoh dan berdaun hijau segar. Fenomena etiolasi pada Pot A tersebut disebabkan oleh ....",
+        "soal": "Pada suatu eksperimen biologi mengenai pengaruh cahaya terhadap pertumbuhan tanaman, seorang siswa menyiapkan dua pot kecambah kacang hijau: Pot A diletakkan di dalam lemari gelap tanpa cahaya, sedangkan Pot B diletakkan di dekat jendela yang terkena sinar matahari langsung. Setelah satu minggu, kecambah pada Pot A tumbuh jauh lebih cepat tinggi namun berbatang pucat kurus dan mudah patah (fenomena etiolasi), sedangkan kecambah pada Pot B tumbuh lebih lambat namun berbatang tebal kokoh dan berdaun hijau segar. Fenomena etiolasi pada Pot A tersebut disebabkan oleh ....",
         "opsi": [
             {"label": "A", "teks": "Aktivitas hormon auksin sangat tinggi karena tidak terurai oleh cahaya matahari"},
             {"label": "B", "teks": "Hormon giberelin rusak akibat ketiadaan udara di dalam lemari"},
@@ -991,7 +991,7 @@ soal_pengayaan = [
     },
     {
         "nomor_bab": 69,
-        "soal": "[Tabel Benar / Salah] Tentukan kebenaran pernyataan ilmiah tentang adaptasi dan suksesi tumbuhan berikut: (a) Sejak Revolusi Industri di Inggris yang membuat batang pohon menghitam oleh jelaga batu bara, populasi ngengat Biston betularia bersayap gelap meningkat karena lebih terhindar dari pemangsa dibandingkan yang bersayap cerah; (b) Tumbuhan xerofit (seperti kaktus) beradaptasi di daerah kering dengan daun berbentuk duri, batang berlapis kutikula lilin, dan jaringan penyimpan air; (c) Perkembangbiakan vegetatif menghasilkan variasi genetik baru yang lebih tahan terhadap perubahan iklim global daripada perkembangbiakan generatif.",
+        "soal": "[Analisis Pernyataan Benar / Salah] Tentukan kebenaran pernyataan ilmiah tentang adaptasi dan suksesi tumbuhan berikut: (a) Sejak Revolusi Industri di Inggris yang membuat batang pohon menghitam oleh jelaga batu bara, populasi ngengat Biston betularia bersayap gelap meningkat karena lebih terhindar dari pemangsa dibandingkan yang bersayap cerah; (b) Tumbuhan xerofit (seperti kaktus) beradaptasi di daerah kering dengan daun berbentuk duri, batang berlapis kutikula lilin, dan jaringan penyimpan air; (c) Perkembangbiakan vegetatif menghasilkan variasi genetik baru yang lebih tahan terhadap perubahan iklim global daripada perkembangbiakan generatif.",
         "opsi": [
             {"label": "A", "teks": "(a) Benar, (b) Benar, (c) Salah"},
             {"label": "B", "teks": "(a) Benar, (b) Salah, (c) Benar"},
