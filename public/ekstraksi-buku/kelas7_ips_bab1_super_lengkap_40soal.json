@@ -1,0 +1,1370 @@
+[
+  {
+    "nomor": 1,
+    "nomor_global": 1,
+    "bab_angka": 1,
+    "bab_nama": "Bab I: Keluarga Awal Kehidupan",
+    "materi": "Keberadaan Diri & Silsilah Keluarga, Lokasi Absolut & Relatif, Komponen Peta, Skala & Kontur, Sosialisasi, Nilai & Norma Sosial, Interaksi Sosial, serta Aktivitas Memenuhi Kebutuhan",
+    "paket": "Bab I: Keluarga Awal Kehidupan - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Perhatikan peta tematik resmi\nPeta Persebaran Dampak Bencana Karhutla di Jawa Tengah Tahun 2023 (BPBD Provinsi Jawa Ten-\ngah) beserta komponen-komponen petanya yang diberi nomor (1) sampai (10) berikut!\nBerdasarkan peta resmi di atas, komponen nomor (1) adalah judul peta, nomor (6) adalah petunjuk arah\n(orientasi), dan nomor (4) adalah skala peta. Apabila pada suatu peta tematik diketahui jarak antara Kota\nA dan Kota B adalah 8 cm dengan jarak sebenarnya di lapangan 24 km, maka skala peta tersebut dan\njarak pada peta baru jika peta diperbesar 2 kali berturut-turut adalah ....",
+    "gambar": [
+      "/soal/ips/kls7_ips_p7_xref278_782x626.jpeg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "1 : 300.000 dan 4 cm"
+      },
+      {
+        "label": "B",
+        "teks": "1 : 300.000 dan 16 cm"
+      },
+      {
+        "label": "C",
+        "teks": "1 : 3.000.000 dan 16 cm"
+      },
+      {
+        "label": "D",
+        "teks": "1 : 150.000 dan 8 cm"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "JS = 24 km = 2.400.000 cm. Skala =\n8\n2.400.000 = 1 : 300.000. Jika peta diperbesar\n2 kali, jarak pada peta menjadi 8 cm × 2 = 16 cm.",
+    "valid": true
+  },
+  {
+    "nomor": 2,
+    "nomor_global": 2,
+    "bab_angka": 1,
+    "bab_nama": "Bab I: Keluarga Awal Kehidupan",
+    "materi": "Keberadaan Diri & Silsilah Keluarga, Lokasi Absolut & Relatif, Komponen Peta, Skala & Kontur, Sosialisasi, Nilai & Norma Sosial, Interaksi Sosial, serta Aktivitas Memenuhi Kebutuhan",
+    "paket": "Bab I: Keluarga Awal Kehidupan - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Sebuah peta to-\npografi lereng gunung api memiliki interval kontur (Ci) sebesar 50 meter.\nBerdasarkan rumus Ci =\n1\n2.000 × Penyebut Skala, skala peta topografi tersebut dan karakteristik kemiringan lereng apabila garis-\ngaris konturnya digambarkan sangat rapat adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "1 : 50.000; lereng terjal/curam"
+      },
+      {
+        "label": "B",
+        "teks": "1 : 100.000; lereng landai"
+      },
+      {
+        "label": "C",
+        "teks": "1 : 100.000; lereng terjal/curam"
+      },
+      {
+        "label": "D",
+        "teks": "1 : 250.000; dataran rendah"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Penyebut Skala = Ci × 2.000 = 50 × 2.000 = 100.000 (1 : 100.000). Garis kontur rapat\nmenandakan lereng terjal/curam.",
+    "valid": true
+  },
+  {
+    "nomor": 3,
+    "nomor_global": 3,
+    "bab_angka": 1,
+    "bab_nama": "Bab I: Keluarga Awal Kehidupan",
+    "materi": "Keberadaan Diri & Silsilah Keluarga, Lokasi Absolut & Relatif, Komponen Peta, Skala & Kontur, Sosialisasi, Nilai & Norma Sosial, Interaksi Sosial, serta Aktivitas Memenuhi Kebutuhan",
+    "paket": "Bab I: Keluarga Awal Kehidupan - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Harga\nlahan pertanian di Desa Sukamaju semula Rp250.000,00 per meter persegi. Setelah pemerintah mem-\nbangun simpang susun jalan tol dan stasiun kereta cepat di dekat desa tersebut, harga lahan melonjak\nmenjadi Rp3.500.000,00 per meter persegi. Fenomena ini membuktikan konsep ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Letak geologis yang dipengaruhi aktivitas patahan lempeng bumi"
+      },
+      {
+        "label": "B",
+        "teks": "Lokasi absolut yang ditentukan oleh garis lintang dan garis bujur"
+      },
+      {
+        "label": "C",
+        "teks": "Jarak absolut yang diukur menggunakan satuan kilometer tetap"
+      },
+      {
+        "label": "D",
+        "teks": "Lokasi relatif yang nilainya berubah mengikuti aksesibilitas ruang sekitar"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Lokasi relatif berubah nilainya mengikuti perkembangan infrastruktur dan aksesibilitas ruang\ndi sekitarnya.",
+    "valid": true
+  },
+  {
+    "nomor": 4,
+    "nomor_global": 4,
+    "bab_angka": 1,
+    "bab_nama": "Bab I: Keluarga Awal Kehidupan",
+    "materi": "Keberadaan Diri & Silsilah Keluarga, Lokasi Absolut & Relatif, Komponen Peta, Skala & Kontur, Sosialisasi, Nilai & Norma Sosial, Interaksi Sosial, serta Aktivitas Memenuhi Kebutuhan",
+    "paket": "Bab I: Keluarga Awal Kehidupan - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Pe-\nsawat Garuda Indonesia lepas landas dari Bandara Soekarno-Hatta (Cengkareng, zona WIB) pada pukul\n06.30 WIB menuju Bandara Frans Kaisiepo di Biak (Papua, zona WIT). Jika lama perjalanan udara adalah\n4 jam 30 menit, pada pukul berapakah pesawat tersebut mendarat waktu setempat?",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Pukul 13.00 WIT"
+      },
+      {
+        "label": "B",
+        "teks": "Pukul 12.00 WIT"
+      },
+      {
+        "label": "C",
+        "teks": "Pukul 11.00 WIT"
+      },
+      {
+        "label": "D",
+        "teks": "Pukul 09.00 WIT"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Berangkat 06.30 WIB = 08.30 WIT (selisih WIB ke WIT +2 jam). Waktu tiba = 08.30 +\n4 jam 30 menit = 13.00 WIT.",
+    "valid": true
+  },
+  {
+    "nomor": 5,
+    "nomor_global": 5,
+    "bab_angka": 1,
+    "bab_nama": "Bab I: Keluarga Awal Kehidupan",
+    "materi": "Keberadaan Diri & Silsilah Keluarga, Lokasi Absolut & Relatif, Komponen Peta, Skala & Kontur, Sosialisasi, Nilai & Norma Sosial, Interaksi Sosial, serta Aktivitas Memenuhi Kebutuhan",
+    "paket": "Bab I: Keluarga Awal Kehidupan - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Perhatikan\ngambar/peta resmi pada buku teks berikut!\nLetak astronomis Indonesia berada pada 6◦LU–11◦LS dan 95◦BT–141◦BT. Dampak langsung dari letak\nlintang Indonesia terhadap kondisi iklim dan aktivitas ekonomi penduduk adalah ....",
+    "gambar": [
+      "/soal/ips/kls7_ips_p8_xref305_1400x939.jpeg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Memiliki banyak gunung api aktif yang kaya akan tanah vulkanik"
+      },
+      {
+        "label": "B",
+        "teks": "Terbagi menjadi tiga daerah waktu (WIB, WITA, dan WIT)"
+      },
+      {
+        "label": "C",
+        "teks": "Beriklim tropis dengan penyinaran matahari sepanjang tahun yang mendukung pertanian"
+      },
+      {
+        "label": "D",
+        "teks": "Menjadi jalur silang perdagangan internasional antara Asia dan Australia"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Letak lintang 6◦LU–11◦LS menyebabkan Indonesia beriklim tropis; sedangkan garis bujur\nmenyebabkan 3 zona waktu.",
+    "valid": true
+  },
+  {
+    "nomor": 6,
+    "nomor_global": 6,
+    "bab_angka": 1,
+    "bab_nama": "Bab I: Keluarga Awal Kehidupan",
+    "materi": "Keberadaan Diri & Silsilah Keluarga, Lokasi Absolut & Relatif, Komponen Peta, Skala & Kontur, Sosialisasi, Nilai & Norma Sosial, Interaksi Sosial, serta Aktivitas Memenuhi Kebutuhan",
+    "paket": "Bab I: Keluarga Awal Kehidupan - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Ketika menyusun sil-\nsilah keluarga dari kakek-nenek hingga cucu, Raka mencatat tahun kelahiran, kota tempat tinggal, serta\nperistiwa perpindahan keluarganya dari Surabaya ke Samarinda pada tahun 1998. Tiga unsur utama\nsejarah yang terangkum dalam catatan Raka adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Mitos, legenda, dan silsilah"
+      },
+      {
+        "label": "B",
+        "teks": "Manusia, ruang, dan waktu"
+      },
+      {
+        "label": "C",
+        "teks": "Produksi, distribusi, dan konsumsi"
+      },
+      {
+        "label": "D",
+        "teks": "Nilai, norma, dan sosialisasi"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Tiga unsur sejarah: manusia (anggota keluarga), ruang (Surabaya–Samarinda), dan waktu\n(tahun peristiwa).",
+    "valid": true
+  },
+  {
+    "nomor": 7,
+    "nomor_global": 7,
+    "bab_angka": 1,
+    "bab_nama": "Bab I: Keluarga Awal Kehidupan",
+    "materi": "Keberadaan Diri & Silsilah Keluarga, Lokasi Absolut & Relatif, Komponen Peta, Skala & Kontur, Sosialisasi, Nilai & Norma Sosial, Interaksi Sosial, serta Aktivitas Memenuhi Kebutuhan",
+    "paket": "Bab I: Keluarga Awal Kehidupan - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Pada peta tata guna lahan\nKabupaten Sleman, simbol warna hijau tua, warna kuning, dan garis berkelok berwarna biru secara\nberurutan merepresentasikan ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Danau vulkanik, lahan pertanian sawah, dan jalur kereta api"
+      },
+      {
+        "label": "B",
+        "teks": "Perairan laut dalam, puncak pegunungan salju, dan jalan raya"
+      },
+      {
+        "label": "C",
+        "teks": "Kawasan industri, rawa-rawa pesisir, dan batas administrasi provinsi"
+      },
+      {
+        "label": "D",
+        "teks": "Dataran rendah/hutan, dataran tinggi/perbukitan, dan aliran sungai"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Pada peta rupabumi/topografi, hijau = dataran rendah/vegetasi, kuning = dataran tinggi/perbukitan,\ngaris biru = sungai.",
+    "valid": true
+  },
+  {
+    "nomor": 8,
+    "nomor_global": 8,
+    "bab_angka": 1,
+    "bab_nama": "Bab I: Keluarga Awal Kehidupan",
+    "materi": "Keberadaan Diri & Silsilah Keluarga, Lokasi Absolut & Relatif, Komponen Peta, Skala & Kontur, Sosialisasi, Nilai & Norma Sosial, Interaksi Sosial, serta Aktivitas Memenuhi Kebutuhan",
+    "paket": "Bab I: Keluarga Awal Kehidupan - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Perhatikan foto pem-\nbiasaan siswa bersalaman dan mencium tangan guru saat memasuki kelas sebagai wujud pelestarian\nnilai kesopanan berikut!\nSeorang anak membiasakan diri mencium tangan orang tua di rumah dan guru di sekolah serta bertutur\nkata santun. Berdasarkan tahapan sosialisasi G.H. Mead dan tingkatan norma sosial, perilaku tersebut\nmenunjukkan peran keluarga dan sekolah dalam menanamkan sosialisasi ....",
+    "gambar": [
+      "/soal/ips/kls7_ips_p8_xref304_981x600.jpeg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Primer yang menanamkan norma kebiasaan (folkways) dan kesopanan sejak dini"
+      },
+      {
+        "label": "B",
+        "teks": "Sekunder yang menerapkan norma hukum tertulis (laws) secara koersif"
+      },
+      {
+        "label": "C",
+        "teks": "Primer yang mengajarkan penyimpangan sosial positif di masyarakat"
+      },
+      {
+        "label": "D",
+        "teks": "Formal yang menggantikan peran lembaga peradilan dan kepolisian"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Keluarga merupakan agen sosialisasi primer yang menanamkan norma kebiasaan (folk-\nways) dan kesopanan sejak dini.",
+    "valid": true
+  },
+  {
+    "nomor": 9,
+    "nomor_global": 9,
+    "bab_angka": 1,
+    "bab_nama": "Bab I: Keluarga Awal Kehidupan",
+    "materi": "Keberadaan Diri & Silsilah Keluarga, Lokasi Absolut & Relatif, Komponen Peta, Skala & Kontur, Sosialisasi, Nilai & Norma Sosial, Interaksi Sosial, serta Aktivitas Memenuhi Kebutuhan",
+    "paket": "Bab I: Keluarga Awal Kehidupan - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Saat\nbermain bersama teman-temannya, Dinda yang berusia 5 tahun berpura-pura menjadi seorang dokter\nyang memeriksa pasien menggunakan stetoskop mainan, namun ia belum memahami aturan kerja rumah\nsakit secara utuh. Dalam teori G.H. Mead, Dinda berada pada tahap ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Preparatory stage (tahap persiapan)"
+      },
+      {
+        "label": "B",
+        "teks": "Play stage (tahap bermain peran)"
+      },
+      {
+        "label": "C",
+        "teks": "Game stage (tahap siap bertindak)"
+      },
+      {
+        "label": "D",
+        "teks": "Generalized other (tahap penerimaan norma kolektif)"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Pada play stage, anak meniru peran orang dewasa (dokter, guru) tetapi belum memahami\naturan sistemik kelompok.",
+    "valid": true
+  },
+  {
+    "nomor": 10,
+    "nomor_global": 10,
+    "bab_angka": 1,
+    "bab_nama": "Bab I: Keluarga Awal Kehidupan",
+    "materi": "Keberadaan Diri & Silsilah Keluarga, Lokasi Absolut & Relatif, Komponen Peta, Skala & Kontur, Sosialisasi, Nilai & Norma Sosial, Interaksi Sosial, serta Aktivitas Memenuhi Kebutuhan",
+    "paket": "Bab I: Keluarga Awal Kehidupan - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Seorang\nsiswa SMP yang membuang bungkus makanan sembarangan di halaman sekolah ditegur oleh guru piket\ndan diminta memungut kembali sampah tersebut. Sementara itu, seorang pengendara motor yang men-\nerobos lampu merah dikenai sanksi tilang dan denda oleh polisi. Perbedaan kedua kasus tersebut terletak\npada ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Kasus pertama bersanksi pidana penjara, sedangkan kasus kedua hanya berupa cemoohan"
+      },
+      {
+        "label": "B",
+        "teks": "Kasus pertama melanggar norma agama, sedangkan kasus kedua melanggar norma cara (usage)"
+      },
+      {
+        "label": "C",
+        "teks": "Kedua kasus sama-sama melanggar adat istiadat (custom) yang tidak tertulis"
+      },
+      {
+        "label": "D",
+        "teks": "Kasus pertama melanggar norma kebiasaan/kesopanan, sedangkan kasus kedua melanggar norma hukum"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Membuang sampah sembarangan di sekolah melanggar kebiasaan/tata tertib, sedangkan\nmenerobos lampu merah melanggar norma hukum.",
+    "valid": true
+  },
+  {
+    "nomor": 11,
+    "nomor_global": 11,
+    "bab_angka": 1,
+    "bab_nama": "Bab I: Keluarga Awal Kehidupan",
+    "materi": "Keberadaan Diri & Silsilah Keluarga, Lokasi Absolut & Relatif, Komponen Peta, Skala & Kontur, Sosialisasi, Nilai & Norma Sosial, Interaksi Sosial, serta Aktivitas Memenuhi Kebutuhan",
+    "paket": "Bab I: Keluarga Awal Kehidupan - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Masyarakat Desa Panglipuran di Bali tetap menjaga aturan adat tata ruang desa dan larangan menebang\npohon secara sembarangan; pelanggarnya wajib menjalani upacara pemulihan adat (prayascitta).\nTingkatan norma yang tampak pada ilustrasi tersebut adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Adat istiadat (custom)"
+      },
+      {
+        "label": "B",
+        "teks": "Cara (usage)"
+      },
+      {
+        "label": "C",
+        "teks": "Kebiasaan (folkways)"
+      },
+      {
+        "label": "D",
+        "teks": "Mode (fashion)"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Aturan warisan leluhur yang memiliki sanksi adat mengikat disebut adat istiadat (custom).",
+    "valid": true
+  },
+  {
+    "nomor": 12,
+    "nomor_global": 12,
+    "bab_angka": 1,
+    "bab_nama": "Bab I: Keluarga Awal Kehidupan",
+    "materi": "Keberadaan Diri & Silsilah Keluarga, Lokasi Absolut & Relatif, Komponen Peta, Skala & Kontur, Sosialisasi, Nilai & Norma Sosial, Interaksi Sosial, serta Aktivitas Memenuhi Kebutuhan",
+    "paket": "Bab I: Keluarga Awal Kehidupan - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Saat terjadi bencana\ngempa bumi di Cianjur, para siswa OSIS SMP menggalang dana bantuan, mengemas sembako, dan\nmenyalurkannya melalui palang merah kepada warga terdampak. Bentuk interaksi sosial asosiatif yang\ntercermin dari tindakan siswa tersebut adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Persaingan (competition) untuk meraih predikat sekolah terbaik"
+      },
+      {
+        "label": "B",
+        "teks": "Kontravensi yang ditandai ketidakpastian sikap terhadap pihak lain"
+      },
+      {
+        "label": "C",
+        "teks": "Kerja sama (cooperation) yang didorong oleh rasa empati mendalam"
+      },
+      {
+        "label": "D",
+        "teks": "Ajudikasi melalui penyelesaian perkara di pengadilan negeri"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Penggalangan dana bencana adalah bentuk kerja sama (cooperation) yang didorong faktor\nempati.",
+    "valid": true
+  },
+  {
+    "nomor": 13,
+    "nomor_global": 13,
+    "bab_angka": 1,
+    "bab_nama": "Bab I: Keluarga Awal Kehidupan",
+    "materi": "Keberadaan Diri & Silsilah Keluarga, Lokasi Absolut & Relatif, Komponen Peta, Skala & Kontur, Sosialisasi, Nilai & Norma Sosial, Interaksi Sosial, serta Aktivitas Memenuhi Kebutuhan",
+    "paket": "Bab I: Keluarga Awal Kehidupan - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Dua kelompok warga berselisih\npaham mengenai batas lahan fasilitas umum. Kepala desa mengundang kedua belah pihak untuk berund-\ning bersama dan bertindak sebagai penengah yang netral tanpa memiliki wewenang mengambil keputu-\nsan akhir. Bentuk akomodasi tersebut dinamakan ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Arbitrase"
+      },
+      {
+        "label": "B",
+        "teks": "Mediasi"
+      },
+      {
+        "label": "C",
+        "teks": "Koersi"
+      },
+      {
+        "label": "D",
+        "teks": "Ajudikasi"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Penyelesaian sengketa melalui pihak ketiga netral sebagai penasihat tanpa kewenangan\nmemutus disebut mediasi.",
+    "valid": true
+  },
+  {
+    "nomor": 14,
+    "nomor_global": 14,
+    "bab_angka": 1,
+    "bab_nama": "Bab I: Keluarga Awal Kehidupan",
+    "materi": "Keberadaan Diri & Silsilah Keluarga, Lokasi Absolut & Relatif, Komponen Peta, Skala & Kontur, Sosialisasi, Nilai & Norma Sosial, Interaksi Sosial, serta Aktivitas Memenuhi Kebutuhan",
+    "paket": "Bab I: Keluarga Awal Kehidupan - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Masjid Menara\nKudus di Jawa Tengah memiliki arsitektur menara yang menyerupai bangunan pura Hindu-Buddha, na-\nmun tetap digunakan untuk mengumandangkan azan bagi umat Islam. Fenomena perpaduan dua kebu-\ndayaan tanpa menghilangkan kepribadian budaya asli tersebut disebut ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Kontravensi"
+      },
+      {
+        "label": "B",
+        "teks": "Asimilasi"
+      },
+      {
+        "label": "C",
+        "teks": "Akulturasi"
+      },
+      {
+        "label": "D",
+        "teks": "Akomodasi paksaan"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Akulturasi adalah perpaduan dua kebudayaan (A + B = AB) tanpa menghilangkan ciri\nkhas budaya asli.",
+    "valid": true
+  },
+  {
+    "nomor": 15,
+    "nomor_global": 15,
+    "bab_angka": 1,
+    "bab_nama": "Bab I: Keluarga Awal Kehidupan",
+    "materi": "Keberadaan Diri & Silsilah Keluarga, Lokasi Absolut & Relatif, Komponen Peta, Skala & Kontur, Sosialisasi, Nilai & Norma Sosial, Interaksi Sosial, serta Aktivitas Memenuhi Kebutuhan",
+    "paket": "Bab I: Keluarga Awal Kehidupan - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Seorang siswa rajin berlatih bulu tangkis setelah melihat tayangan juara Olimpiade Greysia Polii dan\nApriyani Rahayu hingga ia sendiri meraih medali emas tingkat kabupaten. Faktor pendorong interaksi\nsosial yang bekerja secara mendalam dan membentuk kepribadian positif siswa tersebut adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Kontravensi"
+      },
+      {
+        "label": "B",
+        "teks": "Sugesti"
+      },
+      {
+        "label": "C",
+        "teks": "Simpati"
+      },
+      {
+        "label": "D",
+        "teks": "Identifikasi"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Identifikasi adalah kecenderungan menjadi sama/identik secara mendalam dengan tokoh\nidola.",
+    "valid": true
+  },
+  {
+    "nomor": 16,
+    "nomor_global": 16,
+    "bab_angka": 1,
+    "bab_nama": "Bab I: Keluarga Awal Kehidupan",
+    "materi": "Keberadaan Diri & Silsilah Keluarga, Lokasi Absolut & Relatif, Komponen Peta, Skala & Kontur, Sosialisasi, Nilai & Norma Sosial, Interaksi Sosial, serta Aktivitas Memenuhi Kebutuhan",
+    "paket": "Bab I: Keluarga Awal Kehidupan - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Menjelang\nmusim hujan, keluarga Pak Budi menyisihkan sebagian gaji bulanan untuk membeli payung, jas hujan,\nserta membayar premi asuransi kesehatan dan pendidikan anak. Berdasarkan waktu pemenuhannya,\npembelian jas hujan saat hujan turun dan tabungan asuransi pendidikan berturut-turut termasuk kebu-\ntuhan ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Kebutuhan sekarang dan kebutuhan masa yang akan datang"
+      },
+      {
+        "label": "B",
+        "teks": "Kebutuhan masa depan dan kebutuhan tersier mewah"
+      },
+      {
+        "label": "C",
+        "teks": "Kebutuhan rohani dan kebutuhan kolektif masyarakat"
+      },
+      {
+        "label": "D",
+        "teks": "Kebutuhan sekunder dan kebutuhan bebas tanpa pengorbanan"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Jas hujan saat hujan adalah kebutuhan sekarang; tabungan asuransi pendidikan adalah\nkebutuhan masa depan.",
+    "valid": true
+  },
+  {
+    "nomor": 17,
+    "nomor_global": 17,
+    "bab_angka": 1,
+    "bab_nama": "Bab I: Keluarga Awal Kehidupan",
+    "materi": "Keberadaan Diri & Silsilah Keluarga, Lokasi Absolut & Relatif, Komponen Peta, Skala & Kontur, Sosialisasi, Nilai & Norma Sosial, Interaksi Sosial, serta Aktivitas Memenuhi Kebutuhan",
+    "paket": "Bab I: Keluarga Awal Kehidupan - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Pada\nsistem barter, seorang nelayan yang memiliki ikan harus mencari petani yang kebetulan membutuhkan\nikan dan bersedia menukarkan berasnya (double coincidence of wants). Transformasi menuju transaksi\npasar modern mengatasi kendala utama barter dengan menghadirkan ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Penghapusan spesialisasi kerja sehingga setiap keluarga memproduksi semua barang"
+      },
+      {
+        "label": "B",
+        "teks": "Kewajiban menimbun barang pokok agar terjadi kelangkaan di pasar"
+      },
+      {
+        "label": "C",
+        "teks": "Uang sebagai alat tukar umum dan satuan hitung nilai barang yang efisien"
+      },
+      {
+        "label": "D",
+        "teks": "Pembatasan distribusi komoditas hanya di dalam satu desa terpencil"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Uang mengatasi kesulitan double coincidence of wants pada sistem barter dengan menjadi\nalat tukar umum dan satuan hitung.",
+    "valid": true
+  },
+  {
+    "nomor": 18,
+    "nomor_global": 18,
+    "bab_angka": 1,
+    "bab_nama": "Bab I: Keluarga Awal Kehidupan",
+    "materi": "Keberadaan Diri & Silsilah Keluarga, Lokasi Absolut & Relatif, Komponen Peta, Skala & Kontur, Sosialisasi, Nilai & Norma Sosial, Interaksi Sosial, serta Aktivitas Memenuhi Kebutuhan",
+    "paket": "Bab I: Keluarga Awal Kehidupan - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Ketika harga beras\nkualitas premium mengalami kenaikan tinggi, sebagian masyarakat beralih mengonsumsi jagung, sagu,\natau umbi-umbian sebagai sumber karbohidrat.\nSementara itu, kenaikan harga bahan bakar bensin\nmemicu penurunan permintaan sepeda motor berbahan bakar bensin.\nHubungan beras–jagung dan\nbensin–sepeda motor berturut-turut adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Barang komplementer dan barang substitusi"
+      },
+      {
+        "label": "B",
+        "teks": "Barang substitusi dan barang komplementer"
+      },
+      {
+        "label": "C",
+        "teks": "Barang bebas dan barang illith"
+      },
+      {
+        "label": "D",
+        "teks": "Barang mentah dan barang setengah jadi"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Beras dan jagung saling menggantikan (substitusi); bensin dan sepeda motor saling\nmelengkapi (komplementer).",
+    "valid": true
+  },
+  {
+    "nomor": 19,
+    "nomor_global": 19,
+    "bab_angka": 1,
+    "bab_nama": "Bab I: Keluarga Awal Kehidupan",
+    "materi": "Keberadaan Diri & Silsilah Keluarga, Lokasi Absolut & Relatif, Komponen Peta, Skala & Kontur, Sosialisasi, Nilai & Norma Sosial, Interaksi Sosial, serta Aktivitas Memenuhi Kebutuhan",
+    "paket": "Bab I: Keluarga Awal Kehidupan - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Air sungai yang mengalir\nderas dalam jumlah melimpah di musim hujan dapat merendam permukiman warga dan merusak lahan\npertanian, namun jika dikelola dalam waduk dengan takaran tepat sangat bermanfaat bagi irigasi dan\nPLTA. Berdasarkan ketersediaannya, air banjir yang berlebihan dan merugikan disebut ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Barang komplementer"
+      },
+      {
+        "label": "B",
+        "teks": "Barang ekonomis"
+      },
+      {
+        "label": "C",
+        "teks": "Barang bebas"
+      },
+      {
+        "label": "D",
+        "teks": "Barang illith"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Barang illith adalah barang yang jika jumlahnya berlebihan justru merugikan manusia\n(contoh: air saat banjir, api saat kebakaran).",
+    "valid": true
+  },
+  {
+    "nomor": 20,
+    "nomor_global": 20,
+    "bab_angka": 1,
+    "bab_nama": "Bab I: Keluarga Awal Kehidupan",
+    "materi": "Keberadaan Diri & Silsilah Keluarga, Lokasi Absolut & Relatif, Komponen Peta, Skala & Kontur, Sosialisasi, Nilai & Norma Sosial, Interaksi Sosial, serta Aktivitas Memenuhi Kebutuhan",
+    "paket": "Bab I: Keluarga Awal Kehidupan - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Pabrik pengolahan\nroti membeli tepung terigu, gula, telur, dan mentega untuk diolah di dalam oven menjadi roti siap santap\nyang dikemas rapi. Dalam klasifikasi barang menurut proses produksinya, tepung terigu dan roti kemasan\nberturut-turut merupakan ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Barang setengah jadi dan barang jadi"
+      },
+      {
+        "label": "B",
+        "teks": "Barang mentah dan barang setengah jadi"
+      },
+      {
+        "label": "C",
+        "teks": "Barang jadi dan barang bebas"
+      },
+      {
+        "label": "D",
+        "teks": "Barang substitusi dan barang illith"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Tepung terigu adalah barang setengah jadi (bahan baku produksi roti); roti kemasan siap\nsantap adalah barang jadi.",
+    "valid": true
+  },
+  {
+    "nomor": 21,
+    "nomor_global": 21,
+    "bab_angka": 1,
+    "bab_nama": "Bab I: Keluarga Awal Kehidupan",
+    "materi": "Keberadaan Diri & Silsilah Keluarga, Lokasi Absolut & Relatif, Komponen Peta, Skala & Kontur, Sosialisasi, Nilai & Norma Sosial, Interaksi Sosial, serta Aktivitas Memenuhi Kebutuhan",
+    "paket": "Bab I: Keluarga Awal Kehidupan - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Seorang lulusan SMA ditawari bekerja sebagai staf administrasi toko dengan gaji Rp3.200.000,00 per\nbulan atau menjadi kurir ekspedisi dengan gaji Rp3.500.000,00 per bulan. Namun, ia memilih melanjutkan\nkuliah penuh waktu sehingga tidak dapat mengambil kedua pekerjaan tersebut. Besarnya biaya peluang\n(opportunity cost) per bulan dari keputusannya adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Rp6.700.000,00 (jumlah total kedua gaji pekerjaan)"
+      },
+      {
+        "label": "B",
+        "teks": "Rp3.500.000,00 (nilai alternatif terbaik yang dikorbankan)"
+      },
+      {
+        "label": "C",
+        "teks": "Rp3.200.000,00 (nilai alternatif terendah)"
+      },
+      {
+        "label": "D",
+        "teks": "Rp300.000,00 (selisih gaji kedua pekerjaan)"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Biaya peluang (opportunity cost) adalah nilai satu alternatif terbaik yang dikorbankan, yaitu\ngaji kurir Rp3.500.000,00.",
+    "valid": true
+  },
+  {
+    "nomor": 22,
+    "nomor_global": 22,
+    "bab_angka": 1,
+    "bab_nama": "Bab I: Keluarga Awal Kehidupan",
+    "materi": "Keberadaan Diri & Silsilah Keluarga, Lokasi Absolut & Relatif, Komponen Peta, Skala & Kontur, Sosialisasi, Nilai & Norma Sosial, Interaksi Sosial, serta Aktivitas Memenuhi Kebutuhan",
+    "paket": "Bab I: Keluarga Awal Kehidupan - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Perhatikan\ndaftar kebutuhan Rina sebagai siswa SMP kelas VII berikut: (1) Membeli buku paket dan alat tulis sekolah;\n(2) Membayar iuran karya wisata akhir semester; (3) Membeli kuota permainan daring (game online); (4)\nMembeli obat demam untuk adiknya yang sedang sakit. Urutan skala prioritas yang paling rasional bagi\nRina adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(2) – (3) – (1) – (4)"
+      },
+      {
+        "label": "B",
+        "teks": "(3) – (2) – (1) – (4)"
+      },
+      {
+        "label": "C",
+        "teks": "(1) – (3) – (4) – (2)"
+      },
+      {
+        "label": "D",
+        "teks": "(4) – (1) – (2) – (3)"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Prioritas tertinggi: obat adik sakit (4) →buku sekolah (1) →iuran karya wisata (2) →\nkuota game (3).",
+    "valid": true
+  },
+  {
+    "nomor": 23,
+    "nomor_global": 23,
+    "bab_angka": 1,
+    "bab_nama": "Bab I: Keluarga Awal Kehidupan",
+    "materi": "Keberadaan Diri & Silsilah Keluarga, Lokasi Absolut & Relatif, Komponen Peta, Skala & Kontur, Sosialisasi, Nilai & Norma Sosial, Interaksi Sosial, serta Aktivitas Memenuhi Kebutuhan",
+    "paket": "Bab I: Keluarga Awal Kehidupan - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Di\ndaerah pegunungan kapur yang mengalami kekeringan saat kemarau panjang, warga harus mengantre\nberjam-jam atau membeli air bersih dari mobil tangki, sedangkan udara segar dapat dihirup kapan saja\ntanpa membayar. Perbedaan cara memperoleh air bersih saat kemarau dan udara segar menunjukkan\nperbedaan antara ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Barang ekonomis yang jumlahnya terbatas dan barang bebas yang melimpah"
+      },
+      {
+        "label": "B",
+        "teks": "Barang bebas dan barang illith yang merusak lingkungan"
+      },
+      {
+        "label": "C",
+        "teks": "Barang komplementer dan barang substitusi"
+      },
+      {
+        "label": "D",
+        "teks": "Barang konsumsi mewah dan barang modal industri"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Air bersih saat kemarau memerlukan pengorbanan (barang ekonomis), sedangkan udara\nsegar melimpah (barang bebas).",
+    "valid": true
+  },
+  {
+    "nomor": 24,
+    "nomor_global": 24,
+    "bab_angka": 1,
+    "bab_nama": "Bab I: Keluarga Awal Kehidupan",
+    "materi": "Keberadaan Diri & Silsilah Keluarga, Lokasi Absolut & Relatif, Komponen Peta, Skala & Kontur, Sosialisasi, Nilai & Norma Sosial, Interaksi Sosial, serta Aktivitas Memenuhi Kebutuhan",
+    "paket": "Bab I: Keluarga Awal Kehidupan - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Motif ekonomi seorang\npengusaha katering yang memberikan santunan rutin dan makanan bergizi gratis kepada panti asuhan\nsetiap hari Jumat tanpa mengharapkan imbalan finansial dikategorikan sebagai ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Motif memperoleh kekuasaan politik"
+      },
+      {
+        "label": "B",
+        "teks": "Motif mencari laba maksimum"
+      },
+      {
+        "label": "C",
+        "teks": "Motif sosial (membantu sesama manusia)"
+      },
+      {
+        "label": "D",
+        "teks": "Motif spekulasi pasar modal"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Memberi santunan rutin kepada panti asuhan didorong oleh motif sosial (kemanusiaan).",
+    "valid": true
+  },
+  {
+    "nomor": 25,
+    "nomor_global": 25,
+    "bab_angka": 1,
+    "bab_nama": "Bab I: Keluarga Awal Kehidupan",
+    "materi": "Keberadaan Diri & Silsilah Keluarga, Lokasi Absolut & Relatif, Komponen Peta, Skala & Kontur, Sosialisasi, Nilai & Norma Sosial, Interaksi Sosial, serta Aktivitas Memenuhi Kebutuhan",
+    "paket": "Bab I: Keluarga Awal Kehidupan - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Bu Sari selalu membandingkan\nharga dan kualitas bahan makanan di beberapa pedagang pasar tradisional sebelum berbelanja, serta\nmenyusun anggaran belanja mingguan agar pendapatan keluarganya cukup untuk menabung. Tindakan\nBu Sari mencerminkan penerapan ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Politik dumping dan proteksi perdagangan"
+      },
+      {
+        "label": "B",
+        "teks": "Prinsip ekonomi dan tindakan ekonomi rasional"
+      },
+      {
+        "label": "C",
+        "teks": "Konsumsi berlebihan (konsumerisme)"
+      },
+      {
+        "label": "D",
+        "teks": "Distribusi monopoli barang pokok"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Membandingkan harga/kualitas dan menyusun anggaran belanja merupakan wujud prinsip\nekonomi dan tindakan rasional.",
+    "valid": true
+  },
+  {
+    "nomor": 26,
+    "nomor_global": 26,
+    "bab_angka": 1,
+    "bab_nama": "Bab I: Keluarga Awal Kehidupan",
+    "materi": "Keberadaan Diri & Silsilah Keluarga, Lokasi Absolut & Relatif, Komponen Peta, Skala & Kontur, Sosialisasi, Nilai & Norma Sosial, Interaksi Sosial, serta Aktivitas Memenuhi Kebutuhan",
+    "paket": "Bab I: Keluarga Awal Kehidupan - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Perhatikan bagan\nalur tahapan sosialisasi menurut George Herbert Mead berikut!\nBAGAN ALUR EMPAT TAHAP SOSIALISASI INDIVIDU (G.H. MEAD)\n1. Preparatory Stage (Meniru tindakan orang terdekat secara belum sempurna) −→2. Play Stage (Bermain\nperan profesi orang dewasa: dokter, guru, polisi) −→3. Game Stage (Memahami aturan permainan & peran\ntim secara terorganisasi) −→4. [Tahap X] (Menyadari norma dan harapan masyarakat luas secara utuh)\nBerdasarkan bagan alur di atas, Tahap X beserta contoh perilaku remaja SMP yang paling sesuai dengan\ntahapan tersebut adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Play stage; seorang anak TK berpura-pura menyuntik bonekanya menggunakan pena mainan seperti dokter"
+      },
+      {
+        "label": "B",
+        "teks": "Preparatory stage; seorang balita mengucapkan kata ’maem’ ketika melihat ibunya menyiapkan makanan di meja makan"
+      },
+      {
+        "label": "C",
+        "teks": "Generalized other; seorang siswa SMP mematuhi tata tertib lalu lintas dan sopan santun di ruang publik karena sadar akan tanggung jawabnya sebagai warga masyarakat"
+      },
+      {
+        "label": "D",
+        "teks": "Anomie stage; seorang remaja menolak seluruh aturan keluarga dan memisahkan diri dari pergaulan masyarakat"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Tahap ke-4 G.H. Mead adalah Generalized other (penerimaan norma kolektif), di mana\nindividu telah memahami perannya di masyarakat luas dan mematuhi aturan sosial dengan kesadaran diri.",
+    "valid": true
+  },
+  {
+    "nomor": 27,
+    "nomor_global": 27,
+    "bab_angka": 1,
+    "bab_nama": "Bab I: Keluarga Awal Kehidupan",
+    "materi": "Keberadaan Diri & Silsilah Keluarga, Lokasi Absolut & Relatif, Komponen Peta, Skala & Kontur, Sosialisasi, Nilai & Norma Sosial, Interaksi Sosial, serta Aktivitas Memenuhi Kebutuhan",
+    "paket": "Bab I: Keluarga Awal Kehidupan - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Orang tua Nastria berasal\ndari suku bangsa yang berbeda. Ayahnya berasal dari suku X yang memiliki pembawaan tegas dan lugas,\nsedangkan ibunya berasal dari suku Y yang bertutur kata lembut. Meskipun demikian, kehidupan keluarga\nNastria sangat harmonis karena adanya sikap saling menghargai. Berdasarkan ilustrasi tersebut, faktor\nutama pembentuk identitas sosial budaya dalam keluarga Nastria adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Isolasi geografis yang menutup komunikasi antaranggota keluarga inti"
+      },
+      {
+        "label": "B",
+        "teks": "Perbedaan letak astronomis garis lintang dan garis bujur tempat tinggal"
+      },
+      {
+        "label": "C",
+        "teks": "Keterpaksaan hukum formal yang mewajibkan keseragaman adat di setiap rumah"
+      },
+      {
+        "label": "D",
+        "teks": "Keberagaman latar belakang kebudayaan dan sosialisasi nilai toleransi di dalam keluarga"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Perbedaan suku orang tua Nastria yang disatukan secara rukun menunjukkan peran faktor\nkebudayaan dan sosialisasi toleransi keluarga dalam membentuk identitas diri.",
+    "valid": true
+  },
+  {
+    "nomor": 28,
+    "nomor_global": 28,
+    "bab_angka": 1,
+    "bab_nama": "Bab I: Keluarga Awal Kehidupan",
+    "materi": "Keberadaan Diri & Silsilah Keluarga, Lokasi Absolut & Relatif, Komponen Peta, Skala & Kontur, Sosialisasi, Nilai & Norma Sosial, Interaksi Sosial, serta Aktivitas Memenuhi Kebutuhan",
+    "paket": "Bab I: Keluarga Awal Kehidupan - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Perhatikan tabel perbandingan\ntingkatan norma sosial berdasarkan daya ikat dan sanksinya berikut!\nTABEL PERBANDINGAN EMPAT TINGKATAN NORMA SOSIAL\nTingkatan Norma\nCiri Daya Ikat\nContoh Perilaku di Masyarakat\n1. Cara (Usage)\nSangat lemah;\nsanksi berupa tegu-\nran/celaan ringan\nBersendawa keras seusai makan di\ntempat umum\n2. Kebiasaan (Folkways)\nPerbuatan berulang-ulang yang diang-\ngap baik\nMencium tangan orang tua sebelum be-\nrangkat sekolah\n3. Tata Kelakuan (Mores)\nAturan moral/agama pengatur perilaku;\nsanksi berat\nLarangan\nberjudi,\nmencuri,\ndan\nmenyakiti sesama\n4. Adat Istiadat (Custom)\nTradisi\nleluhur\nyang\nmenyatu\nkuat;\nsanksi adat\nUpacara\nadat\n&\nlarangan\nmerusak\nhutan larangan\nBerdasarkan tabel di atas, apabila seorang warga di suatu desa adat melanggar batas wilayah hutan\nlarangan yang disakralkan masyarakat sehingga dikenai denda pemulihan adat oleh tetua desa, maka\nwarga tersebut telah melanggar norma ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Adat istiadat (custom) karena melanggar aturan tradisi turun-temurun yang memiliki sanksi adat mengikat"
+      },
+      {
+        "label": "B",
+        "teks": "Cara (usage) karena hanya berkaitan dengan etiket makan sehari-hari secara individu"
+      },
+      {
+        "label": "C",
+        "teks": "Kebiasaan (folkways) karena tidak memiliki sanksi sosial apa pun dari warga desa"
+      },
+      {
+        "label": "D",
+        "teks": "Mode (fashion) karena berkaitan dengan perubahan gaya berpakaian remaja modern"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Pelanggaran terhadap aturan leluhur yang memiliki sanksi pemulihan adat termasuk\npelanggaran terhadap norma adat istiadat (custom).",
+    "valid": true
+  },
+  {
+    "nomor": 29,
+    "nomor_global": 29,
+    "bab_angka": 1,
+    "bab_nama": "Bab I: Keluarga Awal Kehidupan",
+    "materi": "Keberadaan Diri & Silsilah Keluarga, Lokasi Absolut & Relatif, Komponen Peta, Skala & Kontur, Sosialisasi, Nilai & Norma Sosial, Interaksi Sosial, serta Aktivitas Memenuhi Kebutuhan",
+    "paket": "Bab I: Keluarga Awal Kehidupan - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Hasil produksi\nsayuran dataran tinggi (kubis, wortel, kentang) di wilayah Kabupaten Malang sangat melimpah, sedan-\ngkan wilayah pesisir Kabupaten Lamongan menghasilkan ikan laut segar dalam jumlah besar. Pedagang\ndari kedua daerah kemudian rutin bertukar komoditas melalui jalur jalan tol. Faktor pendorong interaksi\nkeruangan antarwilayah tersebut adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Hambatan transferabilitas mutlak yang memutus jalur transportasi darat"
+      },
+      {
+        "label": "B",
+        "teks": "Keseragaman komoditas pertanian dan perikanan yang identik di kedua kabupaten"
+      },
+      {
+        "label": "C",
+        "teks": "Wilayah yang saling melengkapi (regional complementarity) akibat perbedaan potensi sumber daya alam"
+      },
+      {
+        "label": "D",
+        "teks": "Penghapusan spesialisasi kerja sehingga masyarakat pesisir berhenti menangkap ikan"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Interaksi Kabupaten Malang (sayuran dataran tinggi) dan Kabupaten Lamongan (ikan laut)\nterjadi karena wilayah saling melengkapi (regional complementarity).",
+    "valid": true
+  },
+  {
+    "nomor": 30,
+    "nomor_global": 30,
+    "bab_angka": 1,
+    "bab_nama": "Bab I: Keluarga Awal Kehidupan",
+    "materi": "Keberadaan Diri & Silsilah Keluarga, Lokasi Absolut & Relatif, Komponen Peta, Skala & Kontur, Sosialisasi, Nilai & Norma Sosial, Interaksi Sosial, serta Aktivitas Memenuhi Kebutuhan",
+    "paket": "Bab I: Keluarga Awal Kehidupan - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Perhatikan bagan klasifikasi\nbentuk interaksi sosial berikut!\nBAGAN KLASIFIKASI PROSES INTERAKSI SOSIAL\nInteraksi Sosial =⇒(A) Proses Asosiatif (Mengarah Persatuan): Kerja Sama (Cooperation), Akomodasi\n(Accommodation), Akulturasi (A + B →AB), Asimilasi (A + B →C)\n|\n(B) Proses Disosiatif (Mengarah\nPerpecahan): Persaingan (Competition), Kontravensi (Contravention), Pertentangan/Konflik (Conflict)\nBerdasarkan bagan di atas, perbedaan paling tepat antara akulturasi (A + B →AB) dan asimilasi\n(A + B →C) dalam kehidupan masyarakat Indonesia adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Akulturasi selalu terjadi melalui paksaan militer, sedangkan asimilasi hanya terjadi melalui konflik ter- buka antarsuku"
+      },
+      {
+        "label": "B",
+        "teks": "Akulturasi memadukan dua budaya tanpa menghilangkan ciri budaya asli (contoh: Masjid Menara Kudus), sedangkan asimilasi meleburkan dua budaya menjadi budaya baru dengan memudarnya batas budaya asli"
+      },
+      {
+        "label": "C",
+        "teks": "Akulturasi termasuk proses disosiatif yang memecah belah bangsa, sedangkan asimilasi termasuk kontravensi rahasia"
+      },
+      {
+        "label": "D",
+        "teks": "Akulturasi menghapus seluruh unsur budaya lokal, sedangkan asimilasi menolak segala bentuk inter- aksi dengan budaya luar"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Akulturasi (A + B →AB) memadukan dua budaya tanpa menghilangkan unsur budaya\nasli, sedangkan asimilasi (A + B →C) meleburkan budaya menjadi budaya baru.",
+    "valid": true
+  },
+  {
+    "nomor": 31,
+    "nomor_global": 31,
+    "bab_angka": 1,
+    "bab_nama": "Bab I: Keluarga Awal Kehidupan",
+    "materi": "Keberadaan Diri & Silsilah Keluarga, Lokasi Absolut & Relatif, Komponen Peta, Skala & Kontur, Sosialisasi, Nilai & Norma Sosial, Interaksi Sosial, serta Aktivitas Memenuhi Kebutuhan",
+    "paket": "Bab I: Keluarga Awal Kehidupan - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Perhatikan ciri-ciri tradisi\nlisan (folklor) masyarakat Nusantara berikut: (1) Penciptanya tidak diketahui secara pasti (anonim); (2) Di-\nwariskan secara turun-temurun dari mulut ke mulut; (3) Menjadi milik bersama suatu kolektif masyarakat;\n(4) Mengandung pesan moral dan nilai budi pekerti; (5) Dicatat dalam lembaran negara sebagai undang-\nundang pajak. Karakteristik utama cerita rakyat (mitos, legenda, dan dongeng) sebagai media sosialisasi\nnilai di masyarakat ditunjukkan oleh nomor ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(1), (3), (4), dan (5)"
+      },
+      {
+        "label": "B",
+        "teks": "(1), (2), (4), dan (5)"
+      },
+      {
+        "label": "C",
+        "teks": "(2), (3), (4), dan (5)"
+      },
+      {
+        "label": "D",
+        "teks": "(1), (2), (3), dan (4)"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Ciri cerita rakyat (folklor lisan): anonim (pencipta tidak diketahui), diwariskan lisan, milik\nkolektif, dan sarat pesan moral (1, 2, 3, dan 4).",
+    "valid": true
+  },
+  {
+    "nomor": 32,
+    "nomor_global": 32,
+    "bab_angka": 1,
+    "bab_nama": "Bab I: Keluarga Awal Kehidupan",
+    "materi": "Keberadaan Diri & Silsilah Keluarga, Lokasi Absolut & Relatif, Komponen Peta, Skala & Kontur, Sosialisasi, Nilai & Norma Sosial, Interaksi Sosial, serta Aktivitas Memenuhi Kebutuhan",
+    "paket": "Bab I: Keluarga Awal Kehidupan - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Pada sebuah peta\nProvinsi Daerah Istimewa Yogyakarta berskala 1 : 150.000, terdapat peta kecil di sudut kanan bawah\nyang menampilkan posisi DIY di dalam Pulau Jawa secara keseluruhan. Komponen peta kecil tersebut\nbeserta kategori skala peta utamanya (1 : 150.000) secara berturut-turut adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Inset peta (menunjukkan lokasi relatif terhadap wilayah yang lebih luas) dan Peta Skala Besar (1 : 5.000 s.d. 1 : 250.000)"
+      },
+      {
+        "label": "B",
+        "teks": "Legenda peta (menjelaskan arti simbol warna) dan Peta Kadaster (1 : 100 s.d. 1 : 5.000)"
+      },
+      {
+        "label": "C",
+        "teks": "Orientasi arah mata angin dan Peta Geografis (skala lebih kecil dari 1 : 1.000.000)"
+      },
+      {
+        "label": "D",
+        "teks": "Garis tepi peta (border) dan Peta Skala Sedang (1 : 250.000 s.d. 1 : 500.000)"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Peta kecil penunjuk lokasi relatif disebut inset peta, dan skala 1 : 150.000 termasuk\nkategori Peta Skala Besar (1 : 5.000 s.d. 1 : 250.000).",
+    "valid": true
+  },
+  {
+    "nomor": 33,
+    "nomor_global": 33,
+    "bab_angka": 1,
+    "bab_nama": "Bab I: Keluarga Awal Kehidupan",
+    "materi": "Keberadaan Diri & Silsilah Keluarga, Lokasi Absolut & Relatif, Komponen Peta, Skala & Kontur, Sosialisasi, Nilai & Norma Sosial, Interaksi Sosial, serta Aktivitas Memenuhi Kebutuhan",
+    "paket": "Bab I: Keluarga Awal Kehidupan - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Perhatikan tabel rencana\npengeluaran bulanan Keluarga Pak Rahmat yang berpenghasilan tetap Rp6.000.000,00 per bulan berikut!\nTABEL POS ANGGARAN BULANAN KELUARGA PAK RAHMAT\nPos\nRincian Kebutuhan\nAlokasi Biaya\nKategori Intensitas\n(1)\nBeras, lauk-pauk bergizi, air bersih, & listrik\nrumah\nRp2.700.000,00\nKebutuhan Primer\n(2)\nBiaya sekolah anak, transportasi kerja, & kuota\nbelajar\nRp1.300.000,00\nKebutuhan Sekunder/Primer\n(3)\nTabungan dana darurat & asuransi kesehatan\nkeluarga\nRp1.200.000,00\nKebutuhan Masa Depan\n(4)\nRekreasi keluarga & penggantian perabot ru-\nang tamu\nRp800.000,00\nKebutuhan Sekunder/Tersier\nApabila pada bulan berjalan atap dapur rumah Pak Rahmat bocor parah akibat hujan badai dan mem-\nbutuhkan biaya perbaikan mendesak sebesar Rp750.000,00, keputusan ekonomi paling rasional yang\nsesuai dengan prinsip skala prioritas tanpa harus berutang konsumtif adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Menghentikan pembelian beras dan lauk-pauk pada Pos (1) selama satu bulan penuh"
+      },
+      {
+        "label": "B",
+        "teks": "Menunda pengeluaran Pos (4) (rekreasi dan penggantian perabot ruang tamu) untuk membiayai per- baikan atap dapur yang bersifat mendesak"
+      },
+      {
+        "label": "C",
+        "teks": "Membatalkan pembayaran biaya sekolah anak pada Pos (2) dan mencairkan seluruh asuransi"
+      },
+      {
+        "label": "D",
+        "teks": "Meminjam uang kepada rentenir berbunga tinggi agar tetap bisa berekreasi sesuai Pos (4)"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Sesuai skala prioritas rasional, kebutuhan mendesak (perbaikan atap bocor Rp750.000,00)\ndipenuhi dengan menunda Pos (4) (rekreasi/perabot Rp800.000,00) tanpa mengorbankan kebutuhan primer\natau berutang.",
+    "valid": true
+  },
+  {
+    "nomor": 34,
+    "nomor_global": 34,
+    "bab_angka": 1,
+    "bab_nama": "Bab I: Keluarga Awal Kehidupan",
+    "materi": "Keberadaan Diri & Silsilah Keluarga, Lokasi Absolut & Relatif, Komponen Peta, Skala & Kontur, Sosialisasi, Nilai & Norma Sosial, Interaksi Sosial, serta Aktivitas Memenuhi Kebutuhan",
+    "paket": "Bab I: Keluarga Awal Kehidupan - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Perhatikan pernyataan tindakan\nmanusia berikut: (1) Pedagang buah menggunakan timbangan digital yang jujur dan tidak mencampur\nbuah busuk; (2) Pabrik tahu mengolah limbah cair menjadi biogas agar tidak mencemari sungai desa;\n(3) Spekulan menimbun minyak goreng bersubsidi saat menjelang hari raya demi melipatgandakan laba;\n(4) Nelayan menangkap ikan menggunakan jaring ramah lingkungan sesuai ukuran mata jaring yang\ndiizinkan. Ciri manusia sebagai makhluk ekonomi yang bermoral (homo economicus yang beretika)\nditunjukkan oleh nomor ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(2), (3), dan (4)"
+      },
+      {
+        "label": "B",
+        "teks": "(1), (2), dan (3)"
+      },
+      {
+        "label": "C",
+        "teks": "(1), (3), dan (4)"
+      },
+      {
+        "label": "D",
+        "teks": "(1), (2), dan (4)"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Makhluk ekonomi bermoral mengutamakan kejujuran, kelestarian lingkungan, dan kepatuhan\naturan (1, 2, dan 4); menimbun barang pokok (3) adalah tindakan spekulasi tidak bermoral.",
+    "valid": true
+  },
+  {
+    "nomor": 35,
+    "nomor_global": 35,
+    "bab_angka": 1,
+    "bab_nama": "Bab I: Keluarga Awal Kehidupan",
+    "materi": "Keberadaan Diri & Silsilah Keluarga, Lokasi Absolut & Relatif, Komponen Peta, Skala & Kontur, Sosialisasi, Nilai & Norma Sosial, Interaksi Sosial, serta Aktivitas Memenuhi Kebutuhan",
+    "paket": "Bab I: Keluarga Awal Kehidupan - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Seorang peneliti\ngeografi memetakan jalur evakuasi bencana di lereng gunung api menggunakan Peta X yang memiliki\nskala 1 : 50.000. Pada Peta X, jarak pos pengamatan ke titik kumpul pengungsian adalah 6 cm, dan\ntitik pengungsian berada pada garis kontur ke-4 di atas pos pengamatan. Berapakah jarak sebenarnya\nkedua tempat tersebut dan berapakah selisih ketinggian vertikalnya berdasarkan rumus interval kontur\n(Ci =\n1\n2.000 × Penyebut Skala)?",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Jarak sebenarnya 3 km dan selisih ketinggian 100 meter (Ci = 25 m × 4)"
+      },
+      {
+        "label": "B",
+        "teks": "Jarak sebenarnya 30 km dan selisih ketinggian 200 meter (Ci = 50 m × 4)"
+      },
+      {
+        "label": "C",
+        "teks": "Jarak sebenarnya 3 km dan selisih ketinggian 25 meter (Ci = 25 m × 1)"
+      },
+      {
+        "label": "D",
+        "teks": "Jarak sebenarnya 1, 5 km dan selisih ketinggian 400 meter (Ci = 100 m × 4)"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "JS = 6 × 50.000 cm = 300.000 cm = 3 km. Ci =\n1\n2.000 × 50.000 = 25 m; selisih 4\nkontur = 4 × 25 m = 100 m.",
+    "valid": true
+  },
+  {
+    "nomor": 36,
+    "nomor_global": 36,
+    "bab_angka": 1,
+    "bab_nama": "Bab I: Keluarga Awal Kehidupan",
+    "materi": "Keberadaan Diri & Silsilah Keluarga, Lokasi Absolut & Relatif, Komponen Peta, Skala & Kontur, Sosialisasi, Nilai & Norma Sosial, Interaksi Sosial, serta Aktivitas Memenuhi Kebutuhan",
+    "paket": "Bab I: Keluarga Awal Kehidupan - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "[Pilihan Ganda Kom-\npleks — Analisis Alat Pemuas Kebutuhan & Skala Prioritas] Perhatikan gambar tata ruang pasar\ntradisional dan modern serta klasifikasi komoditas pemuas kebutuhan berikut!\n\nPernyataan analitis yang benar mengenai karakteristik komoditas dan perilaku ekonomi pada gambar di\natas adalah .... (Pilih lebih dari satu jawaban benar)\n\nPernyataan Analisis:\n(1) Beras, sayuran segar, dan lauk-pauk merupakan kebutuhan primer (pokok) yang wajib ditempatkan pada urutan pertama skala prioritas keluarga.\n(2) Kompor gas dan tabung gas LPG memiliki hubungan sebagai barang komplementer karena kedu- anya harus digunakan bersama-sama.\n(3) Daging ayam dan ikan laut segar berperan sebagai barang substitusi dalam memenuhi kebutuhan protein hewani masyarakat.\n(4) Semua barang yang diperdagangkan di pasar modern termasuk barang bebas yang dapat diperoleh tanpa pengorbanan ekonomi.\n\nPernyataan yang tepat adalah ....",
+    "gambar": [
+      "/soal/ips/kls7_ips_p14_xref521_1208x906.jpeg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Pernyataan (1), (2), dan (3) benar"
+      },
+      {
+        "label": "B",
+        "teks": "Pernyataan (1) dan (4) saja yang benar"
+      },
+      {
+        "label": "C",
+        "teks": "Pernyataan (2) dan (4) saja yang benar"
+      },
+      {
+        "label": "D",
+        "teks": "Semua pernyataan (1), (2), (3), dan (4) benar"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Beras/lauk adalah kebutuhan primer (A); kompor dan LPG adalah kom-\nplementer (B); ayam dan ikan adalah substitusi (C). Barang di pasar modern adalah barang ekonomis, bukan\nbarang bebas (D salah).",
+    "valid": true
+  },
+  {
+    "nomor": 37,
+    "nomor_global": 37,
+    "bab_angka": 1,
+    "bab_nama": "Bab I: Keluarga Awal Kehidupan",
+    "materi": "Keberadaan Diri & Silsilah Keluarga, Lokasi Absolut & Relatif, Komponen Peta, Skala & Kontur, Sosialisasi, Nilai & Norma Sosial, Interaksi Sosial, serta Aktivitas Memenuhi Kebutuhan",
+    "paket": "Bab I: Keluarga Awal Kehidupan - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "[Pilihan Ganda Kompleks\n— Komponen Peta & Sosialisasi Masyarakat] Evaluasilah pernyataan geografi dan sosiologi berikut!\nPernyataan yang tepat adalah ....\n\nPernyataan Analisis:\n(1) Inset peta berfungsi memperjelas posisi suatu wilayah kecil terhadap wilayah yang lebih luas di sekitarnya.\n(2) Apabila peta berskala 1 : 200.000 diperkecil 2 kali, maka penyebut skala peta baru berubah menjadi 1 : 400.000.\n(3) Sosialisasi sekunder berlangsung melalui lingkungan teman sebaya, sekolah, dan media massa setelah sosialisasi keluarga.\n(4) Garis bujur (95◦BT–141◦BT) menyebabkan Indonesia memiliki iklim tropis dengan dua musim (hujan dan kemarau).\n\nPernyataan yang tepat adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Pernyataan (1), (2), dan (3) benar"
+      },
+      {
+        "label": "B",
+        "teks": "Pernyataan (1) dan (4) saja yang benar"
+      },
+      {
+        "label": "C",
+        "teks": "Pernyataan (2) dan (4) saja yang benar"
+      },
+      {
+        "label": "D",
+        "teks": "Semua pernyataan (1), (2), (3), dan (4) benar"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "✓A,\n✓B,\n✓C — Inset menunjukkan lokasi relatif wilayah (A); diperkecil 2× membuat\npenyebut skala dikali 2 menjadi 1 : 400.000 (B); teman sebaya/sekolah adalah sosialisasi sekunder (C). Garis\nbujur menentukan zona waktu, bukan iklim tropis (D salah).",
+    "valid": true
+  },
+  {
+    "nomor": 38,
+    "nomor_global": 38,
+    "bab_angka": 1,
+    "bab_nama": "Bab I: Keluarga Awal Kehidupan",
+    "materi": "Keberadaan Diri & Silsilah Keluarga, Lokasi Absolut & Relatif, Komponen Peta, Skala & Kontur, Sosialisasi, Nilai & Norma Sosial, Interaksi Sosial, serta Aktivitas Memenuhi Kebutuhan",
+    "paket": "Bab I: Keluarga Awal Kehidupan - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "[Tabel Centang\nBenar / Salah — Lokasi, Peta, & Zona Waktu] Berilah tanda centang (✓) pada kolom Benar atau Salah\nuntuk setiap pernyataan geografi keruangan berikut!\n\nPernyataan Evaluasi:\n(a) Letak absolut suatu tempat ditentukan oleh perpotongan garis lintang dan garis bujur sehingga tidak berubah meskipun kondisi lingkungan sekitarnya berkembang pesat.\n(b) Jarak 5 cm pada peta berskala 1 : 500.000 mewakili jarak sebenarnya di permukaan bumi sejauh 25 km.\n(c) Jika di Kota Jakarta (WIB) menunjukkan pukul 09.00 pagi, maka pada saat yang sama di Kota Makassar (WITA) menunjukkan pukul 08.00 pagi.\n\nKombinasi analisis nilai kebenaran (Benar/Salah) yang tepat berturut-turut adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(a) Benar, (b) Benar, (c) Salah"
+      },
+      {
+        "label": "B",
+        "teks": "(a) Benar, (b) Salah, (c) Salah"
+      },
+      {
+        "label": "C",
+        "teks": "(a) Salah, (b) Benar, (c) Benar"
+      },
+      {
+        "label": "D",
+        "teks": "(a) Benar, (b) Benar, (c) Benar"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "(a) Lokasi absolut tetap; (b) JS = 5 × 500.000 cm = 25 km;\n(c) Salah, karena WITA lebih cepat 1 jam dari WIB sehingga pukul 09.00 WIB = 10.00 WITA.",
+    "valid": true
+  },
+  {
+    "nomor": 39,
+    "nomor_global": 39,
+    "bab_angka": 1,
+    "bab_nama": "Bab I: Keluarga Awal Kehidupan",
+    "materi": "Keberadaan Diri & Silsilah Keluarga, Lokasi Absolut & Relatif, Komponen Peta, Skala & Kontur, Sosialisasi, Nilai & Norma Sosial, Interaksi Sosial, serta Aktivitas Memenuhi Kebutuhan",
+    "paket": "Bab I: Keluarga Awal Kehidupan - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "[Tabel Centang Benar / Salah — Norma Sosial & Interaksi Sosial] Evaluasilah kebenaran pernyataan\n\nsosiologis mengenai norma dan interaksi masyarakat berikut!\n\nPernyataan Evaluasi:\n(a) Syarat mutlak terjadinya interaksi sosial di masyarakat maupun di ruang digital adalah adanya kontak sosial dan komunikasi.\n(b) Proses akulturasi budaya menghasilkan kebudayaan baru dengan menghilangkan sama sekali seluruh unsur budaya asli pembentuknya.\n(c) Norma hukum merupakan aturan resmi yang dibuat oleh lembaga ne- gara berwenang dengan sanksi tegas dan memaksa.\n\nKombinasi analisis nilai kebenaran (Benar/Salah) yang tepat berturut-turut adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(a) Benar, (b) Salah, (c) Benar"
+      },
+      {
+        "label": "B",
+        "teks": "(a) Benar, (b) Salah, (c) Salah"
+      },
+      {
+        "label": "C",
+        "teks": "(a) Salah, (b) Benar, (c) Benar"
+      },
+      {
+        "label": "D",
+        "teks": "(a) Benar, (b) Benar, (c) Benar"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "(b) Salah, karena peleburan dua budaya yang menghilangkan\nciri budaya asli disebut asimilasi, bukan akulturasi.",
+    "valid": true
+  },
+  {
+    "nomor": 40,
+    "nomor_global": 40,
+    "bab_angka": 1,
+    "bab_nama": "Bab I: Keluarga Awal Kehidupan",
+    "materi": "Keberadaan Diri & Silsilah Keluarga, Lokasi Absolut & Relatif, Komponen Peta, Skala & Kontur, Sosialisasi, Nilai & Norma Sosial, Interaksi Sosial, serta Aktivitas Memenuhi Kebutuhan",
+    "paket": "Bab I: Keluarga Awal Kehidupan - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Keluarga Pak Dedi tinggal di Kota Balikpapan (WITA) dan berencana melakukan panggilan video keluarga\nbesar dengan Kakek di Banda Aceh (WIB) serta Paman di Jayapura (WIT). Apabila panggilan video\ndisepakati berlangsung pada pukul 19.30 WITA, maka waktu setempat di Banda Aceh dan Jayapura saat\npanggilan berlangsung, beserta jenis kontak sosial yang terjadi melalui layar video tersebut berturut-turut\nadalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Pukul 18.30 WIB dan pukul 20.30 WIT; kontak sosial primer tidak langsung (melalui media telekomu- nikasi)"
+      },
+      {
+        "label": "B",
+        "teks": "Pukul 20.30 WIB dan pukul 18.30 WIT; kontak sosial sekunder tatap muka fisik"
+      },
+      {
+        "label": "C",
+        "teks": "Pukul 19.30 WIB dan pukul 21.30 WIT; proses disosiatif kontravensi antargenerasi"
+      },
+      {
+        "label": "D",
+        "teks": "Pukul 17.30 WIB dan pukul 20.30 WIT; kontak sosial pasif tanpa komunikasi dua arah"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "WITA berada pada GMT + 8, sehingga Banda Aceh (WIB, GMT + 7) berselisih −1 jam\n\n(18.30 WIB) dan Jayapura (WIT, GMT + 9) berselisih +1 jam (20.30 WIT). Interaksi dua arah melalui pang-\ngilan video termasuk kontak sosial tidak langsung menggunakan perantara teknologi.",
+    "valid": true
+  }
+]

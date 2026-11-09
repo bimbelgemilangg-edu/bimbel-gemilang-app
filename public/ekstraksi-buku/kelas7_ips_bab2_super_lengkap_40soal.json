@@ -1,0 +1,1370 @@
+[
+  {
+    "nomor": 1,
+    "nomor_global": 41,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Keberagaman Lingkungan Sekitar",
+    "materi": "Berkenalan dengan Lingkungan Alam (Litosfer, Atmosfer, Hidrosfer), Pembiasaan Melestarikan Lingkungan (Udara, Air, Tanah), Aktivitas Manusia Zaman Praaksara (Periodisasi Geologis & Arkeologis), serta Pembangunan Berkelanjutan & Kelangkaan",
+    "paket": "Bab II: Keberagaman Lingkungan Sekitar - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Perhatikan diagram resmi Siklus Hidrologi (Kondensasi, Transpirasi, Curahan/Presipitasi, Evaporasi,\nPeresapan, dan Perkolasi) pada buku teks berikut!\nBerdasarkan diagram siklus hidrologi di atas, proses penguapan air laut oleh radiasi matahari yang kemu-\ndian membentuk awan hujan di atmosfer serta meresap ke dalam pori-pori tanah untuk menjaga cadan-\ngan air tanah disebut ....",
+    "gambar": [
+      "/soal/ips/kls7_ips_p19_xref796_830x510.jpeg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Evaporasi, kondensasi, dan infiltrasi dalam siklus hidrologi"
+      },
+      {
+        "label": "B",
+        "teks": "Transpirasi, sublimasi, dan erosi permukaan"
+      },
+      {
+        "label": "C",
+        "teks": "Tektonisme, vulkanisme, dan sedimentasi"
+      },
+      {
+        "label": "D",
+        "teks": "Reboisasi, terasering, dan kontur mekanik"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Penguapan air laut = evaporasi; pembentukan awan di troposfer = kondensasi; peresapan\nair ke pori tanah = infiltrasi.",
+    "valid": true
+  },
+  {
+    "nomor": 2,
+    "nomor_global": 42,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Keberagaman Lingkungan Sekitar",
+    "materi": "Berkenalan dengan Lingkungan Alam (Litosfer, Atmosfer, Hidrosfer), Pembiasaan Melestarikan Lingkungan (Udara, Air, Tanah), Aktivitas Manusia Zaman Praaksara (Periodisasi Geologis & Arkeologis), serta Pembangunan Berkelanjutan & Kelangkaan",
+    "paket": "Bab II: Keberagaman Lingkungan Sekitar - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Fenomena\ncuaca seperti pembentukan awan kumulonimbus, hujan deras, petir, dan pelangi berlangsung pada\nlapisan atmosfer paling bawah, sedangkan lapisan yang melindungi makhluk hidup dari sengatan sinar\nultraviolet (UV) matahari terletak di atasnya. Kedua lapisan atmosfer tersebut berturut-turut adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Termosfer dan Eksosfer"
+      },
+      {
+        "label": "B",
+        "teks": "Stratosfer dan Mesosfer"
+      },
+      {
+        "label": "C",
+        "teks": "Troposfer dan Stratosfer"
+      },
+      {
+        "label": "D",
+        "teks": "Mesosfer dan Ionosfer"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Cuaca/iklim terjadi di Troposfer; lapisan ozon (O3) penyaring sinar UV berada di Stratosfer.",
+    "valid": true
+  },
+  {
+    "nomor": 3,
+    "nomor_global": 43,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Keberagaman Lingkungan Sekitar",
+    "materi": "Berkenalan dengan Lingkungan Alam (Litosfer, Atmosfer, Hidrosfer), Pembiasaan Melestarikan Lingkungan (Udara, Air, Tanah), Aktivitas Manusia Zaman Praaksara (Periodisasi Geologis & Arkeologis), serta Pembangunan Berkelanjutan & Kelangkaan",
+    "paket": "Bab II: Keberagaman Lingkungan Sekitar - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Petani di lereng\nGunung Merbabu dan kawasan Jatiluwih Bali mengolah lahan pertanian miring dengan membuat teras-\nteras bertingkat (terasering atau sengkedan) serta menanam tanaman penguat teras. Tujuan ekologis\nutama dari teknik konservasi tanah tersebut adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Mempercepat penguapan air tanah agar lereng gunung menjadi kering"
+      },
+      {
+        "label": "B",
+        "teks": "Memperlambat kecepatan aliran air permukaan (run-off) dan mencegah erosi lapisan tanah atas (top- soil)"
+      },
+      {
+        "label": "C",
+        "teks": "Mengubah jenis tanah kapur menjadi tanah gambut rawa secara instan"
+      },
+      {
+        "label": "D",
+        "teks": "Meningkatkan kemiringan lereng agar air hujan langsung mengalir ke sungai"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Terasering mengurangi panjang dan kemiringan lereng sehingga memperlambat aliran\npermukaan (run-off) dan mencegah erosi tanah.",
+    "valid": true
+  },
+  {
+    "nomor": 4,
+    "nomor_global": 44,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Keberagaman Lingkungan Sekitar",
+    "materi": "Berkenalan dengan Lingkungan Alam (Litosfer, Atmosfer, Hidrosfer), Pembiasaan Melestarikan Lingkungan (Udara, Air, Tanah), Aktivitas Manusia Zaman Praaksara (Periodisasi Geologis & Arkeologis), serta Pembangunan Berkelanjutan & Kelangkaan",
+    "paket": "Bab II: Keberagaman Lingkungan Sekitar - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Pencemaran air\nsungai oleh limbah deterjen rumah tangga dan limpasan pupuk kimia pertanian yang kaya akan unsur\nfosfat dan nitrogen memicu ledakan pertumbuhan gulma air (eceng gondok) sehingga kadar oksigen\nterlarut menurun drastis dan ikan-ikan mati. Peristiwa ekologis ini dikenal sebagai ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Efek rumah kaca atmosfer"
+      },
+      {
+        "label": "B",
+        "teks": "Biomagnifikasi pestisida"
+      },
+      {
+        "label": "C",
+        "teks": "Hujan asam (acid rain)"
+      },
+      {
+        "label": "D",
+        "teks": "Eutrofikasi perairan"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Pengayaan nutrien fosfat/nitrogen yang memicu ledakan alga dan eceng gondok disebut\neutrofikasi.",
+    "valid": true
+  },
+  {
+    "nomor": 5,
+    "nomor_global": 45,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Keberagaman Lingkungan Sekitar",
+    "materi": "Berkenalan dengan Lingkungan Alam (Litosfer, Atmosfer, Hidrosfer), Pembiasaan Melestarikan Lingkungan (Udara, Air, Tanah), Aktivitas Manusia Zaman Praaksara (Periodisasi Geologis & Arkeologis), serta Pembangunan Berkelanjutan & Kelangkaan",
+    "paket": "Bab II: Keberagaman Lingkungan Sekitar - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Warga di kawasan perkotaan\npadat penduduk dianjurkan membuat lubang resapan biopori dan sumur resapan di halaman rumah serta\nmengisi lubang biopori dengan sampah daun organik. Manfaat ganda dari pembuatan lubang biopori\ntersebut bagi pelestarian tanah dan air adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Meningkatkan daya resap air hujan ke dalam tanah sekaligus menghasilkan kompos yang menyuburkan biota tanah"
+      },
+      {
+        "label": "B",
+        "teks": "Mencegah terjadinya gempa bumi tektonik dan letusan gunung berapi"
+      },
+      {
+        "label": "C",
+        "teks": "Menurunkan kadar oksigen di dalam tanah agar cacing tanah mati"
+      },
+      {
+        "label": "D",
+        "teks": "Mempercepat aliran air hujan menuju saluran drainase jalan raya"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Biopori meningkatkan laju infiltrasi air hujan sekaligus mengolah sampah organik menjadi\nkompos.",
+    "valid": true
+  },
+  {
+    "nomor": 6,
+    "nomor_global": 46,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Keberagaman Lingkungan Sekitar",
+    "materi": "Berkenalan dengan Lingkungan Alam (Litosfer, Atmosfer, Hidrosfer), Pembiasaan Melestarikan Lingkungan (Udara, Air, Tanah), Aktivitas Manusia Zaman Praaksara (Periodisasi Geologis & Arkeologis), serta Pembangunan Berkelanjutan & Kelangkaan",
+    "paket": "Bab II: Keberagaman Lingkungan Sekitar - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Pembakaran\nbahan bakar fosil (batu bara dan minyak bumi) oleh kendaraan bermotor dan pabrik industri melepaskan\ngas CO2, SO2, dan NOx ke udara. Upaya nyata yang dapat dilakukan pelajar SMP dalam kehidupan\nsehari-hari untuk menekan pencemaran udara tersebut adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Membakar sampah plastik di halaman sekolah setiap selesai jam pelajaran"
+      },
+      {
+        "label": "B",
+        "teks": "Menggunakan transportasi umum, bersepeda ke sekolah, dan menanam pohon peneduh"
+      },
+      {
+        "label": "C",
+        "teks": "Menyalakan pendingin ruangan (AC) pada suhu terendah sepanjang hari"
+      },
+      {
+        "label": "D",
+        "teks": "Mengganti seluruh taman hijau sekolah dengan lapisan beton kedap air"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Menggunakan transportasi umum, bersepeda, dan menanam pohon menurunkan emisi gas\nbuang secara nyata.",
+    "valid": true
+  },
+  {
+    "nomor": 7,
+    "nomor_global": 47,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Keberagaman Lingkungan Sekitar",
+    "materi": "Berkenalan dengan Lingkungan Alam (Litosfer, Atmosfer, Hidrosfer), Pembiasaan Melestarikan Lingkungan (Udara, Air, Tanah), Aktivitas Manusia Zaman Praaksara (Periodisasi Geologis & Arkeologis), serta Pembangunan Berkelanjutan & Kelangkaan",
+    "paket": "Bab II: Keberagaman Lingkungan Sekitar - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Dalam pembabakan zaman bumi berdasarkan geologi, zaman ketika suhu kulit bumi masih sangat panas\nmembentuk bola gas pijar sehingga belum ada tanda-tanda kehidupan, serta zaman ketika reptil raksasa\n(Dinosaurus dan Tyrannosaurus) menguasai permukaan bumi berturut-turut adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Tersier dan Holosen"
+      },
+      {
+        "label": "B",
+        "teks": "Paleozoikum dan Neozoikum"
+      },
+      {
+        "label": "C",
+        "teks": "Mesozoikum dan Kuarter"
+      },
+      {
+        "label": "D",
+        "teks": "Arkaikum dan Mesozoikum"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Arkaikum = zaman tertua belum ada kehidupan; Mesozoikum = zaman reptil raksasa/dinosaurus.",
+    "valid": true
+  },
+  {
+    "nomor": 8,
+    "nomor_global": 48,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Keberagaman Lingkungan Sekitar",
+    "materi": "Berkenalan dengan Lingkungan Alam (Litosfer, Atmosfer, Hidrosfer), Pembiasaan Melestarikan Lingkungan (Udara, Air, Tanah), Aktivitas Manusia Zaman Praaksara (Periodisasi Geologis & Arkeologis), serta Pembangunan Berkelanjutan & Kelangkaan",
+    "paket": "Bab II: Keberagaman Lingkungan Sekitar - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Zaman Kuarter\nmerupakan zaman terpenting bagi sejarah kemanusiaan karena mulai muncul kehidupan manusia purba.\nZaman Kuarter dibagi menjadi dua kala, yaitu Kala Pleistosen (Zaman Es/Glasial) dan Kala Holosen.\nPeristiwa geografis di Kepulauan Nusantara pada Kala Pleistosen adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Meluasnya lapisan es kutub sehingga permukaan air laut turun dan pulau-pulau bagian barat menyatu dengan Asia (Paparan Sunda)"
+      },
+      {
+        "label": "B",
+        "teks": "Mencairnya seluruh es kutub sehingga seluruh daratan Pulau Jawa dan Sumatra tenggelam"
+      },
+      {
+        "label": "C",
+        "teks": "Punahnya seluruh mamalia menyusui dan munculnya ikan pertama di samudra"
+      },
+      {
+        "label": "D",
+        "teks": "Terbentuknya kerak bumi pertama kali dari pembekuan magma pijar"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Pada kala Pleistosen (Zaman Es), penurunan muka laut menyatukan Sumatra, Jawa, dan\nKalimantan dengan daratan Asia (Paparan Sunda).",
+    "valid": true
+  },
+  {
+    "nomor": 9,
+    "nomor_global": 49,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Keberagaman Lingkungan Sekitar",
+    "materi": "Berkenalan dengan Lingkungan Alam (Litosfer, Atmosfer, Hidrosfer), Pembiasaan Melestarikan Lingkungan (Udara, Air, Tanah), Aktivitas Manusia Zaman Praaksara (Periodisasi Geologis & Arkeologis), serta Pembangunan Berkelanjutan & Kelangkaan",
+    "paket": "Bab II: Keberagaman Lingkungan Sekitar - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Perhatikan foto\nkoleksi museum artefak kapak batu zaman praaksara dan fosil tumpukan kulit kerang (Kjokkenmoddinger)\nberikut!\nPerubahan bentuk peralatan manusia praaksara dari kapak genggam kasar (Paleolitikum) dan kapak\nSumatera (pebble di sekitar Kjokkenmoddinger masa Mesolitikum) menjadi kapak persegi yang diasah\nhalus (Neolitikum) hingga peralatan logam (Perundagian) mencerminkan revolusi kebudayaan, yaitu ....",
+    "gambar": [
+      "/soal/ips/kls7_ips_p20_xref832_1076x715.jpeg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Hilangnya sistem pembagian kerja masyarakat karena seluruh manusia kembali hidup di dalam gua"
+      },
+      {
+        "label": "B",
+        "teks": "Kemunduran kemampuan berpikir manusia purba dari zaman logam kembali ke zaman batu tua"
+      },
+      {
+        "label": "C",
+        "teks": "Peralihan dari pola hidup berburu-meramu berpindah-pindah (nomaden) menuju bercocok tanam menetap (sedenter) dan kemahiran teknologi peleburan logam"
+      },
+      {
+        "label": "D",
+        "teks": "Penggunaan tulisan aksara Pallawa dan huruf Sanskerta pada setiap perkakas batu"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Perubahan dari kapak genggam kasar ke kapak persegi halus dan nekara perunggu menun-\njukkan evolusi dari berburu-meramu nomaden ke bercocok tanam menetap dan kemahiran mengecor logam.",
+    "valid": true
+  },
+  {
+    "nomor": 10,
+    "nomor_global": 50,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Keberagaman Lingkungan Sekitar",
+    "materi": "Berkenalan dengan Lingkungan Alam (Litosfer, Atmosfer, Hidrosfer), Pembiasaan Melestarikan Lingkungan (Udara, Air, Tanah), Aktivitas Manusia Zaman Praaksara (Periodisasi Geologis & Arkeologis), serta Pembangunan Berkelanjutan & Kelangkaan",
+    "paket": "Bab II: Keberagaman Lingkungan Sekitar - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Perhatikan gam-\nbar/peta resmi pada buku teks berikut!\nPada masa Mesolitikum (Zaman Batu Tengah), manusia purba mulai hidup setengah menetap di gua-gua\npayung karang dan di tepi pantai. Bukti arkeologis kehidupan mereka di tepi pantai Sumatra Timur berupa\nbukit-bukit kerang hasil tumpukan sampah dapur selama ribuan tahun disebut ....",
+    "gambar": [
+      "/soal/ips/kls7_ips_p21_xref853_1029x772.jpeg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Abris sous roche"
+      },
+      {
+        "label": "B",
+        "teks": "Kjokkenmoddinger"
+      },
+      {
+        "label": "C",
+        "teks": "Sarkofagus"
+      },
+      {
+        "label": "D",
+        "teks": "Punden berundak"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Kjokkenmoddinger adalah bukit kerang sampah dapur zaman Mesolitikum; abris sous\nroche adalah gua tempat tinggal.",
+    "valid": true
+  },
+  {
+    "nomor": 11,
+    "nomor_global": 51,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Keberagaman Lingkungan Sekitar",
+    "materi": "Berkenalan dengan Lingkungan Alam (Litosfer, Atmosfer, Hidrosfer), Pembiasaan Melestarikan Lingkungan (Udara, Air, Tanah), Aktivitas Manusia Zaman Praaksara (Periodisasi Geologis & Arkeologis), serta Pembangunan Berkelanjutan & Kelangkaan",
+    "paket": "Bab II: Keberagaman Lingkungan Sekitar - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Revolusi terbesar dalam se-\njarah kehidupan manusia praaksara terjadi pada masa Neolitikum (Zaman Batu Baru) karena terjadinya\nperubahan mendasar dari food gathering menjadi food producing. Makna dari perubahan tersebut adalah\n....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Manusia berhenti mengonsumsi tumbuh-tumbuhan dan hanya berburu mamut"
+      },
+      {
+        "label": "B",
+        "teks": "Manusia mulai menjual makanan olahan menggunakan uang kertas dan uang logam"
+      },
+      {
+        "label": "C",
+        "teks": "Manusia tidak lagi sekadar mengumpulkan makanan dari alam, melainkan mampu memproduksi pan- gan melalui bercocok tanam dan beternak"
+      },
+      {
+        "label": "D",
+        "teks": "Manusia meninggalkan perkampungan tetap untuk kembali mengembara di hutan belantara"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Food producing berarti manusia mampu memproduksi makanan sendiri melalui bercocok\ntanam dan beternak.",
+    "valid": true
+  },
+  {
+    "nomor": 12,
+    "nomor_global": 52,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Keberagaman Lingkungan Sekitar",
+    "materi": "Berkenalan dengan Lingkungan Alam (Litosfer, Atmosfer, Hidrosfer), Pembiasaan Melestarikan Lingkungan (Udara, Air, Tanah), Aktivitas Manusia Zaman Praaksara (Periodisasi Geologis & Arkeologis), serta Pembangunan Berkelanjutan & Kelangkaan",
+    "paket": "Bab II: Keberagaman Lingkungan Sekitar - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Masyarakat\npada masa bercocok tanam dan megalitikum mengenal sistem kepercayaan terhadap roh nenek moyang\nyang diyakini mendiami puncak gunung atau batu besar, serta kepercayaan bahwa benda-benda alam\n(pohon besar, batu, sungai) memiliki kekuatan gaib. Kedua sistem kepercayaan tersebut berturut-turut\ndinamakan ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Sinkretisme dan Sekularisme"
+      },
+      {
+        "label": "B",
+        "teks": "Totemisme dan Politeisme"
+      },
+      {
+        "label": "C",
+        "teks": "Monoteisme dan Ateisme"
+      },
+      {
+        "label": "D",
+        "teks": "Animisme dan Dinamisme"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Animisme = pemujaan roh nenek moyang; Dinamisme = keyakinan benda tertentu memiliki\nkekuatan gaib/mana.",
+    "valid": true
+  },
+  {
+    "nomor": 13,
+    "nomor_global": 53,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Keberagaman Lingkungan Sekitar",
+    "materi": "Berkenalan dengan Lingkungan Alam (Litosfer, Atmosfer, Hidrosfer), Pembiasaan Melestarikan Lingkungan (Udara, Air, Tanah), Aktivitas Manusia Zaman Praaksara (Periodisasi Geologis & Arkeologis), serta Pembangunan Berkelanjutan & Kelangkaan",
+    "paket": "Bab II: Keberagaman Lingkungan Sekitar - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Perhatikan gambar/peta resmi pada buku teks berikut!\nPerhatikan pasangan bangunan batu besar (Megalitikum) dan fungsinya berikut: (1) Menhir: tugu batu\ntegak tempat memuja roh leluhur; (2) Dolmen: meja batu tempat meletakkan sesaji; (3) Sarkofagus:\nlesung batu berpenutup sebagai peti jenazah; (4) Punden berundak: bangunan bertingkat-tingkat yang\nmenjadi cikal bakal arsitektur candi Nusantara. Pasangan yang seluruhnya benar adalah ....",
+    "gambar": [
+      "/soal/ips/kls7_ips_p21_xref854_1140x360.jpeg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(1), (2), (3), dan (4)"
+      },
+      {
+        "label": "B",
+        "teks": "(1) dan (2) saja"
+      },
+      {
+        "label": "C",
+        "teks": "(2) dan (4) saja"
+      },
+      {
+        "label": "D",
+        "teks": "(3) dan (4) saja"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Keempat pasangan bangunan megalitikum (menhir, dolmen, sarkofagus, punden berun-\ndak) beserta fungsinya benar.",
+    "valid": true
+  },
+  {
+    "nomor": 14,
+    "nomor_global": 54,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Keberagaman Lingkungan Sekitar",
+    "materi": "Berkenalan dengan Lingkungan Alam (Litosfer, Atmosfer, Hidrosfer), Pembiasaan Melestarikan Lingkungan (Udara, Air, Tanah), Aktivitas Manusia Zaman Praaksara (Periodisasi Geologis & Arkeologis), serta Pembangunan Berkelanjutan & Kelangkaan",
+    "paket": "Bab II: Keberagaman Lingkungan Sekitar - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Pada Zaman\nPerundagian (Zaman Logam), para undagi di Nusantara telah menguasai teknik cetak logam tingkat\ntinggi, yaitu teknik menggunakan cetakan batu setangkup yang dapat dipakai berulang kali serta teknik\ncetakan lilin berbalut tanah liat yang hanya dapat dipakai satu kali untuk benda berornamen rumit. Kedua\nteknik tersebut dinamakan ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Teknik vulkanisasi dan kristalisasi"
+      },
+      {
+        "label": "B",
+        "teks": "Teknik pemangkasan monofasial dan bifasial"
+      },
+      {
+        "label": "C",
+        "teks": "Teknik bivalve dan teknik a cire perdue"
+      },
+      {
+        "label": "D",
+        "teks": "Teknik stratigrafi dan tipologi"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Cetakan batu setangkup = bivalve; cetakan lilin berbalut tanah liat = a cire perdue.",
+    "valid": true
+  },
+  {
+    "nomor": 15,
+    "nomor_global": 55,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Keberagaman Lingkungan Sekitar",
+    "materi": "Berkenalan dengan Lingkungan Alam (Litosfer, Atmosfer, Hidrosfer), Pembiasaan Melestarikan Lingkungan (Udara, Air, Tanah), Aktivitas Manusia Zaman Praaksara (Periodisasi Geologis & Arkeologis), serta Pembangunan Berkelanjutan & Kelangkaan",
+    "paket": "Bab II: Keberagaman Lingkungan Sekitar - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Berdasarkan\nteori asal-usul leluhur bangsa Indonesia (Teori Yunnan / Migrasi Austronesia), gelombang kedatangan\nProto Melayu (Melayu Tua) pada ±1500 SM membawa kebudayaan batu baru (Neolitikum), sedangkan\ngelombang Deutero Melayu (Melayu Muda) pada ±500 SM membawa kebudayaan logam (Dongson).\nSuku bangsa di Indonesia saat ini yang merupakan keturunan langsung Proto Melayu adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Suku Jawa, Suku Sunda, Suku Bugis, dan Suku Minang"
+      },
+      {
+        "label": "B",
+        "teks": "Suku Dayak, Suku Toraja, Suku Batak, dan Suku Mentawai"
+      },
+      {
+        "label": "C",
+        "teks": "Suku Asmat, Suku Dani, dan Suku Amungme"
+      },
+      {
+        "label": "D",
+        "teks": "Suku Arab, Suku Tionghoa, dan Suku India"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Keturunan Proto Melayu (Melayu Tua) di Indonesia meliputi suku Dayak, Toraja, Batak,\nNias, dan Mentawai.",
+    "valid": true
+  },
+  {
+    "nomor": 16,
+    "nomor_global": 56,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Keberagaman Lingkungan Sekitar",
+    "materi": "Berkenalan dengan Lingkungan Alam (Litosfer, Atmosfer, Hidrosfer), Pembiasaan Melestarikan Lingkungan (Udara, Air, Tanah), Aktivitas Manusia Zaman Praaksara (Periodisasi Geologis & Arkeologis), serta Pembangunan Berkelanjutan & Kelangkaan",
+    "paket": "Bab II: Keberagaman Lingkungan Sekitar - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Nilai-nilai budaya\nmasyarakat masa praaksara yang tetap lestari dan menjadi modal sosial penting bangsa Indonesia hingga\nmasa kini adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Individualisme ekstrem yang menolak kerja sama antartetangga"
+      },
+      {
+        "label": "B",
+        "teks": "Sistem kasta tertutup yang melarang perpindahan status sosial warga"
+      },
+      {
+        "label": "C",
+        "teks": "Eksploitasi hutan secara besar-besaran tanpa penanaman kembali"
+      },
+      {
+        "label": "D",
+        "teks": "Tradisi gotong royong membangun fasilitas bersama, musyawarah memilih pemimpin, dan kearifan bahari/agraris"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Gotong royong, musyawarah (primus interpares), serta tradisi agraris dan bahari meru-\npakan warisan luhur praaksara.",
+    "valid": true
+  },
+  {
+    "nomor": 17,
+    "nomor_global": 57,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Keberagaman Lingkungan Sekitar",
+    "materi": "Berkenalan dengan Lingkungan Alam (Litosfer, Atmosfer, Hidrosfer), Pembiasaan Melestarikan Lingkungan (Udara, Air, Tanah), Aktivitas Manusia Zaman Praaksara (Periodisasi Geologis & Arkeologis), serta Pembangunan Berkelanjutan & Kelangkaan",
+    "paket": "Bab II: Keberagaman Lingkungan Sekitar - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Prinsip utama Pembangu-\nnan Berkelanjutan (Sustainable Development) sebagaimana dirumuskan dalam Laporan Brundtland dan\nagenda SDGs adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Memenuhi kebutuhan generasi masa kini melalui pemanfaatan energi bersih dan konservasi lahan tanpa mengorbankan kemampuan generasi masa depan"
+      },
+      {
+        "label": "B",
+        "teks": "Menghentikan seluruh aktivitas pertanian, industri, dan transportasi agar manusia kembali ke zaman batu"
+      },
+      {
+        "label": "C",
+        "teks": "Mengeksploitasi seluruh cadangan batu bara dan minyak bumi secepat mungkin demi mengejar per- tumbuhan ekonomi jangka pendek"
+      },
+      {
+        "label": "D",
+        "teks": "Mengutamakan keuntungan finansial korporasi di atas kelestarian ekosistem dan kesejahteraan sosial"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Pembangunan berkelanjutan memenuhi kebutuhan masa kini tanpa mengorbankan ke-\nmampuan generasi mendatang.",
+    "valid": true
+  },
+  {
+    "nomor": 18,
+    "nomor_global": 58,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Keberagaman Lingkungan Sekitar",
+    "materi": "Berkenalan dengan Lingkungan Alam (Litosfer, Atmosfer, Hidrosfer), Pembiasaan Melestarikan Lingkungan (Udara, Air, Tanah), Aktivitas Manusia Zaman Praaksara (Periodisasi Geologis & Arkeologis), serta Pembangunan Berkelanjutan & Kelangkaan",
+    "paket": "Bab II: Keberagaman Lingkungan Sekitar - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Pembangunan\nberkelanjutan di Indonesia ditopang oleh empat pilar utama yang saling terintegrasi, yaitu ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Pilar pertambangan, kehutanan, perikanan tangkap, dan impor barang mewah"
+      },
+      {
+        "label": "B",
+        "teks": "Pilar pembangunan sosial, ekonomi, lingkungan hidup, serta hukum dan tata kelola"
+      },
+      {
+        "label": "C",
+        "teks": "Pilar militerisme, ekspansi wilayah, monopoli dagang, dan privatisasi air"
+      },
+      {
+        "label": "D",
+        "teks": "Pilar urbanisasi masif, industrialisasi fosil, deforestasi, dan reklamasi"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Empat pilar SDGs di Indonesia: pembangunan sosial, ekonomi, lingkungan, serta hukum\ndan tata kelola.",
+    "valid": true
+  },
+  {
+    "nomor": 19,
+    "nomor_global": 59,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Keberagaman Lingkungan Sekitar",
+    "materi": "Berkenalan dengan Lingkungan Alam (Litosfer, Atmosfer, Hidrosfer), Pembiasaan Melestarikan Lingkungan (Udara, Air, Tanah), Aktivitas Manusia Zaman Praaksara (Periodisasi Geologis & Arkeologis), serta Pembangunan Berkelanjutan & Kelangkaan",
+    "paket": "Bab II: Keberagaman Lingkungan Sekitar - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Di\nsebuah kota metropolitan, pertumbuhan jumlah penduduk dan kendaraan bermotor berlangsung sangat\ncepat, sedangkan pasokan bahan bakar minyak (BBM) dan lahan permukiman sangat terbatas sehingga\nharga rumah dan antrean BBM meningkat. Masalah pokok ekonomi yang tampak pada fenomena terse-\nbut adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Hilangnya daya beli masyarakat terhadap seluruh kebutuhan primer"
+      },
+      {
+        "label": "B",
+        "teks": "Kelebihan penawaran (oversupply) barang tambang di pasar domestik"
+      },
+      {
+        "label": "C",
+        "teks": "Penurunan jumlah penduduk usia produktif secara drastis"
+      },
+      {
+        "label": "D",
+        "teks": "Kelangkaan (scarcity) akibat kesenjangan antara kebutuhan manusia yang tidak terbatas dan sumber daya yang terbatas"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Kelangkaan terjadi karena kebutuhan manusia terus meningkat sementara ketersediaan\nsumber daya terbatas.",
+    "valid": true
+  },
+  {
+    "nomor": 20,
+    "nomor_global": 60,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Keberagaman Lingkungan Sekitar",
+    "materi": "Berkenalan dengan Lingkungan Alam (Litosfer, Atmosfer, Hidrosfer), Pembiasaan Melestarikan Lingkungan (Udara, Air, Tanah), Aktivitas Manusia Zaman Praaksara (Periodisasi Geologis & Arkeologis), serta Pembangunan Berkelanjutan & Kelangkaan",
+    "paket": "Bab II: Keberagaman Lingkungan Sekitar - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Berikut ini\nyang bukan merupakan faktor penyebab terjadinya kelangkaan sumber daya ekonomi di suatu wilayah\nadalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Kemampuan alam memperbarui cadangan mineral logam dan minyak bumi dalam waktu beberapa hari"
+      },
+      {
+        "label": "B",
+        "teks": "Pertumbuhan jumlah penduduk yang lebih cepat dibandingkan laju produksi pangan"
+      },
+      {
+        "label": "C",
+        "teks": "Perbedaan letak geografis dan sebaran sumber daya alam antarwilayah"
+      },
+      {
+        "label": "D",
+        "teks": "Keterbatasan penguasaan ilmu pengetahuan dan teknologi (IPTEK) dalam mengolah sumber daya"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Mineral logam dan minyak bumi membutuhkan jutaan tahun untuk terbentuk, bukan\nbeberapa hari.",
+    "valid": true
+  },
+  {
+    "nomor": 21,
+    "nomor_global": 61,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Keberagaman Lingkungan Sekitar",
+    "materi": "Berkenalan dengan Lingkungan Alam (Litosfer, Atmosfer, Hidrosfer), Pembiasaan Melestarikan Lingkungan (Udara, Air, Tanah), Aktivitas Manusia Zaman Praaksara (Periodisasi Geologis & Arkeologis), serta Pembangunan Berkelanjutan & Kelangkaan",
+    "paket": "Bab II: Keberagaman Lingkungan Sekitar - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Untuk mengatasi\nkelangkaan bahan bakar fosil (minyak bumi dan batu bara) yang bersifat tidak terbarukan (non-renewable)\nsekaligus mengurangi emisi karbon, langkah strategis yang sesuai dengan pilar lingkungan pembangu-\nnan berkelanjutan adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Menaikkan impor minyak mentah secara terus-menerus tanpa batas kuota"
+      },
+      {
+        "label": "B",
+        "teks": "Membuka tambang batu bara baru di dalam kawasan taman nasional dan hutan lindung"
+      },
+      {
+        "label": "C",
+        "teks": "Mengembangkan energi baru terbarukan (EBT) seperti pembangkit listrik tenaga surya, panas bumi (geotermal), mikrohidro, dan angin"
+      },
+      {
+        "label": "D",
+        "teks": "Melarang penggunaan listrik bagi seluruh rumah tangga dan sekolah di perdesaan"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Transisi ke energi baru terbarukan (surya, panas bumi, hidro, angin) mengatasi kelangkaan\nfosil dan menekan emisi.",
+    "valid": true
+  },
+  {
+    "nomor": 22,
+    "nomor_global": 62,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Keberagaman Lingkungan Sekitar",
+    "materi": "Berkenalan dengan Lingkungan Alam (Litosfer, Atmosfer, Hidrosfer), Pembiasaan Melestarikan Lingkungan (Udara, Air, Tanah), Aktivitas Manusia Zaman Praaksara (Periodisasi Geologis & Arkeologis), serta Pembangunan Berkelanjutan & Kelangkaan",
+    "paket": "Bab II: Keberagaman Lingkungan Sekitar - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Nelayan tradisional\ndi Maluku dan Papua menerapkan kearifan lokal Sasi Laut, yaitu larangan menangkap biota laut tertentu\n(seperti teripang dan lola) di suatu wilayah perairan selama jangka waktu tertentu hingga populasi biota\ntersebut pulih dan berukuran dewasa. Ditinjau dari ilmu ekonomi dan ekologi, tradisi Sasi berfungsi untuk\n....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Menurunkan pendapatan nelayan secara permanen agar beralih menjadi penambang"
+      },
+      {
+        "label": "B",
+        "teks": "Mencegah kelangkaan sumber daya perikanan dan menjaga keberlanjutan hasil tangkapan jangka panjang"
+      },
+      {
+        "label": "C",
+        "teks": "Membiarkan kapal asing menangkap ikan secara bebas menggunakan pukat harimau"
+      },
+      {
+        "label": "D",
+        "teks": "Menghilangkan hak masyarakat adat atas pengelolaan wilayah pesisir"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Sasi Laut memberi waktu pemulihan stok ikan/biota laut sehingga mencegah overfishing\ndan kelangkaan.",
+    "valid": true
+  },
+  {
+    "nomor": 23,
+    "nomor_global": 63,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Keberagaman Lingkungan Sekitar",
+    "materi": "Berkenalan dengan Lingkungan Alam (Litosfer, Atmosfer, Hidrosfer), Pembiasaan Melestarikan Lingkungan (Udara, Air, Tanah), Aktivitas Manusia Zaman Praaksara (Periodisasi Geologis & Arkeologis), serta Pembangunan Berkelanjutan & Kelangkaan",
+    "paket": "Bab II: Keberagaman Lingkungan Sekitar - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Seorang wirausahawan muda\nmengolah limbah serbuk gergaji kayu dan tempurung kelapa yang semula dibuang menjadi briket arang\nramah lingkungan yang bernilai jual ekspor. Tindakan wirausahawan tersebut menerapkan prinsip pen-\ngelolaan lingkungan ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Eksploitasi hutan primer secara ilegal"
+      },
+      {
+        "label": "B",
+        "teks": "Pemborosan sumber daya alam tak terbarukan"
+      },
+      {
+        "label": "C",
+        "teks": "Recycle (mendaur ulang limbah menjadi produk baru yang bernilai ekonomi)"
+      },
+      {
+        "label": "D",
+        "teks": "Konsumsi barang impor secara berlebihan"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Mengolah limbah serbuk gergaji/tempurung menjadi briket baru yang bernilai guna adalah\ntindakan Recycle.",
+    "valid": true
+  },
+  {
+    "nomor": 24,
+    "nomor_global": 64,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Keberagaman Lingkungan Sekitar",
+    "materi": "Berkenalan dengan Lingkungan Alam (Litosfer, Atmosfer, Hidrosfer), Pembiasaan Melestarikan Lingkungan (Udara, Air, Tanah), Aktivitas Manusia Zaman Praaksara (Periodisasi Geologis & Arkeologis), serta Pembangunan Berkelanjutan & Kelangkaan",
+    "paket": "Bab II: Keberagaman Lingkungan Sekitar - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Bencana\ntanah longsor dan banjir bandang di daerah hilir sering dipicu oleh alih fungsi hutan lindung di daerah hulu\nmenjadi vila komersial dan lahan sayuran semusim tanpa pohon berakar tunggang. Hubungan kausalitas\nantara aktivitas manusia di daerah hulu dan dampak di daerah hilir ini menunjukkan konsep geografi ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Keunggulan mutlak perdagangan internasional antarnegara"
+      },
+      {
+        "label": "B",
+        "teks": "Letak astronomis yang memengaruhi perbedaan waktu antara hulu dan hilir"
+      },
+      {
+        "label": "C",
+        "teks": "Isolasi geografis yang membuat daerah hilir tidak pernah berhubungan dengan hulu"
+      },
+      {
+        "label": "D",
+        "teks": "Interaksi dan interdependensi keruangan antara wilayah hulu dan hilir dalam satu Daerah Aliran Sungai (DAS)"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Kerusakan hulu DAS yang memicu banjir di hilir menunjukkan interaksi dan ketergantungan\nkeruangan antarwilayah.",
+    "valid": true
+  },
+  {
+    "nomor": 25,
+    "nomor_global": 65,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Keberagaman Lingkungan Sekitar",
+    "materi": "Berkenalan dengan Lingkungan Alam (Litosfer, Atmosfer, Hidrosfer), Pembiasaan Melestarikan Lingkungan (Udara, Air, Tanah), Aktivitas Manusia Zaman Praaksara (Periodisasi Geologis & Arkeologis), serta Pembangunan Berkelanjutan & Kelangkaan",
+    "paket": "Bab II: Keberagaman Lingkungan Sekitar - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Di antara perilaku siswa di lingkungan sekolah berikut, manakah yang paling mencerminkan gaya hidup\nberkelanjutan (sustainable lifestyle) untuk mencegah kelangkaan air dan energi?",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Membawa botol minum isi ulang (tumbler), mematikan lampu/kipas angin kelas saat kosong, dan menutup keran air rapat-rapat setelah digunakan"
+      },
+      {
+        "label": "B",
+        "teks": "Membeli minuman kemasan plastik sekali pakai setiap jam istirahat dan membuangnya ke selokan"
+      },
+      {
+        "label": "C",
+        "teks": "Membiarkan keran air wastafel mengalir terus-menerus agar lantai kamar mandi tetap basah"
+      },
+      {
+        "label": "D",
+        "teks": "Mencetak seluruh tugas sekolah pada satu sisi kertas baru lalu membuang kertas yang salah ketik"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Menggunakan tumbler, mematikan listrik saat tidak dipakai, dan menghemat air mencer-\nminkan perilaku berkelanjutan.",
+    "valid": true
+  },
+  {
+    "nomor": 26,
+    "nomor_global": 66,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Keberagaman Lingkungan Sekitar",
+    "materi": "Berkenalan dengan Lingkungan Alam (Litosfer, Atmosfer, Hidrosfer), Pembiasaan Melestarikan Lingkungan (Udara, Air, Tanah), Aktivitas Manusia Zaman Praaksara (Periodisasi Geologis & Arkeologis), serta Pembangunan Berkelanjutan & Kelangkaan",
+    "paket": "Bab II: Keberagaman Lingkungan Sekitar - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Perhatikan bagan alur perkem-\nbangan kehidupan masyarakat masa Praaksara di Indonesia berikut!\nBAGAN EVOLUSI SOSIAL-EKONOMI MASYARAKAT ZAMAN PRAAKSARA\n1. Masa Berburu & Mengumpulkan Makanan Tingkat Sederhana (Nomaden, Food Gathering, Kapak Perim-\nbas) −→2. Masa Berburu & Meramu Tingkat Lanjut (Semi-Sedenter di Gua Abris Sous Roche, Kjokkenmod-\ndinger) −→3. [Tahap X: Revolusi Neolitikum] (Sedenter/Menetap, Bercocok Tanam, Beliung Persegi) −→4.\nMasa Perundagian (Spesialisasi Kerja Undagi, Teknik Bivalve & A Cire Perdue)\nBerdasarkan bagan alur di atas, perubahan fundamental yang terjadi pada Tahap X (Revolusi Neoli-\ntikum) terhadap corak kehidupan manusia praaksara adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Berpindahnya manusia purba dari rumah panggung permanen kembali ke hutan secara nomaden"
+      },
+      {
+        "label": "B",
+        "teks": "Ditemukannya mesin uap industri dan tulisan aksara Pallawa pada prasasti batu"
+      },
+      {
+        "label": "C",
+        "teks": "Perubahan dari food gathering (mengumpulkan makanan dari alam) menjadi food producing (meng- hasilkan makanan dengan bercocok tanam dan beternak secara menetap)"
+      },
+      {
+        "label": "D",
+        "teks": "Penggunaan mata uang kertas dan perbankan modern dalam perdagangan antarpulau"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Revolusi Neolitikum (Masa Bercocok Tanam) menandai peralihan besar dari food\ngathering (mengumpulkan makanan) menuju food producing (memproduksi makanan sendiri secara mene-\ntap/sedenter).",
+    "valid": true
+  },
+  {
+    "nomor": 27,
+    "nomor_global": 67,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Keberagaman Lingkungan Sekitar",
+    "materi": "Berkenalan dengan Lingkungan Alam (Litosfer, Atmosfer, Hidrosfer), Pembiasaan Melestarikan Lingkungan (Udara, Air, Tanah), Aktivitas Manusia Zaman Praaksara (Periodisasi Geologis & Arkeologis), serta Pembangunan Berkelanjutan & Kelangkaan",
+    "paket": "Bab II: Keberagaman Lingkungan Sekitar - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Bangsa Melayu Muda (Deutro\nMelayu) bermigrasi ke Kepulauan Nusantara sekitar tahun 500 SM melalui jalur barat (Yunan – Teluk\nTonkin – Vietnam – Semenanjung Malaka – Sumatra – Jawa) dengan membawa kebudayaan logam\n(Perunggu/Dongson). Suku bangsa di Indonesia saat ini yang merupakan keturunan langsung dari jalur\nmigrasi Deutro Melayu adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Suku Dayak, Toraja, Sasak, Nias, dan Batak (keturunan Proto Melayu)"
+      },
+      {
+        "label": "B",
+        "teks": "Suku Jawa, Sunda, Melayu, Bugis, dan Bali"
+      },
+      {
+        "label": "C",
+        "teks": "Suku Asmat, Dani, dan Korowai di Papua (keturunan Melanesoid)"
+      },
+      {
+        "label": "D",
+        "teks": "Suku Aborigin dan Maori di kawasan Pasifik Selatan"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Bangsa Deutro Melayu (Melayu Muda) menurunkan suku Jawa, Sunda, Melayu, Bugis,\ndan Bali; sedangkan Proto Melayu menurunkan Dayak, Toraja, Batak, Nias, dan Sasak.",
+    "valid": true
+  },
+  {
+    "nomor": 28,
+    "nomor_global": 68,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Keberagaman Lingkungan Sekitar",
+    "materi": "Berkenalan dengan Lingkungan Alam (Litosfer, Atmosfer, Hidrosfer), Pembiasaan Melestarikan Lingkungan (Udara, Air, Tanah), Aktivitas Manusia Zaman Praaksara (Periodisasi Geologis & Arkeologis), serta Pembangunan Berkelanjutan & Kelangkaan",
+    "paket": "Bab II: Keberagaman Lingkungan Sekitar - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Perhatikan tabel\nperbandingan hasil kebudayaan zaman batu dan zaman logam berikut!\nTABEL IDENTIFIKASI ARTEFAK ZAMAN PRAAKSARA NUSANTARA\nNo.\nNama Artefak\nKarakteristik Fisik & Fungsi\nPeriodisasi\n(1)\nKapak Genggam / Perimbas\nBatu dipangkas kasar satu sisi tanpa tangkai un-\ntuk menguliti buruan\nPaleolitikum\n(2)\nFlakes & Pipisan Batu\nAlat serpih batu kalsedon dan batu penggiling\nmakanan/cat merah di gua\nMesolitikum\n(3)\nKapak Persegi & Kapak\nLonjong\nBatu telah diasah halus di seluruh permukaan un-\ntuk membuka lahan tani\nNeolitikum\n(4)\nNekara, Moko, & Kapak\nCorong\nDicetak dari logam perunggu untuk upacara pe-\nmanggil hujan & tanda status\nPerundagian\nBerdasarkan tabel di atas, pasangan artefak yang membuktikan bahwa masyarakat Nusantara pada\nakhir masa praaksara telah menguasai teknologi peleburan bijih logam suhu tinggi dan memiliki stratifikasi\nsosial yang teratur ditunjukkan oleh nomor ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Nomor (3) karena kapak lonjong terbuat dari tanah liat yang dijemur di bawah sinar matahari"
+      },
+      {
+        "label": "B",
+        "teks": "Nomor (1) karena kapak perimbas dibuat tanpa proses pengasahan oleh Pithecanthropus erectus"
+      },
+      {
+        "label": "C",
+        "teks": "Nomor (2) karena alat serpih flakes hanya digunakan untuk mengupas umbi-umbian di gua"
+      },
+      {
+        "label": "D",
+        "teks": "Nomor (4) karena pembuatan nekara dan kapak corong menuntut keahlian khusus golongan undagi dengan teknik a cire perdue dan bivalve"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Nekara, moko, dan kapak corong (nomor 4) berasal dari zaman Perundagian (Logam)\nyang menuntut spesialisasi kerja golongan undagi dan teknik cetak logam.",
+    "valid": true
+  },
+  {
+    "nomor": 29,
+    "nomor_global": 69,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Keberagaman Lingkungan Sekitar",
+    "materi": "Berkenalan dengan Lingkungan Alam (Litosfer, Atmosfer, Hidrosfer), Pembiasaan Melestarikan Lingkungan (Udara, Air, Tanah), Aktivitas Manusia Zaman Praaksara (Periodisasi Geologis & Arkeologis), serta Pembangunan Berkelanjutan & Kelangkaan",
+    "paket": "Bab II: Keberagaman Lingkungan Sekitar - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Pada masa Mesolitikum (Batu Ten-\ngah), para arkeolog menemukan tumpukan bukit kerang dan siput yang telah membatu setinggi beberapa\nmeter di sepanjang pantai timur Sumatra (antara Langsa di Aceh hingga Medan), serta gua-gua karang\ntempat tinggal di Sampung (Ponorogo) dan Maros (Sulawesi Selatan). Istilah arkeologi untuk tumpukan\nsampah dapur kulit kerang dan gua tempat tinggal tersebut secara berturut-turut adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Kjokkenmoddinger dan Abris sous roche"
+      },
+      {
+        "label": "B",
+        "teks": "Abris sous roche dan Sarkofagus"
+      },
+      {
+        "label": "C",
+        "teks": "Menhir dan Punden berundak"
+      },
+      {
+        "label": "D",
+        "teks": "Dolmen dan Waruga"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Kjokkenmoddinger adalah bukit kerang sampah dapur zaman Mesolitikum; Abris sous\nroche adalah gua karang tempat tinggal manusia purba.",
+    "valid": true
+  },
+  {
+    "nomor": 30,
+    "nomor_global": 70,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Keberagaman Lingkungan Sekitar",
+    "materi": "Berkenalan dengan Lingkungan Alam (Litosfer, Atmosfer, Hidrosfer), Pembiasaan Melestarikan Lingkungan (Udara, Air, Tanah), Aktivitas Manusia Zaman Praaksara (Periodisasi Geologis & Arkeologis), serta Pembangunan Berkelanjutan & Kelangkaan",
+    "paket": "Bab II: Keberagaman Lingkungan Sekitar - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Perhatikan\nbagan empat pilar Pembangunan Berkelanjutan (Sustainable Development) berikut!\nBAGAN EMPAT PILAR PEMBANGUNAN BERKELANJUTAN\nPembangunan Berkelanjutan =⇒(1) Pilar Ekonomi (Pertumbuhan efisien & bernilai tambah) + (2) Pilar\nSosial (Pengentasan kemiskinan & keadilan akses) + (3) Pilar Lingkungan (Konservasi biodiversitas & rendah\nemisi) + (4) Pilar Tata Kelola (Regulasi hukum AMDAL & transparansi)\nSebuah perusahaan perkebunan kelapa sawit membuka lahan baru dengan cara membakar hutan gam-\nbut secara masif agar biaya pembukaan lahan menjadi murah, namun asapnya memicu penyakit ISPA\nbagi warga sekitar dan memusnahkan habitat orang utan. Berdasarkan bagan di atas, tindakan perusa-\nhaan tersebut melanggar prinsip pembangunan berkelanjutan karena ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Terlalu mengutamakan pelestarian hutan gambut sehingga melupakan keuntungan perusahaan"
+      },
+      {
+        "label": "B",
+        "teks": "Hanya mengejar keuntungan jangka pendek (Pilar Ekonomi) dengan merusak daya dukung ekosistem (Pilar Lingkungan), membahayakan kesehatan warga (Pilar Sosial), dan melanggar hukum (Pilar Tata Kelola)"
+      },
+      {
+        "label": "C",
+        "teks": "Menyeimbangkan keempat pilar pembangunan secara harmonis dan ramah lingkungan"
+      },
+      {
+        "label": "D",
+        "teks": "Menerapkan prinsip tebang pilih tanam dan pengelolaan limbah nol emisi (zero waste)"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Pembakaran hutan gambut demi menekan biaya merupakan pelanggaran berat terhadap\nPilar Lingkungan, Pilar Sosial, dan Pilar Tata Kelola dalam pembangunan berkelanjutan.",
+    "valid": true
+  },
+  {
+    "nomor": 31,
+    "nomor_global": 71,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Keberagaman Lingkungan Sekitar",
+    "materi": "Berkenalan dengan Lingkungan Alam (Litosfer, Atmosfer, Hidrosfer), Pembiasaan Melestarikan Lingkungan (Udara, Air, Tanah), Aktivitas Manusia Zaman Praaksara (Periodisasi Geologis & Arkeologis), serta Pembangunan Berkelanjutan & Kelangkaan",
+    "paket": "Bab II: Keberagaman Lingkungan Sekitar - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Pohon jati dan meranti meru-\npakan komoditas hutan bernilai ekonomi tinggi untuk bahan baku mebel serta konstruksi bangunan. Agar\npemanfaatan sumber daya hutan tersebut tidak memicu kepunahan hayati dan bencana tanah longsor di\ndaerah aliran sungai (DAS), langkah pengelolaan yang paling tepat adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Membakar semak belukar di lereng pegunungan setiap menjelang musim kemarau"
+      },
+      {
+        "label": "B",
+        "teks": "Melakukan penebangan habis (clear cutting) seluruh pohon muda maupun tua sekaligus"
+      },
+      {
+        "label": "C",
+        "teks": "Mengalihfungsikan seluruh kawasan hutan lindung menjadi kawasan permukiman padat"
+      },
+      {
+        "label": "D",
+        "teks": "Menerapkan sistem Tebang Pilih Tanam Indonesia (TPTI) dan reboisasi berkelanjutan pada lahan kritis"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Pengelolaan hutan lestari wajib menerapkan Tebang Pilih Tanam Indonesia (TPTI) dan\nreboisasi agar fungsi hidrologis DAS terjaga.",
+    "valid": true
+  },
+  {
+    "nomor": 32,
+    "nomor_global": 72,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Keberagaman Lingkungan Sekitar",
+    "materi": "Berkenalan dengan Lingkungan Alam (Litosfer, Atmosfer, Hidrosfer), Pembiasaan Melestarikan Lingkungan (Udara, Air, Tanah), Aktivitas Manusia Zaman Praaksara (Periodisasi Geologis & Arkeologis), serta Pembangunan Berkelanjutan & Kelangkaan",
+    "paket": "Bab II: Keberagaman Lingkungan Sekitar - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Pencemaran tanah di kawasan perta-\nnian intensif sering kali disebabkan oleh penggunaan pupuk kimia sintetis dan pestisida secara berlebi-\nhan dalam jangka panjang yang mematikan mikroorganisme pengurai tanah. Solusi ramah lingkungan\n(ecofriendly) yang dapat diterapkan petani untuk memulihkan kesuburan tanah adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Beralih menggunakan pupuk organik/kompos, rotasi tanaman, dan pengendalian hama terpadu secara hayati"
+      },
+      {
+        "label": "B",
+        "teks": "Melipatgandakan dosis pestisida kimia agar seluruh serangga tanah musnah seketika"
+      },
+      {
+        "label": "C",
+        "teks": "Menimbun limbah plastik kemasan pestisida di bawah lapisan tanah sawah"
+      },
+      {
+        "label": "D",
+        "teks": "Menyiram lahan pertanian menggunakan air limbah deterjen rumah tangga"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Pemulihan tanah tercemar bahan kimia dilakukan melalui pupuk organik/kompos, rotasi\ntanaman, dan pengendalian hama hayati.",
+    "valid": true
+  },
+  {
+    "nomor": 33,
+    "nomor_global": 73,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Keberagaman Lingkungan Sekitar",
+    "materi": "Berkenalan dengan Lingkungan Alam (Litosfer, Atmosfer, Hidrosfer), Pembiasaan Melestarikan Lingkungan (Udara, Air, Tanah), Aktivitas Manusia Zaman Praaksara (Periodisasi Geologis & Arkeologis), serta Pembangunan Berkelanjutan & Kelangkaan",
+    "paket": "Bab II: Keberagaman Lingkungan Sekitar - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Perhatikan tabel karakteristik\nlapisan-lapisan atmosfer bumi berikut!\nTABEL KARAKTERISTIK VERTIKAL LAPISAN ATMOSFER BUMI\nNama Lapisan\nKetinggian\nFungsi & Fenomena Utama\n1. Troposfer\n0–12 km\nTempat berlangsungnya cuaca: awan, hujan, angin, petir;\nsuhu turun 0, 6◦C/100 m\n2. Stratosfer\n12–50 km\nTerdapat lapisan Ozon (O3) penyerap radiasi ultraviolet;\njalur pesawat jet\n3. Mesosfer\n50–80 km\nPelindung bumi yang membakar meteor dari luar angkasa\nsebelum jatuh ke bumi\n4. Termosfer (Ionosfer)\n80–800 km\nTerjadi ionisasi partikel pemantul gelombang radio dan\nfenomena cahaya Aurora\nBerdasarkan tabel di atas, pelepasan gas Chlorofluorocarbon (CFC) dari perangkat pendingin tua yang\nmerusak lapisan pelindung radiasi ultraviolet matahari serta aktivitas pemantulan gelombang komunikasi\nradio jarak jauh secara berturut-turut berlangsung pada lapisan ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Lapisan Mesosfer dan Lapisan Troposfer"
+      },
+      {
+        "label": "B",
+        "teks": "Lapisan Troposfer dan Lapisan Mesosfer"
+      },
+      {
+        "label": "C",
+        "teks": "Lapisan Stratosfer (tempat lapisan ozon O3) dan Lapisan Termosfer/Ionosfer"
+      },
+      {
+        "label": "D",
+        "teks": "Lapisan Eksosfer dan Lapisan Litosfer kerak bumi"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Lapisan ozon (O3) berada di Stratosfer (12–50 km), sedangkan pemantulan gelombang\nradio terjadi di lapisan Termosfer/Ionosfer.",
+    "valid": true
+  },
+  {
+    "nomor": 34,
+    "nomor_global": 74,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Keberagaman Lingkungan Sekitar",
+    "materi": "Berkenalan dengan Lingkungan Alam (Litosfer, Atmosfer, Hidrosfer), Pembiasaan Melestarikan Lingkungan (Udara, Air, Tanah), Aktivitas Manusia Zaman Praaksara (Periodisasi Geologis & Arkeologis), serta Pembangunan Berkelanjutan & Kelangkaan",
+    "paket": "Bab II: Keberagaman Lingkungan Sekitar - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Nilai-nilai luhur kebu-\ndayaan masyarakat masa Praaksara yang masih relevan dan patut dilestarikan oleh pelajar Indonesia\npada abad ke-21, sebagaimana tercermin dari tradisi membangun rumah adat bersama dan pelayaran\nperahu bercadik menyeberangi samudra, adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Sikap individualisme ekstrem dan penolakan terhadap kerja sama kelompok"
+      },
+      {
+        "label": "B",
+        "teks": "Nilai gotong royong, musyawarah, religiusitas, serta ketangguhan jiwa bahari/maritim"
+      },
+      {
+        "label": "C",
+        "teks": "Pola hidup nomaden yang merusak fasilitas umum di lingkungan sekitar"
+      },
+      {
+        "label": "D",
+        "teks": "Penyelesaian setiap perbedaan pendapat melalui peperangan antarkampung"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Nilai luhur masa praaksara yang wajib dilestarikan adalah gotong royong, musyawarah,\nreligiusitas, dan jiwa bahari.",
+    "valid": true
+  },
+  {
+    "nomor": 35,
+    "nomor_global": 75,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Keberagaman Lingkungan Sekitar",
+    "materi": "Berkenalan dengan Lingkungan Alam (Litosfer, Atmosfer, Hidrosfer), Pembiasaan Melestarikan Lingkungan (Udara, Air, Tanah), Aktivitas Manusia Zaman Praaksara (Periodisasi Geologis & Arkeologis), serta Pembangunan Berkelanjutan & Kelangkaan",
+    "paket": "Bab II: Keberagaman Lingkungan Sekitar - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Sebuah kota pesisir\nberpenduduk 1, 2 juta jiwa mengalami penyedotan air tanah dalam secara berlebihan oleh gedung-\ngedung bertingkat, sementara kawasan hutan mangrove di pesisirnya ditebang untuk tambak intensif.\nDampak ekologis berantai yang paling mengancam keberlangsungan ruang hidup warga kota tersebut\nadalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Peningkatan cadangan air tawar bawah tanah secara drastis sepanjang musim kemarau"
+      },
+      {
+        "label": "B",
+        "teks": "Terbentuknya pegunungan lipatan baru yang kaya akan cadangan batu bara"
+      },
+      {
+        "label": "C",
+        "teks": "Penurunan muka tanah (land subsidence), intrusi air asin ke sumur warga, dan abrasi pantai disertai banjir rob"
+      },
+      {
+        "label": "D",
+        "teks": "Menurunnya suhu rata-rata permukaan laut global hingga membeku"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Eksploitasi air tanah berlebih dan rusaknya mangrove memicu penurunan muka tanah\n(land subsidence), intrusi air laut, dan abrasi/banjir rob.",
+    "valid": true
+  },
+  {
+    "nomor": 36,
+    "nomor_global": 76,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Keberagaman Lingkungan Sekitar",
+    "materi": "Berkenalan dengan Lingkungan Alam (Litosfer, Atmosfer, Hidrosfer), Pembiasaan Melestarikan Lingkungan (Udara, Air, Tanah), Aktivitas Manusia Zaman Praaksara (Periodisasi Geologis & Arkeologis), serta Pembangunan Berkelanjutan & Kelangkaan",
+    "paket": "Bab II: Keberagaman Lingkungan Sekitar - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "[Pilihan\nGanda Kompleks — Analisis Ekosistem & Pembangunan Berkelanjutan] Evaluasilah konsep zonasi\nekosistem darat-pesisir dan integrasi kearifan pelestarian lingkungan berikut! Pernyataan yang benar\nmengenai fungsi ekologis dan ekonomi berkelanjutan dari ekosistem tersebut adalah .... (Pilih lebih dari\nsatu jawaban benar)\n\nPernyataan Analisis:\n(1) Hutan mangrove di pesisir berfungsi menahan abrasi gelombang laut sekaligus menjadi tempat pemijahan (spawning ground) ikan dan udang.\n(2) Hutan hujan tropis di daerah hulu berfungsi sebagai kawasan resapan air (catchment area) dan penyerap emisi karbon (CO2).\n(3) Terumbu karang yang sehat mendukung ekonomi masyarakat pesisir melalui perikanan lestari dan ekowisata bahari.\n(4) Konversi seluruh hutan mangrove menjadi tambak intensif dan pabrik beton tidak akan memengaruhi garis pantai maupun populasi ikan.\n\nPernyataan yang tepat adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Pernyataan (1), (2), dan (3) benar"
+      },
+      {
+        "label": "B",
+        "teks": "Pernyataan (1) dan (4) saja yang benar"
+      },
+      {
+        "label": "C",
+        "teks": "Pernyataan (2) dan (4) saja yang benar"
+      },
+      {
+        "label": "D",
+        "teks": "Semua pernyataan (1), (2), (3), dan (4) benar"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Mangrove menahan abrasi & menjadi tempat pemijahan (A); hutan hulu\nmeresapkan air & menyerap karbon (B); terumbu karang menopang perikanan & ekowisata (C).",
+    "valid": true
+  },
+  {
+    "nomor": 37,
+    "nomor_global": 77,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Keberagaman Lingkungan Sekitar",
+    "materi": "Berkenalan dengan Lingkungan Alam (Litosfer, Atmosfer, Hidrosfer), Pembiasaan Melestarikan Lingkungan (Udara, Air, Tanah), Aktivitas Manusia Zaman Praaksara (Periodisasi Geologis & Arkeologis), serta Pembangunan Berkelanjutan & Kelangkaan",
+    "paket": "Bab II: Keberagaman Lingkungan Sekitar - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "[Pilihan Ganda Kompleks — Kehidupan Manusia Masa Praaksara] Evaluasilah karakteristik kehidupan\nmasyarakat praaksara di Nusantara berikut! Pernyataan yang tepat adalah ....\n\nPernyataan Analisis:\n(1) Pada masa berburu dan mengumpulkan makanan tingkat sederhana (Paleolitikum), manusia hidup nomaden dalam kelompok kecil.\n(2) Penemuan api dan pembuatan gerabah dari tanah liat berkembang pesat ketika manusia mulai mengenal cara mengolah makanan.\n(3) Kapak persegi dan kapak lonjong merupakan alat batu yang telah diasah halus dari masa bercocok tanam (Neolitikum).\n(4) Manusia pada masa Paleolitikum telah mengenal sistem kerajaan, tulisan prasasti batu, dan mata uang logam emas.\n\nPernyataan yang tepat adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Pernyataan (1), (2), dan (3) benar"
+      },
+      {
+        "label": "B",
+        "teks": "Pernyataan (1) dan (4) saja yang benar"
+      },
+      {
+        "label": "C",
+        "teks": "Pernyataan (2) dan (4) saja yang benar"
+      },
+      {
+        "label": "D",
+        "teks": "Semua pernyataan (1), (2), (3), dan (4) benar"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Masa Paleolitikum hidup nomaden (A), mengenal api & gerabah (B),\ndan kapak persegi/lonjong diasah halus pada masa Neolitikum (C). Tulisan prasasti baru dikenal pada masa\naksara/sejarah (D salah).",
+    "valid": true
+  },
+  {
+    "nomor": 38,
+    "nomor_global": 78,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Keberagaman Lingkungan Sekitar",
+    "materi": "Berkenalan dengan Lingkungan Alam (Litosfer, Atmosfer, Hidrosfer), Pembiasaan Melestarikan Lingkungan (Udara, Air, Tanah), Aktivitas Manusia Zaman Praaksara (Periodisasi Geologis & Arkeologis), serta Pembangunan Berkelanjutan & Kelangkaan",
+    "paket": "Bab II: Keberagaman Lingkungan Sekitar - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "[Tabel Cen-\ntang Benar / Salah — Pencemaran & Pelestarian Lingkungan] Berilah tanda centang (✓) pada kolom\nBenar atau Salah untuk setiap pernyataan lingkungan hidup berikut!\n\nPernyataan Evaluasi:\n(a) Penggunaan pupuk organik (kompos/kandang) dan rotasi tanaman membantu menjaga struktur kesuburan tanah dalam jangka panjang.\n(b) Gas klorofluorokarbon (CFC) dari kaleng aerosol dan pendingin lama dapat merusak lapisan ozon (O3) di stratosfer.\n(c) Air hujan yang jatuh di kawasan hutan gundul akan mengalami infiltrasi lebih besar dibandingkan di kawasan hutan lebat.\n\nKombinasi analisis nilai kebenaran (Benar/Salah) yang tepat berturut-turut adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(a) Benar, (b) Benar, (c) Salah"
+      },
+      {
+        "label": "B",
+        "teks": "(a) Benar, (b) Salah, (c) Salah"
+      },
+      {
+        "label": "C",
+        "teks": "(a) Salah, (b) Benar, (c) Benar"
+      },
+      {
+        "label": "D",
+        "teks": "(a) Benar, (b) Benar, (c) Benar"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "(c) Salah, karena di hutan gundul infiltrasi justru sangat kecil\ndan sebagian besar air menjadi aliran permukaan (run-off) pemicu banjir.",
+    "valid": true
+  },
+  {
+    "nomor": 39,
+    "nomor_global": 79,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Keberagaman Lingkungan Sekitar",
+    "materi": "Berkenalan dengan Lingkungan Alam (Litosfer, Atmosfer, Hidrosfer), Pembiasaan Melestarikan Lingkungan (Udara, Air, Tanah), Aktivitas Manusia Zaman Praaksara (Periodisasi Geologis & Arkeologis), serta Pembangunan Berkelanjutan & Kelangkaan",
+    "paket": "Bab II: Keberagaman Lingkungan Sekitar - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "[Tabel Centang\nBenar / Salah — Zaman Praaksara & Kelangkaan Ekonomi] Evaluasilah kebenaran pernyataan sejarah\ndan ekonomi berikut!\n\nPernyataan Evaluasi:\n(a) Abris sous roche adalah gua-gua karang yang dijadikan tempat tinggal sementara oleh manusia purba pada masa Mesolitikum.\n(b) Kelangkaan sumber daya ekonomi hanya dialami oleh negara-negara miskin dan tidak pernah dialami oleh negara maju.\n(c) Prinsip Reduce, Reuse, Recycle (3R) membantu menekan laju ke- langkaan bahan baku alam sekaligus mengurangi timbunan limbah.\n\nKombinasi analisis nilai kebenaran (Benar/Salah) yang tepat berturut-turut adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(a) Benar, (b) Salah, (c) Benar"
+      },
+      {
+        "label": "B",
+        "teks": "(a) Benar, (b) Salah, (c) Salah"
+      },
+      {
+        "label": "C",
+        "teks": "(a) Salah, (b) Benar, (c) Benar"
+      },
+      {
+        "label": "D",
+        "teks": "(a) Benar, (b) Benar, (c) Benar"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "(b) Salah, karena semua negara (termasuk negara maju)\ntetap menghadapi masalah kelangkaan sumber daya.",
+    "valid": true
+  },
+  {
+    "nomor": 40,
+    "nomor_global": 80,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Keberagaman Lingkungan Sekitar",
+    "materi": "Berkenalan dengan Lingkungan Alam (Litosfer, Atmosfer, Hidrosfer), Pembiasaan Melestarikan Lingkungan (Udara, Air, Tanah), Aktivitas Manusia Zaman Praaksara (Periodisasi Geologis & Arkeologis), serta Pembangunan Berkelanjutan & Kelangkaan",
+    "paket": "Bab II: Keberagaman Lingkungan Sekitar - Kelas VII SMP",
+    "kelas": 7,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Suatu stasiun meteorologi di pantai mencatat suhu udara permukaan (0 mdpl) sebesar 28◦C. Berdasarkan\nhukum gradien termometrik (normal lapse rate di lapisan troposfer, di mana suhu turun 0, 6◦C setiap ke-\nnaikan 100 meter), berapakah suhu udara di Desa Wisata Lereng Gunung pada ketinggian 1.500 mdpl dan\njenis komoditas perkebunan apa yang paling cocok dibudidayakan secara berkelanjutan di desa tersebut?",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Suhu udara 37◦C; cocok untuk tanaman kaktus gurun pasir kering"
+      },
+      {
+        "label": "B",
+        "teks": "Suhu udara 25◦C; cocok untuk perkebunan kelapa pantai dan tambak garam"
+      },
+      {
+        "label": "C",
+        "teks": "Suhu udara 9◦C; hanya dapat ditumbuhi lumut tundra kutub"
+      },
+      {
+        "label": "D",
+        "teks": "Suhu udara 19◦C; cocok untuk perkebunan teh, kopi arabika, dan hortikultura sayuran dengan sistem terasering"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Penurunan suhu ∆T =\n1.500\n100\n× 0, 6◦C = 15 × 0, 6◦C = 9◦C. Suhu di ketinggian\n1.500 mdpl adalah 28◦C −9◦C = 19◦C (zona sejuk/sedang), sangat ideal untuk teh, kopi arabika, dan\n\nsayuran.",
+    "valid": true
+  }
+]
