@@ -303,23 +303,64 @@ export default function ModalSiapkanLatihanSesi({
     const fetchBankSoal = async () => {
       setLoadingBank(true);
       try {
-        let qBank;
+        const rawDocs = new Map();
+        const namaLengkap = namaMapelLengkap(kodeMapel) || '';
+        const mapelAliases = {
+          bind: ['Bahasa Indonesia', 'bahasa indonesia', 'bind', 'BIND', 'B. Indonesia', 'Bahasa Indo'],
+          ipa: ['Ilmu Pengetahuan Alam (IPA)', 'Ilmu Pengetahuan Alam', 'IPA', 'ipa', 'Sains'],
+          ips: ['Ilmu Pengetahuan Sosial (IPS)', 'Ilmu Pengetahuan Sosial', 'IPS', 'ips'],
+          bing: ['Bahasa Inggris', 'bahasa inggris', 'bing', 'BING', 'English', 'B. Inggris'],
+          mtk: ['Matematika', 'matematika', 'mtk', 'MTK', 'Math'],
+        };
+        const variasiMapel = Array.from(new Set([
+          ...(mapelAliases[kodeMapel] || []),
+          kodeMapel,
+          normalisasiKodeMapel(kodeMapel),
+          namaLengkap,
+          namaLengkap.toLowerCase(),
+        ].filter(Boolean)));
+
+        // 1. Coba query tertarget mataPelajaran
         try {
-          qBank = query(
+          const q1 = query(
             collection(db, 'bank_soal'),
-            where('status', '==', 'aktif'),
-            limit(100)
+            where('mataPelajaran', 'in', variasiMapel.slice(0, 10)),
+            limit(500)
           );
-        } catch {
-          qBank = query(collection(db, 'bank_soal'), limit(100));
+          const snap1 = await getDocs(q1);
+          snap1.forEach((d) => rawDocs.set(d.id, { id: d.id, ...d.data() }));
+        } catch (_e1) {
+          // Abaikan jika query 'in' mataPelajaran belum diindeks
         }
 
-        const snap = await getDocs(qBank);
+        // 2. Coba query tertarget mapel
+        try {
+          const q2 = query(
+            collection(db, 'bank_soal'),
+            where('mapel', 'in', variasiMapel.slice(0, 10)),
+            limit(500)
+          );
+          const snap2 = await getDocs(q2);
+          snap2.forEach((d) => rawDocs.set(d.id, { id: d.id, ...d.data() }));
+        } catch (_e2) {
+          // Abaikan jika query 'in' mapel belum diindeks
+        }
+
+        // 3. Fallback: jika hasil tertarget masih sedikit (< 10), ambil dari koleksi umum dengan batas lebih besar (1000)
+        if (rawDocs.size < 10) {
+          try {
+            const qUmum = query(collection(db, 'bank_soal'), limit(1000));
+            const snapUmum = await getDocs(qUmum);
+            snapUmum.forEach((d) => rawDocs.set(d.id, { id: d.id, ...d.data() }));
+          } catch (_e3) {
+            // Abaikan
+          }
+        }
+
         if (!mounted) return;
 
         const items = [];
-        snap.forEach((d) => {
-          const raw = { id: d.id, ...d.data() };
+        rawDocs.forEach((raw) => {
           const norm = normalisasiButirSoal(raw, items.length);
           if (norm && norm.teksSoal) {
             items.push(norm);
@@ -331,13 +372,23 @@ export default function ModalSiapkanLatihanSesi({
           const m = normalisasiKodeMapel(it.mapel);
           if (m !== kodeMapel) return false;
 
-          const teksGabungan = `${it.jenjang || ''} ${it.tingkatKelas || ''} ${it.fase || ''} ${it.materi || ''} ${it.teksSoal || ''}`.toLowerCase();
+          // Jangan muat yang statusnya nonaktif atau draf
+          if (it.status && it.status !== 'aktif') return false;
+
+          const identitasKetat = `${it.jenjang || ''} ${it.tingkatKelas || ''} ${it.fase || ''} ${it.paket || ''} ${it.materi || ''}`.toLowerCase();
 
           // Saring ketat materi SMA/UTBK agar tidak menyusup ke sesi SMP atau SD
           if (jenjangSesi === 'smp' || jenjangSesi === 'sd') {
-            const isSMA = /\b(sma|smk|ma|utbk|snbt|fase e|fase f|kelas 10|kelas 11|kelas 12|kelas x\b|kelas xi\b|kelas xii\b)\b/i.test(teksGabungan);
-            const isSMAKeyword = /trigonometri|\bsin\b|\bcos\b|\btan\b|\\sin|\\cos|\\tan|komposisi\s+fungsi|fungsi\s+invers|turunan|integral|matriks|vektor|eksponen|logaritma|dimensi tiga/i.test(teksGabungan);
-            if (isSMA || isSMAKeyword) return false;
+            const isSMA = /\b(sma|smk|utbk|snbt|fase e|fase f|kelas 10|kelas 11|kelas 12|kelas x\b|kelas xi\b|kelas xii\b)\b/i.test(identitasKetat);
+            if (isSMA) return false;
+
+            // Kata kunci matematika SMA HANYA disaring jika mapelnya Matematika
+            if (kodeMapel === 'mtk') {
+              const isSMAKeyword = /trigonometri|\bsin\b|\bcos\b|\btan\b|\\sin|\\cos|\\tan|komposisi\s+fungsi|fungsi\s+invers|turunan|integral|matriks|vektor|eksponen|logaritma|dimensi tiga/i.test(
+                `${identitasKetat} ${it.teksSoal || ''}`.toLowerCase()
+              );
+              if (isSMAKeyword) return false;
+            }
           }
 
           if (jenjangSesi === 'smp') {
