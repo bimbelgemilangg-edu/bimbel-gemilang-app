@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { useProfilSiswa } from '../utils/profilSiswa';
 import { useDataTargetKampus } from '../services/dataTargetKampus';
+import { deteksiJenjangUjianAkhir } from '../utils/jalurUjianAiConfig';
 
 // Logo dari folder public
 const LogoBimbel = "/logo-gemilang.png";
@@ -48,6 +49,9 @@ const SidebarSiswa = ({ activeMenu, setActiveMenu, isOpen, setIsOpen }) => {
     { jenjang: profil.jenjang, kelasSekolah: profil.kelasSekolah || profil.kelas },
   );
 
+  // 🚀 Jalur Ujian AI: HANYA muncul untuk jenjang akhir (6 SD, 9 SMP, 12 SMA/UTBK)
+  const targetUjianAi = deteksiJenjangUjianAkhir(profil);
+
   const menuGroups = [
     {
       label: null,
@@ -64,14 +68,17 @@ const SidebarSiswa = ({ activeMenu, setActiveMenu, isOpen, setIsOpen }) => {
     {
       label: 'BELAJAR',
       items: [
-        // MATERI v2 (mockup Gemilang Biru) -- route /siswa/belajar.
-        // Menu lama (E-Learning, Buku Digital via dashboard) tetap ada
-        // sampai switch Fase 5; lihat docs/RENCANA-ROMBAK-MATERI.md.
-        // 🔥 14 Okt 2026 (owner): menu Try Out & Latihan Harian AI sebelumnya
-        // TIDAK ADA di sidebar padahal rute & halamannya hidup — siswa hanya
-        // bisa masuk lewat kartu dashboard. Visi super app: latihan harian
-        // ala Duolingo (AI) adalah pintu latihan TKA→UTBK sehari-hari.
-        { id: 'tryout', label: 'Try Out & Misi', icon: <Rocket size={18} />, path: '/siswa/tryout', color: '#f97316' },
+        // 🚀 Jalur Ujian AI (khusus kelas 6 SD, 9 SMP, 12 SMA) - Peta bertingkat tanpa deadline
+        ...(targetUjianAi ? [{
+          id: 'jalur-ujian-ai',
+          label: 'Jalur Ujian AI',
+          icon: <Rocket size={18} />,
+          path: '/siswa/jalur-ujian-ai',
+          color: '#0d9488',
+          badge: targetUjianAi.labelBadge,
+        }] : []),
+        // Menu Try Out biasa murni untuk try out manual terbitan tentor/admin
+        { id: 'tryout', label: 'Try Out Kelas', icon: <Rocket size={18} />, path: '/siswa/tryout', color: '#f97316' },
         { id: 'latihan-harian', label: 'Latihan Harian', icon: <Flame size={18} />, path: '/siswa/latihan-harian', color: '#dc2626' },
         { id: 'belajar', label: 'Materi Belajar', icon: <Library size={18} />, path: '/siswa/belajar', color: '#1E9BF0', badge: 'BARU' },
         { id: 'materi', label: 'E-Learning', icon: <BookOpen size={18} />, path: '/siswa/materi', color: '#10b981' },

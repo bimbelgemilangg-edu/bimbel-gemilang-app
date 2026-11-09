@@ -13,6 +13,7 @@ import { RAPORT_COLLECTIONS } from '../../firebase/raportCollection';
 import { ChipTargetSiswa, KartuTargetSiswa } from '../../components/BannerTargetSiswa';
 import StudentDigitalCard from '../../components/StudentDigitalCard';
 import MaskotAstronot from '../../components/MaskotAstronot';
+import { deteksiJenjangUjianAkhir } from '../../utils/jalurUjianAiConfig';
 import {
   BookOpen, Calendar, ClipboardList, X, Camera, User, MapPin,
   Trophy, ArrowRight, AlertCircle, Award, Bell, Download,
@@ -720,6 +721,54 @@ const StudentDashboard = () => {
                 null untuk siswa yang tidak didaftarkan admin, jadi dashboard
                 SD/SMP/kelas 10-11 tidak berubah sedikit pun. */}
             <KartuTargetSiswa studentId={studentId} profil={studentProfile} />
+
+            {/* 🚀 BANNER JALUR UJIAN AI — Khusus Kelas 6 SD, 9 SMP, 12 SMA/UTBK (Tanpa Deadline) */}
+            {(() => {
+              const targetUjianAi = deteksiJenjangUjianAkhir(studentProfile || { kelasSekolah: studentKelas });
+              if (!targetUjianAi) return null;
+              return (
+                <div
+                  onClick={() => navigate('/siswa/jalur-ujian-ai')}
+                  style={{
+                    marginTop: 14,
+                    background: 'linear-gradient(135deg, #14b8a6 0%, #0d9488 100%)',
+                    borderRadius: 18,
+                    padding: '14px 18px',
+                    color: '#ffffff',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    cursor: 'pointer',
+                    boxShadow: '0 6px 18px rgba(13, 148, 136, 0.28)',
+                    position: 'relative',
+                    overflow: 'hidden',
+                  }}
+                  title="Buka Peta Ekspedisi Jalur Ujian AI"
+                >
+                  <div style={{ position: 'relative', zIndex: 2 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
+                      <span style={{ background: '#f97316', fontSize: 10, fontWeight: 900, padding: '2px 7px', borderRadius: 99 }}>
+                        {targetUjianAi.labelBadge}
+                      </span>
+                      <span style={{ fontSize: 11, fontWeight: 700, color: '#ccfbf1' }}>
+                        Jalur Misi Tanpa Deadline
+                      </span>
+                    </div>
+                    <div style={{ fontSize: 15, fontWeight: 800, color: '#ffffff' }}>
+                      {targetUjianAi.subJudul}
+                    </div>
+                    <div style={{ fontSize: 11.5, color: '#e6fffa', marginTop: 2 }}>
+                      Taklukkan unit bertingkat & pantau analisis kemampuan AI 🚀
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, position: 'relative', zIndex: 2 }}>
+                    <div style={{ width: 44, height: 44, borderRadius: '50%', background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Rocket size={22} color="#ffffff" />
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, position: 'relative' }}>
             <button

@@ -132,6 +132,7 @@ import TerbitkanTryOutPage from './pages/admin/bank-soal/TerbitkanTryOutPage';
 import HasilTryOutAdminPage from './pages/admin/bank-soal/HasilTryOutAdminPage';
 import AnalitikBelajarPage from './pages/admin/analitik/AnalitikBelajarPage';
 import PilihTampilanTryOut from './pages/student/tryout/PilihTampilanTryOut';
+import JalurUjianAiPage from './pages/student/tryout/JalurUjianAiPage';
 import TryOutView from './pages/student/tryout/TryOutView';
 import HasilKuisAdminPage from './pages/admin/bank-soal/HasilKuisAdminPage';
 import LatihanAktivitasPage from './pages/admin/bank-soal/LatihanAktivitasPage';
@@ -977,6 +978,8 @@ function App() {
             ==================================================== */}
         <Route path="/siswa/dashboard" element={<SiswaPage><StudentDashboard /></SiswaPage>} />
         <Route path="/siswa/tryout" element={<SiswaPageBelajar fitur="Try Out"><PilihTampilanTryOut /></SiswaPageBelajar>} />
+        {/* 🚀 Jalur Misi Ujian AI (Ekspedisi Kosmik TKA & UTBK untuk jenjang akhir 6 SD, 9 SMP, 12 SMA) */}
+        <Route path="/siswa/jalur-ujian-ai" element={<SiswaPageBelajar fitur="Try Out"><JalurUjianAiPage /></SiswaPageBelajar>} />
         {/* 🔖 20 Okt: arsip kode soal siswa (sinkron buku tulis <-> sistem) */}
         <Route path="/siswa/kode-soal" element={<SiswaPage><KodeSoalSiswaPage /></SiswaPage>} />
         <Route path="/siswa/tryout/:paketId" element={<SiswaFiturBelajar fitur="Try Out"><TryOutView /></SiswaFiturBelajar>} />

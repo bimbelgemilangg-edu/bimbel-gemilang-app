@@ -26,7 +26,7 @@
 // ============================================================
 
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { db } from '../../../firebase';
 import { filterSoalTryOutByMapelSiswa } from '../../../utils/aksesKontenSiswa';
 import {
@@ -149,6 +149,7 @@ function formatAngkaSkala(n) {
 export default function TryOutView() {
   const { paketId } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const studentId = localStorage.getItem('studentId');
 
   const [tahap, setTahap] = useState('memuat'); // 'memuat' | 'mulai' | 'mengerjakan' | 'selesai'
@@ -346,35 +347,36 @@ export default function TryOutView() {
           }
         }
       } else {
-        // Cek jadwal buka/deadline SEBELUM kasih tahap 'mulai'. Jaga-
-        // jaga kalau siswa buka link try out langsung (bukan lewat
-        // daftar yang udah nge-filter duluan).
-        // "Kini" = jam perangkat + offset kalibrasi header Date server.
-        const sekarangMs = Date.now() + offsetWaktuRef.current;
-        const waktuBukaMs = dataPaket.waktuBuka ? new Date(dataPaket.waktuBuka).getTime() : null;
-        const waktuTutupMs = dataPaket.waktuTutup ? new Date(dataPaket.waktuTutup).getTime() : null;
-        let izinBerlaku = false;
-        if (waktuTutupMs !== null && sekarangMs > waktuTutupMs) {
-          // "Izin Ulang Khusus" -- admin bisa kasih 1 siswa izin buat
-          // ngerjain LAGI walau deadline PAKET-nya udah lewat, TANPA
-          // harus buka deadline itu buat semua orang.
-          const snapIzin = await getDoc(doc(db, 'tryout_izin_ulang', `${paketId}_${studentId}`));
-          izinBerlaku = snapIzin.exists() && sekarangMs < new Date(snapIzin.data().waktuBerlakuSampai).getTime();
-        }
-        const putusan = putuskanAksesJendela({
-          adaSesiBerjalan: false,
-          sekarangMs,
-          waktuBukaMs,
-          waktuTutupMs,
-          izinBerlaku,
-        });
-        if (putusan.aksi === 'lewat-deadline') {
-          setTahap('lewat-deadline');
-          return;
-        }
-        if (putusan.aksi === 'belum-dibuka') {
-          setTahap('belum-dibuka');
-          return;
+        // Cek jadwal buka/deadline SEBELUM kasih tahap 'mulai'.
+        // 🚀 KECUALI JALUR UJIAN AI: tanpa deadline, selalu terbuka bertahap sesuai keaktifan siswa!
+        const isJalurAiPaket = Boolean(dataPaket.jalurUjianAi || searchParams.get('jalur') === 'ai');
+        if (!isJalurAiPaket) {
+          const sekarangMs = Date.now() + offsetWaktuRef.current;
+          const waktuBukaMs = dataPaket.waktuBuka ? new Date(dataPaket.waktuBuka).getTime() : null;
+          const waktuTutupMs = dataPaket.waktuTutup ? new Date(dataPaket.waktuTutup).getTime() : null;
+          let izinBerlaku = false;
+          if (waktuTutupMs !== null && sekarangMs > waktuTutupMs) {
+            // "Izin Ulang Khusus" -- admin bisa kasih 1 siswa izin buat
+            // ngerjain LAGI walau deadline PAKET-nya udah lewat, TANPA
+            // harus buka deadline itu buat semua orang.
+            const snapIzin = await getDoc(doc(db, 'tryout_izin_ulang', `${paketId}_${studentId}`));
+            izinBerlaku = snapIzin.exists() && sekarangMs < new Date(snapIzin.data().waktuBerlakuSampai).getTime();
+          }
+          const putusan = putuskanAksesJendela({
+            adaSesiBerjalan: false,
+            sekarangMs,
+            waktuBukaMs,
+            waktuTutupMs,
+            izinBerlaku,
+          });
+          if (putusan.aksi === 'lewat-deadline') {
+            setTahap('lewat-deadline');
+            return;
+          }
+          if (putusan.aksi === 'belum-dibuka') {
+            setTahap('belum-dibuka');
+            return;
+          }
         }
         setTahap('mulai');
       }
@@ -1235,9 +1237,30 @@ export default function TryOutView() {
           );
         })}
 
-        <button type="button" onClick={() => navigate('/siswa/dashboard')} style={st.tombolUtama}>
-          Kembali ke Dashboard
-        </button>
+        {/* 🚀 Arahkan kembali ke Jalur Ujian AI jika ini paket ekspedisi AI */}
+        {(paket?.jalurUjianAi || searchParams.get('jalur') === 'ai') ? (
+          <>
+            <button
+              type="button"
+              onClick={() => navigate('/siswa/jalur-ujian-ai')}
+              style={{
+                ...st.tombolUtama,
+                background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                marginBottom: 10,
+                boxShadow: '0 6px 18px rgba(16, 185, 129, 0.35)',
+              }}
+            >
+              🚀 Lanjutkan Peta Ekspedisi Jalur Ujian AI
+            </button>
+            <button type="button" onClick={() => navigate('/siswa/dashboard')} style={st.tombolSekunder}>
+              Kembali ke Dashboard
+            </button>
+          </>
+        ) : (
+          <button type="button" onClick={() => navigate('/siswa/dashboard')} style={st.tombolUtama}>
+            Kembali ke Dashboard
+          </button>
+        )}
       </div></div>
     );
   }
