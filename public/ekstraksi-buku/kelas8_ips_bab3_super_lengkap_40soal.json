@@ -1,0 +1,1370 @@
+[
+  {
+    "nomor": 1,
+    "nomor_global": 81,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Nasionalisme dan Jati Diri Bangsa",
+    "materi": "Penjelajahan Samudra, Kebijakan Kolonialisme & Imperialisme Barat (VOC, Tanam Paksa, UU Agraria), Pergerakan Kebangsaan Menuju Kemerdekaan (Budi Utomo 1908, Sumpah Pemuda 1928, Proklamasi 1945), Pemerataan Pembangunan & Lembaga Keuangan, serta Resolusi Konflik & Integrasi Sosial",
+    "paket": "Bab III: Nasionalisme dan Jati Diri Bangsa - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Perhatikan peta historis Jalur Rempah Indonesia (Dari Indonesia, Rempah Mendunia)\nyang menjadi tujuan penjelajahan samudra bangsa Eropa menuju Kepulauan Nusantara berikut!\nBerdasarkan peta jalur pelayaran rempah di atas, ekspedisi Portugis (Vasco da Gama dan Alfonso de\nAlbuquerque) berlayar menyusuri Samudra Hindia menuju Malaka dan Maluku, sedangkan ekspedisi\nSpanyol (Magelhaens–del Cano) berlayar melintasi Samudra Pasifik hingga tiba di Filipina dan Maluku\n(1521).\nPertemuan Portugis (bersekutu dengan Ternate) dan Spanyol (bersekutu dengan Tidore) di\nMaluku diselesaikan melalui ....",
+    "gambar": [
+      "/soal/ips/kls8_ips_p79_xref3318_912x690.jpeg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Perjanjian Bongaya (1667) yang membubarkan kongsi dagang VOC di Batavia"
+      },
+      {
+        "label": "B",
+        "teks": "Perjanjian Tordesillas (1494) yang membagi Pulau Jawa menjadi wilayah Inggris dan Belanda"
+      },
+      {
+        "label": "C",
+        "teks": "Traktat London (1824) yang menyerahkan Bengkulu kepada pemerintah kolonial Belanda"
+      },
+      {
+        "label": "D",
+        "teks": "Perjanjian Saragosa (1529) yang menetapkan Maluku berada di bawah pengaruh dagang Portugis dan Spanyol harus kembali ke Filipina"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Konflik batas wilayah dagang Portugis (Ternate) dan Spanyol (Tidore) di Maluku diselesaikan\nlewat Perjanjian Saragosa (1529).",
+    "valid": true
+  },
+  {
+    "nomor": 2,
+    "nomor_global": 82,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Nasionalisme dan Jati Diri Bangsa",
+    "materi": "Penjelajahan Samudra, Kebijakan Kolonialisme & Imperialisme Barat (VOC, Tanam Paksa, UU Agraria), Pergerakan Kebangsaan Menuju Kemerdekaan (Budi Utomo 1908, Sumpah Pemuda 1928, Proklamasi 1945), Pemerataan Pembangunan & Lembaga Keuangan, serta Resolusi Konflik & Integrasi Sosial",
+    "paket": "Bab III: Nasionalisme dan Jati Diri Bangsa - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Terda-\npat perbedaan mendasar antara motivasi Imperialisme Kuno (sebelum abad ke-18) dan Imperialisme\nModern (setelah meletusnya Revolusi Industri di Inggris). Orientasi utama bangsa-bangsa Barat dalam\nImperialisme Modern di tanah jajahan adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Mencari daerah pemasok bahan baku industri, tempat pemasaran hasil manufaktur, dan lokasi penana- man modal asing"
+      },
+      {
+        "label": "B",
+        "teks": "Menyebarkan agama dan mencari logam mulia emas semata tanpa membangun pabrik"
+      },
+      {
+        "label": "C",
+        "teks": "Membantu kerajaan-kerajaan lokal di Asia dan Afrika mencapai kemerdekaan politik"
+      },
+      {
+        "label": "D",
+        "teks": "Menghapuskan seluruh kegiatan pertambangan dan perkebunan di daerah koloni"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Imperialisme Modern pasca-Revolusi Industri berfokus pada pencarian bahan baku industri,\npasar produk manufaktur, dan tempat investasi modal.",
+    "valid": true
+  },
+  {
+    "nomor": 3,
+    "nomor_global": 83,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Nasionalisme dan Jati Diri Bangsa",
+    "materi": "Penjelajahan Samudra, Kebijakan Kolonialisme & Imperialisme Barat (VOC, Tanam Paksa, UU Agraria), Pergerakan Kebangsaan Menuju Kemerdekaan (Budi Utomo 1908, Sumpah Pemuda 1928, Proklamasi 1945), Pemerataan Pembangunan & Lembaga Keuangan, serta Resolusi Konflik & Integrasi Sosial",
+    "paket": "Bab III: Nasionalisme dan Jati Diri Bangsa - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Untuk\nmenghindari persaingan tidak sehat antarpedagang Belanda sendiri dan menghadapi persaingan dengan\nPortugis serta Inggris (EIC), pada tanggal 20 Maret 1602 dibentuklah Vereenigde Oost-Indische Com-\npagnie (VOC). Kebijakan VOC menebang tanaman rempah-rempah milik rakyat Maluku apabila produksi\nmelebihi kuota agar harga rempah di pasar Eropa tetap tinggi disebut ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Contingentie stelsel (pajak hasil bumi)"
+      },
+      {
+        "label": "B",
+        "teks": "Hak Ekstirpasi yang dikawal dengan Pelayaran Hongi"
+      },
+      {
+        "label": "C",
+        "teks": "Landrent system (sistem sewa tanah)"
+      },
+      {
+        "label": "D",
+        "teks": "Politik Pintu Terbuka (Open Door Policy)"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Hak Ekstirpasi adalah kebijakan VOC menebang kelebihan pohon rempah rakyat agar harga\ntetap tinggi, diawasi dengan Pelayaran Hongi.",
+    "valid": true
+  },
+  {
+    "nomor": 4,
+    "nomor_global": 84,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Nasionalisme dan Jati Diri Bangsa",
+    "materi": "Penjelajahan Samudra, Kebijakan Kolonialisme & Imperialisme Barat (VOC, Tanam Paksa, UU Agraria), Pergerakan Kebangsaan Menuju Kemerdekaan (Budi Utomo 1908, Sumpah Pemuda 1928, Proklamasi 1945), Pemerataan Pembangunan & Lembaga Keuangan, serta Resolusi Konflik & Integrasi Sosial",
+    "paket": "Bab III: Nasionalisme dan Jati Diri Bangsa - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Setelah\nbertahan hampir dua abad sebagai kongsi dagang terkaya di dunia, VOC akhirnya mengalami kebangkru-\ntan dan resmi dibubarkan oleh Pemerintah Belanda pada tanggal 31 Desember 1799. Faktor internal\nutama yang menyebabkan kemunduran dan runtuhnya VOC adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Keberhasilan sistem sewa tanah yang diterapkan oleh Thomas Stamford Raffles"
+      },
+      {
+        "label": "B",
+        "teks": "Kemenangan tentara Kekaisaran Jepang atas armada laut Rusia di Selat Tsushima"
+      },
+      {
+        "label": "C",
+        "teks": "Dihapuskannya seluruh tanaman cengkih dan pala di daratan benua Eropa"
+      },
+      {
+        "label": "D",
+        "teks": "Maraknya praktik korupsi di kalangan pejabat VOC dari tingkat rendah hingga tinggi serta tingginya biaya administrasi dan utang perang"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Faktor internal utama runtuhnya VOC pada 31 Desember 1799 adalah korupsi sistemik\npegawai dan beban utang perang yang besar.",
+    "valid": true
+  },
+  {
+    "nomor": 5,
+    "nomor_global": 85,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Nasionalisme dan Jati Diri Bangsa",
+    "materi": "Penjelajahan Samudra, Kebijakan Kolonialisme & Imperialisme Barat (VOC, Tanam Paksa, UU Agraria), Pergerakan Kebangsaan Menuju Kemerdekaan (Budi Utomo 1908, Sumpah Pemuda 1928, Proklamasi 1945), Pemerataan Pembangunan & Lembaga Keuangan, serta Resolusi Konflik & Integrasi Sosial",
+    "paket": "Bab III: Nasionalisme dan Jati Diri Bangsa - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Gubernur Jenderal Herman Willem Daendels (1808–1811) ditugaskan oleh Raja Louis Napoleon untuk\nmempertahankan Pulau Jawa dari ancaman serangan armada Inggris. Kebijakan monumental Daendels\nyang menyengsarakan rakyat Jawa karena dilakukan dengan kerja paksa (rodi), namun di kemudian hari\nmempercepat konektivitas ekonomi dan birokrasi Pulau Jawa adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Pembangunan Jalan Raya Pos (Groote Postweg) sepanjang ±1.000 km dari Anyer (Banten) hingga Panarukan (Jawa Timur)"
+      },
+      {
+        "label": "B",
+        "teks": "Penulisan buku ilmiah History of Java dan perintisan Kebun Raya Bogor"
+      },
+      {
+        "label": "C",
+        "teks": "Penerapan Undang-Undang Agraria tahun 1870 bagi pengusaha swasta asing"
+      },
+      {
+        "label": "D",
+        "teks": "Pembentukan organisasi pemuda Seinendan dan Keibodan di setiap desa"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "H.W. Daendels membangun Jalan Raya Pos (Groote Postweg) sepanjang ±1.000 km dari\nAnyer hingga Panarukan.",
+    "valid": true
+  },
+  {
+    "nomor": 6,
+    "nomor_global": 86,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Nasionalisme dan Jati Diri Bangsa",
+    "materi": "Penjelajahan Samudra, Kebijakan Kolonialisme & Imperialisme Barat (VOC, Tanam Paksa, UU Agraria), Pergerakan Kebangsaan Menuju Kemerdekaan (Budi Utomo 1908, Sumpah Pemuda 1928, Proklamasi 1945), Pemerataan Pembangunan & Lembaga Keuangan, serta Resolusi Konflik & Integrasi Sosial",
+    "paket": "Bab III: Nasionalisme dan Jati Diri Bangsa - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Perhatikan perbandingan kebi-\njakan ekonomi Thomas Stamford Raffles (Landrent, 1811–1816) dan Johannes van den Bosch (Cultuurs-\ntelsel, 1830–1870) berikut: (1) Petani diwajibkan menyewakan tanah kepada negara dan membayar pajak\nuang/beras; (2) Petani diwajibkan menanami minimal 1/5 tanahnya dengan tanaman ekspor laku keras\n(kopi, tebu, nila); (3) Penghapusan kerja rodi dan penyerahan wajib hasil bumi; (4) Kegagalan panen\nditanggung petani dan dalam praktiknya tanah yang ditanami mencapai 1/2 hingga 2/3 lahan terbaik.\nKebijakan yang merupakan karakteristik Sistem Tanam Paksa (Cultuurstelsel) adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(1) dan (2)"
+      },
+      {
+        "label": "B",
+        "teks": "(1) dan (3)"
+      },
+      {
+        "label": "C",
+        "teks": "(2) dan (4)"
+      },
+      {
+        "label": "D",
+        "teks": "(3) dan (4)"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Kewajiban menanam 1/5 tanah dengan tanaman ekspor (2) dan penyimpangan praktik di\nlapangan (4) adalah ciri Sistem Tanam Paksa (Cultuurstelsel).",
+    "valid": true
+  },
+  {
+    "nomor": 7,
+    "nomor_global": 87,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Nasionalisme dan Jati Diri Bangsa",
+    "materi": "Penjelajahan Samudra, Kebijakan Kolonialisme & Imperialisme Barat (VOC, Tanam Paksa, UU Agraria), Pergerakan Kebangsaan Menuju Kemerdekaan (Budi Utomo 1908, Sumpah Pemuda 1928, Proklamasi 1945), Pemerataan Pembangunan & Lembaga Keuangan, serta Resolusi Konflik & Integrasi Sosial",
+    "paket": "Bab III: Nasionalisme dan Jati Diri Bangsa - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Penerapan Agrarische Wet (Undang-Undang Agraria) tahun 1870 oleh Menteri Jajahan En-\ngelbertus de Waal menandai dimulainya zaman Liberal (Politik Pintu Terbuka) di Hindia Belanda. Isi\npokok undang-undang tersebut yang menguntungkan pemodal swasta asing namun mengeksploitasi bu-\nruh pribumi adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Seluruh perkebunan milik Belanda diserahkan secara gratis kepada petani pribumi"
+      },
+      {
+        "label": "B",
+        "teks": "Pengusaha swasta asing diizinkan menyewa tanah negara dalam jangka waktu hingga 75 tahun (hak erfpacht) untuk membuka perkebunan besar (tembakau, karet, tebu)"
+      },
+      {
+        "label": "C",
+        "teks": "Larangan masuknya modal swasta Eropa ke seluruh wilayah Pulau Jawa dan Sumatra"
+      },
+      {
+        "label": "D",
+        "teks": "Penghapusan aturan Koeli Ordonnantie dan Poenale Sanctie di perkebunan Sumatra Timur"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Agrarische Wet 1870 membuka pintu bagi pemodal swasta asing menyewa tanah negara\nhingga 75 tahun (hak erfpacht).",
+    "valid": true
+  },
+  {
+    "nomor": 8,
+    "nomor_global": 88,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Nasionalisme dan Jati Diri Bangsa",
+    "materi": "Penjelajahan Samudra, Kebijakan Kolonialisme & Imperialisme Barat (VOC, Tanam Paksa, UU Agraria), Pergerakan Kebangsaan Menuju Kemerdekaan (Budi Utomo 1908, Sumpah Pemuda 1928, Proklamasi 1945), Pemerataan Pembangunan & Lembaga Keuangan, serta Resolusi Konflik & Integrasi Sosial",
+    "paket": "Bab III: Nasionalisme dan Jati Diri Bangsa - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Perhatikan\ngambar/peta resmi pada buku teks berikut!\nPerang Jawa / Perang Diponegoro (1825–1830) merupakan perlawanan terbesar di Pulau Jawa yang men-\nguras kas keuangan pemerintah kolonial Belanda. Perbedaan antara sebab umum dan sebab khusus\nmeletusnya Perang Diponegoro adalah ....",
+    "gambar": [
+      "/soal/ips/kls8_ips_p80_xref3359_1240x469.jpeg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Sebab umum: monopoli perdagangan cengkih di Maluku; Sebab khusus: penyerbuan Benteng Du- urstede di Saparua"
+      },
+      {
+        "label": "B",
+        "teks": "Sebab umum: penghapusan hak Tawan Karang oleh Belanda; Sebab khusus: penangkapan Sultan Hasanuddin di Benteng Somba Opu"
+      },
+      {
+        "label": "C",
+        "teks": "Sebab umum: penderitaan rakyat akibat pajak berlipat dan campur tangan Belanda dalam urusan Keraton Yogyakarta; Sebab khusus: pemasangan patok jalan oleh Belanda yang melewati tanah makam leluhur Pangeran Diponegoro di Tegalrejo tanpa izin"
+      },
+      {
+        "label": "D",
+        "teks": "Sebab umum: pelaksanaan Politik Etis; Sebab khusus: pendirian organisasi Budi Utomo di STOVIA"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Sebab umum Perang Diponegoro: pajak tinggi & intervensi adat keraton; sebab khusus:\npematokan jalan melewati makam leluhur di Tegalrejo.",
+    "valid": true
+  },
+  {
+    "nomor": 9,
+    "nomor_global": 89,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Nasionalisme dan Jati Diri Bangsa",
+    "materi": "Penjelajahan Samudra, Kebijakan Kolonialisme & Imperialisme Barat (VOC, Tanam Paksa, UU Agraria), Pergerakan Kebangsaan Menuju Kemerdekaan (Budi Utomo 1908, Sumpah Pemuda 1928, Proklamasi 1945), Pemerataan Pembangunan & Lembaga Keuangan, serta Resolusi Konflik & Integrasi Sosial",
+    "paket": "Bab III: Nasionalisme dan Jati Diri Bangsa - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Perang\nPuputan di Bali (1846–1849 di Buleleng/Jagaraga dan 1906 di Badung) meletus hingga raja beserta selu-\nruh rakyatnya bertempur sampai titik darah penghabisan (puputan). Konflik ini berawal dari penolakan\nraja-raja Bali terhadap tuntutan Belanda untuk menghapus hukum adat maritim Bali yang disebut ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Peraturan Plakat Panjang dan Traktat Sumatra"
+      },
+      {
+        "label": "B",
+        "teks": "Hak Oktroi (hak istimewa kongsi dagang untuk mencetak uang sendiri)"
+      },
+      {
+        "label": "C",
+        "teks": "Hak Erfpacht (hak menyewa tanah perkebunan selama 75 tahun)"
+      },
+      {
+        "label": "D",
+        "teks": "Hak Tawan Karang (hak kerajaan Bali untuk menyita kapal asing yang terdampar di perairan Bali beserta seluruh muatannya)"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Raja-raja Bali mempertahankan kedaulatan hukum adat maritim Hak Tawan Karang atas\nkapal karam di perairan Bali.",
+    "valid": true
+  },
+  {
+    "nomor": 10,
+    "nomor_global": 90,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Nasionalisme dan Jati Diri Bangsa",
+    "materi": "Penjelajahan Samudra, Kebijakan Kolonialisme & Imperialisme Barat (VOC, Tanam Paksa, UU Agraria), Pergerakan Kebangsaan Menuju Kemerdekaan (Budi Utomo 1908, Sumpah Pemuda 1928, Proklamasi 1945), Pemerataan Pembangunan & Lembaga Keuangan, serta Resolusi Konflik & Integrasi Sosial",
+    "paket": "Bab III: Nasionalisme dan Jati Diri Bangsa - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Transformasi mendasar strategi perjuangan bangsa Indonesia sebelum tahun 1908 dan sesudah tahun\n1908 adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Sebelum 1908 perjuangan bersifat fisik-kedaerahan dan bergantung pada satu tokoh kharismatik; sesudah 1908 perjuangan bersifat nasional melalui organisasi modern, diplomasi, pendidikan, dan pers"
+      },
+      {
+        "label": "B",
+        "teks": "Sebelum 1908 perjuangan menggunakan organisasi partai politik nasional; sesudah 1908 perjuangan kembali bersifat kedaerahan terpisah-pisah"
+      },
+      {
+        "label": "C",
+        "teks": "Sebelum 1908 perjuangan dipimpin oleh kaum terpelajar lulusan universitas; sesudah 1908 dipimpin oleh gubernur jenderal kolonial"
+      },
+      {
+        "label": "D",
+        "teks": "Kedua periode perjuangan sama-sama menolak cita-cita kemerdekaan Indonesia bersatu"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Tahun 1908 menjadi titik balik dari perlawanan fisik-kedaerahan menuju perjuangan organ-\nisasi modern bersifat nasional.",
+    "valid": true
+  },
+  {
+    "nomor": 11,
+    "nomor_global": 91,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Nasionalisme dan Jati Diri Bangsa",
+    "materi": "Penjelajahan Samudra, Kebijakan Kolonialisme & Imperialisme Barat (VOC, Tanam Paksa, UU Agraria), Pergerakan Kebangsaan Menuju Kemerdekaan (Budi Utomo 1908, Sumpah Pemuda 1928, Proklamasi 1945), Pemerataan Pembangunan & Lembaga Keuangan, serta Resolusi Konflik & Integrasi Sosial",
+    "paket": "Bab III: Nasionalisme dan Jati Diri Bangsa - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Pelaksanaan Politik Etis (Irigasi, Emigrasi, Edukasi) sejak tahun 1901 semula dirancang oleh pemerintah\nkolonial Belanda untuk menyediakan pengairan perkebunan swasta, tenaga kerja murah di luar Jawa, dan\npegawai administrasi rendahan yang bergaji murah. Namun, kebijakan ini justru menjadi bumerang bagi\nkolonialisme Belanda karena ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Bidang emigrasi membuat seluruh penduduk Belanda pindah ke Pulau Sumatra"
+      },
+      {
+        "label": "B",
+        "teks": "Bidang irigasi menyebabkan seluruh perkebunan milik Belanda terendam banjir permanen"
+      },
+      {
+        "label": "C",
+        "teks": "Bidang edukasi melahirkan golongan terpelajar/intelektual pribumi yang memiliki kesadaran nasional dan memelopori organisasi Pergerakan Nasional untuk menuntut kemerdekaan"
+      },
+      {
+        "label": "D",
+        "teks": "Pemerintah Belanda langsung memberikan kemerdekaan penuh kepada Indonesia pada tahun 1902"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Edukasi dalam Politik Etis melahirkan kaum intelektual pribumi yang menjadi motor peng-\ngerak organisasi Pergerakan Nasional.",
+    "valid": true
+  },
+  {
+    "nomor": 12,
+    "nomor_global": 92,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Nasionalisme dan Jati Diri Bangsa",
+    "materi": "Penjelajahan Samudra, Kebijakan Kolonialisme & Imperialisme Barat (VOC, Tanam Paksa, UU Agraria), Pergerakan Kebangsaan Menuju Kemerdekaan (Budi Utomo 1908, Sumpah Pemuda 1928, Proklamasi 1945), Pemerataan Pembangunan & Lembaga Keuangan, serta Resolusi Konflik & Integrasi Sosial",
+    "paket": "Bab III: Nasionalisme dan Jati Diri Bangsa - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Kebangkitan Nasional bangsa\nIndonesia pada awal abad ke-20 didorong oleh faktor internal (dalam negeri) dan faktor eksternal (luar\nnegeri). Peristiwa internasional pada tahun 1905 yang meruntuhkan mitos superioritas bangsa kulit putih\n(Eropa) tidak terkalahkan dan membangkitkan rasa percaya diri bangsa-bangsa terjajah di Asia adalah\n....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Jatuhnya Kota Konstantinopel ke tangan Kesultanan Turki Utsmani tahun 1453"
+      },
+      {
+        "label": "B",
+        "teks": "Kemenangan gemilang Kekaisaran Jepang (bangsa Asia) atas Kekaisaran Rusia (bangsa Eropa) dalam Perang Rusia–Jepang 1904–1905"
+      },
+      {
+        "label": "C",
+        "teks": "Penandatanganan Perjanjian Versailles yang mengakhiri Perang Dunia I di Eropa tahun 1919"
+      },
+      {
+        "label": "D",
+        "teks": "Revolusi Prancis yang menggulingkan kekuasaan Raja Louis XVI tahun 1789"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Kemenangan Jepang atas Rusia tahun 1905 membangkitkan semangat nasionalisme\nbangsa-bangsa Asia.",
+    "valid": true
+  },
+  {
+    "nomor": 13,
+    "nomor_global": 93,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Nasionalisme dan Jati Diri Bangsa",
+    "materi": "Penjelajahan Samudra, Kebijakan Kolonialisme & Imperialisme Barat (VOC, Tanam Paksa, UU Agraria), Pergerakan Kebangsaan Menuju Kemerdekaan (Budi Utomo 1908, Sumpah Pemuda 1928, Proklamasi 1945), Pemerataan Pembangunan & Lembaga Keuangan, serta Resolusi Konflik & Integrasi Sosial",
+    "paket": "Bab III: Nasionalisme dan Jati Diri Bangsa - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Pada tahun 1911, H. Samanhudi mendirikan Sarekat Dagang Islam (SDI) di Surakarta yang\nkemudian berkembang menjadi organisasi massa terbesar Sarekat Islam (SI) di bawah kepemimpinan\nH.O.S. Tjokroaminoto pada tahun 1912. Tujuan awal berdirinya SDI adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Membentuk pasukan militer bersenjata untuk membantu tentara Jepang dalam Perang Asia Timur Raya"
+      },
+      {
+        "label": "B",
+        "teks": "Menghimpun para mahasiswa kedokteran STOVIA untuk meneliti penyakit tropis"
+      },
+      {
+        "label": "C",
+        "teks": "Mendirikan bank sentral milik pemerintah kolonial Hindia Belanda di Surakarta"
+      },
+      {
+        "label": "D",
+        "teks": "Memperkuat persatuan dan daya saing para pedagang batik pribumi Muslim dalam menghadapi mo- nopoli bahan baku dan persaingan pedagang asing"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "H. Samanhudi mendirikan SDI (1911) di Surakarta untuk memperkuat persatuan dan posisi\ntawar pedagang batik pribumi.",
+    "valid": true
+  },
+  {
+    "nomor": 14,
+    "nomor_global": 94,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Nasionalisme dan Jati Diri Bangsa",
+    "materi": "Penjelajahan Samudra, Kebijakan Kolonialisme & Imperialisme Barat (VOC, Tanam Paksa, UU Agraria), Pergerakan Kebangsaan Menuju Kemerdekaan (Budi Utomo 1908, Sumpah Pemuda 1928, Proklamasi 1945), Pemerataan Pembangunan & Lembaga Keuangan, serta Resolusi Konflik & Integrasi Sosial",
+    "paket": "Bab III: Nasionalisme dan Jati Diri Bangsa - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Organisasi\nIndische Partij yang didirikan di Bandung pada tanggal 25 Desember 1912 oleh Tiga Serangkai (E.F.E.\nDouwes Dekker, dr. Tjipto Mangoenkoesoemo, dan Suwardi Suryaningrat / Ki Hajar Dewantara) tercatat\nsebagai organisasi politik pertama di Hindia Belanda yang bersikap radikal karena ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Secara tegas dan terbuka menuntut kemerdekaan Hindia (Indie los van Holland) serta menggalang nasionalisme lintas etnis melalui surat kabar De Expres dan tulisan Als Ik Eens Nederlander Was"
+      },
+      {
+        "label": "B",
+        "teks": "Hanya bergerak di bidang pengajaran kesenian tradisional Jawa dan menolak kegiatan politik"
+      },
+      {
+        "label": "C",
+        "teks": "Mewajibkan seluruh anggotanya bersikap kooperatif di dalam dewan kolonial Volksraad"
+      },
+      {
+        "label": "D",
+        "teks": "Membatasi keanggotaan organisasi hanya bagi bangsawan keraton Yogyakarta dan Surakarta"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Indische Partij (Tiga Serangkai) adalah partai politik pertama yang secara tegas menuntut\nkemerdekaan Hindia (Indie los van Holland).",
+    "valid": true
+  },
+  {
+    "nomor": 15,
+    "nomor_global": 95,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Nasionalisme dan Jati Diri Bangsa",
+    "materi": "Penjelajahan Samudra, Kebijakan Kolonialisme & Imperialisme Barat (VOC, Tanam Paksa, UU Agraria), Pergerakan Kebangsaan Menuju Kemerdekaan (Budi Utomo 1908, Sumpah Pemuda 1928, Proklamasi 1945), Pemerataan Pembangunan & Lembaga Keuangan, serta Resolusi Konflik & Integrasi Sosial",
+    "paket": "Bab III: Nasionalisme dan Jati Diri Bangsa - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Kongres Pemuda II yang berlangsung pada tanggal 27–28 Oktober 1928 di Jakarta menghasilkan ikrar\nSumpah Pemuda, pengumandangan lagu kebangsaan Indonesia Raya ciptaan W.R. Supratman untuk\npertama kalinya, serta peleburan berbagai organisasi pemuda kedaerahan (Jong Java, Jong Sumatranen\nBond, Jong Ambon, Jong Celebes) menjadi Indonesia Muda. Makna sosiologis dan politis terpenting dari\nSumpah Pemuda adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Berakhirnya seluruh kegiatan organisasi pergerakan nasional di Hindia Belanda"
+      },
+      {
+        "label": "B",
+        "teks": "Meleburnya sekat-sekat primordialisme kedaerahan menjadi satu identitas integrasi nasional: bertumpah darah satu, berbangsa satu, dan menjunjung bahasa persatuan Indonesia"
+      },
+      {
+        "label": "C",
+        "teks": "Ditetapkannya bahasa Belanda sebagai bahasa resmi pengantar di seluruh sekolah pribumi"
+      },
+      {
+        "label": "D",
+        "teks": "Terbentuknya kabinet pemerintahan parlementer Republik Indonesia pada tahun 1928"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Sumpah Pemuda 28 Oktober 1928 menyatukan organisasi pemuda daerah ke dalam satu\nidentitas tanah air, bangsa, dan bahasa Indonesia.",
+    "valid": true
+  },
+  {
+    "nomor": 16,
+    "nomor_global": 96,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Nasionalisme dan Jati Diri Bangsa",
+    "materi": "Penjelajahan Samudra, Kebijakan Kolonialisme & Imperialisme Barat (VOC, Tanam Paksa, UU Agraria), Pergerakan Kebangsaan Menuju Kemerdekaan (Budi Utomo 1908, Sumpah Pemuda 1928, Proklamasi 1945), Pemerataan Pembangunan & Lembaga Keuangan, serta Resolusi Konflik & Integrasi Sosial",
+    "paket": "Bab III: Nasionalisme dan Jati Diri Bangsa - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Perhatikan gambar/peta resmi pada buku teks berikut!\nPada masa pendudukan militer Jepang (1942–1945), para tokoh nasionalis seperti Empat Serangkai (Ir.\nSoekarno, Drs. Moh. Hatta, Ki Hajar Dewantara, K.H. Mas Mansur) memilih strategi kooperatif dengan\nmemimpin organisasi bentukan Jepang, yaitu PUTERA (Pusat Tenaga Rakyat). Tujuan strategis Empat\nSerangkai memanfaatkan organisasi PUTERA adalah ....",
+    "gambar": [
+      "/soal/ips/kls8_ips_p82_xref3410_662x640.jpeg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Menghapuskan penggunaan Bahasa Indonesia dari seluruh sekolah dan surat kabar"
+      },
+      {
+        "label": "B",
+        "teks": "Membantu Jepang menjajah bangsa Indonesia untuk selama-lamanya"
+      },
+      {
+        "label": "C",
+        "teks": "Mengirimkan seluruh pemuda terpelajar Indonesia untuk menjadi tentara kolonial Belanda (KNIL)"
+      },
+      {
+        "label": "D",
+        "teks": "Menggunakan fasilitas rapat akbar dan jaringan radio milik Jepang untuk membangkitkan semangat nasionalisme serta mempersiapkan mental rakyat menyongsong kemerdekaan"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Empat Serangkai memanfaatkan PUTERA untuk berkomunikasi dengan rakyat dan mem-\nbakar semangat kemerdekaan.",
+    "valid": true
+  },
+  {
+    "nomor": 17,
+    "nomor_global": 97,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Nasionalisme dan Jati Diri Bangsa",
+    "materi": "Penjelajahan Samudra, Kebijakan Kolonialisme & Imperialisme Barat (VOC, Tanam Paksa, UU Agraria), Pergerakan Kebangsaan Menuju Kemerdekaan (Budi Utomo 1908, Sumpah Pemuda 1928, Proklamasi 1945), Pemerataan Pembangunan & Lembaga Keuangan, serta Resolusi Konflik & Integrasi Sosial",
+    "paket": "Bab III: Nasionalisme dan Jati Diri Bangsa - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Pemerintah militer Jepang membentuk berbagai organisasi semi-militer dan militer untuk memobilisasi\nrakyat dalam Perang Asia Timur Raya. Pasangan organisasi bentukan Jepang dan tugasnya yang tepat\nadalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Seinendan (barisan pemuda usia 14–22 tahun), Keibodan (barisan pembantu polisi usia 25–35 tahun), dan PETA (tentara Pembela Tanah Air yang kelak menjadi tulang punggung TNI)"
+      },
+      {
+        "label": "B",
+        "teks": "Fujinkai (tentara tempur garis depan pria) dan Heiho (organisasi barisan wanita perdesaan)"
+      },
+      {
+        "label": "C",
+        "teks": "Jawa Hokokai (serikat pedagang batik pribumi) dan PUTERA (pasukan berani mati Jepang)"
+      },
+      {
+        "label": "D",
+        "teks": "BPUPKI (barisan polisi militer Kempeitai) dan PPKI (organisasi pengerahan pekerja paksa Romusha)"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Seinendan = barisan pemuda; Keibodan = pembantu polisi; PETA = tentara Pembela\nTanah Air.",
+    "valid": true
+  },
+  {
+    "nomor": 18,
+    "nomor_global": 98,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Nasionalisme dan Jati Diri Bangsa",
+    "materi": "Penjelajahan Samudra, Kebijakan Kolonialisme & Imperialisme Barat (VOC, Tanam Paksa, UU Agraria), Pergerakan Kebangsaan Menuju Kemerdekaan (Budi Utomo 1908, Sumpah Pemuda 1928, Proklamasi 1945), Pemerataan Pembangunan & Lembaga Keuangan, serta Resolusi Konflik & Integrasi Sosial",
+    "paket": "Bab III: Nasionalisme dan Jati Diri Bangsa - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Menjelang Proklamasi Ke-\nmerdekaan, pada dini hari tanggal 16 Agustus 1945, para pemuda (Sukarni, Wikana, Chaerul Saleh,\nSinggih) membawa Ir. Soekarno dan Drs. Moh. Hatta ke Rengasdengklok, Karawang. Latar belakang\ndan tujuan utama terjadinya Peristiwa Rengasdengklok tersebut adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Penolakan Ir. Soekarno dan Drs. Moh. Hatta terhadap rencana kemerdekaan Indonesia"
+      },
+      {
+        "label": "B",
+        "teks": "Keinginan Golongan Muda untuk menyerahkan kekuasaan pemerintahan kepada tentara Sekutu yang mendarat di Jakarta"
+      },
+      {
+        "label": "C",
+        "teks": "Perbedaan pendapat mengenai waktu pelaksanaan proklamasi dan upaya Golongan Muda menga- mankan Soekarno–Hatta agar memproklamasikan kemerdekaan atas kekuatan bangsa sendiri tanpa campur tangan Jepang"
+      },
+      {
+        "label": "D",
+        "teks": "Perintah Laksamana Tadashi Maeda untuk memindahkan ibu kota Republik Indonesia ke Karawang"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Peristiwa Rengasdengklok bertujuan menjauhkan Soekarno–Hatta dari pengaruh Jepang\nagar segera memproklamasikan kemerdekaan.",
+    "valid": true
+  },
+  {
+    "nomor": 19,
+    "nomor_global": 99,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Nasionalisme dan Jati Diri Bangsa",
+    "materi": "Penjelajahan Samudra, Kebijakan Kolonialisme & Imperialisme Barat (VOC, Tanam Paksa, UU Agraria), Pergerakan Kebangsaan Menuju Kemerdekaan (Budi Utomo 1908, Sumpah Pemuda 1928, Proklamasi 1945), Pemerataan Pembangunan & Lembaga Keuangan, serta Resolusi Konflik & Integrasi Sosial",
+    "paket": "Bab III: Nasionalisme dan Jati Diri Bangsa - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Sehari setelah Proklamasi Kemerdekaan, pada tanggal 18 Agustus 1945, Panitia Persiapan\nKemerdekaan Indonesia (PPKI) menggelar sidang pertama yang sangat bersejarah bagi ketatanegaraan\nIndonesia. Tiga keputusan konstitusional yang ditetapkan dalam sidang pertama PPKI tanggal 18 Agus-\ntus 1945 adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Membagi wilayah Indonesia menjadi 8 provinsi, membentuk 12 departemen kementerian, dan mem- bentuk Badan Keamanan Rakyat (BKR)"
+      },
+      {
+        "label": "B",
+        "teks": "Mengesahkan UUD 1945, memilih Ir. Soekarno sebagai Presiden dan Drs. Moh. Hatta sebagai Wakil Presiden, serta membentuk Komite Nasional Indonesia Pusat (KNIP)"
+      },
+      {
+        "label": "C",
+        "teks": "Membentuk Tentara Nasional Indonesia (TNI), mencetak Oeang Republik Indonesia (ORI), dan mem- bubarkan BPUPKI"
+      },
+      {
+        "label": "D",
+        "teks": "Menandatangani Perjanjian Linggarjati, Perjanjian Renville, dan Konferensi Meja Bundar"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Sidang pertama PPKI 18 Agustus 1945: mengesahkan UUD 1945, memilih Presiden\nSoekarno & Wapres Hatta, dan membentuk KNIP.",
+    "valid": true
+  },
+  {
+    "nomor": 20,
+    "nomor_global": 100,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Nasionalisme dan Jati Diri Bangsa",
+    "materi": "Penjelajahan Samudra, Kebijakan Kolonialisme & Imperialisme Barat (VOC, Tanam Paksa, UU Agraria), Pergerakan Kebangsaan Menuju Kemerdekaan (Budi Utomo 1908, Sumpah Pemuda 1928, Proklamasi 1945), Pemerataan Pembangunan & Lembaga Keuangan, serta Resolusi Konflik & Integrasi Sosial",
+    "paket": "Bab III: Nasionalisme dan Jati Diri Bangsa - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Perhatikan\ngambar/peta resmi pada buku teks berikut!\nBerita Proklamasi Kemerdekaan 17 Agustus 1945 yang disiarkan melalui kantor berita Domei dan radio\nHoso Kyoku di Jakarta baru dapat diterima di beberapa wilayah luar Pulau Jawa (seperti Kalimantan, Su-\nlawesi, dan Maluku) beberapa hari hingga beberapa minggu kemudian. Faktor utama yang menghambat\nkecepatan penyebaran berita Proklamasi saat itu adalah ....",
+    "gambar": [
+      "/soal/ips/kls8_ips_p83_xref3436_1400x621.jpeg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Sudah tersedianya jaringan internet satelit dan televisi nasional di seluruh desa pada tahun 1945"
+      },
+      {
+        "label": "B",
+        "teks": "Penolakan para tokoh daerah di luar Pulau Jawa untuk bergabung ke dalam Negara Kesatuan Republik Indonesia"
+      },
+      {
+        "label": "C",
+        "teks": "Keterbatasan jaringan infrastruktur komunikasi/transportasi antarpulau serta penyensoran ketat dan penyegelan pemancar radio oleh polisi militer Jepang (Kempeitai)"
+      },
+      {
+        "label": "D",
+        "teks": "Larangan dari PPKI untuk memberitahukan kabar kemerdekaan kepada masyarakat di luar Jakarta"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Keterbatasan jaringan komunikasi antarpulau dan sensor ketat polisi militer Jepang meng-\nhambat penyebaran berita Proklamasi ke daerah.",
+    "valid": true
+  },
+  {
+    "nomor": 21,
+    "nomor_global": 101,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Nasionalisme dan Jati Diri Bangsa",
+    "materi": "Penjelajahan Samudra, Kebijakan Kolonialisme & Imperialisme Barat (VOC, Tanam Paksa, UU Agraria), Pergerakan Kebangsaan Menuju Kemerdekaan (Budi Utomo 1908, Sumpah Pemuda 1928, Proklamasi 1945), Pemerataan Pembangunan & Lembaga Keuangan, serta Resolusi Konflik & Integrasi Sosial",
+    "paket": "Bab III: Nasionalisme dan Jati Diri Bangsa - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Seo-\nrang pemilik bengkel las dan pengrajin kuliner UMKM memperoleh pinjaman modal kerja berbunga rendah\ndari Bank Umum serta bergabung dalam Koperasi Produsen untuk membeli bahan baku bersama. Peran\nstrategis lembaga keuangan dalam pemerataan pembangunan ekonomi nasional adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Menggantikan fungsi Kementerian Keuangan dalam memungut pajak penghasilan warga"
+      },
+      {
+        "label": "B",
+        "teks": "Menarik seluruh uang beredar dari perdesaan untuk disimpan secara permanen di luar negeri"
+      },
+      {
+        "label": "C",
+        "teks": "Memonopoli seluruh usaha perdagangan eceran agar pedagang kecil gulung tikar"
+      },
+      {
+        "label": "D",
+        "teks": "Menghimpun dana dari masyarakat (funding) dan menyalurkannya kembali (lending) sebagai modal produktif UMKM guna menciptakan lapangan kerja dan menekan kemiskinan"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Lembaga keuangan menghimpun dana (funding) dan menyalurkannya (lending) sebagai\nkredit produktif UMKM untuk pemerataan ekonomi.",
+    "valid": true
+  },
+  {
+    "nomor": 22,
+    "nomor_global": 102,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Nasionalisme dan Jati Diri Bangsa",
+    "materi": "Penjelajahan Samudra, Kebijakan Kolonialisme & Imperialisme Barat (VOC, Tanam Paksa, UU Agraria), Pergerakan Kebangsaan Menuju Kemerdekaan (Budi Utomo 1908, Sumpah Pemuda 1928, Proklamasi 1945), Pemerataan Pembangunan & Lembaga Keuangan, serta Resolusi Konflik & Integrasi Sosial",
+    "paket": "Bab III: Nasionalisme dan Jati Diri Bangsa - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Lembaga Keuangan Bukan Bank (LKBB) memiliki peran spesifik yang melengkapi perbankan. Pasangan\njenis LKBB dan kegiatan usaha utamanya yang tepat adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Pegadaian: memberikan pinjaman kredit berdasarkan hukum gadai dengan jaminan barang bergerak; Leasing (Sewa Guna Usaha): membiayai pengadaan barang modal/mesin secara kontrak sewa; Factor- ing (Anjak Piutang): membeli/mengambil alih pengurusan piutang dagang perusahaan"
+      },
+      {
+        "label": "B",
+        "teks": "Asuransi: mencetak uang kertas Rupiah; Dana Pensiun: menyita barang jaminan nasabah yang me- nunggak pajak"
+      },
+      {
+        "label": "C",
+        "teks": "Koperasi Simpan Pinjam: memperjualbelikan saham perusahaan terbuka di Bursa Efek Indonesia"
+      },
+      {
+        "label": "D",
+        "teks": "Pasar Modal: menerima simpanan tabungan harian pelajar dengan jaminan BPKB sepeda motor"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Pegadaian = kredit gadai; Leasing = pembiayaan sewa guna barang modal; Factoring =\nanjak piutang/pengambilalihan piutang dagang.",
+    "valid": true
+  },
+  {
+    "nomor": 23,
+    "nomor_global": 103,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Nasionalisme dan Jati Diri Bangsa",
+    "materi": "Penjelajahan Samudra, Kebijakan Kolonialisme & Imperialisme Barat (VOC, Tanam Paksa, UU Agraria), Pergerakan Kebangsaan Menuju Kemerdekaan (Budi Utomo 1908, Sumpah Pemuda 1928, Proklamasi 1945), Pemerataan Pembangunan & Lembaga Keuangan, serta Resolusi Konflik & Integrasi Sosial",
+    "paket": "Bab III: Nasionalisme dan Jati Diri Bangsa - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Berdasarkan Undang-Undang Nomor 25 Tahun 1992 tentang Perkoperasian, koperasi Indonesia berlan-\ndaskan Pancasila dan UUD 1945 serta berasaskan kekeluargaan. Salah satu prinsip koperasi adalah\nkemandirian, yang berarti ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Pembagian Sisa Hasil Usaha (SHU) koperasi ditentukan secara sepihak oleh direktur bank asing"
+      },
+      {
+        "label": "B",
+        "teks": "Koperasi dilarang bekerja sama dengan bank maupun perusahaan lain dalam bentuk apa pun"
+      },
+      {
+        "label": "C",
+        "teks": "Koperasi dapat berdiri sendiri dengan mengelola modal dan usahanya secara otonom serta bertang- gung jawab atas keputusan rapat anggota tanpa bergantung pada pihak luar"
+      },
+      {
+        "label": "D",
+        "teks": "Kekuasaan tertinggi koperasi berada di tangan pemilik saham terbesar seperti pada Perseroan Ter- batas (PT)"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Prinsip kemandirian koperasi berarti mampu mengelola usaha secara otonom atas dasar\nkeputusan rapat anggota.",
+    "valid": true
+  },
+  {
+    "nomor": 24,
+    "nomor_global": 104,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Nasionalisme dan Jati Diri Bangsa",
+    "materi": "Penjelajahan Samudra, Kebijakan Kolonialisme & Imperialisme Barat (VOC, Tanam Paksa, UU Agraria), Pergerakan Kebangsaan Menuju Kemerdekaan (Budi Utomo 1908, Sumpah Pemuda 1928, Proklamasi 1945), Pemerataan Pembangunan & Lembaga Keuangan, serta Resolusi Konflik & Integrasi Sosial",
+    "paket": "Bab III: Nasionalisme dan Jati Diri Bangsa - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Pembangunan kawasan indus-\ntri pabrik baru di wilayah perdesaan agraris sering kali memicu konflik sosial antara pihak perusahaan\ndan warga desa sekitar. Faktor sosiologis utama penyebab terjadinya konflik tersebut adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Kesamaan pandangan dan tujuan antara pemilik pabrik dan petani desa"
+      },
+      {
+        "label": "B",
+        "teks": "Perbedaan kepentingan ekonomi (pembebasan lahan, rekrutmen tenaga kerja lokal, dan dampak lim- bah) serta perubahan nilai sosial yang berlangsung terlalu cepat"
+      },
+      {
+        "label": "C",
+        "teks": "Berjalannya proses asimilasi dan akomodasi yang harmonis sejak awal pembangunan"
+      },
+      {
+        "label": "D",
+        "teks": "Tingginya kuota beasiswa pendidikan yang diberikan perusahaan kepada anak-anak desa"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Benturan kepentingan ekonomi dan cepatnya perubahan sosial memicu konflik antara\nindustri baru dan warga desa.",
+    "valid": true
+  },
+  {
+    "nomor": 25,
+    "nomor_global": 105,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Nasionalisme dan Jati Diri Bangsa",
+    "materi": "Penjelajahan Samudra, Kebijakan Kolonialisme & Imperialisme Barat (VOC, Tanam Paksa, UU Agraria), Pergerakan Kebangsaan Menuju Kemerdekaan (Budi Utomo 1908, Sumpah Pemuda 1928, Proklamasi 1945), Pemerataan Pembangunan & Lembaga Keuangan, serta Resolusi Konflik & Integrasi Sosial",
+    "paket": "Bab III: Nasionalisme dan Jati Diri Bangsa - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Perhatikan tiga pernyataan mengenai integrasi sosial di Indonesia berikut: (1) Masyarakat In-\ndonesia bersatu karena menjunjung tinggi nilai Pancasila dan semboyan Bhinneka Tunggal Ika; (2) Suku\nBugis yang mahir melaut saling membutuhkan dengan suku Jawa yang mahir bertani padi dalam per-\ntukaran ekonomi; (3) Polisi membubarkan bentrokan antarkelompok menggunakan kewenangan hukum\nyang tegas. Ketiga bentuk integrasi sosial tersebut secara berurutan adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Integrasi asimilatif, integrasi disosiatif, dan integrasi kontravensi"
+      },
+      {
+        "label": "B",
+        "teks": "Integrasi koersif, integrasi normatif, dan integrasi fungsional"
+      },
+      {
+        "label": "C",
+        "teks": "Integrasi fungsional, integrasi koersif, dan integrasi normatif"
+      },
+      {
+        "label": "D",
+        "teks": "Integrasi normatif, integrasi fungsional, dan integrasi koersif"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Diikat nilai Pancasila = integrasi normatif; saling ketergantungan keahlian ekonomi =\nintegrasi fungsional; wewenang hukum = integrasi koersif.",
+    "valid": true
+  },
+  {
+    "nomor": 26,
+    "nomor_global": 106,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Nasionalisme dan Jati Diri Bangsa",
+    "materi": "Penjelajahan Samudra, Kebijakan Kolonialisme & Imperialisme Barat (VOC, Tanam Paksa, UU Agraria), Pergerakan Kebangsaan Menuju Kemerdekaan (Budi Utomo 1908, Sumpah Pemuda 1928, Proklamasi 1945), Pemerataan Pembangunan & Lembaga Keuangan, serta Resolusi Konflik & Integrasi Sosial",
+    "paket": "Bab III: Nasionalisme dan Jati Diri Bangsa - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Perhatikan bagan per-\nbandingan karakteristik perjuangan bangsa Indonesia Sebelum Tahun 1908 dan Sesudah Tahun 1908\n(Masa Pergerakan Nasional) berikut!\nBAGAN TRANSFORMASI STRATEGI PERJUANGAN BANGSA INDONESIA\nSebelum 1908 (Perlawanan Daerah): Bersifat lokal/kedaerahan →Mengandalkan perjuangan fisik bersenjata\n→Bergantung pada kharisma satu tokoh pemimpin (raja/ulama) →Mudah dipecah belah (devide et impera)\n\f\f\f\nSesudah 1908 (Kebangkitan Nasional): Bersifat nasional lintas daerah →Menggunakan organisasi modern,\npendidikan, pers, & diplomasi politik →Dipelopori kaum terpelajar →Bertujuan mencapai Indonesia Merdeka\nBerdasarkan bagan di atas, mengapa perlawanan bersenjata yang dipimpin secara heroik oleh para\ntokoh daerah pada abad ke-17 hingga ke-19 sering kali belum berhasil mengusir penjajah secara tuntas\ndari seluruh Nusantara?",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Karena perjuangan masih bersifat kedaerahan (belum terkoordinasi secara nasional) dan sangat bergantung pada satu tokoh pemimpin sehingga mudah dipatahkan dengan politik adu domba (devide et impera)"
+      },
+      {
+        "label": "B",
+        "teks": "Karena para pahlawan daerah menggunakan organisasi kepartaian modern dan surat kabar nasional"
+      },
+      {
+        "label": "C",
+        "teks": "Karena bangsa Eropa membantu mempersenjatai seluruh kerajaan Nusantara secara cuma-cuma"
+      },
+      {
+        "label": "D",
+        "teks": "Karena rakyat di berbagai daerah menolak dipimpin oleh raja maupun ulama setempat"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Perlawanan sebelum 1908 belum berhasil tuntas karena masih bersifat kedaerahan,\nmengandalkan fisik semata, dan bergantung pada satu tokoh kharismatik sehingga mudah diadu domba\n(devide et impera).",
+    "valid": true
+  },
+  {
+    "nomor": 27,
+    "nomor_global": 107,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Nasionalisme dan Jati Diri Bangsa",
+    "materi": "Penjelajahan Samudra, Kebijakan Kolonialisme & Imperialisme Barat (VOC, Tanam Paksa, UU Agraria), Pergerakan Kebangsaan Menuju Kemerdekaan (Budi Utomo 1908, Sumpah Pemuda 1928, Proklamasi 1945), Pemerataan Pembangunan & Lembaga Keuangan, serta Resolusi Konflik & Integrasi Sosial",
+    "paket": "Bab III: Nasionalisme dan Jati Diri Bangsa - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Sikap nasion-\nalisme dan penjagaan jati diri bangsa oleh pelajar SMP di era keterbukaan informasi saat ini tidak lagi\ndiwujudkan dengan memanggul senjata di medan perang, melainkan melalui tindakan nyata di lingkungan\nsekolah dan masyarakat, yaitu ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Menganggap suku bangsa sendiri paling unggul dan merendahkan budaya daerah lain (etnosentrisme sempit)"
+      },
+      {
+        "label": "B",
+        "teks": "Mengikuti upacara bendera dengan khidmat, bangga menggunakan produk dalam negeri, menghor- mati teman berbeda suku/agama (toleransi), serta berprestasi mengharumkan nama bangsa"
+      },
+      {
+        "label": "C",
+        "teks": "Mengganti bahasa persatuan Bahasa Indonesia dengan bahasa asing dalam seluruh dokumen resmi negara"
+      },
+      {
+        "label": "D",
+        "teks": "Menolak mempelajari sejarah perjuangan kemerdekaan karena dianggap sudah usang"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Wujud nasionalisme pelajar masa kini adalah mengikuti upacara dengan tertib, menc-\nintai produk dalam negeri, toleran dalam keberagaman, dan berprestasi.",
+    "valid": true
+  },
+  {
+    "nomor": 28,
+    "nomor_global": 108,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Nasionalisme dan Jati Diri Bangsa",
+    "materi": "Penjelajahan Samudra, Kebijakan Kolonialisme & Imperialisme Barat (VOC, Tanam Paksa, UU Agraria), Pergerakan Kebangsaan Menuju Kemerdekaan (Budi Utomo 1908, Sumpah Pemuda 1928, Proklamasi 1945), Pemerataan Pembangunan & Lembaga Keuangan, serta Resolusi Konflik & Integrasi Sosial",
+    "paket": "Bab III: Nasionalisme dan Jati Diri Bangsa - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Per-\nhatikan tabel organisasi-organisasi pada masa Pergerakan Nasional Indonesia berikut!\nTABEL TONGGAK ORGANISASI MASA PERGERAKAN NASIONAL INDONESIA\nNama Organisasi\nTanggal\nBerdiri\nTokoh Pelopor\nFokus & Peran Sejarah\n1. Budi Utomo\n20 Mei 1908\nDr. Sutomo & dr. Wahidin S.\nOrganisasi modern pertama; mema-\njukan\npendidikan\n&\nkebudayaan\n(Hari Kebangkitan Nasional)\n2. Sarekat Islam (SI)\n1911 / 1912\nH. Samanhudi & H.O.S.\nTjokroaminoto\nMemperkuat\nekonomi\npedagang\npribumi\ndan\nmenghimpun\nmassa\nrakyat secara luas\n3. Indische Partij\n25 Des 1912\nTiga Serangkai (E.F.E.\nDouwes Dekker, Cipto M.,\nSuwardi S.)\nOrganisasi\npolitik\nmurni\npertama\nyang secara terang-terangan me-\nnuntut kemerdekaan Hindia (Indis-\nche los van Holland)\n4. Perhimpunan\nIndonesia\n1908 / 1925\nMoh. Hatta, Iwa K., Sartono\nPelopor penggunaan nama ’Indone-\nsia’\ndi\nkancah\ninternasional\ndan\nmanifesto politik kemerdekaan\nBerdasarkan tabel di atas, organisasi pergerakan pertama yang secara tegas bergerak di bidang politik\npraktis untuk menumbuhkan nasionalisme Hindia tanpa membedakan ras/keturunan serta melahirkan\ntulisan kritis ’Als ik eens Nederlander was’ (Seandainya Aku Seorang Belanda) karya Suwardi Suryan-\ningrat (Ki Hajar Dewantara) adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Kongsi dagang EIC milik kerajaan Inggris di Bengkulu"
+      },
+      {
+        "label": "B",
+        "teks": "Vereenigde Oostindische Compagnie (VOC) yang dipimpin oleh Gubernur Jenderal Jan Pieterszoon Coen"
+      },
+      {
+        "label": "C",
+        "teks": "Jawa Hokokai (Himpunan Kebaktian Rakyat Jawa) bentukan pemerintahan militer Jepang"
+      },
+      {
+        "label": "D",
+        "teks": "Indische Partij yang dipimpin oleh Tiga Serangkai (Douwes Dekker, dr. Cipto Mangunkusumo, dan Suwardi Suryaningrat)"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Indische Partij (Tiga Serangkai: Douwes Dekker, Cipto Mangunkusumo, Suwardi Suryan-\ningrat) adalah partai politik pertama yang menuntut kemerdekaan Hindia.",
+    "valid": true
+  },
+  {
+    "nomor": 29,
+    "nomor_global": 109,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Nasionalisme dan Jati Diri Bangsa",
+    "materi": "Penjelajahan Samudra, Kebijakan Kolonialisme & Imperialisme Barat (VOC, Tanam Paksa, UU Agraria), Pergerakan Kebangsaan Menuju Kemerdekaan (Budi Utomo 1908, Sumpah Pemuda 1928, Proklamasi 1945), Pemerataan Pembangunan & Lembaga Keuangan, serta Resolusi Konflik & Integrasi Sosial",
+    "paket": "Bab III: Nasionalisme dan Jati Diri Bangsa - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Kebijakan Politik Etis (Poli-\ntik Balas Budi) yang diusulkan oleh C.Th. van Deventer dan diberlakukan pemerintah kolonial Belanda\nmulai tahun 1901 mencakup tiga program utama (Trias van Deventer: Irigasi, Emigrasi, dan Edukasi).\nMeskipun semula ditujukan untuk menyediakan tenaga kerja murah bagi perkebunan Belanda, program\nEdukasi justru melahirkan dampak besar yang tidak diduga oleh Belanda, yaitu ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Lahirnya golongan intelektual/terpelajar pribumi yang memiliki kesadaran nasional dan memelopori berdirinya organisasi pergerakan kemerdekaan"
+      },
+      {
+        "label": "B",
+        "teks": "Hilangnya seluruh sekolah kedokteran (STOVIA) dan sekolah teknik di Pulau Jawa"
+      },
+      {
+        "label": "C",
+        "teks": "Meningkatnya kesetiaan mutlak seluruh pemuda Indonesia kepada Kerajaan Belanda"
+      },
+      {
+        "label": "D",
+        "teks": "Dihapuskannya pajak tanah dan kerja paksa di seluruh wilayah Hindia Belanda secara sukarela"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Bidang Edukasi dalam Politik Etis melahirkan golongan terpelajar pribumi yang menjadi\nmotor penggerak Kebangkitan Nasional 1908.",
+    "valid": true
+  },
+  {
+    "nomor": 30,
+    "nomor_global": 110,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Nasionalisme dan Jati Diri Bangsa",
+    "materi": "Penjelajahan Samudra, Kebijakan Kolonialisme & Imperialisme Barat (VOC, Tanam Paksa, UU Agraria), Pergerakan Kebangsaan Menuju Kemerdekaan (Budi Utomo 1908, Sumpah Pemuda 1928, Proklamasi 1945), Pemerataan Pembangunan & Lembaga Keuangan, serta Resolusi Konflik & Integrasi Sosial",
+    "paket": "Bab III: Nasionalisme dan Jati Diri Bangsa - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Perhatikan bagan\nperbandingan fungsi Lembaga Keuangan Bank dan Lembaga Keuangan Bukan Bank (LKBB) dalam\npemerataan pembangunan berikut!\nBAGAN PERAN LEMBAGA KEUANGAN DALAM PEMERATAAN EKONOMI\n1. Bank Sentral (Bank Indonesia): Menjaga kestabilan nilai Rupiah, kebijakan moneter, & sistem pembayaran\n\f\f\f\n2. Bank Umum & BPR: Menghimpun dana masyarakat (tabungan, giro, deposito) & menyalurkan kredit pro-\nduktif (KUR UMKM)\n\f\f\f\n3. LKBB: Pegadaian (Kredit gadai barang bergerak), Asuransi (Pengalihan risiko),\nKoperasi Simpan Pinjam (Kesejahteraan anggota), Dana Pensiun, & Pasar Modal\nSeorang pedagang pasar tradisional membutuhkan tambahan modal kerja secara cepat untuk kulakan\nbarang menjelang bulan Ramadan dengan menjaminkan perhiasan emas miliknya secara resmi tanpa\nharus menjual emas tersebut. Berdasarkan bagan di atas, lembaga keuangan yang paling tepat dikun-\njungi pedagang tersebut adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Perusahaan Asuransi Jiwa karena memberikan pinjaman tunai harian dengan jaminan kendaraan"
+      },
+      {
+        "label": "B",
+        "teks": "Bank Indonesia (Bank Sentral) karena melayani gadai perhiasan ritel bagi warga perorangan"
+      },
+      {
+        "label": "C",
+        "teks": "PT Pegadaian (Lembaga Keuangan Bukan Bank) karena memberikan fasilitas pinjaman beragunan barang bergerak secara cepat, aman, dan berizin OJK"
+      },
+      {
+        "label": "D",
+        "teks": "Rentenir tidak resmi yang mengenakan bunga harian mencekik tanpa pengawasan hukum"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "PT Pegadaian adalah LKBB resmi yang melayani pinjaman kredit cepat berbasis hukum\ngadai dengan agunan barang bergerak (seperti emas).",
+    "valid": true
+  },
+  {
+    "nomor": 31,
+    "nomor_global": 111,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Nasionalisme dan Jati Diri Bangsa",
+    "materi": "Penjelajahan Samudra, Kebijakan Kolonialisme & Imperialisme Barat (VOC, Tanam Paksa, UU Agraria), Pergerakan Kebangsaan Menuju Kemerdekaan (Budi Utomo 1908, Sumpah Pemuda 1928, Proklamasi 1945), Pemerataan Pembangunan & Lembaga Keuangan, serta Resolusi Konflik & Integrasi Sosial",
+    "paket": "Bab III: Nasionalisme dan Jati Diri Bangsa - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Pada masa pen-\ndudukan militer Jepang di Indonesia (1942–1945), pemerintah Jepang menerapkan eksploitasi sumber\ndaya ekonomi dan tenaga kerja paksa (romusha) untuk membiayai Perang Asia Timur Raya. Namun, di\nbalik penderitaan tersebut, kebijakan Jepang yang secara langsung mempercepat pengukuhan jati diri\nkebangsaan Indonesia adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Pemberian kemerdekaan penuh kepada Indonesia pada hari pertama tentara Jepang mendarat di Tarakan"
+      },
+      {
+        "label": "B",
+        "teks": "Pelarangan penggunaan bahasa Belanda dan diwajibkannya penggunaan Bahasa Indonesia sebagai bahasa pengantar resmi di sekolah, kantor pemerintahan, serta media komunikasi"
+      },
+      {
+        "label": "C",
+        "teks": "Pembagian tanah perkebunan secara gratis kepada seluruh petani Jawa tanpa kewajiban setor padi"
+      },
+      {
+        "label": "D",
+        "teks": "Pendirian universitas-universitas riset bebas di setiap desa terpencil oleh tentara Jepang"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Pada masa pendudukan Jepang, pelarangan bahasa Belanda dan penggunaan wajib\nBahasa Indonesia justru memperluas pemakaian bahasa persatuan di seluruh Nusantara.",
+    "valid": true
+  },
+  {
+    "nomor": 32,
+    "nomor_global": 112,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Nasionalisme dan Jati Diri Bangsa",
+    "materi": "Penjelajahan Samudra, Kebijakan Kolonialisme & Imperialisme Barat (VOC, Tanam Paksa, UU Agraria), Pergerakan Kebangsaan Menuju Kemerdekaan (Budi Utomo 1908, Sumpah Pemuda 1928, Proklamasi 1945), Pemerataan Pembangunan & Lembaga Keuangan, serta Resolusi Konflik & Integrasi Sosial",
+    "paket": "Bab III: Nasionalisme dan Jati Diri Bangsa - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Dalam masyarakat yang\nmajemuk, gesekan kepentingan antarindividu atau antarkelompok dapat memicu konflik sosial. Apabila\nkonflik antara serikat pekerja dan manajemen perusahaan mengenai upah lembur diselesaikan melalui\nkeputusan mengikat oleh pihak ketiga yang netral (Dewan Arbitrase Hubungan Industrial), maka bentuk\npengendalian konflik tersebut dinamakan ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Stalemate (kebuntuan seimbang tanpa penyelesaian)"
+      },
+      {
+        "label": "B",
+        "teks": "Koersi (coercion melalui kekerasan fisik)"
+      },
+      {
+        "label": "C",
+        "teks": "Arbitrase (arbitration)"
+      },
+      {
+        "label": "D",
+        "teks": "Eliminasi (pengusiran salah satu pihak secara paksa)"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Penyelesaian sengketa melalui pihak ketiga netral yang berwenang mengambil keputusan\nmengikat disebut arbitrase.",
+    "valid": true
+  },
+  {
+    "nomor": 33,
+    "nomor_global": 113,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Nasionalisme dan Jati Diri Bangsa",
+    "materi": "Penjelajahan Samudra, Kebijakan Kolonialisme & Imperialisme Barat (VOC, Tanam Paksa, UU Agraria), Pergerakan Kebangsaan Menuju Kemerdekaan (Budi Utomo 1908, Sumpah Pemuda 1928, Proklamasi 1945), Pemerataan Pembangunan & Lembaga Keuangan, serta Resolusi Konflik & Integrasi Sosial",
+    "paket": "Bab III: Nasionalisme dan Jati Diri Bangsa - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Perhatikan tabel de-\nlapan jalur pemerataan pembangunan dan mekanisme Redistribusi Pendapatan Nasional di Indonesia\nberikut!\nTABEL INSTRUMEN REDISTRIBUSI PENDAPATAN NASIONAL\nJenis Redistribusi\nPengertian Mekanisme\nContoh Program Nyata di Indonesia\n1. Redistribusi Vertikal\nTransfer dana dari masyarakat berpen-\ndapatan tinggi (melalui pajak progresif)\nkepada masyarakat kurang mampu\nProgram\nKeluarga\nHarapan\n(PKH),\nKartu\nIndonesia\nPintar\n(KIP),\nKartu\nIndonesia Sehat (KIS/BPJS PBI), &\nSubsidi Tepat Sasaran\n2. Redistribusi Horizontal\nTransfer uang antar-kelompok atau sik-\nlus hidup individu itu sendiri\nIuran Jaminan Hari Tua (JHT) / Dana\nPensiun dan tabungan siklus hidup\nBerdasarkan tabel di atas, mengapa penerapan pajak penghasilan (PPh) progresif dan pajak barang\nmewah yang dananya dialokasikan pemerintah untuk membiayai sekolah gratis (BOS/KIP), layanan ke-\nsehatan BPJS Penerima Bantuan Iuran (PBI), serta bantuan modal UMKM sangat penting bagi integrasi\nnasional?",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Karena mengalihkan dana pendidikan rakyat miskin untuk mensubsidi pembelian mobil mewah"
+      },
+      {
+        "label": "B",
+        "teks": "Karena bertujuan menyita seluruh harta milik pengusaha swasta agar tidak ada lagi perusahaan di Indonesia"
+      },
+      {
+        "label": "C",
+        "teks": "Karena membebaskan warga berpenghasilan tinggi dari kewajiban membayar pajak kepada negara"
+      },
+      {
+        "label": "D",
+        "teks": "Karena memperkecil jurang kesenjangan sosial-ekonomi antara kelompok kaya dan kelompok miskin, memenuhi keadilan sosial (Sila ke-5 Pancasila), dan mencegah kecemburuan sosial"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Redistribusi vertikal (pajak progresif untuk membiayai KIP, KIS/BPJS PBI, PKH, dan\nUMKM) memperkecil ketimpangan ekonomi dan memperkokoh keadilan sosial.",
+    "valid": true
+  },
+  {
+    "nomor": 34,
+    "nomor_global": 114,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Nasionalisme dan Jati Diri Bangsa",
+    "materi": "Penjelajahan Samudra, Kebijakan Kolonialisme & Imperialisme Barat (VOC, Tanam Paksa, UU Agraria), Pergerakan Kebangsaan Menuju Kemerdekaan (Budi Utomo 1908, Sumpah Pemuda 1928, Proklamasi 1945), Pemerataan Pembangunan & Lembaga Keuangan, serta Resolusi Konflik & Integrasi Sosial",
+    "paket": "Bab III: Nasionalisme dan Jati Diri Bangsa - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Peristiwa Rengasdengk-\nlok pada tanggal 16 Agustus 1945 memperlihatkan adanya perbedaan pendapat mengenai waktu pelak-\nsanaan Proklamasi Kemerdekaan antara golongan tua (Ir. Soekarno dan Drs. Moh. Hatta) dengan\ngolongan muda (Soekarni, Wikana, Chaerul Saleh). Nilai luhur yang patut diteladani dari penyelesaian\nperistiwa tersebut hingga lahirnya Proklamasi 17 Agustus 1945 adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Kedua golongan memiliki tujuan luhur yang sama (kemerdekaan Indonesia tanpa campur tangan Jepang) dan mengutamakan musyawarah serta persatuan bangsa di atas ego kelompok"
+      },
+      {
+        "label": "B",
+        "teks": "Golongan muda memproklamasikan kemerdekaan sendiri tanpa melibatkan Ir. Soekarno dan Drs. Moh. Hatta"
+      },
+      {
+        "label": "C",
+        "teks": "Golongan tua menyerahkan naskah proklamasi untuk disahkan terlebih dahulu oleh Kaisar Jepang di Tokyo"
+      },
+      {
+        "label": "D",
+        "teks": "Perbedaan pendapat diselesaikan melalui pertempuran bersenjata antarpemuda di Jakarta"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Peristiwa Rengasdengklok diselesaikan melalui musyawarah dan kesamaan cita-cita\nkemerdekaan tanpa campur tangan Jepang.",
+    "valid": true
+  },
+  {
+    "nomor": 35,
+    "nomor_global": 115,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Nasionalisme dan Jati Diri Bangsa",
+    "materi": "Penjelajahan Samudra, Kebijakan Kolonialisme & Imperialisme Barat (VOC, Tanam Paksa, UU Agraria), Pergerakan Kebangsaan Menuju Kemerdekaan (Budi Utomo 1908, Sumpah Pemuda 1928, Proklamasi 1945), Pemerataan Pembangunan & Lembaga Keuangan, serta Resolusi Konflik & Integrasi Sosial",
+    "paket": "Bab III: Nasionalisme dan Jati Diri Bangsa - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Integrasi nasional di In-\ndonesia yang terdiri atas ribuan pulau dan ratusan suku bangsa dapat terwujud melalui tiga bentuk ikatan:\n(1) Integrasi normatif (berdasarkan nilai dan norma bersama seperti Pancasila dan semboyan Bhinneka\nTunggal Ika), (2) Integrasi fungsional (berdasarkan ketergantungan fungsi ekonomi antardaerah), dan\n(3) Integrasi koersif (berdasarkan wewenang penegakan hukum). Contoh nyata integrasi fungsional\nadalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Pembacaan teks Pancasila pada saat upacara peringatan Hari Kemerdekaan di istana negara"
+      },
+      {
+        "label": "B",
+        "teks": "Pembubaran kerusuhan massa oleh aparat kepolisian menggunakan gas air mata"
+      },
+      {
+        "label": "C",
+        "teks": "Masyarakat Bugis yang unggul di bidang pelayaran laut bekerja sama dengan masyarakat Jawa penghasil beras dan masyarakat Maluku penghasil rempah sehingga tercipta kesalingtergantungan yang menyatukan bangsa"
+      },
+      {
+        "label": "D",
+        "teks": "Penjatuhan vonis hukuman penjara oleh hakim pengadilan negeri kepada pelaku tindak pidana"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Integrasi fungsional terbentuk karena adanya fungsi-fungsi ekonomi antardaerah/antarsuku\nyang saling membutuhkan dan melengkapi.",
+    "valid": true
+  },
+  {
+    "nomor": 36,
+    "nomor_global": 116,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Nasionalisme dan Jati Diri Bangsa",
+    "materi": "Penjelajahan Samudra, Kebijakan Kolonialisme & Imperialisme Barat (VOC, Tanam Paksa, UU Agraria), Pergerakan Kebangsaan Menuju Kemerdekaan (Budi Utomo 1908, Sumpah Pemuda 1928, Proklamasi 1945), Pemerataan Pembangunan & Lembaga Keuangan, serta Resolusi Konflik & Integrasi Sosial",
+    "paket": "Bab III: Nasionalisme dan Jati Diri Bangsa - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "[Pilihan Ganda Kompleks —\nAnalisis Resolusi Konflik & Integrasi Nasional] Evaluasilah konsep musyawarah mediasi lintas tokoh\nmasyarakat dan harmoni keberagaman budaya nasional berikut! Pernyataan sosiologis yang benar men-\ngenai penanganan konflik dan penguatan integrasi sosial berdasarkan panduan kalimat di atas adalah .... (Pilih\nlebih dari satu jawaban benar)\n\nPernyataan Analisis:\n(1) Penyelesaian sengketa melalui musyawarah mufakat dan mediasi tokoh masyarakat merupakan bentuk akomodasi damai yang menjaga keutuhan warga.\n(2) Sikap toleransi, saling menghargai perbedaan budaya, dan terbukanya kesempatan ekonomi yang adil merupakan faktor pendorong cepatnya integrasi sosial.\n(3) Semboyan Bhinneka Tunggal Ika dan falsafah Pancasila berperan sebagai pengikat integrasi nor- matif seluruh elemen bangsa Indonesia.\n(4) Sikap primordialisme sempit, etnosentrisme ekstrem, dan fanatisme kelompok akan mempercepat terwujudnya integrasi nasional.\n\nPernyataan yang tepat adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Pernyataan (1), (2), dan (3) benar"
+      },
+      {
+        "label": "B",
+        "teks": "Pernyataan (1) dan (4) saja yang benar"
+      },
+      {
+        "label": "C",
+        "teks": "Pernyataan (2) dan (4) saja yang benar"
+      },
+      {
+        "label": "D",
+        "teks": "Semua pernyataan (1), (2), (3), dan (4) benar"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "✓A,\n✓B,\n✓C — Mediasi/musyawarah menyelesaikan sengketa secara damai (A), tol-\neransi mendorong integrasi (B), dan Pancasila/Bhinneka Tunggal Ika adalah pengikat integrasi normatif (C).\n\nEtnosentrisme ekstrem justru menghambat integrasi (D salah).",
+    "valid": true
+  },
+  {
+    "nomor": 37,
+    "nomor_global": 117,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Nasionalisme dan Jati Diri Bangsa",
+    "materi": "Penjelajahan Samudra, Kebijakan Kolonialisme & Imperialisme Barat (VOC, Tanam Paksa, UU Agraria), Pergerakan Kebangsaan Menuju Kemerdekaan (Budi Utomo 1908, Sumpah Pemuda 1928, Proklamasi 1945), Pemerataan Pembangunan & Lembaga Keuangan, serta Resolusi Konflik & Integrasi Sosial",
+    "paket": "Bab III: Nasionalisme dan Jati Diri Bangsa - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "[Pilihan Ganda Kompleks — Kolonialisme Barat & Pergerakan Kebangsaan] Evaluasilah pernyataan\nsejarah perjuangan bangsa Indonesia berikut! Pernyataan yang tepat adalah ....\n\nPernyataan Analisis:\n(1) Traktat Sumatra tahun 1871 antara Inggris dan Belanda memberikan kebebasan bagi Belanda untuk memperluas kekuasaan ke seluruh Sumatra sehingga memicu meletusnya Perang Aceh (1873).\n(2) Organisasi Budi Utomo yang didirikan pada tanggal 20 Mei 1908 oleh dr. Sutomo dan mahasiswa STOVIA diperingati sebagai tonggak Hari Kebangkitan Nasional.\n(3) Pada masa pendudukan Jepang, Bahasa Indonesia berkembang luas karena Jepang melarang penggunaan bahasa Belanda dan mewajibkan Bahasa Indonesia di sekolah serta administrasi.\n(4) Tujuan utama pemerintah kolonial Belanda menerapkan Cultuurstelsel (Tanam Paksa) tahun 1830 adalah untuk memakmurkan petani pribumi di Pulau Jawa.\n\nPernyataan yang tepat adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Pernyataan (1), (2), dan (3) benar"
+      },
+      {
+        "label": "B",
+        "teks": "Pernyataan (1) dan (4) saja yang benar"
+      },
+      {
+        "label": "C",
+        "teks": "Pernyataan (2) dan (4) saja yang benar"
+      },
+      {
+        "label": "D",
+        "teks": "Semua pernyataan (1), (2), (3), dan (4) benar"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "✓A,\n✓B,\n✓C — Traktat Sumatra 1871 memicu Perang Aceh (A), Budi Utomo 20 Mei\n1908 adalah tonggak Kebangkitan Nasional (B), dan Bahasa Indonesia meluas pada masa Jepang (C). Tanam\nPaksa 1830 bertujuan mengisi kas negara Belanda yang kosong, bukan memakmurkan petani (D salah).",
+    "valid": true
+  },
+  {
+    "nomor": 38,
+    "nomor_global": 118,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Nasionalisme dan Jati Diri Bangsa",
+    "materi": "Penjelajahan Samudra, Kebijakan Kolonialisme & Imperialisme Barat (VOC, Tanam Paksa, UU Agraria), Pergerakan Kebangsaan Menuju Kemerdekaan (Budi Utomo 1908, Sumpah Pemuda 1928, Proklamasi 1945), Pemerataan Pembangunan & Lembaga Keuangan, serta Resolusi Konflik & Integrasi Sosial",
+    "paket": "Bab III: Nasionalisme dan Jati Diri Bangsa - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "[Tabel\nCentang Benar / Salah — Kebijakan Kolonial & Pergerakan Nasional] Berilah tanda centang (✓) pada\nkolom Benar atau Salah untuk setiap pernyataan sejarah berikut!\n\nPernyataan Evaluasi:\n(a) Sistem sewa tanah (Landrent) yang diterapkan Thomas Stamford Raf- fles didasarkan pada pandangan bahwa seluruh tanah adalah milik ne- gara dan petani wajib membayar pajak sewa tanah.\n(b) Surat kabar De Expres dan artikel terkenal “Als Ik Eens Nederlan- der Was” (Seandainya Aku Seorang Belanda) digunakan oleh Tiga Serangkai (Indische Partij) untuk mengkritik ketidakadilan kolonial.\n(c) Kongres Pemuda II tanggal 28 Oktober 1928 menghasilkan naskah Proklamasi Kemerdekaan Republik Indonesia yang ditandatangani oleh Soekarno–Hatta.\n\nKombinasi analisis nilai kebenaran (Benar/Salah) yang tepat berturut-turut adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(a) Benar, (b) Benar, (c) Salah"
+      },
+      {
+        "label": "B",
+        "teks": "(a) Benar, (b) Salah, (c) Salah"
+      },
+      {
+        "label": "C",
+        "teks": "(a) Salah, (b) Benar, (c) Benar"
+      },
+      {
+        "label": "D",
+        "teks": "(a) Benar, (b) Benar, (c) Benar"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "(c) Salah, karena Kongres Pemuda II menghasilkan ikrar\nSumpah Pemuda, sedangkan Proklamasi Kemerdekaan dikumandangkan pada 17 Agustus 1945.",
+    "valid": true
+  },
+  {
+    "nomor": 39,
+    "nomor_global": 119,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Nasionalisme dan Jati Diri Bangsa",
+    "materi": "Penjelajahan Samudra, Kebijakan Kolonialisme & Imperialisme Barat (VOC, Tanam Paksa, UU Agraria), Pergerakan Kebangsaan Menuju Kemerdekaan (Budi Utomo 1908, Sumpah Pemuda 1928, Proklamasi 1945), Pemerataan Pembangunan & Lembaga Keuangan, serta Resolusi Konflik & Integrasi Sosial",
+    "paket": "Bab III: Nasionalisme dan Jati Diri Bangsa - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "[Tabel\nCentang Benar / Salah — Lembaga Keuangan & Konflik-Integrasi Sosial] Evaluasilah kebenaran\n\npernyataan ekonomi dan sosiologi berikut!\n\nPernyataan Evaluasi:\n(a) Bank Umum berfungsi menghimpun dana dari masyarakat dalam ben- tuk simpanan (tabungan, giro, deposito), menyalurkan kredit, serta memberikan jasa lalu lintas pembayaran.\n(b) Penyelesaian sengketa antara dua pihak melalui keputusan majelis hakim di pengadilan negara yang bersifat mengikat secara hukum dise- but ajudikasi.\n(c) Perusahaan Anjak Piutang (Factoring) adalah lembaga keuangan yang tugas utamanya mencetak uang kertas dan menetapkan suku bunga acuan nasional.\n\nKombinasi analisis nilai kebenaran (Benar/Salah) yang tepat berturut-turut adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(a) Benar, (b) Benar, (c) Salah"
+      },
+      {
+        "label": "B",
+        "teks": "(a) Benar, (b) Salah, (c) Salah"
+      },
+      {
+        "label": "C",
+        "teks": "(a) Salah, (b) Benar, (c) Benar"
+      },
+      {
+        "label": "D",
+        "teks": "(a) Benar, (b) Benar, (c) Benar"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "(c) Salah, karena wewenang mencetak uang Rupiah dan\nmenetapkan suku bunga acuan berada pada Bank Indonesia (Bank Sentral), bukan perusahaan factoring.",
+    "valid": true
+  },
+  {
+    "nomor": 40,
+    "nomor_global": 120,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Nasionalisme dan Jati Diri Bangsa",
+    "materi": "Penjelajahan Samudra, Kebijakan Kolonialisme & Imperialisme Barat (VOC, Tanam Paksa, UU Agraria), Pergerakan Kebangsaan Menuju Kemerdekaan (Budi Utomo 1908, Sumpah Pemuda 1928, Proklamasi 1945), Pemerataan Pembangunan & Lembaga Keuangan, serta Resolusi Konflik & Integrasi Sosial",
+    "paket": "Bab III: Nasionalisme dan Jati Diri Bangsa - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Pada tahun 1830–1870, Gubernur Jenderal Johannes van den Bosch menerapkan sistem\nTanam Paksa (Cultuurstelsel) yang mewajibkan petani Jawa menanami tanahnya dengan tanaman ek-\nspor (kopi, tebu, nila) dan menyerahkan hasilnya kepada pemerintah kolonial hingga menghasilkan sur-\nplus kas Belanda (batig slot) ratusan juta gulden, namun memicu kelaparan hebat di Cirebon, Demak,\ndan Grobogan. Bandingkan kebijakan eksploitatif tersebut dengan prinsip Koperasi dan Kredit Usaha\nRakyat (KUR) bagi petani pada masa kemerdekaan saat ini!",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Kedua kebijakan tersebut sama-sama menghapus kepemilikan lahan petani dan melarang perdagan- gan hasil pertanian"
+      },
+      {
+        "label": "B",
+        "teks": "Cultuurstelsel dan Koperasi sama-sama mewajibkan petani menyerahkan 100% hasil panen tanpa bayaran kepada pemerintah asing"
+      },
+      {
+        "label": "C",
+        "teks": "Cultuurstelsel menyejahterakan petani pribumi di Demak dan Grobogan, sedangkan KUR melarang petani menanam padi"
+      },
+      {
+        "label": "D",
+        "teks": "Cultuurstelsel merampas lahan, waktu, dan nilai tambah petani untuk kas negara penjajah, sedangkan Koperasi dan KUR memberdayakan petani sebagai pemilik usaha yang menikmati sendiri nilai tambah panennya demi pemerataan kesejahteraan nasional"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Pada masa Cultuurstelsel, surplus ekonomi (batig slot) dikirim ke Belanda melalui pak-\nsaan yang memiskinkan petani pribumi; sebaliknya, pada masa kemerdekaan, Koperasi dan KUR memperkuat\nakses modal petani agar nilai tambah dinikmati oleh rakyat sendiri.\n\n1. Dinamika Pembangunan Perekonomian Indonesia dari Awal Kemerdekaan hingga Reformasi\na. Masa Awal Kemerdekaan (1945–1949): Perekonomian menghadapi hiperinflasi (peredaran tiga mata uang: De\nJavasche Bank, pemerintah Hindia Belanda, dan mata uang pendudukan Jepang yang tak terkendali) serta blokade laut\nBelanda (NICA) sejak November 1945. Langkah terobosan pemerintah RI: (1) Penerbitan Oeang Republik Indone-\nsia (ORI) pada 30 Oktober 1946 sebagai simbol kedaulatan moneter; (2) Program Pinjaman Nasional oleh Menkeu Ir.\nSurachman; (3) Diplomasi Beras ke India (500.000 ton beras ditukar kain tekstil dan obat-obatan); (4) Pembentukan\nBanking and Trading Corporation (BTC) pimpinan Sumitro Djojohadikusumo dan Indonesian Office (Indoff) di Singa-\npura untuk menembus blokade; serta (5) Plan Kasimo (swasembada pangan). Rujukan resmi: Buku Siswa IPS Ke-\nlas VIII Kemendikdasmen (https://static-sc.cloudapp.web.id/content/pdf/bukuteks/kurikulum21/IPS-BS-\nKLS-VIII.pdf).\nb. Masa Demokrasi Parlementer (1950–1959) & Demokrasi Terpimpin (1959–1966): Kebijakan ekonomi masa Par-\nlementer: (1) Gunting Syafruddin (20 Maret 1950: pemotongan nilai uang Rp2,50 ke atas menjadi dua bagian — seten-\ngah alat bayar, setengah obligasi negara); (2) Sistem Ekonomi Gerakan Benteng (Sumitro Djojohadikusumo: pembe-\nrian kredit dan lisensi impor kepada pengusaha pribumi); (3) Nasionalisasi De Javasche Bank menjadi Bank Indonesia\n(1951/1953); (4) Sistem Ekonomi Ali-Baba (Mr. Iskaq Tjokrohadisurjo: kolaborasi pengusaha pribumi Ali dan non-\npribumi Baba); dan (5) Pembatalan sepihak hasil KMB setelah perundingan Finek (1956) ditolak Belanda. Pada masa\nDemokrasi Terpimpin, dibentuk Depernas dan Deklarasi Ekonomi (Dekon, 1963) serta devaluasi mata uang Rp1.000\nmenjadi Rp1, namun inflasi melonjak hingga 650% akibat pembiayaan proyek mercusuar dan konfrontasi.\nc. Masa Orde Baru (1966–1998) & Masa Reformasi (1998–Sekarang): Pemerintah Orde Baru menerapkan Trilogi\nPembangunan (Stabilitas nasional, Pertumbuhan ekonomi tinggi, dan Pemerataan pembangunan) melalui Pembangu-\nnan Lima Tahun (Pelita I s.d. Pelita VI) dan Revolusi Hijau (ekstensifikasi, intensifikasi Panca Usaha Tani, diversi-\nfikasi, rehabilitasi) hingga meraih Swasembada Beras tahun 1984 (diakui FAO). Namun, deregulasi perbankan (Pakto\n88) tanpa pengawasan kredit ketat, utang luar negeri swasta, dan praktik KKN memicu keruntuhan ekonomi saat Kri-\nsis Moneter 1997/1998. Pada era Reformasi, Presiden B.J. Habibie merestrukturisasi perbankan (membentuk BPPN),\nmemperkuat nilai tukar Rupiah dari Rp16.000 ke bawah Rp10.000/USD, dan menetapkan independensi Bank Indonesia\n(UU No. 23 Tahun 1999), dilanjutkan pembangunan infrastruktur dan ekonomi digital hingga kini.\n2. Perdagangan Internasional (Ekspor-Impor, Kurs, Proteksi) & Kerja Sama Ekonomi Dunia\na. Teori Keunggulan Mutlak & Komparatif, Instrumen Pembayaran, serta Kebijakan Proteksi: Menurut Adam Smith\n(Absolute Advantage), negara berspesialisasi pada komoditas yang diproduksi paling efisien secara mutlak; menurut\nDavid Ricardo (Comparative Advantage), perdagangan tetap menguntungkan jika berspesialisasi pada komoditas den-\ngan biaya peluang terendah. Pembayaran internasional menggunakan Valuta Asing (Kurs Beli = saat bank membeli\nvalas/kita menukar valas ke Rupiah; Kurs Jual = saat bank menjual valas/kita menukar Rupiah ke valas), Letter of Credit\n(L/C), dan Wesel Internasional (Bill of Exchange). Kebijakan perdagangan meliputi Tarif/Bea Masuk, Kuota Impor,\nSubsidi Ekspor, Larangan Impor, dan Politik Dumping (menjual barang di luar negeri lebih murah daripada di dalam\nnegeri).\nb. Organisasi Kerja Sama Ekonomi Internasional: ASEAN (AFTA dan Masyarakat Ekonomi ASEAN / MEA), APEC\n(Asia-Pacific Economic Cooperation), WTO (World Trade Organization), IMF (International Monetary Fund), World Bank,\ndan FAO.\nc.\nRujukan 40 Soal HOTS Bab IV Kelas 8 (3 Jenis Ujian): (1) OSN IPS SMP & US: Naskah OSN IPS Tabel &\nKurs (https://id.scribd.com/document/475019789/SOAL-OSN-IPS) & Olimpiade Sains IPS (https://id.scribd.\ncom/doc/257777959/SAINS-IPS-YANTI-docx); (2) MGMP IPS SMP: Latihan Soal HOTS Pembangunan Perekono-\nmian Indonesia (https://id.scribd.com/document/891079235/Soal-3-Pembangunan-Perekonomian-Indonesia);\n(3) ASAT/PAT Kurikulum Merdeka: Kumpulan Soal IPS Kelas 8 Semester Genap Kurikulum Merdeka (https://id.\nscribd.com/document/825012902/Kumpulan-Soal-Ips-Kelas-8-Semester-Genap-Kurikulum-Merdeka) & Soal\nPAT IPS Kelas 8 2024/2025 (https://id.scribd.com/document/870228379/SOAL-PAT-IPS-KELAS-8-SEMESTER-\nGENAP-2024-2025-kumer).",
+    "valid": true
+  }
+]

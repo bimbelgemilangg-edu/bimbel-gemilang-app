@@ -1,0 +1,1370 @@
+[
+  {
+    "nomor": 1,
+    "nomor_global": 1,
+    "bab_angka": 1,
+    "bab_nama": "Bab I: Kondisi Geografis & Pelestarian SDA",
+    "materi": "Keragaman Alam Indonesia (Letak Astronomis, Geologis, Geografis), Pemanfaatan Sumber Daya Alam, Kualitas Sumber Daya Manusia (SDM), Peran Lembaga Sosial dalam Pemanfaatan SDA & SDM, serta Interaksi Budaya Masa Hindu-Buddha",
+    "paket": "Bab I: Kondisi Geografis & Pelestarian SDA - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Perhatikan peta resmi Jalur Ekspedisi Cincin Api dan pertemuan tiga lempeng tektonik (Lempeng Eura-\nsia, Lempeng Indo-Australia, dan Lempeng Pasifik) di Indonesia berikut!\nBerdasarkan peta tektonik di atas, zona subduksi (penunjaman) antara Lempeng Indo-Australia dan Lem-\npeng Eurasia memanjang di sepanjang lepas pantai barat Sumatra, selatan Jawa, hingga Nusa Tenggara.\nImplikasi geologis dari struktur tektonik ini bagi Pulau Kalimantan dibandingkan Pulau Jawa dan Sumatra\nadalah ....",
+    "gambar": [
+      "/soal/ips/kls8_ips_p54_xref2234_1089x595.jpeg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Pulau Kalimantan memiliki jumlah gunung berapi aktif paling banyak di Indonesia"
+      },
+      {
+        "label": "B",
+        "teks": "Pulau Kalimantan relatif aman dari aktivitas gunung berapi aktif dan gempa bumi megathrust karena berada jauh dari batas tumbukan lempeng"
+      },
+      {
+        "label": "C",
+        "teks": "Pulau Jawa dan Sumatra tidak pernah mengalami gempa bumi maupun letusan gunung berapi"
+      },
+      {
+        "label": "D",
+        "teks": "Seluruh wilayah Papua dan Maluku bebas dari aktivitas tektonik Lempeng Pasifik"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Pulau Kalimantan berada di bagian dalam Lempeng Eurasia yang jauh dari zona subduksi\naktif sehingga relatif aman dari gunung berapi dan gempa megathrust.",
+    "valid": true
+  },
+  {
+    "nomor": 2,
+    "nomor_global": 2,
+    "bab_angka": 1,
+    "bab_nama": "Bab I: Kondisi Geografis & Pelestarian SDA",
+    "materi": "Keragaman Alam Indonesia (Letak Astronomis, Geologis, Geografis), Pemanfaatan Sumber Daya Alam, Kualitas Sumber Daya Manusia (SDM), Peran Lembaga Sosial dalam Pemanfaatan SDA & SDM, serta Interaksi Budaya Masa Hindu-Buddha",
+    "paket": "Bab I: Kondisi Geografis & Pelestarian SDA - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Antara bulan\nOktober hingga April, kedudukan semu matahari berada di belahan bumi selatan (Australia) sehingga\ndaratan Australia bertekanan udara rendah (minimum) dan daratan Asia bertekanan udara tinggi (maksi-\nmum). Pergerakan angin yang terjadi beserta dampaknya terhadap pola tanam petani di sebagian besar\nwilayah Indonesia adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Bertiup angin fohn lokal yang mengeringkan seluruh lahan sawah di Pulau Jawa"
+      },
+      {
+        "label": "B",
+        "teks": "Bertiup Angin Muson Timur dari gurun Australia yang memicu musim kemarau panjang"
+      },
+      {
+        "label": "C",
+        "teks": "Bertiup Angin Muson Barat yang melewati perairan luas sehingga membawa curah hujan tinggi dan dimanfaatkan petani untuk memulai musim tanam padi"
+      },
+      {
+        "label": "D",
+        "teks": "Terhentinya seluruh siklus hidrologi di wilayah perairan laut Indonesia"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Pada Oktober–April bertiup Angin Muson Barat dari Asia menuju Australia melewati samudra\nluas sehingga membawa musim hujan.",
+    "valid": true
+  },
+  {
+    "nomor": 3,
+    "nomor_global": 3,
+    "bab_angka": 1,
+    "bab_nama": "Bab I: Kondisi Geografis & Pelestarian SDA",
+    "materi": "Keragaman Alam Indonesia (Letak Astronomis, Geologis, Geografis), Pemanfaatan Sumber Daya Alam, Kualitas Sumber Daya Manusia (SDM), Peran Lembaga Sosial dalam Pemanfaatan SDA & SDM, serta Interaksi Budaya Masa Hindu-Buddha",
+    "paket": "Bab I: Kondisi Geografis & Pelestarian SDA - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Per-\nhatikan peta resmi Paparan Sunda (Sunda Shelf), kawasan perairan tengah (Wallacea), dan Paparan\nSahul (Sahul Shelf) berikut!\nBerdasarkan peta biogeografi di atas, sekelompok peneliti konservasi mengamati satwa endemik di\nTaman Nasional Lore Lindu (Sulawesi Tengah) dan Taman Nasional Komodo (Nusa Tenggara Timur).\nSatwa khas yang hanya ditemukan pada zona Fauna Peralihan (Zona Wallacea) di antara Paparan\nSunda dan Paparan Sahul adalah ....",
+    "gambar": [
+      "/soal/ips/kls8_ips_p55_xref2270_904x1012.jpeg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Beruang kutub, penguin, dan singa afrika"
+      },
+      {
+        "label": "B",
+        "teks": "Gajah sumatra, harimau sumatra, badak bercula satu, dan orangutan"
+      },
+      {
+        "label": "C",
+        "teks": "Burung cenderawasih, kasuari, kanguru pohon, dan kuskus"
+      },
+      {
+        "label": "D",
+        "teks": "Anoa, babirusa, burung maleo, tarsius, dan komodo"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Fauna Peralihan (Zona Wallacea: Sulawesi, NTT, NTB) meliputi anoa, babirusa, maleo,\ntarsius, dan komodo.",
+    "valid": true
+  },
+  {
+    "nomor": 4,
+    "nomor_global": 4,
+    "bab_angka": 1,
+    "bab_nama": "Bab I: Kondisi Geografis & Pelestarian SDA",
+    "materi": "Keragaman Alam Indonesia (Letak Astronomis, Geologis, Geografis), Pemanfaatan Sumber Daya Alam, Kualitas Sumber Daya Manusia (SDM), Peran Lembaga Sosial dalam Pemanfaatan SDA & SDM, serta Interaksi Budaya Masa Hindu-Buddha",
+    "paket": "Bab I: Kondisi Geografis & Pelestarian SDA - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Masyarakat adat di\nGowa (Sulawesi Selatan) membangun rumah panggung Balla Lompoa dengan tinggi tiang kolong menca-\npai 2, 5–3 meter, sedangkan masyarakat di daerah rawan gempa Mamuju (Sulawesi Barat) mengadaptasi\nrumah panggung dengan tinggi kolong yang lebih rendah (sekitar 1 meter) dan sambungan kayu fleksibel.\nPerbedaan arsitektur vernakular ini menunjukkan ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Kearifan lokal masyarakat dalam mengadaptasi konstruksi bangunan terhadap risiko bencana gempa bumi dan kondisi lingkungan setempat"
+      },
+      {
+        "label": "B",
+        "teks": "Ketidakmampuan masyarakat Sulawesi Barat dalam mengolah bahan bangunan kayu"
+      },
+      {
+        "label": "C",
+        "teks": "Larangan adat untuk membangun rumah panggung di seluruh kawasan pesisir Sulawesi"
+      },
+      {
+        "label": "D",
+        "teks": "Kesamaan mutlak kondisi geologis dan topografi di seluruh daratan Pulau Sulawesi"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Perbedaan tinggi kolong dan sambungan kayu rumah panggung di Sulawesi merupakan\nkearifan lokal mitigasi bencana gempa bumi.",
+    "valid": true
+  },
+  {
+    "nomor": 5,
+    "nomor_global": 5,
+    "bab_angka": 1,
+    "bab_nama": "Bab I: Kondisi Geografis & Pelestarian SDA",
+    "materi": "Keragaman Alam Indonesia (Letak Astronomis, Geologis, Geografis), Pemanfaatan Sumber Daya Alam, Kualitas Sumber Daya Manusia (SDM), Peran Lembaga Sosial dalam Pemanfaatan SDA & SDM, serta Interaksi Budaya Masa Hindu-Buddha",
+    "paket": "Bab I: Kondisi Geografis & Pelestarian SDA - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Persentase sebaran terumbu\nkarang di sepanjang pantai selatan Pulau Jawa jauh lebih sedikit dibandingkan di perairan Kepulauan\nRaja Ampat, Wakatobi, atau Bunaken. Faktor oseanografis utama yang menyebabkan kondisi tersebut\nadalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Kepulauan Raja Ampat tidak pernah mendapatkan sinar matahari sepanjang tahun"
+      },
+      {
+        "label": "B",
+        "teks": "Perairan pantai selatan Pulau Jawa selalu membeku menjadi es sepanjang tahun"
+      },
+      {
+        "label": "C",
+        "teks": "Pantai selatan Pulau Jawa berhadapan langsung dengan Samudra Hindia yang memiliki gelombang besar, arus kuat, dan dasar laut curam"
+      },
+      {
+        "label": "D",
+        "teks": "Kadar garam perairan Samudra Hindia adalah nol persen seperti air tawar"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Pantai selatan Jawa berhadapan langsung dengan gelombang besar dan dasar laut curam\nSamudra Hindia sehingga kurang ideal bagi terumbu karang.",
+    "valid": true
+  },
+  {
+    "nomor": 6,
+    "nomor_global": 6,
+    "bab_angka": 1,
+    "bab_nama": "Bab I: Kondisi Geografis & Pelestarian SDA",
+    "materi": "Keragaman Alam Indonesia (Letak Astronomis, Geologis, Geografis), Pemanfaatan Sumber Daya Alam, Kualitas Sumber Daya Manusia (SDM), Peran Lembaga Sosial dalam Pemanfaatan SDA & SDM, serta Interaksi Budaya Masa Hindu-Buddha",
+    "paket": "Bab I: Kondisi Geografis & Pelestarian SDA - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Praktik penangkapan\nikan di laut secara berlebihan (overfishing) yang melampaui Jumlah Tangkapan yang Diperbolehkan (JTB)\nserta penggunaan alat tangkap merusak seperti pukat harimau (trawl) dan bom ikan akan mengakibatkan\n....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Meningkatnya populasi ikan karang dan keanekaragaman hayati laut secara drastis"
+      },
+      {
+        "label": "B",
+        "teks": "Rusaknya habitat terumbu karang, terputusnya rantai makanan laut, dan terancamnya keberlanjutan stok ikan bagi nelayan di masa depan"
+      },
+      {
+        "label": "C",
+        "teks": "Bertambahnya luas hutan mangrove dan padang lamun di sepanjang pesisir"
+      },
+      {
+        "label": "D",
+        "teks": "Menurunnya permukaan air laut global secara permanen"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Overfishing dan alat tangkap merusak menghancurkan terumbu karang serta memutus\nregenerasi stok ikan.",
+    "valid": true
+  },
+  {
+    "nomor": 7,
+    "nomor_global": 7,
+    "bab_angka": 1,
+    "bab_nama": "Bab I: Kondisi Geografis & Pelestarian SDA",
+    "materi": "Keragaman Alam Indonesia (Letak Astronomis, Geologis, Geografis), Pemanfaatan Sumber Daya Alam, Kualitas Sumber Daya Manusia (SDM), Peran Lembaga Sosial dalam Pemanfaatan SDA & SDM, serta Interaksi Budaya Masa Hindu-Buddha",
+    "paket": "Bab I: Kondisi Geografis & Pelestarian SDA - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Berdasarkan Konvensi Hukum Laut Internasional PBB (UNCLOS 1982), batas wilayah perairan di mana\nNegara Kesatuan Republik Indonesia memiliki hak berdaulat untuk melakukan eksplorasi, eksploitasi,\ndan konservasi sumber daya alam hayati maupun nonhayati sejauh 200 mil laut diukur dari garis pangkal\nkepulauan disebut ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Laut Bebas Internasional (High Seas)"
+      },
+      {
+        "label": "B",
+        "teks": "Laut Teritorial (12 mil laut)"
+      },
+      {
+        "label": "C",
+        "teks": "Perairan Pedalaman"
+      },
+      {
+        "label": "D",
+        "teks": "Zona Ekonomi Eksklusif (ZEE)"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Zona Ekonomi Eksklusif (ZEE) selebar 200 mil laut memberikan hak berdaulat pengelolaan\nsumber daya ekonomi laut.",
+    "valid": true
+  },
+  {
+    "nomor": 8,
+    "nomor_global": 8,
+    "bab_angka": 1,
+    "bab_nama": "Bab I: Kondisi Geografis & Pelestarian SDA",
+    "materi": "Keragaman Alam Indonesia (Letak Astronomis, Geologis, Geografis), Pemanfaatan Sumber Daya Alam, Kualitas Sumber Daya Manusia (SDM), Peran Lembaga Sosial dalam Pemanfaatan SDA & SDM, serta Interaksi Budaya Masa Hindu-Buddha",
+    "paket": "Bab I: Kondisi Geografis & Pelestarian SDA - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Dalam penghi-\ntungan Indeks Pembangunan Manusia (IPM) oleh Badan Pusat Statistik (BPS), dimensi pengetahuan\ndiukur melalui Harapan Lama Sekolah (HLS) dan Rata-rata Lama Sekolah (RLS). Alasan metodologis\npenghitungan RLS hanya menggunakan populasi penduduk berusia 25 tahun ke atas adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Penduduk berusia 25 tahun ke atas diasumsikan telah menyelesaikan proses pendidikan formalnya sehingga datanya stabil"
+      },
+      {
+        "label": "B",
+        "teks": "Penduduk berusia di bawah 25 tahun dilarang menempuh pendidikan formal di sekolah"
+      },
+      {
+        "label": "C",
+        "teks": "Penduduk usia sekolah dasar dan menengah tidak dihitung sebagai warga negara"
+      },
+      {
+        "label": "D",
+        "teks": "Usia 25 tahun merupakan batas usia pensiun wajib bagi seluruh pekerja di Indonesia"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Penduduk usia ≥25 tahun diasumsikan telah menamatkan pendidikan formalnya sehingga\nangka RLS stabil.",
+    "valid": true
+  },
+  {
+    "nomor": 9,
+    "nomor_global": 9,
+    "bab_angka": 1,
+    "bab_nama": "Bab I: Kondisi Geografis & Pelestarian SDA",
+    "materi": "Keragaman Alam Indonesia (Letak Astronomis, Geologis, Geografis), Pemanfaatan Sumber Daya Alam, Kualitas Sumber Daya Manusia (SDM), Peran Lembaga Sosial dalam Pemanfaatan SDA & SDM, serta Interaksi Budaya Masa Hindu-Buddha",
+    "paket": "Bab I: Kondisi Geografis & Pelestarian SDA - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Per-\nhatikan perbandingan indeks kualitas SDM di empat provinsi berikut: Provinsi P (AHH = 75, 2 thn, RLS\n= 11, 4 thn, Pengeluaran = Rp18,5 juta/thn); Provinsi Q (AHH = 71, 8 thn, RLS = 8, 9 thn, Pengelu-\naran = Rp11,2 juta/thn); Provinsi R (AHH = 67, 5 thn, RLS = 7, 2 thn, Pengeluaran = Rp8,4 juta/thn);\nProvinsi S (AHH = 73, 0 thn, RLS = 9, 8 thn, Pengeluaran = Rp13,6 juta/thn). Provinsi yang memiliki\nkualitas Sumber Daya Manusia (IPM) tertinggi dan siap mengembangkan industri berbasis teknologi\ntinggi adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Provinsi Q"
+      },
+      {
+        "label": "B",
+        "teks": "Provinsi P"
+      },
+      {
+        "label": "C",
+        "teks": "Provinsi R"
+      },
+      {
+        "label": "D",
+        "teks": "Provinsi S"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Provinsi P memiliki capaian tertinggi pada ketiga dimensi IPM (AHH 75, 2 thn, RLS 11, 4 thn,\npengeluaran Rp18,5 juta).",
+    "valid": true
+  },
+  {
+    "nomor": 10,
+    "nomor_global": 10,
+    "bab_angka": 1,
+    "bab_nama": "Bab I: Kondisi Geografis & Pelestarian SDA",
+    "materi": "Keragaman Alam Indonesia (Letak Astronomis, Geologis, Geografis), Pemanfaatan Sumber Daya Alam, Kualitas Sumber Daya Manusia (SDM), Peran Lembaga Sosial dalam Pemanfaatan SDA & SDM, serta Interaksi Budaya Masa Hindu-Buddha",
+    "paket": "Bab I: Kondisi Geografis & Pelestarian SDA - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Sesuai tahapan\nkegiatan pertambangan dalam Undang-Undang Pertambangan Mineral dan Batu Bara, kegiatan penye-\nlidikan geologi dan geofisika di lapangan untuk memastikan keberadaan, luas sebaran, kadar, serta jum-\nlah cadangan endapan mineral sebelum dilakukan penambangan komersial disebut tahap ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Pemasaran dan distribusi"
+      },
+      {
+        "label": "B",
+        "teks": "Eksploitasi"
+      },
+      {
+        "label": "C",
+        "teks": "Pengolahan dan pemurnian (smelting)"
+      },
+      {
+        "label": "D",
+        "teks": "Eksplorasi"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Tahap penyelidikan geologi/geofisika untuk menghitung cadangan mineral sebelum pe-\nnambangan disebut eksplorasi.",
+    "valid": true
+  },
+  {
+    "nomor": 11,
+    "nomor_global": 11,
+    "bab_angka": 1,
+    "bab_nama": "Bab I: Kondisi Geografis & Pelestarian SDA",
+    "materi": "Keragaman Alam Indonesia (Letak Astronomis, Geologis, Geografis), Pemanfaatan Sumber Daya Alam, Kualitas Sumber Daya Manusia (SDM), Peran Lembaga Sosial dalam Pemanfaatan SDA & SDM, serta Interaksi Budaya Masa Hindu-Buddha",
+    "paket": "Bab I: Kondisi Geografis & Pelestarian SDA - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Para siswa dan guru di se-\nbuah SMP perkotaan yang memiliki lahan halaman sempit memanfaatkan pipa paralon dan botol bekas\nyang disusun bertingkat secara vertikal (vertikultur) untuk menanam sayuran sawi, kangkung, dan selada\norganik. Kegiatan tersebut mencerminkan peran nyata ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Lembaga pendidikan dalam menanamkan inovasi pemanfaatan ruang terbatas serta pelestarian sum- ber daya tanah dan air"
+      },
+      {
+        "label": "B",
+        "teks": "Lembaga politik dalam menetapkan undang-undang pajak pertambangan nasional"
+      },
+      {
+        "label": "C",
+        "teks": "Lembaga peradilan dalam menjatuhkan sanksi pidana bagi pelaku pencemaran"
+      },
+      {
+        "label": "D",
+        "teks": "Lembaga keuangan perbankan dalam menyalurkan kredit korporasi besar"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Praktik vertikultur di sekolah menunjukkan peran lembaga pendidikan dalam inovasi\nefisiensi lahan dan pelestarian SDA.",
+    "valid": true
+  },
+  {
+    "nomor": 12,
+    "nomor_global": 12,
+    "bab_angka": 1,
+    "bab_nama": "Bab I: Kondisi Geografis & Pelestarian SDA",
+    "materi": "Keragaman Alam Indonesia (Letak Astronomis, Geologis, Geografis), Pemanfaatan Sumber Daya Alam, Kualitas Sumber Daya Manusia (SDM), Peran Lembaga Sosial dalam Pemanfaatan SDA & SDM, serta Interaksi Budaya Masa Hindu-Buddha",
+    "paket": "Bab I: Kondisi Geografis & Pelestarian SDA - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Untuk mengantisipasi\npenurunan produksi gabah dalam negeri akibat fenomena iklim El Nino (kemarau panjang), Pemerin-\ntah bersama Perum Bulog menjaga stok Cadangan Beras Pemerintah (CBP) sebesar 350 ribu ton serta\nmenyalurkan beras Stabilisasi Pasokan dan Harga Pangan (SPHP) ke pasar-pasar tradisional. Kebijakan\nini menunjukkan sinergi antara ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Lembaga agama dan lembaga pendidikan dalam menyusun kurikulum sekolah"
+      },
+      {
+        "label": "B",
+        "teks": "Lembaga keluarga dan lembaga adat dalam menyelenggarakan upacara panen raya"
+      },
+      {
+        "label": "C",
+        "teks": "Lembaga politik (pemerintah) dan lembaga ekonomi (Bulog) dalam menjaga ketahanan pangan dan stabilitas harga bagi masyarakat"
+      },
+      {
+        "label": "D",
+        "teks": "Pasar gelap dan spekulan beras untuk menaikkan harga pangan setinggi-tingginya"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Pengelolaan CBP dan beras SPHP saat El Nino merupakan sinergi lembaga politik (pe-\nmerintah) dan lembaga ekonomi (Bulog).",
+    "valid": true
+  },
+  {
+    "nomor": 13,
+    "nomor_global": 13,
+    "bab_angka": 1,
+    "bab_nama": "Bab I: Kondisi Geografis & Pelestarian SDA",
+    "materi": "Keragaman Alam Indonesia (Letak Astronomis, Geologis, Geografis), Pemanfaatan Sumber Daya Alam, Kualitas Sumber Daya Manusia (SDM), Peran Lembaga Sosial dalam Pemanfaatan SDA & SDM, serta Interaksi Budaya Masa Hindu-Buddha",
+    "paket": "Bab I: Kondisi Geografis & Pelestarian SDA - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Masyarakat adat Bali mengelola sistem pengairan sawah secara adil dan lestari melalui organisasi tra-\ndisional Subak yang berlandaskan falsafah Tri Hita Karana (harmoni hubungan manusia dengan Tuhan,\nsesama manusia, dan alam lingkungan). Keberhasilan sistem Subak membuktikan fungsi sinergis antara\n....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Lembaga militer dan perusahaan tambang asing dalam menggali batu bara"
+      },
+      {
+        "label": "B",
+        "teks": "Lembaga agama, lembaga adat, dan lembaga ekonomi pertanian dalam melestarikan sumber daya air dan lahan"
+      },
+      {
+        "label": "C",
+        "teks": "Lembaga perbankan internasional dalam menghapus sektor pertanian tradisional"
+      },
+      {
+        "label": "D",
+        "teks": "Urbanisasi penduduk desa secara serentak menuju kota besar"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Organisasi Subak di Bali memadukan lembaga agama, adat, dan ekonomi pertanian\ndalam tata kelola air sawah.",
+    "valid": true
+  },
+  {
+    "nomor": 14,
+    "nomor_global": 14,
+    "bab_angka": 1,
+    "bab_nama": "Bab I: Kondisi Geografis & Pelestarian SDA",
+    "materi": "Keragaman Alam Indonesia (Letak Astronomis, Geologis, Geografis), Pemanfaatan Sumber Daya Alam, Kualitas Sumber Daya Manusia (SDM), Peran Lembaga Sosial dalam Pemanfaatan SDA & SDM, serta Interaksi Budaya Masa Hindu-Buddha",
+    "paket": "Bab I: Kondisi Geografis & Pelestarian SDA - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Pada\nabad-abad awal Masehi, jalur perdagangan darat (Jalur Sutra) yang menghubungkan Tiongkok dan India\nmenuju Laut Tengah sering terganggu oleh konflik keamanan di Asia Tengah, sehingga para pedagang\nberalih ke jalur laut melewati Selat Malaka. Faktor geografis Nusantara yang membuat para pelayar asing\nsinggah berbulan-bulan di pelabuhan Nusantara adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Ketiadaan daratan dan pelabuhan di sepanjang pesisir pantai timur Sumatra"
+      },
+      {
+        "label": "B",
+        "teks": "Adanya Terusan Suez yang membelah Pulau Sumatra dan Pulau Jawa"
+      },
+      {
+        "label": "C",
+        "teks": "Ketergantungan kapal layar terhadap pergantian arah Angin Muson Barat dan Angin Muson Timur serta kekayaan komoditas rempah/gaharu Nusantara"
+      },
+      {
+        "label": "D",
+        "teks": "Kewajiban membayar pajak menggunakan mata uang Euro kepada VOC sejak abad ke-1 M"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Pelayaran kuno bergantung pada pergantian arah Angin Muson Barat dan Timur serta\ndaya tarik rempah Nusantara.",
+    "valid": true
+  },
+  {
+    "nomor": 15,
+    "nomor_global": 15,
+    "bab_angka": 1,
+    "bab_nama": "Bab I: Kondisi Geografis & Pelestarian SDA",
+    "materi": "Keragaman Alam Indonesia (Letak Astronomis, Geologis, Geografis), Pemanfaatan Sumber Daya Alam, Kualitas Sumber Daya Manusia (SDM), Peran Lembaga Sosial dalam Pemanfaatan SDA & SDM, serta Interaksi Budaya Masa Hindu-Buddha",
+    "paket": "Bab I: Kondisi Geografis & Pelestarian SDA - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Se-\njarawan J.C. van Leur mengemukakan bahwa kebudayaan Hindu-Buddha di Nusantara disebarkan oleh\ngolongan pemuka agama yang diundang oleh kepala suku/raja di Nusantara untuk memimpin upacara\nkeagamaan dan penobatan raja (Vratyastoma). Argumen terkuat yang mendukung Teori Brahmana ini\nadalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Seluruh candi di Indonesia dibangun langsung oleh arsitek yang didatangkan dari Kerajaan Romawi"
+      },
+      {
+        "label": "B",
+        "teks": "Kaum pedagang (Waisya) di India dilarang keras melakukan pelayaran menyeberangi lautan"
+      },
+      {
+        "label": "C",
+        "teks": "Para prajurit Ksatria India berhasil menaklukkan seluruh kerajaan di Nusantara menjadi provinsi koloni India"
+      },
+      {
+        "label": "D",
+        "teks": "Prasasti-prasasti peninggalan kerajaan Hindu-Buddha di Indonesia ditulis menggunakan huruf Pallawa dan bahasa Sanskerta yang hanya dikuasai oleh kaum Brahmana"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Huruf Pallawa dan bahasa Sanskerta kitab Weda hanya dikuasai secara mendalam oleh\ngolongan Brahmana.",
+    "valid": true
+  },
+  {
+    "nomor": 16,
+    "nomor_global": 16,
+    "bab_angka": 1,
+    "bab_nama": "Bab I: Kondisi Geografis & Pelestarian SDA",
+    "materi": "Keragaman Alam Indonesia (Letak Astronomis, Geologis, Geografis), Pemanfaatan Sumber Daya Alam, Kualitas Sumber Daya Manusia (SDM), Peran Lembaga Sosial dalam Pemanfaatan SDA & SDM, serta Interaksi Budaya Masa Hindu-Buddha",
+    "paket": "Bab I: Kondisi Geografis & Pelestarian SDA - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Teori Arus Balik\nyang dikemukakan oleh F.D.K. Bosch dan G. Coedes menempatkan bangsa Nusantara sebagai pihak\nyang aktif dalam proses masuknya kebudayaan Hindu-Buddha. Bukti historis yang menguatkan Teori\nArus Balik tersebut adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Prasasti Nalanda di India yang menyebutkan permintaan Raja Balaputradewa dari Sriwijaya agar Raja Dewapaladewa menyediakan asrama bagi para pelajar dan biksu Nusantara yang menuntut ilmu di Uni- versitas Nalanda"
+      },
+      {
+        "label": "B",
+        "teks": "Ditemukannya kapak genggam batu kasar di lembah Sungai Baksoka Pacitan"
+      },
+      {
+        "label": "C",
+        "teks": "Ditandatanganinya Perjanjian Giyanti yang membagi wilayah Kesultanan Mataram menjadi Surakarta dan Yogyakarta"
+      },
+      {
+        "label": "D",
+        "teks": "Pembangunan benteng Duurstede oleh pemerintah kolonial Belanda di Saparua"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Prasasti Nalanda membuktikan peran aktif pelajar dan biksu Sriwijaya yang belajar di India\nlalu kembali menyebarkan ilmu di Nusantara (Arus Balik).",
+    "valid": true
+  },
+  {
+    "nomor": 17,
+    "nomor_global": 17,
+    "bab_angka": 1,
+    "bab_nama": "Bab I: Kondisi Geografis & Pelestarian SDA",
+    "materi": "Keragaman Alam Indonesia (Letak Astronomis, Geologis, Geografis), Pemanfaatan Sumber Daya Alam, Kualitas Sumber Daya Manusia (SDM), Peran Lembaga Sosial dalam Pemanfaatan SDA & SDM, serta Interaksi Budaya Masa Hindu-Buddha",
+    "paket": "Bab I: Kondisi Geografis & Pelestarian SDA - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Tujuh buah Prasasti Yupa yang\nditemukan di Muara Kaman (Kalimantan Timur) dari abad ke-4 Masehi menandai berakhirnya zaman\npraaksara dan dimulainya zaman sejarah di Indonesia. Informasi ekonomi dan sosial yang tercatat pada\nPrasasti Yupa masa pemerintahan Raja Mulawarman dari Kerajaan Kutai adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Pengiriman ekspedisi militer laut untuk menaklukkan Kerajaan Melayu di Sumatra"
+      },
+      {
+        "label": "B",
+        "teks": "Perintah pembangunan seribu candi batu andesit di dataran tinggi Dieng"
+      },
+      {
+        "label": "C",
+        "teks": "Kedermawanan Raja Mulawarman yang menghadiahkan 20.000 ekor sapi kepada kaum Brahmana di tanah suci Waprakeswara, menandakan kemakmuran peternakan dan perdagangan"
+      },
+      {
+        "label": "D",
+        "teks": "Penggunaan mata uang kertas Oeang Republik Indonesia (ORI) dalam perdagangan sungai"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Prasasti Yupa mencatat sedekah 20.000 ekor sapi oleh Raja Mulawarman kepada kaum\nBrahmana.",
+    "valid": true
+  },
+  {
+    "nomor": 18,
+    "nomor_global": 18,
+    "bab_angka": 1,
+    "bab_nama": "Bab I: Kondisi Geografis & Pelestarian SDA",
+    "materi": "Keragaman Alam Indonesia (Letak Astronomis, Geologis, Geografis), Pemanfaatan Sumber Daya Alam, Kualitas Sumber Daya Manusia (SDM), Peran Lembaga Sosial dalam Pemanfaatan SDA & SDM, serta Interaksi Budaya Masa Hindu-Buddha",
+    "paket": "Bab I: Kondisi Geografis & Pelestarian SDA - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Prasasti Tugu pening-\ngalan Kerajaan Tarumanagara (abad ke-5 M) di Jawa Barat menceritakan perintah Raja Purnawarman\nuntuk menggali saluran Sungai Gomati dan Candrabhaga sepanjang 6.112 tombak (±11 km) yang dise-\nlesaikan dalam waktu 21 hari. Tujuan ekologis dan ekonomis penggalian saluran sungai tersebut adalah\n....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Memisahkan daratan Pulau Jawa dan Pulau Sumatra menjadi dua pulau terpisah"
+      },
+      {
+        "label": "B",
+        "teks": "Mengendalikan banjir pada musim hujan sekaligus mengairi lahan pertanian rakyat pada musim ke- marau"
+      },
+      {
+        "label": "C",
+        "teks": "Menimbun seluruh rawa pesisir utara Jawa menjadi kawasan industri berat"
+      },
+      {
+        "label": "D",
+        "teks": "Menghalangi masuknya kapal dagang dari Tiongkok dan India ke pelabuhan Sunda Kelapa"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Penggalian Sungai Gomati dan Candrabhaga bertujuan mengendalikan banjir dan mengairi\nlahan pertanian.",
+    "valid": true
+  },
+  {
+    "nomor": 19,
+    "nomor_global": 19,
+    "bab_angka": 1,
+    "bab_nama": "Bab I: Kondisi Geografis & Pelestarian SDA",
+    "materi": "Keragaman Alam Indonesia (Letak Astronomis, Geologis, Geografis), Pemanfaatan Sumber Daya Alam, Kualitas Sumber Daya Manusia (SDM), Peran Lembaga Sosial dalam Pemanfaatan SDA & SDM, serta Interaksi Budaya Masa Hindu-Buddha",
+    "paket": "Bab I: Kondisi Geografis & Pelestarian SDA - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Kerajaan Sriwijaya yang berpusat di tepi Sungai Musi (Palembang) berkembang menjadi imperium mar-\nitim terbesar di Asia Tenggara pada abad ke-7 hingga ke-11 Masehi. Faktor geografis dan strategis yang\nmendorong kejayaan maritim Sriwijaya adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Penutupan seluruh pelabuhan Sumatra dari kunjungan biksu dan pedagang mancanegara"
+      },
+      {
+        "label": "B",
+        "teks": "Letak ibu kota Sriwijaya di puncak pegunungan tinggi yang tertutup bagi bangsa asing"
+      },
+      {
+        "label": "C",
+        "teks": "Ketergantungan penuh ekonomi Sriwijaya pada ekspor gandum dan wol domba"
+      },
+      {
+        "label": "D",
+        "teks": "Penguasaan jalur pelayaran internasional di Selat Malaka dan Selat Sunda serta armada laut yang kuat untuk menjamin keamanan kapal dagang"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Kejayaan maritim Sriwijaya ditopang oleh penguasaan jalur strategis Selat Malaka dan\nSelat Sunda.",
+    "valid": true
+  },
+  {
+    "nomor": 20,
+    "nomor_global": 20,
+    "bab_angka": 1,
+    "bab_nama": "Bab I: Kondisi Geografis & Pelestarian SDA",
+    "materi": "Keragaman Alam Indonesia (Letak Astronomis, Geologis, Geografis), Pemanfaatan Sumber Daya Alam, Kualitas Sumber Daya Manusia (SDM), Peran Lembaga Sosial dalam Pemanfaatan SDA & SDM, serta Interaksi Budaya Masa Hindu-Buddha",
+    "paket": "Bab I: Kondisi Geografis & Pelestarian SDA - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Perhatikan\nfoto asli arca Buddha dan stupa teras Arupadhatu pada Candi Borobudur di Magelang, Jawa Tengah\nberikut!\nPada masa Kerajaan Mataram Kuno di Jawa Tengah (abad ke-8 hingga ke-9 M), Dinasti Syailendra yang\nberagama Buddha Mahayana membangun Candi Borobudur, sedangkan Dinasti Sanjaya yang beragama\nHindu Siwa membangun kompleks Candi Prambanan.\nKehidupan berdampingan kedua dinasti yang\nbahkan disatukan melalui pernikahan Pramodawardhani dan Rakai Pikatan membuktikan ....",
+    "gambar": [
+      "/soal/ips/kls8_ips_p58_xref2361_1400x933.jpeg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Tingginya semangat toleransi beragama, harmoni sosial, dan penguasaan teknologi arsitektur batu andesit masyarakat Nusantara kuno"
+      },
+      {
+        "label": "B",
+        "teks": "Terjadinya perang agama berkepanjangan yang menghancurkan seluruh bangunan candi di Jawa Ten- gah"
+      },
+      {
+        "label": "C",
+        "teks": "Larangan memeluk agama Hindu di seluruh wilayah Pulau Jawa sejak abad ke-8 M"
+      },
+      {
+        "label": "D",
+        "teks": "Bahwa Candi Borobudur dan Candi Prambanan dibangun oleh pemerintah kolonial Belanda pada abad ke-19"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Pembangunan Candi Borobudur (Buddha) dan Candi Prambanan (Hindu) yang berdampin-\ngan membuktikan toleransi tinggi masyarakat Mataram Kuno.",
+    "valid": true
+  },
+  {
+    "nomor": 21,
+    "nomor_global": 21,
+    "bab_angka": 1,
+    "bab_nama": "Bab I: Kondisi Geografis & Pelestarian SDA",
+    "materi": "Keragaman Alam Indonesia (Letak Astronomis, Geologis, Geografis), Pemanfaatan Sumber Daya Alam, Kualitas Sumber Daya Manusia (SDM), Peran Lembaga Sosial dalam Pemanfaatan SDA & SDM, serta Interaksi Budaya Masa Hindu-Buddha",
+    "paket": "Bab I: Kondisi Geografis & Pelestarian SDA - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Secara\narsitektural dan filosofis, struktur bangunan Candi Borobudur terbagi menjadi tiga tingkatan kosmologi\nBuddha dari bawah ke atas, yaitu Kamadhatu, Rupadhatu, dan Arupadhatu. Makna filosofis tingkatan\npaling atas (Arupadhatu) yang berbentuk stupa-stupa melingkar tanpa relief dinding adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Alam kehidupan duniawi manusia biasa yang masih dikuasai oleh hawa nafsu dan hukum sebab-akibat"
+      },
+      {
+        "label": "B",
+        "teks": "Alam nirwana/kebuddhaan yang suci di mana manusia telah terbebas sepenuhnya dari ikatan nafsu dan wujud duniawi"
+      },
+      {
+        "label": "C",
+        "teks": "Alam peralihan tempat manusia mulai meninggalkan keinginan materi namun masih terikat rupa"
+      },
+      {
+        "label": "D",
+        "teks": "Tempat penyimpanan persenjataan perang dan lumbung padi kerajaan"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Arupadhatu adalah tingkatan tertinggi Candi Borobudur yang melambangkan alam nirwana\nbebas dari ikatan rupa/nafsu.",
+    "valid": true
+  },
+  {
+    "nomor": 22,
+    "nomor_global": 22,
+    "bab_angka": 1,
+    "bab_nama": "Bab I: Kondisi Geografis & Pelestarian SDA",
+    "materi": "Keragaman Alam Indonesia (Letak Astronomis, Geologis, Geografis), Pemanfaatan Sumber Daya Alam, Kualitas Sumber Daya Manusia (SDM), Peran Lembaga Sosial dalam Pemanfaatan SDA & SDM, serta Interaksi Budaya Masa Hindu-Buddha",
+    "paket": "Bab I: Kondisi Geografis & Pelestarian SDA - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Raja Kertanegara\ndari Kerajaan Singasari pada tahun 1275 M mengirimkan Ekspedisi Pamalayu ke Kerajaan Melayu (Dhar-\nmasraya) di Sumatra serta menjalin aliansi dengan Kerajaan Campa di Asia Tenggara. Tujuan geopolitik\nutama dari kebijakan politik luar negeri Raja Kertanegara tersebut adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Memindahkan pusat Kerajaan Singasari dari Malang menuju Pulau Kalimantan"
+      },
+      {
+        "label": "B",
+        "teks": "Menyerahkan kedaulatan Pulau Jawa kepada utusan Kaisar Kubilai Khan"
+      },
+      {
+        "label": "C",
+        "teks": "Membantu kongsi dagang VOC memonopoli perdagangan lada di Sumatra"
+      },
+      {
+        "label": "D",
+        "teks": "Membendung ancaman ekspansi kekaisaran Mongol (Kubilai Khan / Dinasti Yuan) dan memperkokoh pertahanan maritim di Selat Malaka"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Ekspedisi Pamalayu Raja Kertanegara bertujuan menyatukan kekuatan Nusantara meng-\nhadapi ancaman ekspansi Mongol (Kubilai Khan).",
+    "valid": true
+  },
+  {
+    "nomor": 23,
+    "nomor_global": 23,
+    "bab_angka": 1,
+    "bab_nama": "Bab I: Kondisi Geografis & Pelestarian SDA",
+    "materi": "Keragaman Alam Indonesia (Letak Astronomis, Geologis, Geografis), Pemanfaatan Sumber Daya Alam, Kualitas Sumber Daya Manusia (SDM), Peran Lembaga Sosial dalam Pemanfaatan SDA & SDM, serta Interaksi Budaya Masa Hindu-Buddha",
+    "paket": "Bab I: Kondisi Geografis & Pelestarian SDA - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Pada masa puncak kejayaan\nKerajaan Majapahit di bawah pemerintahan Raja Hayam Wuruk (1350–1389 M), Mahapatih Gajah Mada\nmengucapkan Sumpah Palapa untuk menyatukan wilayah Nusantara, sementara Empu Tantular menulis\nkitab Sutasoma yang memuat semboyan Bhinneka Tunggal Ika Tan Hana Dharma Mangrwa. Makna\nhistoris semboyan tersebut adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Meskipun berbeda-beda (antara penganut Buddha dan Hindu Siwa), tetapi pada hakikatnya tetap satu jua karena tidak ada kebenaran yang mendua"
+      },
+      {
+        "label": "B",
+        "teks": "Kewajiban seluruh rakyat di wilayah Nusantara untuk menganut satu agama yang sama"
+      },
+      {
+        "label": "C",
+        "teks": "Pemisahan secara kaku antara penduduk Pulau Jawa dan penduduk luar Pulau Jawa"
+      },
+      {
+        "label": "D",
+        "teks": "Larangan melakukan perdagangan antarpulau di seluruh perairan Nusantara"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Bhinneka Tunggal Ika dalam kitab Sutasoma menegaskan persatuan dalam keberagaman\nagama Hindu dan Buddha.",
+    "valid": true
+  },
+  {
+    "nomor": 24,
+    "nomor_global": 24,
+    "bab_angka": 1,
+    "bab_nama": "Bab I: Kondisi Geografis & Pelestarian SDA",
+    "materi": "Keragaman Alam Indonesia (Letak Astronomis, Geologis, Geografis), Pemanfaatan Sumber Daya Alam, Kualitas Sumber Daya Manusia (SDM), Peran Lembaga Sosial dalam Pemanfaatan SDA & SDM, serta Interaksi Budaya Masa Hindu-Buddha",
+    "paket": "Bab I: Kondisi Geografis & Pelestarian SDA - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Kerajaan Majapahit\ndikenal sebagai kerajaan agraris sekaligus maritim (semi-agraris dan komersial). Bukti kemajuan sistem\nekonomi dan moneter pada masa Kerajaan Majapahit adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Penutupan seluruh aliran Sungai Brantas dan Bengawan Solo dari aktivitas pelayaran niaga"
+      },
+      {
+        "label": "B",
+        "teks": "Penggunaan sistem barter murni tanpa mengenal mata uang logam maupun pelabuhan laut"
+      },
+      {
+        "label": "C",
+        "teks": "Pembangunan tanggul dan jaringan irigasi pertanian di lembah Sungai Brantas, ramainya pelabuhan Tuban–Gresik–Surabaya, serta penggunaan mata uang keping Gobog dan kepeng"
+      },
+      {
+        "label": "D",
+        "teks": "Ketergantungan kas kerajaan semata-mata pada pinjaman bank asing Eropa"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Majapahit membangun irigasi Sungai Brantas, pelabuhan niaga Tuban–Gresik–Surabaya,\ndan menggunakan uang kepeng/Gobog.",
+    "valid": true
+  },
+  {
+    "nomor": 25,
+    "nomor_global": 25,
+    "bab_angka": 1,
+    "bab_nama": "Bab I: Kondisi Geografis & Pelestarian SDA",
+    "materi": "Keragaman Alam Indonesia (Letak Astronomis, Geologis, Geografis), Pemanfaatan Sumber Daya Alam, Kualitas Sumber Daya Manusia (SDM), Peran Lembaga Sosial dalam Pemanfaatan SDA & SDM, serta Interaksi Budaya Masa Hindu-Buddha",
+    "paket": "Bab I: Kondisi Geografis & Pelestarian SDA - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Akulturasi kebudayaan Hindu-Buddha dengan kebudayaan asli Nusantara tampak jelas pada seni per-\ntunjukan wayang kulit dan karya sastra Kakawin Bharatayuddha. Unsur asli budaya lokal Nusantara yang\nditambahkan ke dalam pertunjukan wayang sehingga berbeda dari wiracarita Mahabharata asli di India\nadalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Penggunaan bahasa Inggris kuno dalam seluruh dialog pedalangan wayang kulit"
+      },
+      {
+        "label": "B",
+        "teks": "Kehadiran tokoh-tokoh Punakawan (Semar, Gareng, Petruk, Bagong) sebagai penasihat bijak sekali- gus representasi rakyat kecil"
+      },
+      {
+        "label": "C",
+        "teks": "Penghapusan seluruh tokoh Pandawa dan Kurawa dari jalan cerita"
+      },
+      {
+        "label": "D",
+        "teks": "Pementasan wayang yang hanya boleh dilakukan di dalam kuil di kota New Delhi"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Tokoh Punakawan (Semar, Gareng, Petruk, Bagong) adalah kreasi asli budaya Nusantara\ndalam akulturasi wayang.",
+    "valid": true
+  },
+  {
+    "nomor": 26,
+    "nomor_global": 26,
+    "bab_angka": 1,
+    "bab_nama": "Bab I: Kondisi Geografis & Pelestarian SDA",
+    "materi": "Keragaman Alam Indonesia (Letak Astronomis, Geologis, Geografis), Pemanfaatan Sumber Daya Alam, Kualitas Sumber Daya Manusia (SDM), Peran Lembaga Sosial dalam Pemanfaatan SDA & SDM, serta Interaksi Budaya Masa Hindu-Buddha",
+    "paket": "Bab I: Kondisi Geografis & Pelestarian SDA - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Perhatikan\nbagan interaksi tiga aspek letak wilayah Indonesia terhadap kondisi alamnya berikut!\nBAGAN DAMPAK LETAK ASTRONOMIS, GEOGRAFIS, DAN GEOLOGIS INDONESIA\n1. Letak Astronomis (6◦LU–11◦LS & 95◦BT–141◦BT) →Iklim Tropis & 3 Zona Waktu\n\f\f\f\n2. Letak Ge-\nografis (Di antara Benua Asia–Australia & Samudra Hindia–Pasifik) →Angin Muson (2 Musim) & Posisi Silang\nPerdagangan\n\f\f\f\n3. Letak Geologis (Pertemuan 3 Lempeng: Eurasia, Indo-Australia, Pasifik) →[Dampak\nX]\nBerdasarkan bagan di atas, Dampak X yang muncul langsung akibat letak geologis Indonesia serta\nupaya adaptasi masyarakat yang tepat adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Berembusnya angin muson barat dan muson timur yang berganti arah setiap enam bulan sekali"
+      },
+      {
+        "label": "B",
+        "teks": "Terbaginya waktu Indonesia menjadi WIB, WITA, dan WIT dengan selisih masing-masing satu jam"
+      },
+      {
+        "label": "C",
+        "teks": "Banyaknya rangkaian gunung api aktif (Ring of Fire) yang menyuburkan tanah (tanah andosol/vulkanik) dan kaya mineral tambang, namun menuntut kesiapsiagaan mitigasi gempa bumi dan erupsi"
+      },
+      {
+        "label": "D",
+        "teks": "Tidak adanya potensi gempa tektonik maupun vulkanik di seluruh pulau besar Indonesia"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Letak geologis Indonesia di pertemuan 3 lempeng tektonik menghasilkan deretan gunung\napi aktif (Ring of Fire) yang memberi berkah tanah vulkanik subur dan mineral tambang, sekaligus potensi\ngempa/erupsi.",
+    "valid": true
+  },
+  {
+    "nomor": 27,
+    "nomor_global": 27,
+    "bab_angka": 1,
+    "bab_nama": "Bab I: Kondisi Geografis & Pelestarian SDA",
+    "materi": "Keragaman Alam Indonesia (Letak Astronomis, Geologis, Geografis), Pemanfaatan Sumber Daya Alam, Kualitas Sumber Daya Manusia (SDM), Peran Lembaga Sosial dalam Pemanfaatan SDA & SDM, serta Interaksi Budaya Masa Hindu-Buddha",
+    "paket": "Bab I: Kondisi Geografis & Pelestarian SDA - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Garis khayal bio-\ngeografi yang membatasi persebaran fauna Indonesia bagian Barat (tipe Asiatis: harimau, gajah, badak,\norang utan) dengan bagian Tengah (tipe Peralihan/Wallacea: anoa, komodo, babi rusa, maleo), serta\ngaris yang membatasi bagian Tengah dengan bagian Timur (tipe Australis: cenderawasih, kanguru po-\nhon, kasuari) secara berturut-turut adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Garis Isobar tekanan udara dan Garis Isotherm suhu udara"
+      },
+      {
+        "label": "B",
+        "teks": "Garis Khatulistiwa (0◦) dan Garis Balik Utara (23, 5◦LU)"
+      },
+      {
+        "label": "C",
+        "teks": "Garis Meridian Pangkal Greenwich dan Garis Batas Tanggal Internasional"
+      },
+      {
+        "label": "D",
+        "teks": "Garis Wallace (Selat Lombok–Selat Makassar) dan Garis Weber (timur Sulawesi–Kepulauan Maluku)"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Garis Wallace memisahkan fauna Asiatis (Barat) dengan Peralihan (Tengah), sedangkan\nGaris Weber memisahkan fauna Peralihan dengan Australis (Timur).",
+    "valid": true
+  },
+  {
+    "nomor": 28,
+    "nomor_global": 28,
+    "bab_angka": 1,
+    "bab_nama": "Bab I: Kondisi Geografis & Pelestarian SDA",
+    "materi": "Keragaman Alam Indonesia (Letak Astronomis, Geologis, Geografis), Pemanfaatan Sumber Daya Alam, Kualitas Sumber Daya Manusia (SDM), Peran Lembaga Sosial dalam Pemanfaatan SDA & SDM, serta Interaksi Budaya Masa Hindu-Buddha",
+    "paket": "Bab I: Kondisi Geografis & Pelestarian SDA - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Perhatikan tabel peran lima lembaga\nsosial dalam pemanfaatan dan pelestarian Sumber Daya Alam (SDA) serta Sumber Daya Manusia (SDM)\nberikut!\nTABEL PERAN LEMBAGA SOSIAL DALAM PENGELOLAAN SDA DAN SDM\nLembaga Sosial\nPeran Peningkatan Kualitas SDM\nPeran Pelestarian SDA\n1. Lembaga Keluarga\nMenanamkan karakter disiplin, jujur, dan\npola hidup sehat sejak dini\nMembiasakan hemat air, hemat listrik,\ndan memilah sampah di rumah\n2. Lembaga Pendidikan\nMembekali ilmu pengetahuan,\nketer-\nampilan vokasi, dan literasi teknologi\nMengajarkan\nekoliterasi\nmelalui\npro-\ngram Sekolah Adiwiyata\n3. Lembaga Ekonomi\nMenyediakan lapangan kerja dan pelati-\nhan produktivitas tenaga kerja\nMenerapkan produksi ramah lingkungan\n(green industry) & CSR\n4. Lembaga Politik/Hukum\nMenyusun anggaran pendidikan & kese-\nhatan nasional\nMenetapkan\nUU\nLingkungan\nHidup\n(AMDAL) dan menindak perusak hutan\nApabila sebuah perusahaan pertambangan nikel di Sulawesi membangun instalasi pengolahan air lim-\nbah (IPAL) berstandar tinggi dan mereklamasi lahan bekas tambang karena mematuhi Undang-Undang\nNomor 32 Tahun 2009 yang diawasi oleh kementerian terkait, maka telah terjadi sinergi fungsional antara\n....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Lembaga Ekonomi (perusahaan tambang yang menjalankan produksi ramah lingkungan) dan Lem- baga Politik/Hukum (negara yang menegakkan regulasi AMDAL)"
+      },
+      {
+        "label": "B",
+        "teks": "Lembaga Keluarga inti dan Lembaga Kekerabatan adat semata tanpa aturan hukum"
+      },
+      {
+        "label": "C",
+        "teks": "Lembaga Perdagangan gelap dan sindikat penambangan liar tanpa izin"
+      },
+      {
+        "label": "D",
+        "teks": "Lembaga Hiburan dengan penghapusan kewajiban reklamasi lahan tambang"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Kepatuhan perusahaan tambang terhadap UU Lingkungan Hidup (AMDAL) menunjukkan\nsinergi antara Lembaga Ekonomi dan Lembaga Politik/Hukum.",
+    "valid": true
+  },
+  {
+    "nomor": 29,
+    "nomor_global": 29,
+    "bab_angka": 1,
+    "bab_nama": "Bab I: Kondisi Geografis & Pelestarian SDA",
+    "materi": "Keragaman Alam Indonesia (Letak Astronomis, Geologis, Geografis), Pemanfaatan Sumber Daya Alam, Kualitas Sumber Daya Manusia (SDM), Peran Lembaga Sosial dalam Pemanfaatan SDA & SDM, serta Interaksi Budaya Masa Hindu-Buddha",
+    "paket": "Bab I: Kondisi Geografis & Pelestarian SDA - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Peningkatan kualitas Sumber Daya\nManusia (SDM) Indonesia agar mampu mengelola kekayaan SDA secara mandiri di era industri modern\ntidak cukup hanya mengandalkan jumlah penduduk yang besar, melainkan harus memprioritaskan ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Penurunan anggaran pendidikan dan riset agar biaya belanja rutin birokrasi meningkat"
+      },
+      {
+        "label": "B",
+        "teks": "Pengiriman seluruh bahan tambang mentah ke luar negeri tanpa diolah di pabrik dalam negeri"
+      },
+      {
+        "label": "C",
+        "teks": "Peningkatan mutu pendidikan vokasi/sains, penguasaan teknologi tepat guna, layanan kesehatan gizi (pencegahan stunting), serta etos kerja produktif"
+      },
+      {
+        "label": "D",
+        "teks": "Pembatasan akses internet dan pelatihan keterampilan bagi pemuda di daerah perdesaan"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Peningkatan kualitas SDM menuntut investasi pada pendidikan vokasi/sains, pen-\nguasaan teknologi, kesehatan gizi, dan etos kerja.",
+    "valid": true
+  },
+  {
+    "nomor": 30,
+    "nomor_global": 30,
+    "bab_angka": 1,
+    "bab_nama": "Bab I: Kondisi Geografis & Pelestarian SDA",
+    "materi": "Keragaman Alam Indonesia (Letak Astronomis, Geologis, Geografis), Pemanfaatan Sumber Daya Alam, Kualitas Sumber Daya Manusia (SDM), Peran Lembaga Sosial dalam Pemanfaatan SDA & SDM, serta Interaksi Budaya Masa Hindu-Buddha",
+    "paket": "Bab I: Kondisi Geografis & Pelestarian SDA - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Perhatikan bagan\nperbandingan karakteristik Kerajaan Hindu-Buddha bercorak Agraris Pedalaman dan Maritim Pesisir di\nNusantara berikut!\nBAGAN TIPOLOGI EKONOMI KERAJAAN HINDU-BUDDHA NUSANTARA\nTipe I: Kerajaan Maritim-Perdagangan (Lokasi di tepi selat/muara sungai besar →Mengandalkan pajak\npelabuhan, armada laut, & komoditas transit rempah/emas →Contoh: Sriwijaya di tepi Sungai Musi & Selat\nMalaka)\n\f\f\f\nTipe II: Kerajaan Agraris-Maritim (Lokasi di lembah sungai subur & dataran vulkanik →Men-\ngandalkan pertanian padi beririgasi maju sekaligus pelabuhan dagang →Contoh: Mataram Kuno & Majapahit\ndi Lembah Sungai Brantas)\nBerdasarkan bagan di atas, faktor geografis utama yang mendorong Kerajaan Sriwijaya berkembang\nmenjadi negara maritim terbesar di Asia Tenggara pada abad ke-7 hingga ke-11 M adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Letaknya yang terkurung di puncak pegunungan kapur tanpa akses menuju perairan laut"
+      },
+      {
+        "label": "B",
+        "teks": "Letaknya yang sangat strategis di jalur pelayaran perdagangan internasional antara India dan Tiongkok (Selat Malaka dan Selat Sunda) serta runtuhnya Kerajaan Funan di Indochina"
+      },
+      {
+        "label": "C",
+        "teks": "Ketergantungan mutlak pada hasil berburu hewan di padang sabana kering"
+      },
+      {
+        "label": "D",
+        "teks": "Penolakan penguasa Sriwijaya terhadap kedatangan kapal-kapal dagang dan biksu mancanegara"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Kerajaan Sriwijaya tumbuh menjadi imperium maritim berkat letak geostrategis di jalur\npelayaran Selat Malaka dan Selat Sunda antara India dan Tiongkok.",
+    "valid": true
+  },
+  {
+    "nomor": 31,
+    "nomor_global": 31,
+    "bab_angka": 1,
+    "bab_nama": "Bab I: Kondisi Geografis & Pelestarian SDA",
+    "materi": "Keragaman Alam Indonesia (Letak Astronomis, Geologis, Geografis), Pemanfaatan Sumber Daya Alam, Kualitas Sumber Daya Manusia (SDM), Peran Lembaga Sosial dalam Pemanfaatan SDA & SDM, serta Interaksi Budaya Masa Hindu-Buddha",
+    "paket": "Bab I: Kondisi Geografis & Pelestarian SDA - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Perhatikan\ndaftar kegiatan masyarakat berikut: (1) Melaksanakan reboisasi dan penghijauan di lahan miring hulu\nsungai; (2) Menerapkan sistem tebang pilih dan tebang tanam pada hutan produksi; (3) Membawa tas\nbelanja pakai ulang (reusable bag) dan botol minum (tumbler) ke sekolah; (4) Membakar sampah plastik\ndan ban bekas secara terbuka di pekarangan padat penduduk. Bentuk pelestarian sumber daya alam\ndan lingkungan hidup yang tepat ditunjukkan oleh nomor ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(2), (3), dan (4)"
+      },
+      {
+        "label": "B",
+        "teks": "(1), (2), dan (4)"
+      },
+      {
+        "label": "C",
+        "teks": "(1), (3), dan (4)"
+      },
+      {
+        "label": "D",
+        "teks": "(1), (2), dan (3)"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Reboisasi (1), tebang pilih (2), dan penggunaan tas/botol pakai ulang (3) adalah aksi\npelestarian lingkungan; membakar plastik/ban (4) mencemari udara dengan dioksin.",
+    "valid": true
+  },
+  {
+    "nomor": 32,
+    "nomor_global": 32,
+    "bab_angka": 1,
+    "bab_nama": "Bab I: Kondisi Geografis & Pelestarian SDA",
+    "materi": "Keragaman Alam Indonesia (Letak Astronomis, Geologis, Geografis), Pemanfaatan Sumber Daya Alam, Kualitas Sumber Daya Manusia (SDM), Peran Lembaga Sosial dalam Pemanfaatan SDA & SDM, serta Interaksi Budaya Masa Hindu-Buddha",
+    "paket": "Bab I: Kondisi Geografis & Pelestarian SDA - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Prasasti Yupa yang ditemukan di\nMuara Kaman (Kalimantan Timur) ditulis dengan huruf Pallawa dan bahasa Sanskerta sekitar abad ke-4\nMasehi. Informasi sejarah ekonomi dan sosial yang tercatat pada Prasasti Yupa mengenai Kerajaan Kutai\nMartadipura adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Kedermawanan Raja Mulawarman yang menyedekahkan 20.000 ekor sapi kepada kaum Brahmana di tanah suci Waprakeswara, menandakan kemakmuran peternakan dan perdagangan"
+      },
+      {
+        "label": "B",
+        "teks": "Pembangunan terusan sungai sepanjang 1, 5 km yang disebut Sungai Gomati oleh Raja Purnawarman di Jawa Barat"
+      },
+      {
+        "label": "C",
+        "teks": "Pengucapan Sumpah Palapa oleh Mahapatih Gajah Mada untuk menyatukan seluruh Nusantara"
+      },
+      {
+        "label": "D",
+        "teks": "Penggunaan mata uang logam emas dirham di pelabuhan Samudera Pasai"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Prasasti Yupa (Kerajaan Kutai) mencatat kedermawanan Raja Mulawarman yang meng-\nhadiahkan 20.000 ekor sapi kepada kaum Brahmana di Waprakeswara.",
+    "valid": true
+  },
+  {
+    "nomor": 33,
+    "nomor_global": 33,
+    "bab_angka": 1,
+    "bab_nama": "Bab I: Kondisi Geografis & Pelestarian SDA",
+    "materi": "Keragaman Alam Indonesia (Letak Astronomis, Geologis, Geografis), Pemanfaatan Sumber Daya Alam, Kualitas Sumber Daya Manusia (SDM), Peran Lembaga Sosial dalam Pemanfaatan SDA & SDM, serta Interaksi Budaya Masa Hindu-Buddha",
+    "paket": "Bab I: Kondisi Geografis & Pelestarian SDA - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Perhatikan tabel data kepen-\ndudukan dan angkatan kerja di Provinsi X berikut!\nTABEL KOMPOSISI PENDUDUK MENURUT USIA DI PROVINSI X\nKelompok Usia\nKategori Ketenagakerjaan\nJumlah Jiwa\n0–14 tahun\nPenduduk Usia Muda (Belum Produktif)\n1.100.000 jiwa\n15–64 tahun\nPenduduk Usia Kerja (Produktif)\n3.000.000 jiwa\n≥65 tahun\nPenduduk Usia Lanjut (Tidak Produktif)\n400.000 jiwa\nTotal Penduduk Provinsi X\n4.500.000 jiwa\nBerdasarkan rumus Angka Beban Tanggungan (Dependency Ratio / DR =\nP0−14+P≥65\nP15−64\n× 100), be-\nrapakah besarnya angka beban tanggungan Provinsi X dan apa maknanya bagi perekonomian daerah\ntersebut?",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "DR = 150; artinya setiap 100 penduduk produktif menanggung 150 penduduk nonproduktif"
+      },
+      {
+        "label": "B",
+        "teks": "DR = 50; artinya setiap 100 penduduk usia produktif menanggung beban ekonomi sebanyak 50 pen- duduk usia nonproduktif (kondisi bonus demografi)"
+      },
+      {
+        "label": "C",
+        "teks": "DR = 33, 3; artinya tidak ada penduduk usia lanjut di Provinsi X"
+      },
+      {
+        "label": "D",
+        "teks": "DR = 75; artinya mayoritas penduduk Provinsi X masih berusia di bawah 14 tahun"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "DR =\n1.100.000+400.000\n3.000.000\n× 100 =\n1.500.000\n3.000.000 × 100 = 50 (setiap 100 penduduk produktif\nmenanggung 50 penduduk nonproduktif).",
+    "valid": true
+  },
+  {
+    "nomor": 34,
+    "nomor_global": 34,
+    "bab_angka": 1,
+    "bab_nama": "Bab I: Kondisi Geografis & Pelestarian SDA",
+    "materi": "Keragaman Alam Indonesia (Letak Astronomis, Geologis, Geografis), Pemanfaatan Sumber Daya Alam, Kualitas Sumber Daya Manusia (SDM), Peran Lembaga Sosial dalam Pemanfaatan SDA & SDM, serta Interaksi Budaya Masa Hindu-Buddha",
+    "paket": "Bab I: Kondisi Geografis & Pelestarian SDA - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Kitab Sutasoma karangan Mpu\nTantular pada masa Kerajaan Majapahit (masa pemerintahan Raja Hayam Wuruk) memuat kalimat ’Bhin-\nneka Tunggal Ika, Tan Hana Dharma Mangrwa’. Makna sosiologis dan historis dari kalimat tersebut yang\nmenjadi semboyan negara Republik Indonesia adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Pemisahan wilayah kerajaan menjadi dua bagian seperti pembelahan Kerajaan Kahuripan oleh Raja Airlangga"
+      },
+      {
+        "label": "B",
+        "teks": "Kewajiban menyeragamkan seluruh bahasa daerah dan adat istiadat di Nusantara menjadi satu adat tunggal"
+      },
+      {
+        "label": "C",
+        "teks": "Larangan melakukan perdagangan laut dengan saudagar dari Tiongkok, India, dan Timur Tengah"
+      },
+      {
+        "label": "D",
+        "teks": "Kerukunan dan toleransi hidup berdampingan secara damai antara pemeluk agama Hindu (Siwa) dan Buddha pada masa Majapahit karena hakikat kebenaran tidak mendua"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Semboyan Bhinneka Tunggal Ika dalam Kitab Sutasoma karya Mpu Tantular menegaskan\nkerukunan hidup berdampingan antara umat Hindu dan Buddha di Majapahit.",
+    "valid": true
+  },
+  {
+    "nomor": 35,
+    "nomor_global": 35,
+    "bab_angka": 1,
+    "bab_nama": "Bab I: Kondisi Geografis & Pelestarian SDA",
+    "materi": "Keragaman Alam Indonesia (Letak Astronomis, Geologis, Geografis), Pemanfaatan Sumber Daya Alam, Kualitas Sumber Daya Manusia (SDM), Peran Lembaga Sosial dalam Pemanfaatan SDA & SDM, serta Interaksi Budaya Masa Hindu-Buddha",
+    "paket": "Bab I: Kondisi Geografis & Pelestarian SDA - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Sekitar 70%\nwilayah Negara Kesatuan Republik Indonesia berupa perairan laut yang menghubungkan lebih dari 17.000\npulau dan terletak di jalur pelayaran utama dunia. Kebijakan strategis yang paling tepat untuk mengopti-\nmalkan potensi Indonesia sebagai Poros Maritim Dunia sekaligus menjaga kelestarian laut adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Membangun konektivitas pelabuhan Tol Laut, memodernisasi industri perikanan pengolahan dalam negeri, memberantas illegal fishing, dan merehabilitasi terumbu karang serta mangrove"
+      },
+      {
+        "label": "B",
+        "teks": "Mengizinkan kapal-kapal asing mengeruk ikan menggunakan pukat harimau (trawl) tanpa batas kuota"
+      },
+      {
+        "label": "C",
+        "teks": "Menutup seluruh pelabuhan samudra di Indonesia bagi kapal niaga internasional"
+      },
+      {
+        "label": "D",
+        "teks": "Menimbun seluruh perairan selat antarpulau menjadi daratan perkebunan monokultur"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Optimalisasi Poros Maritim Dunia dilakukan melalui konektivitas Tol Laut, hilirisasi\nperikanan, pemberantasan illegal fishing, dan konservasi ekosistem laut.",
+    "valid": true
+  },
+  {
+    "nomor": 36,
+    "nomor_global": 36,
+    "bab_angka": 1,
+    "bab_nama": "Bab I: Kondisi Geografis & Pelestarian SDA",
+    "materi": "Keragaman Alam Indonesia (Letak Astronomis, Geologis, Geografis), Pemanfaatan Sumber Daya Alam, Kualitas Sumber Daya Manusia (SDM), Peran Lembaga Sosial dalam Pemanfaatan SDA & SDM, serta Interaksi Budaya Masa Hindu-Buddha",
+    "paket": "Bab I: Kondisi Geografis & Pelestarian SDA - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "[Pilihan Ganda Kom-\npleks — Analisis Peran Lembaga Sosial dalam Pelestarian SDA] Perhatikan infografik resmi Potensi\n\nKemaritiman Indonesia dan peran lembaga sosial dalam pelestarian sumber daya alam berikut!\nPernyataan yang benar mengenai fungsi pengendalian dan pemberdayaan lembaga sosial pada gambar\ndi atas adalah .... (Pilih lebih dari satu jawaban benar)\n\nPernyataan Analisis:\n(1) Lembaga pendidikan berperan menanamkan literasi ekologi dan keterampilan pertanian ramah lingkungan (seperti hidroponik/vertikultur) kepada peserta didik.\n(2) Lembaga ekonomi (koperasi/BUMN pangan) berperan menjaga distribusi komoditas secara adil dan mendorong usaha hijau berkelanjutan.\n(3) Lembaga politik dan hukum berperan menyusun regulasi perlindungan hutan/laut serta menindak tegas pelaku perusakan lingkungan.\n(4) Pelestarian sumber daya alam hanya menjadi tanggung jawab lembaga kepolisian tanpa memer- lukan peran keluarga maupun sekolah.\n\nPernyataan yang tepat adalah ....",
+    "gambar": [
+      "/soal/ips/kls8_ips_p62_xref2552_1350x833.jpeg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Pernyataan (1), (2), dan (3) benar"
+      },
+      {
+        "label": "B",
+        "teks": "Pernyataan (1) dan (4) saja yang benar"
+      },
+      {
+        "label": "C",
+        "teks": "Pernyataan (2) dan (4) saja yang benar"
+      },
+      {
+        "label": "D",
+        "teks": "Semua pernyataan (1), (2), (3), dan (4) benar"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "✓A,\n✓B,\n✓C — Lembaga pendidikan, ekonomi, dan politik/hukum bersinergi dengan\nkeluarga dalam pelestarian SDA.",
+    "valid": true
+  },
+  {
+    "nomor": 37,
+    "nomor_global": 37,
+    "bab_angka": 1,
+    "bab_nama": "Bab I: Kondisi Geografis & Pelestarian SDA",
+    "materi": "Keragaman Alam Indonesia (Letak Astronomis, Geologis, Geografis), Pemanfaatan Sumber Daya Alam, Kualitas Sumber Daya Manusia (SDM), Peran Lembaga Sosial dalam Pemanfaatan SDA & SDM, serta Interaksi Budaya Masa Hindu-Buddha",
+    "paket": "Bab I: Kondisi Geografis & Pelestarian SDA - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "[Pilihan Ganda Kompleks — Geografi Indonesia & Peninggalan Masa Hindu-Buddha] Evaluasilah\npernyataan geografi dan sejarah berikut! Pernyataan yang tepat adalah ....\n\nPernyataan Analisis:\n(1) Angin Muson Barat yang bertiup pada bulan Oktober–April menyebabkan sebagian besar wilayah Indonesia mengalami musim penghujan.\n(2) Candi Borobudur memiliki struktur berundak-undak yang merupakan akulturasi antara konsep stupa Buddha India dan tradisi punden berundak megalitikum Nusantara.\n(3) Wilayah Indonesia bagian timur (Papua dan Kepulauan Aru) berada di Paparan Sahul sehingga memiliki tipe fauna Australis (cenderawasih, kasuari, kanguru pohon).\n(4) Garis Wallace memisahkan fauna tipe Australis di Papua dengan fauna tipe Peralihan di Maluku.\n\nPernyataan yang tepat adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Pernyataan (1), (2), dan (3) benar"
+      },
+      {
+        "label": "B",
+        "teks": "Pernyataan (1) dan (4) saja yang benar"
+      },
+      {
+        "label": "C",
+        "teks": "Pernyataan (2) dan (4) saja yang benar"
+      },
+      {
+        "label": "D",
+        "teks": "Semua pernyataan (1), (2), (3), dan (4) benar"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Angin Muson Barat membawa hujan (A), Borobudur berakulturasi dengan\npunden berundak (B), dan Papua memiliki fauna Australis (C). Garis yang memisahkan zona Peralihan dan\nAustralis adalah Garis Weber, bukan Garis Wallace (D salah).",
+    "valid": true
+  },
+  {
+    "nomor": 38,
+    "nomor_global": 38,
+    "bab_angka": 1,
+    "bab_nama": "Bab I: Kondisi Geografis & Pelestarian SDA",
+    "materi": "Keragaman Alam Indonesia (Letak Astronomis, Geologis, Geografis), Pemanfaatan Sumber Daya Alam, Kualitas Sumber Daya Manusia (SDM), Peran Lembaga Sosial dalam Pemanfaatan SDA & SDM, serta Interaksi Budaya Masa Hindu-Buddha",
+    "paket": "Bab I: Kondisi Geografis & Pelestarian SDA - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "[Tabel\nCentang Benar / Salah — Kondisi Geografis, Iklim, & Kualitas SDM] Berilah tanda centang (✓) pada\nkolom Benar atau Salah untuk setiap pernyataan berikut!\n\nPernyataan Evaluasi:\n(a) Pertemuan Lempeng Indo-Australia, Eurasia, dan Pasifik menye- babkan Indonesia memiliki deretan gunung api aktif yang menyuburkan tanah pertanian vulkanik.\n(b) Indeks Pembangunan Manusia (IPM) diukur menggunakan tiga di- mensi dasar, yaitu umur panjang/hidup sehat, pengetahuan (pen- didikan), dan standar hidup layak.\n(c) Angin Muson Timur yang berembus dari Benua Australia menuju Asia pada bulan Mei–September membawa uap air sangat banyak sehingga memicu banjir raya di seluruh Jawa.\n\nKombinasi analisis nilai kebenaran (Benar/Salah) yang tepat berturut-turut adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(a) Benar, (b) Benar, (c) Salah"
+      },
+      {
+        "label": "B",
+        "teks": "(a) Benar, (b) Salah, (c) Salah"
+      },
+      {
+        "label": "C",
+        "teks": "(a) Salah, (b) Benar, (c) Benar"
+      },
+      {
+        "label": "D",
+        "teks": "(a) Benar, (b) Benar, (c) Benar"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "(c) Salah, karena Angin Muson Timur berasal dari gurun\n\nAustralia yang kering sehingga membawa musim kemarau.",
+    "valid": true
+  },
+  {
+    "nomor": 39,
+    "nomor_global": 39,
+    "bab_angka": 1,
+    "bab_nama": "Bab I: Kondisi Geografis & Pelestarian SDA",
+    "materi": "Keragaman Alam Indonesia (Letak Astronomis, Geologis, Geografis), Pemanfaatan Sumber Daya Alam, Kualitas Sumber Daya Manusia (SDM), Peran Lembaga Sosial dalam Pemanfaatan SDA & SDM, serta Interaksi Budaya Masa Hindu-Buddha",
+    "paket": "Bab I: Kondisi Geografis & Pelestarian SDA - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "[Tabel\nCentang Benar / Salah — Lembaga Sosial & Sejarah Hindu-Buddha] Evaluasilah kebenaran perny-\n\nataan sosiologi dan sejarah berikut!\n\nPernyataan Evaluasi:\n(a) Lembaga keluarga merupakan lembaga sosial primer yang pertama kali membentuk karakter anak untuk menghargai alam dan sesama manusia.\n(b) Kerajaan Kutai di Kalimantan Timur dan Kerajaan Tarumanagara di Jawa Barat merupakan kerajaan bercorak Buddha Mahayana yang didirikan pada abad ke-14 M.\n(c) Semboyan Bhinneka Tunggal Ika diambil dari kitab Sutasoma karya Empu Tantular pada masa kejayaan Kerajaan Majapahit.\n\nKombinasi analisis nilai kebenaran (Benar/Salah) yang tepat berturut-turut adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(a) Benar, (b) Salah, (c) Benar"
+      },
+      {
+        "label": "B",
+        "teks": "(a) Benar, (b) Salah, (c) Salah"
+      },
+      {
+        "label": "C",
+        "teks": "(a) Salah, (b) Benar, (c) Benar"
+      },
+      {
+        "label": "D",
+        "teks": "(a) Benar, (b) Benar, (c) Benar"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "(b) Salah, karena Kutai (abad ke-4 M) dan Tarumanagara\n(abad ke-5 M) adalah kerajaan tertua bercorak Hindu.",
+    "valid": true
+  },
+  {
+    "nomor": 40,
+    "nomor_global": 40,
+    "bab_angka": 1,
+    "bab_nama": "Bab I: Kondisi Geografis & Pelestarian SDA",
+    "materi": "Keragaman Alam Indonesia (Letak Astronomis, Geologis, Geografis), Pemanfaatan Sumber Daya Alam, Kualitas Sumber Daya Manusia (SDM), Peran Lembaga Sosial dalam Pemanfaatan SDA & SDM, serta Interaksi Budaya Masa Hindu-Buddha",
+    "paket": "Bab I: Kondisi Geografis & Pelestarian SDA - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Pada bulan Oktober hingga Maret, matahari berada di belahan bumi selatan sehingga Benua Australia\nbertekanan udara rendah (suhu tinggi) dan Benua Asia bertekanan udara tinggi (suhu rendah). Angin\nbertiup dari Benua Asia melewati Samudra Hindia dan Laut Cina Selatan yang luas menuju Australia\nmelalui Kepulauan Indonesia. Analisis dampak klimatologis dan strategi adaptasi sektor pertanian In-\ndonesia pada periode tersebut yang paling tepat adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Berembus Angin Muson Barat yang membawa uap air melimpah sehingga sebagian besar wilayah Indonesia mengalami musim hujan; petani memulai musim tanam padi sawah sembari menjaga saluran drainase/irigasi"
+      },
+      {
+        "label": "B",
+        "teks": "Berembus Angin Muson Timur yang kering dari gurun Australia sehingga terjadi musim kemarau pan- jang; petani wajib menghentikan seluruh penanaman padi"
+      },
+      {
+        "label": "C",
+        "teks": "Terjadi badai salju subtropis di dataran rendah Kalimantan dan Sumatra sepanjang bulan Desember"
+      },
+      {
+        "label": "D",
+        "teks": "Kelembapan udara turun hingga 0% di seluruh Jawa dan Sumatra sehingga waduk PLTA mengering"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Pada periode Oktober–Maret, tekanan udara di Asia tinggi dan di Australia rendah, memicu\nAngin Muson Barat yang kaya uap air dan menurunkan musim hujan di Indonesia (musim tanam utama padi).",
+    "valid": true
+  }
+]
