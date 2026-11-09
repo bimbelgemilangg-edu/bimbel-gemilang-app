@@ -1,0 +1,1032 @@
+[
+  {
+    "nomor": 61,
+    "tipe": "pg_sederhana",
+    "paket": "Bab III: Menulis Artikel Ilmiah Populer - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Artikel Ilmiah Populer, Pemilahan Fakta vs Opini, Kalimat Perbandingan, Analogi, & Metode Triangulasi",
+    "capaian_pembelajaran": "Peserta didik memahami struktur artikel ilmiah populer (judul, pendahuluan, isi/argumen, penutup), memilah kalimat fakta dan opini, menganalisis kalimat perbandingan dan analogi, serta memahami metode pengumpulan data ilmiah populer.",
+    "bacaan": {
+      "teks": "III, penulis memaparkan bagaimana peserta didik difabel dan nondifabel belajar bersama di ruang kelas\nyang sama. Mengapa tulisan tersebut dikategorikan sebagai Artikel Ilmiah Populer (bukan cerpen fiksi\ndan bukan pula laporan rumus laboratorium murni)?",
+      "grup": "bacaan_bab3_sekolah_inklusi"
+    },
+    "teks_soal": "Dalam artikel ilmiah populer \"Interaksi Peserta Didik Difabel di Sekolah Inklusi\" pada Buku Siswa Bab\nIII, penulis memaparkan bagaimana peserta didik difabel dan nondifabel belajar bersama di ruang kelas\nyang sama. Mengapa tulisan tersebut dikategorikan sebagai Artikel Ilmiah Populer (bukan cerpen fiksi\ndan bukan pula laporan rumus laboratorium murni)?",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Karena seluruh tokoh dan sekolah yang diceritakan di dalamnya merupakan hasil khayalan imajinatif penulis"
+      },
+      {
+        "label": "B",
+        "teks": "Karena menyajikan topik sosial-pendidikan berdasarkan fakta pengamatan nyata dan data wawancara di sekolah inklusi, namun ditulis dengan bahasa yang ringan, mengalir, dan mudah dipahami pembaca umum"
+      },
+      {
+        "label": "C",
+        "teks": "Karena hanya berisi daftar tabel angka statistik tanpa menggunakan paragraf penjelasan sama sekali"
+      },
+      {
+        "label": "D",
+        "teks": "Karena ditulis khusus menggunakan bahasa Latin kuno yang hanya dimengerti oleh ilmuwan biologi"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "B. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.",
+    "valid": true
+  },
+  {
+    "nomor": 62,
+    "tipe": "pg_sederhana",
+    "paket": "Bab III: Menulis Artikel Ilmiah Populer - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Artikel Ilmiah Populer, Pemilahan Fakta vs Opini, Kalimat Perbandingan, Analogi, & Metode Triangulasi",
+    "capaian_pembelajaran": "Peserta didik memahami struktur artikel ilmiah populer (judul, pendahuluan, isi/argumen, penutup), memilah kalimat fakta dan opini, menganalisis kalimat perbandingan dan analogi, serta memahami metode pengumpulan data ilmiah populer.",
+    "bacaan": {
+      "teks": "III, penulis memaparkan bagaimana peserta didik difabel dan nondifabel belajar bersama di ruang kelas\nyang sama. Mengapa tulisan tersebut dikategorikan sebagai Artikel Ilmiah Populer (bukan cerpen fiksi\ndan bukan pula laporan rumus laboratorium murni)?",
+      "grup": "bacaan_bab3_sekolah_inklusi"
+    },
+    "teks_soal": "Bacalah kutipan paragraf dari artikel ilmiah populer \"Interaksi Peserta Didik Difabel di Sekolah Inklusi\"\nberikut!\n(1) Berdasarkan Undang-Undang Nomor 8 Tahun 2016 tentang Penyandang Disabilitas, setiap peserta\ndidik difabel memiliki hak yang sama untuk memperoleh layanan pendidikan yang bermutu di sekolah reg-\nuler maupun sekolah khusus. (2) Di SMP Negeri 10, tercatat ada 8 peserta didik difabel yang mengikuti\npembelajaran bersama teman-teman nondifabel pada tahun ajaran ini. (3) Sayangnya, ketersediaan\nbidang miring (ramp) dan toilet khusus kursi roda di beberapa gedung sekolah tampaknya masih belum\nmemadai. (4) Oleh karena itu, pihak sekolah sebaiknya segera memperbaiki fasilitas penunjang agar\npeserta didik difabel merasa lebih nyaman.\nPasangan kalimat yang merupakan fakta dan pasangan kalimat yang merupakan opini pada paragraf di\natas adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Fakta: kalimat (1) dan (4); Opini: kalimat (2) dan (3)"
+      },
+      {
+        "label": "B",
+        "teks": "Fakta: kalimat (3) dan (4); Opini: kalimat (1) dan (2)"
+      },
+      {
+        "label": "C",
+        "teks": "Fakta: kalimat (1) dan (2); Opini: kalimat (3) dan (4)"
+      },
+      {
+        "label": "D",
+        "teks": "Keempat kalimat tersebut seluruhnya merupakan opini subjektif"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "C. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.",
+    "valid": true
+  },
+  {
+    "nomor": 63,
+    "tipe": "pg_sederhana",
+    "paket": "Bab III: Menulis Artikel Ilmiah Populer - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Artikel Ilmiah Populer, Pemilahan Fakta vs Opini, Kalimat Perbandingan, Analogi, & Metode Triangulasi",
+    "capaian_pembelajaran": "Peserta didik memahami struktur artikel ilmiah populer (judul, pendahuluan, isi/argumen, penutup), memilah kalimat fakta dan opini, menganalisis kalimat perbandingan dan analogi, serta memahami metode pengumpulan data ilmiah populer.",
+    "bacaan": {
+      "teks": "III, penulis memaparkan bagaimana peserta didik difabel dan nondifabel belajar bersama di ruang kelas\nyang sama. Mengapa tulisan tersebut dikategorikan sebagai Artikel Ilmiah Populer (bukan cerpen fiksi\ndan bukan pula laporan rumus laboratorium murni)?",
+      "grup": "bacaan_bab3_sekolah_inklusi"
+    },
+    "teks_soal": "Mengapa kalimat (1) (Berdasarkan Undang-Undang Nomor 8 Tahun 2016...) dan kalimat (2) (Di SMP\nNegeri 10, tercatat ada 8 peserta didik difabel...) pada soal sebelumnya dikategorikan sebagai kalimat\nfakta?",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Karena kebenarannya bersifat objektif dan dapat diverifikasi melalui dokumen hukum negara yang sah serta data administrasi sekolah yang terukur"
+      },
+      {
+        "label": "B",
+        "teks": "Karena menggunakan kata tampaknya dan sebaiknya yang merupakan saran penulis"
+      },
+      {
+        "label": "C",
+        "teks": "Karena merupakan ramalan peristiwa yang baru akan terjadi sepuluh tahun mendatang"
+      },
+      {
+        "label": "D",
+        "teks": "Karena kedua kalimat tersebut menggunakan majas hiperbola dan personifikasi"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "A. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.",
+    "valid": true
+  },
+  {
+    "nomor": 64,
+    "tipe": "pg_sederhana",
+    "paket": "Bab III: Menulis Artikel Ilmiah Populer - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Artikel Ilmiah Populer, Pemilahan Fakta vs Opini, Kalimat Perbandingan, Analogi, & Metode Triangulasi",
+    "capaian_pembelajaran": "Peserta didik memahami struktur artikel ilmiah populer (judul, pendahuluan, isi/argumen, penutup), memilah kalimat fakta dan opini, menganalisis kalimat perbandingan dan analogi, serta memahami metode pengumpulan data ilmiah populer.",
+    "bacaan": {
+      "teks": "III, penulis memaparkan bagaimana peserta didik difabel dan nondifabel belajar bersama di ruang kelas\nyang sama. Mengapa tulisan tersebut dikategorikan sebagai Artikel Ilmiah Populer (bukan cerpen fiksi\ndan bukan pula laporan rumus laboratorium murni)?",
+      "grup": "bacaan_bab3_sekolah_inklusi"
+    },
+    "teks_soal": "Dalam artikel ilmiah populer tentang sekolah inklusi, disebutkan bahwa interaksi yang baik antara siswa\nnondifabel dan siswa difabel (seperti saling membantu mendorong kursi roda, berbagi buku catatan, dan\nberdiskusi kelompok bersama) memberikan manfaat psikologis dan sosial bagi seluruh siswa, yaitu ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Menghapuskan kewajiban sekolah dalam menyediakan guru pendamping khusus"
+      },
+      {
+        "label": "B",
+        "teks": "Membuat siswa nondifabel kehilangan waktu belajar dan menurunkan nilai ujian sekolah"
+      },
+      {
+        "label": "C",
+        "teks": "Memisahkan siswa difabel agar belajar sendirian di ruangan terpencil tanpa teman"
+      },
+      {
+        "label": "D",
+        "teks": "Menumbuhkan rasa empati, toleransi, penghargaan terhadap keberagaman, serta kepercayaan diri peserta didik difabel bahwa mereka diterima secara setara"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.",
+    "valid": true
+  },
+  {
+    "nomor": 65,
+    "tipe": "pg_sederhana",
+    "paket": "Bab III: Menulis Artikel Ilmiah Populer - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Artikel Ilmiah Populer, Pemilahan Fakta vs Opini, Kalimat Perbandingan, Analogi, & Metode Triangulasi",
+    "capaian_pembelajaran": "Peserta didik memahami struktur artikel ilmiah populer (judul, pendahuluan, isi/argumen, penutup), memilah kalimat fakta dan opini, menganalisis kalimat perbandingan dan analogi, serta memahami metode pengumpulan data ilmiah populer.",
+    "bacaan": null,
+    "teks_soal": "Seorang siswa Kelas VIII hendak menulis artikel ilmiah populer berjudul \"Kebiasaan Membaca Buku dan\nPenggunaan Media Sosial pada Siswa SMP Harapan\". Untuk memperoleh data kuantitatif dari 100 siswa\ndi sekolahnya dalam waktu singkat, ia membagikan lembaran kertas dan tautan formulir daring berisi 10\npertanyaan pilihan ganda untuk diisi oleh para responden. Teknik pengumpulan data yang digunakan\nsiswa tersebut dinamakan ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Studi pustaka ensiklopedia kuno"
+      },
+      {
+        "label": "C",
+        "teks": "Eksperimen reaksi kimia di laboratorium"
+      },
+      {
+        "label": "B",
+        "teks": "Kuesioner (angket)"
+      },
+      {
+        "label": "D",
+        "teks": "Deklamasi puisi di panggung"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "B. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.",
+    "valid": true
+  },
+  {
+    "nomor": 66,
+    "tipe": "pg_sederhana",
+    "paket": "Bab III: Menulis Artikel Ilmiah Populer - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Artikel Ilmiah Populer, Pemilahan Fakta vs Opini, Kalimat Perbandingan, Analogi, & Metode Triangulasi",
+    "capaian_pembelajaran": "Peserta didik memahami struktur artikel ilmiah populer (judul, pendahuluan, isi/argumen, penutup), memilah kalimat fakta dan opini, menganalisis kalimat perbandingan dan analogi, serta memahami metode pengumpulan data ilmiah populer.",
+    "bacaan": {
+      "teks": "III, penulis memaparkan bagaimana peserta didik difabel dan nondifabel belajar bersama di ruang kelas\nyang sama. Mengapa tulisan tersebut dikategorikan sebagai Artikel Ilmiah Populer (bukan cerpen fiksi\ndan bukan pula laporan rumus laboratorium murni)?",
+      "grup": "bacaan_bab3_sekolah_inklusi"
+    },
+    "teks_soal": "Selain menyebarkan kuesioner kepada 100 siswa, penulis artikel tersebut juga menemui Guru Bimbin-\ngan Konseling (BK) dan Kepala Perpustakaan untuk mengajukan pertanyaan secara tatap muka serta\nmerekam jawaban mereka. Teknik pengumpulan data melalui tanya jawab langsung dengan narasumber\nahli ini disebut ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Observasi pasif jarak jauh"
+      },
+      {
+        "label": "C",
+        "teks": "Wawancara (interview)"
+      },
+      {
+        "label": "B",
+        "teks": "Kuesioner tertutup"
+      },
+      {
+        "label": "D",
+        "teks": "Menyunting ejaan kamus"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "C. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.",
+    "valid": true
+  },
+  {
+    "nomor": 67,
+    "tipe": "pg_sederhana",
+    "paket": "Bab III: Menulis Artikel Ilmiah Populer - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Artikel Ilmiah Populer, Pemilahan Fakta vs Opini, Kalimat Perbandingan, Analogi, & Metode Triangulasi",
+    "capaian_pembelajaran": "Peserta didik memahami struktur artikel ilmiah populer (judul, pendahuluan, isi/argumen, penutup), memilah kalimat fakta dan opini, menganalisis kalimat perbandingan dan analogi, serta memahami metode pengumpulan data ilmiah populer.",
+    "bacaan": null,
+    "teks_soal": "Ketika mencantumkan informasi yang diambil dari buku atau artikel karya orang lain ke dalam artikel\nilmiah populer yang kita tulis, etika penulisan ilmiah yang wajib dipatuhi agar terhindar dari tindakan\nplagiarisme (penjiplakan) adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Menuliskan kembali gagasan tersebut dengan kalimat sendiri (parafrasa) atau mengutipnya secara tepat sambil mencantumkan nama penulis asli dan sumber rujukannya"
+      },
+      {
+        "label": "B",
+        "teks": "Menyalin seluruh artikel orang lain dari internet lalu mengganti nama penulisnya dengan nama kita sendiri"
+      },
+      {
+        "label": "C",
+        "teks": "Menghapus seluruh nama peneliti dan tahun terbit buku yang kita gunakan"
+      },
+      {
+        "label": "D",
+        "teks": "Mengklaim hasil survei lembaga nasional sebagai hasil survei pribadi kita"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "A. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.",
+    "valid": true
+  },
+  {
+    "nomor": 68,
+    "tipe": "pg_sederhana",
+    "paket": "Bab III: Menulis Artikel Ilmiah Populer - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Artikel Ilmiah Populer, Pemilahan Fakta vs Opini, Kalimat Perbandingan, Analogi, & Metode Triangulasi",
+    "capaian_pembelajaran": "Peserta didik memahami struktur artikel ilmiah populer (judul, pendahuluan, isi/argumen, penutup), memilah kalimat fakta dan opini, menganalisis kalimat perbandingan dan analogi, serta memahami metode pengumpulan data ilmiah populer.",
+    "bacaan": null,
+    "teks_soal": "Berdasarkan hasil kuesioner terhadap 100 siswa SMP tentang Durasi Penggunaan Gawai untuk Media\nSosial per Hari, diperoleh data: kurang dari 1 jam = 15 siswa, 1–2 jam = 25 siswa, 3–4 jam = 42 siswa,\ndan lebih dari 4 jam = 18 siswa. Apabila data kuesioner tersebut diubah menjadi kalimat fakta pendukung\ndi dalam bagian Isi artikel ilmiah populer, rumusan kalimat yang paling akurat adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Sebaiknya orang tua menyita seluruh gawai milik anak-anak mereka tanpa perlu melihat hasil survei."
+      },
+      {
+        "label": "B",
+        "teks": "Hasil survei membuktikan bahwa seluruh siswa SMP sebanyak 100% sama sekali tidak pernah mem- buka media sosial di gawai mereka."
+      },
+      {
+        "label": "C",
+        "teks": "Kelompok terbesar dalam survei tersebut adalah siswa yang menggunakan media sosial kurang dari 1 jam per hari, yaitu sebanyak 85 siswa."
+      },
+      {
+        "label": "D",
+        "teks": "Hasil kuesioner terhadap 100 siswa menunjukkan bahwa mayoritas responden, yakni sebanyak 60% siswa (42 siswa berdurasi 3–4 jam dan 18 siswa berdurasi lebih dari 4 jam), menghabiskan waktu tiga jam atau lebih setiap hari untuk mengakses media sosial."
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.",
+    "valid": true
+  },
+  {
+    "nomor": 69,
+    "tipe": "pg_sederhana",
+    "paket": "Bab III: Menulis Artikel Ilmiah Populer - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Artikel Ilmiah Populer, Pemilahan Fakta vs Opini, Kalimat Perbandingan, Analogi, & Metode Triangulasi",
+    "capaian_pembelajaran": "Peserta didik memahami struktur artikel ilmiah populer (judul, pendahuluan, isi/argumen, penutup), memilah kalimat fakta dan opini, menganalisis kalimat perbandingan dan analogi, serta memahami metode pengumpulan data ilmiah populer.",
+    "bacaan": null,
+    "teks_soal": "Perhatikan empat kalimat yang terdapat dalam artikel ilmiah populer berikut:\n(1) *Kandungan vitamin C pada buah jambu biji merah dua kali lebih tinggi dibandingkan dengan kan-\ndungan vitamin C pada buah jeruk manis.*\n(2) *Pembelajaran tatap muka di kelas memungkinkan interaksi sosial yang lebih hangat daripada pem-\nbelajaran daring melalui layar komputer.*\n(3) *Membiasakan budaya membaca buku sejak kecil ibarat menanam benih pohon jati yang kelak akan\nmemberikan keteduhan ilmu di masa dewasa.*\n(4) *Persahabatan sejati antara siswa di sekolah inklusi bagaikan pelangi yang justru tampak indah\nkarena perbedaan warnanya.*\nPasangan kalimat yang merupakan kalimat perbandingan dan pasangan kalimat yang merupakan kali-\nmat analogi berturut-turut adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Kalimat Perbandingan: (3) dan (4); Kalimat Analogi: (1) dan (2)"
+      },
+      {
+        "label": "B",
+        "teks": "Kalimat Perbandingan: (1) dan (2); Kalimat Analogi: (3) dan (4)"
+      },
+      {
+        "label": "C",
+        "teks": "Kalimat Perbandingan: (1) dan (3); Kalimat Analogi: (2) dan (4)"
+      },
+      {
+        "label": "D",
+        "teks": "Keempat kalimat tersebut seluruhnya merupakan kalimat perintah imperatif"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "B. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.",
+    "valid": true
+  },
+  {
+    "nomor": 70,
+    "tipe": "pg_sederhana",
+    "paket": "Bab III: Menulis Artikel Ilmiah Populer - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Artikel Ilmiah Populer, Pemilahan Fakta vs Opini, Kalimat Perbandingan, Analogi, & Metode Triangulasi",
+    "capaian_pembelajaran": "Peserta didik memahami struktur artikel ilmiah populer (judul, pendahuluan, isi/argumen, penutup), memilah kalimat fakta dan opini, menganalisis kalimat perbandingan dan analogi, serta memahami metode pengumpulan data ilmiah populer.",
+    "bacaan": null,
+    "teks_soal": "Apa perbedaan mendasar antara kalimat perbandingan dan kalimat analogi dalam kaidah keba-\nhasaan artikel ilmiah populer?",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Kalimat perbandingan hanya boleh digunakan dalam puisi; sedangkan kalimat analogi hanya untuk surat dinas"
+      },
+      {
+        "label": "B",
+        "teks": "Kalimat perbandingan selalu menggunakan kata ibarat dan bagaikan; sedangkan kalimat analogi selalu menggunakan angka desimal"
+      },
+      {
+        "label": "C",
+        "teks": "Kalimat perbandingan membandingkan dua hal yang sejenis/setara secara lugas (daripada, diband- ingkan dengan); sedangkan kalimat analogi membandingkan dua hal yang berbeda jenis menggunakan kiasan/perumpamaan (ibarat, bagaikan, bak) untuk memperjelas konsep"
+      },
+      {
+        "label": "D",
+        "teks": "Keduanya tidak boleh digunakan di dalam penulisan artikel ilmiah populer"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "C. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.",
+    "valid": true
+  },
+  {
+    "nomor": 71,
+    "tipe": "pg_sederhana",
+    "paket": "Bab III: Menulis Artikel Ilmiah Populer - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Artikel Ilmiah Populer, Pemilahan Fakta vs Opini, Kalimat Perbandingan, Analogi, & Metode Triangulasi",
+    "capaian_pembelajaran": "Peserta didik memahami struktur artikel ilmiah populer (judul, pendahuluan, isi/argumen, penutup), memilah kalimat fakta dan opini, menganalisis kalimat perbandingan dan analogi, serta memahami metode pengumpulan data ilmiah populer.",
+    "bacaan": null,
+    "teks_soal": "Bacalah kalimat berikut: *\"Otak manusia yang tidak pernah dilatih berpikir kritis dan membaca buku\numpama pisau besi yang dibiarkan menganggur hingga tumpul berkarat.\"* Kalimat tersebut menggu-\nnakan pola penalaran analogi karena ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Memberikan instruksi cara mengasah pisau dapur menggunakan batu asahan"
+      },
+      {
+        "label": "B",
+        "teks": "Membandingkan harga pisau besi di pasar tradisional dengan harga pisau baja di pasar swalayan"
+      },
+      {
+        "label": "C",
+        "teks": "Melaporkan jumlah dokter spesialis saraf di rumah sakit daerah secara kuantitatif"
+      },
+      {
+        "label": "D",
+        "teks": "Mengumpamakan fungsi kerja otak manusia (organ biologis/kognitif) dengan sifat pisau besi (benda logam tajam) yang sama-sama akan tumpul jika tidak diasah"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.",
+    "valid": true
+  },
+  {
+    "nomor": 72,
+    "tipe": "pg_sederhana",
+    "paket": "Bab III: Menulis Artikel Ilmiah Populer - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Artikel Ilmiah Populer, Pemilahan Fakta vs Opini, Kalimat Perbandingan, Analogi, & Metode Triangulasi",
+    "capaian_pembelajaran": "Peserta didik memahami struktur artikel ilmiah populer (judul, pendahuluan, isi/argumen, penutup), memilah kalimat fakta dan opini, menganalisis kalimat perbandingan dan analogi, serta memahami metode pengumpulan data ilmiah populer.",
+    "bacaan": null,
+    "teks_soal": "Bacalah kutipan paragraf artikel ilmiah populer berikut!\n*\"Sekolah inklusi hadir untuk memastikan tidak ada lagi diskriminasi terhadap anak-anak berkebutuhan\nkhusus. Melalui dukungan fasilitas yang memadai dan sikap empati seluruh warga sekolah, setiap anak\ndapat mengembangkan bakatnya secara optimal.\"*\nPasangan sinonim (padanan makna) yang tepat untuk kata diskriminasi dan memadai pada kutipan\ndi atas adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Persamaan hak secara adil; sangat kurang / terbatas"
+      },
+      {
+        "label": "B",
+        "teks": "Pembedaan perlakuan yang tidak adil; mencukupi / memenuhi syarat"
+      },
+      {
+        "label": "C",
+        "teks": "Kerja sama kelompok; berlebihan hingga terbuang"
+      },
+      {
+        "label": "D",
+        "teks": "Pemberian beasiswa prestasi; rusak berat"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "B. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.",
+    "valid": true
+  },
+  {
+    "nomor": 73,
+    "tipe": "pg_sederhana",
+    "paket": "Bab III: Menulis Artikel Ilmiah Populer - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Artikel Ilmiah Populer, Pemilahan Fakta vs Opini, Kalimat Perbandingan, Analogi, & Metode Triangulasi",
+    "capaian_pembelajaran": "Peserta didik memahami struktur artikel ilmiah populer (judul, pendahuluan, isi/argumen, penutup), memilah kalimat fakta dan opini, menganalisis kalimat perbandingan dan analogi, serta memahami metode pengumpulan data ilmiah populer.",
+    "bacaan": null,
+    "teks_soal": "Perhatikan kata bercetak tebal pada kalimat berikut: *\"Artikel ilmiah populer harus menyajikan argumen\nyang objektif dan didukung oleh data yang aktual.\"* Pasangan antonim (lawan kata) dari kata objektif\ndan aktual menurut KBBI adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Subjektif dan usang (kedaluwarsa)"
+      },
+      {
+        "label": "C",
+        "teks": "Nyata dan baru"
+      },
+      {
+        "label": "B",
+        "teks": "Faktual dan terkini"
+      },
+      {
+        "label": "D",
+        "teks": "Rasional dan modern"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "A. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.",
+    "valid": true
+  },
+  {
+    "nomor": 74,
+    "tipe": "pg_sederhana",
+    "paket": "Bab III: Menulis Artikel Ilmiah Populer - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Artikel Ilmiah Populer, Pemilahan Fakta vs Opini, Kalimat Perbandingan, Analogi, & Metode Triangulasi",
+    "capaian_pembelajaran": "Peserta didik memahami struktur artikel ilmiah populer (judul, pendahuluan, isi/argumen, penutup), memilah kalimat fakta dan opini, menganalisis kalimat perbandingan dan analogi, serta memahami metode pengumpulan data ilmiah populer.",
+    "bacaan": {
+      "teks": "Scribd 997809157 No. 13–15]\nWACANA LITERASI MEMBACA: WACANA LITERASI MEMBACA: GAYA HIDUP REMAJA DAN ANCA-\nMAN GAGAL GINJAL DINI\n(Paragraf 1) Dalam beberapa tahun terakhir, dokter spesialis anak dan penyakit dalam di Indonesia men-\nemukan fenomena yang mengkhawatirkan: meningkatnya jumlah pasien remaja usia 12 hingga 18 tahun\nyang mengalami penurunan fungsi ginjal kronis. Padahal, puluhan tahun silam, penyakit gagal ginjal kronis\numumnya baru menyerang kelompok usia lanjut di atas 50 tahun.\n(Paragraf 2) Ginjal kita bekerja ibarat saringan air cerdas yang tak pernah tidur sepanjang hari. Setiap menit,\ndua organ seukuran kepalan tangan ini menyaring sekitar setengah cangkir darah untuk membuang racun\nsisa metabolisme dan kelebihan cairan melalui urine. Namun, ketika remaja gemar mengonsumsi minuman\nkemasan berpemanis tinggi fruktosa dan makanan cepat saji (junk food) yang sarat garam natrium setiap\nhari, saringan halus pada ginjal (glomerulus) dipaksa bekerja ekstra keras di bawah tekanan tinggi.\n(Paragraf 3) Berdasarkan survei kesehatan nasional, lebih dari 60 persen pelajar perkotaan mengonsumsi\nminuman manis kemasan minimal satu kali sehari, sementara asupan air putih murni mereka kurang dari 4\ngelas per hari. Kombinasi tingginya kadar gula darah, kelebihan natrium, dan dehidrasi ringan yang berlang-\nsung bertahun-tahun secara perlahan merusak pembuluh darah mikro di dalam ginjal tanpa gejala nyeri yang\nmencolok pada tahap awal.\n(Paragraf 4) Oleh karena itu, langkah perlindungan ginjal harus dimulai dari bangku sekolah. Mengganti\nminuman berpemanis dengan air putih, memperbanyak konsumsi buah segar utuh, serta rutin berolahraga\nminimal 30 menit sehari merupakan investasi sederhana agar saringan kehidupan di tubuh kita tetap awet\nhingga hari tua.\nTeknik penjelasan konsep ilmiah yang digunakan penulis pada kalimat pertama dan kedua Paragraf 2\n(\"Ginjal kita bekerja ibarat saringan air cerdas yang tak pernah tidur sepanjang hari...\") adalah ....",
+      "grup": "bacaan_bab3_gagal_ginjal"
+    },
+    "teks_soal": "(\"Ginjal kita bekerja ibarat saringan air cerdas yang tak pernah tidur sepanjang hari...\") adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Definisi kamus kaku, yakni menyalin rumus kimia urine dari buku teks kedokteran"
+      },
+      {
+        "label": "B",
+        "teks": "Analogi (perumpamaan kiasan), yakni membandingkan cara kerja organ biologis ginjal dalam men- yaring racun darah dengan cara kerja saringan air cerdas agar konsep medis mudah dipahami oleh pembaca awam/pelajar"
+      },
+      {
+        "label": "C",
+        "teks": "Majas sarkasme, yakni mengejek remaja yang sedang dirawat di rumah sakit"
+      },
+      {
+        "label": "D",
+        "teks": "Kuesioner terbuka, yakni membagikan lembar pertanyaan kepada dokter spesialis"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "B. Ciri khas artikel ilmiah populer adalah menerjemahkan konsep sains yang abstrak/rumit\nmenggunakan analogi yang akrab bagi pembaca umum, seperti menyamakan fungsi penyaringan glomerulus\nginjal dengan “saringan air cerdas”.",
+    "valid": true
+  },
+  {
+    "nomor": 75,
+    "tipe": "pg_sederhana",
+    "paket": "Bab III: Menulis Artikel Ilmiah Populer - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Artikel Ilmiah Populer, Pemilahan Fakta vs Opini, Kalimat Perbandingan, Analogi, & Metode Triangulasi",
+    "capaian_pembelajaran": "Peserta didik memahami struktur artikel ilmiah populer (judul, pendahuluan, isi/argumen, penutup), memilah kalimat fakta dan opini, menganalisis kalimat perbandingan dan analogi, serta memahami metode pengumpulan data ilmiah populer.",
+    "bacaan": {
+      "teks": "Scribd 997809157 No. 13–15]\nWACANA LITERASI MEMBACA: WACANA LITERASI MEMBACA: GAYA HIDUP REMAJA DAN ANCA-\nMAN GAGAL GINJAL DINI\n(Paragraf 1) Dalam beberapa tahun terakhir, dokter spesialis anak dan penyakit dalam di Indonesia men-\nemukan fenomena yang mengkhawatirkan: meningkatnya jumlah pasien remaja usia 12 hingga 18 tahun\nyang mengalami penurunan fungsi ginjal kronis. Padahal, puluhan tahun silam, penyakit gagal ginjal kronis\numumnya baru menyerang kelompok usia lanjut di atas 50 tahun.\n(Paragraf 2) Ginjal kita bekerja ibarat saringan air cerdas yang tak pernah tidur sepanjang hari. Setiap menit,\ndua organ seukuran kepalan tangan ini menyaring sekitar setengah cangkir darah untuk membuang racun\nsisa metabolisme dan kelebihan cairan melalui urine. Namun, ketika remaja gemar mengonsumsi minuman\nkemasan berpemanis tinggi fruktosa dan makanan cepat saji (junk food) yang sarat garam natrium setiap\nhari, saringan halus pada ginjal (glomerulus) dipaksa bekerja ekstra keras di bawah tekanan tinggi.\n(Paragraf 3) Berdasarkan survei kesehatan nasional, lebih dari 60 persen pelajar perkotaan mengonsumsi\nminuman manis kemasan minimal satu kali sehari, sementara asupan air putih murni mereka kurang dari 4\ngelas per hari. Kombinasi tingginya kadar gula darah, kelebihan natrium, dan dehidrasi ringan yang berlang-\nsung bertahun-tahun secara perlahan merusak pembuluh darah mikro di dalam ginjal tanpa gejala nyeri yang\nmencolok pada tahap awal.\n(Paragraf 4) Oleh karena itu, langkah perlindungan ginjal harus dimulai dari bangku sekolah. Mengganti\nminuman berpemanis dengan air putih, memperbanyak konsumsi buah segar utuh, serta rutin berolahraga\nminimal 30 menit sehari merupakan investasi sederhana agar saringan kehidupan di tubuh kita tetap awet\nhingga hari tua.\nTeknik penjelasan konsep ilmiah yang digunakan penulis pada kalimat pertama dan kedua Paragraf 2\n(\"Ginjal kita bekerja ibarat saringan air cerdas yang tak pernah tidur sepanjang hari...\") adalah ....",
+      "grup": "bacaan_bab3_gagal_ginjal"
+    },
+    "teks_soal": "Berdasarkan wacana artikel ilmiah populer pada soal nomor 14, manakah pasangan kalimat Fakta\nIlmiah/Statistik dan kalimat Opini/Saran Penulis yang paling tepat?",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Seluruh kalimat pada Paragraf 1, 2, 3, dan 4 merupakan opini khayalan penulis tanpa bukti medis"
+      },
+      {
+        "label": "B",
+        "teks": "Fakta: \"Langkah perlindungan ginjal harus dimulai dari bangku sekolah\"; Opini: \"Setiap menit, ginjal menyaring sekitar setengah cangkir darah\""
+      },
+      {
+        "label": "C",
+        "teks": "Fakta: \"Berdasarkan survei kesehatan nasional, lebih dari 60 persen pelajar perkotaan mengonsumsi minuman manis kemasan minimal satu kali sehari\" (Paragraf 3); Opini/Saran: \"Oleh karena itu, langkah perlindungan ginjal harus dimulai dari bangku sekolah\" (Paragraf 4)"
+      },
+      {
+        "label": "D",
+        "teks": "Artikel ilmiah populer di atas melarang pelajar minum air putih lebih dari 4 gelas sehari"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "C. Kalimat pada Paragraf 3 memuat data persentase hasil survei nasional (>60% pelajar) yang\nteruji kebenarannya (Fakta), sedangkan kalimat pada Paragraf 4 yang menggunakan modalitas keharusan\n(harus dimulai dari bangku sekolah) merupakan pandangan/rekomendasi penulis (Opini).",
+    "valid": true
+  },
+  {
+    "nomor": 76,
+    "tipe": "pg_sederhana",
+    "paket": "Bab III: Menulis Artikel Ilmiah Populer - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Artikel Ilmiah Populer, Pemilahan Fakta vs Opini, Kalimat Perbandingan, Analogi, & Metode Triangulasi",
+    "capaian_pembelajaran": "Peserta didik memahami struktur artikel ilmiah populer (judul, pendahuluan, isi/argumen, penutup), memilah kalimat fakta dan opini, menganalisis kalimat perbandingan dan analogi, serta memahami metode pengumpulan data ilmiah populer.",
+    "bacaan": null,
+    "teks_soal": "Cermatilah perbandingan dua kutipan artikel ilmiah populer bertema sosiologi remaja berikut!\nTEKS 1:\nPERUBAHAN INTERAKSI SOSIAL RE-\nMAJA DI ERA DIGITAL\nTEKS 2:\nMENINGKATNYA INDIVIDUALISME RE-\nMAJA PERKOTAAN\nKehadiran media sosial telah mengubah pola inter-\naksi sosial remaja secara mendasar.\nPenelitian so-\nsiologi pendidikan tahun 2025 terhadap 500 siswa\nSMP menunjukkan bahwa 78 persen remaja lebih ser-\ning mengobrol dengan teman sebayanya melalui ru-\nang obrolan daring (chat room) dibandingkan bertatap\nmuka langsung sepulang sekolah.\nDi satu sisi, komunikasi daring memudahkan kolab-\norasi tugas jarak jauh; namun di sisi lain, berku-\nrangnya tatap muka menurunkan kepekaan remaja\ndalam membaca bahasa tubuh dan ekspresi empati\nlawan bicara.\nFenomena remaja yang duduk berkumpul di satu meja\ntaman atau kafe tetapi masing-masing sibuk menun-\nduk menatap layar gawai (phubbing) kini menjadi pe-\nmandangan lazim di kota-kota besar.\nKetergantun-\ngan berlebih pada algoritma tontonan personal mem-\nbuat sebagian remaja lebih nyaman berada di dalam\n“gelembung digital” miliknya sendiri.\nApabila kebiasaan mengabaikan orang di sekitar\nini terus dibiarkan, ikatan solidaritas gotong royong\ndi lingkungan masyarakat dikhawatirkan akan kian\nmemudar.\nPersamaan tema besar dan perbedaan fokus pembahasan antara Teks 1 dan Teks 2 di atas adalah\n....",
+    "gambar": [
+      "/soal/bindo/kls8_bindo_p103_xref3410_880x880.jpeg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Kedua teks tersebut tidak memiliki hubungan dengan kehidupan remaja SMP"
+      },
+      {
+        "label": "B",
+        "teks": "Persamaan: keduanya membahas cara merakit komputer di laboratorium; Perbedaan: Teks 1 terjadi di desa, sedangkan Teks 2 terjadi di hutan"
+      },
+      {
+        "label": "C",
+        "teks": "Persamaan: keduanya mendukung remaja bermain gawai 24 jam sehari; Perbedaan: Teks 1 meng- gunakan bahasa Inggris, sedangkan Teks 2 menggunakan bahasa daerah"
+      },
+      {
+        "label": "D",
+        "teks": "Persamaan: keduanya membahas dampak teknologi digital/gawai terhadap perilaku sosial remaja; Perbedaan: Teks 1 memfokuskan pada pergeseran media komunikasi dari tatap muka ke obrolan daring beserta data surveinya, sedangkan Teks 2 memfokuskan pada perilaku mengabaikan lawan bicara di dekatnya (phubbing) yang memicu sikap individualisme"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Kedua kutipan artikel ilmiah populer tersebut mengangkat payung tema yang sama (dampak\ngawai pada relasi sosial remaja), tetapi Teks 1 menyoroti pergeseran pola komunikasi tatap muka vs chat\ndaring (78% responden), sedangkan Teks 2 menyoroti fenomena phubbing dan menguatnya individualisme.",
+    "valid": true
+  },
+  {
+    "nomor": 77,
+    "tipe": "pg_sederhana",
+    "paket": "Bab III: Menulis Artikel Ilmiah Populer - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Artikel Ilmiah Populer, Pemilahan Fakta vs Opini, Kalimat Perbandingan, Analogi, & Metode Triangulasi",
+    "capaian_pembelajaran": "Peserta didik memahami struktur artikel ilmiah populer (judul, pendahuluan, isi/argumen, penutup), memilah kalimat fakta dan opini, menganalisis kalimat perbandingan dan analogi, serta memahami metode pengumpulan data ilmiah populer.",
+    "bacaan": null,
+    "teks_soal": "Perhatikan empat judul karya tulis berikut:\n(1) Analisis Spektrofotometri Serapan Atom Logam Berat Kadmium (Cd) pada Sedimen Muara Sungai\n(Studi Kasus Laboratorium Kimia Analitik)\n(2) Mengapa Remaja Sering Mengantuk di Kelas Pagi? Kenali Pentingnya Sarapan dan Jam Tidur Sehat\n(3) Peran Teman Sebaya dalam Membangun Kepercayaan Diri Siswa Difabel di Sekolah Inklusi\n(4) Kisah Putri Bulan dan Naga Kristal di Negeri Awan Ungu\nPasangan judul yang paling mencerminkan ciri khas Artikel Ilmiah Populer (ilmiah namun komunikatif\ndan menarik bagi pembaca umum) adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(1) dan (4)"
+      },
+      {
+        "label": "C",
+        "teks": "(1) dan (2)"
+      },
+      {
+        "label": "B",
+        "teks": "(2) dan (3)"
+      },
+      {
+        "label": "D",
+        "teks": "(3) dan (4)"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "B. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.",
+    "valid": true
+  },
+  {
+    "nomor": 78,
+    "tipe": "pg_sederhana",
+    "paket": "Bab III: Menulis Artikel Ilmiah Populer - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Artikel Ilmiah Populer, Pemilahan Fakta vs Opini, Kalimat Perbandingan, Analogi, & Metode Triangulasi",
+    "capaian_pembelajaran": "Peserta didik memahami struktur artikel ilmiah populer (judul, pendahuluan, isi/argumen, penutup), memilah kalimat fakta dan opini, menganalisis kalimat perbandingan dan analogi, serta memahami metode pengumpulan data ilmiah populer.",
+    "bacaan": null,
+    "teks_soal": "Bacalah wacana artikel ilmiah populer tiga paragraf berikut dengan saksama!\n\nWACANA LITERASI MEMBACA: DAMPAK MEDIA SOSIAL TERHADAP KESEHATAN MENTAL REMAJA\nDI ERA DIGITAL\n(Paragraf 1) Media sosial telah menjadi bagian tak terpisahkan dalam kehidupan remaja sebagai sarana untuk\nmengekspresikan diri dan membangun interaksi sosial secara virtual. Kehadiran media sosial memberikan\nruang bagi kalangan remaja untuk mengekspresikan emosi dan pandangan mereka secara terbuka melalui\nunggahan visual seperti foto maupun video, serta fitur interaktif kolom komentar.\n(Paragraf 2) Namun, tingginya intensitas penggunaan media sosial menimbulkan konsekuensi serius ter-\nhadap kesehatan mental remaja. Faktor pemicunya meliputi perundungan siber, komentar negatif, dan per-\nbandingan sosial yang tidak realistis. Penggunaan berlebihan berkaitan erat dengan meningkatnya risiko\nstres, kecemasan, depresi, gangguan tidur, dan menurunnya kepercayaan diri.\n(Paragraf 3) Apabila kesehatan mental remaja tidak terpelihara secara optimal, muncul indikasi awal seperti\nperubahan perilaku, gangguan pola tidur, menarik diri dari lingkungan sosial, serta hambatan belajar. Ketika\ngejala tersebut teridentifikasi, pendekatan yang disarankan adalah melakukan pengelolaan emosi secara\ntepat dengan pendampingan dari tenaga profesional kesehatan mental.\nBagan visual yang paling sesuai dengan isi ketiga paragraf teks di atas adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Pilihan A sesuai wacana dan kaidah kebahasaan"
+      },
+      {
+        "label": "B",
+        "teks": "Pilihan B kurang tepat sesuai konteks teks"
+      },
+      {
+        "label": "C",
+        "teks": "Pilihan C tidak didukung oleh data bacaan"
+      },
+      {
+        "label": "D",
+        "teks": "Pilihan D bertentangan dengan isi teks"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "C. Bagan pada gambar C memetakan gagasan pokok ketiga paragraf secara berurutan:\nParagraf 1 (Media sosial tak terpisahkan dari kehidupan remaja) →Paragraf 2 (Intensitas tinggi menimbulkan\ngangguan kesehatan mental) →Paragraf 3 (Indikasi gejala & cara mengatasi dampak negatif bersama tenaga\nprofesional).",
+    "valid": true
+  },
+  {
+    "nomor": 79,
+    "tipe": "pg_sederhana",
+    "paket": "Bab III: Menulis Artikel Ilmiah Populer - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Artikel Ilmiah Populer, Pemilahan Fakta vs Opini, Kalimat Perbandingan, Analogi, & Metode Triangulasi",
+    "capaian_pembelajaran": "Peserta didik memahami struktur artikel ilmiah populer (judul, pendahuluan, isi/argumen, penutup), memilah kalimat fakta dan opini, menganalisis kalimat perbandingan dan analogi, serta memahami metode pengumpulan data ilmiah populer.",
+    "bacaan": null,
+    "teks_soal": "Perhatikan kalimat opini berikut: \"Menurut hemat saya, penyediaan jalur pemandu bertekstur (guiding\nblock) di trotoar depan sekolah masih perlu diperbaiki karena beberapa ubinnya sudah retak.\" Mengapa\nkalimat tersebut tergolong opini yang baik dan konstruktif di dalam artikel ilmiah populer?",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Karena penilaian dan saran penulis didasarkan pada alasan faktual yang teramati di lapangan (beber- apa ubinnya sudah retak) demi keselamatan pengguna jalan tunanetra"
+      },
+      {
+        "label": "B",
+        "teks": "Karena penulis memaki-maki petugas dinas pekerjaan umum dengan kata-kata kasar"
+      },
+      {
+        "label": "C",
+        "teks": "Karena kalimat tersebut sama sekali tidak berkaitan dengan fasilitas penyandang disabilitas"
+      },
+      {
+        "label": "D",
+        "teks": "Karena penulis mengarang kebohongan tanpa pernah melihat kondisi trotoar sekolah"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "A. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.",
+    "valid": true
+  },
+  {
+    "nomor": 80,
+    "tipe": "pg_sederhana",
+    "paket": "Bab III: Menulis Artikel Ilmiah Populer - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Artikel Ilmiah Populer, Pemilahan Fakta vs Opini, Kalimat Perbandingan, Analogi, & Metode Triangulasi",
+    "capaian_pembelajaran": "Peserta didik memahami struktur artikel ilmiah populer (judul, pendahuluan, isi/argumen, penutup), memilah kalimat fakta dan opini, menganalisis kalimat perbandingan dan analogi, serta memahami metode pengumpulan data ilmiah populer.",
+    "bacaan": {
+      "teks": "Scribd 1009621080 Paket 3 No. 7–9]\nPerhatikan perbandingan dua teks artikel ilmiah populer tentang polusi udara berikut untuk menjawab\nsoal nomor 20 dan 21!\nTEKS 1:\nPENYEBAB UTAMA POLUSI UDARA\nPERKOTAAN\nTEKS 2: DAMPAK POLUSI UDARA BAGI KESE-\nHATAN REMAJA\nBadan\nMeteorologi,\nKlimatologi,\ndan\nGeofisika\n(BMKG) mencatat konsentrasi partikel debu halus\n(PM2.5) di sejumlah kota besar sering melampaui\nambang batas aman organisasi kesehatan dunia\n(WHO) sebesar 15 µg/m3.\nKajian lingkungan menunjukkan bahwa 67 persen po-\nlutan udara di perkotaan bersumber dari emisi gas\nbuang kendaraan bermotor berbahan bakar fosil, 20\npersen dari aktivitas pembangkit dan industri di sekitar\nkota, serta sisanya berasal dari pembakaran sampah\nterbuka di permukiman warga.\nPartikel debu mikroskopis PM2.5 memiliki ukuran tiga\npuluh kali lebih kecil daripada diameter sehelai ram-\nbut manusia. Karena ukurannya yang sangat halus,\npartikel ini tidak tertahan oleh bulu hidung, melainkan\nlangsung menembus alveolus paru-paru hingga ma-\nsuk ke aliran darah.\nDinas Kesehatan melaporkan bahwa paparan PM2.5\nsecara terus-menerus memicu lonjakan kasus Infeksi\nSaluran Pernapasan Akut (ISPA), asma bronkial, serta\nmenurunkan daya konsentrasi belajar siswa di kelas\npada siang hari.\nHubungan logis antarteks apabila Teks 1 dan Teks 2 digabungkan ke dalam satu artikel ilmiah populer\nyang utuh adalah ....",
+      "grup": "bacaan_bab3_polusi_pm25"
+    },
+    "teks_soal": "yang utuh adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Teks 1 memaparkan faktor-faktor penyebab (sebab/hulu masalah) tingginya konsentrasi polutan PM2.5 di perkotaan; sedangkan Teks 2 memaparkan mekanisme biologis dan dampak kesehatan (akibat/hilir masalah) yang ditimbulkan oleh polutan PM2.5 tersebut"
+      },
+      {
+        "label": "B",
+        "teks": "Teks 1 dan Teks 2 saling membantah karena Teks 1 menyatakan udara kota sangat bersih, sedangkan Teks 2 menyatakan udara kota berpolusi"
+      },
+      {
+        "label": "C",
+        "teks": "Teks 1 membahas polusi air sungai; sedangkan Teks 2 membahas polusi suara pesawat terbang"
+      },
+      {
+        "label": "D",
+        "teks": "Kedua teks hanya berisi kutipan puisi keindahan langit biru"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "A. Teks 1 menguraikan sumber penyebab polusi PM2.5 (emisi kendaraan 67%, industri 20%,\npembakaran sampah), sedangkan Teks 2 menguraikan akibat/dampak medisnya saat partikel PM2.5 menem-\nbus alveolus paru-paru remaja (ISPA, asma, penurunan konsentrasi).",
+    "valid": true
+  },
+  {
+    "nomor": 81,
+    "tipe": "pg_sederhana",
+    "paket": "Bab III: Menulis Artikel Ilmiah Populer - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Artikel Ilmiah Populer, Pemilahan Fakta vs Opini, Kalimat Perbandingan, Analogi, & Metode Triangulasi",
+    "capaian_pembelajaran": "Peserta didik memahami struktur artikel ilmiah populer (judul, pendahuluan, isi/argumen, penutup), memilah kalimat fakta dan opini, menganalisis kalimat perbandingan dan analogi, serta memahami metode pengumpulan data ilmiah populer.",
+    "bacaan": {
+      "teks": "Scribd 1009621080 Paket 3 No. 7–9]\nPerhatikan perbandingan dua teks artikel ilmiah populer tentang polusi udara berikut untuk menjawab\nsoal nomor 20 dan 21!\nTEKS 1:\nPENYEBAB UTAMA POLUSI UDARA\nPERKOTAAN\nTEKS 2: DAMPAK POLUSI UDARA BAGI KESE-\nHATAN REMAJA\nBadan\nMeteorologi,\nKlimatologi,\ndan\nGeofisika\n(BMKG) mencatat konsentrasi partikel debu halus\n(PM2.5) di sejumlah kota besar sering melampaui\nambang batas aman organisasi kesehatan dunia\n(WHO) sebesar 15 µg/m3.\nKajian lingkungan menunjukkan bahwa 67 persen po-\nlutan udara di perkotaan bersumber dari emisi gas\nbuang kendaraan bermotor berbahan bakar fosil, 20\npersen dari aktivitas pembangkit dan industri di sekitar\nkota, serta sisanya berasal dari pembakaran sampah\nterbuka di permukiman warga.\nPartikel debu mikroskopis PM2.5 memiliki ukuran tiga\npuluh kali lebih kecil daripada diameter sehelai ram-\nbut manusia. Karena ukurannya yang sangat halus,\npartikel ini tidak tertahan oleh bulu hidung, melainkan\nlangsung menembus alveolus paru-paru hingga ma-\nsuk ke aliran darah.\nDinas Kesehatan melaporkan bahwa paparan PM2.5\nsecara terus-menerus memicu lonjakan kasus Infeksi\nSaluran Pernapasan Akut (ISPA), asma bronkial, serta\nmenurunkan daya konsentrasi belajar siswa di kelas\npada siang hari.\nHubungan logis antarteks apabila Teks 1 dan Teks 2 digabungkan ke dalam satu artikel ilmiah populer\nyang utuh adalah ....",
+      "grup": "bacaan_bab3_polusi_pm25"
+    },
+    "teks_soal": "Pada Teks 2 soal nomor 20, kalimat \"Partikel debu mikroskopis PM2.5 memiliki ukuran tiga puluh\nkali lebih kecil daripada diameter sehelai rambut manusia\" menggunakan teknik penulisan artikel\nilmiah populer berupa ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Pertentangan (antitesis) antara warna rambut hitam dan warna rambut putih"
+      },
+      {
+        "label": "B",
+        "teks": "Perbandingan (comparison), yakni membandingkan ukuran benda mikroskopis yang tidak kasat- mata (extPM2.5) dengan ukuran benda sehari-hari yang dikenal pembaca (sehelai rambut manusia) agar pembaca dapat membayangkan betapa halusnya partikel tersebut"
+      },
+      {
+        "label": "C",
+        "teks": "Majas litotes untuk merendahkan diri penulis di hadapan pembaca"
+      },
+      {
+        "label": "D",
+        "teks": "Kalimat perintah (imperatif) untuk mencukur rambut"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "B. Dalam penulisan artikel ilmiah populer (Buku Siswa Kelas VIII Bab III), teknik perbandingan\ndigunakan dengan menyandingkan ukuran ilmiah yang abstrak (mikrometer PM2.5) terhadap objek konkret\nsehari-hari (diameter sehelai rambut manusia).",
+    "valid": true
+  },
+  {
+    "nomor": 82,
+    "tipe": "pg_sederhana",
+    "paket": "Bab III: Menulis Artikel Ilmiah Populer - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Artikel Ilmiah Populer, Pemilahan Fakta vs Opini, Kalimat Perbandingan, Analogi, & Metode Triangulasi",
+    "capaian_pembelajaran": "Peserta didik memahami struktur artikel ilmiah populer (judul, pendahuluan, isi/argumen, penutup), memilah kalimat fakta dan opini, menganalisis kalimat perbandingan dan analogi, serta memahami metode pengumpulan data ilmiah populer.",
+    "bacaan": {
+      "teks": "Scribd 997810237 No. 13–15]\nWACANA LITERASI MEMBACA: WACANA LITERASI MEMBACA: LEBIH DARI GULA PASIR — FAKTA\nMENGEJUTKAN TENTANG RISIKO DIABETES\n(Paragraf 1) Banyak orang mengira bahwa penyakit diabetes melitus (kencing manis) hanya mengintai mereka\nyang gemar menambahkan bergelas-gelas gula pasir ke dalam teh atau kopi.\nAnggapan tersebut tidak\nsepenuhnya tepat. Dalam ilmu gizi modern, ancaman lonjakan gula darah justru sering bersembunyi di balik\nmakanan dan minuman olahan yang rasanya tidak selalu manis di lidah, atau yang dikenal sebagai “gula\ntersembunyi” (hidden sugar).\n(Paragraf 2) Karbohidrat sederhana yang terkandung dalam roti tawar putih, mi instan, kentang goreng, dan\nsaus kemasan memiliki indeks glikemik yang tinggi.\nBegitu masuk ke saluran pencernaan, enzim tubuh\nmemecah karbohidrat olahan tersebut menjadi glukosa darah hampir secepat gula pasir murni. Akibatnya,\nkelenjar pankreas dipaksa memompa hormon insulin secara berlebih untuk memasukkan glukosa ke dalam\nsel-sel tubuh.\n(Paragraf 3) Risiko ini makin berlipat ganda apabila remaja menerapkan gaya hidup kurang gerak (sedentary\nlifestyle). Ketika otot-otot tubuh jarang digerakkan untuk berolahraga, glukosa yang menumpuk di dalam darah\ntidak terbakar menjadi energi, melainkan diubah menjadi cadangan lemak viseral di sekitar perut. Lama-\nkelamaan, sel-sel tubuh menjadi kebal terhadap sinyal insulin—suatu kondisi medis yang disebut resistansi\ninsulin.\n(Paragraf 4) Oleh sebab itu, mencegah diabetes tidak cukup hanya dengan mengurangi takaran gula pasir\ndi cangkir teh. Kita perlu membiasakan diri membaca label nilai gizi pada kemasan makanan, mengganti\nkarbohidrat olahan dengan karbohidrat kompleks berserat tinggi (seperti beras merah, jagung, atau ubi), serta\naktif bergerak setiap hari.\nRisiko Diabetes\"?",
+      "grup": "bacaan_bab3_gula_pasir"
+    },
+    "teks_soal": "Mengapa penulis memberi judul wacana di atas \"Lebih dari Gula Pasir — Fakta Mengejutkan tentang\nRisiko Diabetes\"?",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Karena penulis ingin mengiklankan produk gula pasir merek tertentu kepada pembaca"
+      },
+      {
+        "label": "B",
+        "teks": "Karena gula pasir terbukti tidak mengandung kalori sama sekali menurut ilmu gizi modern"
+      },
+      {
+        "label": "C",
+        "teks": "Karena penyakit diabetes hanya disebabkan oleh gigitan nyamuk di malam hari"
+      },
+      {
+        "label": "D",
+        "teks": "Karena pemicu lonjakan gula darah dan resistansi insulin bukan hanya gula pasir biasa, melainkan juga gula tersembunyi dari karbohidrat olahan berindeks glikemik tinggi (roti putih, mi instan, saus ke- masan) yang diperparah oleh gaya hidup kurang gerak"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Paragraf 1 dan 2 meluruskan miskonsepsi umum: risiko diabetes tidak hanya berasal dari\ngula pasir, tetapi juga dari karbohidrat sederhana berindeks glikemik tinggi (hidden sugar) serta gaya hidup\nkurang gerak (Paragraf 3).",
+    "valid": true
+  },
+  {
+    "nomor": 83,
+    "tipe": "pg_sederhana",
+    "paket": "Bab III: Menulis Artikel Ilmiah Populer - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Artikel Ilmiah Populer, Pemilahan Fakta vs Opini, Kalimat Perbandingan, Analogi, & Metode Triangulasi",
+    "capaian_pembelajaran": "Peserta didik memahami struktur artikel ilmiah populer (judul, pendahuluan, isi/argumen, penutup), memilah kalimat fakta dan opini, menganalisis kalimat perbandingan dan analogi, serta memahami metode pengumpulan data ilmiah populer.",
+    "bacaan": {
+      "teks": "Scribd 997810237 No. 13–15]\nWACANA LITERASI MEMBACA: WACANA LITERASI MEMBACA: LEBIH DARI GULA PASIR — FAKTA\nMENGEJUTKAN TENTANG RISIKO DIABETES\n(Paragraf 1) Banyak orang mengira bahwa penyakit diabetes melitus (kencing manis) hanya mengintai mereka\nyang gemar menambahkan bergelas-gelas gula pasir ke dalam teh atau kopi.\nAnggapan tersebut tidak\nsepenuhnya tepat. Dalam ilmu gizi modern, ancaman lonjakan gula darah justru sering bersembunyi di balik\nmakanan dan minuman olahan yang rasanya tidak selalu manis di lidah, atau yang dikenal sebagai “gula\ntersembunyi” (hidden sugar).\n(Paragraf 2) Karbohidrat sederhana yang terkandung dalam roti tawar putih, mi instan, kentang goreng, dan\nsaus kemasan memiliki indeks glikemik yang tinggi.\nBegitu masuk ke saluran pencernaan, enzim tubuh\nmemecah karbohidrat olahan tersebut menjadi glukosa darah hampir secepat gula pasir murni. Akibatnya,\nkelenjar pankreas dipaksa memompa hormon insulin secara berlebih untuk memasukkan glukosa ke dalam\nsel-sel tubuh.\n(Paragraf 3) Risiko ini makin berlipat ganda apabila remaja menerapkan gaya hidup kurang gerak (sedentary\nlifestyle). Ketika otot-otot tubuh jarang digerakkan untuk berolahraga, glukosa yang menumpuk di dalam darah\ntidak terbakar menjadi energi, melainkan diubah menjadi cadangan lemak viseral di sekitar perut. Lama-\nkelamaan, sel-sel tubuh menjadi kebal terhadap sinyal insulin—suatu kondisi medis yang disebut resistansi\ninsulin.\n(Paragraf 4) Oleh sebab itu, mencegah diabetes tidak cukup hanya dengan mengurangi takaran gula pasir\ndi cangkir teh. Kita perlu membiasakan diri membaca label nilai gizi pada kemasan makanan, mengganti\nkarbohidrat olahan dengan karbohidrat kompleks berserat tinggi (seperti beras merah, jagung, atau ubi), serta\naktif bergerak setiap hari.\nRisiko Diabetes\"?",
+      "grup": "bacaan_bab3_gula_pasir"
+    },
+    "teks_soal": "Berdasarkan Paragraf 3 wacana pada soal nomor 22, hubungan sebab-akibat terjadinya kondisi medis\nresistansi insulin adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Mengonsumsi beras merah, jagung, dan ubi rebus menyebabkan pankreas berhenti bekerja"
+      },
+      {
+        "label": "B",
+        "teks": "Terlalu sering berolahraga lari pagi membuat otot tubuh kekurangan hormon insulin"
+      },
+      {
+        "label": "C",
+        "teks": "Tingginya asupan glukosa yang disertai kurangnya aktivitas fisik membuat glukosa tidak dibakar oleh otot menjadi energi dan menumpuk sebagai lemak viseral, sehingga lama-kelamaan sel tubuh menjadi kebal (tidak peka) terhadap sinyal hormon insulin"
+      },
+      {
+        "label": "D",
+        "teks": "Membaca label nilai gizi pada kemasan makanan menyebabkan kadar gula darah naik"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "C. Alur kausalitas pada Paragraf 3 sangat jelas: gaya hidup kurang gerak (sedentary) →otot\njarang membakar glukosa →glukosa menumpuk jadi lemak viseral →sel tubuh kebal terhadap sinyal insulin\n(resistansi insulin).",
+    "valid": true
+  },
+  {
+    "nomor": 84,
+    "tipe": "pg_sederhana",
+    "paket": "Bab III: Menulis Artikel Ilmiah Populer - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Artikel Ilmiah Populer, Pemilahan Fakta vs Opini, Kalimat Perbandingan, Analogi, & Metode Triangulasi",
+    "capaian_pembelajaran": "Peserta didik memahami struktur artikel ilmiah populer (judul, pendahuluan, isi/argumen, penutup), memilah kalimat fakta dan opini, menganalisis kalimat perbandingan dan analogi, serta memahami metode pengumpulan data ilmiah populer.",
+    "bacaan": {
+      "teks": "Scribd 997810237 No. 13–15]\nWACANA LITERASI MEMBACA: WACANA LITERASI MEMBACA: LEBIH DARI GULA PASIR — FAKTA\nMENGEJUTKAN TENTANG RISIKO DIABETES\n(Paragraf 1) Banyak orang mengira bahwa penyakit diabetes melitus (kencing manis) hanya mengintai mereka\nyang gemar menambahkan bergelas-gelas gula pasir ke dalam teh atau kopi.\nAnggapan tersebut tidak\nsepenuhnya tepat. Dalam ilmu gizi modern, ancaman lonjakan gula darah justru sering bersembunyi di balik\nmakanan dan minuman olahan yang rasanya tidak selalu manis di lidah, atau yang dikenal sebagai “gula\ntersembunyi” (hidden sugar).\n(Paragraf 2) Karbohidrat sederhana yang terkandung dalam roti tawar putih, mi instan, kentang goreng, dan\nsaus kemasan memiliki indeks glikemik yang tinggi.\nBegitu masuk ke saluran pencernaan, enzim tubuh\nmemecah karbohidrat olahan tersebut menjadi glukosa darah hampir secepat gula pasir murni. Akibatnya,\nkelenjar pankreas dipaksa memompa hormon insulin secara berlebih untuk memasukkan glukosa ke dalam\nsel-sel tubuh.\n(Paragraf 3) Risiko ini makin berlipat ganda apabila remaja menerapkan gaya hidup kurang gerak (sedentary\nlifestyle). Ketika otot-otot tubuh jarang digerakkan untuk berolahraga, glukosa yang menumpuk di dalam darah\ntidak terbakar menjadi energi, melainkan diubah menjadi cadangan lemak viseral di sekitar perut. Lama-\nkelamaan, sel-sel tubuh menjadi kebal terhadap sinyal insulin—suatu kondisi medis yang disebut resistansi\ninsulin.\n(Paragraf 4) Oleh sebab itu, mencegah diabetes tidak cukup hanya dengan mengurangi takaran gula pasir\ndi cangkir teh. Kita perlu membiasakan diri membaca label nilai gizi pada kemasan makanan, mengganti\nkarbohidrat olahan dengan karbohidrat kompleks berserat tinggi (seperti beras merah, jagung, atau ubi), serta\naktif bergerak setiap hari.\nRisiko Diabetes\"?",
+      "grup": "bacaan_bab3_gula_pasir"
+    },
+    "teks_soal": "Pasangan sinonim (padanan makna) dan antonim (lawan makna) dari kata-kata yang digunakan\ndalam wacana soal nomor 22 berikut yang tepat adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Sinonim kata aktif adalah pasif; sedangkan antonim kata tinggi adalah mahal"
+      },
+      {
+        "label": "B",
+        "teks": "Sinonim kata risiko adalah ancaman/bahaya; sedangkan antonim kata sederhana (pada karbohidrat sederhana) adalah kompleks (pada karbohidrat kompleks)"
+      },
+      {
+        "label": "C",
+        "teks": "Sinonim kata mencegah adalah membiarkan; sedangkan antonim kata modern adalah baru"
+      },
+      {
+        "label": "D",
+        "teks": "Sinonim kata kurang adalah lebih; sedangkan antonim kata manis adalah gula"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "B. Di dalam wacana tersebut, kata risiko bersinonim dengan ancaman, sedangkan penulis\nsecara langsung mempertentangkan (antonim) karbohidrat sederhana (Paragraf 2) dengan karbohidrat kom-\npleks (Paragraf 4).",
+    "valid": true
+  },
+  {
+    "nomor": 85,
+    "tipe": "pg_sederhana",
+    "paket": "Bab III: Menulis Artikel Ilmiah Populer - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Artikel Ilmiah Populer, Pemilahan Fakta vs Opini, Kalimat Perbandingan, Analogi, & Metode Triangulasi",
+    "capaian_pembelajaran": "Peserta didik memahami struktur artikel ilmiah populer (judul, pendahuluan, isi/argumen, penutup), memilah kalimat fakta dan opini, menganalisis kalimat perbandingan dan analogi, serta memahami metode pengumpulan data ilmiah populer.",
+    "bacaan": null,
+    "teks_soal": "Bacalah kutipan artikel ilmiah populer berikut!\n\"Partikel mikroplastik berukuran kurang dari 5 milimeter kini ditemukan mencemari garam dapur, air\nkemasan, hingga tubuh ikan laut. (2) Menurut laporan peneliti oseanografi LIPI/BRIN, kantong plastik\ndan botol sekali pakai yang terbuang ke laut tidak benar-benar lenyap, melainkan terpecah oleh sinar\nultraviolet dan gelombang menjadi serpihan mikroskopis. (3) Oleh karena itu, setiap keluarga sebaiknya\nmulai mengganti wadah plastik sekali pakai dengan wadah kaca atau baja tahan karat (stainless steel)\ndemi kesehatan generasi mendatang.\"\nStruktur bagian argumen penguat fakta dan bagian penutup/solusi pada kutipan di atas ditunjukkan oleh\n....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Kutipan di atas menyimpulkan bahwa plastik sekali pakai sangat mudah larut menjadi vitamin di laut"
+      },
+      {
+        "label": "B",
+        "teks": "Kalimat (1) merupakan daftar pustaka; sedangkan Kalimat (3) merupakan orientasi cerpen"
+      },
+      {
+        "label": "C",
+        "teks": "Seluruh kalimat (1), (2), dan (3) merupakan kalimat perintah dalam teks prosedur"
+      },
+      {
+        "label": "D",
+        "teks": "Kalimat (1) dan (2) merupakan Isi/Argumen berbasis fakta ilmiah; sedangkan Kalimat (3) meru- pakan Penutup/Rekomendasi solusi praktis"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Kalimat (1) dan (2) memaparkan bukti temuan ilmiah peneliti BRIN tentang ukuran dan\nproses terbentuknya mikroplastik (Isi/Argumen Fakta), sedangkan Kalimat (3) yang ditandai konjungsi Oleh\nkarena itu dan kata saran sebaiknya merupakan Penutup/Solusi.",
+    "valid": true
+  },
+  {
+    "nomor": 86,
+    "tipe": "pg_sederhana",
+    "paket": "Bab III: Menulis Artikel Ilmiah Populer - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Artikel Ilmiah Populer, Pemilahan Fakta vs Opini, Kalimat Perbandingan, Analogi, & Metode Triangulasi",
+    "capaian_pembelajaran": "Peserta didik memahami struktur artikel ilmiah populer (judul, pendahuluan, isi/argumen, penutup), memilah kalimat fakta dan opini, menganalisis kalimat perbandingan dan analogi, serta memahami metode pengumpulan data ilmiah populer.",
+    "bacaan": null,
+    "teks_soal": "Perhatikan foto kegiatan kolaborasi siswa di Sekolah Inklusi berikut!\n\nPernyataan analitis yang benar mengenai penyusunan artikel ilmiah populer berdasarkan gambar di atas\nadalah .... (Pilih lebih dari satu jawaban benar)\n\nPernyataan:\n(1) Artikel ilmiah populer memadukan fakta objektif (hasil pengamatan kelas inklusi dan data grafik\nsurvei) dengan opini/pandangan solusi penulis menggunakan bahasa yang komunikatif.\n(2) Penyajian data kuesioner dalam bentuk diagram batang memudahkan penulis merumuskan kalimat\nfakta kuantitatif untuk memperkuat argumen di bagian Isi artikel.\n(3) Pengumpulan data untuk mendukung artikel ilmiah populer dapat dilakukan secara triangulasi\nmelalui observasi lapangan, wawancara narasumber, dan penyebaran kuesioner.\n(4) Artikel ilmiah populer dilarang mencantumkan fakta maupun data angka karena hanya berisi cerita\nkhayalan murni.\n\nPernyataan yang tepat adalah ....",
+    "gambar": [
+      "/soal/bindo/kls8_bindo_p106_xref3524_880x880.jpeg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(1), (2), dan (3)"
+      },
+      {
+        "label": "B",
+        "teks": "(1) dan (4) saja"
+      },
+      {
+        "label": "C",
+        "teks": "(2) dan (4) saja"
+      },
+      {
+        "label": "D",
+        "teks": "(1), (2), (3), dan (4)"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "✓A, ✓B, ✓C — Perpaduan fakta-opini (A), manfaat grafik kuesioner (B), dan triangulasi\ndata (C) seluruhnya benar.",
+    "valid": true
+  },
+  {
+    "nomor": 87,
+    "tipe": "pg_sederhana",
+    "paket": "Bab III: Menulis Artikel Ilmiah Populer - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Artikel Ilmiah Populer, Pemilahan Fakta vs Opini, Kalimat Perbandingan, Analogi, & Metode Triangulasi",
+    "capaian_pembelajaran": "Peserta didik memahami struktur artikel ilmiah populer (judul, pendahuluan, isi/argumen, penutup), memilah kalimat fakta dan opini, menganalisis kalimat perbandingan dan analogi, serta memahami metode pengumpulan data ilmiah populer.",
+    "bacaan": null,
+    "teks_soal": "Evaluasilah pernyataan kaidah kebahasaan\nartikel ilmiah populer berikut! Pernyataan yang tepat adalah ....\n\nPernyataan:\n(1) Kalimat ¨Berdasarkan data UNESCO, minat baca masyarakat perlu terus ditingkatkan melalui penye-\ndiaan pojok baca di setiap sekolah¨ memadukan rujukan lembaga dengan saran kebijakan.\n(2) Kalimat ¨Menjaga kebersihan lingkungan sekolah ibarat merawat rumah kita sendiri¨ merupakan\ncontoh penggunaan kalimat analogi.\n(3) Kata inklusi berantonim dengan eksklusi, sedangkan kata difabel bersinonim dengan penyandang\ndisabilitas.\n(4) Kalimat fakta adalah kalimat yang menggunakan kata mungkin, barangkali, seandainya, dan belum\npernah terjadi.\n\nPernyataan yang tepat adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(1), (2), dan (3)"
+      },
+      {
+        "label": "B",
+        "teks": "(1) dan (4) saja"
+      },
+      {
+        "label": "C",
+        "teks": "(2) dan (4) saja"
+      },
+      {
+        "label": "D",
+        "teks": "(1), (2), (3), dan (4)"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "✓A, ✓B, ✓C — Perpaduan data-saran (A), kalimat analogi ibarat (B), dan antonim/sinonim\ninklusi/difabel (C) benar.",
+    "valid": true
+  },
+  {
+    "nomor": 88,
+    "tipe": "pg_sederhana",
+    "paket": "Bab III: Menulis Artikel Ilmiah Populer - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Artikel Ilmiah Populer, Pemilahan Fakta vs Opini, Kalimat Perbandingan, Analogi, & Metode Triangulasi",
+    "capaian_pembelajaran": "Peserta didik memahami struktur artikel ilmiah populer (judul, pendahuluan, isi/argumen, penutup), memilah kalimat fakta dan opini, menganalisis kalimat perbandingan dan analogi, serta memahami metode pengumpulan data ilmiah populer.",
+    "bacaan": null,
+    "teks_soal": "Berilah tanda centang (✓) pada kolom Benar atau Salah untuk setiap pernyataan berikut!\nNo.\nPernyataan Analisis Bahasa Indonesia\nBenar\nSalah\n\nPernyataan:\n(a) Struktur artikel ilmiah populer terdiri atas Judul, Pendahuluan, Isi\n(Pembahasan), dan Penutup (Simpulan/Saran).\n(b) Teknik pengumpulan data dengan cara membagikan daftar pertanyaan\ntertulis kepada sejumlah responden untuk diisi disebut kuesioner\n(angket).\n(c) Menyalin seluruh tulisan ilmiah milik orang lain tanpa menyebutkan\nsumber rujukannya merupakan tindakan terpuji yang dianjurkan dalam\npenulisan artikel.\n\nKombinasi analisis nilai kebenaran (Benar/Salah) yang tepat adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(a) Benar, (b) Benar, (c) Salah"
+      },
+      {
+        "label": "B",
+        "teks": "(a) Benar, (b) Salah, (c) Salah"
+      },
+      {
+        "label": "C",
+        "teks": "(a) Salah, (b) Benar, (c) Benar"
+      },
+      {
+        "label": "D",
+        "teks": "(a) Benar, (b) Benar, (c) Benar"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "(a) Benar, (b) Benar, (c) Salah — (c) Salah, karena menyalin karya orang lain tanpa menyebut\nsumber adalah plagiarisme yang melanggar etika ilmiah.",
+    "valid": true
+  },
+  {
+    "nomor": 89,
+    "tipe": "pg_sederhana",
+    "paket": "Bab III: Menulis Artikel Ilmiah Populer - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Artikel Ilmiah Populer, Pemilahan Fakta vs Opini, Kalimat Perbandingan, Analogi, & Metode Triangulasi",
+    "capaian_pembelajaran": "Peserta didik memahami struktur artikel ilmiah populer (judul, pendahuluan, isi/argumen, penutup), memilah kalimat fakta dan opini, menganalisis kalimat perbandingan dan analogi, serta memahami metode pengumpulan data ilmiah populer.",
+    "bacaan": null,
+    "teks_soal": "Evaluasilah\n\nkebenaran pernyataan kaidah kebahasaan berikut!\nNo.\nPernyataan Analisis Bahasa Indonesia\nBenar\nSalah\n\nPernyataan:\n(a) Kalimat “Pada tahun 2025, SMP Negeri 2 memiliki 32 ruang kelas dan\n1 laboratorium bahasa” merupakan contoh kalimat fakta.\n(b) Kalimat “Bersepeda ke sekolah lebih menyehatkan jantung daripada\ndiantar menggunakan sepeda motor” merupakan contoh kalimat per-\nbandingan.\n(c) Kata analisa, hipotesa, praktek, dan kwalitas merupakan bentuk kata\nbaku menurut Kamus Besar Bahasa Indonesia (KBBI).\n\nKombinasi analisis nilai kebenaran (Benar/Salah) yang tepat adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(a) Benar, (b) Benar, (c) Salah"
+      },
+      {
+        "label": "B",
+        "teks": "(a) Benar, (b) Salah, (c) Salah"
+      },
+      {
+        "label": "C",
+        "teks": "(a) Salah, (b) Benar, (c) Benar"
+      },
+      {
+        "label": "D",
+        "teks": "(a) Benar, (b) Benar, (c) Benar"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "(a) Benar, (b) Benar, (c) Salah — (c) Salah, karena bentuk baku menurut KBBI adalah\nanalisis, hipotesis, praktik, kualitas.",
+    "valid": true
+  },
+  {
+    "nomor": 90,
+    "tipe": "pg_sederhana",
+    "paket": "Bab III: Menulis Artikel Ilmiah Populer - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Artikel Ilmiah Populer, Pemilahan Fakta vs Opini, Kalimat Perbandingan, Analogi, & Metode Triangulasi",
+    "capaian_pembelajaran": "Peserta didik memahami struktur artikel ilmiah populer (judul, pendahuluan, isi/argumen, penutup), memilah kalimat fakta dan opini, menganalisis kalimat perbandingan dan analogi, serta memahami metode pengumpulan data ilmiah populer.",
+    "bacaan": null,
+    "teks_soal": "Perhatikan data hasil survei dan wawancara tim jurnalistik SMP Cendekia tentang Kebiasaan\nSarapan Pagi Siswa berikut: - Fakta Kuesioner (200 Siswa): Sebanyak 130 siswa (65%) rutin sarapan\npagi di rumah dan terbukti memiliki skor fokus belajar yang baik; sedangkan 70 siswa (35%) tidak sarapan\npagi sehingga sering mengeluh lemas, pusing, dan mengantuk pada jam pelajaran pertama–ketiga. -\nKonsep Analogi: Tubuh manusia yang belajar di sekolah diumpamakan seperti kendaraan bermotor\nyang membutuhkan bahan bakar sebelum menempuh perjalanan. - Opini Solusi Penulis: Orang tua\ndan siswa perlu menyiapkan menu sarapan praktis bergizi setiap pagi. Manakah paragraf Artikel Ilmiah\nPopuler yang paling padu, logis, dan baku menggabungkan Fakta Kuantitatif + Kalimat Analogi + Opini\nSolusi berdasarkan data di atas?\nA. Tubuh pelajar yang memulai aktivitas belajar di pagi hari ibarat kendaraan bermotor yang membutuhkan\nbahan bakar berkualitas sebelum menempuh perjalanan jauh. Berdasarkan survei terhadap 200 siswa\nSMP Cendekia, tercatat 65% siswa (130 orang) yang rutin sarapan pagi memiliki fokus belajar yang prima,\nsedangkan 35% siswa (70 orang) yang melewatkan sarapan sering mengalami keluhan lemas, pusing,\ndan mengantuk di kelas. Oleh karena itu, siswa bersama orang tua sebaiknya membiasakan sarapan pagi\ndengan menu praktis bergizi minimal 30 menit sebelum berangkat ke sekolah.\nB. Menurut perkiraan kami tanpa melakukan survei, mungkin semua siswa di sekolah sudah sarapan pagi\nsehingga tidak ada seorang pun yang mengantuk di kelas.\nC. Pertama, pecahkan dua butir telur ayam ke dalam mangkuk. Kedua, kocok lepas bersama sejumput\ngaram. Ketiga, gorenglah di atas wajan panas hingga matang.\nD. Survei terhadap 200 siswa menunjukkan bahwa 35% siswa yang tidak sarapan justru memiliki kese-\nhatan yang jauh lebih baik dibandingkan 65% siswa yang rutin sarapan pagi.\n1\nB\n7\nA\n13\nA\n19\nA\n25\nD\n2\nC\n8\nD\n14\nB\n20\nA\n26\nABC\n3\nA\n9\nB\n15\nC\n21\nB\n27\nABC\n4\nD\n10\nC\n16\nD\n22\nD\n28\nBBS\n5\nB\n11\nD\n17\nB\n23\nC\n29\nBBS\n6\nC\n12\nB\n18\nC\n24\nB\n30\nA\n1. Jawaban: B. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.\n2. Jawaban: C. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.\n3. Jawaban: A. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.\n4. Jawaban: D. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.\n5. Jawaban: B. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.\n6. Jawaban: C. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.\n7. Jawaban: A. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.\n8. Jawaban: D. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.\n9. Jawaban: B. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.\n10. Jawaban: C. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.\n11. Jawaban: D. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.\n12. Jawaban: B. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.\n\nBerdasarkan kaidah bahasa baku EYD Edisi V dan materi bab ini, rumusan analisis / hasil penyuntingan yang paling tepat adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "A — Pilihan A menyatukan kalimat analogi (ibarat kendaraan bermotor), fakta survei (65%\nvs 35%), dan opini solusi (sebaiknya membiasakan sarapan) secara padu. (Rujukan: https://id.scribd.\ncom/document/786652279/KELAS-8-SOAL-B-INDO-BAB-3-ARTIKEL-ILMIAH-POPULER)"
+      },
+      {
+        "label": "B",
+        "teks": "Mengabaikan penggunaan tanda koma dan huruf kapital pada nama geografi serta membiarkan kata tidak baku tetap tertulis apa adanya"
+      },
+      {
+        "label": "C",
+        "teks": "Mengubah seluruh kalimat menjadi bahasa santai dan menghilangkan unsur fakta objektif dalam teks"
+      },
+      {
+        "label": "D",
+        "teks": "Menghapus seluruh paragraf wacana dan menggantinya dengan opini pribadi tanpa bukti ilmiah"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "A — Pilihan A menyatukan kalimat analogi (ibarat kendaraan bermotor), fakta survei (65%\nvs 35%), dan opini solusi (sebaiknya membiasakan sarapan) secara padu. (Rujukan: https://id.scribd.\ncom/document/786652279/KELAS-8-SOAL-B-INDO-BAB-3-ARTIKEL-ILMIAH-POPULER).\n\n1. Membedah Unsur Intrinsik Karya Fiksi & Struktur Teks Ulasan (Resensi)\na. Enam Unsur Intrinsik Karya Fiksi (Cerpen & Novel): Dalam mengulas karya fiksi seperti cerpen “Kotak Sulap Pa-\nman Tom” atau “Parkir” pada Buku Siswa Bab IV, peresensi perlu menganalisis unsur pembangun dari dalam karya:\n(1) Tema: gagasan inti yang mendasari cerita; (2) Tokoh dan Penokohan: pelaku cerita beserta wataknya (tokoh\nutama vs tokoh pendukung; watak protagonis, antagonis, atau campuran/bulat seperti tokoh Paman Tom yang men-\ngalami pasang surut kehidupan); (3) Latar (Setting): keterangan tempat, waktu, dan suasana terjadinya peristiwa; (4)\nAlur (Plot): rangkaian peristiwa berdasarkan hubungan sebab-akibat (pengenalan/awal →pemunculan konflik →pun-\ncak konflik/klimaks →peleraian/akhir; dapat beralur maju, mundur/flashback, atau campuran); (5) Sudut Pandang (Point\nof View): posisi pencerita (orang pertama aku atau orang ketiga dia/nama tokoh); dan (6) Amanat: pesan moral yang\ningin disampaikan pengarang. Rujukan resmi: Buku Siswa Bahasa Indonesia Kelas VIII Edisi Revisi Kemendikdasmen\n(https://rendratopan.com/wp-content/uploads/2026/06/Bahasa_Indonesia_BS_KLS_VIII_Rev.pdf).\nb. Struktur Teks Ulasan / Resensi Karya Fiksi: (1) Identitas Karya (Judul, pengarang, penerbit, tahun terbit, tebal\nhalaman, ISBN), (2) Orientasi (pengenalan gambaran umum karya dan reputasi pengarang), (3) Sinopsis (ringkasan alur\ncerita), (4) Analisis Unsur Intrinsik, dan (5) Evaluasi & Rekomendasi (penilaian kelebihan, kekurangan, serta kelayakan\nbaca).\n2. Kaidah Kebahasaan: Makna Denotasi vs Konotasi & Konjungsi Teks Ulasan\na. Makna Denotasi vs Makna Konotasi: - Makna Denotasi: makna kata atau frasa yang bersifat lugas, objektif,\ndan sebenarnya sesuai dengan arti kamus (KBBI) tanpa muatan rasa tambahan (contoh: *“Ibu menyalakan lampu di\nruang tengah karena malam sudah gelap”; “Adik jatuh sehingga tangan kanannya terkilir”*). - Makna Konotasi: makna\nkata atau frasa yang bersifat kias, figuratif, atau memiliki nilai rasa/asosiasi emosional tertentu (positif atau negatif)\nyang melampaui arti harfiahnya (contoh: *“Buku merupakan lampu penerang di tengah kegelapan kebodohan”; “Pak\nBudi menjadi tangan kanan direktur karena kejujurannya”; “meja hijau” = pengadilan; “kambing hitam”* = orang yang\ndipersalahkan).\nb. Konjungsi dalam Teks Ulasan: Menggunakan konjungsi penerang (bahwa, yakni, yaitu), konjungsi temporal (se-\njak, semenjak, kemudian, akhirnya), konjungsi penyebab (karena, sebab), dan ungkapan saran/rekomendasi (jangan\nsampai terlewatkan, hendaknya, patut dibaca).\nc. Rujukan 30 Soal HOTS Bab IV Kelas 8 (3 Jenis Ujian): (1) ASPD DIY / TKAD / ANBK: Soal TO ASPD Bindo Feb\n2025 (https://id.scribd.com/document/829607232/SOAL-TO-ASPD-BINDO-FEB-2025); (2) MGMP Bahasa Indone-\nsia SMP: Kumpulan Soal TKA MGMP DKI Jakarta (https://id.scribd.com/document/1009621080/Kumpulan-Soal-\nTka-Bahasa-Indonesia-Mgmp-Bindo-Smp-Dki-Jakarta); (3) ASAT/PAT Kurikulum Merdeka: Latihan Soal Men-\ngulas Karya Fiksi Kelas 8 (https://id.scribd.com/document/851586246/LATIHAN-SOAL-MENGULAS-KARYA-FIKSI-\nKELAS-8) & 20 Soal Teks Ulasan (https://id.scribd.com/document/737615796/20-Soal-Teks-Ulasan-Kelas-8-\nSMP-Berbentuk-Pilihan-Ganda).",
+    "valid": true
+  }
+]

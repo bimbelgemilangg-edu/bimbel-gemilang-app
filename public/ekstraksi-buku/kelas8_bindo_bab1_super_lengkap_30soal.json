@@ -1,0 +1,1038 @@
+[
+  {
+    "nomor": 1,
+    "tipe": "pg_sederhana",
+    "paket": "Bab I: Menulis Teks LHO - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks LHO, Sifat Objektif, Struktur LHO, Kalimat Fakta, & Kaidah Bahasa EYD Edisi V",
+    "capaian_pembelajaran": "Peserta didik memahami, menganalisis, dan mengevaluasi informasi serta struktur teks laporan hasil observasi (pembuka/definisi umum, deskripsi bagian, simpulan), membedakan kalimat fakta vs opini, dan menerapkan kaidah kebahasaan baku EYD Edisi V.",
+    "bacaan": {
+      "teks": "(1) Menurut data Badan Pusat Statistik (BPS), 67,88% penduduk Indonesia yang berusia 5 tahun ke atas\nsudah memiliki gawai pada 2022. (2) Persentase tersebut meningkat jika dibandingkan tahun 2021 yang\nmasih 65,87% dan sekaligus menjadi rekor tertinggi dalam sedekade terakhir. (3) Berdasarkan sebuah\npenelitian dan pengamatan, proporsi kepemilikan gawai tertinggi berada di Provinsi Kalimantan Timur,\nsedangkan proporsi terendah berada di Provinsi Papua.\n(4) Adapun secara nasional, pada 2022, persentase penduduk laki-laki usia 5 tahun ke atas yang punya\ngawai mencapai 72,76%, sedangkan perempuan hanya 62,91%. (5) Persentase penduduk laki-laki usia\n5 tahun ke atas yang mengakses internet juga lebih banyak, yakni 69,39%, sedangkan perempuan hanya\n63,53%. (6) Berdasarkan data tersebut, terlihat bahwa adanya ketimpangan jumlah kepemilikan gawai\ndan pengguna internet yang didominasi penduduk laki-laki yang berusia di atas 5 tahun.",
+      "grup": "bacaan_bab1_bps_gawai"
+    },
+    "teks_soal": "Perhatikan grafik data BPS dan kutipan teks laporan hasil observasi berikut!\n(1) Menurut data Badan Pusat Statistik (BPS), 67,88% penduduk Indonesia yang berusia 5 tahun ke atas\nsudah memiliki gawai pada 2022. (2) Persentase tersebut meningkat jika dibandingkan tahun 2021 yang\nmasih 65,87% dan sekaligus menjadi rekor tertinggi dalam sedekade terakhir. (3) Berdasarkan sebuah\npenelitian dan pengamatan, proporsi kepemilikan gawai tertinggi berada di Provinsi Kalimantan Timur,\nsedangkan proporsi terendah berada di Provinsi Papua.\n(4) Adapun secara nasional, pada 2022, persentase penduduk laki-laki usia 5 tahun ke atas yang punya\ngawai mencapai 72,76%, sedangkan perempuan hanya 62,91%. (5) Persentase penduduk laki-laki usia\n5 tahun ke atas yang mengakses internet juga lebih banyak, yakni 69,39%, sedangkan perempuan hanya\n63,53%. (6) Berdasarkan data tersebut, terlihat bahwa adanya ketimpangan jumlah kepemilikan gawai\ndan pengguna internet yang didominasi penduduk laki-laki yang berusia di atas 5 tahun.\nGagasan utama paragraf pertama adalah ....",
+    "gambar": [
+      "/soal/bindo/kls8_bindo_p75_xref2475_880x880.jpeg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "perbandingan jumlah penduduk yang sudah memiliki gawai di Indonesia"
+      },
+      {
+        "label": "B",
+        "teks": "data terkait kepemilikan gawai pada penduduk Indonesia yang berusia 5 tahun ke atas"
+      },
+      {
+        "label": "C",
+        "teks": "proporsi kepemilikan gawai tertinggi dan proporsi kepemilikan gawai terendah di Indonesia"
+      },
+      {
+        "label": "D",
+        "teks": "persentase tertinggi terkait kepemilikan gawai pada penduduk Indonesia yang berusia 5 tahun"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "B. Pada paragraf pertama, kalimat utama terletak pada kalimat (1) yang memfokuskan pemba-\nhasan pada data kepemilikan gawai penduduk Indonesia berusia 5 tahun ke atas (67,88%).",
+    "valid": true
+  },
+  {
+    "nomor": 2,
+    "tipe": "pg_sederhana",
+    "paket": "Bab I: Menulis Teks LHO - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks LHO, Sifat Objektif, Struktur LHO, Kalimat Fakta, & Kaidah Bahasa EYD Edisi V",
+    "capaian_pembelajaran": "Peserta didik memahami, menganalisis, dan mengevaluasi informasi serta struktur teks laporan hasil observasi (pembuka/definisi umum, deskripsi bagian, simpulan), membedakan kalimat fakta vs opini, dan menerapkan kaidah kebahasaan baku EYD Edisi V.",
+    "bacaan": {
+      "teks": "(1) Menurut data Badan Pusat Statistik (BPS), 67,88% penduduk Indonesia yang berusia 5 tahun ke atas\nsudah memiliki gawai pada 2022. (2) Persentase tersebut meningkat jika dibandingkan tahun 2021 yang\nmasih 65,87% dan sekaligus menjadi rekor tertinggi dalam sedekade terakhir. (3) Berdasarkan sebuah\npenelitian dan pengamatan, proporsi kepemilikan gawai tertinggi berada di Provinsi Kalimantan Timur,\nsedangkan proporsi terendah berada di Provinsi Papua.\n(4) Adapun secara nasional, pada 2022, persentase penduduk laki-laki usia 5 tahun ke atas yang punya\ngawai mencapai 72,76%, sedangkan perempuan hanya 62,91%. (5) Persentase penduduk laki-laki usia\n5 tahun ke atas yang mengakses internet juga lebih banyak, yakni 69,39%, sedangkan perempuan hanya\n63,53%. (6) Berdasarkan data tersebut, terlihat bahwa adanya ketimpangan jumlah kepemilikan gawai\ndan pengguna internet yang didominasi penduduk laki-laki yang berusia di atas 5 tahun.",
+      "grup": "bacaan_bab1_bps_gawai"
+    },
+    "teks_soal": "Perhatikan kembali kutipan teks laporan hasil observasi tentang Kepemilikan Gawai pada soal nomor 1!\nIde pokok paragraf kedua teks laporan hasil observasi tersebut terletak pada kalimat ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(1)"
+      },
+      {
+        "label": "C",
+        "teks": "(5)"
+      },
+      {
+        "label": "B",
+        "teks": "(4)"
+      },
+      {
+        "label": "D",
+        "teks": "(6)"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Kalimat (6) merangkum simpulan utama paragraf kedua, yaitu adanya ketimpangan kepemi-\nlikan gawai dan pengguna internet yang didominasi penduduk laki-laki.",
+    "valid": true
+  },
+  {
+    "nomor": 3,
+    "tipe": "pg_sederhana",
+    "paket": "Bab I: Menulis Teks LHO - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks LHO, Sifat Objektif, Struktur LHO, Kalimat Fakta, & Kaidah Bahasa EYD Edisi V",
+    "capaian_pembelajaran": "Peserta didik memahami, menganalisis, dan mengevaluasi informasi serta struktur teks laporan hasil observasi (pembuka/definisi umum, deskripsi bagian, simpulan), membedakan kalimat fakta vs opini, dan menerapkan kaidah kebahasaan baku EYD Edisi V.",
+    "bacaan": {
+      "teks": "(1) Menurut data Badan Pusat Statistik (BPS), 67,88% penduduk Indonesia yang berusia 5 tahun ke atas\nsudah memiliki gawai pada 2022. (2) Persentase tersebut meningkat jika dibandingkan tahun 2021 yang\nmasih 65,87% dan sekaligus menjadi rekor tertinggi dalam sedekade terakhir. (3) Berdasarkan sebuah\npenelitian dan pengamatan, proporsi kepemilikan gawai tertinggi berada di Provinsi Kalimantan Timur,\nsedangkan proporsi terendah berada di Provinsi Papua.\n(4) Adapun secara nasional, pada 2022, persentase penduduk laki-laki usia 5 tahun ke atas yang punya\ngawai mencapai 72,76%, sedangkan perempuan hanya 62,91%. (5) Persentase penduduk laki-laki usia\n5 tahun ke atas yang mengakses internet juga lebih banyak, yakni 69,39%, sedangkan perempuan hanya\n63,53%. (6) Berdasarkan data tersebut, terlihat bahwa adanya ketimpangan jumlah kepemilikan gawai\ndan pengguna internet yang didominasi penduduk laki-laki yang berusia di atas 5 tahun.",
+      "grup": "bacaan_bab1_bps_gawai"
+    },
+    "teks_soal": "Perhatikan kembali kutipan teks Kepemilikan Gawai pada soal nomor 1! Kang Sha Tee ingin melengkapi\nteks laporan hasil observasi tersebut. Bagian struktur apa yang perlu ditambahkan oleh Kang Sha Tee\nagar teks tersebut menjadi lebih lengkap?",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Deskripsi umum"
+      },
+      {
+        "label": "C",
+        "teks": "Deskripsi bagian"
+      },
+      {
+        "label": "B",
+        "teks": "Definisi khusus"
+      },
+      {
+        "label": "D",
+        "teks": "Penutup / Simpulan"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Kutipan tersebut sudah memiliki pengenalan umum (paragraf 1) dan deskripsi bagian\nberdasarkan jenis kelamin (paragraf 2), sehingga yang perlu ditambahkan adalah bagian Penutup / Sim-\npulan.",
+    "valid": true
+  },
+  {
+    "nomor": 4,
+    "tipe": "pg_sederhana",
+    "paket": "Bab I: Menulis Teks LHO - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks LHO, Sifat Objektif, Struktur LHO, Kalimat Fakta, & Kaidah Bahasa EYD Edisi V",
+    "capaian_pembelajaran": "Peserta didik memahami, menganalisis, dan mengevaluasi informasi serta struktur teks laporan hasil observasi (pembuka/definisi umum, deskripsi bagian, simpulan), membedakan kalimat fakta vs opini, dan menerapkan kaidah kebahasaan baku EYD Edisi V.",
+    "bacaan": null,
+    "teks_soal": "Penggunaan tanda baca koma (,) yang SALAH terdapat pada kalimat ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Di berbagai daerah, jamblang mempunyai sebutan lain, seperti duwet, jamun, jambul, atau jambolan."
+      },
+      {
+        "label": "B",
+        "teks": "Hati atau liver terletak di rongga perut kanan bagian atas, tepat di bawah rusuk bagian kanan."
+      },
+      {
+        "label": "C",
+        "teks": "Tuktuk Siadong adalah kelurahan yang berada di Kecamatan Simanindo, Kabupaten Samosir, Provinsi Sumatra Utara, Indonesia."
+      },
+      {
+        "label": "D",
+        "teks": "Wombat adalah marsupial Australia yang kakinya empat dan pendek, panjang tubuhnya kira-kira 1 meter dan ekornya pendek."
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Kalimat D memiliki klausa setara yang memerinci ciri fisik sehingga seharusnya dipisahkan\ndengan tanda titik koma (;): Wombat adalah marsupial Australia yang kakinya empat dan pendek, panjang\ntubuhnya kira-kira 1 meter; ekornya pendek.",
+    "valid": true
+  },
+  {
+    "nomor": 5,
+    "tipe": "pg_sederhana",
+    "paket": "Bab I: Menulis Teks LHO - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks LHO, Sifat Objektif, Struktur LHO, Kalimat Fakta, & Kaidah Bahasa EYD Edisi V",
+    "capaian_pembelajaran": "Peserta didik memahami, menganalisis, dan mengevaluasi informasi serta struktur teks laporan hasil observasi (pembuka/definisi umum, deskripsi bagian, simpulan), membedakan kalimat fakta vs opini, dan menerapkan kaidah kebahasaan baku EYD Edisi V.",
+    "bacaan": {
+      "teks": "(1) Pagophagia adalah kegemaran memakan es batu atau kebiasaan menjadikannya sebagai makanan\nringan di kala senggang. (2) Pagophagia termasuk salah satu bentuk kondisi medis yang disebut pica,\nyaitu kebiasaan mengunyah atau memakan benda yang tidak lazim.\n(3) Untuk dapat dikategorikan\npagophagia, seseorang harus memiliki gejala selama satu bulan atau lebih. (4) Jadi kamu jangan menye-\nbut temanmu sebagai orang yang mengidap pagophagia jika melihatnya mengunyah es sesekali saja.\nTeks tersebut mengalami kesalahan penggunaan tanda baca. Kesalahan tersebut terjadi karena ....",
+      "grup": "bacaan_bab1_pagophagia"
+    },
+    "teks_soal": "Perhatikan kutipan teks berikut!\n(1) Pagophagia adalah kegemaran memakan es batu atau kebiasaan menjadikannya sebagai makanan\nringan di kala senggang. (2) Pagophagia termasuk salah satu bentuk kondisi medis yang disebut pica,\nyaitu kebiasaan mengunyah atau memakan benda yang tidak lazim.\n(3) Untuk dapat dikategorikan\npagophagia, seseorang harus memiliki gejala selama satu bulan atau lebih. (4) Jadi kamu jangan menye-\nbut temanmu sebagai orang yang mengidap pagophagia jika melihatnya mengunyah es sesekali saja.\nTeks tersebut mengalami kesalahan penggunaan tanda baca. Kesalahan tersebut terjadi karena ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "tidak ada tanda koma (,) setelah kata pagophagia di kalimat (1)"
+      },
+      {
+        "label": "B",
+        "teks": "tidak ada tanda koma (,) setelah kata Jadi di kalimat (4)"
+      },
+      {
+        "label": "C",
+        "teks": "ada tanda koma (,) setelah kata pica di kalimat (2) yang seharusnya dihilangkan"
+      },
+      {
+        "label": "D",
+        "teks": "ada tanda koma (,) setelah kata pagophagia di kalimat (3) yang seharusnya dihilangkan"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "B. Kata Jadi pada awal kalimat (4) merupakan konjungsi antarkalimat penyimpul sehingga wajib\ndiikuti tanda koma (Jadi, kamu jangan menyebut...).",
+    "valid": true
+  },
+  {
+    "nomor": 6,
+    "tipe": "pg_sederhana",
+    "paket": "Bab I: Menulis Teks LHO - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks LHO, Sifat Objektif, Struktur LHO, Kalimat Fakta, & Kaidah Bahasa EYD Edisi V",
+    "capaian_pembelajaran": "Peserta didik memahami, menganalisis, dan mengevaluasi informasi serta struktur teks laporan hasil observasi (pembuka/definisi umum, deskripsi bagian, simpulan), membedakan kalimat fakta vs opini, dan menerapkan kaidah kebahasaan baku EYD Edisi V.",
+    "bacaan": {
+      "teks": "(1) Pagophagia adalah kegemaran memakan es batu atau kebiasaan menjadikannya sebagai makanan\nringan di kala senggang. (2) Pagophagia termasuk salah satu bentuk kondisi medis yang disebut pica,\nyaitu kebiasaan mengunyah atau memakan benda yang tidak lazim.\n(3) Untuk dapat dikategorikan\npagophagia, seseorang harus memiliki gejala selama satu bulan atau lebih. (4) Jadi kamu jangan menye-\nbut temanmu sebagai orang yang mengidap pagophagia jika melihatnya mengunyah es sesekali saja.\nTeks tersebut mengalami kesalahan penggunaan tanda baca. Kesalahan tersebut terjadi karena ....",
+      "grup": "bacaan_bab1_pagophagia"
+    },
+    "teks_soal": "Paragraf teks laporan hasil observasi tentang Pagophagia pada soal nomor 5 dikembangkan dengan\njenis paragraf ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "eksposisi"
+      },
+      {
+        "label": "C",
+        "teks": "narasi"
+      },
+      {
+        "label": "B",
+        "teks": "deskripsi"
+      },
+      {
+        "label": "D",
+        "teks": "persuasi"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "A. Paragraf tersebut memaparkan definisi dan informasi medis tentang pagophagia serta krite-\nrianya secara objektif untuk menambah wawasan pembaca, sehingga termasuk paragraf eksposisi.",
+    "valid": true
+  },
+  {
+    "nomor": 7,
+    "tipe": "pg_sederhana",
+    "paket": "Bab I: Menulis Teks LHO - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks LHO, Sifat Objektif, Struktur LHO, Kalimat Fakta, & Kaidah Bahasa EYD Edisi V",
+    "capaian_pembelajaran": "Peserta didik memahami, menganalisis, dan mengevaluasi informasi serta struktur teks laporan hasil observasi (pembuka/definisi umum, deskripsi bagian, simpulan), membedakan kalimat fakta vs opini, dan menerapkan kaidah kebahasaan baku EYD Edisi V.",
+    "bacaan": null,
+    "teks_soal": "Kalimat yang memuat penggunaan tanda baca yang SALAH adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Ikan bernapas dengan insang; lumba-lumba bernapas dengan paru-paru."
+      },
+      {
+        "label": "B",
+        "teks": "Transportasi umum di Jakarta beragam, seperti transjakarta, angkot, dan bajaj."
+      },
+      {
+        "label": "C",
+        "teks": "Waktu tidur malam gajah adalah sekitar pukul 01;00 sampai dengan pukul 06;00."
+      },
+      {
+        "label": "D",
+        "teks": "Selain kelinci dan pika, kapibara ternyata juga memakan kotorannya sendiri."
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "C. Pemisah angka jam dan menit tidak boleh menggunakan tanda titik koma (;), melainkan\ntanda titik (pukul 01.00 sampai dengan pukul 06.00).",
+    "valid": true
+  },
+  {
+    "nomor": 8,
+    "tipe": "pg_sederhana",
+    "paket": "Bab I: Menulis Teks LHO - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks LHO, Sifat Objektif, Struktur LHO, Kalimat Fakta, & Kaidah Bahasa EYD Edisi V",
+    "capaian_pembelajaran": "Peserta didik memahami, menganalisis, dan mengevaluasi informasi serta struktur teks laporan hasil observasi (pembuka/definisi umum, deskripsi bagian, simpulan), membedakan kalimat fakta vs opini, dan menerapkan kaidah kebahasaan baku EYD Edisi V.",
+    "bacaan": null,
+    "teks_soal": "Perhatikan kalimat yang belum bertanda baca berikut!\nTahi lalat adalah bintik kecil berwarna kecokelatan biasanya berbentuk bulat atau oval bertekstur halus\nkasar atau menonjol\nAgar menjadi kalimat baku: \"Tahi lalat adalah bintik kecil berwarna kecokelatan, biasanya berbentuk bulat\natau oval, bertekstur halus, kasar, atau menonjol.\" maka tanda baca yang digunakan secara berurutan\nadalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "tanda koma dan tanda titik"
+      },
+      {
+        "label": "C",
+        "teks": "tanda petik tunggal dan tanda titik dua"
+      },
+      {
+        "label": "B",
+        "teks": "tanda seru dan tanda tanya"
+      },
+      {
+        "label": "D",
+        "teks": "tanda kurung siku dan tanda hubung"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "A. Kalimat tersebut membutuhkan tanda koma (,) untuk memisahkan unsur-unsur pemerincian\nsifat fisik dan tanda titik (.) pada akhir kalimat berita.",
+    "valid": true
+  },
+  {
+    "nomor": 9,
+    "tipe": "pg_sederhana",
+    "paket": "Bab I: Menulis Teks LHO - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks LHO, Sifat Objektif, Struktur LHO, Kalimat Fakta, & Kaidah Bahasa EYD Edisi V",
+    "capaian_pembelajaran": "Peserta didik memahami, menganalisis, dan mengevaluasi informasi serta struktur teks laporan hasil observasi (pembuka/definisi umum, deskripsi bagian, simpulan), membedakan kalimat fakta vs opini, dan menerapkan kaidah kebahasaan baku EYD Edisi V.",
+    "bacaan": {
+      "teks": "(1) Selain terkenal dengan kerupuk kulit, daerah Jawa Barat juga terkenal dengan makanan yang\nbernama unik dan berharga terjangkau: kerupuk miskin. (2) Kerupuk miskin (biasanya dijual seharga\nRp.5.000,00) merupakan penganan berwarna putih atau merah muda yang memiliki cita rasa gurih dan\ntekstur yang renyah. (3) Kerupuk ini terbuat dari tepung tapioka dan diolah dengan cara digoreng meng-\ngunakan pasir.\n(4) Meski biasanya pasir digunakan sebagai bahan dasar dalam pembuatan bangunan atau gedung,\nbukan berarti penggunaannya sebagai bahan dasar saat menggoreng kerupuk menjadi tidak higienis.\n(5) Pasir yang digunakan untuk menggoreng kerupuk miskin adalah pasir bersih yang sudah disangrai\nbeberapa kali hingga bersih. (6) Pasir tersebut biasanya merupakan pasir gunung.\nKelemahan penulisan ejaan/tanda baca pada kutipan teks LHO tersebut terletak pada ....",
+      "grup": "bacaan_bab1_kerupuk_miskin"
+    },
+    "teks_soal": "Perhatikan teks laporan hasil observasi berikut!\n(1) Selain terkenal dengan kerupuk kulit, daerah Jawa Barat juga terkenal dengan makanan yang\nbernama unik dan berharga terjangkau: kerupuk miskin. (2) Kerupuk miskin (biasanya dijual seharga\nRp.5.000,00) merupakan penganan berwarna putih atau merah muda yang memiliki cita rasa gurih dan\ntekstur yang renyah. (3) Kerupuk ini terbuat dari tepung tapioka dan diolah dengan cara digoreng meng-\ngunakan pasir.\n(4) Meski biasanya pasir digunakan sebagai bahan dasar dalam pembuatan bangunan atau gedung,\nbukan berarti penggunaannya sebagai bahan dasar saat menggoreng kerupuk menjadi tidak higienis.\n(5) Pasir yang digunakan untuk menggoreng kerupuk miskin adalah pasir bersih yang sudah disangrai\nbeberapa kali hingga bersih. (6) Pasir tersebut biasanya merupakan pasir gunung.\nKelemahan penulisan ejaan/tanda baca pada kutipan teks LHO tersebut terletak pada ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "kesalahan penggunaan tanda koma setelah frasa kerupuk kulit dalam kalimat (1)"
+      },
+      {
+        "label": "B",
+        "teks": "kesalahan penggunaan tanda titik setelah lambang Rp dalam kalimat (2)"
+      },
+      {
+        "label": "C",
+        "teks": "kesalahan penggunaan tanda koma setelah kata gedung dalam kalimat (4)"
+      },
+      {
+        "label": "D",
+        "teks": "kesalahan penggunaan huruf kapital pada awal kalimat (5)"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "B. Menurut kaidah EYD Edisi V, penulisan lambang mata uang rupiah (Rp) tidak diikuti tanda\ntitik dan dirangkaikan langsung dengan angka (Rp5.000,00).",
+    "valid": true
+  },
+  {
+    "nomor": 10,
+    "tipe": "pg_sederhana",
+    "paket": "Bab I: Menulis Teks LHO - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks LHO, Sifat Objektif, Struktur LHO, Kalimat Fakta, & Kaidah Bahasa EYD Edisi V",
+    "capaian_pembelajaran": "Peserta didik memahami, menganalisis, dan mengevaluasi informasi serta struktur teks laporan hasil observasi (pembuka/definisi umum, deskripsi bagian, simpulan), membedakan kalimat fakta vs opini, dan menerapkan kaidah kebahasaan baku EYD Edisi V.",
+    "bacaan": {
+      "teks": "(1) Selain terkenal dengan kerupuk kulit, daerah Jawa Barat juga terkenal dengan makanan yang\nbernama unik dan berharga terjangkau: kerupuk miskin. (2) Kerupuk miskin (biasanya dijual seharga\nRp.5.000,00) merupakan penganan berwarna putih atau merah muda yang memiliki cita rasa gurih dan\ntekstur yang renyah. (3) Kerupuk ini terbuat dari tepung tapioka dan diolah dengan cara digoreng meng-\ngunakan pasir.\n(4) Meski biasanya pasir digunakan sebagai bahan dasar dalam pembuatan bangunan atau gedung,\nbukan berarti penggunaannya sebagai bahan dasar saat menggoreng kerupuk menjadi tidak higienis.\n(5) Pasir yang digunakan untuk menggoreng kerupuk miskin adalah pasir bersih yang sudah disangrai\nbeberapa kali hingga bersih. (6) Pasir tersebut biasanya merupakan pasir gunung.\nKelemahan penulisan ejaan/tanda baca pada kutipan teks LHO tersebut terletak pada ....",
+      "grup": "bacaan_bab1_kerupuk_miskin"
+    },
+    "teks_soal": "Perhatikan kembali teks Kerupuk Miskin pada soal nomor 9! Pernyataan yang tepat mengenai jenis\nparagraf dalam kutipan teks LHO tersebut adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Paragraf 1 termasuk paragraf deskripsi, sedangkan paragraf 2 termasuk paragraf eksposisi."
+      },
+      {
+        "label": "B",
+        "teks": "Paragraf 1 termasuk paragraf eksposisi, sedangkan paragraf 2 termasuk paragraf deskripsi."
+      },
+      {
+        "label": "C",
+        "teks": "Kedua paragraf tersebut termasuk paragraf narasi fiksi."
+      },
+      {
+        "label": "D",
+        "teks": "Kedua paragraf tersebut termasuk paragraf persuasi iklan."
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "A. Paragraf 1 menggambarkan warna, cita rasa, dan tekstur kerupuk miskin (deskripsi),\nsedangkan paragraf 2 menjelaskan proses penyangraian pasir gunung yang higienis (eksposisi).",
+    "valid": true
+  },
+  {
+    "nomor": 11,
+    "tipe": "pg_sederhana",
+    "paket": "Bab I: Menulis Teks LHO - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks LHO, Sifat Objektif, Struktur LHO, Kalimat Fakta, & Kaidah Bahasa EYD Edisi V",
+    "capaian_pembelajaran": "Peserta didik memahami, menganalisis, dan mengevaluasi informasi serta struktur teks laporan hasil observasi (pembuka/definisi umum, deskripsi bagian, simpulan), membedakan kalimat fakta vs opini, dan menerapkan kaidah kebahasaan baku EYD Edisi V.",
+    "bacaan": {
+      "teks": "(Paragraf 1) Sepeda gravel adalah jenis sepeda yang makin populer dalam dunia bersepeda. Karena\ndikombinasi dari karakteristik sepeda jalan raya dan sepeda gunung, sepeda gravel memberikan ke-\nmampuan dan fleksibilitas untuk mengatasi berbagai jenis permukaan jalan.\n(Paragraf 2) Sepeda gravel didesain dengan kerangka yang lebih kuat jika dibandingkan dengan sepeda\nbalap biasa, tetapi tetap ringan agar mudah dikendalikan di segala medan, dari jalanan beraspal hingga\njalur off-road. Artinya, pengendara dapat menggunakan satu sepeda untuk berbagai tujuan dan kegiatan\nbersepeda. Selain itu, ban yang digunakan lebih lebar: berkisar antara 38–47 mm sehingga memberikan\ntraksi dan stabilitas yang lebih baik pada permukaan jalan yang kasar. Dengan ban yang lebih lebar dan\nposisi berkendara yang lebih tegak, sepeda gravel umumnya lebih nyaman untuk jarak jauh atau waktu\nberkendara yang lama jika dibandingkan dengan sepeda balap.\n(Paragraf 3) Secara keseluruhan, sepeda gravel menawarkan solusi fleksibel di dunia bersepeda dan\nmampu mengatasi berbagai jenis permukaan jalan dengan kemampuannya yang serbaguna.",
+      "grup": "bacaan_bab1_soal11"
+    },
+    "teks_soal": "Apa gagasan utama yang terdapat pada paragraf ke-2?",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Sepeda gravel hanya boleh digunakan di jalan beraspal halus."
+      },
+      {
+        "label": "B",
+        "teks": "Sepeda gravel didesain dengan kerangka yang lebih kuat dan ban yang lebih lebar agar memiliki keuntungan lebih jika dibandingkan dengan sepeda balap."
+      },
+      {
+        "label": "C",
+        "teks": "Harga sepeda gravel sangat mahal sehingga tidak ada yang membelinya."
+      },
+      {
+        "label": "D",
+        "teks": "Sepeda balap memiliki ban yang jauh lebih lebar daripada sepeda gravel."
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "B. Paragraf kedua memaparkan desain kerangka kuat namun ringan serta ukuran ban lebar\n(38–47 mm) yang memberikan keunggulan fleksibilitas dan kenyamanan dibandingkan sepeda balap.",
+    "valid": true
+  },
+  {
+    "nomor": 12,
+    "tipe": "pg_sederhana",
+    "paket": "Bab I: Menulis Teks LHO - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks LHO, Sifat Objektif, Struktur LHO, Kalimat Fakta, & Kaidah Bahasa EYD Edisi V",
+    "capaian_pembelajaran": "Peserta didik memahami, menganalisis, dan mengevaluasi informasi serta struktur teks laporan hasil observasi (pembuka/definisi umum, deskripsi bagian, simpulan), membedakan kalimat fakta vs opini, dan menerapkan kaidah kebahasaan baku EYD Edisi V.",
+    "bacaan": null,
+    "teks_soal": "Apa topik utama dari keseluruhan teks Sepeda Gravel pada soal nomor 11?",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Sejarah penemuan roda kayu pada zaman purba"
+      },
+      {
+        "label": "B",
+        "teks": "Cara menambal ban sepeda gunung yang bocor"
+      },
+      {
+        "label": "C",
+        "teks": "Kelebihan sepeda gravel daripada jenis sepeda lainnya"
+      },
+      {
+        "label": "D",
+        "teks": "Jadwal perlombaan balap sepeda tingkat provinsi"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "C. Keseluruhan teks membahas kemampuan, fleksibilitas, kenyamanan, dan keunggulan\nsepeda gravel dibandingkan jenis sepeda lain.",
+    "valid": true
+  },
+  {
+    "nomor": 13,
+    "tipe": "pg_sederhana",
+    "paket": "Bab I: Menulis Teks LHO - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks LHO, Sifat Objektif, Struktur LHO, Kalimat Fakta, & Kaidah Bahasa EYD Edisi V",
+    "capaian_pembelajaran": "Peserta didik memahami, menganalisis, dan mengevaluasi informasi serta struktur teks laporan hasil observasi (pembuka/definisi umum, deskripsi bagian, simpulan), membedakan kalimat fakta vs opini, dan menerapkan kaidah kebahasaan baku EYD Edisi V.",
+    "bacaan": {
+      "teks": "(Paragraf 1) Sepeda gravel adalah jenis sepeda yang makin populer dalam dunia bersepeda. Karena\ndikombinasi dari karakteristik sepeda jalan raya dan sepeda gunung, sepeda gravel memberikan ke-\nmampuan dan fleksibilitas untuk mengatasi berbagai jenis permukaan jalan.\n(Paragraf 2) Sepeda gravel didesain dengan kerangka yang lebih kuat jika dibandingkan dengan sepeda\nbalap biasa, tetapi tetap ringan agar mudah dikendalikan di segala medan, dari jalanan beraspal hingga\njalur off-road. Artinya, pengendara dapat menggunakan satu sepeda untuk berbagai tujuan dan kegiatan\nbersepeda. Selain itu, ban yang digunakan lebih lebar: berkisar antara 38–47 mm sehingga memberikan\ntraksi dan stabilitas yang lebih baik pada permukaan jalan yang kasar. Dengan ban yang lebih lebar dan\nposisi berkendara yang lebih tegak, sepeda gravel umumnya lebih nyaman untuk jarak jauh atau waktu\nberkendara yang lama jika dibandingkan dengan sepeda balap.\n(Paragraf 3) Secara keseluruhan, sepeda gravel menawarkan solusi fleksibel di dunia bersepeda dan\nmampu mengatasi berbagai jenis permukaan jalan dengan kemampuannya yang serbaguna.",
+      "grup": "bacaan_bab1_soal11"
+    },
+    "teks_soal": "Pernyataan yang tepat terkait struktur teks LHO Sepeda Gravel pada soal nomor 11 adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Paragraf 1 merupakan bagian simpulan akhir laporan."
+      },
+      {
+        "label": "B",
+        "teks": "Paragraf 2 merupakan bagian deskripsi bagian (isi) karena memerinci bagian kerangka, ban, dan posisi berkendara sepeda gravel."
+      },
+      {
+        "label": "C",
+        "teks": "Paragraf 2 merupakan bagian definisi umum karena memuat pengertian dasar."
+      },
+      {
+        "label": "D",
+        "teks": "Paragraf 3 merupakan bagian komplikasi cerita."
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "B. Paragraf 1 adalah Definisi Umum, Paragraf 2 adalah Deskripsi Bagian (Isi) yang memerinci\nspesifikasi kerangka dan ban, sedangkan Paragraf 3 adalah Simpulan.",
+    "valid": true
+  },
+  {
+    "nomor": 14,
+    "tipe": "pg_sederhana",
+    "paket": "Bab I: Menulis Teks LHO - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks LHO, Sifat Objektif, Struktur LHO, Kalimat Fakta, & Kaidah Bahasa EYD Edisi V",
+    "capaian_pembelajaran": "Peserta didik memahami, menganalisis, dan mengevaluasi informasi serta struktur teks laporan hasil observasi (pembuka/definisi umum, deskripsi bagian, simpulan), membedakan kalimat fakta vs opini, dan menerapkan kaidah kebahasaan baku EYD Edisi V.",
+    "bacaan": {
+      "teks": "Scribd 997810237 No. 1–3]\nnomor 14 dan 15!\nWACANA LITERASI MEMBACA: WACANA LITERASI MEMBACA: KEANEKARAGAMAN HAYATI LAUT\nRAJA AMPAT\n(Paragraf 1) Kepulauan Raja Ampat yang terletak di Provinsi Papua Barat Daya merupakan kawasan perairan\ntropis yang berada tepat di jantung Segitiga Terumbu Karang Dunia (Coral Triangle). Berdasarkan hasil obser-\nvasi lembaga konservasi kelautan internasional, perairan Raja Ampat dijuluki sebagai “Pabrik Spesies” bawah\nlaut karena arus laut dalam yang hangat dan kaya nutrisi mengalir terus-menerus di sela-sela gugusan pulau\nkarstnya.\n(Paragraf 2) Kekayaan terumbu karang di perairan ini mencapai 553 spesies karang keras (Scleractinia), atau\nsetara dengan 75 persen dari seluruh spesies karang yang telah teridentifikasi di dunia. Koloni karang meja\n(Acropora), karang otak, dan karang kipas tumbuh rapat pada kedalaman 2 hingga 30 meter dengan kondisi\ntutupan karang hidup yang sangat sehat karena rendahnya tingkat pencemaran industri.\n(Paragraf 3) Selain terumbu karang, ekosistem Raja Ampat menjadi habitat bagi lebih dari 1.600 spesies ikan\nkarang, 699 spesies moluska (hewan lunak), dan 5 spesies penyu laut langka termasuk penyu belimbing (Der-\nmochelys coriacea). Di perairan dangkal berpasir juga ditemukan spesies endemik hiu berjalan (Hemiscyllium\nfreycineti) yang menggunakan sirip dadanya untuk merayap di atas rataan terumbu saat air laut surut.\n(Paragraf 4) Keanekaragaman hayati yang luar biasa tersebut memberikan manfaat ekologis dan ekonomis\nyang sangat tinggi. Terumbu karang yang sehat berfungsi sebagai pelindung alami pesisir dari gelombang\nbesar sekaligus menjadi sumber mata pencaharian berkelanjutan bagi masyarakat adat melalui ekowisata\nbahari dan sistem konservasi tradisional Sasi Laut.\nPernyataan yang sesuai dengan data kuantitatif dan fakta ilmiah pada Paragraf 2 dan Paragraf 3 wacana\nLHO di atas adalah ....",
+      "grup": "bacaan_bab1_raja_ampat"
+    },
+    "teks_soal": "LHO di atas adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Perairan Raja Ampat hanya dihuni oleh 5 spesies ikan karang karena tingginya pencemaran limbah pabrik"
+      },
+      {
+        "label": "B",
+        "teks": "Perairan Raja Ampat memiliki 553 spesies karang keras (75% spesies karang dunia), lebih dari 1.600 spesies ikan karang, serta satwa endemik hiu berjalan (Hemiscyllium freycineti) yang merayap dengan sirip dadanya"
+      },
+      {
+        "label": "C",
+        "teks": "Hiu berjalan (Hemiscyllium freycineti) hidup di puncak bukit kapur dan bernapas menggunakan paru- paru"
+      },
+      {
+        "label": "D",
+        "teks": "Sistem konservasi tradisional Sasi Laut bertujuan menangkap seluruh penyu belimbing hingga punah"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "B. Data kuantitatif pada Paragraf 2 menyebutkan 553 spesies karang keras (75% dunia), dan\nParagraf 3 menyebutkan >1.600 spesies ikan karang serta hiu berjalan (Hemiscyllium freycineti).",
+    "valid": true
+  },
+  {
+    "nomor": 15,
+    "tipe": "pg_sederhana",
+    "paket": "Bab I: Menulis Teks LHO - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks LHO, Sifat Objektif, Struktur LHO, Kalimat Fakta, & Kaidah Bahasa EYD Edisi V",
+    "capaian_pembelajaran": "Peserta didik memahami, menganalisis, dan mengevaluasi informasi serta struktur teks laporan hasil observasi (pembuka/definisi umum, deskripsi bagian, simpulan), membedakan kalimat fakta vs opini, dan menerapkan kaidah kebahasaan baku EYD Edisi V.",
+    "bacaan": {
+      "teks": "Scribd 997810237 No. 1–3]\nnomor 14 dan 15!\nWACANA LITERASI MEMBACA: WACANA LITERASI MEMBACA: KEANEKARAGAMAN HAYATI LAUT\nRAJA AMPAT\n(Paragraf 1) Kepulauan Raja Ampat yang terletak di Provinsi Papua Barat Daya merupakan kawasan perairan\ntropis yang berada tepat di jantung Segitiga Terumbu Karang Dunia (Coral Triangle). Berdasarkan hasil obser-\nvasi lembaga konservasi kelautan internasional, perairan Raja Ampat dijuluki sebagai “Pabrik Spesies” bawah\nlaut karena arus laut dalam yang hangat dan kaya nutrisi mengalir terus-menerus di sela-sela gugusan pulau\nkarstnya.\n(Paragraf 2) Kekayaan terumbu karang di perairan ini mencapai 553 spesies karang keras (Scleractinia), atau\nsetara dengan 75 persen dari seluruh spesies karang yang telah teridentifikasi di dunia. Koloni karang meja\n(Acropora), karang otak, dan karang kipas tumbuh rapat pada kedalaman 2 hingga 30 meter dengan kondisi\ntutupan karang hidup yang sangat sehat karena rendahnya tingkat pencemaran industri.\n(Paragraf 3) Selain terumbu karang, ekosistem Raja Ampat menjadi habitat bagi lebih dari 1.600 spesies ikan\nkarang, 699 spesies moluska (hewan lunak), dan 5 spesies penyu laut langka termasuk penyu belimbing (Der-\nmochelys coriacea). Di perairan dangkal berpasir juga ditemukan spesies endemik hiu berjalan (Hemiscyllium\nfreycineti) yang menggunakan sirip dadanya untuk merayap di atas rataan terumbu saat air laut surut.\n(Paragraf 4) Keanekaragaman hayati yang luar biasa tersebut memberikan manfaat ekologis dan ekonomis\nyang sangat tinggi. Terumbu karang yang sehat berfungsi sebagai pelindung alami pesisir dari gelombang\nbesar sekaligus menjadi sumber mata pencaharian berkelanjutan bagi masyarakat adat melalui ekowisata\nbahari dan sistem konservasi tradisional Sasi Laut.\nPernyataan yang sesuai dengan data kuantitatif dan fakta ilmiah pada Paragraf 2 dan Paragraf 3 wacana\nLHO di atas adalah ....",
+      "grup": "bacaan_bab1_raja_ampat"
+    },
+    "teks_soal": "Urutan struktur Teks Laporan Hasil Observasi (LHO) pada wacana \"Keanekaragaman Hayati Laut\nRaja Ampat\" di soal nomor 14 yang paling tepat adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Isu (Paragraf 1) →Argumen Pro (Paragraf 2) →Argumen Kontra (Paragraf 3–4)"
+      },
+      {
+        "label": "B",
+        "teks": "Deskripsi Manfaat (Paragraf 1) →Definisi Umum (Paragraf 2–3) →Langkah Kerja (Paragraf 4)"
+      },
+      {
+        "label": "C",
+        "teks": "Orientasi (Paragraf 1) →Komplikasi (Paragraf 2–3) →Resolusi (Paragraf 4)"
+      },
+      {
+        "label": "D",
+        "teks": "Definisi Umum / Pernyataan Umum (Paragraf 1) →Deskripsi Bagian (Paragraf 2 tentang flora/terumbu karang & Paragraf 3 tentang fauna laut) →Deskripsi Manfaat / Simpulan (Paragraf 4)"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Paragraf 1 menyajikan gambaran umum lokasi dan klasifikasi kawasan Raja Ampat (Defin-\nisi Umum), Paragraf 2–3 memerinci bagian-bagian ekosistemnya berupa karang dan satwa laut (Deskripsi\nBagian), serta Paragraf 4 menguraikan manfaat ekologis dan ekonomisnya (Deskripsi Manfaat).",
+    "valid": true
+  },
+  {
+    "nomor": 16,
+    "tipe": "pg_sederhana",
+    "paket": "Bab I: Menulis Teks LHO - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks LHO, Sifat Objektif, Struktur LHO, Kalimat Fakta, & Kaidah Bahasa EYD Edisi V",
+    "capaian_pembelajaran": "Peserta didik memahami, menganalisis, dan mengevaluasi informasi serta struktur teks laporan hasil observasi (pembuka/definisi umum, deskripsi bagian, simpulan), membedakan kalimat fakta vs opini, dan menerapkan kaidah kebahasaan baku EYD Edisi V.",
+    "bacaan": null,
+    "teks_soal": "Cermatilah perbandingan dua teks Laporan Hasil Observasi (LHO) satwa berikut!\nTEKS 1: KOMODO (VARANUS KOMODOENSIS)\nTEKS 2: LUMBA-LUMBA HIDUNG BOTOL\nKomodo (Varanus komodoensis) adalah spesies bi-\nawak besar purba yang merupakan satwa endemik di\nPulau Komodo, Rinca, Flores, dan Gili Motang, Nusa\nTenggara Timur. Kadal terbesar di dunia ini dapat tum-\nbuh mencapai panjang 3 meter dengan bobot tubuh\nsekitar 70 hingga 90 kilogram.\nKomodo termasuk hewan reptilia berdarah dingin\n(poikiloterm) yang berkembang biak dengan cara\nbertelur (ovipar). Dalam berburu mangsa seperti rusa\ndan babi hutan, komodo mengandalkan lidah berca-\nbang sebagai indra penciuman tajam serta kelenjar\nbisa beracun pada rahang bawahnya.\nLumba-lumba hidung botol (Tursiops truncatus) meru-\npakan mamalia laut cerdas yang hidup berkelompok di\nperairan hangat dan tropis di seluruh dunia. Panjang\ntubuh lumba-lumba dewasa berkisar antara 2 hingga\n4 meter dengan berat mencapai 150 hingga 300 kilo-\ngram.\nBerbeda dengan ikan yang bernapas menggunakan\ninsang dan bertelur, lumba-lumba bernapas meng-\ngunakan paru-paru melalui lubang sembur di atas\nkepalanya\nserta\nberkembang\nbiak\ndengan\ncara\nmelahirkan (vivipar). Lumba-lumba menggunakan sis-\ntem sonar (ekolokasi) untuk mendeteksi keberadaan\nmangsa di laut.\nPersamaan aspek perincian struktur dan perbedaan klasifikasi biologis objek pada kedua teks LHO\ndi atas adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Persamaan: keduanya membahas cara memelihara hewan di akuarium rumah; Perbedaan: Teks 1 menggunakan bahasa puisi, sedangkan Teks 2 menggunakan bahasa iklan"
+      },
+      {
+        "label": "B",
+        "teks": "Persamaan: keduanya memerinci nama ilmiah, ukuran fisik (panjang & bobot), cara berkembang biak, dan mekanisme berburu mangsa; Perbedaan: Teks 1 mengobservasi satwa reptilia darat endemik yang bertelur (ovipar), sedangkan Teks 2 mengobservasi mamalia laut yang melahirkan (vivipar) dan bernapas dengan paru-paru"
+      },
+      {
+        "label": "C",
+        "teks": "Persamaan: keduanya merupakan hewan pemakan tumbuhan (herbivor); Perbedaan: Teks 1 hidup di kutub utara, sedangkan Teks 2 hidup di padang pasir"
+      },
+      {
+        "label": "D",
+        "teks": "Kedua teks tidak mencantumkan data kuantitatif ukuran tubuh maupun istilah ilmiah"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "B. Kedua teks LHO disusun dengan pola klasifikasi ilmiah yang sejajar (nama Latin, habitat,\nukuran panjang/bobot, reproduksi, dan cara mendeteksi mangsa), namun objeknya kontras: Komodo (reptilia\ndarat ovipar) vs Lumba-lumba (mamalia laut vivipar berekokasi).",
+    "valid": true
+  },
+  {
+    "nomor": 17,
+    "tipe": "pg_sederhana",
+    "paket": "Bab I: Menulis Teks LHO - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks LHO, Sifat Objektif, Struktur LHO, Kalimat Fakta, & Kaidah Bahasa EYD Edisi V",
+    "capaian_pembelajaran": "Peserta didik memahami, menganalisis, dan mengevaluasi informasi serta struktur teks laporan hasil observasi (pembuka/definisi umum, deskripsi bagian, simpulan), membedakan kalimat fakta vs opini, dan menerapkan kaidah kebahasaan baku EYD Edisi V.",
+    "bacaan": null,
+    "teks_soal": "Perhatikan kutipan teks LHO berikut!\nPLTU batu bara merupakan perangkat yang melibatkan pembakaran batu bara di dalam tungku untuk\nmenghasilkan uap. Uap yang tercipta selanjutnya akan mendorong turbin yang terhubung dengan gen-\nerator listrik. Batu bara adalah bahan bakar fosil dengan persediaan terbanyak dan terdistribusi paling\nluas di dunia. Sayangnya, pembakaran batu bara menghasilkan sejumlah besar gas rumah kaca dan\npolutan lainnya.\nManakah pernyataan yang tepat terkait jenis paragraf dalam bacaan tersebut?",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Paragraf berjenis deskripsi karena melukiskan keindahan warna batu bara."
+      },
+      {
+        "label": "B",
+        "teks": "Paragraf berjenis eksposisi karena berisi paparan yang bertujuan menjelaskan informasi cara kerja dan dampak PLTU batu bara secara objektif."
+      },
+      {
+        "label": "C",
+        "teks": "Paragraf berjenis narasi karena menceritakan dongeng penambang batu bara."
+      },
+      {
+        "label": "D",
+        "teks": "Paragraf berjenis persuasi iklan penjualan listrik."
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "B. Paragraf tersebut memaparkan informasi mekanisme kerja PLTU batu bara serta\ndampaknya secara informatif dan objektif, sehingga termasuk paragraf eksposisi.",
+    "valid": true
+  },
+  {
+    "nomor": 18,
+    "tipe": "pg_sederhana",
+    "paket": "Bab I: Menulis Teks LHO - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks LHO, Sifat Objektif, Struktur LHO, Kalimat Fakta, & Kaidah Bahasa EYD Edisi V",
+    "capaian_pembelajaran": "Peserta didik memahami, menganalisis, dan mengevaluasi informasi serta struktur teks laporan hasil observasi (pembuka/definisi umum, deskripsi bagian, simpulan), membedakan kalimat fakta vs opini, dan menerapkan kaidah kebahasaan baku EYD Edisi V.",
+    "bacaan": null,
+    "teks_soal": "Cermatilah kutipan teks deskripsi struktur kelembagaan berikut!\nWACANA LITERASI MEMBACA: STRUKTUR KOMITE KONSERVASI BUDAYA (KKB)\nKomite Konservasi Budaya (KKB) dipimpin oleh seorang Ketua Komite yang bertanggung jawab langsung\nkepada Dewan Penasihat. Di bawah Ketua Komite, terdapat dua divisi utama yang memiliki otoritas setara,\nyaitu Divisi Penelitian & Dokumentasi serta Divisi Pelestarian & Aksi.\nDivisi Penelitian & Dokumentasi dipimpin oleh Manajer Penelitian dan membawahi dua unit operasional,\nyaitu Unit Arkeologi dan Unit Filologi.\nSementara itu, Divisi Pelestarian & Aksi dipimpin oleh Manajer\nPelestarian dan memiliki tiga koordinator lapangan, yaitu Koordinator Situs Sejarah, Koordinator Kesenian\nTradisional, dan Koordinator Bahasa Lokal. Semua unit dan koordinator bertanggung jawab langsung\nkepada manajer divisi masing-masing.\nRumusan bagan struktur organisasi yang paling sesuai dengan ilustrasi teks di atas adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Dewan Penasihat →Ketua Komite →(Divisi Penelitian: Koord. Situs Sejarah, Koord. Kesenian Tradisional, Koord. Bahasa Lokal) | (Divisi Pelestarian: Unit Arkeologi, Unit Filologi)"
+      },
+      {
+        "label": "B",
+        "teks": "Ketua Komite →Dewan Penasihat →(Divisi Penelitian: Unit Arkeologi, Koord. Situs Sejarah) | (Divisi Pelestarian: Unit Filologi, Koord. Bahasa Lokal)"
+      },
+      {
+        "label": "C",
+        "teks": "Dewan Penasihat →Ketua Komite →(Divisi Penelitian & Dokumentasi [Manajer Penelitian]: 1. Unit Arkeologi, 2. Unit Filologi) | (Divisi Pelestarian & Aksi [Manajer Pelestarian]: 1. Koord. Situs Sejarah, 2. Koord. Kesenian Tradisional, 3. Koord. Bahasa Lokal)"
+      },
+      {
+        "label": "D",
+        "teks": "Dewan Penasihat →Manajer Penelitian →(Ketua Komite: Unit Arkeologi, Koord. Kesenian) | (Divisi Pelestarian: Koord. Situs Sejarah, Koord. Bahasa Lokal)"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "C. Bagan pada pilihan C sesuai 100% dengan hierarki pada teks: Dewan Penasihat di puncak\n→Ketua Komite KKB →2 Divisi setara (Divisi Penelitian & Dokumentasi membawahi 2 unit: Unit Arkeologi &\nUnit Filologi; serta Divisi Pelestarian & Aksi membawahi 3 koordinator: Situs Sejarah, Kesenian Tradisional,\ndan Bahasa Lokal).",
+    "valid": true
+  },
+  {
+    "nomor": 19,
+    "tipe": "pg_sederhana",
+    "paket": "Bab I: Menulis Teks LHO - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks LHO, Sifat Objektif, Struktur LHO, Kalimat Fakta, & Kaidah Bahasa EYD Edisi V",
+    "capaian_pembelajaran": "Peserta didik memahami, menganalisis, dan mengevaluasi informasi serta struktur teks laporan hasil observasi (pembuka/definisi umum, deskripsi bagian, simpulan), membedakan kalimat fakta vs opini, dan menerapkan kaidah kebahasaan baku EYD Edisi V.",
+    "bacaan": null,
+    "teks_soal": "Perhatikan empat kalimat berikut!\n(1) Di dalam bus kota itu terdapat empat kursi prioritas berwarna merah di dekat pintu masuk.\n(2) Tercatat ada 35 penumpang yang terdiri atas 20 pelajar dan 15 pekerja kantoran.\n(3) Menurut perkiraan saya, sopir bus itu mungkin sedang sedih memikirkan masalah keluarganya.\n(4) Bus kota berhenti di halte selama 30 detik untuk menaikkan dan menurunkan penumpang.\nKalimat yang tidak objektif (mengandung opini/prasangka subjektif) adalah kalimat nomor ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(1)"
+      },
+      {
+        "label": "C",
+        "teks": "(3)"
+      },
+      {
+        "label": "B",
+        "teks": "(2)"
+      },
+      {
+        "label": "D",
+        "teks": "(4)"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "C. Kalimat (3) mengandung tebakan subjektif penulis (Menurut perkiraan saya ... mungkin\nsedang sedih) yang tidak dapat dibuktikan secara faktual dari pengamatan.",
+    "valid": true
+  },
+  {
+    "nomor": 20,
+    "tipe": "pg_sederhana",
+    "paket": "Bab I: Menulis Teks LHO - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks LHO, Sifat Objektif, Struktur LHO, Kalimat Fakta, & Kaidah Bahasa EYD Edisi V",
+    "capaian_pembelajaran": "Peserta didik memahami, menganalisis, dan mengevaluasi informasi serta struktur teks laporan hasil observasi (pembuka/definisi umum, deskripsi bagian, simpulan), membedakan kalimat fakta vs opini, dan menerapkan kaidah kebahasaan baku EYD Edisi V.",
+    "bacaan": null,
+    "teks_soal": "Perhatikan perbandingan dua teks hasil observasi budi daya tanaman hidroponik berikut!\n\nTEKS 1: HIDROPONIK DI PERKOTAAN\nTEKS 2: HIDROPONIK DI PEDESAAN\nMasyarakat perkotaan memanfaatkan teknik budi daya\ntanaman hidroponik untuk menyiasati keterbatasan la-\nhan pekarangan rumah yang sempit. Pipa-pipa par-\nalon disusun secara vertikal menempel pada dinding\npagar atau teras rumah sehingga tetap hemat ruang.\nSelain menghasilkan sayuran bebas pestisida seperti\nselada dan pakcoy untuk konsumsi keluarga, instalasi\nhidroponik di perkotaan juga kerap dijadikan peluang\nusaha agribisnis modern yang dipasarkan ke pasar\nswalayan.\nDi kawasan pedesaan yang sebenarnya masih memi-\nliki lahan tanah luas, sejumlah kelompok tani muda\nmulai mengembangkan budi daya hidroponik menggu-\nnakan rangka bambu lokal dan rumah kaca sederhana\n(greenhouse).\nTujuan\nutama\npenerapan\nhidroponik\ndi\ndesa\nini\nbukan karena sempitnya lahan,\nmelainkan untuk\nmenjaga kesinambungan panen sayuran berkualitas\ntinggi sepanjang tahun tanpa terpengaruh serangan\nhama tanah maupun perubahan musim kemarau dan\npenghujan.\nPerbedaan tujuan utama/latar belakang pemanfaatan tanaman hidroponik antara masyarakat pada\nTeks 1 dan Teks 2 di atas adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Pada Teks 1, tanaman yang ditanam adalah pohon jati; sedangkan pada Teks 2, tanaman yang ditanam adalah pohon kelapa"
+      },
+      {
+        "label": "B",
+        "teks": "Pada Teks 1, hidroponik menggunakan media tanah liat; sedangkan pada Teks 2, hidroponik dilarang menggunakan air"
+      },
+      {
+        "label": "C",
+        "teks": "Pada Teks 1, hidroponik dimanfaatkan untuk menyiasati keterbatasan lahan sempit di perkotaan dengan instalasi pipa vertikal; sedangkan pada Teks 2, hidroponik dimanfaatkan untuk menjaga kesta- bilan panen sepanjang musim dan menghindari hama tanah di pedesaan dengan memanfaatkan rangka bambu lokal"
+      },
+      {
+        "label": "D",
+        "teks": "Kedua teks menyimpulkan bahwa tanaman hidroponik hanya dapat tumbuh di daerah bersalju"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "C. Perbandingan isi kedua teks menunjukkan perbedaan motivasi adaptasi: warga kota (Teks\n1) memakai hidroponik vertikal karena lahan pekarangan sempit, sedangkan petani muda desa (Teks 2)\nmemakai hidroponik bambu agar panen stabil tanpa gangguan musim dan hama tanah.",
+    "valid": true
+  },
+  {
+    "nomor": 21,
+    "tipe": "pg_sederhana",
+    "paket": "Bab I: Menulis Teks LHO - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks LHO, Sifat Objektif, Struktur LHO, Kalimat Fakta, & Kaidah Bahasa EYD Edisi V",
+    "capaian_pembelajaran": "Peserta didik memahami, menganalisis, dan mengevaluasi informasi serta struktur teks laporan hasil observasi (pembuka/definisi umum, deskripsi bagian, simpulan), membedakan kalimat fakta vs opini, dan menerapkan kaidah kebahasaan baku EYD Edisi V.",
+    "bacaan": {
+      "teks": "Scribd 1009621080 Paket 2 No. 4–6]\n23!\nWACANA LITERASI MEMBACA: WACANA LITERASI MEMBACA: EKOSISTEM MANGROVE — BEN-\nTENG ALAMI PESISIR INDONESIA\n(Paragraf 1) Ekosistem mangrove atau hutan bakau adalah komunitas vegetasi pantai tropis yang tumbuh\ndi zona intertidal (daerah pasang surut air laut) dengan substrat tanah berlumpur dan kadar garam (salin-\nitas) tinggi. Indonesia tercatat memiliki kawasan hutan mangrove terluas di dunia, yakni mencapai sekitar\n3, 36 juta hektare atau lebih dari 20 persen total luas mangrove global.\n(Paragraf 2) Tanaman penyusun ekosistem mangrove diklasifikasikan ke dalam beberapa marga utama\nberdasarkan bentuk sistem perakarannya. Marga Rhizophora (bakau sejati) memiliki akar tunjang yang men-\ncengkeram lumpur seperti kaki laba-laba. Marga Avicennia (api-api) dan Sonneratia (pedada) memiliki akar\nnapas (pneumatofor) yang mencuat vertikal ke permukaan lumpur untuk menyerap oksigen saat air laut surut,\nsedangkan marga Bruguiera (tancang) memiliki akar lutut yang berlekuk-lekuk.\n(Paragraf 3) Dari segi fungsi biologis dan fisik, hutan mangrove berperan sebagai daerah asuhan (nursery\nground), daerah mencari makan (feeding ground), dan daerah pemijahan (spawning ground) bagi berbagai\njenis ikan, udang, serta kepiting bakau. Selain menahan abrasi gelombang laut, hutan mangrove juga meru-\npakan penyerap karbon biru (blue carbon) yang mampu menyimpan emisi karbon empat hingga lima kali lebih\nbesar dibandingkan hutan daratan tropis.\nHubungan klasifikasi antara kata \"Tanaman penyusun ekosistem mangrove\" dan kata \"Rhizophora,\nAvicennia, Sonneratia, Bruguiera\" pada Paragraf 2 wacana di atas merupakan hubungan ....",
+      "grup": "bacaan_bab1_mangrove"
+    },
+    "teks_soal": "Bacalah wacana Teks Laporan Hasil Observasi (LHO) berikut untuk menjawab soal nomor 21, 22, dan\n23!\nWACANA LITERASI MEMBACA: WACANA LITERASI MEMBACA: EKOSISTEM MANGROVE — BEN-\nTENG ALAMI PESISIR INDONESIA\n(Paragraf 1) Ekosistem mangrove atau hutan bakau adalah komunitas vegetasi pantai tropis yang tumbuh\ndi zona intertidal (daerah pasang surut air laut) dengan substrat tanah berlumpur dan kadar garam (salin-\nitas) tinggi. Indonesia tercatat memiliki kawasan hutan mangrove terluas di dunia, yakni mencapai sekitar\n3, 36 juta hektare atau lebih dari 20 persen total luas mangrove global.\n(Paragraf 2) Tanaman penyusun ekosistem mangrove diklasifikasikan ke dalam beberapa marga utama\nberdasarkan bentuk sistem perakarannya. Marga Rhizophora (bakau sejati) memiliki akar tunjang yang men-\ncengkeram lumpur seperti kaki laba-laba. Marga Avicennia (api-api) dan Sonneratia (pedada) memiliki akar\nnapas (pneumatofor) yang mencuat vertikal ke permukaan lumpur untuk menyerap oksigen saat air laut surut,\nsedangkan marga Bruguiera (tancang) memiliki akar lutut yang berlekuk-lekuk.\n(Paragraf 3) Dari segi fungsi biologis dan fisik, hutan mangrove berperan sebagai daerah asuhan (nursery\nground), daerah mencari makan (feeding ground), dan daerah pemijahan (spawning ground) bagi berbagai\njenis ikan, udang, serta kepiting bakau. Selain menahan abrasi gelombang laut, hutan mangrove juga meru-\npakan penyerap karbon biru (blue carbon) yang mampu menyimpan emisi karbon empat hingga lima kali lebih\nbesar dibandingkan hutan daratan tropis.\nHubungan klasifikasi antara kata \"Tanaman penyusun ekosistem mangrove\" dan kata \"Rhizophora,\nAvicennia, Sonneratia, Bruguiera\" pada Paragraf 2 wacana di atas merupakan hubungan ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Kalimat opini subjektif yang tidak dapat dibuktikan secara ilmiah"
+      },
+      {
+        "label": "B",
+        "teks": "Antonim (lawan kata) yang saling bertentangan maknanya"
+      },
+      {
+        "label": "C",
+        "teks": "Majas metafora dan majas ironi dalam karya sastra fiksi"
+      },
+      {
+        "label": "D",
+        "teks": "Kata umum (hipernim) dan kata khusus (hiponim) yang dikelompokkan berdasarkan ciri morfologi sistem perakarannya"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Frasa Tanaman penyusun ekosistem mangrove adalah kelas kata umum (hipernim), sedan-\ngkan Rhizophora, Avicennia, Sonneratia, dan Bruguiera adalah anggota rincian khususnya (hiponim) yang\ndiklasifikasikan menurut tipe akarnya.",
+    "valid": true
+  },
+  {
+    "nomor": 22,
+    "tipe": "pg_sederhana",
+    "paket": "Bab I: Menulis Teks LHO - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks LHO, Sifat Objektif, Struktur LHO, Kalimat Fakta, & Kaidah Bahasa EYD Edisi V",
+    "capaian_pembelajaran": "Peserta didik memahami, menganalisis, dan mengevaluasi informasi serta struktur teks laporan hasil observasi (pembuka/definisi umum, deskripsi bagian, simpulan), membedakan kalimat fakta vs opini, dan menerapkan kaidah kebahasaan baku EYD Edisi V.",
+    "bacaan": {
+      "teks": "Scribd 1009621080 Paket 2 No. 4–6]\n23!\nWACANA LITERASI MEMBACA: WACANA LITERASI MEMBACA: EKOSISTEM MANGROVE — BEN-\nTENG ALAMI PESISIR INDONESIA\n(Paragraf 1) Ekosistem mangrove atau hutan bakau adalah komunitas vegetasi pantai tropis yang tumbuh\ndi zona intertidal (daerah pasang surut air laut) dengan substrat tanah berlumpur dan kadar garam (salin-\nitas) tinggi. Indonesia tercatat memiliki kawasan hutan mangrove terluas di dunia, yakni mencapai sekitar\n3, 36 juta hektare atau lebih dari 20 persen total luas mangrove global.\n(Paragraf 2) Tanaman penyusun ekosistem mangrove diklasifikasikan ke dalam beberapa marga utama\nberdasarkan bentuk sistem perakarannya. Marga Rhizophora (bakau sejati) memiliki akar tunjang yang men-\ncengkeram lumpur seperti kaki laba-laba. Marga Avicennia (api-api) dan Sonneratia (pedada) memiliki akar\nnapas (pneumatofor) yang mencuat vertikal ke permukaan lumpur untuk menyerap oksigen saat air laut surut,\nsedangkan marga Bruguiera (tancang) memiliki akar lutut yang berlekuk-lekuk.\n(Paragraf 3) Dari segi fungsi biologis dan fisik, hutan mangrove berperan sebagai daerah asuhan (nursery\nground), daerah mencari makan (feeding ground), dan daerah pemijahan (spawning ground) bagi berbagai\njenis ikan, udang, serta kepiting bakau. Selain menahan abrasi gelombang laut, hutan mangrove juga meru-\npakan penyerap karbon biru (blue carbon) yang mampu menyimpan emisi karbon empat hingga lima kali lebih\nbesar dibandingkan hutan daratan tropis.\nHubungan klasifikasi antara kata \"Tanaman penyusun ekosistem mangrove\" dan kata \"Rhizophora,\nAvicennia, Sonneratia, Bruguiera\" pada Paragraf 2 wacana di atas merupakan hubungan ....",
+      "grup": "bacaan_bab1_mangrove"
+    },
+    "teks_soal": "Makna istilah teknis zona intertidal pada Paragraf 1 dan pneumatofor pada Paragraf 2 berdasarkan\nkonteks kalimat penjelas di dalam wacana soal nomor 21 adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Zona intertidal adalah wilayah pesisir yang dipengaruhi oleh pasang surut air laut; sedangkan pneu- matofor adalah akar napas yang tumbuh mencuat vertikal ke atas permukaan lumpur untuk menyerap oksigen"
+      },
+      {
+        "label": "B",
+        "teks": "Zona intertidal adalah puncak pegunungan berapi; sedangkan pneumatofor adalah daun kering yang gugur di musim kemarau"
+      },
+      {
+        "label": "C",
+        "teks": "Zona intertidal adalah dasar palung samudra sedalam 10 kilometer; sedangkan pneumatofor adalah alat pancing tradisional nelayan"
+      },
+      {
+        "label": "D",
+        "teks": "Kedua istilah tersebut bermakna jenis pupuk kimia buatan pabrik"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "A. Teks LHO mendefinisikan kedua istilah teknis tersebut secara eksplisit di dalam kurung\ndan klausa penjelasnya: zona intertidal (daerah pasang surut air laut) dan akar napas (pneumatofor) yang\nmencuat vertikal ke permukaan lumpur untuk menyerap oksigen.",
+    "valid": true
+  },
+  {
+    "nomor": 23,
+    "tipe": "pg_sederhana",
+    "paket": "Bab I: Menulis Teks LHO - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks LHO, Sifat Objektif, Struktur LHO, Kalimat Fakta, & Kaidah Bahasa EYD Edisi V",
+    "capaian_pembelajaran": "Peserta didik memahami, menganalisis, dan mengevaluasi informasi serta struktur teks laporan hasil observasi (pembuka/definisi umum, deskripsi bagian, simpulan), membedakan kalimat fakta vs opini, dan menerapkan kaidah kebahasaan baku EYD Edisi V.",
+    "bacaan": {
+      "teks": "Scribd 1009621080 Paket 2 No. 4–6]\n23!\nWACANA LITERASI MEMBACA: WACANA LITERASI MEMBACA: EKOSISTEM MANGROVE — BEN-\nTENG ALAMI PESISIR INDONESIA\n(Paragraf 1) Ekosistem mangrove atau hutan bakau adalah komunitas vegetasi pantai tropis yang tumbuh\ndi zona intertidal (daerah pasang surut air laut) dengan substrat tanah berlumpur dan kadar garam (salin-\nitas) tinggi. Indonesia tercatat memiliki kawasan hutan mangrove terluas di dunia, yakni mencapai sekitar\n3, 36 juta hektare atau lebih dari 20 persen total luas mangrove global.\n(Paragraf 2) Tanaman penyusun ekosistem mangrove diklasifikasikan ke dalam beberapa marga utama\nberdasarkan bentuk sistem perakarannya. Marga Rhizophora (bakau sejati) memiliki akar tunjang yang men-\ncengkeram lumpur seperti kaki laba-laba. Marga Avicennia (api-api) dan Sonneratia (pedada) memiliki akar\nnapas (pneumatofor) yang mencuat vertikal ke permukaan lumpur untuk menyerap oksigen saat air laut surut,\nsedangkan marga Bruguiera (tancang) memiliki akar lutut yang berlekuk-lekuk.\n(Paragraf 3) Dari segi fungsi biologis dan fisik, hutan mangrove berperan sebagai daerah asuhan (nursery\nground), daerah mencari makan (feeding ground), dan daerah pemijahan (spawning ground) bagi berbagai\njenis ikan, udang, serta kepiting bakau. Selain menahan abrasi gelombang laut, hutan mangrove juga meru-\npakan penyerap karbon biru (blue carbon) yang mampu menyimpan emisi karbon empat hingga lima kali lebih\nbesar dibandingkan hutan daratan tropis.\nHubungan klasifikasi antara kata \"Tanaman penyusun ekosistem mangrove\" dan kata \"Rhizophora,\nAvicennia, Sonneratia, Bruguiera\" pada Paragraf 2 wacana di atas merupakan hubungan ....",
+      "grup": "bacaan_bab1_mangrove"
+    },
+    "teks_soal": "Berdasarkan Paragraf 3 wacana pada soal nomor 21, mengapa ekosistem mangrove disebut memiliki\nperan ganda bagi ketahanan pangan nelayan sekaligus pengendalian perubahan iklim global?",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Karena pohon mangrove dapat menghasilkan beras dan gandum secara langsung di ujung rantingnya"
+      },
+      {
+        "label": "B",
+        "teks": "Karena perairan mangrove menjadi tempat pemijahan, asuhan, dan mencari makan bagi ikan/udang/kepiting (mendukung hasil tangkapan nelayan), sekaligus mampu menyerap dan menyimpan blue carbon 4–5 kali lebih besar daripada hutan daratan (mengurangi gas rumah kaca pemicu perubahan iklim)"
+      },
+      {
+        "label": "C",
+        "teks": "Karena hutan mangrove memantulkan sinar matahari kembali ke ruang angkasa menggunakan cermin kaca"
+      },
+      {
+        "label": "D",
+        "teks": "Karena nelayan dianjurkan menebang seluruh pohon bakau untuk dijadikan kayu bakar"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "B. Paragraf 3 memaparkan dua manfaat ekologis utama: fungsi biologis sebagai nursery,\nfeeding, dan spawning ground biota laut ekonomis (ketahanan pangan nelayan) serta fungsi penyerapan blue\ncarbon 4–5 kali lipat hutan daratan (mitigasi iklim).",
+    "valid": true
+  },
+  {
+    "nomor": 24,
+    "tipe": "pg_sederhana",
+    "paket": "Bab I: Menulis Teks LHO - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks LHO, Sifat Objektif, Struktur LHO, Kalimat Fakta, & Kaidah Bahasa EYD Edisi V",
+    "capaian_pembelajaran": "Peserta didik memahami, menganalisis, dan mengevaluasi informasi serta struktur teks laporan hasil observasi (pembuka/definisi umum, deskripsi bagian, simpulan), membedakan kalimat fakta vs opini, dan menerapkan kaidah kebahasaan baku EYD Edisi V.",
+    "bacaan": null,
+    "teks_soal": "Perhatikan perbandingan dua paragraf dalam teks LHO Observasi Terumbu Karang di Perairan Bunaken\nberikut!\nPARAGRAF A\nPARAGRAF B\nBerdasarkan\npengamatan\nmenggunakan\nmetode\nTransek Garis Singgung (Line Intercept Transect)\npada kedalaman 5 meter di Stasiun Timur Pulau\nBunaken, tercatat persentase tutupan karang hidup\nmencapai 68, 4%, karang mati tertutup alga sebesar\n14, 2%, patahan karang (rubble) sebesar 9, 1%, dan\nsubstrat pasir sebesar 8, 3%.\nSuhu air laut terukur\nstabil pada angka 28, 5◦C dengan tingkat kecerahan\nmencapai 18 meter.\nHamparan karang meja dan karang tanduk rusa\ndi Stasiun Timur Bunaken tampak bersusun indah\nmenyerupai taman bunga berwarna ungu muda, kun-\ning keemasan, dan hijau toska. Di celah-celah cabang\nkarang tersebut, puluhan ikan badut (Amphiprion ocel-\nlaris) berwarna jingga terang tampak berenang keluar-\nmasuk di sela-sela tentakel anemon laut yang melam-\nbai mengikuti arus.\nPerbedaan jenis penyajian data antara Paragraf A dan Paragraf B dalam laporan hasil observasi di atas\nadalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Kedua paragraf di atas sama sekali tidak memuat fakta hasil pengamatan"
+      },
+      {
+        "label": "B",
+        "teks": "Paragraf A menyajikan opini khayalan peneliti; sedangkan Paragraf B menyajikan rumus matematika"
+      },
+      {
+        "label": "C",
+        "teks": "Paragraf A merupakan bagian Simpulan; sedangkan Paragraf B merupakan bagian Daftar Pustaka"
+      },
+      {
+        "label": "D",
+        "teks": "Paragraf A menyajikan data kuantitatif (numerik/angka hasil pengukuran instrumen) dengan pola eksposisi ilmiah; sedangkan Paragraf B menyajikan data kualitatif (ciri bentuk, warna, dan perilaku objek) dengan pola deskripsi faktual"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Dalam Teks LHO Kelas 8, Paragraf A memaparkan angka persentase tutupan karang,\nkedalaman, dan suhu (data kuantitatif dengan gaya eksposisi), sedangkan Paragraf B melukiskan bentuk,\nwarna, dan perilaku ikan badut pada anemon (data kualitatif dengan gaya deskripsi).",
+    "valid": true
+  },
+  {
+    "nomor": 25,
+    "tipe": "pg_sederhana",
+    "paket": "Bab I: Menulis Teks LHO - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks LHO, Sifat Objektif, Struktur LHO, Kalimat Fakta, & Kaidah Bahasa EYD Edisi V",
+    "capaian_pembelajaran": "Peserta didik memahami, menganalisis, dan mengevaluasi informasi serta struktur teks laporan hasil observasi (pembuka/definisi umum, deskripsi bagian, simpulan), membedakan kalimat fakta vs opini, dan menerapkan kaidah kebahasaan baku EYD Edisi V.",
+    "bacaan": null,
+    "teks_soal": "Perhatikan kalimat hasil observasi yang masih mengandung kesalahan penulisan ejaan dan tanda baca\nberikut!\n\"Oleh karena itu tim peneliti menyimpulkan, bahwa harga bibit tanaman Bakau jenis rhizophora mu-\ncronata di koperasi pesisir adalah Rp. 3.500,00 perbatang.\"\nPerbaikan kalimat tersebut yang 100% sesuai kaidah EYD Edisi V adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "\"Oleh, karena itu tim peneliti menyimpulkan bahwa harga bibit tanaman bakau jenis rhizophora mu- cronata adalah Rp.3.500,00 perbatang.\""
+      },
+      {
+        "label": "B",
+        "teks": "\"Oleh karena itu tim peneliti menyimpulkan bahwa, harga bibit tanaman Bakau jenis Rhizophora Mu- cronata adalah Rp 3.500 per-batang.\""
+      },
+      {
+        "label": "C",
+        "teks": "\"Oleh karena itu, tim peneliti menyimpulkan bahwa harga bibit tanaman bakau jenis Rhizophora mu- cronata di koperasi pesisir adalah Rp3.500,00 per batang.\""
+      },
+      {
+        "label": "D",
+        "teks": "\"Oleh karena itu; tim peneliti menyimpulkan, bahwa harga bibit tanaman bakau adalah Rp3.500,- per batang.\""
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "C. Koreksi sesuai EYD Edisi V: (1) konjungsi antarkalimat Oleh karena itu, wajib diikuti koma,\n(2) sebelum konjungsi bahwa tidak diberi koma, (3) kata umum bakau ditulis huruf kecil, (4) nama ilmiah\nditulis miring dengan huruf awal genus kapital dan spesies kecil (Rhizophora mucronata), (5) nilai uang ditulis\nRp3.500,00 tanpa titik/spasi setelah Rp, dan (6) partikel per yang berarti ’tiap’ ditulis terpisah (per batang).",
+    "valid": true
+  },
+  {
+    "nomor": 26,
+    "tipe": "pg_sederhana",
+    "paket": "Bab I: Menulis Teks LHO - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks LHO, Sifat Objektif, Struktur LHO, Kalimat Fakta, & Kaidah Bahasa EYD Edisi V",
+    "capaian_pembelajaran": "Peserta didik memahami, menganalisis, dan mengevaluasi informasi serta struktur teks laporan hasil observasi (pembuka/definisi umum, deskripsi bagian, simpulan), membedakan kalimat fakta vs opini, dan menerapkan kaidah kebahasaan baku EYD Edisi V.",
+    "bacaan": null,
+    "teks_soal": "Perhatikan foto objek pengamatan Sepeda Gravel berikut!\nBerdasarkan teks LHO Sepeda Gravel (Brain Academy Nomor 11–13) dan gambar di atas, pernyataan\nyang benar adalah .... (Pilih lebih dari satu jawaban benar)\n\nPernyataan:\n(1) Paragraf yang memperkenalkan sepeda gravel sebagai kombinasi sepeda jalan raya dan sepeda\ngunung merupakan bagian Definisi Umum.\n(2) Paragraf yang memerinci ukuran lebar ban (38–47 mm), kerangka yang kuat tetapi ringan, dan posisi\nberkendara merupakan bagian Deskripsi Bagian (Isi).\n(3) Informasi ukuran lebar ban 38–47 mm termasuk data kuantitatif, sedangkan deskripsi kemampuan\nmelintasi jalan beraspal dan off-road termasuk data kualitatif.\n(4) Teks LHO Sepeda Gravel bertujuan menceritakan dongeng khayalan tentang sepeda yang dapat\nterbang ke angkasa.\n\nPernyataan yang tepat adalah ....",
+    "gambar": [
+      "/soal/bindo/kls8_bindo_p82_xref2671_880x880.jpeg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(1), (2), dan (3)"
+      },
+      {
+        "label": "B",
+        "teks": "(1) dan (4) saja"
+      },
+      {
+        "label": "C",
+        "teks": "(2) dan (4) saja"
+      },
+      {
+        "label": "D",
+        "teks": "(1), (2), (3), dan (4)"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "A, B, C. Pernyataan D salah karena teks LHO bersifat faktual dan nonfiksi.",
+    "valid": true
+  },
+  {
+    "nomor": 27,
+    "tipe": "pg_sederhana",
+    "paket": "Bab I: Menulis Teks LHO - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks LHO, Sifat Objektif, Struktur LHO, Kalimat Fakta, & Kaidah Bahasa EYD Edisi V",
+    "capaian_pembelajaran": "Peserta didik memahami, menganalisis, dan mengevaluasi informasi serta struktur teks laporan hasil observasi (pembuka/definisi umum, deskripsi bagian, simpulan), membedakan kalimat fakta vs opini, dan menerapkan kaidah kebahasaan baku EYD Edisi V.",
+    "bacaan": null,
+    "teks_soal": "Manakah\ndi antara pernyataan kaidah tanda baca dan ejaan dalam Teks LHO berikut yang benar? (Pilih lebih dari\nsatu jawaban benar)\n\nPernyataan:\n(1) Konjungsi antarkalimat di awal kalimat seperti Jadi, Oleh karena itu, dan Namun, wajib diikuti oleh\ntanda baca koma (,).\n(2) Penulisan lambang mata uang rupiah yang baku tidak menggunakan tanda titik dan tidak menggu-\nnakan spasi setelah lambang Rp (contoh: Rp5.000,00).\n(3) Kata berbahasa asing yang diberi imbuhan bahasa Indonesia ditulis menggunakan tanda hubung\ndan dicetak miring (contoh: meng-coding, di-charge).\n(4) Tanda titik koma (;) digunakan untuk memisahkan angka jam dan menit (pukul 01;00).\n\nPernyataan yang tepat adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(1), (2), dan (3)"
+      },
+      {
+        "label": "B",
+        "teks": "(1) dan (4) saja"
+      },
+      {
+        "label": "C",
+        "teks": "(2) dan (4) saja"
+      },
+      {
+        "label": "D",
+        "teks": "(1), (2), (3), dan (4)"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "A, B, C. Pernyataan D salah karena pemisah jam dan menit dalam bahasa Indonesia meng-\ngunakan tanda titik (pukul 01.00).",
+    "valid": true
+  },
+  {
+    "nomor": 28,
+    "tipe": "pg_sederhana",
+    "paket": "Bab I: Menulis Teks LHO - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks LHO, Sifat Objektif, Struktur LHO, Kalimat Fakta, & Kaidah Bahasa EYD Edisi V",
+    "capaian_pembelajaran": "Peserta didik memahami, menganalisis, dan mengevaluasi informasi serta struktur teks laporan hasil observasi (pembuka/definisi umum, deskripsi bagian, simpulan), membedakan kalimat fakta vs opini, dan menerapkan kaidah kebahasaan baku EYD Edisi V.",
+    "bacaan": null,
+    "teks_soal": "Tentukan apakah perny-\n\nataan analisis teks LHO berikut Benar atau Salah!\nNo.\nPernyataan Analisis Bahasa Indonesia\nBenar\nSalah\n\nPernyataan:\n(a) Dalam teks LHO Kerupuk Miskin, paragraf pertama yang melukiskan\nwarna putih/merah muda, rasa gurih, dan tekstur renyah kerupuk ter-\nmasuk paragraf deskripsi.\n(b) Paragraf yang memaparkan pengertian kondisi medis pagophagia be-\nserta kriteria gejalanya selama minimal satu bulan termasuk paragraf\neksposisi.\n(c) Kalimat “Wombat adalah marsupial Australia yang kakinya empat dan\npendek, panjang tubuhnya kira-kira 1 meter dan ekornya pendek” su-\ndah menggunakan tanda baca titik koma secara tepat.\n\nKombinasi analisis nilai kebenaran (Benar/Salah) yang tepat adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(a) Benar, (b) Benar, (c) Salah"
+      },
+      {
+        "label": "B",
+        "teks": "(a) Benar, (b) Salah, (c) Salah"
+      },
+      {
+        "label": "C",
+        "teks": "(a) Salah, (b) Benar, (c) Benar"
+      },
+      {
+        "label": "D",
+        "teks": "(a) Benar, (b) Benar, (c) Benar"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "(a) Benar, (b) Benar, (c) Salah. Kalimat Wombat pada (c) salah karena belum menggunakan\ntanda titik koma (;) sebelum klausa ekornya pendek.",
+    "valid": true
+  },
+  {
+    "nomor": 29,
+    "tipe": "pg_sederhana",
+    "paket": "Bab I: Menulis Teks LHO - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks LHO, Sifat Objektif, Struktur LHO, Kalimat Fakta, & Kaidah Bahasa EYD Edisi V",
+    "capaian_pembelajaran": "Peserta didik memahami, menganalisis, dan mengevaluasi informasi serta struktur teks laporan hasil observasi (pembuka/definisi umum, deskripsi bagian, simpulan), membedakan kalimat fakta vs opini, dan menerapkan kaidah kebahasaan baku EYD Edisi V.",
+    "bacaan": null,
+    "teks_soal": "Tentukan apakah\npernyataan karakteristik teks LHO berikut Benar atau Salah!\nNo.\nPernyataan Analisis Bahasa Indonesia\nBenar\nSalah\n\nPernyataan:\n(a) Teks Laporan Hasil Observasi (LHO) wajib disusun secara objektif\nberdasarkan fakta hasil pengamatan langsung tanpa prasangka sub-\njektif penulis.\n(b) Tanda titik dua (:) digunakan secara tepat pada kalimat: “Taman kota ini\nmemiliki berbagai fasilitas: jalur lari, area bermain anak, dan gazebo.”\n(c) Nama ilmiah Latin tanaman lidah buaya dalam teks LHO ditulis tegak\ndengan huruf kapital semua menjadi ALOE VERA.\n\nKombinasi analisis nilai kebenaran (Benar/Salah) yang tepat adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(a) Benar, (b) Benar, (c) Salah"
+      },
+      {
+        "label": "B",
+        "teks": "(a) Benar, (b) Salah, (c) Salah"
+      },
+      {
+        "label": "C",
+        "teks": "(a) Salah, (b) Benar, (c) Benar"
+      },
+      {
+        "label": "D",
+        "teks": "(a) Benar, (b) Benar, (c) Benar"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "(a) Benar, (b) Benar, (c) Salah. Nama ilmiah Latin ditulis dengan huruf miring (Aloe vera).",
+    "valid": true
+  },
+  {
+    "nomor": 30,
+    "tipe": "pg_sederhana",
+    "paket": "Bab I: Menulis Teks LHO - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks LHO, Sifat Objektif, Struktur LHO, Kalimat Fakta, & Kaidah Bahasa EYD Edisi V",
+    "capaian_pembelajaran": "Peserta didik memahami, menganalisis, dan mengevaluasi informasi serta struktur teks laporan hasil observasi (pembuka/definisi umum, deskripsi bagian, simpulan), membedakan kalimat fakta vs opini, dan menerapkan kaidah kebahasaan baku EYD Edisi V.",
+    "bacaan": null,
+    "teks_soal": "Perhatikan kembali data Badan Pusat Statistik (BPS) tahun 2022 pada Soal Nomor 1:\n- Persentase penduduk usia 5 tahun ke atas yang memiliki gawai: 67,88% (meningkat dari 65,87% pada\n2021).\n- Kepemilikan gawai menurut jenis kelamin: Laki-laki 72,76% vs Perempuan 62,91%.\n- Akses internet menurut jenis kelamin: Laki-laki 69,39% vs Perempuan 63,53%.\nSusunlah: (a) 1 paragraf Simpulan / Penutup LHO yang merangkum data di atas secara objektif; dan (b)\nPerbaikilah kesalahan penulisan pada kalimat: “Harga tiket masuk ke kebun raya itu adalah Rp. 15.000,00\npada pukul 08;00 pagi.”!\n1\nB\n7\nC\n13\nB\n19\nC\n25\nC\n2\nD\n8\nA\n14\nB\n20\nC\n26\nA, B, C\n3\nD\n9\nB\n15\nD\n21\nD\n27\nA, B, C\n4\nD\n10\nA\n16\nB\n22\nA\n28\nB-B-S\n5\nB\n11\nB\n17\nB\n23\nB\n29\nB-B-S\n6\nA\n12\nC\n18\nC\n24\nD\n30\nUraian\n1. Jawaban: B. Pada paragraf pertama, kalimat utama terletak pada kalimat (1) yang memfokuskan pemba-\nhasan pada data kepemilikan gawai penduduk Indonesia berusia 5 tahun ke atas (67,88%).\n2. Jawaban: D. Kalimat (6) merangkum simpulan utama paragraf kedua, yaitu adanya ketimpangan kepemi-\nlikan gawai dan pengguna internet yang didominasi penduduk laki-laki.\n3.\nJawaban: D. Kutipan tersebut sudah memiliki pengenalan umum (paragraf 1) dan deskripsi bagian\nberdasarkan jenis kelamin (paragraf 2), sehingga yang perlu ditambahkan adalah bagian Penutup / Sim-\npulan.\n4. Jawaban: D. Kalimat D memiliki klausa setara yang memerinci ciri fisik sehingga seharusnya dipisahkan\ndengan tanda titik koma (;): Wombat adalah marsupial Australia yang kakinya empat dan pendek, panjang\ntubuhnya kira-kira 1 meter; ekornya pendek.\n5. Jawaban: B. Kata Jadi pada awal kalimat (4) merupakan konjungsi antarkalimat penyimpul sehingga wajib\ndiikuti tanda koma (Jadi, kamu jangan menyebut...).\n6. Jawaban: A. Paragraf tersebut memaparkan definisi dan informasi medis tentang pagophagia serta krite-\nrianya secara objektif untuk menambah wawasan pembaca, sehingga termasuk paragraf eksposisi.\n\nBerdasarkan kaidah bahasa baku EYD Edisi V dan materi bab ini, rumusan analisis / hasil penyuntingan yang paling tepat adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "- (a) Paragraf Simpulan/Penutup LHO: Dengan demikian, dapat disimpulkan bahwa tingkat kepemilikan\n\ngawai penduduk Indonesia usia 5 tahun ke atas terus meningkat hingga mencapai 67,88% pada tahun 2022,\nnamun masih terdapat ketimpangan gender di mana persentase "
+      },
+      {
+        "label": "B",
+        "teks": "Mengabaikan penggunaan tanda koma dan huruf kapital pada nama geografi serta membiarkan kata tidak baku tetap tertulis apa adanya"
+      },
+      {
+        "label": "C",
+        "teks": "Mengubah seluruh kalimat menjadi bahasa santai dan menghilangkan unsur fakta objektif dalam teks"
+      },
+      {
+        "label": "D",
+        "teks": "Menghapus seluruh paragraf wacana dan menggantinya dengan opini pribadi tanpa bukti ilmiah"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "- (a) Paragraf Simpulan/Penutup LHO: Dengan demikian, dapat disimpulkan bahwa tingkat kepemilikan\n\ngawai penduduk Indonesia usia 5 tahun ke atas terus meningkat hingga mencapai 67,88% pada tahun 2022,\nnamun masih terdapat ketimpangan gender di mana persentase kepemilikan gawai dan akses internet pen-\nduduk laki-laki lebih tinggi dibandingkan perempuan.\n- (b) Perbaikan Kalimat: *“Harga tiket masuk ke kebun raya itu adalah Rp15.000,00 pada pukul 08.00 pagi.”*\n(Tanpa titik/spasi setelah Rp dan menggunakan tanda titik pada angka jam).",
+    "valid": true
+  }
+]

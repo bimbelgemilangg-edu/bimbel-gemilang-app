@@ -1,0 +1,1015 @@
+[
+  {
+    "nomor": 31,
+    "tipe": "pg_sederhana",
+    "paket": "Bab II: Menulis Iklan, Slogan, Poster - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Iklan, Slogan, Poster, Kalimat Persuasif, Imperatif, & Analisis Efektivitas Pesan",
+    "capaian_pembelajaran": "Peserta didik mengidentifikasi unsur-unsur iklan, slogan, dan poster, membedakan iklan komersial vs nonkomersial (ILM), menganalisis kalimat persuasif dan imperatif, serta mengevaluasi efektivitas pesan visual dan tipografi.",
+    "bacaan": null,
+    "teks_soal": "Perhatikan poster iklan aplikasi belajar berikut!\nPesan utama yang ditawarkan sebagai daya tarik dalam iklan aplikasi belajar di atas adalah ....",
+    "gambar": [
+      "/soal/bindo/kls8_bindo_p87_xref2851_880x880.jpeg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "jadwal ujian akhir semester ganjil di seluruh sekolah menengah"
+      },
+      {
+        "label": "B",
+        "teks": "pengumuman lowongan pekerjaan menjadi guru privat di sekolah"
+      },
+      {
+        "label": "C",
+        "teks": "larangan menggunakan komputer dan tablet selama berada di rumah"
+      },
+      {
+        "label": "D",
+        "teks": "informasi paket belajar lengkap yang terjangkau mulai Rp1.000 per hari dengan berlangganan 1 tahun"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.",
+    "valid": true
+  },
+  {
+    "nomor": 32,
+    "tipe": "pg_sederhana",
+    "paket": "Bab II: Menulis Iklan, Slogan, Poster - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Iklan, Slogan, Poster, Kalimat Persuasif, Imperatif, & Analisis Efektivitas Pesan",
+    "capaian_pembelajaran": "Peserta didik mengidentifikasi unsur-unsur iklan, slogan, dan poster, membedakan iklan komersial vs nonkomersial (ILM), menganalisis kalimat persuasif dan imperatif, serta mengevaluasi efektivitas pesan visual dan tipografi.",
+    "bacaan": null,
+    "teks_soal": "Perhatikan slogan pendidikan berikut!\n\"Tak ada orang berilmu yang menyesal.\"\nBerikut yang tidak termasuk pesan yang terkandung dalam slogan tersebut adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "mengajak setiap orang untuk tidak berhenti belajar"
+      },
+      {
+        "label": "B",
+        "teks": "menginformasikan keuntungan dari memiliki ilmu pengetahuan"
+      },
+      {
+        "label": "C",
+        "teks": "menjelaskan bahwa penyesalan tidak pernah datang dari orang berilmu dalam segala hal"
+      },
+      {
+        "label": "D",
+        "teks": "menyampaikan bahwa menuntut ilmu adalah pilihan yang tepat"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "C. Slogan \"Tak ada orang berilmu yang menyesal\" menekankan manfaat menuntut ilmu, bukan\nmengklaim bahwa orang berilmu tidak pernah mengalami penyesalan apa pun dalam hidup.",
+    "valid": true
+  },
+  {
+    "nomor": 33,
+    "tipe": "pg_sederhana",
+    "paket": "Bab II: Menulis Iklan, Slogan, Poster - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Iklan, Slogan, Poster, Kalimat Persuasif, Imperatif, & Analisis Efektivitas Pesan",
+    "capaian_pembelajaran": "Peserta didik mengidentifikasi unsur-unsur iklan, slogan, dan poster, membedakan iklan komersial vs nonkomersial (ILM), menganalisis kalimat persuasif dan imperatif, serta mengevaluasi efektivitas pesan visual dan tipografi.",
+    "bacaan": null,
+    "teks_soal": "Dinas Kesehatan Kota X prihatin karena 1 dari 3 balita mengalami risiko stunting. Dinas Kesehatan\nmembuat iklan layanan masyarakat bergambar anak sehat yang meminum segelas susu dengan latar\nsapi perah. Kalimat persuasif yang paling tepat untuk melengkapi iklan layanan masyarakat tersebut\nadalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Bukan tentang sapi, tapi tentang susu dan stunting"
+      },
+      {
+        "label": "B",
+        "teks": "Minumlah susu dari sapi untuk cegah stunting!"
+      },
+      {
+        "label": "C",
+        "teks": "Yuk, pastikan konsumsi susu tiap hari untuk cegah stunting!"
+      },
+      {
+        "label": "D",
+        "teks": "Biarkan sapi cemburu, minumlah susu dan penuhi gizimu!"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "C. Kalimat persuasif bertujuan mengajak pembaca secara ramah dan jelas; pilihan C menggu-\nnakan kata ajakan \"Yuk\" yang langsung mengaitkan kebiasaan minum susu setiap hari dengan pencegahan\nstunting.",
+    "valid": true
+  },
+  {
+    "nomor": 34,
+    "tipe": "pg_sederhana",
+    "paket": "Bab II: Menulis Iklan, Slogan, Poster - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Iklan, Slogan, Poster, Kalimat Persuasif, Imperatif, & Analisis Efektivitas Pesan",
+    "capaian_pembelajaran": "Peserta didik mengidentifikasi unsur-unsur iklan, slogan, dan poster, membedakan iklan komersial vs nonkomersial (ILM), menganalisis kalimat persuasif dan imperatif, serta mengevaluasi efektivitas pesan visual dan tipografi.",
+    "bacaan": null,
+    "teks_soal": "Pada Buku Siswa halaman 56–57, siswa membandingkan dua desain iklan saus tomat: Iklan Saus\nTomat 1 hanya menampilkan gambar botol saus dan tulisan \"Saus Tomat Enak\", sedangkan Iklan Saus\nTomat 2 menampilkan foto botol saus yang dikelilingi buah tomat merah segar utuh serta keterangan\n\"Dibuat dari 100% Tomat Segar Pilihan Petani Lokal, Tanpa Pewarna & Pengawet Buatan\". Mengapa\nIklan Saus Tomat 2 dinilai jauh lebih efektif dan persuasif bagi konsumen?",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Karena memadukan bukti visual kesegaran bahan asli dengan klaim keunggulan mutu dan kesehatan yang spesifik sehingga menumbuhkan kepercayaan konsumen"
+      },
+      {
+        "label": "B",
+        "teks": "Karena Iklan 2 menyembunyikan bahan pembuat saus tomat agar konsumen merasa penasaran"
+      },
+      {
+        "label": "C",
+        "teks": "Karena konsumen lebih menyukai iklan yang tidak mencantumkan keunggulan produk sama sekali"
+      },
+      {
+        "label": "D",
+        "teks": "Karena Iklan 1 memiliki kalimat penjelasan yang terlalu panjang dan rumit"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "A. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.",
+    "valid": true
+  },
+  {
+    "nomor": 35,
+    "tipe": "pg_sederhana",
+    "paket": "Bab II: Menulis Iklan, Slogan, Poster - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Iklan, Slogan, Poster, Kalimat Persuasif, Imperatif, & Analisis Efektivitas Pesan",
+    "capaian_pembelajaran": "Peserta didik mengidentifikasi unsur-unsur iklan, slogan, dan poster, membedakan iklan komersial vs nonkomersial (ILM), menganalisis kalimat persuasif dan imperatif, serta mengevaluasi efektivitas pesan visual dan tipografi.",
+    "bacaan": null,
+    "teks_soal": "Perhatikan tiga pernyataan teks persuasif berikut:\n(1) \"Hijaukan Bumiku, Lestari Masa Depanku!\"\n(2) Sebuah plakat besar berukuran 60×90 cm bergambar paru-paru pohon hijau yang ditempel di dinding\nhalte bus kota.\n(3) Tayangan video berdurasi 30 detik di televisi yang menampilkan keluarga bahagia menikmati susu\nkalsium tinggi disertai lagu jingle dan harga promo.\nBerdasarkan bentuk dan medianya, pernyataan (1), (2), dan (3) secara berurutan merupakan contoh dari\n....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Cerita Fantasi, Puisi Rakyat, dan Teks Prosedur"
+      },
+      {
+        "label": "B",
+        "teks": "Iklan Baris, Slogan, dan Surat Dinas"
+      },
+      {
+        "label": "C",
+        "teks": "Poster, Iklan Kolom, dan Slogan"
+      },
+      {
+        "label": "D",
+        "teks": "Slogan, Poster, dan Iklan Audiovisual"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.",
+    "valid": true
+  },
+  {
+    "nomor": 36,
+    "tipe": "pg_sederhana",
+    "paket": "Bab II: Menulis Iklan, Slogan, Poster - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Iklan, Slogan, Poster, Kalimat Persuasif, Imperatif, & Analisis Efektivitas Pesan",
+    "capaian_pembelajaran": "Peserta didik mengidentifikasi unsur-unsur iklan, slogan, dan poster, membedakan iklan komersial vs nonkomersial (ILM), menganalisis kalimat persuasif dan imperatif, serta mengevaluasi efektivitas pesan visual dan tipografi.",
+    "bacaan": null,
+    "teks_soal": "Perhatikan empat contoh iklan berikut:\n(1) Iklan penawaran sepeda listrik merek VoltMax dengan potongan harga Rp1.000.000,00 akhir tahun.\n(2) Iklan dari Kementerian Kesehatan tentang ajakan memeriksa jentik nyamuk 3M Plus untuk mencegah\ndemam berdarah.\n(3) Iklan dari Dinas Perhubungan dan Kepolisian tentang imbauan memakai sabuk pengaman dan helm\nSNI demi keselamatan berkendara.\n(4) Iklan jasa bimbingan belajar Cerdas Prestasi yang menawarkan garansi lulus ujian masuk SMA fa-\nvorit.\nPasangan iklan yang termasuk kategori Iklan Nonkomersial (Iklan Layanan Masyarakat / ILM) ditun-\njukkan oleh nomor ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(1) dan (2)"
+      },
+      {
+        "label": "C",
+        "teks": "(1) dan (4)"
+      },
+      {
+        "label": "B",
+        "teks": "(2) dan (3)"
+      },
+      {
+        "label": "D",
+        "teks": "(3) dan (4)"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "B. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.",
+    "valid": true
+  },
+  {
+    "nomor": 37,
+    "tipe": "pg_sederhana",
+    "paket": "Bab II: Menulis Iklan, Slogan, Poster - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Iklan, Slogan, Poster, Kalimat Persuasif, Imperatif, & Analisis Efektivitas Pesan",
+    "capaian_pembelajaran": "Peserta didik mengidentifikasi unsur-unsur iklan, slogan, dan poster, membedakan iklan komersial vs nonkomersial (ILM), menganalisis kalimat persuasif dan imperatif, serta mengevaluasi efektivitas pesan visual dan tipografi.",
+    "bacaan": null,
+    "teks_soal": "Bacalah kliping iklan baris di surat kabar berikut!\nDJL RMH: Perum Griya Asri Blok C/12 Sleman. LT/LB 120/85 m2, 3 KT, 2 KM, SHM, taman asri, dkt\nkampus & RS. Hrg 650 jt nego. Hub: Budi 0813-2233-4455 (TP).\nMakna yang tepat dari singkatan-singkatan baku iklan baris LT/LB, SHM, dan TP pada kliping di atas\nadalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Lokasi strategis / Lingkungan Bersih; Siap Huni segera; Tunai Penuh"
+      },
+      {
+        "label": "B",
+        "teks": "Lantai Tingkat / Lantai Bawah; Surat Harapan Masyarakat; Tempat Parkir"
+      },
+      {
+        "label": "C",
+        "teks": "Luas Tanah / Luas Bangunan; Sertifikat Hak Milik; Tanpa Perantara"
+      },
+      {
+        "label": "D",
+        "teks": "Lebar Tanah / Lebar Belakang; Sewa Harian Murah; Telepon Pemilik"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "C. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.",
+    "valid": true
+  },
+  {
+    "nomor": 38,
+    "tipe": "pg_sederhana",
+    "paket": "Bab II: Menulis Iklan, Slogan, Poster - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Iklan, Slogan, Poster, Kalimat Persuasif, Imperatif, & Analisis Efektivitas Pesan",
+    "capaian_pembelajaran": "Peserta didik mengidentifikasi unsur-unsur iklan, slogan, dan poster, membedakan iklan komersial vs nonkomersial (ILM), menganalisis kalimat persuasif dan imperatif, serta mengevaluasi efektivitas pesan visual dan tipografi.",
+    "bacaan": null,
+    "teks_soal": "Mengapa penulisan iklan baris di surat kabar selalu menggunakan banyak singkatan kata (Djl, cpt, BU,\nhub, strtgs) dan tidak menyertakan gambar ilustrasi berwarna?",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Karena biaya pemasangan iklan baris dihitung berdasarkan jumlah baris atau jumlah karakter huruf dan ruang kolomnya sangat terbatas"
+      },
+      {
+        "label": "B",
+        "teks": "Karena redaksi surat kabar melarang penggunaan kata yang ditulis lengkap di seluruh halaman koran"
+      },
+      {
+        "label": "C",
+        "teks": "Agar iklan tersebut menjadi kode rahasia yang tidak dapat dibaca oleh calon pembeli"
+      },
+      {
+        "label": "D",
+        "teks": "Karena mesin cetak surat kabar tidak mampu mencetak huruf vokal a, i, u, e, o"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "A. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.",
+    "valid": true
+  },
+  {
+    "nomor": 39,
+    "tipe": "pg_sederhana",
+    "paket": "Bab II: Menulis Iklan, Slogan, Poster - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Iklan, Slogan, Poster, Kalimat Persuasif, Imperatif, & Analisis Efektivitas Pesan",
+    "capaian_pembelajaran": "Peserta didik mengidentifikasi unsur-unsur iklan, slogan, dan poster, membedakan iklan komersial vs nonkomersial (ILM), menganalisis kalimat persuasif dan imperatif, serta mengevaluasi efektivitas pesan visual dan tipografi.",
+    "bacaan": {
+      "teks": "Kutipan Pesan Poster Kampanye:\n\"Membaca buku membuka cakrawala ilmu, menanam pohon merawat kelestarian alam semesta. Mari budayakan gemar membaca sekaligus rawat bumi demi generasi masa depan!\"",
+      "grup": "bacaan_bab2_soal9"
+    },
+    "teks_soal": "Pada poster kampanye di atas tertulis ajakan untuk gemar membaca buku sekaligus menanam pohon\ndemi kelestarian bumi. Apabila kamu diminta merumuskan satu kalimat slogan berbahasa Indonesia\nyang paling memikat, berima indah, dan mewakili kedua pesan pada uraian teks tersebut, slogan manakah\nyang paling tepat?",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "\"Toko Buku ini Buka mulai Pukul Delapan Pagi sampai Sore.\""
+      },
+      {
+        "label": "B",
+        "teks": "\"Belilah Kayu Hutan sebanyak-banyaknya untuk Membuat Kertas!\""
+      },
+      {
+        "label": "C",
+        "teks": "\"Jangan Membaca Buku di Taman karena Pohonnya Sangat Tinggi!\""
+      },
+      {
+        "label": "D",
+        "teks": "\"Baca Buku Buka Dunia, Tanam Pohon Selamatkan Semesta!\""
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.",
+    "valid": true
+  },
+  {
+    "nomor": 40,
+    "tipe": "pg_sederhana",
+    "paket": "Bab II: Menulis Iklan, Slogan, Poster - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Iklan, Slogan, Poster, Kalimat Persuasif, Imperatif, & Analisis Efektivitas Pesan",
+    "capaian_pembelajaran": "Peserta didik mengidentifikasi unsur-unsur iklan, slogan, dan poster, membedakan iklan komersial vs nonkomersial (ILM), menganalisis kalimat persuasif dan imperatif, serta mengevaluasi efektivitas pesan visual dan tipografi.",
+    "bacaan": null,
+    "teks_soal": "Perhatikan ilustrasi permasalahan di sekolah berikut:\nBanyak siswa SMP yang sering lupa mematikan keran air di wastafel kamar mandi dan membiarkan\nlampu serta kipas angin kelas tetap menyala saat seluruh siswa sedang berada di lapangan olahraga.\nKalimat poster yang paling efektif, lugas, dan tepat ditempel di dekat sakelar lampu serta keran air\nsekolah untuk mengatasi masalah tersebut adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Listrik dan Air Adalah Sumber Daya Alam yang Dikelola oleh Perusahaan Negara."
+      },
+      {
+        "label": "B",
+        "teks": "Matikan Lampu dan Keran Saat Tak Digunakan: Hemat Energi, Selamatkan Bumi!"
+      },
+      {
+        "label": "C",
+        "teks": "Apakah Kalian Tahu Berapa Tagihan Listrik dan Air Sekolah Kita Setiap Bulan?"
+      },
+      {
+        "label": "D",
+        "teks": "Nyalakan Seluruh Lampu Kelas Sepanjang Siang dan Malam Agar Ruangan Terang!"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "B. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.",
+    "valid": true
+  },
+  {
+    "nomor": 41,
+    "tipe": "pg_sederhana",
+    "paket": "Bab II: Menulis Iklan, Slogan, Poster - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Iklan, Slogan, Poster, Kalimat Persuasif, Imperatif, & Analisis Efektivitas Pesan",
+    "capaian_pembelajaran": "Peserta didik mengidentifikasi unsur-unsur iklan, slogan, dan poster, membedakan iklan komersial vs nonkomersial (ILM), menganalisis kalimat persuasif dan imperatif, serta mengevaluasi efektivitas pesan visual dan tipografi.",
+    "bacaan": null,
+    "teks_soal": "Dalam kaidah kebahasaan teks iklan dan poster, terdapat perbedaan struktur antara kalimat imperatif\n(perintah) dan kalimat persuasif (ajakan). Perhatikan empat kalimat berikut:\n(1) Gunakanlah helm berstandar SNI setiap kali berkendara di jalan raya!\n(2) Mari kita kurangi penggunaan kantong plastik sekali pakai mulai hari ini!\n(3) Buanglah sampah pada tempat sampah terpilah yang telah disediakan!\n(4) Ayo, lindungi masa depan keluarga Anda dengan menabung sejak dini di Bank Nusantara!\nPasangan kalimat yang merupakan kalimat persuasif (ajakan) ditunjukkan oleh nomor ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(1) dan (3)"
+      },
+      {
+        "label": "C",
+        "teks": "(2) dan (4)"
+      },
+      {
+        "label": "B",
+        "teks": "(1) dan (2)"
+      },
+      {
+        "label": "D",
+        "teks": "(3) dan (4)"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "C. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.",
+    "valid": true
+  },
+  {
+    "nomor": 42,
+    "tipe": "pg_sederhana",
+    "paket": "Bab II: Menulis Iklan, Slogan, Poster - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Iklan, Slogan, Poster, Kalimat Persuasif, Imperatif, & Analisis Efektivitas Pesan",
+    "capaian_pembelajaran": "Peserta didik mengidentifikasi unsur-unsur iklan, slogan, dan poster, membedakan iklan komersial vs nonkomersial (ILM), menganalisis kalimat persuasif dan imperatif, serta mengevaluasi efektivitas pesan visual dan tipografi.",
+    "bacaan": null,
+    "teks_soal": "Sebuah iklan produk sampo menampilkan seorang dokter spesialis kesehatan kulit kepala dan seo-\nrang atlet nasional yang memberikan kesaksian positif setelah memakai produk tersebut selama satu\nbulan. Teknik penyajian bukti kepuasan pengguna atau rekomendasi tokoh/pakar di dalam iklan untuk\nmeningkatkan kepercayaan konsumen ini disebut ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Majas ironi sindiran"
+      },
+      {
+        "label": "C",
+        "teks": "Plagiarisme merek dagang"
+      },
+      {
+        "label": "B",
+        "teks": "Diskriminasi harga pasar"
+      },
+      {
+        "label": "D",
+        "teks": "Testimoni (kesaksian pengguna/pakar)"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.",
+    "valid": true
+  },
+  {
+    "nomor": 43,
+    "tipe": "pg_sederhana",
+    "paket": "Bab II: Menulis Iklan, Slogan, Poster - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Iklan, Slogan, Poster, Kalimat Persuasif, Imperatif, & Analisis Efektivitas Pesan",
+    "capaian_pembelajaran": "Peserta didik mengidentifikasi unsur-unsur iklan, slogan, dan poster, membedakan iklan komersial vs nonkomersial (ILM), menganalisis kalimat persuasif dan imperatif, serta mengevaluasi efektivitas pesan visual dan tipografi.",
+    "bacaan": null,
+    "teks_soal": "Perhatikan kutipan iklan layanan masyarakat dari Badan Nasional Penanggulangan Bencana (BNPB)\nberikut:\n(1) Gempa bumi dapat terjadi kapan saja tanpa peringatan awal.\n(2) Kenali jalur evakuasi dan titik kumpul aman di sekolah maupun rumah Anda!\n(3) Lindungi kepala dengan tas atau bantal, berlindunglah di bawah meja yang kokoh, dan jauhi kaca\nsaat guncangan terjadi!\n(4) Kesiapsiagaan kita hari ini adalah kunci keselamatan jiwa esok hari.\nKalimat yang berfungsi sebagai pernyataan fakta pembuka masalah dan kalimat yang berfungsi seba-\ngai instruksi tindakan penyelamatan (imperatif) berturut-turut adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Kalimat (4) dan kalimat (1)"
+      },
+      {
+        "label": "C",
+        "teks": "Kalimat (2) dan kalimat (4)"
+      },
+      {
+        "label": "B",
+        "teks": "Kalimat (1) dan kalimat (2)–(3)"
+      },
+      {
+        "label": "D",
+        "teks": "Kalimat (3) dan kalimat (1)"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "B. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.",
+    "valid": true
+  },
+  {
+    "nomor": 44,
+    "tipe": "pg_sederhana",
+    "paket": "Bab II: Menulis Iklan, Slogan, Poster - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Iklan, Slogan, Poster, Kalimat Persuasif, Imperatif, & Analisis Efektivitas Pesan",
+    "capaian_pembelajaran": "Peserta didik mengidentifikasi unsur-unsur iklan, slogan, dan poster, membedakan iklan komersial vs nonkomersial (ILM), menganalisis kalimat persuasif dan imperatif, serta mengevaluasi efektivitas pesan visual dan tipografi.",
+    "bacaan": {
+      "teks": "Scribd 997809157 & Paket B — Scribd 997810237 No. 10–12]\njawab soal nomor 14 dan 15!\nWACANA LITERASI MEMBACA: WACANA LITERASI MEMBACA: KAMPANYE POSTER DAN SLOGAN\n’BERANI BICARA, STOP PERUNDUNGAN!’\n(Paragraf 1) Tim Pencegahan dan Penanganan Kekerasan (TPPK) di SMP Nusantara meluncurkan kampa-\nnye komunikasi persuasif bertajuk “Sekolah Ramah, Semua Bahagia”. Kampanye ini dilatarbelakangi oleh\ntemuan survei internal sekolah bahwa 65 persen siswa yang pernah menyaksikan tindakan perundungan\n(bullying) memilih diam karena takut dianggap pengadu atau bingung harus melapor ke mana.\n(Paragraf 2) Untuk mengubah sikap pasif tersebut menjadi aksi nyata, pengurus OSIS bersama TPPK mer-\nancang tiga media persuasif terpadu. Pertama, Slogan Sekolah: “Teman Sejati Merangkul, Bukan Memukul;\nBerani Lapor Itu Hebat!” yang dipasang di setiap koridor kelas. Kedua, Poster Infografis Layanan Aduan\nyang memuat ilustrasi siswa saling menolong, alur 3 langkah pelaporan rahasia, serta kode QR kotak aduan\nramah anak. Ketiga, Iklan Layanan Masyarakat (ILM) Audio-Visual berdurasi 45 detik yang ditayangkan di\ntelevisi lobi sekolah setiap jam istirahat.\n(Paragraf 3) Dua bulan setelah kampanye persuasif tersebut berjalan, jumlah laporan dini dan mediasi damai\nmeningkat signifikan, sedangkan kasus ejekan verbal di lingkungan kelas menurun hingga 70 persen. Ke-\nberhasilan ini membuktikan bahwa perpaduan bahasa persuasif yang membangkitkan keberanian (imperatif-\nsugestif) dan informasi saluran bantuan yang jelas mampu mengubah perilaku warga sekolah.\nMengapa tim TPPK dan OSIS pada Paragraf 2 wacana di atas tidak hanya memasang slogan singkat,\ntetapi juga melengkapinya dengan Poster Infografis yang memuat alur 3 langkah pelaporan dan\nkode QR kotak aduan?",
+      "grup": "bacaan_bab2_stop_bullying"
+    },
+    "teks_soal": "Bacalah wacana kampanye layanan masyarakat dan edukasi perlindungan diri remaja berikut untuk men-\njawab soal nomor 14 dan 15!\n\nWACANA LITERASI MEMBACA: WACANA LITERASI MEMBACA: KAMPANYE POSTER DAN SLOGAN\n’BERANI BICARA, STOP PERUNDUNGAN!’\n(Paragraf 1) Tim Pencegahan dan Penanganan Kekerasan (TPPK) di SMP Nusantara meluncurkan kampa-\nnye komunikasi persuasif bertajuk “Sekolah Ramah, Semua Bahagia”. Kampanye ini dilatarbelakangi oleh\ntemuan survei internal sekolah bahwa 65 persen siswa yang pernah menyaksikan tindakan perundungan\n(bullying) memilih diam karena takut dianggap pengadu atau bingung harus melapor ke mana.\n(Paragraf 2) Untuk mengubah sikap pasif tersebut menjadi aksi nyata, pengurus OSIS bersama TPPK mer-\nancang tiga media persuasif terpadu. Pertama, Slogan Sekolah: “Teman Sejati Merangkul, Bukan Memukul;\nBerani Lapor Itu Hebat!” yang dipasang di setiap koridor kelas. Kedua, Poster Infografis Layanan Aduan\nyang memuat ilustrasi siswa saling menolong, alur 3 langkah pelaporan rahasia, serta kode QR kotak aduan\nramah anak. Ketiga, Iklan Layanan Masyarakat (ILM) Audio-Visual berdurasi 45 detik yang ditayangkan di\ntelevisi lobi sekolah setiap jam istirahat.\n(Paragraf 3) Dua bulan setelah kampanye persuasif tersebut berjalan, jumlah laporan dini dan mediasi damai\nmeningkat signifikan, sedangkan kasus ejekan verbal di lingkungan kelas menurun hingga 70 persen. Ke-\nberhasilan ini membuktikan bahwa perpaduan bahasa persuasif yang membangkitkan keberanian (imperatif-\nsugestif) dan informasi saluran bantuan yang jelas mampu mengubah perilaku warga sekolah.\nMengapa tim TPPK dan OSIS pada Paragraf 2 wacana di atas tidak hanya memasang slogan singkat,\ntetapi juga melengkapinya dengan Poster Infografis yang memuat alur 3 langkah pelaporan dan\nkode QR kotak aduan?",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Karena Iklan Layanan Masyarakat bertujuan mencari keuntungan finansial dari penjualan poster"
+      },
+      {
+        "label": "B",
+        "teks": "Karena siswa SMP tidak dapat membaca kalimat slogan yang terdiri atas tujuh kata"
+      },
+      {
+        "label": "C",
+        "teks": "Karena kode QR pada poster berfungsi untuk memesan makanan dan minuman di kantin sekolah"
+      },
+      {
+        "label": "D",
+        "teks": "Karena berdasarkan data survei pada Paragraf 1, banyak siswa yang diam bukan karena tidak peduli, melainkan karena takut dan bingung harus melapor ke mana; sehingga slogan pemantik keberanian harus didukung petunjuk saluran pelaporan rahasia yang konkret dan mudah diakses"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Slogan berfungsi membangkitkan kesadaran dan keberanian moral (Berani Lapor Itu\nHebat!), sedangkan poster infografis ber-QR menjawab masalah kebingungan teknis siswa (Paragraf 1) den-\ngan memberikan prosedur pelaporan rahasia yang jelas.",
+    "valid": true
+  },
+  {
+    "nomor": 45,
+    "tipe": "pg_sederhana",
+    "paket": "Bab II: Menulis Iklan, Slogan, Poster - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Iklan, Slogan, Poster, Kalimat Persuasif, Imperatif, & Analisis Efektivitas Pesan",
+    "capaian_pembelajaran": "Peserta didik mengidentifikasi unsur-unsur iklan, slogan, dan poster, membedakan iklan komersial vs nonkomersial (ILM), menganalisis kalimat persuasif dan imperatif, serta mengevaluasi efektivitas pesan visual dan tipografi.",
+    "bacaan": {
+      "teks": "Scribd 997809157 & Paket B — Scribd 997810237 No. 10–12]\njawab soal nomor 14 dan 15!\nWACANA LITERASI MEMBACA: WACANA LITERASI MEMBACA: KAMPANYE POSTER DAN SLOGAN\n’BERANI BICARA, STOP PERUNDUNGAN!’\n(Paragraf 1) Tim Pencegahan dan Penanganan Kekerasan (TPPK) di SMP Nusantara meluncurkan kampa-\nnye komunikasi persuasif bertajuk “Sekolah Ramah, Semua Bahagia”. Kampanye ini dilatarbelakangi oleh\ntemuan survei internal sekolah bahwa 65 persen siswa yang pernah menyaksikan tindakan perundungan\n(bullying) memilih diam karena takut dianggap pengadu atau bingung harus melapor ke mana.\n(Paragraf 2) Untuk mengubah sikap pasif tersebut menjadi aksi nyata, pengurus OSIS bersama TPPK mer-\nancang tiga media persuasif terpadu. Pertama, Slogan Sekolah: “Teman Sejati Merangkul, Bukan Memukul;\nBerani Lapor Itu Hebat!” yang dipasang di setiap koridor kelas. Kedua, Poster Infografis Layanan Aduan\nyang memuat ilustrasi siswa saling menolong, alur 3 langkah pelaporan rahasia, serta kode QR kotak aduan\nramah anak. Ketiga, Iklan Layanan Masyarakat (ILM) Audio-Visual berdurasi 45 detik yang ditayangkan di\ntelevisi lobi sekolah setiap jam istirahat.\n(Paragraf 3) Dua bulan setelah kampanye persuasif tersebut berjalan, jumlah laporan dini dan mediasi damai\nmeningkat signifikan, sedangkan kasus ejekan verbal di lingkungan kelas menurun hingga 70 persen. Ke-\nberhasilan ini membuktikan bahwa perpaduan bahasa persuasif yang membangkitkan keberanian (imperatif-\nsugestif) dan informasi saluran bantuan yang jelas mampu mengubah perilaku warga sekolah.\nMengapa tim TPPK dan OSIS pada Paragraf 2 wacana di atas tidak hanya memasang slogan singkat,\ntetapi juga melengkapinya dengan Poster Infografis yang memuat alur 3 langkah pelaporan dan\nkode QR kotak aduan?",
+      "grup": "bacaan_bab2_stop_bullying"
+    },
+    "teks_soal": "Keunggulan gaya bahasa pada kalimat slogan \"Teman Sejati Merangkul, Bukan Memukul; Berani\nLapor Itu Hebat!\" dalam wacana soal nomor 14 adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Menggunakan kalimat majemuk bertingkat yang sangat panjang hingga tiga paragraf"
+      },
+      {
+        "label": "B",
+        "teks": "Memanfaatkan rima bunyi akhir yang selaras (Merangkul – Memukul) serta pertentangan makna kata (antitesis) yang padat, berirama, dan mudah diingat oleh pembaca"
+      },
+      {
+        "label": "C",
+        "teks": "Menggunakan istilah medis berbahasa Latin yang sulit dipahami oleh siswa SMP"
+      },
+      {
+        "label": "D",
+        "teks": "Menyembunyikan pesan utama agar pembaca tidak mengetahui maksud pembuat slogan"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "B. Slogan yang efektif memenuhi kriteria singkat, padat, berima/ritmis (Merangkul vs\nMemukul), dan menggunakan diksi kontras yang kuat untuk menanamkan nilai persahabatan.",
+    "valid": true
+  },
+  {
+    "nomor": 46,
+    "tipe": "pg_sederhana",
+    "paket": "Bab II: Menulis Iklan, Slogan, Poster - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Iklan, Slogan, Poster, Kalimat Persuasif, Imperatif, & Analisis Efektivitas Pesan",
+    "capaian_pembelajaran": "Peserta didik mengidentifikasi unsur-unsur iklan, slogan, dan poster, membedakan iklan komersial vs nonkomersial (ILM), menganalisis kalimat persuasif dan imperatif, serta mengevaluasi efektivitas pesan visual dan tipografi.",
+    "bacaan": null,
+    "teks_soal": "Perhatikan perbandingan dua teks iklan berikut!\nIKLAN 1: SEPATU SEKOLAH ’AEROSTEP’\nIKLAN 2: GERAKAN HEMAT AIR BERSIH\nMELANGKAH RINGAN, PRESTASI GEMILANG!\nSepatu Sekolah AeroStep Pro hadir dengan bantalan\nsol busa memori empuk dan jaring sirkulasi udara anti-\nlembap. Nyaman dipakai upacara hingga olahraga se-\nharian!\nPromo Kembali ke Sekolah: Diskon 30% + Gratis\nKaos Kaki Bambu untuk pembelian tanggal 1–15 Juli\n2026 di seluruh toko resmi AeroStep atau melalui situs\nwww.aerostep.co.id. Hubungi WA: 0811-2233-4455.\nSETETES AIR HARI INI, SEJUTA KEHIDUPAN\nESOK HARI!\nTahukah Anda? Membiarkan keran air menetes satu\ntetes per detik dapat membuang lebih dari 10.000 liter\nair bersih setiap tahun.\nMari tutup rapat keran seusai digunakan, perbaiki\npipa yang bocor, dan gunakan air cucian beras untuk\nmenyiram tanaman!\nLayanan Masyarakat ini dipersembahkan oleh Ke-\nmenterian Pekerjaan Umum dan PDAM Tirta Nusan-\ntara.\nPerbedaan jenis iklan, tujuan utama, dan isi penawaran antara Iklan 1 dan Iklan 2 di atas adalah ....",
+    "gambar": [
+      "/soal/bindo/kls8_bindo_p91_xref3013_880x880.jpeg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Iklan 1 tidak mencantumkan keunggulan produk; sedangkan Iklan 2 mencantumkan harga diskon air PDAM"
+      },
+      {
+        "label": "B",
+        "teks": "Iklan 1 adalah iklan pengumuman duka cita; sedangkan Iklan 2 adalah iklan penjualan pipa air rumah tangga"
+      },
+      {
+        "label": "C",
+        "teks": "Iklan 1 adalah Iklan Niaga (Komersial) yang bertujuan membujuk konsumen membeli produk barang (Sepatu AeroStep) demi keuntungan ekonomi; sedangkan Iklan 2 adalah Iklan Nonniaga / Iklan Layanan Masyarakat (ILM) yang bertujuan mengedukasi masyarakat agar mengubah perilaku (menghemat air bersih) demi kepentingan umum"
+      },
+      {
+        "label": "D",
+        "teks": "Kedua iklan di atas termasuk jenis iklan baris di surat kabar cetak yang disingkat-singkat"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "C. Iklan 1 menawarkan produk komersial (Sepatu AeroStep) lengkap dengan keunggulan fisik,\npromo diskon 30%, dan kontak pembelian (Iklan Niaga), sedangkan Iklan 2 menyajikan fakta pemborosan air\ndan ajakan berhemat dari instansi pemerintah/PDAM (Iklan Layanan Masyarakat).",
+    "valid": true
+  },
+  {
+    "nomor": 47,
+    "tipe": "pg_sederhana",
+    "paket": "Bab II: Menulis Iklan, Slogan, Poster - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Iklan, Slogan, Poster, Kalimat Persuasif, Imperatif, & Analisis Efektivitas Pesan",
+    "capaian_pembelajaran": "Peserta didik mengidentifikasi unsur-unsur iklan, slogan, dan poster, membedakan iklan komersial vs nonkomersial (ILM), menganalisis kalimat persuasif dan imperatif, serta mengevaluasi efektivitas pesan visual dan tipografi.",
+    "bacaan": null,
+    "teks_soal": "Perhatikan empat kriteria penulisan teks poster berikut:\n(1) Menggunakan kalimat yang singkat, padat, jelas, dan mudah dibaca dari jarak beberapa meter;\n(2) Memilih ukuran huruf (font) yang besar dan warna teks yang kontras dengan warna latar belakang;\n(3) Menyertakan gambar ilustrasi yang relevan dan mendukung pesan tulisan;\n(4) Menuliskan 15 paragraf teks penjelasan sepanjang 2.000 kata di dalam satu lembar poster.\nKriteria yang salah dan harus dihindari saat membuat poster adalah nomor ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Nomor (2) karena warna huruf poster harus sama persis dengan warna latar agar tidak terlihat"
+      },
+      {
+        "label": "B",
+        "teks": "Nomor (1) karena kalimat poster seharusnya bertele-tele"
+      },
+      {
+        "label": "C",
+        "teks": "Nomor (4) karena teks yang terlalu panjang dan rapat akan membuat poster tidak terbaca oleh orang yang berlalu-lalang"
+      },
+      {
+        "label": "D",
+        "teks": "Nomor (3) karena poster dilarang mencantumkan gambar ilustrasi"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "C. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.",
+    "valid": true
+  },
+  {
+    "nomor": 48,
+    "tipe": "pg_sederhana",
+    "paket": "Bab II: Menulis Iklan, Slogan, Poster - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Iklan, Slogan, Poster, Kalimat Persuasif, Imperatif, & Analisis Efektivitas Pesan",
+    "capaian_pembelajaran": "Peserta didik mengidentifikasi unsur-unsur iklan, slogan, dan poster, membedakan iklan komersial vs nonkomersial (ILM), menganalisis kalimat persuasif dan imperatif, serta mengevaluasi efektivitas pesan visual dan tipografi.",
+    "bacaan": null,
+    "teks_soal": "Bacalah ilustrasi permasalahan sosial dan kesehatan berikut dengan saksama!\nWACANA LITERASI MEMBACA: ILUSTRASI DAMPAK PENYALAHGUNAAN NARKOBA\nPenyalahgunaan narkoba menimbulkan banyak bahaya, baik bagi individu yang menggunakannya maupun\nmasyarakat secara keseluruhan. Narkoba memiliki dampak negatif bagi kesehatan mental. Penggunaan\njangka panjang dapat menyebabkan gangguan kecemasan, depresi, psikosis, memicu perubahan suasana\nhati yang drastis, dan meningkatkan risiko perilaku impulsif atau agresif. Penyalahgunaan narkoba juga dapat\nmerusak hubungan sosial serta memengaruhi produktivitas dan kinerja seseorang di tempat kerja atau seko-\nlah. Hal ini berdampak negatif pada keuangan pribadi, peluang karier, dan masa depan individu. Untuk itu,\nkita bisa membantu dengan cara memberi edukasi, memberikan pemahaman tentang bahaya narkoba, dan\nmemberikan dukungan bagi yang membutuhkan bantuan.\nPoster cetak yang paling tepat berdasarkan ilustrasi tersebut adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Pilihan A sesuai wacana dan kaidah kebahasaan"
+      },
+      {
+        "label": "B",
+        "teks": "Pilihan B kurang tepat sesuai konteks teks"
+      },
+      {
+        "label": "C",
+        "teks": "Pilihan C tidak didukung oleh data bacaan"
+      },
+      {
+        "label": "D",
+        "teks": "Pilihan D bertentangan dengan isi teks"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "B. Poster pada gambar B mencakup seluruh isi ilustrasi secara tepat, yaitu dampak bu-\nruk narkoba terhadap kesehatan mental (kecemasan, depresi, psikosis), rusaknya relasi sosial/karier, serta\najakan solusi untuk memberikan edukasi bahaya narkoba dan mendukung pemulihan korban.",
+    "valid": true
+  },
+  {
+    "nomor": 49,
+    "tipe": "pg_sederhana",
+    "paket": "Bab II: Menulis Iklan, Slogan, Poster - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Iklan, Slogan, Poster, Kalimat Persuasif, Imperatif, & Analisis Efektivitas Pesan",
+    "capaian_pembelajaran": "Peserta didik mengidentifikasi unsur-unsur iklan, slogan, dan poster, membedakan iklan komersial vs nonkomersial (ILM), menganalisis kalimat persuasif dan imperatif, serta mengevaluasi efektivitas pesan visual dan tipografi.",
+    "bacaan": null,
+    "teks_soal": "Cermatilah papan selebaran empat iklan percetakan (Iklan 1, Iklan 2, Iklan 3, dan Iklan 4) berikut!\nIlustrasi Kebutuhan: Dalam rangka memperingati HUT ke-25 SMP Intan Permata, peserta didik kelas\nVII, VIII, dan IX diwajibkan mengikuti lomba poster antarkelas. Poster yang dibuat harus dicetak dengan\nkertas ukuran A-2 dan ditempelkan di ruang kelas masing-masing. Karena waktu yang diberikan untuk\npembuatan poster hanya satu hari, peserta didik mencari tempat cetak poster yang bisa langsung jadi.\nBerdasarkan gambar keempat iklan di atas, iklan yang efektif dan sesuai dengan ilustrasi tersebut terda-\npat pada nomor ....",
+    "gambar": [
+      "/soal/bindo/kls8_bindo_p92_xref3042_880x880.jpeg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Iklan (1) dan Iklan (3)"
+      },
+      {
+        "label": "C",
+        "teks": "Iklan (2) dan Iklan (3)"
+      },
+      {
+        "label": "B",
+        "teks": "Iklan (1) dan Iklan (4)"
+      },
+      {
+        "label": "D",
+        "teks": "Iklan (2) dan Iklan (4)"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "A. Siswa membutuhkan percetakan yang melayani kertas ukuran A-2 dan proses langsung\njadi dalam 1 hari. Pada papan selebaran iklan, hanya Iklan 1 (Prima Print) dan Iklan 3 (Kilat Digital) yang\nmelayani cetak poster ukuran A-2 dengan layanan kilat langsung jadi.",
+    "valid": true
+  },
+  {
+    "nomor": 50,
+    "tipe": "pg_sederhana",
+    "paket": "Bab II: Menulis Iklan, Slogan, Poster - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Iklan, Slogan, Poster, Kalimat Persuasif, Imperatif, & Analisis Efektivitas Pesan",
+    "capaian_pembelajaran": "Peserta didik mengidentifikasi unsur-unsur iklan, slogan, dan poster, membedakan iklan komersial vs nonkomersial (ILM), menganalisis kalimat persuasif dan imperatif, serta mengevaluasi efektivitas pesan visual dan tipografi.",
+    "bacaan": null,
+    "teks_soal": "Perhatikan perbandingan dua bentuk iklan penawaran kursus bahasa berikut!\nTEKS A: IKLAN KOLOM / DISPLAY\nTEKS B: IKLAN BARIS KORAN\nKURSUS BAHASA INGGRIS & JEPANG “GLOBAL\nLINGUA”\nIngin lancar berbicara bahasa asing dalam 3 bu-\nlan tanpa menghafal rumus rumit?\nBergabunglah\nbersama Global Lingua!\n• Pengajar penutur asli (native speaker) & berpen-\ngalaman\n• Kelas kecil maksimal 10 siswa (Tersedia kelas luring\n& daring)\n• Gratis modul cetak & sertifikat resmi\nDaftar sekarang di Jalan Kaliurang Km 7 Nomor 42,\nSleman.\nKURSUS BHS. Inggris & Jpg. Metode praktis 3 bln\nlancar bicara. Guru ramah & brpnglmn. Kls kecil maks\n10 ssw, gratis modul. Hub: Global Lingua, Jl. Kaliu-\nrang Km 7/42 Slmn. Tlp. (0274) 889900.\nPersamaan informasi pokok dan perbedaan teknik penulisan antara Teks A dan Teks B di atas adalah\n....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Teks A menggunakan bahasa yang salah ejaan; sedangkan Teks B tidak mencantumkan alamat lembaga"
+      },
+      {
+        "label": "B",
+        "teks": "Persamaan: keduanya menawarkan lowongan pekerjaan guru bahasa; Perbedaan: Teks A dimuat di radio, sedangkan Teks B dimuat di televisi"
+      },
+      {
+        "label": "C",
+        "teks": "Persamaan: keduanya menjual buku kamus bekas; Perbedaan: Teks A gratis, sedangkan Teks B berbayar"
+      },
+      {
+        "label": "D",
+        "teks": "Persamaan: keduanya menawarkan jasa kursus bahasa Inggris dan Jepang di lembaga Global Lin- gua dengan keunggulan kelas kecil (maksimal 10 siswa) dan gratis modul; Perbedaan: Teks A ditulis dengan kalimat lengkap dan tata letak poin berjarak (iklan kolom/display), sedangkan Teks B ditulis san- gat ringkas menggunakan banyak singkatan kata untuk menghemat biaya per baris (iklan baris)"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Kedua teks mengiklankan jasa yang sama (Global Lingua), tetapi berbeda format media\ncetak: Teks A adalah iklan kolom/display yang leluasa memuat kalimat utuh dan butir keunggulan, sedangkan\nTeks B adalah iklan baris yang memadatkan kata menjadi singkatan (Bhs., Jpg., 3 bln, brpnglmn, ssw, Slmn).",
+    "valid": true
+  },
+  {
+    "nomor": 51,
+    "tipe": "pg_sederhana",
+    "paket": "Bab II: Menulis Iklan, Slogan, Poster - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Iklan, Slogan, Poster, Kalimat Persuasif, Imperatif, & Analisis Efektivitas Pesan",
+    "capaian_pembelajaran": "Peserta didik mengidentifikasi unsur-unsur iklan, slogan, dan poster, membedakan iklan komersial vs nonkomersial (ILM), menganalisis kalimat persuasif dan imperatif, serta mengevaluasi efektivitas pesan visual dan tipografi.",
+    "bacaan": null,
+    "teks_soal": "Perhatikan tabel analisis kalimat Fakta dan Opini (Klaim Subjektif) dalam teks iklan produk madu hutan\nberikut!\n(1) \"Madu Hutan Sumbawa Murni dikemas dalam botol kaca kedap udara berukuran bersih 350 mililiter.\"\n(2) \"Telah terdaftar resmi di BPOM RI dengan nomor izin edar MD 152110012345 dan bersertifikat Halal\nIndonesia.\"\n(3) \"Rasanya paling nikmat di dunia dan dijamin membuat tubuh Anda langsung terasa sepuluh tahun\nlebih muda!\"\n(4) \"Komposisi bahan: 100% madu nektar bunga multiflora hutan Sumbawa tanpa tambahan sirup fruk-\ntosa.\"\nPasangan kalimat yang merupakan Fakta Objektif dan Opini Hiperbolis dalam iklan tersebut secara\nberturut-turut adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Fakta Objektif: kalimat (1), (2), dan (4); sedangkan Opini Hiperbolis: kalimat (3)"
+      },
+      {
+        "label": "B",
+        "teks": "Fakta Objektif: kalimat (3) saja; sedangkan Opini Hiperbolis: kalimat (1), (2), dan (4)"
+      },
+      {
+        "label": "C",
+        "teks": "Seluruh kalimat (1), (2), (3), dan (4) merupakan fakta laboratorium yang dapat diukur dengan peng- garis"
+      },
+      {
+        "label": "D",
+        "teks": "Seluruh kalimat (1), (2), (3), dan (4) merupakan majas personifikasi"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "A. Kalimat (1) ukuran volume 350 mL, (2) nomor izin edar BPOM/Halal, dan (4) komposisi\nbahan dapat diverifikasi kebenarannya secara faktual; sedangkan kalimat (3) (paling nikmat di dunia, langsung\nsepuluh tahun lebih muda) adalah opini klaim subjektif yang hiperbolis.",
+    "valid": true
+  },
+  {
+    "nomor": 52,
+    "tipe": "pg_sederhana",
+    "paket": "Bab II: Menulis Iklan, Slogan, Poster - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Iklan, Slogan, Poster, Kalimat Persuasif, Imperatif, & Analisis Efektivitas Pesan",
+    "capaian_pembelajaran": "Peserta didik mengidentifikasi unsur-unsur iklan, slogan, dan poster, membedakan iklan komersial vs nonkomersial (ILM), menganalisis kalimat persuasif dan imperatif, serta mengevaluasi efektivitas pesan visual dan tipografi.",
+    "bacaan": {
+      "teks": "Gunungkidul DIY — Pendalaman Materi ASPD 2\n2024/2025 Scribd 829607232]\nsoal nomor 22 dan 23!\nWACANA LITERASI MEMBACA: WACANA LITERASI MEMBACA: EVALUASI POSTER KAMPANYE\nKANTIN SEHAT BEBAS PLASTIK\n(Paragraf 1) Pengurus OSIS Seksi Kesehatan dan Lingkungan memasang sebuah poster berukuran A3 di\ndinding lorong menuju kantin sekolah. Poster tersebut bertujuan mengajak seluruh siswa membawa botol\nminum isi ulang (tumbler) dan kotak makan sendiri dari rumah guna mengurangi timbunan sampah gelas\nplastik sekali pakai di sekolah.\n(Paragraf 2) Akan tetapi, setelah satu pekan dipasang, hampir tidak ada siswa yang berhenti membaca poster\ntersebut. Ketika dilakukan evaluasi bersama guru Bahasa Indonesia, ditemukan tiga kelemahan utama pada\ndesain dan teks poster itu: (a) ukuran huruf judul terlalu kecil dan menggunakan jenis huruf sambung (script)\nyang rumit; (b) latar belakang poster berwarna biru tua, sedangkan teks kalimatnya ditulis dengan warna\nhitam sehingga tidak kontras; dan (c) isi poster memuat paragraf penjelasan sepanjang 250 kata tanpa satu\npun ilustrasi gambar.\n(Paragraf 3) Tim OSIS kemudian merombak total poster tersebut menjadi versi baru: menggunakan judul\nberukuran besar dan tegas “BAWA TUMBLER-MU, SELAMATKAN BUMIMU!” berwarna kuning cerah di\natas latar biru tua, menampilkan satu ilustrasi besar botol minum ramah lingkungan yang segar, serta me-\nmangkas teks menjadi 3 poin keuntungan singkat (Hemat Uang Jajan, Air Tetap Dingin/Hangat, Sekolah\nBebas Sampah Plastik).\nBerdasarkan Paragraf 2 dan Paragraf 3 wacana di atas, mengapa poster versi pertama gagal menarik\nperhatian siswa yang berjalan melewati lorong kantin?",
+      "grup": "bacaan_bab2_evaluasi_poster"
+    },
+    "teks_soal": "Berdasarkan Paragraf 2 dan Paragraf 3 wacana di atas, mengapa poster versi pertama gagal menarik\nperhatian siswa yang berjalan melewati lorong kantin?",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Karena kertas ukuran A3 tidak dapat ditempelkan di dinding tembok sekolah"
+      },
+      {
+        "label": "B",
+        "teks": "Karena poster ditempatkan di area lalu-lalang yang membutuhkan keterbacaan cepat (3–5 detik), sehingga penggunaan huruf sambung kecil, warna teks hitam di atas biru tua yang tidak kontras, dan teks paragraf panjang tanpa gambar membuat pesan poster tidak terbaca sambil lalu"
+      },
+      {
+        "label": "C",
+        "teks": "Karena siswa SMP lebih menyukai poster yang ditulis dalam bahasa Latin kuno"
+      },
+      {
+        "label": "D",
+        "teks": "Karena kantin sekolah tidak menjual makanan dan minuman pada jam istirahat"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "B. Prinsip utama poster di ruang publik/lorong adalah dapat ditangkap pesannya dalam hitun-\ngan detik oleh orang yang bergerak; huruf kecil tak kontras dan teks 250 kata tanpa visual melanggar syarat\nvisibilitas dan kepadatan bahasa poster.",
+    "valid": true
+  },
+  {
+    "nomor": 53,
+    "tipe": "pg_sederhana",
+    "paket": "Bab II: Menulis Iklan, Slogan, Poster - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Iklan, Slogan, Poster, Kalimat Persuasif, Imperatif, & Analisis Efektivitas Pesan",
+    "capaian_pembelajaran": "Peserta didik mengidentifikasi unsur-unsur iklan, slogan, dan poster, membedakan iklan komersial vs nonkomersial (ILM), menganalisis kalimat persuasif dan imperatif, serta mengevaluasi efektivitas pesan visual dan tipografi.",
+    "bacaan": {
+      "teks": "Gunungkidul DIY — Pendalaman Materi ASPD 2\n2024/2025 Scribd 829607232]\nsoal nomor 22 dan 23!\nWACANA LITERASI MEMBACA: WACANA LITERASI MEMBACA: EVALUASI POSTER KAMPANYE\nKANTIN SEHAT BEBAS PLASTIK\n(Paragraf 1) Pengurus OSIS Seksi Kesehatan dan Lingkungan memasang sebuah poster berukuran A3 di\ndinding lorong menuju kantin sekolah. Poster tersebut bertujuan mengajak seluruh siswa membawa botol\nminum isi ulang (tumbler) dan kotak makan sendiri dari rumah guna mengurangi timbunan sampah gelas\nplastik sekali pakai di sekolah.\n(Paragraf 2) Akan tetapi, setelah satu pekan dipasang, hampir tidak ada siswa yang berhenti membaca poster\ntersebut. Ketika dilakukan evaluasi bersama guru Bahasa Indonesia, ditemukan tiga kelemahan utama pada\ndesain dan teks poster itu: (a) ukuran huruf judul terlalu kecil dan menggunakan jenis huruf sambung (script)\nyang rumit; (b) latar belakang poster berwarna biru tua, sedangkan teks kalimatnya ditulis dengan warna\nhitam sehingga tidak kontras; dan (c) isi poster memuat paragraf penjelasan sepanjang 250 kata tanpa satu\npun ilustrasi gambar.\n(Paragraf 3) Tim OSIS kemudian merombak total poster tersebut menjadi versi baru: menggunakan judul\nberukuran besar dan tegas “BAWA TUMBLER-MU, SELAMATKAN BUMIMU!” berwarna kuning cerah di\natas latar biru tua, menampilkan satu ilustrasi besar botol minum ramah lingkungan yang segar, serta me-\nmangkas teks menjadi 3 poin keuntungan singkat (Hemat Uang Jajan, Air Tetap Dingin/Hangat, Sekolah\nBebas Sampah Plastik).\nBerdasarkan Paragraf 2 dan Paragraf 3 wacana di atas, mengapa poster versi pertama gagal menarik\nperhatian siswa yang berjalan melewati lorong kantin?",
+      "grup": "bacaan_bab2_evaluasi_poster"
+    },
+    "teks_soal": "Pada perbaikan poster versi baru di Paragraf 3 wacana soal nomor 22, pencantuman tiga poin (Hemat\nUang Jajan, Air Tetap Dingin/Hangat, Sekolah Bebas Sampah Plastik) menerapkan struktur teks ik-\nlan/poster bagian ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Daftar Pustaka Rujukan Ilmiah"
+      },
+      {
+        "label": "B",
+        "teks": "Alamat Pengirim Surat (Return Address)"
+      },
+      {
+        "label": "C",
+        "teks": "Koda / Amanat Cerita Pendek"
+      },
+      {
+        "label": "D",
+        "teks": "Tubuh Iklan / Alasan & Manfaat (Body Copy / Benefit) yang memberikan argumen rasional men- gapa khalayak perlu mengikuti ajakan pada judul (Headline)"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Dalam struktur teks iklan/poster, kalimat judul “BAWA TUMBLER-MU, SELAMATKAN BU-\nMIMU!” berfungsi sebagai Headline (Judul/Orientasi), sedangkan 3 poin keuntungan berfungsi sebagai Body\nCopy / Justification (alasan/manfaat rasional yang memperkuat ajakan).",
+    "valid": true
+  },
+  {
+    "nomor": 54,
+    "tipe": "pg_sederhana",
+    "paket": "Bab II: Menulis Iklan, Slogan, Poster - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Iklan, Slogan, Poster, Kalimat Persuasif, Imperatif, & Analisis Efektivitas Pesan",
+    "capaian_pembelajaran": "Peserta didik mengidentifikasi unsur-unsur iklan, slogan, dan poster, membedakan iklan komersial vs nonkomersial (ILM), menganalisis kalimat persuasif dan imperatif, serta mengevaluasi efektivitas pesan visual dan tipografi.",
+    "bacaan": null,
+    "teks_soal": "Perhatikan empat draf kalimat iklan toko buku dan apotek berikut!\n(1) \"Dapatkan koleksi buku ensiklopedia sains terlengkap dengan kualitas cetak terbaik hanya di Toko\nBuku Cendekia!\"\n(2) \"Apotik Sehat Farma melayani penebusan resep dokter dan konsultasi apoteker setiap hari pukul\n08.00–21.00 WIB.\"\n(3) \"Ayo, tingkatkan kreativitas menulis dan ketrampilan berbicara di sanggar bahasa kami!\"\n(4) \"Kami menjamin keaslian produk suplemen kesehatan yang telah memperoleh ijin resmi pemerintah.\"\nKalimat iklan yang seluruh kosakatanya ditulis menggunakan kata baku sesuai KBBI dan EYD Edisi V\nadalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Kalimat (3) (ketrampilan)"
+      },
+      {
+        "label": "B",
+        "teks": "Kalimat (2) (Apotik)"
+      },
+      {
+        "label": "C",
+        "teks": "Kalimat (1) (kualitas)"
+      },
+      {
+        "label": "D",
+        "teks": "Kalimat (4) (ijin)"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "C. Pada Kalimat (1), seluruh kata sudah baku (koleksi, ensiklopedia, kualitas). Sebaliknya,\nKalimat (2) tidak baku pada Apotik (baku: Apotek), Kalimat (3) tidak baku pada ketrampilan (baku: keter-\nampilan), dan Kalimat (4) tidak baku pada ijin (baku: izin).",
+    "valid": true
+  },
+  {
+    "nomor": 55,
+    "tipe": "pg_sederhana",
+    "paket": "Bab II: Menulis Iklan, Slogan, Poster - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Iklan, Slogan, Poster, Kalimat Persuasif, Imperatif, & Analisis Efektivitas Pesan",
+    "capaian_pembelajaran": "Peserta didik mengidentifikasi unsur-unsur iklan, slogan, dan poster, membedakan iklan komersial vs nonkomersial (ILM), menganalisis kalimat persuasif dan imperatif, serta mengevaluasi efektivitas pesan visual dan tipografi.",
+    "bacaan": null,
+    "teks_soal": "Seorang pelaku UMKM lokal ingin membuat Iklan Komersial untuk produk Keripik Tempe Sagu Ren-\ndah Minyak yang menyasar segmen ibu rumah tangga dan pekerja kantoran yang peduli kesehatan.\nKalimat iklan yang paling efektif dan sesuai dengan karakteristik sasaran konsumen tersebut adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "\"Keripik Tempe Super Pedas Level 100 dengan Minyak Melimpah, Berani Coba Tantangan Ekstrem Ini?!\""
+      },
+      {
+        "label": "B",
+        "teks": "\"Camilan Renyah Tanpa Rasa Bersalah! Keripik Tempe Sagu ’Sari Kedelai’ diolah dengan pemang- gang udara (air-fryer) rendah minyak, tinggi protein nabati, dan tanpa pengawet MSG—teman sehat kerja dan santai keluarga Anda!\""
+      },
+      {
+        "label": "C",
+        "teks": "\"Dicari karyawan pabrik tempe lulusan SMK, lamaran dikirim ke Jalan Melati Nomor 5.\""
+      },
+      {
+        "label": "D",
+        "teks": "\"Jangan pernah memakan tempe goreng karena tempe terbuat dari kacang kedelai pilihan!\""
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "B. Segmen konsumen ibu rumah tangga dan pekerja kantoran yang peduli kesehatan membu-\ntuhkan informasi nilai gizi dan keamanan pengolahan (rendah minyak, tinggi protein nabati, tanpa pengawet\nMSG) yang dikemas dengan kalimat sugestif yang relevan (Camilan Renyah Tanpa Rasa Bersalah).",
+    "valid": true
+  },
+  {
+    "nomor": 56,
+    "tipe": "pg_sederhana",
+    "paket": "Bab II: Menulis Iklan, Slogan, Poster - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Iklan, Slogan, Poster, Kalimat Persuasif, Imperatif, & Analisis Efektivitas Pesan",
+    "capaian_pembelajaran": "Peserta didik mengidentifikasi unsur-unsur iklan, slogan, dan poster, membedakan iklan komersial vs nonkomersial (ILM), menganalisis kalimat persuasif dan imperatif, serta mengevaluasi efektivitas pesan visual dan tipografi.",
+    "bacaan": null,
+    "teks_soal": "Dinas\nKesehatan membuat iklan layanan masyarakat (ILM) sebagai upaya mengurangi angka stunting pada\nanak. Perhatikan poster “Cegah Stunting Itu Penting! Rutinitas Minum Susu Setiap Hari” berikut!\nPernyataan evaluatif yang benar mengenai keefektifan penyajian visual dan kebahasaan kedua poster\npada gambar di atas adalah .... (Pilih lebih dari satu jawaban benar)\n\nPernyataan:\n(1) Poster sebelah kiri efektif menarik minat pembeli bahan makanan karena menampilkan visual produk\nbotol saus yang dikelilingi buah tomat segar utuh sebagai bukti kualitas bahan alami.\n(2) Poster sebelah kanan berhasil memadukan kampanye gemar membaca di toko buku dengan aksi\nnyata pelestarian lingkungan melalui penanaman pohon.\n(3) Kedua poster menggunakan tipografi judul yang berukuran besar, kontras, dan mudah terbaca dari\nkejauhan.\n(4) Sebuah poster yang baik dilarang keras menampilkan gambar ilustrasi produk maupun kegiatan\nmanusia.\n\nPernyataan yang tepat adalah ....",
+    "gambar": [
+      "/soal/bindo/kls8_bindo_p94_xref3088_880x880.jpeg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(1), (2), dan (3)"
+      },
+      {
+        "label": "B",
+        "teks": "(1) dan (4) saja"
+      },
+      {
+        "label": "C",
+        "teks": "(2) dan (4) saja"
+      },
+      {
+        "label": "D",
+        "teks": "(1), (2), (3), dan (4)"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "✓A, ✓B, ✓C — Keunggulan visual saus tomat (A), pesan ganda toko buku-penghijauan\n\n(B), dan tipografi kontras (C) seluruhnya benar.",
+    "valid": true
+  },
+  {
+    "nomor": 57,
+    "tipe": "pg_sederhana",
+    "paket": "Bab II: Menulis Iklan, Slogan, Poster - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Iklan, Slogan, Poster, Kalimat Persuasif, Imperatif, & Analisis Efektivitas Pesan",
+    "capaian_pembelajaran": "Peserta didik mengidentifikasi unsur-unsur iklan, slogan, dan poster, membedakan iklan komersial vs nonkomersial (ILM), menganalisis kalimat persuasif dan imperatif, serta mengevaluasi efektivitas pesan visual dan tipografi.",
+    "bacaan": null,
+    "teks_soal": "Evaluasilah pernyataan mengenai kaidah\nkebahasaan teks iklan, slogan, dan poster berikut! Pernyataan yang tepat adalah ....\n\nPernyataan:\n(1) Kalimat persuasif dalam iklan bertujuan membujuk dan meyakinkan khalayak secara halus meng-\ngunakan kata seperti mari, ayo, atau penonjolan keunggulan produk.\n(2) Slogan mengandalkan pilihan kata (diksi) yang ringkas, padat, ritmis/berima, dan mudah diingat oleh\n(3) Iklan Layanan Masyarakat (ILM) merupakan iklan nonkomersial yang diselenggarakan oleh lembaga\npemerintah atau organisasi sosial untuk mengedukasi publik.\n(4) Iklan baris di surat kabar wajib ditulis sepanjang lima halaman penuh tanpa boleh menggunakan\nsingkatan kata.\n\nPernyataan yang tepat adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(1), (2), dan (3)"
+      },
+      {
+        "label": "B",
+        "teks": "(1) dan (4) saja"
+      },
+      {
+        "label": "C",
+        "teks": "(2) dan (4) saja"
+      },
+      {
+        "label": "D",
+        "teks": "(1), (2), (3), dan (4)"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "✓A, ✓B, ✓C — Fungsi kalimat persuasif (A), ciri diksi slogan (B), dan tujuan ILM (C)\nbenar.",
+    "valid": true
+  },
+  {
+    "nomor": 58,
+    "tipe": "pg_sederhana",
+    "paket": "Bab II: Menulis Iklan, Slogan, Poster - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Iklan, Slogan, Poster, Kalimat Persuasif, Imperatif, & Analisis Efektivitas Pesan",
+    "capaian_pembelajaran": "Peserta didik mengidentifikasi unsur-unsur iklan, slogan, dan poster, membedakan iklan komersial vs nonkomersial (ILM), menganalisis kalimat persuasif dan imperatif, serta mengevaluasi efektivitas pesan visual dan tipografi.",
+    "bacaan": null,
+    "teks_soal": "Berilah tanda centang (✓) pada\nkolom Benar atau Salah untuk setiap pernyataan berikut!\nNo.\nPernyataan Analisis Bahasa Indonesia\nBenar\nSalah\n\nPernyataan:\n(a) Iklan penawaran produk sepatu sekolah dan jasa bimbingan belajar ter-\nmasuk ke dalam jenis iklan komersial.\n(b) Pencantuman\nnomor\ntelepon/narahubung\ndan\nalamat\npengiklan\nberfungsi memudahkan konsumen yang tertarik untuk membeli atau\nmemesan produk/jasa.\n(c) Slogan hanya boleh menggunakan gambar lukisan tanpa mencan-\ntumkan satu kata atau kalimat pun.\n\nKombinasi analisis nilai kebenaran (Benar/Salah) yang tepat adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(a) Benar, (b) Benar, (c) Salah"
+      },
+      {
+        "label": "B",
+        "teks": "(a) Benar, (b) Salah, (c) Salah"
+      },
+      {
+        "label": "C",
+        "teks": "(a) Salah, (b) Benar, (c) Benar"
+      },
+      {
+        "label": "D",
+        "teks": "(a) Benar, (b) Benar, (c) Benar"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "(a) Benar, (b) Benar, (c) Salah — (c) Salah, karena slogan justru mengutamakan kekuatan\nkata-kata/kalimat pendek.",
+    "valid": true
+  },
+  {
+    "nomor": 59,
+    "tipe": "pg_sederhana",
+    "paket": "Bab II: Menulis Iklan, Slogan, Poster - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Iklan, Slogan, Poster, Kalimat Persuasif, Imperatif, & Analisis Efektivitas Pesan",
+    "capaian_pembelajaran": "Peserta didik mengidentifikasi unsur-unsur iklan, slogan, dan poster, membedakan iklan komersial vs nonkomersial (ILM), menganalisis kalimat persuasif dan imperatif, serta mengevaluasi efektivitas pesan visual dan tipografi.",
+    "bacaan": null,
+    "teks_soal": "Evaluasilah kebe-\nnaran pernyataan kaidah bahasa berikut!\nNo.\nPernyataan Analisis Bahasa Indonesia\nBenar\nSalah\n\nPernyataan:\n(a) Kalimat “Matikan keran air rapat-rapat setelah digunakan!” merupakan\ncontoh kalimat imperatif (perintah) pada poster penghematan air.\n(b) Bentuk kata berimbuhan yang baku menurut KBBI untuk poster lingkun-\ngan adalah menyukseskan, pencinta alam, dan mengubah sampah.\n(c) Kalimat iklan diperbolehkan menipu konsumen dengan menjanjikan\nkhasiat palsu asalkan produknya cepat terjual habis.\n\nKombinasi analisis nilai kebenaran (Benar/Salah) yang tepat adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(a) Benar, (b) Benar, (c) Salah"
+      },
+      {
+        "label": "B",
+        "teks": "(a) Benar, (b) Salah, (c) Salah"
+      },
+      {
+        "label": "C",
+        "teks": "(a) Salah, (b) Benar, (c) Benar"
+      },
+      {
+        "label": "D",
+        "teks": "(a) Benar, (b) Benar, (c) Benar"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "(a) Benar, (b) Benar, (c) Salah — (c) Salah, karena iklan wajib jujur dan dilarang menipu\nkonsumen (melanggar UU Perlindungan Konsumen & Etika Pariwara).",
+    "valid": true
+  },
+  {
+    "nomor": 60,
+    "tipe": "pg_sederhana",
+    "paket": "Bab II: Menulis Iklan, Slogan, Poster - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Teks Iklan, Slogan, Poster, Kalimat Persuasif, Imperatif, & Analisis Efektivitas Pesan",
+    "capaian_pembelajaran": "Peserta didik mengidentifikasi unsur-unsur iklan, slogan, dan poster, membedakan iklan komersial vs nonkomersial (ILM), menganalisis kalimat persuasif dan imperatif, serta mengevaluasi efektivitas pesan visual dan tipografi.",
+    "bacaan": null,
+    "teks_soal": "Kelompok kewirausahaan\nsiswa Kelas VIII SMP Nusantara memproduksi minuman sehat hasil karya sendiri dengan data produk\nsebagai berikut: - Nama Produk: Sari Temulawak Madu ¨BugarCeria¨ - Bahan & Keunggulan: Diolah\ndari rimpang temulawak organik segar dan madu hutan murni, tanpa pemanis buatan dan tanpa bahan\npengawet; meningkatkan daya tahan tubuh dan nafsu makan. - Harga & Kemasan: Rp8.000,00 per botol\n(250 mL); beli 2 botol gratis 1 stiker edukasi kesehatan. - Tempat Pemesanan: Stand Koperasi Siswa\nSMP Nusantara atau WA 0811-9988-7766. Manakah rancangan Slogan dan Teks Iklan Komersial yang\npaling lengkap, jujur, efektif, dan persuasif mewakili seluruh data produk di atas?\nA. Slogan: ¨BugarCeria: Segar Alaminya, Kuat Imun Tubuhnya!¨ — Teks Iklan: Ingin tubuh tetap fit dan\nberenergi sepanjang hari di sekolah? Minumlah Sari Temulawak Madu ¨BugarCeria¨! Diolah dari tem-\nulawak organik segar dan madu hutan murni tanpa pengawet maupun pemanis buatan. Harga hemat\nhanya Rp8.000,00/botol (beli 2 botol gratis stiker keren!). Dapatkan segera di Stand Koperasi Siswa SMP\nNusantara atau pesan melalui WA 0811-9988-7766.\nB. Slogan: ¨Minuman Kemasan Botol Plastik Biasa.¨ — Teks Iklan: Kami menjual minuman temulawak\nyang rasanya sangat pahit dengan harga yang sangat mahal tanpa nomor telepon pemesanan.\nC. Slogan: ¨Jangan Minum Sari Temulawak!¨ — Teks Iklan: Kupaslah temulawak sebanyak dua kilogram,\nlalu iris tipis-tipis dan jemur di bawah sinar matahari selama tiga hari.\nD. Slogan: Öbat Ajaib Penyembuh Segala Penyakit dalam Satu Detik!¨ — Teks Iklan: Minuman ini men-\ngandung bahan kimia sintetis dan dijual khusus di luar negeri.\n\nBerdasarkan kaidah bahasa baku EYD Edisi V dan materi bab ini, rumusan analisis / hasil penyuntingan yang paling tepat adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "A — Pilihan A memuat slogan berima serta teks iklan yang mencakup seluruh unsur (nama\nproduk, keunggulan bahan alami, harga & promo, serta lokasi/nomor kontak WA). (Rujukan: https://id.\nscribd.com/document/684407182/Teks-Iklan-Slogan-Poster-Asesmen-Sumatif)."
+      },
+      {
+        "label": "B",
+        "teks": "Mengabaikan penggunaan tanda koma dan huruf kapital pada nama geografi serta membiarkan kata tidak baku tetap tertulis apa adanya"
+      },
+      {
+        "label": "C",
+        "teks": "Mengubah seluruh kalimat menjadi bahasa santai dan menghilangkan unsur fakta objektif dalam teks"
+      },
+      {
+        "label": "D",
+        "teks": "Menghapus seluruh paragraf wacana dan menggantinya dengan opini pribadi tanpa bukti ilmiah"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "A — Pilihan A memuat slogan berima serta teks iklan yang mencakup seluruh unsur (nama\nproduk, keunggulan bahan alami, harga & promo, serta lokasi/nomor kontak WA). (Rujukan: https://id.\nscribd.com/document/684407182/Teks-Iklan-Slogan-Poster-Asesmen-Sumatif).",
+    "valid": true
+  }
+]

@@ -1,0 +1,1033 @@
+[
+  {
+    "nomor": 121,
+    "tipe": "pg_sederhana",
+    "paket": "Bab V: Menciptakan Puisi - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Puisi Modern, Unsur Fisik & Batin, Puisi Diafan vs Prismatis, Diksi, Citraan, & Majas",
+    "capaian_pembelajaran": "Peserta didik mengapresiasi dan menganalisis unsur fisik puisi (diksi, imaji/citraan, kata konkret, majas, rima/ritme, tipografi) dan unsur batin puisi (tema, perasaan, nada, amanat), serta membedakan puisi diafan dan prismatis.",
+    "bacaan": null,
+    "teks_soal": "Berikut adalah larik puisi yang mengandung majas personifikasi, yaitu ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Ibu kembali ke pelukan buah hatinya"
+      },
+      {
+        "label": "C",
+        "teks": "Tahukah kamu siapa yang aku cintai?"
+      },
+      {
+        "label": "B",
+        "teks": "Jam dinding itu sedari tadi menatapku"
+      },
+      {
+        "label": "D",
+        "teks": "Semangatnya bagai api yang membara"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "B. Pada larik \"Jam dinding itu sedari tadi menatapku\", benda mati (jam dinding) diberi sifat\nperilaku manusia yaitu menatap.",
+    "valid": true
+  },
+  {
+    "nomor": 122,
+    "tipe": "pg_sederhana",
+    "paket": "Bab V: Menciptakan Puisi - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Puisi Modern, Unsur Fisik & Batin, Puisi Diafan vs Prismatis, Diksi, Citraan, & Majas",
+    "capaian_pembelajaran": "Peserta didik mengapresiasi dan menganalisis unsur fisik puisi (diksi, imaji/citraan, kata konkret, majas, rima/ritme, tipografi) dan unsur batin puisi (tema, perasaan, nada, amanat), serta membedakan puisi diafan dan prismatis.",
+    "bacaan": null,
+    "teks_soal": "Larik puisi berikut yang mengandung majas pars pro toto (sebagian mewakili keseluruhan) adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Mengapa kami harus angkat kaki dari tanah kami sendiri"
+      },
+      {
+        "label": "B",
+        "teks": "Buah tangan itulah yang kautunggu, bukan kepulanganku"
+      },
+      {
+        "label": "C",
+        "teks": "Dua hari yang terus memaksaku untuk menjadi orang lain"
+      },
+      {
+        "label": "D",
+        "teks": "Kita terus berputar, putar, dan putar mencari jawaban"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "A. Ungkapan angkat kaki menyebut sebagian anggota tubuh (kaki) untuk mewakili keseluruhan\ndiri seseorang yang pergi meninggalkan suatu tempat.",
+    "valid": true
+  },
+  {
+    "nomor": 123,
+    "tipe": "pg_sederhana",
+    "paket": "Bab V: Menciptakan Puisi - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Puisi Modern, Unsur Fisik & Batin, Puisi Diafan vs Prismatis, Diksi, Citraan, & Majas",
+    "capaian_pembelajaran": "Peserta didik mengapresiasi dan menganalisis unsur fisik puisi (diksi, imaji/citraan, kata konkret, majas, rima/ritme, tipografi) dan unsur batin puisi (tema, perasaan, nada, amanat), serta membedakan puisi diafan dan prismatis.",
+    "bacaan": null,
+    "teks_soal": "Perhatikan kutipan puisi karya Chairil Anwar berikut!\nDoa\nTuhanku / Dalam termangu / Aku masih menyebut nama-Mu / Biar susah sungguh / mengingat Kau\npenuh seluruh / caya-Mu panas suci / tinggal kerlip lilin di kelam sunyi / Tuhanku / aku hilang bentuk /\nremuk / Tuhanku / aku mengembara di negara asing / Tuhanku / di pintu-Mu aku mengetuk / aku tidak\nbisa berpaling\nMajas metafora dalam puisi di atas terdapat pada larik ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "kepada pemeluk teguh"
+      },
+      {
+        "label": "C",
+        "teks": "Aku masih menyebut nama-Mu"
+      },
+      {
+        "label": "B",
+        "teks": "di pintu-Mu aku mengetuk"
+      },
+      {
+        "label": "D",
+        "teks": "aku tidak bisa berpaling"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "B. Larik \"di pintu-Mu aku mengetuk\" menggunakan metafora pintu-Mu untuk melambangkan\njalan permohonan ampun dan pertobatan seorang hamba kepada Tuhan.",
+    "valid": true
+  },
+  {
+    "nomor": 124,
+    "tipe": "pg_sederhana",
+    "paket": "Bab V: Menciptakan Puisi - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Puisi Modern, Unsur Fisik & Batin, Puisi Diafan vs Prismatis, Diksi, Citraan, & Majas",
+    "capaian_pembelajaran": "Peserta didik mengapresiasi dan menganalisis unsur fisik puisi (diksi, imaji/citraan, kata konkret, majas, rima/ritme, tipografi) dan unsur batin puisi (tema, perasaan, nada, amanat), serta membedakan puisi diafan dan prismatis.",
+    "bacaan": {
+      "teks": "Perempuan Berpayung Tampah\nKutatap mata sendunya yang selalu tersenyum\nKulit keriputnya yang seolah tertawa\nKaki-kaki kecilnya yang tak pernah lelah melangkah\nPerempuan berpayung tampah\nMenjajakan berbagai-bagai dagangan ke sepanjang arah",
+      "grup": "bacaan_bab5_soal4"
+    },
+    "teks_soal": "Perhatikan kutipan puisi berikut!\nPerempuan Berpayung Tampah\nKutatap mata sendunya yang selalu tersenyum / kulit keriputnya yang seolah tertawa / kaki-kaki kecilnya\nyang tak pernah lelah melangkah / Perempuan berpayung tampah / menjajakan berbagai-bagai dagan-\ngan ke sepanjang arah\nMajas personifikasi dalam puisi di atas terdapat pada larik ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "menyambut pagi dengan segala sumpah kebaikan"
+      },
+      {
+        "label": "B",
+        "teks": "menjajakan berbagai-bagai dagangan"
+      },
+      {
+        "label": "C",
+        "teks": "kaki-kaki kecilnya yang tak pernah lelah melangkah"
+      },
+      {
+        "label": "D",
+        "teks": "kutatap mata sendunya yang selalu tersenyum"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Pada larik \"kutatap mata sendunya yang selalu tersenyum\", mata digambarkan seolah-olah\nmanusia utuh yang dapat tersenyum.",
+    "valid": true
+  },
+  {
+    "nomor": 125,
+    "tipe": "pg_sederhana",
+    "paket": "Bab V: Menciptakan Puisi - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Puisi Modern, Unsur Fisik & Batin, Puisi Diafan vs Prismatis, Diksi, Citraan, & Majas",
+    "capaian_pembelajaran": "Peserta didik mengapresiasi dan menganalisis unsur fisik puisi (diksi, imaji/citraan, kata konkret, majas, rima/ritme, tipografi) dan unsur batin puisi (tema, perasaan, nada, amanat), serta membedakan puisi diafan dan prismatis.",
+    "bacaan": null,
+    "teks_soal": "Perhatikan kutipan puisi berikut!\nkata Sapardi, tiada yang lebih tabah dari hujan bulan Juni / tapi kata Ibu, tiada yang tabahnya men-\ngalahkan perjuangan Ayah / Dilan bilang rindu itu berat, makanya banyak orang tak akan kuat / tapi Ayah\nbilang, beratnya rindu tak akan sebanding dengan kesabaran Ibu / biar tubuh remuk, biar jiwa redam /\nkasih sayang ayah ibu tak akan berkurang meski sekuku\nMajas yang terdapat pada bait terakhir kutipan puisi tersebut adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "personifikasi"
+      },
+      {
+        "label": "C",
+        "teks": "epifora"
+      },
+      {
+        "label": "B",
+        "teks": "metafora"
+      },
+      {
+        "label": "D",
+        "teks": "hiperbola"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Larik \"biar tubuh remuk, biar jiwa redam / kasih sayang ayah ibu tak akan berkurang meski\nsekuku\" mengungkapkan penekanan secara berlebih-lebihan (hiperbola).",
+    "valid": true
+  },
+  {
+    "nomor": 126,
+    "tipe": "pg_sederhana",
+    "paket": "Bab V: Menciptakan Puisi - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Puisi Modern, Unsur Fisik & Batin, Puisi Diafan vs Prismatis, Diksi, Citraan, & Majas",
+    "capaian_pembelajaran": "Peserta didik mengapresiasi dan menganalisis unsur fisik puisi (diksi, imaji/citraan, kata konkret, majas, rima/ritme, tipografi) dan unsur batin puisi (tema, perasaan, nada, amanat), serta membedakan puisi diafan dan prismatis.",
+    "bacaan": {
+      "teks": "Tuhanku\nDalam termangu\nAku masih menyebut nama-Mu\nBiar susah sungguh\nmengingat Kau penuh seluruh\nCahaya-Mu panas suci\ntinggal kerdip lilin di kelam sunyi\nTuhanku\naku hilang bentuk\nremuk\nTuhanku\naku mengembara di negeri asing\nTuhanku\ndi pintu-Mu aku mengetuk\naku tidak bisa berpaling\nPengulangan sapaan \"Tuhanku\" pada awal beberapa bait puisi di atas menggunakan gaya bahasa\nMajas Repetisi. Fungsi efek puitis dari pengulangan tersebut adalah ....",
+      "grup": "bacaan_bab5_puisi_doa"
+    },
+    "teks_soal": "Bacalah kutipan puisi \"Doa\" karya Chairil Anwar berikut!\nTuhanku\nDalam termangu\nAku masih menyebut nama-Mu\nBiar susah sungguh\nmengingat Kau penuh seluruh\nCahaya-Mu panas suci\ntinggal kerdip lilin di kelam sunyi\nTuhanku\naku hilang bentuk\nremuk\nTuhanku\naku mengembara di negeri asing\nTuhanku\ndi pintu-Mu aku mengetuk\naku tidak bisa berpaling\nPengulangan sapaan \"Tuhanku\" pada awal beberapa bait puisi di atas menggunakan gaya bahasa\nMajas Repetisi. Fungsi efek puitis dari pengulangan tersebut adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Menggantikan fungsi rima dan irama di dalam bait puisi"
+      },
+      {
+        "label": "B",
+        "teks": "Menunjukkan bahwa penyair kehabisan kosakata bahasa Indonesia saat menulis puisi"
+      },
+      {
+        "label": "C",
+        "teks": "Menciptakan suasana jenaka agar pembaca tertawa saat membaca puisi"
+      },
+      {
+        "label": "D",
+        "teks": "Memberikan penekanan emosional yang sangat kuat atas kepasrahan, kerinduan, dan kesungguhan doa penyair kepada Tuhan"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.",
+    "valid": true
+  },
+  {
+    "nomor": 127,
+    "tipe": "pg_sederhana",
+    "paket": "Bab V: Menciptakan Puisi - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Puisi Modern, Unsur Fisik & Batin, Puisi Diafan vs Prismatis, Diksi, Citraan, & Majas",
+    "capaian_pembelajaran": "Peserta didik mengapresiasi dan menganalisis unsur fisik puisi (diksi, imaji/citraan, kata konkret, majas, rima/ritme, tipografi) dan unsur batin puisi (tema, perasaan, nada, amanat), serta membedakan puisi diafan dan prismatis.",
+    "bacaan": {
+      "teks": "Tuhanku\nDalam termangu\nAku masih menyebut nama-Mu\nBiar susah sungguh\nmengingat Kau penuh seluruh\nCahaya-Mu panas suci\ntinggal kerdip lilin di kelam sunyi\nTuhanku\naku hilang bentuk\nremuk\nTuhanku\naku mengembara di negeri asing\nTuhanku\ndi pintu-Mu aku mengetuk\naku tidak bisa berpaling\nPengulangan sapaan \"Tuhanku\" pada awal beberapa bait puisi di atas menggunakan gaya bahasa\nMajas Repetisi. Fungsi efek puitis dari pengulangan tersebut adalah ....",
+      "grup": "bacaan_bab5_puisi_doa"
+    },
+    "teks_soal": "Dalam kutipan puisi \"Doa\" karya Chairil Anwar pada soal nomor 6, terdapat larik metaforis: *\"tinggal\nkerdip lilin di kelam sunyi\"*. Makna simbolik/lambang dari frasa \"kerdip lilin\" di tengah \"kelam sunyi\"\nadalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Pemadaman aliran listrik PLN di rumah penyair sehingga ia harus membeli lilin di warung"
+      },
+      {
+        "label": "B",
+        "teks": "Secercah iman dan harapan kepada Tuhan yang masih menyala di dalam hati penyair meskipun ia sedang berada di tengah kegelapan cobaan hidup dan kesunyian batin"
+      },
+      {
+        "label": "C",
+        "teks": "Pesta ulang tahun meriah yang menyalakan lilin di atas kue tart pada malam hari"
+      },
+      {
+        "label": "D",
+        "teks": "Kebakaran hutan besar yang menghanguskan pepohonan di malam yang sepi"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "B. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.",
+    "valid": true
+  },
+  {
+    "nomor": 128,
+    "tipe": "pg_sederhana",
+    "paket": "Bab V: Menciptakan Puisi - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Puisi Modern, Unsur Fisik & Batin, Puisi Diafan vs Prismatis, Diksi, Citraan, & Majas",
+    "capaian_pembelajaran": "Peserta didik mengapresiasi dan menganalisis unsur fisik puisi (diksi, imaji/citraan, kata konkret, majas, rima/ritme, tipografi) dan unsur batin puisi (tema, perasaan, nada, amanat), serta membedakan puisi diafan dan prismatis.",
+    "bacaan": null,
+    "teks_soal": "Perhatikan bait puisi berikut dan identifikasilah jenis citraan (imaji) pada tiap lariknya!\n(1) Kulihat hamparan padi menguning keemasan di lembah desa\n(2) Terdengar alunan seruling bambu menggema merdu dari gubuk tua\n(3) Angin sore membelai lembut kulit wajahku dengan kesejukan lembah\n(4) Harum tanah basah sehabis gerimis menyeruak memenuhi udara\nUrutan jenis citraan pada larik (1), (2), (3), dan (4) secara berurutan adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(1) Perabaan – (2) Pencecapan – (3) Penglihatan – (4) Pendengaran"
+      },
+      {
+        "label": "B",
+        "teks": "(1) Pendengaran – (2) Penglihatan – (3) Penciuman – (4) Pencecapan"
+      },
+      {
+        "label": "C",
+        "teks": "(1) Penglihatan (visual) – (2) Pendengaran (auditif) – (3) Perabaan (taktil) – (4) Penciuman (olfaktif)"
+      },
+      {
+        "label": "D",
+        "teks": "Keempat larik tersebut seluruhnya hanya menggunakan citraan pencecapan (gustatif)"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "C. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.",
+    "valid": true
+  },
+  {
+    "nomor": 129,
+    "tipe": "pg_sederhana",
+    "paket": "Bab V: Menciptakan Puisi - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Puisi Modern, Unsur Fisik & Batin, Puisi Diafan vs Prismatis, Diksi, Citraan, & Majas",
+    "capaian_pembelajaran": "Peserta didik mengapresiasi dan menganalisis unsur fisik puisi (diksi, imaji/citraan, kata konkret, majas, rima/ritme, tipografi) dan unsur batin puisi (tema, perasaan, nada, amanat), serta membedakan puisi diafan dan prismatis.",
+    "bacaan": null,
+    "teks_soal": "Pada Buku Siswa Bab V diperkenalkan langkah praktis menciptakan puisi dengan metode 3M, yaitu\nMenemukan, Menuliskan, dan Menyunting. Kegiatan yang tepat dilakukan oleh seorang siswa pada\ntahap kedua (Menuliskan) dan tahap ketiga (Menyunting) secara berurutan adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Menuliskan: berdeklamasi di panggung tanpa teks; Menyunting: menentukan topik awal sebelum mengamati alam"
+      },
+      {
+        "label": "B",
+        "teks": "Menuliskan: membakar kertas catatan puisi; Menyunting: menyalin puisi karya penyair terkenal lalu mengakuinya sebagai karya sendiri"
+      },
+      {
+        "label": "C",
+        "teks": "Menuliskan: membuat tabel statistik pertumbuhan penduduk; Menyunting: membuat kop surat resmi sekolah"
+      },
+      {
+        "label": "D",
+        "teks": "Menuliskan: menuangkan ide objek inspirasi ke dalam larik-larik puisi menggunakan kata konkret dan majas; Menyunting: memeriksa kembali dan mengganti diksi yang kurang puitis agar rima dan maknanya semakin kuat"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.",
+    "valid": true
+  },
+  {
+    "nomor": 130,
+    "tipe": "pg_sederhana",
+    "paket": "Bab V: Menciptakan Puisi - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Puisi Modern, Unsur Fisik & Batin, Puisi Diafan vs Prismatis, Diksi, Citraan, & Majas",
+    "capaian_pembelajaran": "Peserta didik mengapresiasi dan menganalisis unsur fisik puisi (diksi, imaji/citraan, kata konkret, majas, rima/ritme, tipografi) dan unsur batin puisi (tema, perasaan, nada, amanat), serta membedakan puisi diafan dan prismatis.",
+    "bacaan": {
+      "teks": "Tuhanku\nDalam termangu\nAku masih menyebut nama-Mu\nBiar susah sungguh\nmengingat Kau penuh seluruh\nCahaya-Mu panas suci\ntinggal kerdip lilin di kelam sunyi\nTuhanku\naku hilang bentuk\nremuk\nTuhanku\naku mengembara di negeri asing\nTuhanku\ndi pintu-Mu aku mengetuk\naku tidak bisa berpaling\nPengulangan sapaan \"Tuhanku\" pada awal beberapa bait puisi di atas menggunakan gaya bahasa\nMajas Repetisi. Fungsi efek puitis dari pengulangan tersebut adalah ....",
+      "grup": "bacaan_bab5_puisi_doa"
+    },
+    "teks_soal": "Bacalah bait puisi yang larik keempatnya masih rumpang berikut!\nSenja turun perlahan di batas dermaga,\nperahu-perahu nelayan menambatkan sauhnya,\ncamar putih pulang menuju sarang di tebing karang,\n[....]\nLarik bermajas personifikasi yang paling puitis dan selaras dengan suasana ketenangan senja di pantai\nuntuk melengkapi bait puisi di atas adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "sedangkan harga ikan tongkol di tempat pelelangan ikan naik dua ribu rupiah."
+      },
+      {
+        "label": "B",
+        "teks": "sementara ombak malam mulai menyanyikan lagu pengantar tidur bagi lautan."
+      },
+      {
+        "label": "C",
+        "teks": "oleh karena itu nelayan wajib membawa surat izin menangkap ikan dari dinas."
+      },
+      {
+        "label": "D",
+        "teks": "tiba-tiba matahari terbit dengan sangat terik tepat pada pukul dua belas siang."
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "B. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.",
+    "valid": true
+  },
+  {
+    "nomor": 131,
+    "tipe": "pg_sederhana",
+    "paket": "Bab V: Menciptakan Puisi - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Puisi Modern, Unsur Fisik & Batin, Puisi Diafan vs Prismatis, Diksi, Citraan, & Majas",
+    "capaian_pembelajaran": "Peserta didik mengapresiasi dan menganalisis unsur fisik puisi (diksi, imaji/citraan, kata konkret, majas, rima/ritme, tipografi) dan unsur batin puisi (tema, perasaan, nada, amanat), serta membedakan puisi diafan dan prismatis.",
+    "bacaan": {
+      "teks": "Tuhanku\nDalam termangu\nAku masih menyebut nama-Mu\nBiar susah sungguh\nmengingat Kau penuh seluruh\nCahaya-Mu panas suci\ntinggal kerdip lilin di kelam sunyi\nTuhanku\naku hilang bentuk\nremuk\nTuhanku\naku mengembara di negeri asing\nTuhanku\ndi pintu-Mu aku mengetuk\naku tidak bisa berpaling\nPengulangan sapaan \"Tuhanku\" pada awal beberapa bait puisi di atas menggunakan gaya bahasa\nMajas Repetisi. Fungsi efek puitis dari pengulangan tersebut adalah ....",
+      "grup": "bacaan_bab5_puisi_doa"
+    },
+    "teks_soal": "Bacalah kutipan puisi \"Gadis Peminta-minta\" karya Toto Sudarto Bachtiar berikut!\nSetiap kita bertemu, gadis kecil berkaleng kecil\nSenyummu terlalu kekal untuk kenal duka\nTengadah padaku, pada bulan merah jambu\nTapi kotaku jadi hilang, tanpa jiwa\nNada (tone) sikap penyair terhadap sosok gadis kecil peminta-minta dan suasana hati yang terbangun\nbagi pembaca dari bait puisi di atas adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Nada penuh simpati, kasih sayang, dan kepedulian kemanusiaan; suasana mengharukan dan menyentuh nurani"
+      },
+      {
+        "label": "B",
+        "teks": "Nada mengejek, membenci, dan mengusir; suasana gembira dan jenaka"
+      },
+      {
+        "label": "C",
+        "teks": "Nada sombong dan menggurui; suasana menegangkan seperti cerita horor"
+      },
+      {
+        "label": "D",
+        "teks": "Nada acuh tak acuh; suasana meriah di pusat perbelanjaan"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "A. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.",
+    "valid": true
+  },
+  {
+    "nomor": 132,
+    "tipe": "pg_sederhana",
+    "paket": "Bab V: Menciptakan Puisi - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Puisi Modern, Unsur Fisik & Batin, Puisi Diafan vs Prismatis, Diksi, Citraan, & Majas",
+    "capaian_pembelajaran": "Peserta didik mengapresiasi dan menganalisis unsur fisik puisi (diksi, imaji/citraan, kata konkret, majas, rima/ritme, tipografi) dan unsur batin puisi (tema, perasaan, nada, amanat), serta membedakan puisi diafan dan prismatis.",
+    "bacaan": null,
+    "teks_soal": "Dalam puisi modern, penyair sengaja memilih kata-kata bernilai rasa puitis (diksi arkais/estetis) untuk\nmenggantikan kata sehari-hari yang datar.\nPasangan kata sehari-hari dan pilihan diksi puitis yang\nsepadan maknanya menurut tabel Jelajah Kata Buku Siswa adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Air = api membara; Langit = dasar jurang; Bunga = duri tajam"
+      },
+      {
+        "label": "B",
+        "teks": "Angin = batu karang; Matahari = rembulan; Malam = siang bolong; Hati = sepatu"
+      },
+      {
+        "label": "C",
+        "teks": "Angin = bayu / pawana; Matahari = mentari / surya; Malam/Gelap = kelam / gulita; Hati = kalbu / sukma"
+      },
+      {
+        "label": "D",
+        "teks": "Semua diksi puitis dilarang digunakan karena tidak memiliki arti di dalam kamus"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "C. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.",
+    "valid": true
+  },
+  {
+    "nomor": 133,
+    "tipe": "pg_sederhana",
+    "paket": "Bab V: Menciptakan Puisi - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Puisi Modern, Unsur Fisik & Batin, Puisi Diafan vs Prismatis, Diksi, Citraan, & Majas",
+    "capaian_pembelajaran": "Peserta didik mengapresiasi dan menganalisis unsur fisik puisi (diksi, imaji/citraan, kata konkret, majas, rima/ritme, tipografi) dan unsur batin puisi (tema, perasaan, nada, amanat), serta membedakan puisi diafan dan prismatis.",
+    "bacaan": null,
+    "teks_soal": "Perhatikan tata wajah (tipografi) dua puisi: Puisi A ditulis rata kiri rapi dalam bait-bait yang masing-\nmasing terdiri atas empat baris, sedangkan Puisi B ditulis dengan baris-baris yang menjorok berliku-liku\nmembentuk siluet gelombang air laut atau tangga menurun. Fungsi pemilihan tipografi unik pada Puisi\nB adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Karena puisi modern diwajibkan mengikuti aturan baris pantun lama"
+      },
+      {
+        "label": "B",
+        "teks": "Karena mesin ketik yang digunakan penyair rusak pada tombol spasi"
+      },
+      {
+        "label": "C",
+        "teks": "Untuk menyembunyikan kesalahan ejaan kata tidak baku di dalam puisi"
+      },
+      {
+        "label": "D",
+        "teks": "Memperkuat kesan visual dan mendukung makna puisi secara artistik sejak pertama kali dilihat oleh mata pembaca"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.",
+    "valid": true
+  },
+  {
+    "nomor": 134,
+    "tipe": "pg_sederhana",
+    "paket": "Bab V: Menciptakan Puisi - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Puisi Modern, Unsur Fisik & Batin, Puisi Diafan vs Prismatis, Diksi, Citraan, & Majas",
+    "capaian_pembelajaran": "Peserta didik mengapresiasi dan menganalisis unsur fisik puisi (diksi, imaji/citraan, kata konkret, majas, rima/ritme, tipografi) dan unsur batin puisi (tema, perasaan, nada, amanat), serta membedakan puisi diafan dan prismatis.",
+    "bacaan": {
+      "teks": "Tryout TKA SMP Bahasa Indonesia Pusmendik Kemendikdasmen — Scribd\n994524260 No. 4–6 & Scribd 980888883 No. 1–3]\njawab soal nomor 14, 15, dan 16!\nWACANA LITERASI MEMBACA: WACANA LITERASI MEMBACA: PUISI ’PEREMPUAN-PEREMPUAN\nPERKASA’ (HARTOJO ANDANGDJAJA)\n(Bait 1)\nPerempuan-perempuan yang membawa bakul di pagi buta,\ndari manakah mereka?\nKe stasiun kereta mereka datang dari bukit-bukit desa\nsebelum peluit kereta pagi terjaga\nsebelum hari bermula dalam pesta kerja.\n(Bait 2)\nPerempuan-perempuan yang membawa bakul dalam kereta,\nke manakah mereka?\nDi atas roda-roda baja mereka berkendara\nMereka berlomba dengan surya menuju ke gerbang kota\nmerebut hidup di pasar-pasar kota.\n(Bait 3)\nPerempuan-perempuan yang membawa bakul di pagi buta,\nsiapakah mereka?\nMereka ialah ibu-ibu berhati baja, perempuan-perempuan perkasa\nakar-akar yang melata dari tanah perbukitan turun ke kota\nMereka: cinta kasih yang bergerak menghidupi desa demi desa.\n(Tanggapan Tiga Siswa:)\n• Dina: “Larik ’sebelum peluit kereta pagi terjaga’ menggunakan majas personifikasi untuk menggambarkan\nbetapa paginya para ibu pedagang desa itu berangkat bekerja.”\n• Mira: “Larik ’mereka ialah ibu-ibu berhati baja’ menggunakan majas metafora yang bermakna para ibu itu\nberwatak kejam dan tidak memiliki belas kasihan.”\n• Tika: “Aku tidak setuju dengan Mira. Ungkapan ’berhati baja’ dan ’akar-akar yang melata’ pada Bait 3\njustru bermakna ketangguhan mental dan ketulusan cinta kasih para ibu pencari nafkah yang menghidupi\nkeluarganya di desa.”\nBerdasarkan Bait 1 dan Bait 2 puisi \"Perempuan-Perempuan Perkasa\" di atas, siapakah sosok yang\ndigambarkan oleh penyair dan bagaimana perjuangan hidup mereka?",
+      "grup": "bacaan_bab5_perempuan_perkasa"
+    },
+    "teks_soal": "Bacalah wacana teks puisi tiga bait karya Hartojo Andangdjaja dan diskusi tiga siswa berikut untuk men-\njawab soal nomor 14, 15, dan 16!\n\nWACANA LITERASI MEMBACA: WACANA LITERASI MEMBACA: PUISI ’PEREMPUAN-PEREMPUAN\nPERKASA’ (HARTOJO ANDANGDJAJA)\n(Bait 1)\nPerempuan-perempuan yang membawa bakul di pagi buta,\ndari manakah mereka?\nKe stasiun kereta mereka datang dari bukit-bukit desa\nsebelum peluit kereta pagi terjaga\nsebelum hari bermula dalam pesta kerja.\n(Bait 2)\nPerempuan-perempuan yang membawa bakul dalam kereta,\nke manakah mereka?\nDi atas roda-roda baja mereka berkendara\nMereka berlomba dengan surya menuju ke gerbang kota\nmerebut hidup di pasar-pasar kota.\n(Bait 3)\nPerempuan-perempuan yang membawa bakul di pagi buta,\nsiapakah mereka?\nMereka ialah ibu-ibu berhati baja, perempuan-perempuan perkasa\nakar-akar yang melata dari tanah perbukitan turun ke kota\nMereka: cinta kasih yang bergerak menghidupi desa demi desa.\n(Tanggapan Tiga Siswa:)\n• Dina: “Larik ’sebelum peluit kereta pagi terjaga’ menggunakan majas personifikasi untuk menggambarkan\nbetapa paginya para ibu pedagang desa itu berangkat bekerja.”\n• Mira: “Larik ’mereka ialah ibu-ibu berhati baja’ menggunakan majas metafora yang bermakna para ibu itu\nberwatak kejam dan tidak memiliki belas kasihan.”\n• Tika: “Aku tidak setuju dengan Mira. Ungkapan ’berhati baja’ dan ’akar-akar yang melata’ pada Bait 3\njustru bermakna ketangguhan mental dan ketulusan cinta kasih para ibu pencari nafkah yang menghidupi\nkeluarganya di desa.”\nBerdasarkan Bait 1 dan Bait 2 puisi \"Perempuan-Perempuan Perkasa\" di atas, siapakah sosok yang\ndigambarkan oleh penyair dan bagaimana perjuangan hidup mereka?",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Para masinis kereta api perempuan yang mengemudikan roda-roda baja pada malam hari"
+      },
+      {
+        "label": "B",
+        "teks": "Para wisatawan perempuan dari kota besar yang sedang berlibur naik kereta api menuju bukit desa"
+      },
+      {
+        "label": "C",
+        "teks": "Para atlet lari perempuan yang sedang mengikuti perlombaan lari pagi di stasiun kereta"
+      },
+      {
+        "label": "D",
+        "teks": "Para ibu pedagang kecil dari perbukitan desa yang bekerja keras membawa bakul dagangan naik kereta api sejak pagi buta (sebelum matahari terbit) menuju pasar-pasar kota demi mencari nafkah bagi keluarga"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Larik-larik puisi menggambarkan para perempuan pedagang desa yang menggendong\nbakul menuju stasiun kereta sejak pagi buta (sebelum peluit kereta pagi terjaga, berlomba dengan surya\nmenuju ke gerbang kota, merebut hidup di pasar-pasar kota).",
+    "valid": true
+  },
+  {
+    "nomor": 135,
+    "tipe": "pg_sederhana",
+    "paket": "Bab V: Menciptakan Puisi - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Puisi Modern, Unsur Fisik & Batin, Puisi Diafan vs Prismatis, Diksi, Citraan, & Majas",
+    "capaian_pembelajaran": "Peserta didik mengapresiasi dan menganalisis unsur fisik puisi (diksi, imaji/citraan, kata konkret, majas, rima/ritme, tipografi) dan unsur batin puisi (tema, perasaan, nada, amanat), serta membedakan puisi diafan dan prismatis.",
+    "bacaan": {
+      "teks": "Tryout TKA SMP Bahasa Indonesia Pusmendik Kemendikdasmen — Scribd\n994524260 No. 4–6 & Scribd 980888883 No. 1–3]\njawab soal nomor 14, 15, dan 16!\nWACANA LITERASI MEMBACA: WACANA LITERASI MEMBACA: PUISI ’PEREMPUAN-PEREMPUAN\nPERKASA’ (HARTOJO ANDANGDJAJA)\n(Bait 1)\nPerempuan-perempuan yang membawa bakul di pagi buta,\ndari manakah mereka?\nKe stasiun kereta mereka datang dari bukit-bukit desa\nsebelum peluit kereta pagi terjaga\nsebelum hari bermula dalam pesta kerja.\n(Bait 2)\nPerempuan-perempuan yang membawa bakul dalam kereta,\nke manakah mereka?\nDi atas roda-roda baja mereka berkendara\nMereka berlomba dengan surya menuju ke gerbang kota\nmerebut hidup di pasar-pasar kota.\n(Bait 3)\nPerempuan-perempuan yang membawa bakul di pagi buta,\nsiapakah mereka?\nMereka ialah ibu-ibu berhati baja, perempuan-perempuan perkasa\nakar-akar yang melata dari tanah perbukitan turun ke kota\nMereka: cinta kasih yang bergerak menghidupi desa demi desa.\n(Tanggapan Tiga Siswa:)\n• Dina: “Larik ’sebelum peluit kereta pagi terjaga’ menggunakan majas personifikasi untuk menggambarkan\nbetapa paginya para ibu pedagang desa itu berangkat bekerja.”\n• Mira: “Larik ’mereka ialah ibu-ibu berhati baja’ menggunakan majas metafora yang bermakna para ibu itu\nberwatak kejam dan tidak memiliki belas kasihan.”\n• Tika: “Aku tidak setuju dengan Mira. Ungkapan ’berhati baja’ dan ’akar-akar yang melata’ pada Bait 3\njustru bermakna ketangguhan mental dan ketulusan cinta kasih para ibu pencari nafkah yang menghidupi\nkeluarganya di desa.”\nBerdasarkan Bait 1 dan Bait 2 puisi \"Perempuan-Perempuan Perkasa\" di atas, siapakah sosok yang\ndigambarkan oleh penyair dan bagaimana perjuangan hidup mereka?",
+      "grup": "bacaan_bab5_perempuan_perkasa"
+    },
+    "teks_soal": "Dalam diskusi apresiasi puisi pada wacana soal nomor 14, analisis siapa yang tepat dan siapa yang\nkeliru dalam menafsirkan makna majas puisi tersebut?",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Analisis Dina dan Tika tepat, sedangkan analisis Mira keliru; karena metafora \"ibu-ibu berhati baja\" pada Bait 3 bukan bermakna kejam, melainkan bermakna memiliki ketabahan, kekuatan tekad, dan ketangguhan luar biasa demi menghidupi keluarga (cinta kasih yang bergerak menghidupi desa demi desa)"
+      },
+      {
+        "label": "B",
+        "teks": "Analisis Mira paling tepat, sedangkan analisis Dina dan Tika keliru"
+      },
+      {
+        "label": "C",
+        "teks": "Ketiga siswa tersebut keliru karena puisi Perempuan-Perempuan Perkasa merupakan puisi diafan yang tidak memiliki majas sama sekali"
+      },
+      {
+        "label": "D",
+        "teks": "Hanya analisis Dina yang tepat, sedangkan Bait 3 tidak memiliki amanat"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "A. Dina tepat mengidentifikasi majas personifikasi (peluit kereta pagi terjaga), dan Tika tepat\nmengoreksi kesalahan Mira dengan membuktikan dari konteks larik terakhir Bait 3 bahwa berhati baja melam-\nbangkan ketangguhan perjuangan dan cinta kasih ibu.",
+    "valid": true
+  },
+  {
+    "nomor": 136,
+    "tipe": "pg_sederhana",
+    "paket": "Bab V: Menciptakan Puisi - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Puisi Modern, Unsur Fisik & Batin, Puisi Diafan vs Prismatis, Diksi, Citraan, & Majas",
+    "capaian_pembelajaran": "Peserta didik mengapresiasi dan menganalisis unsur fisik puisi (diksi, imaji/citraan, kata konkret, majas, rima/ritme, tipografi) dan unsur batin puisi (tema, perasaan, nada, amanat), serta membedakan puisi diafan dan prismatis.",
+    "bacaan": null,
+    "teks_soal": "Perhatikan perbandingan dua puisi modern Indonesia berikut!\n\nPUISI 1: DENGAN PUISI, AKU (TAUFIQ ISMAIL)\nPUISI\n2:\nGADIS\nPEMINTA-MINTA\n(TOTO\nS.\nBACHTIAR)\nDengan puisi aku bernyanyi\nSampai senja umurku nanti\nDengan puisi aku bercinta\nBerbaur cakrawala\nDengan puisi aku mengenang\nKeabadian yang akan datang\nDengan puisi aku menangis\nJarum waktu bila kejam mengiris\nSetiap kita bertemu, gadis kecil berkaleng kecil\nSenyummu terlalu kekal untuk kenal duka\nTengadah padaku, pada bulan merah jambu\nTapi kotaku jadi hilang, tanpa jiwa\nIngin aku ikut, gadis kecil berkaleng kecil\nPulang ke bawah jembatan yang melulur sosok\nHidup dari kehidupan angan-angan yang gemerlapan\nPerbedaan tema pokok dan gaya pengulangan bunyi/majas yang menonjol pada kedua puisi di atas\nadalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Puisi 1 bertema kemiskinan kota; sedangkan Puisi 2 bertema keindahan alam pegunungan"
+      },
+      {
+        "label": "B",
+        "teks": "Puisi 1 bertema kesetiaan penyair menjadikan puisi sebagai pendamping seluruh perjalanan hidupnya dengan menonjolkan majas repetisi anafora (\"Dengan puisi aku...\"); sedangkan Puisi 2 bertema empati kemanusiaan terhadap anak jalanan yang tetap tersenyum di tengah kemiskinan kota"
+      },
+      {
+        "label": "C",
+        "teks": "Puisi 1 merupakan puisi rakyat gurindam; sedangkan Puisi 2 merupakan pantun jenaka"
+      },
+      {
+        "label": "D",
+        "teks": "Kedua puisi tersebut mengekspresikan suasana kemarahan dan kebencian terhadap sesama manusia"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "B. Puisi 1 (Taufiq Ismail) menggunakan pengulangan frasa awal larik/anafora (Dengan puisi\naku...) untuk menyatakan kesetiaan berkarya hingga akhir hayat (senja umurku), sedangkan Puisi 2 (Toto\nSudarto Bachtiar) menyuarakan empati sosial terhadap gadis kecil berkaleng kecil di bawah jembatan kota.",
+    "valid": true
+  },
+  {
+    "nomor": 137,
+    "tipe": "pg_sederhana",
+    "paket": "Bab V: Menciptakan Puisi - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Puisi Modern, Unsur Fisik & Batin, Puisi Diafan vs Prismatis, Diksi, Citraan, & Majas",
+    "capaian_pembelajaran": "Peserta didik mengapresiasi dan menganalisis unsur fisik puisi (diksi, imaji/citraan, kata konkret, majas, rima/ritme, tipografi) dan unsur batin puisi (tema, perasaan, nada, amanat), serta membedakan puisi diafan dan prismatis.",
+    "bacaan": {
+      "teks": "Tryout TKA SMP Bahasa Indonesia Pusmendik Kemendikdasmen — Scribd\n994524260 No. 4–6 & Scribd 980888883 No. 1–3]\njawab soal nomor 14, 15, dan 16!\nWACANA LITERASI MEMBACA: WACANA LITERASI MEMBACA: PUISI ’PEREMPUAN-PEREMPUAN\nPERKASA’ (HARTOJO ANDANGDJAJA)\n(Bait 1)\nPerempuan-perempuan yang membawa bakul di pagi buta,\ndari manakah mereka?\nKe stasiun kereta mereka datang dari bukit-bukit desa\nsebelum peluit kereta pagi terjaga\nsebelum hari bermula dalam pesta kerja.\n(Bait 2)\nPerempuan-perempuan yang membawa bakul dalam kereta,\nke manakah mereka?\nDi atas roda-roda baja mereka berkendara\nMereka berlomba dengan surya menuju ke gerbang kota\nmerebut hidup di pasar-pasar kota.\n(Bait 3)\nPerempuan-perempuan yang membawa bakul di pagi buta,\nsiapakah mereka?\nMereka ialah ibu-ibu berhati baja, perempuan-perempuan perkasa\nakar-akar yang melata dari tanah perbukitan turun ke kota\nMereka: cinta kasih yang bergerak menghidupi desa demi desa.\n(Tanggapan Tiga Siswa:)\n• Dina: “Larik ’sebelum peluit kereta pagi terjaga’ menggunakan majas personifikasi untuk menggambarkan\nbetapa paginya para ibu pedagang desa itu berangkat bekerja.”\n• Mira: “Larik ’mereka ialah ibu-ibu berhati baja’ menggunakan majas metafora yang bermakna para ibu itu\nberwatak kejam dan tidak memiliki belas kasihan.”\n• Tika: “Aku tidak setuju dengan Mira. Ungkapan ’berhati baja’ dan ’akar-akar yang melata’ pada Bait 3\njustru bermakna ketangguhan mental dan ketulusan cinta kasih para ibu pencari nafkah yang menghidupi\nkeluarganya di desa.”\nBerdasarkan Bait 1 dan Bait 2 puisi \"Perempuan-Perempuan Perkasa\" di atas, siapakah sosok yang\ndigambarkan oleh penyair dan bagaimana perjuangan hidup mereka?",
+      "grup": "bacaan_bab5_perempuan_perkasa"
+    },
+    "teks_soal": "Perhatikan bait puisi tentang alam berikut!\nPohon-pohon cemara di lereng gunung itu\nberdiri tegak menjaga mata air desa\nakar-akarnya mendekap tanah dengan setia\nagar lembah tak menangis diterjang bencana\nAmanat (pesan) ekologis yang ingin disampaikan penyair melalui lambang dan majas personifikasi pada\nbait puisi di atas adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Mengajak manusia menjaga kelestarian pohon di lereng gunung karena hutan berperan penting meny- impan mata air dan mencegah bencana longsor/banjir"
+      },
+      {
+        "label": "B",
+        "teks": "Meminta warga desa menebang seluruh pohon cemara di lereng gunung untuk dijadikan kayu bakar"
+      },
+      {
+        "label": "C",
+        "teks": "Menjelaskan bahwa pohon cemara dapat menangis mengeluarkan air mata seperti manusia"
+      },
+      {
+        "label": "D",
+        "teks": "Melaporkan harga bibit pohon cemara di dinas kehutanan kabupaten"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "A. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.",
+    "valid": true
+  },
+  {
+    "nomor": 138,
+    "tipe": "pg_sederhana",
+    "paket": "Bab V: Menciptakan Puisi - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Puisi Modern, Unsur Fisik & Batin, Puisi Diafan vs Prismatis, Diksi, Citraan, & Majas",
+    "capaian_pembelajaran": "Peserta didik mengapresiasi dan menganalisis unsur fisik puisi (diksi, imaji/citraan, kata konkret, majas, rima/ritme, tipografi) dan unsur batin puisi (tema, perasaan, nada, amanat), serta membedakan puisi diafan dan prismatis.",
+    "bacaan": {
+      "teks": "Tryout TKA SMP Bahasa Indonesia Pusmendik Kemendikdasmen — Scribd\n994524260 No. 4–6 & Scribd 980888883 No. 1–3]\njawab soal nomor 14, 15, dan 16!\nWACANA LITERASI MEMBACA: WACANA LITERASI MEMBACA: PUISI ’PEREMPUAN-PEREMPUAN\nPERKASA’ (HARTOJO ANDANGDJAJA)\n(Bait 1)\nPerempuan-perempuan yang membawa bakul di pagi buta,\ndari manakah mereka?\nKe stasiun kereta mereka datang dari bukit-bukit desa\nsebelum peluit kereta pagi terjaga\nsebelum hari bermula dalam pesta kerja.\n(Bait 2)\nPerempuan-perempuan yang membawa bakul dalam kereta,\nke manakah mereka?\nDi atas roda-roda baja mereka berkendara\nMereka berlomba dengan surya menuju ke gerbang kota\nmerebut hidup di pasar-pasar kota.\n(Bait 3)\nPerempuan-perempuan yang membawa bakul di pagi buta,\nsiapakah mereka?\nMereka ialah ibu-ibu berhati baja, perempuan-perempuan perkasa\nakar-akar yang melata dari tanah perbukitan turun ke kota\nMereka: cinta kasih yang bergerak menghidupi desa demi desa.\n(Tanggapan Tiga Siswa:)\n• Dina: “Larik ’sebelum peluit kereta pagi terjaga’ menggunakan majas personifikasi untuk menggambarkan\nbetapa paginya para ibu pedagang desa itu berangkat bekerja.”\n• Mira: “Larik ’mereka ialah ibu-ibu berhati baja’ menggunakan majas metafora yang bermakna para ibu itu\nberwatak kejam dan tidak memiliki belas kasihan.”\n• Tika: “Aku tidak setuju dengan Mira. Ungkapan ’berhati baja’ dan ’akar-akar yang melata’ pada Bait 3\njustru bermakna ketangguhan mental dan ketulusan cinta kasih para ibu pencari nafkah yang menghidupi\nkeluarganya di desa.”\nBerdasarkan Bait 1 dan Bait 2 puisi \"Perempuan-Perempuan Perkasa\" di atas, siapakah sosok yang\ndigambarkan oleh penyair dan bagaimana perjuangan hidup mereka?",
+      "grup": "bacaan_bab5_perempuan_perkasa"
+    },
+    "teks_soal": "Perhatikan kata konkret yang dicetak tebal pada kutipan puisi berikut!\n*Di sudut terminal yang bising oleh deru knalpot dan asap hitam,*\n*seorang kakek tua menghitung recehan logam kusam di telapak tangannya yang keriput.*\nFungsi penggunaan kata konkret (deru knalpot, asap hitam, recehan logam kusam, telapak tangan\nkeriput) dalam kutipan puisi tersebut adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Mengajarkan rumus menghitung nilai mata uang logam di bank sentral"
+      },
+      {
+        "label": "B",
+        "teks": "Menunjukkan bahwa kakek tersebut adalah seorang pengusaha kaya pemilik terminal bus"
+      },
+      {
+        "label": "C",
+        "teks": "Membangkitkan imaji visual dan auditif yang nyata di benak pembaca untuk menggambarkan kerasnya perjuangan hidup masyarakat kecil di perkotaan"
+      },
+      {
+        "label": "D",
+        "teks": "Menghilangkan seluruh unsur perasaan dan empati dari dalam puisi"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "C. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.",
+    "valid": true
+  },
+  {
+    "nomor": 139,
+    "tipe": "pg_sederhana",
+    "paket": "Bab V: Menciptakan Puisi - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Puisi Modern, Unsur Fisik & Batin, Puisi Diafan vs Prismatis, Diksi, Citraan, & Majas",
+    "capaian_pembelajaran": "Peserta didik mengapresiasi dan menganalisis unsur fisik puisi (diksi, imaji/citraan, kata konkret, majas, rima/ritme, tipografi) dan unsur batin puisi (tema, perasaan, nada, amanat), serta membedakan puisi diafan dan prismatis.",
+    "bacaan": null,
+    "teks_soal": "Bacalah bait puisi berikut!\n*Guru adalah pelita di malam gelap*\nyang rela membakar dirinya sendiri\ndemi menerangi jalan murid-muridnya\nmenuju gerbang masa depan yang gemilang\nMajas yang terdapat pada larik pertama (Guru adalah pelita di malam gelap) beserta maknanya adalah\n....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Majas Hiperbola; mengatakan bahwa tubuh guru terbuat dari sumbu minyak tanah"
+      },
+      {
+        "label": "B",
+        "teks": "Majas Simile; guru dibandingkan dengan lampu menggunakan kata penghubung bagaikan"
+      },
+      {
+        "label": "C",
+        "teks": "Majas Ironi; menyindir guru yang mengajar di ruang kelas yang lampunya padam"
+      },
+      {
+        "label": "D",
+        "teks": "Majas Metafora; guru diibaratkan secara langsung sebagai sumber cahaya ilmu yang menuntun murid keluar dari ketidaktahuan"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.",
+    "valid": true
+  },
+  {
+    "nomor": 140,
+    "tipe": "pg_sederhana",
+    "paket": "Bab V: Menciptakan Puisi - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Puisi Modern, Unsur Fisik & Batin, Puisi Diafan vs Prismatis, Diksi, Citraan, & Majas",
+    "capaian_pembelajaran": "Peserta didik mengapresiasi dan menganalisis unsur fisik puisi (diksi, imaji/citraan, kata konkret, majas, rima/ritme, tipografi) dan unsur batin puisi (tema, perasaan, nada, amanat), serta membedakan puisi diafan dan prismatis.",
+    "bacaan": {
+      "teks": "Scribd 997810237 No. 22–24]\nWACANA LITERASI MEMBACA: WACANA LITERASI MEMBACA: PUISI ’DUNIA IBU’ (KARYA JOKO PIN-\nURBO)\n(Bait 1)\nDi mata Ibu, aku tetaplah bocah kecil\nyang sering lupa membawa pulang topi sekolah\ndan pulang dengan lutut berdarah karena jatuh dari sepeda.\n(Bait 2)\nDapur Ibu adalah laboratorium cinta paling sibuk di dunia:\ntempat bawang merah, cabai, dan doa-doa hangat\nditumis bersama keringat yang tak pernah meminta tanda jasa.\n(Bait 3)\nKetika aku merantau jauh mengejar gedung-gedung tinggi,\nIbu duduk di teras senja sambil merajut kabar dari telepon genggam\nyang layarnya sering buram oleh air mata rindu.\n(Bait 4)\nKini rambut Ibu telah memutih bagai kapas musim kemarau,\ntetapi pelukannya tetaplah rumah paling teduh\ntempat segala lelahku luruh dan sembuh.\nMakna simbolik dan majas pada Bait 2 (\"Dapur Ibu adalah laboratorium cinta paling sibuk di dunia:\ntempat bawang merah, cabai, dan doa-doa hangat ditumis bersama keringat yang tak pernah meminta\ntanda jasa\") adalah ....",
+      "grup": "bacaan_bab5_dunia_ibu"
+    },
+    "teks_soal": "tanda jasa\") adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Menunjukkan bahwa dapur rumah tersebut sangat kotor dan penuh asap"
+      },
+      {
+        "label": "B",
+        "teks": "Menggambarkan seorang ibu yang berprofesi sebagai peneliti kimia di laboratorium rumah sakit"
+      },
+      {
+        "label": "C",
+        "teks": "Mengkritik ibu karena memasak kertas doa di atas wajan penggorengan"
+      },
+      {
+        "label": "D",
+        "teks": "Menggunakan majas metafora untuk menggambarkan ketulusan, pengorbanan, dan kasih sayang seorang ibu yang selalu menyiapkan masakan sekaligus mendoakan anak-anaknya tanpa mengharap- kan imbalan (pamrih)"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Penyair memetaforakan Dapur Ibu sebagai laboratorium cinta tempat masakan diramu\nbersama doa-doa hangat dan kerja keras tanpa pamrih (tak pernah meminta tanda jasa).",
+    "valid": true
+  },
+  {
+    "nomor": 141,
+    "tipe": "pg_sederhana",
+    "paket": "Bab V: Menciptakan Puisi - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Puisi Modern, Unsur Fisik & Batin, Puisi Diafan vs Prismatis, Diksi, Citraan, & Majas",
+    "capaian_pembelajaran": "Peserta didik mengapresiasi dan menganalisis unsur fisik puisi (diksi, imaji/citraan, kata konkret, majas, rima/ritme, tipografi) dan unsur batin puisi (tema, perasaan, nada, amanat), serta membedakan puisi diafan dan prismatis.",
+    "bacaan": {
+      "teks": "Scribd 997810237 No. 22–24]\nWACANA LITERASI MEMBACA: WACANA LITERASI MEMBACA: PUISI ’DUNIA IBU’ (KARYA JOKO PIN-\nURBO)\n(Bait 1)\nDi mata Ibu, aku tetaplah bocah kecil\nyang sering lupa membawa pulang topi sekolah\ndan pulang dengan lutut berdarah karena jatuh dari sepeda.\n(Bait 2)\nDapur Ibu adalah laboratorium cinta paling sibuk di dunia:\ntempat bawang merah, cabai, dan doa-doa hangat\nditumis bersama keringat yang tak pernah meminta tanda jasa.\n(Bait 3)\nKetika aku merantau jauh mengejar gedung-gedung tinggi,\nIbu duduk di teras senja sambil merajut kabar dari telepon genggam\nyang layarnya sering buram oleh air mata rindu.\n(Bait 4)\nKini rambut Ibu telah memutih bagai kapas musim kemarau,\ntetapi pelukannya tetaplah rumah paling teduh\ntempat segala lelahku luruh dan sembuh.\nMakna simbolik dan majas pada Bait 2 (\"Dapur Ibu adalah laboratorium cinta paling sibuk di dunia:\ntempat bawang merah, cabai, dan doa-doa hangat ditumis bersama keringat yang tak pernah meminta\ntanda jasa\") adalah ....",
+      "grup": "bacaan_bab5_dunia_ibu"
+    },
+    "teks_soal": "Setelah membaca puisi \"Dunia Ibu\" pada soal nomor 20, empat orang siswa mengungkapkan perasaan\nyang muncul di hati mereka:\n- Adi: \"Aku merasa sangat terharu dan bersyukur atas kasih sayang ibu yang tak pernah pudar meskipun\nanaknya sudah dewasa dan merantau.\"\n- Budi: \"Aku merasa gembira karena tokoh aku berhasil membeli gedung-gedung tinggi di kota.\"\n- Edi: \"Aku merasa marah kepada tokoh ibu karena terlalu sering menangis di depan telepon genggam.\"\n- Bedi: \"Aku merasa takut masuk ke dapur karena di sana banyak bawang merah dan cabai.\"\nUngkapan perasaan siswa yang paling tepat mewakili suasana batin (nada dan rasa) puisi tersebut\nadalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Edi (marah dan kesal terhadap sikap ibu)"
+      },
+      {
+        "label": "B",
+        "teks": "Budi (gembira berlebihan karena kemewahan kota)"
+      },
+      {
+        "label": "C",
+        "teks": "Adi (haru, rindu, dan syukur mendalam atas pengorbanan ibu)"
+      },
+      {
+        "label": "D",
+        "teks": "Bedi (takut terhadap bumbu dapur)"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "C. Secara keseluruhan, Bait 1 hingga Bait 4 membangun suasana haru, rindu, dan rasa syukur\nyang mendalam seorang anak terhadap ketulusan kasih sayang ibunya, sebagaimana diungkapkan dengan\ntepat oleh Adi.",
+    "valid": true
+  },
+  {
+    "nomor": 142,
+    "tipe": "pg_sederhana",
+    "paket": "Bab V: Menciptakan Puisi - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Puisi Modern, Unsur Fisik & Batin, Puisi Diafan vs Prismatis, Diksi, Citraan, & Majas",
+    "capaian_pembelajaran": "Peserta didik mengapresiasi dan menganalisis unsur fisik puisi (diksi, imaji/citraan, kata konkret, majas, rima/ritme, tipografi) dan unsur batin puisi (tema, perasaan, nada, amanat), serta membedakan puisi diafan dan prismatis.",
+    "bacaan": {
+      "teks": "Scribd 997810237 No. 22–24]\nWACANA LITERASI MEMBACA: WACANA LITERASI MEMBACA: PUISI ’DUNIA IBU’ (KARYA JOKO PIN-\nURBO)\n(Bait 1)\nDi mata Ibu, aku tetaplah bocah kecil\nyang sering lupa membawa pulang topi sekolah\ndan pulang dengan lutut berdarah karena jatuh dari sepeda.\n(Bait 2)\nDapur Ibu adalah laboratorium cinta paling sibuk di dunia:\ntempat bawang merah, cabai, dan doa-doa hangat\nditumis bersama keringat yang tak pernah meminta tanda jasa.\n(Bait 3)\nKetika aku merantau jauh mengejar gedung-gedung tinggi,\nIbu duduk di teras senja sambil merajut kabar dari telepon genggam\nyang layarnya sering buram oleh air mata rindu.\n(Bait 4)\nKini rambut Ibu telah memutih bagai kapas musim kemarau,\ntetapi pelukannya tetaplah rumah paling teduh\ntempat segala lelahku luruh dan sembuh.\nMakna simbolik dan majas pada Bait 2 (\"Dapur Ibu adalah laboratorium cinta paling sibuk di dunia:\ntempat bawang merah, cabai, dan doa-doa hangat ditumis bersama keringat yang tak pernah meminta\ntanda jasa\") adalah ....",
+      "grup": "bacaan_bab5_dunia_ibu"
+    },
+    "teks_soal": "Pasangan jenis majas dan jenis citraan (imaji) pada Bait 4 puisi di soal nomor 20 (\"Kini rambut Ibu\ntelah memutih bagai kapas musim kemarau, / tetapi pelukannya tetaplah rumah paling teduh\") adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Larik pertama menggunakan majas ironi dengan citraan pendengaran; sedangkan larik kedua meng- gunakan majas litotes dengan citraan penciuman"
+      },
+      {
+        "label": "B",
+        "teks": "Larik pertama menggunakan majas simile (asosiasi) (bagai kapas musim kemarau) dengan cit- raan penglihatan (visual); sedangkan larik kedua menggunakan majas metafora (pelukannya tetaplah rumah paling teduh) dengan citraan perasaan/perabaan"
+      },
+      {
+        "label": "C",
+        "teks": "Kedua larik tersebut menggunakan kalimat lugas tanpa majas dan tanpa citraan"
+      },
+      {
+        "label": "D",
+        "teks": "Larik pertama menggunakan majas personifikasi; sedangkan larik kedua menggunakan majas sarkasme"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "B. Kata pembanding eksplisit bagai pada rambut Ibu telah memutih bagai kapas menandai\nmajas simile + citraan penglihatan (visual), sedangkan penyamaan langsung pelukannya tetaplah rumah\npaling teduh tanpa kata pembanding menandai majas metafora.",
+    "valid": true
+  },
+  {
+    "nomor": 143,
+    "tipe": "pg_sederhana",
+    "paket": "Bab V: Menciptakan Puisi - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Puisi Modern, Unsur Fisik & Batin, Puisi Diafan vs Prismatis, Diksi, Citraan, & Majas",
+    "capaian_pembelajaran": "Peserta didik mengapresiasi dan menganalisis unsur fisik puisi (diksi, imaji/citraan, kata konkret, majas, rima/ritme, tipografi) dan unsur batin puisi (tema, perasaan, nada, amanat), serta membedakan puisi diafan dan prismatis.",
+    "bacaan": null,
+    "teks_soal": "Perhatikan perbandingan antara Puisi Diafan (Polos) dan Puisi Prismatis (Kaya Majas/Simbol) dalam\ntabel berikut!\nPUISI A (PUISI DIAFAN)\nPUISI B (PUISI PRISMATIS)\nPagi ini aku bangun pukul lima\nAku merapikan tempat tidurku sendiri\nLalu membantu Ibu menyapu halaman rumah\nUdara pagi terasa sangat segar dan bersih\nAku berangkat ke sekolah dengan hati gembira.\nFajar mengetuk jendela kamar dengan jari emasnya\nAku melipat mimpi semalam di sudut bantal\nHalaman rumah bernafas lega disapu embun perawan\nLangkah kakiku mengeja jalanan menuju taman ilmu.\nMengapa Puisi A dikategorikan sebagai Puisi Diafan, sedangkan Puisi B dikategorikan sebagai Puisi\nPrismatis?",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Karena Puisi A menggunakan bahasa asing, sedangkan Puisi B menggunakan bahasa daerah"
+      },
+      {
+        "label": "B",
+        "teks": "Karena Puisi A ditulis oleh penyair terkenal, sedangkan Puisi B ditulis oleh mesin komputer"
+      },
+      {
+        "label": "C",
+        "teks": "Karena Puisi A memiliki rima a-b-a-b, sedangkan Puisi B tidak boleh dibaca di depan kelas"
+      },
+      {
+        "label": "D",
+        "teks": "Karena Puisi A menggunakan kalimat yang polos, lugas, dan maknanya langsung dapat dipahami sekali baca seperti bahasa sehari-hari; sedangkan Puisi B membiaskan makna melalui simbol, lambang, dan majas (fajar mengetuk jendela, melipat mimpi, taman ilmu) yang menuntut penafsiran mendalam"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "D. Sesuai konsep Buku Siswa Kelas VIII Bab V: puisi diafan (transparan/polos) menggunakan\nkata-kata denotatif/lugas yang langsung jelas maknanya, sedangkan puisi prismatis membiaskan makna\nlayaknya prisma cahaya melalui majas dan lambang yang kaya tafsir.",
+    "valid": true
+  },
+  {
+    "nomor": 144,
+    "tipe": "pg_sederhana",
+    "paket": "Bab V: Menciptakan Puisi - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Puisi Modern, Unsur Fisik & Batin, Puisi Diafan vs Prismatis, Diksi, Citraan, & Majas",
+    "capaian_pembelajaran": "Peserta didik mengapresiasi dan menganalisis unsur fisik puisi (diksi, imaji/citraan, kata konkret, majas, rima/ritme, tipografi) dan unsur batin puisi (tema, perasaan, nada, amanat), serta membedakan puisi diafan dan prismatis.",
+    "bacaan": {
+      "teks": "Scribd 997810237 No. 22–24]\nWACANA LITERASI MEMBACA: WACANA LITERASI MEMBACA: PUISI ’DUNIA IBU’ (KARYA JOKO PIN-\nURBO)\n(Bait 1)\nDi mata Ibu, aku tetaplah bocah kecil\nyang sering lupa membawa pulang topi sekolah\ndan pulang dengan lutut berdarah karena jatuh dari sepeda.\n(Bait 2)\nDapur Ibu adalah laboratorium cinta paling sibuk di dunia:\ntempat bawang merah, cabai, dan doa-doa hangat\nditumis bersama keringat yang tak pernah meminta tanda jasa.\n(Bait 3)\nKetika aku merantau jauh mengejar gedung-gedung tinggi,\nIbu duduk di teras senja sambil merajut kabar dari telepon genggam\nyang layarnya sering buram oleh air mata rindu.\n(Bait 4)\nKini rambut Ibu telah memutih bagai kapas musim kemarau,\ntetapi pelukannya tetaplah rumah paling teduh\ntempat segala lelahku luruh dan sembuh.\nMakna simbolik dan majas pada Bait 2 (\"Dapur Ibu adalah laboratorium cinta paling sibuk di dunia:\ntempat bawang merah, cabai, dan doa-doa hangat ditumis bersama keringat yang tak pernah meminta\ntanda jasa\") adalah ....",
+      "grup": "bacaan_bab5_dunia_ibu"
+    },
+    "teks_soal": "Bacalah dua bait puisi \"Di Tepi Pantai\" karya Amir Hamzah berikut!\nOmbak memecah di tepi pantai / Angin berhembus lemah lembut / Puncak kelapa melambai-lambai / Di\nruang angkasa awan bergelut //\nPuteri manis di tempat sunyi / Meratap sukmanya melayang-layang / Mengenang kekasih jauh pergi /\nEntah bila kembali pulang.\nPerubahan suasana dari Bait Pertama ke Bait Kedua pada puisi di atas adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Dari suasana peperangan yang menegangkan (Bait 1) berubah menjadi suasana pesta pernikahan yang meriah (Bait 2)"
+      },
+      {
+        "label": "B",
+        "teks": "Dari suasana keindahan alam pantai yang tenang dan dinamis (Bait 1) berubah menjadi suasana kesunyian, kesedihan, dan kerinduan mendalam seorang gadis yang menanti kepulangan kekasihnya (Bait 2)"
+      },
+      {
+        "label": "C",
+        "teks": "Dari suasana kesedihan di tengah hutan (Bait 1) berubah menjadi suasana kegembiraan di pasar kota (Bait 2)"
+      },
+      {
+        "label": "D",
+        "teks": "Kedua bait sama-sama menggambarkan kemarahan nelayan terhadap badai laut"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "B. Bait 1 melukiskan panorama alam pantai (ombak, angin lembut, nyiur melambai), lalu Bait\n2 beralih ke suasana batin tokoh (di tempat sunyi, meratap sukmanya, mengenang kekasih jauh pergi) yang\nbernada haru dan rindu.",
+    "valid": true
+  },
+  {
+    "nomor": 145,
+    "tipe": "pg_sederhana",
+    "paket": "Bab V: Menciptakan Puisi - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Puisi Modern, Unsur Fisik & Batin, Puisi Diafan vs Prismatis, Diksi, Citraan, & Majas",
+    "capaian_pembelajaran": "Peserta didik mengapresiasi dan menganalisis unsur fisik puisi (diksi, imaji/citraan, kata konkret, majas, rima/ritme, tipografi) dan unsur batin puisi (tema, perasaan, nada, amanat), serta membedakan puisi diafan dan prismatis.",
+    "bacaan": null,
+    "teks_soal": "Ketika seorang siswa hendak menampilkan Musikalisasi Puisi dari puisi \"Dunia Ibu\" (soal nomor 20)\natau \"Di Tepi Pantai\" (soal nomor 24) yang bernada haru, rindu, dan reflektif, pemilihan aransemen musik\ndan intonasi vokal yang paling selaras adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Membaca seluruh larik puisi sambil berteriak cepat seperti komentator pertandingan sepak bola"
+      },
+      {
+        "label": "B",
+        "teks": "Menggunakan tabuhan drum musik heavy metal bervolume sangat keras hingga menutupi suara pembaca puisi"
+      },
+      {
+        "label": "C",
+        "teks": "Menggunakan petikan gitar akustik atau alunan piano/biola bertempo lambat (adagio/andante) dengan dinamika vokal yang lembut, penuh penghayatan, serta artikulasi vokal yang tetap jelas"
+      },
+      {
+        "label": "D",
+        "teks": "Mengubah kata-kata di dalam puisi menjadi lirik lagu anak-anak yang jenaka"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "C. Prinsip utama musikalisasi puisi adalah keselarasan antara suasana batin puisi\n(haru/reflektif) dengan tempo, nada dasar, dan instrumen pengiring tanpa menenggelamkan kejelasan\npelafalan kata-kata puisi.",
+    "valid": true
+  },
+  {
+    "nomor": 146,
+    "tipe": "pg_sederhana",
+    "paket": "Bab V: Menciptakan Puisi - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Puisi Modern, Unsur Fisik & Batin, Puisi Diafan vs Prismatis, Diksi, Citraan, & Majas",
+    "capaian_pembelajaran": "Peserta didik mengapresiasi dan menganalisis unsur fisik puisi (diksi, imaji/citraan, kata konkret, majas, rima/ritme, tipografi) dan unsur batin puisi (tema, perasaan, nada, amanat), serta membedakan puisi diafan dan prismatis.",
+    "bacaan": null,
+    "teks_soal": "Perhatikan ilustrasi suasana puisi “Hujan Bulan Juni” berikut!\n\nPernyataan analitis yang benar mengenai penciptaan dan apresiasi puisi berdasarkan gambar di atas\nadalah .... (Pilih lebih dari satu jawaban benar)\n\nPernyataan:\n(1) Pengamatan mendalam terhadap fenomena alam (seperti rintik hujan yang jatuh di atas bunga flam-\nboyan dan jalan berbatu) merupakan langkah awal Menemukan inspirasi dalam metode 3M penciptaan\npuisi.\n(2) Puisi prismatis menggunakan lambang/simbol alam dan majas (seperti personifikasi, metafora, dan\nsimile) untuk membiaskan makna kehidupan yang kaya dan mendalam.\n(3) Pemilihan kata konkret dan citraan (penglihatan, pendengaran, perabaan) membantu pembaca\nmerasakan langsung suasana hening dan syahdu di dalam puisi.\n(4) Sebuah puisi modern hanya boleh ditulis menggunakan kalimat definisi kamus tanpa boleh meng-\ngunakan gaya bahasa kiasan.\n\nPernyataan yang tepat adalah ....",
+    "gambar": [
+      "/soal/bindo/kls8_bindo_p128_xref4353_880x880.jpeg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(1), (2), dan (3)"
+      },
+      {
+        "label": "B",
+        "teks": "(1) dan (4) saja"
+      },
+      {
+        "label": "C",
+        "teks": "(2) dan (4) saja"
+      },
+      {
+        "label": "D",
+        "teks": "(1), (2), (3), dan (4)"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "✓A,\n✓B,\n✓C — Inspirasi alam 3M (A), ciri puisi prismatis (B), dan fungsi kata\nkonkret/citraan (C) seluruhnya benar.",
+    "valid": true
+  },
+  {
+    "nomor": 147,
+    "tipe": "pg_sederhana",
+    "paket": "Bab V: Menciptakan Puisi - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Puisi Modern, Unsur Fisik & Batin, Puisi Diafan vs Prismatis, Diksi, Citraan, & Majas",
+    "capaian_pembelajaran": "Peserta didik mengapresiasi dan menganalisis unsur fisik puisi (diksi, imaji/citraan, kata konkret, majas, rima/ritme, tipografi) dan unsur batin puisi (tema, perasaan, nada, amanat), serta membedakan puisi diafan dan prismatis.",
+    "bacaan": null,
+    "teks_soal": "Evaluasilah pernyataan mengenai\nunsur fisik puisi dan deklamasi berikut! Pernyataan yang tepat adalah ....\n\nPernyataan:\n(1) Larik ¨Buku adalah jendela dunia yang membuka cakrawala ilmu¨ menggunakan majas metafora.\n(2) Larik ¨Semangatnya berkobar bagaikan api unggun di malam dingin¨ menggunakan majas simile.\n(3) Dalam mendeklamasikan puisi, keselarasan antara intonasi suara, jeda pemenggalan frasa, mimik\nwajah, dan gerak tubuh (kinesik) menentukan keberhasilan penyampaian pesan puisi.\n(4) Puisi diafan adalah puisi yang maknanya paling gelap dan sama sekali tidak dapat dipahami oleh\nmanusia.\n\nPernyataan yang tepat adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(1), (2), dan (3)"
+      },
+      {
+        "label": "B",
+        "teks": "(1) dan (4) saja"
+      },
+      {
+        "label": "C",
+        "teks": "(2) dan (4) saja"
+      },
+      {
+        "label": "D",
+        "teks": "(1), (2), (3), dan (4)"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "✓A, ✓B, ✓C — Metafora jendela dunia (A), simile bagaikan api unggun (B), dan unsur\ndeklamasi (C) benar.",
+    "valid": true
+  },
+  {
+    "nomor": 148,
+    "tipe": "pg_sederhana",
+    "paket": "Bab V: Menciptakan Puisi - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Puisi Modern, Unsur Fisik & Batin, Puisi Diafan vs Prismatis, Diksi, Citraan, & Majas",
+    "capaian_pembelajaran": "Peserta didik mengapresiasi dan menganalisis unsur fisik puisi (diksi, imaji/citraan, kata konkret, majas, rima/ritme, tipografi) dan unsur batin puisi (tema, perasaan, nada, amanat), serta membedakan puisi diafan dan prismatis.",
+    "bacaan": null,
+    "teks_soal": "Berilah\ntanda centang (✓) pada kolom Benar atau Salah untuk setiap pernyataan berikut!\nNo.\nPernyataan Analisis Bahasa Indonesia\nBenar\nSalah\n\nPernyataan:\n(a) Puisi Diafan menggunakan bahasa yang polos dan lugas sehingga\nmaknanya mudah dipahami secara langsung, sedangkan Puisi Pris-\nmatis kaya akan majas dan makna simbolik.\n(b) Tema, rasa (feeling), nada (tone), dan amanat merupakan empat kom-\nponen unsur batin pembangun puisi.\n(c) Larik “Terdengar gemericik air sungai bernyanyi merdu di sela bebat-\nuan” membangkitkan citraan penciuman (olfaktif).\n\nKombinasi analisis nilai kebenaran (Benar/Salah) yang tepat adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(a) Benar, (b) Benar, (c) Salah"
+      },
+      {
+        "label": "B",
+        "teks": "(a) Benar, (b) Salah, (c) Salah"
+      },
+      {
+        "label": "C",
+        "teks": "(a) Salah, (b) Benar, (c) Benar"
+      },
+      {
+        "label": "D",
+        "teks": "(a) Benar, (b) Benar, (c) Benar"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "(a) Benar, (b) Benar, (c) Salah — (c) Salah, karena terdengar gemericik... bernyanyi merdu\nmembangkitkan citraan pendengaran (auditif).",
+    "valid": true
+  },
+  {
+    "nomor": 149,
+    "tipe": "pg_sederhana",
+    "paket": "Bab V: Menciptakan Puisi - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Puisi Modern, Unsur Fisik & Batin, Puisi Diafan vs Prismatis, Diksi, Citraan, & Majas",
+    "capaian_pembelajaran": "Peserta didik mengapresiasi dan menganalisis unsur fisik puisi (diksi, imaji/citraan, kata konkret, majas, rima/ritme, tipografi) dan unsur batin puisi (tema, perasaan, nada, amanat), serta membedakan puisi diafan dan prismatis.",
+    "bacaan": null,
+    "teks_soal": "Evaluasilah kebenaran\npernyataan berikut!\nNo.\nPernyataan Analisis Bahasa Indonesia\nBenar\nSalah\n\nPernyataan:\n(a) Pengulangan kata atau frasa yang sama pada awal beberapa baris\npuisi untuk memberikan penegasan makna disebut majas repetisi.\n(b) Tanda jeda garis miring ganda (//) pada naskah deklamasi puisi\nmenandakan jeda sedang untuk pergantian klausa atau baris.\n(c) Musikalisasi puisi yang bertema duka dan kesedihan mendalam paling\ntepat diiringi dengan musik berirama sangat cepat dan gembira.\n\nKombinasi analisis nilai kebenaran (Benar/Salah) yang tepat adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(a) Benar, (b) Benar, (c) Salah"
+      },
+      {
+        "label": "B",
+        "teks": "(a) Benar, (b) Salah, (c) Salah"
+      },
+      {
+        "label": "C",
+        "teks": "(a) Salah, (b) Benar, (c) Benar"
+      },
+      {
+        "label": "D",
+        "teks": "(a) Benar, (b) Benar, (c) Benar"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "(a) Benar, (b) Benar, (c) Salah — (c) Salah, karena puisi bertema duka/kesedihan harus\ndiiringi musik bertempo lambat dan syahdu.",
+    "valid": true
+  },
+  {
+    "nomor": 150,
+    "tipe": "pg_sederhana",
+    "paket": "Bab V: Menciptakan Puisi - Kelas VIII SMP",
+    "kelas": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Puisi Modern, Unsur Fisik & Batin, Puisi Diafan vs Prismatis, Diksi, Citraan, & Majas",
+    "capaian_pembelajaran": "Peserta didik mengapresiasi dan menganalisis unsur fisik puisi (diksi, imaji/citraan, kata konkret, majas, rima/ritme, tipografi) dan unsur batin puisi (tema, perasaan, nada, amanat), serta membedakan puisi diafan dan prismatis.",
+    "bacaan": null,
+    "teks_soal": "Seorang siswa\nmengamati seorang petani tua di sawah saat matahari terbit dan mencatat tiga unsur fisik yang wajib\ndimasukkan ke dalam satu bait puisi prismatis karya sendiri: 1. Baris 1–2 memuat citraan penglihatan\n(visual) dan majas personifikasi tentang matahari pagi/embun; 2. Baris 3 memuat majas simile (den-\ngan kata bagaikan/laksana) tentang tetesan keringat petani; 3. Baris 4 memuat majas metafora yang\nmenyamakan bulir padi dengan emas kehidupan. Manakah bait puisi di bawah ini yang 100% memenuhi\nketiga syarat kreatif tersebut secara puitis dan padu?\nA. Mentari pagi tersenyum hangat menyibak selimut kabut di ufuk timur, / embun bening berpamitan dari\npucuk-pucuk daun hijau, / keringat Pak Tani menetes jatuh bagaikan mutiara doa di tanah berlumpur, /\nmerawat permadani bulir emas kehidupan demi pangan seluruh negeri.\nB. Pada pukul enam pagi petani pergi ke sawah membawa cangkul besi, / ia mencangkul tanah sawah\nselama empat jam sampai siang hari, / kemudian ia makan siang dan minum air putih di bawah pohon, /\nsetelah sore hari ia pulang ke rumah untuk beristirahat.\nC. Petani adalah orang yang bekerja di bidang pertanian tanaman pangan, / sedangkan nelayan adalah\norang yang bekerja menangkap ikan di laut.\nD. Pergi ke sawah menanam padi, / padi ditanam di pagi hari. / Rajin belajar setiap hari, / agar sukses di\nkemudian hari.\n1\nB\n7\nB\n13\nD\n19\nD\n25\nC\n2\nA\n8\nC\n14\nD\n20\nD\n26\nABC\n3\nB\n9\nD\n15\nA\n21\nC\n27\nABC\n4\nD\n10\nB\n16\nB\n22\nB\n28\nBBS\n5\nD\n11\nA\n17\nA\n23\nD\n29\nBBS\n6\nD\n12\nC\n18\nC\n24\nB\n30\nA\n1. Jawaban: B. Pada larik \"Jam dinding itu sedari tadi menatapku\", benda mati (jam dinding) diberi sifat\nperilaku manusia yaitu menatap.\n2. Jawaban: A. Ungkapan angkat kaki menyebut sebagian anggota tubuh (kaki) untuk mewakili keseluruhan\ndiri seseorang yang pergi meninggalkan suatu tempat.\n3. Jawaban: B. Larik \"di pintu-Mu aku mengetuk\" menggunakan metafora pintu-Mu untuk melambangkan\njalan permohonan ampun dan pertobatan seorang hamba kepada Tuhan.\n4. Jawaban: D. Pada larik \"kutatap mata sendunya yang selalu tersenyum\", mata digambarkan seolah-olah\nmanusia utuh yang dapat tersenyum.\n5. Jawaban: D. Larik \"biar tubuh remuk, biar jiwa redam / kasih sayang ayah ibu tak akan berkurang meski\nsekuku\" mengungkapkan penekanan secara berlebih-lebihan (hiperbola).\n6. Jawaban: D. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.\n7. Jawaban: B. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.\n8. Jawaban: C. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.\n9. Jawaban: D. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.\n10. Jawaban: B. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.\n11. Jawaban: A. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.\n12. Jawaban: C. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.\n13. Jawaban: D. Sesuai dengan isi bacaan dan kaidah kebahasaan EYD Edisi V.\n14. Jawaban: D. Larik-larik puisi menggambarkan para perempuan pedagang desa yang menggendong\nbakul menuju stasiun kereta sejak pagi buta (sebelum peluit kereta pagi terjaga, berlomba dengan surya\nmenuju ke gerbang kota, merebut hidup di pasar-pasar kota).\n15. Jawaban: A. Dina tepat mengidentifikasi majas personifikasi (peluit kereta pagi terjaga), dan Tika tepat\nmengoreksi kesalahan Mira dengan membuktikan dari konteks larik terakhir Bait 3 bahwa berhati baja melam-\nbangkan ketangguhan perjuangan dan cinta kasih ibu.\n16. Jawaban: B. Puisi 1 (Taufiq Ismail) menggunakan pengulangan frasa awal larik/anafora (Dengan puisi\naku...) untuk menyatakan kesetiaan berkarya hingga akhir hayat (senja umurku), sedangkan Puisi 2 (Toto\nSudarto Bachtiar) menyuarakan empati sosial terhadap gadis kecil berkaleng kecil di bawah jembatan kota.\n\nBerdasarkan kaidah bahasa baku EYD Edisi V dan materi bab ini, rumusan analisis / hasil penyuntingan yang paling tepat adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "A — Pilihan A memuat citraan visual & personifikasi (Mentari pagi tersenyum...), simile\n(keringat...\nbagaikan mutiara doa), dan metafora (permadani bulir emas kehidupan).\n(Rujukan: https:\n//id.scribd.com/document/860575032/contoh-soal-puisi-diafan).\n\n1. Hakika"
+      },
+      {
+        "label": "B",
+        "teks": "Mengabaikan penggunaan tanda koma dan huruf kapital pada nama geografi serta membiarkan kata tidak baku tetap tertulis apa adanya"
+      },
+      {
+        "label": "C",
+        "teks": "Mengubah seluruh kalimat menjadi bahasa santai dan menghilangkan unsur fakta objektif dalam teks"
+      },
+      {
+        "label": "D",
+        "teks": "Menghapus seluruh paragraf wacana dan menggantinya dengan opini pribadi tanpa bukti ilmiah"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "A — Pilihan A memuat citraan visual & personifikasi (Mentari pagi tersenyum...), simile\n(keringat...\nbagaikan mutiara doa), dan metafora (permadani bulir emas kehidupan).\n(Rujukan: https:\n//id.scribd.com/document/860575032/contoh-soal-puisi-diafan).\n\n1. Hakikat, Struktur Teks Pidato Persuasif, & Empat Metode Berpidato\na. Pengertian & Tiga Struktur Utama Teks Pidato Persuasif: Pidato adalah kegiatan berbicara di depan khalayak\numum untuk menyampaikan gagasan, informasi, dan ajakan guna memengaruhi pendengar (seperti pidato “Sambutan\nKetua OSIS Terpilih”, “Masalah Sampah”, atau “Pentingnya Sarapan Pagi” pada Buku Siswa Bab VI). Struktur teks pidato\nterdiri atas: (1) Pembukaan: meliputi salam pembuka, sapaan kehormatan (diurutkan dari pejabat/tokoh berkedudukan\ntertinggi hingga audiens umum), ucapan puji syukur kepada Tuhan YME, dan pengantar ke topik pidato; (2) Isi Pidato:\nbagian inti yang memaparkan gagasan utama, fakta dan data ilmiah/statistik pendukung argumen, serta alasan logis\nuntuk meyakinkan pendengar; dan (3) Penutup Pidato: meliputi simpulan singkat, kalimat ajakan/harapan (persuasif),\npermohonan maaf atas kekhilafan tutur kata, serta ucapan terima kasih dan salam penutup. Rujukan resmi: Buku\nSiswa Bahasa Indonesia Kelas VIII Edisi Revisi Kemendikdasmen (https://rendratopan.com/wp-content/uploads/\n2026/06/Bahasa_Indonesia_BS_KLS_VIII_Rev.pdf).\nb. Empat Metode Penyampaian Pidato: (1) Metode Impromptu (Serta-merta): berpidato secara spontan/mendadak\ntanpa persiapan naskah sebelumnya berdasarkan pengetahuan dan pengalaman pembicara; (2) Metode Manuskrip\n(Naskah): berpidato dengan membaca naskah lengkap dari awal hingga akhir (lazim digunakan oleh pejabat negara pada\npidato kenegaraan resmi agar tidak terjadi kesalahan kata/data); (3) Metode Memoriter (Menghafal): menulis naskah\nlengkap terlebih dahulu lalu menghafalkannya kata demi kata (sering dipakai siswa dalam lomba pidato); (4) Metode Ek-\nstemporan (Catatan Kerangka): berpidato dengan membawa catatan kecil berisi poin-poin garis besar (outline) argumen\nlalu mengembangkannya secara komunikatif dengan bahasa sendiri.\n2. Kaidah Kebahasaan Teks Pidato & Penyuntingan Sapaan Kehormatan (EYD Edisi V)\na. Ciri Kebahasaan Teks Pidato Persuasif: - Penggunaan kalimat persuasif (mengandung kata ajakan seperti mari,\nmarilah, ayo, hendaknya, sebaiknya) dan ungkapan rasa peduli/simpati (kita prihatin melihat..., sudah saatnya kita\npeduli...); - Penggunaan pronomina persona (kata ganti orang): kata ganti orang pertama jamak inklusif kita (un-\ntuk membangun kebersamaan antara pembicara dan pendengar), saya/kami, serta sapaan orang kedua (Bapak, Ibu,\nSaudara, hadirin, teman-teman); - Penggunaan fakta, data kuantitatif, dan kosakata ilmiah/teknis (seperti mikroplastik,\nemisi, daur ulang, nutrisi, metabolisme) agar argumen pidato logis dan meyakinkan.\nb. Kaidah Penyuntingan Sapaan Kehormatan & Kalimat Efektif dalam Pidato: - Urutan sapaan kehormatan dimulai\ndari jabatan tertinggi di ruangan tersebut (Yang terhormat Kepala SMP..., yang kami hormati Bapak dan Ibu Guru, serta\nteman-teman yang saya banggakan). - Hindari kemubaziran kata (pleonasme) seperti “Hadirin sekalian yang berbahagia”\n(cukup Hadirin yang berbahagia, karena kata hadirin sudah bermakna jamak: semua orang yang hadir) atau “Para\nBapak-Bapak dan Ibu-Ibu” (cukup Bapak-bapak dan Ibu-ibu atau Bapak dan Ibu).\nc. Rujukan 30 Soal HOTS Bab VI Kelas 8 (3 Jenis Ujian): (1) ASPD DIY / Riset HOTS MGMP Bantul: Pengemban-\ngan Soal HOTS Teks Pidato Persuasif MGMP Bantul (https://ejournal.uinmadura.ac.id/index.php/ghancaran/\narticle/download/5399/2758/15616); (2) MGMP Bahasa Indonesia SMP: ASAT MGMP Bindo Kab. Brebes Kelas VIII\n(https://id.scribd.com/document/740060361/Kelas-Viii-Kurmer-kunci-Jawaban-Asat-b-ind); (3) ASAT/PAT\nKurikulum Merdeka:\nLatihan Soal Pidato Kelas 8 Semester 2 (https://id.scribd.com/document/715514976/\nLatihan-Soal-Bahasa-Indonesia-kelas8smp-semester2-pidato-siswa).",
+    "valid": true
+  }
+]
