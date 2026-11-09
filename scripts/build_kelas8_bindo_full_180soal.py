@@ -115,6 +115,38 @@ def parse_answers_for_bab(as_, ae):
             
     return ans_dict, table_keys
 
+def split_wacana_and_question(prompt_clean):
+    lines = [l.strip() for l in prompt_clean.split('\n') if l.strip()]
+    q_starters = [
+        "ciri kebahasaan", "hubungan logis", "konflik batin", "topik utama",
+        "pernyataan yang", "gagasan utama", "simpulan yang", "pesan utama",
+        "nilai moral", "amanat", "makna kata", "makna ", "majas", "kalimat yang",
+        "mengapa", "bagaimana", "apa ", "apakah", "siapa", "kelebihan",
+        "kekurangan", "perbedaan", "persamaan", "berdasarkan", "fokus",
+        "sudut pandang", "fungsi", "tujuan", "kutipan", "karakter", "watak",
+        "latar", "alur", "keunggulan", "penggunaan", "sikap", "tindakan", "hal yang",
+        "pasangan", "alasan", "bukti", "pendapat", "unsur", "ringkasan"
+    ]
+    
+    split_idx = -1
+    for i in range(len(lines)-1, max(-1, len(lines)-8), -1):
+        line_lower = lines[i].lower()
+        if any(line_lower.startswith(qs) for qs in q_starters):
+            split_idx = i
+            break
+            
+    if split_idx != -1:
+        wacana = '\n'.join(lines[:split_idx]).strip()
+        q_sent = '\n'.join(lines[split_idx:]).strip()
+        return wacana, q_sent
+    else:
+        if len(lines) >= 2:
+            if re.sub(r'[\s\.\?!]+', '', lines[-1]) == '':
+                return '\n'.join(lines[:-2]).strip(), '\n'.join(lines[-2:]).strip()
+            elif any(w in lines[-1].lower() for w in ['adalah ....', 'adalah...', 'ditunjukkan', 'terdapat', 'merupakan', 'karena']):
+                return '\n'.join(lines[:-1]).strip(), lines[-1].strip()
+        return '', prompt_clean
+
 def parse_shared_wacana(raw_prompt):
     """Memisahkan wacana dan kalimat pertanyaan dari prompt utama."""
     m_head = re.search(r'untuk\s+menjawab\s+soal\s+nomor\s+(\d+[^!\n]*)!\s*', raw_prompt, re.I)
@@ -123,17 +155,7 @@ def parse_shared_wacana(raw_prompt):
         
     intro = raw_prompt[:m_head.end()].strip()
     after_intro = raw_prompt[m_head.end():].strip()
-    
-    lines = [l.strip() for l in after_intro.split('\n') if l.strip()]
-    split_idx = len(lines) - 1
-    for i in range(len(lines)-1, max(0, len(lines)-6), -1):
-        line = lines[i]
-        if any(w in line.lower() for w in ['adalah ....', 'ditunjukkan oleh', 'terdapat pada', 'merupakan ....', 'karena ....', 'mengapa', 'bagaimana', 'apabila']):
-            split_idx = i
-            break
-            
-    wacana = '\n'.join(lines[:split_idx]).strip()
-    q_sentence = '\n'.join(lines[split_idx:]).strip()
+    wacana, q_sentence = split_wacana_and_question(after_intro)
     return intro, wacana, q_sentence
 
 all_master_articles = []
@@ -263,16 +285,20 @@ for cfg in bab_configs:
         # Q20-Q21: Polusi Udara PM2.5
         raw_q20 = q_raw_dict.get(20, '')
         p_q20 = re.split(r'(?:^|\n)\s*[A-D]\.\s+', raw_q20)[0]
-        lines_q20 = [l.strip() for l in p_q20.split('\n') if l.strip()]
-        w_pol = '\n'.join([l for l in lines_q20 if not l.startswith('[Sumber') and not l.startswith('Bacalah') and not l.startswith('Perbedaan')])
+        intro_20, w_pol, q_20 = parse_shared_wacana(p_q20)
+        if not w_pol:
+            lines_q20 = [l.strip() for l in p_q20.split('\n') if l.strip()]
+            w_pol = '\n'.join([l for l in lines_q20 if not l.startswith('[Sumber') and not l.startswith('Bacalah') and not l.startswith('Perbedaan') and not l.startswith('Hubungan logis')])
         for qn in [20, 21]:
             shared_wacanas[qn] = ("bacaan_bab3_polusi_pm25", w_pol)
 
         # Q22-Q24: Lebih dari Gula Pasir
         raw_q22 = q_raw_dict.get(22, '')
         p_q22 = re.split(r'(?:^|\n)\s*[A-D]\.\s+', raw_q22)[0]
-        lines_q22 = [l.strip() for l in p_q22.split('\n') if l.strip()]
-        w_gula = '\n'.join([l for l in lines_q22 if not l.startswith('[Sumber') and not l.startswith('Bacalah') and not l.startswith('Mengapa')])
+        intro_22, w_gula, q_22 = parse_shared_wacana(p_q22)
+        if not w_gula:
+            lines_q22 = [l.strip() for l in p_q22.split('\n') if l.strip()]
+            w_gula = '\n'.join([l for l in lines_q22 if not l.startswith('[Sumber') and not l.startswith('Bacalah') and not l.startswith('Mengapa')])
         for qn in [22, 23, 24]:
             shared_wacanas[qn] = ("bacaan_bab3_gula_pasir", w_gula)
 
@@ -312,8 +338,10 @@ for cfg in bab_configs:
         # Q23-Q25: Seni Menertawakan Luka Masa Lalu (Suka Duka Tawa)
         raw_q23 = q_raw_dict.get(23, '')
         p_q23 = re.split(r'(?:^|\n)\s*[A-D]\.\s+', raw_q23)[0]
-        lines_q23 = [l.strip() for l in p_q23.split('\n') if l.strip()]
-        w_sdt = '\n'.join([l for l in lines_q23 if not l.startswith('[Sumber') and not l.startswith('Bacalah') and not l.startswith('Fokus')])
+        intro_23, w_sdt, q_23 = parse_shared_wacana(p_q23)
+        if not w_sdt:
+            lines_q23 = [l.strip() for l in p_q23.split('\n') if l.strip()]
+            w_sdt = '\n'.join([l for l in lines_q23 if not l.startswith('[Sumber') and not l.startswith('Bacalah') and not l.startswith('Fokus') and not l.startswith('Konflik batin')])
         for qn in [23, 24, 25]:
             shared_wacanas[qn] = ("bacaan_bab4_suka_duka_tawa", w_sdt)
 
@@ -365,8 +393,10 @@ for cfg in bab_configs:
         # Q21-Q23: Pidato Darurat Sampah & Sekolah Bebas Plastik
         raw_q21 = q_raw_dict.get(21, '')
         p_q21 = re.split(r'(?:^|\n)\s*[A-D]\.\s+', raw_q21)[0]
-        lines_q21 = [l.strip() for l in p_q21.split('\n') if l.strip()]
-        w_bebas = '\n'.join([l for l in lines_q21 if not l.startswith('[Sumber') and not l.startswith('Bacalah') and not l.startswith('Ajakan')])
+        intro_21, w_bebas, q_21 = parse_shared_wacana(p_q21)
+        if not w_bebas:
+            lines_q21 = [l.strip() for l in p_q21.split('\n') if l.strip()]
+            w_bebas = '\n'.join([l for l in lines_q21 if not l.startswith('[Sumber') and not l.startswith('Bacalah') and not l.startswith('Ajakan') and not l.startswith('Ciri kebahasaan')])
         for qn in [21, 22, 23]:
             shared_wacanas[qn] = ("bacaan_bab6_darurat_sampah", w_bebas)
 
@@ -393,15 +423,23 @@ for cfg in bab_configs:
                 if w_cand:
                     bacaan_group = f"bacaan_bab{bnum}_soal{qn}"
                     bacaan_text = w_cand
-                    teks_soal = q_sent if q_sent else prompt_clean
+                    teks_soal = q_sent if q_sent and len(re.sub(r'[\s\.\?!]+', '', q_sent)) >= 15 else prompt_clean
                 else:
                     teks_soal = prompt_clean
             elif bacaan_text:
                 # Remove the long wacana from teks_soal so it stays concise
                 intro, w_cand, q_sent = parse_shared_wacana(prompt_clean)
-                teks_soal = q_sent if q_sent else prompt_clean
+                teks_soal = q_sent if q_sent and len(re.sub(r'[\s\.\?!]+', '', q_sent)) >= 15 else prompt_clean
             else:
                 teks_soal = prompt_clean
+
+            # Guard against empty/too short teks_soal:
+            if len(re.sub(r'[\s\.\?!]+', '', teks_soal)) < 15:
+                lines = [l.strip() for l in prompt_clean.split('\n') if l.strip()]
+                for l_rev in reversed(lines):
+                    if len(re.sub(r'[\s\.\?!]+', '', l_rev)) >= 15:
+                        teks_soal = l_rev
+                        break
 
             options = []
             for j in range(1, len(parts), 2):
