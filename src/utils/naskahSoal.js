@@ -360,6 +360,11 @@ export const GAYA_NASKAH = `
    (kebocoran kunci). Sekarang mesin cetak menyediakan kotaknya sendiri
    (kotak kosong berbingkai), terlepas dari bersih/kotor datanya. */
 .naskah .nsk-kotak-centang { display: inline-block; width: 3.2mm; height: 3.2mm; border: 0.35mm solid #1f2937; border-radius: 0.5mm; margin: 0 1.4mm 0 0; vertical-align: -0.5mm; }
+/* 🔥 TABEL SOAL CETAK: render tabel data matematika/ipa/ips di lembar siswa & guru */
+.naskah .nsk-tabel { margin: 1.5mm 0 2mm 0; width: 100%; overflow: hidden; break-inside: avoid; }
+.naskah .nsk-tabel table { width: 100%; border-collapse: collapse; font-size: 8.5pt; line-height: 1.25; border: 0.35mm solid #000; }
+.naskah .nsk-tabel th { background: #f1f5f9; font-weight: bold; border: 0.35mm solid #000; padding: 1mm 1.5mm; text-align: left; }
+.naskah .nsk-tabel td { border: 0.35mm solid #000; padding: 1mm 1.5mm; vertical-align: top; }
 .naskah .nsk-bs { margin: 1.5mm 0 0 7.5mm; }
 .naskah .nsk-bs-head, .naskah .nsk-bs-row { display: grid; grid-template-columns: 1fr 14mm 14mm; gap: 2mm; align-items: start; }
 .naskah .nsk-bs-head { font-size: 8.5pt; font-weight: bold; border-bottom: 0.4pt solid #000; padding-bottom: 1mm; }
@@ -442,6 +447,24 @@ export const RASIO_BAWAAN_GAMBAR = 1.3;
  * Blok bacaan/wacana untuk naskah cetak.
  * Kosong bila butir memang tidak punya bacaan.
  */
+export function tabelNaskahHtml(tabel) {
+  if (!tabel) return '';
+  const header = Array.isArray(tabel?.header || tabel?.headers || tabel?.kolom) ? (tabel.header || tabel.headers || tabel.kolom) : [];
+  const rows = Array.isArray(tabel?.baris || tabel?.rows || tabel?.data) ? (tabel.baris || tabel.rows || tabel.data) : [];
+  if (!header.length && !rows.length) return '';
+
+  const ths = header.length > 0
+    ? `<thead><tr>${header.map((h) => `<th>${teksKeHtml(String(h ?? ''))}</th>`).join('')}</tr></thead>`
+    : '';
+
+  const trs = rows.map((r) => {
+    const cells = Array.isArray(r) ? r : Object.values(r || {});
+    return `<tr>${cells.map((c) => `<td>${teksKeHtml(String(c ?? ''))}</td>`).join('')}</tr>`;
+  }).join('');
+
+  return `<div class="nsk-tabel"><table>${ths}<tbody>${trs}</tbody></table></div>`;
+}
+
 export function bacaanNaskahHtml(soal, nomor, lebarKolom, rasioGambar = {}) {
   const bacaan = bacaanDari(soal);
   if (!bacaan) return '';
@@ -462,7 +485,8 @@ export function bacaanNaskahHtml(soal, nomor, lebarKolom, rasioGambar = {}) {
   const rentang = bacaan.rentang
     ? `<div class="nsk-bacaan-rentang">untuk soal ${bacaan.rentang.dari}–${bacaan.rentang.sampai}</div>`
     : '';
-  return `<div class="nsk-bacaan">${rentang}${isi}</div>`;
+  const tabelBacaan = tabelNaskahHtml(bacaan?.tabel || bacaan?.tabelSoal || bacaan?.tabel_soal);
+  return `<div class="nsk-bacaan">${rentang}${isi}${tabelBacaan}</div>`;
 }
 
 export function barisBenarSalah(soal) {
@@ -604,8 +628,9 @@ export function butirNaskahHtml(soal, nomor, lebarKolom, rasioGambar = {}, opsiB
   // tabelnya, pg_kompleks pernyataannya, menjodohkan pasangannya, isian &
   // esai tempat menjawabnya -- siswa tidak lagi disuruh menjawab di ruang
   // yang tidak tercetak.
+  const tabelHtml = tabelNaskahHtml(soal?.tabelSoal || soal?.tabel_soal);
   const isiJawaban = isiJawabanNaskah(soal, nomor, lebarKolom, rasioGambar);
-  return `<div class="nsk-butir">${opsiButir.kode ? `<div class="nsk-kodesoal">🔖 ${escapeHtml(opsiButir.kode)}</div>` : ''}<div class="nsk-no">${nomor}.</div><div class="nsk-isi">${bacaanHtml}${kodeHtml}${badan}${opsiHtml ? `<div class="nsk-opsi" style="grid-template-columns:repeat(${nKolomOpsi},1fr);">${opsiHtml}</div>` : ''}${isiJawaban}</div></div>`;
+  return `<div class="nsk-butir">${opsiButir.kode ? `<div class="nsk-kodesoal">🔖 ${escapeHtml(opsiButir.kode)}</div>` : ''}<div class="nsk-no">${nomor}.</div><div class="nsk-isi">${bacaanHtml}${kodeHtml}${badan}${tabelHtml}${opsiHtml ? `<div class="nsk-opsi" style="grid-template-columns:repeat(${nKolomOpsi},1fr);">${opsiHtml}</div>` : ''}${isiJawaban}</div></div>`;
 }
 
 export function kopNaskahHtml(paket, judulDok, denganIdentitas) {
@@ -1078,7 +1103,15 @@ export function estimasiTinggiBlokMm(mode, soal, lebarKolom, rasioGambar = {}, o
   } else if (tipeSoal === 'esai' || tipeSoal === 'uraian') {
     tinggiIsi = 30;
   }
-  return Math.round(barisTeks + tinggiGambar + tinggiGambarBacaan + barisBacaan + barisOpsi + tinggiIsi + 4);
+  // 🔥 Taksir tinggi tabel soal (mis. tabel nilai, tabel perbandingan harga)
+  const tabelData = soal?.tabelSoal || soal?.tabel_soal;
+  let tinggiTabel = 0;
+  if (tabelData) {
+    const baris = Array.isArray(tabelData.baris || tabelData.rows || tabelData.data) ? (tabelData.baris || tabelData.rows || tabelData.data) : [];
+    const hasHeader = Boolean(Array.isArray(tabelData?.header || tabelData?.headers || tabelData?.kolom) && (tabelData.header || tabelData.headers || tabelData.kolom).length > 0);
+    tinggiTabel = Math.max(10, ((baris.length + (hasHeader ? 1 : 0)) * 6.5) + 4);
+  }
+  return Math.round(barisTeks + tinggiGambar + tinggiGambarBacaan + barisBacaan + barisOpsi + tinggiIsi + tinggiTabel + 4);
 }
 
 /**
@@ -1305,6 +1338,7 @@ export default {
   seimbangkanHalamanTerakhir,
   seimbangkanKolomHalaman,
   bacaanNaskahHtml,
+  tabelNaskahHtml,
   LOGO_WATERMARK,
   gayaWatermark,
   watermarkHtml,

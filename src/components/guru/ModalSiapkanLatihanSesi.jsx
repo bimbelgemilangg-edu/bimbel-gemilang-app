@@ -1156,6 +1156,93 @@ export default function ModalSiapkanLatihanSesi({
     }
   };
 
+  // 4D. Generate Soal Baru Otomatis dengan Gemini AI (Berdasarkan Silabus Kurikulum Merdeka)
+  const handleGenerateSoalBaruAi = async (jumlahTarget = 5) => {
+    if (!babTerpilihObj) return;
+
+    setLoadingAiRekomendasi(true);
+    setPesanStatus(`🤖 Gemini AI sedang menyusun ${jumlahTarget} butir soal baru khusus materi "${babTerpilihObj.judul}" sesuai Kurikulum Merdeka...`);
+
+    try {
+      const resp = await fetch('/api/generateQuizFromTopic', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          topic: `${babTerpilihObj.judul} - ${selectedSubBab || fokusAktif || 'Konsep dan Analisis'}`,
+          mapel: namaMapelLengkap(kodeMapel),
+          kelas: `${jenjangSesi.toUpperCase()} ${kelasAngka}`,
+          jumlahSoal: jumlahTarget,
+          types: ['pg_sederhana'],
+          arahan: [
+            `Mata Pelajaran: ${namaMapelLengkap(kodeMapel)}`,
+            `Jenjang: ${jenjangSesi.toUpperCase()} Kelas ${kelasAngka}`,
+            `Bab: ${babTerpilihObj.judul}`,
+            selectedSubBab ? `Sub-Bab: ${selectedSubBab}` : '',
+            fokusAktif ? `Fokus: ${fokusAktif}` : '',
+            `Capaian Pembelajaran: ${babTerpilihObj.cp || 'Pemahaman konsep dasar dan aplikasi praktis'}`,
+            'Pastikan soal berkualitas, bahasa Indonesia baku, pilihan jawaban A-D logis, kunci jawaban terverifikasi dan ada pembahasan jelas.',
+          ].filter(Boolean).join('\n'),
+          sourceMode: 'source',
+          useTrendSearch: false,
+        }),
+      });
+
+      if (!resp.ok) {
+        throw new Error(`HTTP ${resp.status}`);
+      }
+
+      const data = await resp.json();
+      const rawQuestions = Array.isArray(data?.questions) ? data.questions : (Array.isArray(data?.data?.questions) ? data.data.questions : []);
+
+      if (rawQuestions.length === 0) {
+        throw new Error('Tidak ada butir soal yang berhasil disusun oleh AI.');
+      }
+
+      const converted = rawQuestions.map((q, idx) => {
+        const opsi = Array.isArray(q.options)
+          ? q.options.map((opt, oIdx) => {
+              const huruf = String.fromCharCode(65 + oIdx);
+              if (typeof opt === 'string') return { label: huruf, teks: opt };
+              return { label: opt.label || huruf, teks: opt.teks || opt.text || opt.jawaban || '' };
+            })
+          : [];
+
+        const key = q.correctAnswer || q.kunci || q.kunciJawaban || 'A';
+        const hurufKunci = /^[A-E]$/i.test(String(key).trim())
+          ? String(key).trim().toUpperCase()
+          : (typeof key === 'number' && key >= 0 && key < 5)
+            ? String.fromCharCode(65 + key)
+            : 'A';
+
+        return normalisasiButirSoal({
+          id: `ai_gen_${Date.now()}_${idx}`,
+          teksSoal: q.question || q.teksSoal || q.soal || '',
+          opsiJawaban: opsi,
+          kunciJawaban: hurufKunci,
+          pembahasan: q.explanation || q.pembahasan || '',
+          materi: babTerpilihObj?.judul || '',
+          tingkatKelas: kelasAngka,
+          jenjang: jenjangSesi,
+          mapel: kodeMapel,
+          tipe: 'pg_sederhana',
+          alasanAi: `Dibuat cerdas oleh Gemini AI berdasarkan Silabus Kurikulum Merdeka ${babTerpilihObj.judul}`,
+        }, idx);
+      }).filter((s) => s && s.teksSoal);
+
+      if (converted.length === 0) {
+        throw new Error('Format butir dari AI tidak dapat dinormalisasi.');
+      }
+
+      setSoalTerpilih(converted);
+      setPesanStatus(`✨ Gemini AI berhasil menyusun ${converted.length} butir soal baru terverifikasi untuk "${babTerpilihObj.judul}"! Silakan tinjau dan terbitkan ke kelas.`);
+    } catch (err) {
+      console.warn('Gagal generate soal baru dari AI:', err);
+      setPesanStatus(`⚠️ Gagal menyusun soal baru otomatis: ${err.message || 'Koneksi ke AI bermasalah'}. Silakan gunakan tab "✍️ Tulis Soal Mandiri".`);
+    } finally {
+      setLoadingAiRekomendasi(false);
+    }
+  };
+
   // Toggle pilihan butir soal pada mode manual
   const handleTogglePilihManual = (soal) => {
     const ada = soalTerpilih.some((s) => s.id === soal.id);
@@ -1972,7 +2059,7 @@ export default function ModalSiapkanLatihanSesi({
                     </div>
                   </div>
                 </div>
-                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
                   <button
                     type="button"
                     onClick={() => handleTerapkanRekomendasi(5)}
@@ -1992,14 +2079,14 @@ export default function ModalSiapkanLatihanSesi({
                       boxShadow: '0 2px 4px rgba(124, 58, 237, 0.25)',
                     }}
                   >
-                    <Sparkles size={13} /> {loadingAiRekomendasi ? 'Membaca Bank Soal...' : '✨ Siapkan 5 Soal (Gemini AI)'}
+                    <Sparkles size={13} /> {loadingAiRekomendasi ? 'Membaca Bank Soal...' : '✨ Siapkan 5 Soal (Bank Soal)'}
                   </button>
                   <button
                     type="button"
-                    onClick={() => handleTerapkanRekomendasi(10)}
+                    onClick={() => handleGenerateSoalBaruAi(5)}
                     disabled={loadingAiRekomendasi}
                     style={{
-                      background: loadingAiRekomendasi ? '#818cf8' : '#4f46e5',
+                      background: loadingAiRekomendasi ? '#818cf8' : '#059669',
                       color: '#ffffff',
                       border: 'none',
                       borderRadius: 8,
@@ -2010,10 +2097,10 @@ export default function ModalSiapkanLatihanSesi({
                       display: 'inline-flex',
                       alignItems: 'center',
                       gap: 6,
-                      boxShadow: '0 2px 4px rgba(79, 70, 229, 0.25)',
+                      boxShadow: '0 2px 4px rgba(5, 150, 105, 0.25)',
                     }}
                   >
-                    {loadingAiRekomendasi ? 'Membaca Bank Soal...' : 'Siapkan 10 Soal (Gemini AI)'}
+                    <Sparkles size={13} /> {loadingAiRekomendasi ? 'Menyusun Soal...' : '⚡ Buat 5 Soal Baru (Gemini AI)'}
                   </button>
                 </div>
               </div>
@@ -2183,8 +2270,46 @@ export default function ModalSiapkanLatihanSesi({
           </div>
 
           {pesanStatus && (
-            <div style={{ fontSize: 11.5, color: '#047857', background: '#ecfdf5', padding: '6px 10px', borderRadius: 6, marginBottom: 14 }}>
-              {pesanStatus}
+            <div
+              style={{
+                fontSize: 12,
+                color: pesanStatus.includes('⚠️') ? '#92400e' : '#047857',
+                background: pesanStatus.includes('⚠️') ? '#fffbeb' : '#ecfdf5',
+                border: pesanStatus.includes('⚠️') ? '1px solid #fde68a' : '1px solid #a7f3d0',
+                padding: '10px 14px',
+                borderRadius: 8,
+                marginBottom: 14,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                flexWrap: 'wrap',
+                gap: 10,
+              }}
+            >
+              <div style={{ flex: 1, minWidth: 260, lineHeight: 1.5 }}>{pesanStatus}</div>
+              {pesanStatus.includes('⚠️') && (
+                <button
+                  type="button"
+                  onClick={() => handleGenerateSoalBaruAi(5)}
+                  disabled={loadingAiRekomendasi}
+                  style={{
+                    background: '#7c3aed',
+                    color: '#ffffff',
+                    border: 'none',
+                    borderRadius: 6,
+                    padding: '6px 12px',
+                    fontSize: 11.5,
+                    fontWeight: 700,
+                    cursor: loadingAiRekomendasi ? 'wait' : 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 5,
+                    boxShadow: '0 2px 4px rgba(124, 58, 237, 0.25)',
+                  }}
+                >
+                  <Sparkles size={13} /> {loadingAiRekomendasi ? 'Menyusun Soal...' : '✨ Buat 5 Soal Baru Otomatis'}
+                </button>
+              )}
             </div>
           )}
 
