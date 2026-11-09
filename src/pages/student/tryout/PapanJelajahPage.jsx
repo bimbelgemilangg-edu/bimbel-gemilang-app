@@ -266,10 +266,9 @@ export default function PapanJelajahPage({ studentId = '' }) {
   const level = 1 + Math.floor(xp / 100);
 
   const hariBulan = useMemo(() => {
-    // 🔥 2026-10-25: bulan berjalan hanya menampilkan tanggal s.d. HARI INI;
-    // bulan lalu penuh; bulan depan kosong & tombol majunya dinonaktifkan.
-    const jumlah = jumlahTanggalTampil(bulan.y, bulan.m, kini);
-    return Array.from({ length: jumlah }, (_, i) => {
+    // Tampilkan seluruh tanggal dalam bulan (1 s.d. akhir bulan) agar siswa dapat melihat jadwal mendatang
+    const jumlahHari = new Date(bulan.y, bulan.m + 1, 0).getDate();
+    return Array.from({ length: jumlahHari }, (_, i) => {
       const key = `${bulan.y}-${String(bulan.m + 1).padStart(2, '0')}-${String(i + 1).padStart(2, '0')}`;
       const dok = dokumenPerTanggal.get(key) || [];
       return {
@@ -281,7 +280,11 @@ export default function PapanJelajahPage({ studentId = '' }) {
     });
   }, [bulan, dokumenPerTanggal, kini]);
 
-  const targetUjianAi = useMemo(() => deteksiJenjangUjianAkhir({ kelasSekolah: kelas, kelas }), [kelas]);
+  const bolehMaju = useMemo(() => {
+    const selisihBulan = (bulan.y - new Date(kini).getFullYear()) * 12 + (bulan.m - new Date(kini).getMonth());
+    return selisihBulan < 6;
+  }, [bulan, kini]);
+
   const paketUntukAnalitik = useMemo(() => [...paket, ...paketRiwayat], [paket, paketRiwayat]);
   const analitik = useMemo(() => hitungAnalitik(
     [...sesiPerPaket.values()].map((s) => {
@@ -344,9 +347,9 @@ export default function PapanJelajahPage({ studentId = '' }) {
               <div style={{ fontWeight: 800, fontSize: 14 }}>{BULAN[bulan.m]} {bulan.y}</div>
               <button
                 type="button"
-                style={{ ...st.tab(false), opacity: bolehBulanBerikutnya(bulan.y, bulan.m, kini) ? 1 : 0.35, cursor: bolehBulanBerikutnya(bulan.y, bulan.m, kini) ? 'pointer' : 'not-allowed' }}
-                disabled={!bolehBulanBerikutnya(bulan.y, bulan.m, kini)}
-                title={bolehBulanBerikutnya(bulan.y, bulan.m, kini) ? 'Bulan berikutnya' : 'Strip tanggal berhenti di hari ini'}
+                style={{ ...st.tab(false), opacity: bolehMaju ? 1 : 0.35, cursor: bolehMaju ? 'pointer' : 'not-allowed' }}
+                disabled={!bolehMaju}
+                title={bolehMaju ? 'Bulan berikutnya' : 'Batas kalender'}
                 onClick={() => setBulan((b) => (b.m === 11 ? { y: b.y + 1, m: 0 } : { y: b.y, m: b.m + 1 }))}
               ><ChevronRight size={14} /></button>
             </div>
@@ -382,90 +385,34 @@ export default function PapanJelajahPage({ studentId = '' }) {
               ))}
             </div>
             <div style={{ fontSize: 11, color: '#9aa3d6', marginTop: 6 }}>
-              Geser tanggal untuk meninjau hari lain: lingkaran ber-titik = ada misi, ✓ hijau = semua misi tanggal itu selesai. Strip berhenti di hari ini; bulan sebelumnya tersedia lewat tombol panah.
+              Pilih tanggal untuk melihat try out yang dijadwalkan: lingkaran bertitik (•) = ada try out, lingkaran oranye = hari ini.
             </div>
           </div>
 
-          {/* ---------- daftar misi tanggal terpilih ---------- */}
+          {/* ---------- daftar try out terjadwal tanggal terpilih ---------- */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             <div style={{ fontWeight: 800, fontSize: 14 }}>
-              📅 Misi {new Date(tanggal).getDate()} {BULAN[new Date(tanggal).getMonth()]}
-              {misiTanggalIni.length ? ` · ${misiTanggalIni.length} test` : ''}
+              📅 Jadwal Try Out {new Date(tanggal).getDate()} {BULAN[new Date(tanggal).getMonth()]}
+              {misiTanggalIni.length ? ` · ${misiTanggalIni.length} paket` : ''}
             </div>
             {misiTanggalIni.length === 0 ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                {semuaDokumen.length > 0 ? (
-                  <>
-                    {targetUjianAi && (
-                      <div style={{ ...st.kartu, background: 'linear-gradient(135deg, rgba(13,148,136,0.2) 0%, rgba(15,118,110,0.12) 100%)', border: '1px solid rgba(13,148,136,0.45)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
-                        <div>
-                          <div style={{ fontWeight: 800, fontSize: 13.5, color: '#2dd4bf', display: 'flex', alignItems: 'center', gap: 6 }}>
-                            <Rocket size={16} /> Jalur Ujian AI (Simulasi Bertingkat Tanpa Deadline)
-                          </div>
-                          <div style={{ fontSize: 12, color: '#ccfbf1', marginTop: 2 }}>
-                            Khusus simulasi otomatis AI bertahap dengan analisis kemampuan belajar, buka menu <strong>Jalur Ujian AI</strong>.
-                          </div>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => navigate('/siswa/jalur-ai')}
-                          style={{
-                            background: '#0d9488', color: '#fff', border: 'none', borderRadius: 10,
-                            padding: '8px 14px', fontWeight: 800, fontSize: 12, cursor: 'pointer',
-                            display: 'flex', alignItems: 'center', gap: 6,
-                          }}
-                        >
-                          <Rocket size={14} /> Buka Jalur AI
-                        </button>
-                      </div>
-                    )}
-
-                    <div style={{ ...st.kartu, background: 'rgba(249,115,22,0.14)', border: '1px solid rgba(249,115,22,0.4)' }}>
-                      <div style={{ fontWeight: 800, fontSize: 14.5, color: '#f97316', display: 'flex', alignItems: 'center', gap: 6 }}>
-                        <CalendarDays size={17} /> Try Out Terjadwal & Ujian Akbar ({semuaDokumen.length} Paket Aktif)
-                      </div>
-                      <p style={{ ...st.deskripsi, marginTop: 4, color: '#eef1ff' }}>
-                        Daftar try out resmi terjadwal yang diterbitkan oleh admin atau tentor. Kerjakan sesuai jadwal pengerjaan yang tertera:
-                      </p>
-                    </div>
-                    {semuaDokumen.map((d) => (
-                      <KartuMisiBola key={d.id} dok={d} onBuka={(x) => navigate(`/siswa/tryout/${x.paketId}`)} />
-                    ))}
-                  </>
-                ) : (
-                  <div style={st.kartu}>
-                    <div style={{ fontWeight: 700, fontSize: 13.5 }}>🌙 Belum ada try out aktif untuk kamu.</div>
-                    <p style={st.deskripsi}>
-                      Yuk kerjakan latihan harianmu! Latihan singkat setiap hari
-                      melatih kemampuanmu dari TKA sampai UTBK.
-                    </p>
-                    <Link
-                      to="/siswa/latihan-harian"
-                      style={{ display: 'inline-flex', alignItems: 'center', gap: 7, marginTop: 10, padding: '10px 16px', borderRadius: 12, background: 'linear-gradient(90deg,#f97316,#7c3aed)', color: '#fff', fontWeight: 900, fontSize: 13, textDecoration: 'none' }}
-                    >
-                      <Rocket size={14} /> Latihan Harian
-                    </Link>
-                  </div>
-                )}
+              <div style={st.kartu}>
+                <div style={{ fontWeight: 700, fontSize: 13.5 }}>🌙 Tidak ada try out yang dijadwalkan pada {new Date(tanggal).getDate()} {BULAN[new Date(tanggal).getMonth()]}.</div>
+                <p style={{ ...st.deskripsi, marginTop: 4 }}>
+                  Silakan geser dan pilih tanggal di kalender yang memiliki tanda titik (•) untuk melihat jadwal try out yang tersedia.
+                </p>
+                <Link
+                  to="/siswa/latihan-harian"
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: 7, marginTop: 10, padding: '10px 16px', borderRadius: 12, background: 'linear-gradient(90deg,#f97316,#7c3aed)', color: '#fff', fontWeight: 900, fontSize: 13, textDecoration: 'none' }}
+                >
+                  <Rocket size={14} /> Latihan Harian
+                </Link>
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {misiTanggalIni.map((d) => (
                   <KartuMisiBola key={d.id} dok={d} onBuka={(x) => navigate(`/siswa/tryout/${x.paketId}`)} />
                 ))}
-                {/* Tampilkan juga misi hari lain yang belum diselesaikan agar tidak terlewat */}
-                {semuaDokumen.filter((d) => !misiTanggalIni.some((m) => m.id === d.id) && d.statusPaket !== 'selesai').length > 0 && (
-                  <div style={{ marginTop: 14 }}>
-                    <div style={{ fontWeight: 800, fontSize: 13, color: '#fbbf24', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <Sparkles size={14} /> Misi Lain yang Tersedia untuk Dikerjakan:
-                    </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                      {semuaDokumen.filter((d) => !misiTanggalIni.some((m) => m.id === d.id) && d.statusPaket !== 'selesai').map((d) => (
-                        <KartuMisiBola key={d.id} dok={d} onBuka={(x) => navigate(`/siswa/tryout/${x.paketId}`)} />
-                      ))}
-                    </div>
-                  </div>
-                )}
               </div>
             )}
           </div>

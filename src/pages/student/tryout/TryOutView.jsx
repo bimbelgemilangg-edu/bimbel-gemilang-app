@@ -1241,12 +1241,12 @@ export default function TryOutView() {
           );
         })}
 
-        {/* 🚀 Arahkan kembali ke Jalur Ujian AI jika ini paket ekspedisi AI */}
+        {/* 🗺️ Arahkan kembali ke Roadmap Belajar jika ini paket ekspedisi roadmap */}
         {(paket?.jalurUjianAi || searchParams.get('jalur') === 'ai') ? (
           <>
             <button
               type="button"
-              onClick={() => navigate('/siswa/jalur-ujian-ai')}
+              onClick={() => navigate('/siswa/roadmap')}
               style={{
                 ...st.tombolUtama,
                 background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
@@ -1254,7 +1254,7 @@ export default function TryOutView() {
                 boxShadow: '0 6px 18px rgba(16, 185, 129, 0.35)',
               }}
             >
-              🚀 Lanjutkan Peta Ekspedisi Jalur Ujian AI
+              🚀 Lanjutkan Roadmap Belajar
             </button>
             <button type="button" onClick={() => navigate('/siswa/dashboard')} style={st.tombolSekunder}>
               Kembali ke Dashboard

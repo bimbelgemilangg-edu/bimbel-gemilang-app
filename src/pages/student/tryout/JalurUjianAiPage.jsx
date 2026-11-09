@@ -117,15 +117,15 @@ export default function JalurUjianAiPage() {
           passingGrade: 60 + Math.min(idx * 5, 20),
           xpReward: 150 + idx * 50,
           icon: idx === 0 ? 'Rocket' : idx % 2 === 1 ? 'BookOpen' : 'Sparkles',
-          deskripsi: p.deskripsi || 'Simulasi ujian otomatis berbasis AI untuk menguji dan mengasah pemahamanmu.',
+          deskripsi: p.deskripsi || 'Simulasi pemahaman bertahap untuk menguji dan mengasah penguasaan materimu secara real time.',
         };
       });
 
-      // Tambahkan node puncak: Review & Analisis AI
+      // Tambahkan node puncak: Review & Analisis Kemampuan
       units.push({
         id: 'unit-review-ai',
         unitNomor: units.length + 1,
-        judul: 'Puncak Jalur: Analisis Kemampuan AI',
+        judul: 'Puncak Roadmap: Analisis Kemampuan',
         subjudul: 'Radar Penguasaan Materi, Kesiapan & Rekomendasi Belajar',
         tipe: 'review',
       });
@@ -178,13 +178,13 @@ export default function JalurUjianAiPage() {
             <MaskotAstronot size={110} />
           </div>
           <h2 style={{ fontSize: 22, fontWeight: 800, color: '#0f766e', margin: '0 0 10px' }}>
-            Jalur Misi Khusus Ujian Akhir
+            Roadmap Kemampuan Ujian Akhir
           </h2>
           <p style={{ color: '#475569', fontSize: 14, lineHeight: 1.6, margin: '0 0 20px' }}>
-            Halo <strong>{profil.nama || 'Siswa'}</strong>! Fitur <strong>Jalur Ujian AI</strong> ini dirancang khusus bagi sahabat kelas <strong>6 SD (TKA SD)</strong>, <strong>9 SMP (TKA SMP)</strong>, dan <strong>12 SMA/SMK (UTBK-SNBT)</strong> untuk simulasi kelulusan dan seleksi sekolah/kampus impian.
+            Halo <strong>{profil.nama || 'Siswa'}</strong>! Fitur <strong>Roadmap Kemampuan</strong> ini dirancang khusus bagi sahabat kelas <strong>6 SD (TKA SD)</strong>, <strong>9 SMP (TKA SMP)</strong>, dan <strong>12 SMA/SMK (UTBK-SNBT)</strong> untuk simulasi kelulusan dan seleksi sekolah/kampus impian.
           </p>
           <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 12, padding: 14, marginBottom: 20, textAlign: 'left', fontSize: 13, color: '#166534' }}>
-            ✨ Untuk kelasmu (<strong>{profil.kelas || 'Reguler'}</strong>), silakan nikmati menu <strong>Latihan Harian AI</strong> dan <strong>Materi Modul E-Learning</strong> untuk memperkuat nilai harian!
+            ✨ Untuk kelasmu (<strong>{profil.kelas || 'Reguler'}</strong>), silakan nikmati menu <strong>Latihan Harian</strong> dan <strong>Materi Modul E-Learning</strong> untuk memperkuat nilai harian!
           </div>
           <button
             type="button"
@@ -206,7 +206,7 @@ export default function JalurUjianAiPage() {
       {/* Background garis topografi kosmik halus */}
       <div style={st.bgTopologyOverlay} aria-hidden="true" />
 
-      {/* HEADER ATAS: TOMBOL KEMBALI, BADGE JENJANG, AVATAR, & REVIEW AI */}
+      {/* HEADER ATAS: TOMBOL KEMBALI, BADGE JENJANG, AVATAR, & REVIEW */}
       <header style={st.headerBar}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <button
@@ -233,10 +233,10 @@ export default function JalurUjianAiPage() {
             type="button"
             onClick={() => setModalReviewTerbuka(true)}
             style={st.btnReviewHeader}
-            title="Buka Analisis Kemampuan Belajar AI"
+            title="Buka Analisis Kemampuan Belajar"
           >
             <Brain size={16} color="#0d9488" />
-            <span>Analisis AI</span>
+            <span>Analisis Kemampuan</span>
           </button>
           <div style={st.avatarBulat} title={profil.nama}>
             {profil.nama ? profil.nama.charAt(0).toUpperCase() : 'S'}
@@ -321,7 +321,7 @@ export default function JalurUjianAiPage() {
                   style={st.tombolCapsuleReview}
                 >
                   <Brain size={18} color="#0d9488" />
-                  <span style={{ fontWeight: 800, fontSize: 13, color: '#0f766e' }}>Review AI</span>
+                  <span style={{ fontWeight: 800, fontSize: 13, color: '#0f766e' }}>Review Hasil</span>
                 </button>
               </div>
             );
@@ -349,7 +349,7 @@ export default function JalurUjianAiPage() {
         })}
 
         {/* MASKOT ASTRO GEMILANG MENGINTIP CERIA DI POJOK KANAN BAWAH */}
-        <div style={st.maskotMengintip} title="Hai! Aku Master G, pemandumu di Jalur Ujian AI!">
+        <div style={st.maskotMengintip} title="Hai! Aku Master G, pemandumu di Roadmap Kemampuan!">
           <div style={{ position: 'relative' }}>
             <MaskotAstronot size={88} />
             <div style={st.balonBicaraMaskot}>
@@ -453,7 +453,7 @@ export default function JalurUjianAiPage() {
                   }}
                   style={st.btnLihatAnalisisKecil}
                 >
-                  Analisis AI
+                  Analisis Kemampuan
                 </button>
               </div>
             )}
@@ -521,7 +521,7 @@ export default function JalurUjianAiPage() {
                 </div>
                 <div>
                   <h3 style={{ fontSize: 18, fontWeight: 800, color: '#0f172a', margin: 0 }}>
-                    Analisis Kemampuan Belajar AI
+                    Analisis Kemampuan Belajar
                   </h3>
                   <div style={{ fontSize: 12, color: '#64748b', fontWeight: 600 }}>
                     Pelacakan Perkembangan Personal • {targetJenjang.namaUjian}
@@ -587,12 +587,12 @@ export default function JalurUjianAiPage() {
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
                 <Sparkles size={16} color="#8b5cf6" />
                 <span style={{ fontSize: 13, fontWeight: 800, color: '#6d28d9' }}>
-                  Rekomendasi Cerdas AI
+                  Rekomendasi Belajar
                 </span>
               </div>
               <p style={{ fontSize: 12.5, color: '#4c1d95', lineHeight: 1.5, margin: 0 }}>
                 {selesaiCount === 0
-                  ? 'Mulai pengerjaan Tahap 1 (Start) untuk mengaktifkan AI Tracker yang membaca kemampuan dan materi yang perlu kamu kuasai!'
+                  ? 'Mulai pengerjaan Tahap 1 (Start) untuk mengaktifkan radar evaluasi yang membaca kemampuan dan materi yang perlu kamu kuasai!'
                   : 'Pertahankan konsistensimu! Terus lanjutkan tahap berikutnya tanpa khawatir deadline untuk mempertajam daya saing kelulusanmu.'}
               </p>
             </div>

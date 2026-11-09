@@ -722,49 +722,61 @@ const StudentDashboard = () => {
                 SD/SMP/kelas 10-11 tidak berubah sedikit pun. */}
             <KartuTargetSiswa studentId={studentId} profil={studentProfile} />
 
-            {/* 🚀 BANNER JALUR UJIAN AI — Khusus Kelas 6 SD, 9 SMP, 12 SMA/UTBK (Tanpa Deadline) */}
+            {/* 🗺️ BANNER ROADMAP BELAJAR — Khusus Kelas 6 SD, 9 SMP, 12 SMA/UTBK (Tanpa Deadline) */}
             {(() => {
               const k = studentProfile?.kelas || studentProfile?.kelasSekolah || studentKelas || (typeof localStorage !== 'undefined' ? localStorage.getItem('studentGrade') || localStorage.getItem('studentKelas') : '');
               const j = studentProfile?.jenjang || (typeof localStorage !== 'undefined' ? localStorage.getItem('studentGrade') : '');
-              const targetUjianAi = deteksiJenjangUjianAkhir({ ...studentProfile, kelas: k, jenjang: j });
-              if (!targetUjianAi) return null;
+              const targetUjian = deteksiJenjangUjianAkhir({ ...studentProfile, kelas: k, jenjang: j });
+              if (!targetUjian) return null;
+
+              const isUtbk = targetUjian.jenjang === 'SMA' || String(k).toLowerCase().includes('12') || String(k).toLowerCase().includes('utbk');
+              const judulRoadmap = isUtbk ? 'Roadmap UTBK-SNBT' : targetUjian.jenjang === 'SD' ? 'Roadmap TKA SD' : 'Roadmap TKA SMP';
+              const taglineRoadmap = isUtbk
+                ? 'Pantau perjalanan kemampuan UTBK/SNBT-mu real time'
+                : 'Pantau perjalanan kemampuan TKA-mu real time';
+
               return (
                 <div
-                  onClick={() => navigate('/siswa/jalur-ai')}
+                  onClick={() => navigate('/siswa/roadmap')}
                   style={{
                     marginTop: 14,
-                    background: 'linear-gradient(135deg, #14b8a6 0%, #0d9488 100%)',
-                    borderRadius: 18,
-                    padding: '14px 18px',
+                    background: 'linear-gradient(135deg, #0d9488 0%, #047857 100%)',
+                    borderRadius: 20,
+                    padding: '16px 20px',
                     color: '#ffffff',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
                     cursor: 'pointer',
-                    boxShadow: '0 6px 18px rgba(13, 148, 136, 0.28)',
+                    boxShadow: '0 6px 20px rgba(13, 148, 136, 0.28)',
                     position: 'relative',
                     overflow: 'hidden',
                   }}
-                  title="Buka Peta Jalur Ujian AI"
+                  title={`Buka ${judulRoadmap}`}
                 >
-                  <div style={{ position: 'relative', zIndex: 2 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
-                      <span style={{ background: '#f97316', fontSize: 10, fontWeight: 900, padding: '2px 7px', borderRadius: 99 }}>
-                        {targetUjianAi.labelBadge}
+                  <div style={{ position: 'relative', zIndex: 2, maxWidth: '80%' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+                      <span style={{ background: '#f59e0b', color: '#1e293b', fontSize: 10, fontWeight: 900, padding: '2px 8px', borderRadius: 99 }}>
+                        {targetUjian.labelBadge}
                       </span>
                       <span style={{ fontSize: 11, fontWeight: 700, color: '#ccfbf1' }}>
-                        Jalur Misi Tanpa Deadline
+                        Simulasi Bertahap Tanpa Deadline
                       </span>
                     </div>
-                    <div style={{ fontSize: 15, fontWeight: 800, color: '#ffffff' }}>
-                      {targetUjianAi.subJudul}
+                    <div style={{ fontSize: 16.5, fontWeight: 900, color: '#ffffff' }}>
+                      {judulRoadmap}
                     </div>
-                    <div style={{ fontSize: 11.5, color: '#e6fffa', marginTop: 2 }}>
-                      Taklukkan unit bertingkat & pantau analisis kemampuan AI 🚀
+                    <div style={{ fontSize: 12.5, color: '#e6fffa', marginTop: 3, fontWeight: 500 }}>
+                      {taglineRoadmap} 🚀
                     </div>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, position: 'relative', zIndex: 2 }}>
-                    <div style={{ width: 44, height: 44, borderRadius: '50%', background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <div style={{ position: 'relative', zIndex: 2 }}>
+                    <div style={{
+                      width: 46, height: 46, borderRadius: '50%',
+                      background: 'rgba(255,255,255,0.22)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                    }}>
                       <Rocket size={22} color="#ffffff" />
                     </div>
                   </div>
@@ -868,7 +880,7 @@ const StudentDashboard = () => {
           const cekAi = deteksiJenjangUjianAkhir({ ...studentProfile, kelas: kJenjang, jenjang: jJenjang });
 
           const menuBaru = [
-            ...(cekAi ? [{ key: 'jalur-ai', label: 'Jalur AI', emoji: '🚀', warna: '#ccfbf1', warnaTeks: '#0f766e', segeraHadir: false }] : []),
+            ...(cekAi ? [{ key: 'roadmap', label: 'Roadmap', emoji: '🗺️', warna: '#ccfbf1', warnaTeks: '#0f766e', segeraHadir: false }] : []),
             { key: 'latihan', label: 'Latihan Harian', emoji: '📝', warna: '#ecfeff', warnaTeks: '#155e75', segeraHadir: false },
             { key: 'tryout', label: 'TryOut Terjadwal', emoji: '📅', warna: '#fef3c7', warnaTeks: '#92400e', segeraHadir: false },
             // 🔥 BARU: tile "Bank Soal" (placeholder "Segera") diganti jadi
@@ -944,8 +956,8 @@ const StudentDashboard = () => {
                     onClick={() => {
                       if (m.key === 'kehadiran') {
                         attendanceRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                      } else if (m.key === 'jalur-ai') {
-                        navigate('/siswa/jalur-ai');
+                      } else if (m.key === 'roadmap' || m.key === 'jalur-ai') {
+                        navigate('/siswa/roadmap');
                       } else if (m.key === 'latihan') {
                         navigate('/siswa/latihan-harian');
                       } else if (m.key === 'tryout') {

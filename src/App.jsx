@@ -978,7 +978,8 @@ function App() {
             ==================================================== */}
         <Route path="/siswa/dashboard" element={<SiswaPage><StudentDashboard /></SiswaPage>} />
         <Route path="/siswa/tryout" element={<SiswaPageBelajar fitur="Try Out"><PilihTampilanTryOut /></SiswaPageBelajar>} />
-        {/* 🚀 Jalur Misi Ujian AI (Ekspedisi Kosmik TKA & UTBK bertingkat untuk jenjang akhir) */}
+        {/* 🗺️ Roadmap Kemampuan Belajar (Ekspedisi Kosmik TKA & UTBK bertingkat untuk jenjang akhir) */}
+        <Route path="/siswa/roadmap" element={<SiswaPageBelajar fitur="Try Out"><JalurUjianAiPage /></SiswaPageBelajar>} />
         <Route path="/siswa/jalur-ai" element={<SiswaPageBelajar fitur="Try Out"><JalurUjianAiPage /></SiswaPageBelajar>} />
         <Route path="/siswa/jalur-ujian-ai" element={<SiswaPageBelajar fitur="Try Out"><JalurUjianAiPage /></SiswaPageBelajar>} />
         {/* 🔖 20 Okt: arsip kode soal siswa (sinkron buku tulis <-> sistem) */}

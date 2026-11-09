@@ -232,8 +232,8 @@ export function getDaftarUnitJalurUjian(jenjang = 'SMP') {
       {
         id: 'jalur-ai-sd-review',
         unitNomor: 5,
-        judul: 'Review & Analisis AI Kelulusan',
-        subjudul: 'Radar Penguasaan Materi & Rekomendasi Belajar AI',
+        judul: 'Review & Analisis Kelulusan SD',
+        subjudul: 'Radar Penguasaan Materi & Rekomendasi Belajar',
         tipe: 'review',
         posisiAlign: 'center',
         deskripsi: 'Analisis komprehensif performamu dari seluruh unit. Temukan kekuatanmu dan materi yang perlu ditingkatkan!',
@@ -306,11 +306,11 @@ export function getDaftarUnitJalurUjian(jenjang = 'SMP') {
       {
         id: 'jalur-ai-sma-review',
         unitNomor: 5,
-        judul: 'Review & Analisis AI SNBT Kampus',
+        judul: 'Review & Analisis SNBT Kampus',
         subjudul: 'Peluang Lolos Jurusan Impian & Rekomendasi Materi',
         tipe: 'review',
         posisiAlign: 'center',
-        deskripsi: 'Analisis komprehensif seluruh subtes dari AI untuk memaksimalkan peluang lolos SNBT.',
+        deskripsi: 'Analisis komprehensif seluruh subtes untuk memaksimalkan peluang lolos SNBT.',
       },
     ];
   }
@@ -380,11 +380,11 @@ export function getDaftarUnitJalurUjian(jenjang = 'SMP') {
     {
       id: 'jalur-ai-smp-review',
       unitNomor: 5,
-      judul: 'Review & Analisis AI Kelulusan SMP',
+      judul: 'Review & Analisis Kelulusan SMP',
       subjudul: 'Pemetaan Daya Saing Masuk SMA/SMK Favorit',
       tipe: 'review',
       posisiAlign: 'center',
-      deskripsi: 'Analisis komprehensif kemampuan belajar dari AI dan panduan fokus materi menuju kelulusan cemerlang.',
+      deskripsi: 'Analisis komprehensif kemampuan belajar dan panduan fokus materi menuju kelulusan cemerlang.',
     },
   ];
 }

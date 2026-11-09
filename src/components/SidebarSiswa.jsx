@@ -70,12 +70,12 @@ const SidebarSiswa = ({ activeMenu, setActiveMenu, isOpen, setIsOpen }) => {
     {
       label: 'BELAJAR',
       items: [
-        // 🚀 Jalur Ujian AI: Simulasi otomatis bertahap dengan analitik kemampuan AI (khusus jenjang akhir)
+        // 🗺️ Roadmap: Simulasi bertahap untuk memantau perjalanan kemampuan siswa real-time
         ...(targetUjianAi ? [{
-          id: 'jalur-ai',
-          label: 'Jalur Ujian AI',
+          id: 'roadmap',
+          label: 'Roadmap',
           icon: <Rocket size={18} />,
-          path: '/siswa/jalur-ai',
+          path: '/siswa/roadmap',
           color: '#0d9488',
           badge: targetUjianAi.labelBadge,
         }] : []),
@@ -215,7 +215,9 @@ const SidebarSiswa = ({ activeMenu, setActiveMenu, isOpen, setIsOpen }) => {
                 <div style={styles.sectionLabel}>{group.label}</div>
               )}
               {group.items.map((item) => {
-                const isActive = activeMenu === item.id || location.pathname === item.path;
+                const isActive = activeMenu === item.id ||
+                  location.pathname === item.path ||
+                  (item.id === 'roadmap' && (location.pathname === '/siswa/roadmap' || location.pathname === '/siswa/jalur-ai'));
                 return (
                   <div
                     key={item.id}
