@@ -243,6 +243,24 @@ export default function PapanJelajahPage({ studentId = '' }) {
     return map;
   }, [paket, sesiPerPaket, kini]);
 
+  // 🚀 SELURUH DOKUMEN TRY OUT DARI SEMUA PAKET AKTIF (TANPA BATAS TANGGAL):
+  // Memastikan seluruh try out yang diterbitkan admin (24 Okt, 1 Nov, 8 Nov, dst.)
+  // SELALU DAPAT DIKERJAKAN oleh siswa kapan saja tanpa terhalang deadline tanggal!
+  const semuaDokumen = useMemo(() => {
+    const list = [];
+    paket.forEach((p) => {
+      bangunDokumenTryOut(p, { kini, sesi: sesiPerPaket.get(p.id) || null }).forEach((d) => {
+        list.push(d);
+      });
+    });
+    return list.sort((a, b) => {
+      const aSelesai = a.statusPaket === 'selesai' ? 1 : 0;
+      const bSelesai = b.statusPaket === 'selesai' ? 1 : 0;
+      if (aSelesai !== bSelesai) return aSelesai - bSelesai;
+      return (b.waktuBuka || 0) - (a.waktuBuka || 0);
+    });
+  }, [paket, sesiPerPaket, kini]);
+
   const xp = useMemo(() => sesi.reduce((a, s) => a + (Number(s.xpFinal) || Number(s.xpMentah) || 0), 0), [sesi]);
   const level = 1 + Math.floor(xp / 100);
 
@@ -373,22 +391,57 @@ export default function PapanJelajahPage({ studentId = '' }) {
               {misiTanggalIni.length ? ` · ${misiTanggalIni.length} test` : ''}
             </div>
             {misiTanggalIni.length === 0 ? (
-              <div style={st.kartu}>
-                <div style={{ fontWeight: 700, fontSize: 13.5 }}>🌙 Belum ada try out untuk kamu.</div>
-                <p style={st.deskripsi}>
-                  Yuk kerjakan misi harianmu! Latihan singkat setiap hari
-                  melatih kemampuanmu dari TKA sampai UTBK.
-                </p>
-                <Link
-                  to="/siswa/latihan-harian"
-                  style={{ display: 'inline-flex', alignItems: 'center', gap: 7, marginTop: 10, padding: '10px 16px', borderRadius: 12, background: 'linear-gradient(90deg,#f97316,#7c3aed)', color: '#fff', fontWeight: 900, fontSize: 13, textDecoration: 'none' }}
-                >
-                  <Rocket size={14} /> Latihan Harian
-                </Link>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {semuaDokumen.length > 0 ? (
+                  <>
+                    <div style={{ ...st.kartu, background: 'rgba(249,115,22,0.14)', border: '1px solid rgba(249,115,22,0.4)' }}>
+                      <div style={{ fontWeight: 800, fontSize: 14.5, color: '#f97316', display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <Rocket size={17} /> Seluruh Try Out Tersedia ({semuaDokumen.length} Misi Aktif)
+                      </div>
+                      <p style={{ ...st.deskripsi, marginTop: 4, color: '#eef1ff' }}>
+                        Tidak ada batas deadline! Seluruh try out pemahaman & simulasi dari sistem selalu terbuka dan dapat kamu kerjakan kapan saja secara bertahap:
+                      </p>
+                    </div>
+                    {semuaDokumen.map((d) => (
+                      <KartuMisiBola key={d.id} dok={d} onBuka={(x) => navigate(`/siswa/tryout/${x.paketId}`)} />
+                    ))}
+                  </>
+                ) : (
+                  <div style={st.kartu}>
+                    <div style={{ fontWeight: 700, fontSize: 13.5 }}>🌙 Belum ada try out aktif untuk kamu.</div>
+                    <p style={st.deskripsi}>
+                      Yuk kerjakan latihan harianmu! Latihan singkat setiap hari
+                      melatih kemampuanmu dari TKA sampai UTBK.
+                    </p>
+                    <Link
+                      to="/siswa/latihan-harian"
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: 7, marginTop: 10, padding: '10px 16px', borderRadius: 12, background: 'linear-gradient(90deg,#f97316,#7c3aed)', color: '#fff', fontWeight: 900, fontSize: 13, textDecoration: 'none' }}
+                    >
+                      <Rocket size={14} /> Latihan Harian
+                    </Link>
+                  </div>
+                )}
               </div>
-            ) : misiTanggalIni.map((d) => (
-              <KartuMisiBola key={d.id} dok={d} onBuka={(x) => navigate(`/siswa/tryout/${x.paketId}`)} />
-            ))}
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {misiTanggalIni.map((d) => (
+                  <KartuMisiBola key={d.id} dok={d} onBuka={(x) => navigate(`/siswa/tryout/${x.paketId}`)} />
+                ))}
+                {/* Tampilkan juga misi hari lain yang belum diselesaikan agar tidak terlewat */}
+                {semuaDokumen.filter((d) => !misiTanggalIni.some((m) => m.id === d.id) && d.statusPaket !== 'selesai').length > 0 && (
+                  <div style={{ marginTop: 14 }}>
+                    <div style={{ fontWeight: 800, fontSize: 13, color: '#fbbf24', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <Sparkles size={14} /> Misi Lain yang Tersedia untuk Dikerjakan:
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                      {semuaDokumen.filter((d) => !misiTanggalIni.some((m) => m.id === d.id) && d.statusPaket !== 'selesai').map((d) => (
+                        <KartuMisiBola key={d.id} dok={d} onBuka={(x) => navigate(`/siswa/tryout/${x.paketId}`)} />
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       ) : (

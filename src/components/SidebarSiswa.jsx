@@ -68,17 +68,7 @@ const SidebarSiswa = ({ activeMenu, setActiveMenu, isOpen, setIsOpen }) => {
     {
       label: 'BELAJAR',
       items: [
-        // 🚀 Jalur Ujian AI (khusus kelas 6 SD, 9 SMP, 12 SMA) - Peta bertingkat tanpa deadline
-        ...(targetUjianAi ? [{
-          id: 'jalur-ujian-ai',
-          label: 'Jalur Ujian AI',
-          icon: <Rocket size={18} />,
-          path: '/siswa/jalur-ujian-ai',
-          color: '#0d9488',
-          badge: targetUjianAi.labelBadge,
-        }] : []),
-        // Menu Try Out biasa murni untuk try out manual terbitan tentor/admin
-        { id: 'tryout', label: 'Try Out Kelas', icon: <Rocket size={18} />, path: '/siswa/tryout', color: '#f97316' },
+        { id: 'tryout', label: 'Try Out & Misi', icon: <Rocket size={18} />, path: '/siswa/tryout', color: '#f97316' },
         { id: 'latihan-harian', label: 'Latihan Harian', icon: <Flame size={18} />, path: '/siswa/latihan-harian', color: '#dc2626' },
         { id: 'belajar', label: 'Materi Belajar', icon: <Library size={18} />, path: '/siswa/belajar', color: '#1E9BF0', badge: 'BARU' },
         { id: 'materi', label: 'E-Learning', icon: <BookOpen size={18} />, path: '/siswa/materi', color: '#10b981' },

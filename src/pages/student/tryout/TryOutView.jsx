@@ -348,9 +348,16 @@ export default function TryOutView() {
         }
       } else {
         // Cek jadwal buka/deadline SEBELUM kasih tahap 'mulai'.
-        // 🚀 KECUALI JALUR UJIAN AI: tanpa deadline, selalu terbuka bertahap sesuai keaktifan siswa!
-        const isJalurAiPaket = Boolean(dataPaket.jalurUjianAi || searchParams.get('jalur') === 'ai');
-        if (!isJalurAiPaket) {
+        // 🚀 PAKET OTOMATIS ADMIN & JALUR UJIAN: tanpa deadline kunci, selalu dapat dikerjakan siswa!
+        const bebasDeadline = Boolean(
+          dataPaket.otomatis ||
+          dataPaket.jalurUjianAi ||
+          dataPaket.jenisUjian === 'TKA' ||
+          dataPaket.jenisUjian === 'SNBT/UTBK' ||
+          String(dataPaket.judul || '').toUpperCase().includes('PEMAHAMAN TKA') ||
+          searchParams.get('jalur') === 'ai'
+        );
+        if (!bebasDeadline) {
           const sekarangMs = Date.now() + offsetWaktuRef.current;
           const waktuBukaMs = dataPaket.waktuBuka ? new Date(dataPaket.waktuBuka).getTime() : null;
           const waktuTutupMs = dataPaket.waktuTutup ? new Date(dataPaket.waktuTutup).getTime() : null;

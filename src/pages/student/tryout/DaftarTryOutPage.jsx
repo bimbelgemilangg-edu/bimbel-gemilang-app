@@ -76,11 +76,6 @@ export default function DaftarTryOutPage() {
         // data (array & string) yang sudah terlanjur ada di Firestore.
         paketList = saringPaketUntukSiswa(paketList, siswa);
 
-        // 🔥 PISAHKAN DARI JALUR UJIAN AI & OTOMATIS:
-        // Halaman ini murni menampilkan Try Out Kelas Manual (terbitan tentor/admin)
-        // agar tidak rancu bagi siswa. Try out bertingkat AI dipindah ke Jalur Ujian AI.
-        paketList = paketList.filter((p) => !p.jalurUjianAi && !p.otomatis);
-
         const snapSesi = await getDocs(query(collection(db, 'tryout_sesi'), where('studentId', '==', studentId)));
         const sesiPerPaket = {};
         snapSesi.forEach((d) => { sesiPerPaket[d.data().paketId] = d.data(); });
@@ -109,7 +104,15 @@ export default function DaftarTryOutPage() {
     // lanjut/lihat hasil walau deadline lewat (perilaku lama dipertahankan).
     const belumDibuka = status === 'belum' && p.waktuBuka && sekarang < new Date(p.waktuBuka);
     const izinBerlaku = Boolean(p.izinUlang) && sekarang < new Date(p.izinUlang.waktuBerlakuSampai);
-    const lewatDeadline = status === 'belum' && p.waktuTutup && sekarang > new Date(p.waktuTutup) && !izinBerlaku;
+    // 🚀 PAKET OTOMATIS / TKA / UTBK: BEBAS DEADLINE, SELALU BISA DIKERJAKAN
+    const bebasDeadline = Boolean(
+      p.otomatis ||
+      p.jalurUjianAi ||
+      p.jenisUjian === 'TKA' ||
+      p.jenisUjian === 'SNBT/UTBK' ||
+      String(p.judul || '').toUpperCase().includes('PEMAHAMAN TKA')
+    );
+    const lewatDeadline = !bebasDeadline && status === 'belum' && p.waktuTutup && sekarang > new Date(p.waktuTutup) && !izinBerlaku;
     return { p, status, terkunci: belumDibuka || lewatDeadline, belumDibuka, izinBerlaku, lewatDeadline };
   });
 

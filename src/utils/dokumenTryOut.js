@@ -26,8 +26,25 @@ const ms = (v) => (typeof v?.toDate === 'function' ? v.toDate().getTime() : v ? 
 export function statusPaketTryOut(paket, sesi, kini = Date.now()) {
   if (sesi?.status === 'selesai') return 'selesai';
   if (sesi?.status === 'berjalan') return 'berjalan';
-  const buka = ms(paket.waktuBuka);
-  const tutup = ms(paket.waktuTutup);
+  const buka = ms(paket?.waktuBuka);
+  const tutup = ms(paket?.waktuTutup);
+
+  // 🚀 PAKET OTOMATIS / TKA / UTBK DARI ADMIN: SELALU TERBUKA (TANPA DEADLINE KUNCI)!
+  // Siswa tidak boleh dikunci karena tanggal/jam lewat. Seluruh try out yang diterbitkan
+  // admin harus selalu dapat dikerjakan kapan saja agar tracking belajar tidak kosong.
+  const bebasDeadline = Boolean(
+    paket?.otomatis ||
+    paket?.jalurUjianAi ||
+    paket?.jenisUjian === 'TKA' ||
+    paket?.jenisUjian === 'SNBT/UTBK' ||
+    String(paket?.judul || '').toUpperCase().includes('PEMAHAMAN TKA')
+  );
+
+  if (bebasDeadline) {
+    if (buka !== null && kini < buka) return 'belum-buka';
+    return 'terbuka';
+  }
+
   if (buka !== null && kini < buka) return 'belum-buka';
   if (tutup !== null && kini > tutup) return 'lewat';
   return 'terbuka';
