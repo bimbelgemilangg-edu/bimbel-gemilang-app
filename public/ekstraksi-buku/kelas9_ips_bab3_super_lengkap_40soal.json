@@ -1,0 +1,1370 @@
+[
+  {
+    "nomor": 1,
+    "nomor_global": 81,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Tantangan Pembangunan Indonesia",
+    "materi": "Perjalanan Pembangunan Nasional (Masa Kemerdekaan, Demokrasi Parlementer, Demokrasi Terpimpin, Orde Baru, hingga Reformasi), Ketergantungan Antarruang, Tolok Ukur Pembangunan (PDB, IPM, Indeks Gini), serta Karakteristik Negara Maju vs Berkembang",
+    "paket": "Bab III: Tantangan Pembangunan Indonesia - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Dalam perjuangan mempertahankan kemerdekaan (1945–1949), bangsa Indonesia memadukan strategi pertempuran fisik bersenjata (seperti Pertempuran 10 November 1945 dan Seran- gan Umum 1 Maret 1949) dengan perundingan diplomasi (Linggarjati, Renville, Roem–Royen, dan KMB). Bagaimana keterkaitan strategis antara Serangan Umum 1 Maret 1949 di Yogyakarta dan keberhasilan diplomasi Indonesia di PBB hingga KMB?",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Konferensi Meja Bundar diadakan sebelum terjadinya Pertempuran 10 November 1945 di Surabaya"
+      },
+      {
+        "label": "B",
+        "teks": "Serangan Umum 1 Maret 1949 menyebabkan PBB menjatuhkan sanksi embargo ekonomi terhadap Republik Indonesia"
+      },
+      {
+        "label": "C",
+        "teks": "Keberhasilan militer TNI membuat pemerintah RI menolak seluruh perundingan diplomasi internasional"
+      },
+      {
+        "label": "D",
+        "teks": "Penguasaan ibu kota Yogyakarta selama 6 jam oleh TNI membuktikan kepada dunia internasional bahwa Republik Indonesia dan TNI masih berdiri tegak, sehingga Dewan Keamanan PBB menekan Be- landa kembali ke meja perundingan Roem–Royen dan mengakui kedaulatan RI di KMB"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Serangan Umum 1 Maret 1949 membuka mata dunia di sidang DK PBB bahwa RI dan TNI masih eksis, sehingga menekan Belanda ke meja perundingan Roem–Royen dan KMB.",
+    "valid": true
+  },
+  {
+    "nomor": 2,
+    "nomor_global": 82,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Tantangan Pembangunan Indonesia",
+    "materi": "Perjalanan Pembangunan Nasional (Masa Kemerdekaan, Demokrasi Parlementer, Demokrasi Terpimpin, Orde Baru, hingga Reformasi), Ketergantungan Antarruang, Tolok Ukur Pembangunan (PDB, IPM, Indeks Gini), serta Karakteristik Negara Maju vs Berkembang",
+    "paket": "Bab III: Tantangan Pembangunan Indonesia - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Ketika Belanda melan- carkan Agresi Militer Belanda II pada tanggal 19 Desember 1948 dengan menduduki ibu kota Yogyakarta dan menawan Presiden Soekarno serta Wapres Moh. Hatta, beberapa jam sebelum ditawan Presiden Soekarno mengirimkan radiogram mandat kepada Menteri Kemakmuran Syafruddin Prawiranegara di Sumatra Barat. Langkah penyelamatan kedaulatan negara yang diambil berdasarkan mandat tersebut adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Membentuk Pemerintahan Darurat Republik Indonesia (PDRI) di Bukittinggi, Sumatra Barat, sehingga mata rantai pemerintahan RI tidak pernah terputus di mata hukum internasional"
+      },
+      {
+        "label": "B",
+        "teks": "Membubarkan Negara Kesatuan Republik Indonesia dan menyerahkan Sumatra kepada Belanda"
+      },
+      {
+        "label": "C",
+        "teks": "Memindahkan ibu kota Republik Indonesia secara permanen ke New Delhi, India"
+      },
+      {
+        "label": "D",
+        "teks": "Menandatangani Perjanjian Renville di atas kapal perang Amerika Serikat"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Pembentukan PDRI di Bukittinggi oleh Syafruddin Prawiranegara menyelamatkan eksistensi pemerintahan RI saat Agresi Militer Belanda II.",
+    "valid": true
+  },
+  {
+    "nomor": 3,
+    "nomor_global": 83,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Tantangan Pembangunan Indonesia",
+    "materi": "Perjalanan Pembangunan Nasional (Masa Kemerdekaan, Demokrasi Parlementer, Demokrasi Terpimpin, Orde Baru, hingga Reformasi), Ketergantungan Antarruang, Tolok Ukur Pembangunan (PDB, IPM, Indeks Gini), serta Karakteristik Negara Maju vs Berkembang",
+    "paket": "Bab III: Tantangan Pembangunan Indonesia - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Konferensi Meja Bundar (KMB) yang berlangsung di Den Haag, Belanda pada tanggal 23 Agustus– 2 November 1949 menghasilkan pengakuan kedaulatan pada tanggal 27 Desember 1949, namun meny- isakan satu masalah politik-teritorial yang ditunda penyelesaiannya selama satu tahun dan baru tuntas melalui Trikora serta PEPERA 1969, yaitu ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Masalah penyerahan Pulau Jawa dan Pulau Madura kepada pemerintah Inggris"
+      },
+      {
+        "label": "B",
+        "teks": "Masalah status wilayah Irian Barat (Papua) yang masih ditahan oleh pemerintah Belanda"
+      },
+      {
+        "label": "C",
+        "teks": "Masalah pembagian wilayah Pulau Kalimantan dengan Kesultanan Brunei"
+      },
+      {
+        "label": "D",
+        "teks": "Masalah penarikan tentara Jepang dari Kepulauan Maluku"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Masalah status Irian Barat ditunda satu tahun pasca-KMB 1949 dan baru selesai melalui Trikora (1961), Perjanjian New York (1962), dan PEPERA (1969).",
+    "valid": true
+  },
+  {
+    "nomor": 4,
+    "nomor_global": 84,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Tantangan Pembangunan Indonesia",
+    "materi": "Perjalanan Pembangunan Nasional (Masa Kemerdekaan, Demokrasi Parlementer, Demokrasi Terpimpin, Orde Baru, hingga Reformasi), Ketergantungan Antarruang, Tolok Ukur Pembangunan (PDB, IPM, Indeks Gini), serta Karakteristik Negara Maju vs Berkembang",
+    "paket": "Bab III: Tantangan Pembangunan Indonesia - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Pada masa Demokrasi Parlementer (1950–1959), Kabinet Burhanuddin Harahap berhasil menyeleng- garakan Pemilihan Umum Pertama tahun 1955 secara demokratis, aman, dan tertib dalam dua tahap (29 September 1955 dan 15 Desember 1955). Tujuan pelaksanaan Pemilu 1955 tahap pertama dan tahap kedua berturut-turut adalah untuk memilih ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Utusan delegasi Indonesia untuk Konferensi Meja Bundar dan Perserikatan Bangsa-Bangsa"
+      },
+      {
+        "label": "B",
+        "teks": "Presiden/Wakil Presiden secara langsung dan kepala daerah gubernur/bupati"
+      },
+      {
+        "label": "C",
+        "teks": "Anggota Majelis Permusyawaratan Rakyat Sementara (MPRS) dan Dewan Pertimbangan Agung"
+      },
+      {
+        "label": "D",
+        "teks": "Anggota Dewan Perwakilan Rakyat (DPR / Parlemen) dan anggota Dewan Konstituante (badan pem- buat UUD baru)"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Pemilu 1955 tahap I memilih anggota DPR; tahap II memilih anggota Dewan Konstituante.",
+    "valid": true
+  },
+  {
+    "nomor": 5,
+    "nomor_global": 85,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Tantangan Pembangunan Indonesia",
+    "materi": "Perjalanan Pembangunan Nasional (Masa Kemerdekaan, Demokrasi Parlementer, Demokrasi Terpimpin, Orde Baru, hingga Reformasi), Ketergantungan Antarruang, Tolok Ukur Pembangunan (PDB, IPM, Indeks Gini), serta Karakteristik Negara Maju vs Berkembang",
+    "paket": "Bab III: Tantangan Pembangunan Indonesia - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Pada tanggal 13 Desember 1957, Perdana Menteri Ir. H. Djuanda Kartawidjaja mengumumkan Deklarasi Djuanda yang mengoreksi aturan hukum laut kolonial Territoriale Zee en Maritieme Kringen Or- donnantie (TZMKO) 1939. Perubahan geopolitik dan kewilayahan yang sangat fundamental dari Deklarasi Djuanda (yang kemudian diakui dunia dalam UNCLOS 1982) adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Mengubah batas laut teritorial dari 3 mil mengelilingi tiap pulau (yang membuat laut antarpulau men- jadi laut bebas internasional) menjadi 12 mil diukur dari garis pangkal lurus yang menghubungkan titik- titik terluar kepulauan, sehingga daratan dan lautan Indonesia menyatu utuh sebagai Negara Kepulauan (Archipelagic State)"
+      },
+      {
+        "label": "B",
+        "teks": "Menyerahkan seluruh perairan Laut Jawa dan Laut Banda kepada kapal-kapal perang asing"
+      },
+      {
+        "label": "C",
+        "teks": "Mengurangi luas wilayah Negara Kesatuan Republik Indonesia menjadi sepertiga dari luas semula"
+      },
+      {
+        "label": "D",
+        "teks": "Memindahkan batas Zona Ekonomi Eksklusif Indonesia menjadi hanya sejauh 1 mil dari pantai"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Deklarasi Djuanda (13 Desember 1957) menyatukan laut antarpulau Indonesia dengan batas 12 mil dari garis pangkal kepulauan (Archipelagic State).",
+    "valid": true
+  },
+  {
+    "nomor": 6,
+    "nomor_global": 86,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Tantangan Pembangunan Indonesia",
+    "materi": "Perjalanan Pembangunan Nasional (Masa Kemerdekaan, Demokrasi Parlementer, Demokrasi Terpimpin, Orde Baru, hingga Reformasi), Ketergantungan Antarruang, Tolok Ukur Pembangunan (PDB, IPM, Indeks Gini), serta Karakteristik Negara Maju vs Berkembang",
+    "paket": "Bab III: Tantangan Pembangunan Indonesia - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Pada tanggal 5 Juli 1959, Presi- den Soekarno mengeluarkan Dekrit Presiden yang menandai berakhirnya masa Demokrasi Parlementer dan dimulainya masa Demokrasi Terpimpin. Latar belakang konstitusional dikeluarkannya Dekrit Presiden 5 Juli 1959 beserta tiga isi pokoknya adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Latar belakang: Agresi Militer Belanda II; Isi pokok: pembentukan PDRI, pencetakan uang ORI, dan nasionalisasi bank asing"
+      },
+      {
+        "label": "B",
+        "teks": "Latar belakang: keberhasilan Pemilu 1955; Isi pokok: pembubaran DPR hasil pemilu, pengangkatan presiden seumur hidup, dan pembubaran partai politik"
+      },
+      {
+        "label": "C",
+        "teks": "Latar belakang: Dewan Konstituante gagal menetapkan UUD baru pengganti UUDS 1950; Isi pokok: pembubaran Konstituante, berlakunya kembali UUD 1945 (dan tidak berlakunya UUDS 1950), serta pem- bentukan MPRS dan DPAS"
+      },
+      {
+        "label": "D",
+        "teks": "Latar belakang: Krisis Moneter 1998; Isi pokok: amandemen UUD 1945, otonomi daerah, dan pem- bentukan KPK"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Dekrit Presiden 5 Juli 1959 membubarkan Konstituante, memberlakukan kembali UUD 1945, dan membentuk MPRS serta DPAS.",
+    "valid": true
+  },
+  {
+    "nomor": 7,
+    "nomor_global": 87,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Tantangan Pembangunan Indonesia",
+    "materi": "Perjalanan Pembangunan Nasional (Masa Kemerdekaan, Demokrasi Parlementer, Demokrasi Terpimpin, Orde Baru, hingga Reformasi), Ketergantungan Antarruang, Tolok Ukur Pembangunan (PDB, IPM, Indeks Gini), serta Karakteristik Negara Maju vs Berkembang",
+    "paket": "Bab III: Tantangan Pembangunan Indonesia - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Dalam perjuangan membebaskan Irian Barat dari pendudukan Belanda, setelah jalur diplomasi bilateral dan sidang PBB menemui jalan buntu, Presiden Soekarno di Yogyakarta pada tang- gal 19 Desember 1961 mengumandangkan Tri Komando Rakyat (Trikora) dan membentuk Komando Mandala yang dipimpin Mayor Jenderal Soeharto. Rangkaian perjuangan Trikora ini berhasil memaksa Belanda menandatangani Perjanjian New York (15 Agustus 1962) yang isinya ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Belanda diizinkan menguasai Irian Barat selama 75 tahun melalui sistem sewa tanah"
+      },
+      {
+        "label": "B",
+        "teks": "Belanda menyerahkan administrasi Irian Barat kepada badan sementara PBB (UNTEA) pada Okto- ber 1962 yang kemudian diserahkan kepada RI pada 1 Mei 1963, disertai penyelenggaraan Penentuan Pendapat Rakyat (PEPERA) tahun 1969 yang menegaskan Irian Barat tetap bagian sah NKRI"
+      },
+      {
+        "label": "C",
+        "teks": "Irian Barat dibagi dua menjadi wilayah milik Australia dan wilayah milik Belanda"
+      },
+      {
+        "label": "D",
+        "teks": "PBB menolak mengakui kedaulatan Republik Indonesia atas wilayah Irian Barat"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Perjanjian New York (15 Agustus 1962) menyerahkan administrasi Irian Barat dari Belanda ke UNTEA (PBB) lalu ke RI (1 Mei 1963) dan dikukuhkan melalui PEPERA 1969.",
+    "valid": true
+  },
+  {
+    "nomor": 8,
+    "nomor_global": 88,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Tantangan Pembangunan Indonesia",
+    "materi": "Perjalanan Pembangunan Nasional (Masa Kemerdekaan, Demokrasi Parlementer, Demokrasi Terpimpin, Orde Baru, hingga Reformasi), Ketergantungan Antarruang, Tolok Ukur Pembangunan (PDB, IPM, Indeks Gini), serta Karakteristik Negara Maju vs Berkembang",
+    "paket": "Bab III: Tantangan Pembangunan Indonesia - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Perhatikan gambar/peta resmi pada buku teks berikut! Pemerintahan Orde Baru (1966–1998) mencatat sejumlah keberhasilan pembangunan fisik dan sosial- ekonomi, namun juga memiliki kelemahan mendasar di bidang politik dan tata kelola pemerintahan yang memicu tuntutan Reformasi 1998. Pasangan keberhasilan ekonomi/sosial dan kelemahan politik/tata kelola masa Orde Baru yang tepat adalah ....",
+    "gambar": [
+      "/soal/ips/kls9_ips_p132_xref5305_1050x762.jpeg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Keberhasilan: penghapusan seluruh utang luar negeri menjadi nol rupiah; Kelemahan: terlalu bebas- nya ratusan partai politik peserta pemilu"
+      },
+      {
+        "label": "B",
+        "teks": "Keberhasilan: penyelenggaraan pemilihan presiden secara langsung oleh rakyat; Kelemahan: pergan- tian kabinet setiap enam bulan sekali"
+      },
+      {
+        "label": "C",
+        "teks": "Keberhasilan: swasembada beras 1984, penurunan angka kemiskinan, serta program KB, SD Inpres, dan Puskesmas; Kelemahan: sentralisasi kekuasaan yang otoriter, pembatasan kebebasan pers/berpendapat, serta maraknya Korupsi, Kolusi, dan Nepotisme (KKN)"
+      },
+      {
+        "label": "D",
+        "teks": "Keberhasilan: desentralisasi otonomi daerah yang sangat luas; Kelemahan: inflasi mencapai 650% per tahun"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Orde Baru berhasil mencapai swasembada beras 1984 dan menekan kemiskinan, namun lemah akibat sentralisasi kekuasaan dan praktik KKN.",
+    "valid": true
+  },
+  {
+    "nomor": 9,
+    "nomor_global": 89,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Tantangan Pembangunan Indonesia",
+    "materi": "Perjalanan Pembangunan Nasional (Masa Kemerdekaan, Demokrasi Parlementer, Demokrasi Terpimpin, Orde Baru, hingga Reformasi), Ketergantungan Antarruang, Tolok Ukur Pembangunan (PDB, IPM, Indeks Gini), serta Karakteristik Negara Maju vs Berkembang",
+    "paket": "Bab III: Tantangan Pembangunan Indonesia - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Gerakan mahasiswa dan masyarakat Indonesia pada bulan Mei 1998 menyuarakan Enam Agenda Re- formasi untuk memperbaiki tatanan kehidupan berbangsa dan bernegara. Berikut ini yang merupakan bagian dari Enam Agenda Reformasi 1998 adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Pengangkatan presiden seumur hidup dan penggabungan seluruh partai politik menjadi satu partai tunggal"
+      },
+      {
+        "label": "B",
+        "teks": "Kembali ke UUDS 1950, pembentukan Dewan Konstituante baru, dan nasionalisasi perusahaan Be- landa"
+      },
+      {
+        "label": "C",
+        "teks": "Pembubaran Dewan Perwakilan Rakyat, pencabutan kebebasan pers, dan pemusatan kekuasaan di pemerintah pusat"
+      },
+      {
+        "label": "D",
+        "teks": "Adili Soeharto dan kroninya, amandemen UUD 1945, otonomi daerah seluas-luasnya, penghapusan Dwifungsi ABRI, pemberantasan KKN, dan penegakan supremasi hukum"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Enam Agenda Reformasi 1998: adili Soeharto dan kroninya, amandemen UUD 1945, otonomi daerah, hapus Dwifungsi ABRI, berantas KKN, dan tegakkan supremasi hukum.",
+    "valid": true
+  },
+  {
+    "nomor": 10,
+    "nomor_global": 90,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Tantangan Pembangunan Indonesia",
+    "materi": "Perjalanan Pembangunan Nasional (Masa Kemerdekaan, Demokrasi Parlementer, Demokrasi Terpimpin, Orde Baru, hingga Reformasi), Ketergantungan Antarruang, Tolok Ukur Pembangunan (PDB, IPM, Indeks Gini), serta Karakteristik Negara Maju vs Berkembang",
+    "paket": "Bab III: Tantangan Pembangunan Indonesia - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Perhatikan perbandingan capaian demokrasi dan ketatanegaraan Indonesia pada Era Reformasi (1998– Sekarang) berikut: (1) Amandemen UUD 1945 yang membatasi masa jabatan Presiden dan Wakil Pres- iden maksimal 2 periode; (2) Pemilihan umum Presiden/Wakil Presiden dan Kepala Daerah secara lang- sung oleh rakyat sejak 2004; (3) Pelaksanaan Otonomi Daerah (UU No. 22/1999 s.d. UU No. 23/2014); (4) Pembentukan Mahkamah Konstitusi (MK) dan Komisi Pemberantasan Korupsi (KPK). Tujuan utama dari reformasi konstitusional tersebut adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Membangun mekanisme checks and balances (saling mengawasi dan mengimbangi) antarlembaga negara, mencegah terulangnya kekuasaan otoriter, dan mendekatkan pelayanan pembangunan ke daerah"
+      },
+      {
+        "label": "B",
+        "teks": "Menghapuskan sistem pemerintahan presidensial dan menggantinya dengan monarki absolut"
+      },
+      {
+        "label": "C",
+        "teks": "Memusatkan seluruh pendapatan pajak daerah ke ibu kota negara tanpa dana perimbangan"
+      },
+      {
+        "label": "D",
+        "teks": "Melarang warga negara menyampaikan pendapat di muka umum dan media massa"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Reformasi konstitusional memperkuat checks and balances, membatasi masa jabatan presiden maksimal 2 periode, dan memperluas otonomi daerah.",
+    "valid": true
+  },
+  {
+    "nomor": 11,
+    "nomor_global": 91,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Tantangan Pembangunan Indonesia",
+    "materi": "Perjalanan Pembangunan Nasional (Masa Kemerdekaan, Demokrasi Parlementer, Demokrasi Terpimpin, Orde Baru, hingga Reformasi), Ketergantungan Antarruang, Tolok Ukur Pembangunan (PDB, IPM, Indeks Gini), serta Karakteristik Negara Maju vs Berkembang",
+    "paket": "Bab III: Tantangan Pembangunan Indonesia - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Perhatikan gambar/peta resmi pada buku teks berikut! Pembangunan infrastruktur konektivitas nasional pada satu dekade terakhir (seperti Jalan Tol Trans-Jawa, Trans-Sumatra, jalur Trans-Papua, bendungan, pelabuhan Tol Laut, dan pembangunan Ibu Kota Nusan- tara / IKN) dirancang dengan paradigma Indonesia-sentris (bukan lagi Jawa-sentris). Tujuan strategis dari paradigma pembangunan Indonesia-sentris ini adalah ....",
+    "gambar": [
+      "/soal/ips/kls9_ips_p133_xref5331_1400x787.jpeg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Memindahkan seluruh penduduk Pulau Kalimantan dan Sulawesi menuju Pulau Jawa"
+      },
+      {
+        "label": "B",
+        "teks": "Menghentikan seluruh kegiatan ekonomi dan pendidikan di Pulau Jawa"
+      },
+      {
+        "label": "C",
+        "teks": "Memangkas biaya logistik antarpulau, menumbuhkan pusat-pusat pertumbuhan ekonomi baru di luar Pulau Jawa, dan mengurangi ketimpangan kesejahteraan antarwilayah"
+      },
+      {
+        "label": "D",
+        "teks": "Menaikkan harga barang pokok di wilayah Indonesia Timur hingga tiga kali lipat"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Pembangunan Indonesia-sentris menekan biaya logistik antarpulau dan memeratakan pertumbuhan ekonomi di luar Pulau Jawa.",
+    "valid": true
+  },
+  {
+    "nomor": 12,
+    "nomor_global": 92,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Tantangan Pembangunan Indonesia",
+    "materi": "Perjalanan Pembangunan Nasional (Masa Kemerdekaan, Demokrasi Parlementer, Demokrasi Terpimpin, Orde Baru, hingga Reformasi), Ketergantungan Antarruang, Tolok Ukur Pembangunan (PDB, IPM, Indeks Gini), serta Karakteristik Negara Maju vs Berkembang",
+    "paket": "Bab III: Tantangan Pembangunan Indonesia - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Dalam ilmu ekonomi pemban- gunan, para ahli membedakan secara tegas antara konsep Pertumbuhan Ekonomi (Economic Growth) dan Pembangunan Ekonomi (Economic Development). Perbedaan mendasar kedua konsep tersebut adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Pertumbuhan ekonomi mengukur kebahagiaan rohani masyarakat; sedangkan pembangunan ekonomi hanya menghitung jumlah uang kertas yang dicetak bank sentral"
+      },
+      {
+        "label": "B",
+        "teks": "Pertumbuhan ekonomi hanya mengukur kenaikan kuantitatif Produk Domestik Bruto (PDB) dalam satu periode tanpa melihat pemerataan; sedangkan pembangunan ekonomi mencakup kenaikan PDB yang disertai peningkatan kualitas hidup (IPM), perubahan struktur ekonomi, dan pemerataan pendapatan"
+      },
+      {
+        "label": "C",
+        "teks": "Pertumbuhan ekonomi hanya terjadi di negara berkembang; sedangkan pembangunan ekonomi hanya terjadi di negara miskin"
+      },
+      {
+        "label": "D",
+        "teks": "Keduanya memiliki pengertian yang sama persis dan tidak memerlukan indikator Indeks Pembangunan Manusia"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Pertumbuhan ekonomi fokus pada kenaikan kuantitatif PDB; pembangunan ekonomi mencakup peningkatan IPM, struktur ekonomi, dan pemerataan pendapatan.",
+    "valid": true
+  },
+  {
+    "nomor": 13,
+    "nomor_global": 93,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Tantangan Pembangunan Indonesia",
+    "materi": "Perjalanan Pembangunan Nasional (Masa Kemerdekaan, Demokrasi Parlementer, Demokrasi Terpimpin, Orde Baru, hingga Reformasi), Ketergantungan Antarruang, Tolok Ukur Pembangunan (PDB, IPM, Indeks Gini), serta Karakteristik Negara Maju vs Berkembang",
+    "paket": "Bab III: Tantangan Pembangunan Indonesia - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Produk Domestik Bruto (PDB) riil Negara X pada tahun 2024 tercatat sebesar Rp1.600 triliun, dan pada tahun 2025 meningkat menjadi Rp1.680 triliun. Berdasarkan rumus laju per- tumbuhan ekonomi g = PDBt−PDBt−1 PDBt−1 × 100%, berapakah laju pertumbuhan ekonomi Negara X pada tahun 2025?",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "50, 0%"
+      },
+      {
+        "label": "B",
+        "teks": "4, 76%"
+      },
+      {
+        "label": "C",
+        "teks": "8, 0%"
+      },
+      {
+        "label": "D",
+        "teks": "5, 0%"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "g = 1.680−1.600 1.600 × 100% = 80 1.600 × 100% = 5, 0%.",
+    "valid": true
+  },
+  {
+    "nomor": 14,
+    "nomor_global": 94,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Tantangan Pembangunan Indonesia",
+    "materi": "Perjalanan Pembangunan Nasional (Masa Kemerdekaan, Demokrasi Parlementer, Demokrasi Terpimpin, Orde Baru, hingga Reformasi), Ketergantungan Antarruang, Tolok Ukur Pembangunan (PDB, IPM, Indeks Gini), serta Karakteristik Negara Maju vs Berkembang",
+    "paket": "Bab III: Tantangan Pembangunan Indonesia - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Perhatikan foto kontras ketimpangan pembangunan sosial-ekonomi antara permukiman padat di tepi rel kereta api dan gedung pencakar langit perkotaan berikut! Berdasarkan indikator pemerataan distribusi pendapatan (**Koefisien Gini / *Gini Ratio*** yang bernilai antara 0 sampai 1), apabila suatu negara mengalami pertumbuhan PDB yang tinggi namun ketimpangan sosialnya melebar seperti tampak pada foto di atas sehingga angka Gini Ratio-nya melonjak dari 0, 32 menjadi 0, 55 (melampaui batas 0, 50), maka fenomena ekonomi yang sedang terjadi adalah ....",
+    "gambar": [
+      "/soal/ips/kls9_ips_p134_xref5392_941x1017.jpeg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Pertumbuhan ekonomi belum inklusif karena terjadi peningkatan ketimpangan distribusi pendapatan yang lebar antara kelompok kaya dan kelompok miskin"
+      },
+      {
+        "label": "B",
+        "teks": "Distribusi pendapatan nasional telah mencapai pemerataan sempurna tanpa ada warga miskin"
+      },
+      {
+        "label": "C",
+        "teks": "Seluruh warga negara menerima jumlah gaji bulanan yang sama persis"
+      },
+      {
+        "label": "D",
+        "teks": "Angka Harapan Hidup dan Rata-rata Lama Sekolah penduduk meningkat menjadi 100%"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Kenaikan Gini Ratio dari 0, 32 ke 0, 55 (mendekati 1) menunjukkan melebarnya ketimpan- gan distribusi pendapatan.",
+    "valid": true
+  },
+  {
+    "nomor": 15,
+    "nomor_global": 95,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Tantangan Pembangunan Indonesia",
+    "materi": "Perjalanan Pembangunan Nasional (Masa Kemerdekaan, Demokrasi Parlementer, Demokrasi Terpimpin, Orde Baru, hingga Reformasi), Ketergantungan Antarruang, Tolok Ukur Pembangunan (PDB, IPM, Indeks Gini), serta Karakteristik Negara Maju vs Berkembang",
+    "paket": "Bab III: Tantangan Pembangunan Indonesia - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Pemerintah berupaya melakukan redistribusi pendapatan nasional agar kue pembangunan dinikmati secara adil oleh seluruh lapisan masyarakat, terutama kelompok rentan dan berpendapatan rendah. Instrumen kebijakan fiskal yang efektif untuk meredistribusi pendapatan dari kelompok berpendapatan tinggi kepada masyarakat luas adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Penghapusan pajak bagi konglomerat dan pengenaan pajak tinggi bagi buruh tani miskin"
+      },
+      {
+        "label": "B",
+        "teks": "Penerapan pajak penghasilan progresif (semakin tinggi penghasilan semakin tinggi tarif pajaknya) dan pajak barang mewah, yang hasilnya disalurkan melalui subsidi pendidikan (KIP), kesehatan (JKN-KIS), bantuan sosial, dan kredit UMKM"
+      },
+      {
+        "label": "C",
+        "teks": "Penghentian seluruh anggaran pendidikan gratis dan layanan puskesmas di daerah tertinggal"
+      },
+      {
+        "label": "D",
+        "teks": "Pemberian monopoli impor pangan kepada satu perusahaan swasta besar"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Pajak progresif/barang mewah yang disalurkan untuk subsidi pendidikan, kesehatan, dan bantuan UMKM adalah instrumen redistribusi pendapatan yang adil.",
+    "valid": true
+  },
+  {
+    "nomor": 16,
+    "nomor_global": 96,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Tantangan Pembangunan Indonesia",
+    "materi": "Perjalanan Pembangunan Nasional (Masa Kemerdekaan, Demokrasi Parlementer, Demokrasi Terpimpin, Orde Baru, hingga Reformasi), Ketergantungan Antarruang, Tolok Ukur Pembangunan (PDB, IPM, Indeks Gini), serta Karakteristik Negara Maju vs Berkembang",
+    "paket": "Bab III: Tantangan Pembangunan Indonesia - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Pada tahun 2030–2040, Indonesia diproyeksikan mencapai puncak Bonus Demografi menuju peringatan satu abad kemerdekaan (Visi Indonesia Emas 2045). Namun, bonus demografi dapat berubah menjadi bencana demografi apabila ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Pemerintah berhasil menghapuskan angka stunting (tengkes) pada anak balita"
+      },
+      {
+        "label": "B",
+        "teks": "Seluruh pemuda usia produktif memiliki kompetensi tinggi dan terserap di sektor industri kreatif serta manufaktur"
+      },
+      {
+        "label": "C",
+        "teks": "Angka beban ketergantungan (dependency ratio) menurun sehingga tabungan nasional meningkat"
+      },
+      {
+        "label": "D",
+        "teks": "Melimpahnya jumlah penduduk usia produktif (15–64 tahun) tidak diimbangi dengan kualitas pen- didikan/kesehatan yang unggul, penguasaan keterampilan teknologi, dan ketersediaan lapangan kerja sehingga memicu pengangguran masif"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Bonus demografi berubah menjadi bencana demografi jika usia produktif tidak berkualitas dan tidak terserap lapangan kerja.",
+    "valid": true
+  },
+  {
+    "nomor": 17,
+    "nomor_global": 97,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Tantangan Pembangunan Indonesia",
+    "materi": "Perjalanan Pembangunan Nasional (Masa Kemerdekaan, Demokrasi Parlementer, Demokrasi Terpimpin, Orde Baru, hingga Reformasi), Ketergantungan Antarruang, Tolok Ukur Pembangunan (PDB, IPM, Indeks Gini), serta Karakteristik Negara Maju vs Berkembang",
+    "paket": "Bab III: Tantangan Pembangunan Indonesia - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Masalah kesehatan gizi kronis pada anak di bawah lima tahun (balita) akibat kurangnya asupan gizi dalam waktu lama (terutama pada 1.000 Hari Pertama Kehidupan) yang menyebabkan tinggi badan anak lebih pendek dari standar usianya serta menghambat perkembangan kognitif otak disebut stunting (tengkes). Mengapa pencegahan stunting menjadi prioritas strategis pembangunan ekonomi nasional?",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Karena stunting menurunkan kapasitas intelektual dan produktivitas kerja generasi penerus bangsa, sehingga pencegahannya mutlak diperlukan untuk mencetak SDM unggul berdaya saing global"
+      },
+      {
+        "label": "B",
+        "teks": "Karena stunting hanya memengaruhi warna pakaian anak tanpa berdampak pada kesehatan maupun kecerdasan"
+      },
+      {
+        "label": "C",
+        "teks": "Karena pencegahan stunting dilakukan dengan mengurangi konsumsi protein hewani bagi ibu hamil dan balita"
+      },
+      {
+        "label": "D",
+        "teks": "Karena negara maju memiliki angka stunting di atas 80% dari total populasi balita"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Stunting menghambat pertumbuhan fisik dan perkembangan kognitif otak anak, sehingga pencegahannya krusial bagi kualitas SDM.",
+    "valid": true
+  },
+  {
+    "nomor": 18,
+    "nomor_global": 98,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Tantangan Pembangunan Indonesia",
+    "materi": "Perjalanan Pembangunan Nasional (Masa Kemerdekaan, Demokrasi Parlementer, Demokrasi Terpimpin, Orde Baru, hingga Reformasi), Ketergantungan Antarruang, Tolok Ukur Pembangunan (PDB, IPM, Indeks Gini), serta Karakteristik Negara Maju vs Berkembang",
+    "paket": "Bab III: Tantangan Pembangunan Indonesia - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Perhatikan foto perbandingan sarana transportasi publik di (a) Negara Maju dan (b) Negara Berkembang pada buku teks berikut! Berdasarkan perbandingan kondisi sarana infrastruktur pada foto di atas, perbedaan struktural paling menonjol antara Negara Maju (Developed Country) seperti Jepang/Jerman dan Negara Berkembang (Developing Country) di bidang struktur mata pencaharian dan komoditas perdagangan adalah ....",
+    "gambar": [
+      "/soal/ips/kls9_ips_p135_xref5428_1200x520.jpeg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Negara maju memiliki laju pertumbuhan penduduk di atas 4% per tahun; negara berkembang memiliki pertumbuhan penduduk negatif"
+      },
+      {
+        "label": "B",
+        "teks": "Negara maju mengandalkan ekspor kayu gelondongan dan bijih tanah mentah; negara berkembang mengekspor satelit ruang angkasa dan superkomputer"
+      },
+      {
+        "label": "C",
+        "teks": "Negara maju didominasi sektor industri berteknologi tinggi dan jasa keuangan serta mengekspor pro- duk manufaktur bernilai tambah tinggi; negara berkembang masih memiliki porsi besar di sektor primer (pertanian/ekstraktif) dan sedang bertransformasi menuju hilirisasi industri"
+      },
+      {
+        "label": "D",
+        "teks": "Pendapatan per kapita negara maju lebih rendah daripada pendapatan per kapita negara berkembang"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Negara maju didominasi sektor industri teknologi tinggi dan jasa; negara berkembang sedang bertransformasi dari sektor primer menuju hilirisasi industri.",
+    "valid": true
+  },
+  {
+    "nomor": 19,
+    "nomor_global": 99,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Tantangan Pembangunan Indonesia",
+    "materi": "Perjalanan Pembangunan Nasional (Masa Kemerdekaan, Demokrasi Parlementer, Demokrasi Terpimpin, Orde Baru, hingga Reformasi), Ketergantungan Antarruang, Tolok Ukur Pembangunan (PDB, IPM, Indeks Gini), serta Karakteristik Negara Maju vs Berkembang",
+    "paket": "Bab III: Tantangan Pembangunan Indonesia - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Perhatikan daftar sepuluh negara di dunia berikut: (1) Jepang, (2) Singapura, (3) India, (4) Korea Selatan, (5) Brasil, (6) Jerman, (7) Mesir, (8) Kanada, (9) Prancis, (10) Nigeria. Kelompok negara yang seluruhnya diklasifikasikan sebagai Negara Maju (Developed Countries) oleh IMF dan PBB adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(1) Jepang, (3) India, (5) Brasil, (7) Mesir, dan (10) Nigeria"
+      },
+      {
+        "label": "B",
+        "teks": "(1) Jepang, (2) Singapura, (4) Korea Selatan, (6) Jerman, (8) Kanada, dan (9) Prancis"
+      },
+      {
+        "label": "C",
+        "teks": "(2) Singapura, (3) India, (7) Mesir, dan (10) Nigeria"
+      },
+      {
+        "label": "D",
+        "teks": "(5) Brasil, (6) Jerman, (7) Mesir, dan (10) Nigeria"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Jepang, Singapura, Korea Selatan, Jerman, Kanada, dan Prancis adalah Negara Maju.",
+    "valid": true
+  },
+  {
+    "nomor": 20,
+    "nomor_global": 100,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Tantangan Pembangunan Indonesia",
+    "materi": "Perjalanan Pembangunan Nasional (Masa Kemerdekaan, Demokrasi Parlementer, Demokrasi Terpimpin, Orde Baru, hingga Reformasi), Ketergantungan Antarruang, Tolok Ukur Pembangunan (PDB, IPM, Indeks Gini), serta Karakteristik Negara Maju vs Berkembang",
+    "paket": "Bab III: Tantangan Pembangunan Indonesia - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Negara Singapura merupakan negara kepulauan kecil di Asia Tenggara dengan luas wilayah hanya sekitar 734 km2 dan hampir tidak memiliki sumber daya alam tambang maupun lahan pertanian luas, namun berhasil menjadi satu-satunya negara berstatus Negara Maju di Asia Tenggara dengan pendapatan per kapita melampaui USD 80.000. Faktor kunci yang mengantarkan kemajuan ekonomi Singapura adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Penutupan pelabuhan dan bandara Changi dari seluruh maskapai dan kapal asing"
+      },
+      {
+        "label": "B",
+        "teks": "Ekspor batu bara, bijih bauksit, dan kayu hutan hujan tropis terbesar di dunia"
+      },
+      {
+        "label": "C",
+        "teks": "Pemanfaatan letak geografis strategis di Selat Malaka sebagai pelabuhan transit global, kualitas SDM dan pendidikan berkelas dunia, kepastian hukum/birokrasi bersih, serta penguasaan sektor jasa keuan- gan, perdagangan, dan pengolahan teknologi tinggi"
+      },
+      {
+        "label": "D",
+        "teks": "Ketergantungan penuh pada sektor pertanian padi sawah tradisional"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Singapura maju berkat letak strategis di Selat Malaka, kualitas SDM unggul, tata kelola bersih, dan keunggulan jasa keuangan/teknologi.",
+    "valid": true
+  },
+  {
+    "nomor": 21,
+    "nomor_global": 101,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Tantangan Pembangunan Indonesia",
+    "materi": "Perjalanan Pembangunan Nasional (Masa Kemerdekaan, Demokrasi Parlementer, Demokrasi Terpimpin, Orde Baru, hingga Reformasi), Ketergantungan Antarruang, Tolok Ukur Pembangunan (PDB, IPM, Indeks Gini), serta Karakteristik Negara Maju vs Berkembang",
+    "paket": "Bab III: Tantangan Pembangunan Indonesia - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Negara Jepang memiliki kondisi geologis yang mirip dengan Indonesia karena terletak di jalur cincin api Pasifik (Ring of Fire) yang rawan gempa bumi dan tsunami serta miskin sumber daya mineral/energi, na- mun Jepang mampu tumbuh menjadi raksasa industri otomotif, robotika, dan elektronik dunia. Pelajaran terpenting dari keberhasilan pembangunan Jepang yang dapat diadaptasi oleh Indonesia adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Mengeksploitasi hutan lindung tanpa memedulikan kelestarian lingkungan"
+      },
+      {
+        "label": "B",
+        "teks": "Mengimpor seluruh barang konsumsi jadi tanpa membangun pabrik manufaktur di dalam negeri"
+      },
+      {
+        "label": "C",
+        "teks": "Meninggalkan identitas budaya nasional dan mengganti bahasa nasional dengan bahasa asing"
+      },
+      {
+        "label": "D",
+        "teks": "Investasi besar-besaran pada riset dan pengembangan IPTEK (R&D), etos kerja disiplin (Kaizen), pendidikan vokasi/sains yang kuat, serta budaya mitigasi bencana berbasis teknologi tahan gempa"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Kemajuan Jepang ditopang oleh riset IPTEK, etos kerja disiplin (Kaizen), pendidikan unggul, dan teknologi mitigasi gempa.",
+    "valid": true
+  },
+  {
+    "nomor": 22,
+    "nomor_global": 102,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Tantangan Pembangunan Indonesia",
+    "materi": "Perjalanan Pembangunan Nasional (Masa Kemerdekaan, Demokrasi Parlementer, Demokrasi Terpimpin, Orde Baru, hingga Reformasi), Ketergantungan Antarruang, Tolok Ukur Pembangunan (PDB, IPM, Indeks Gini), serta Karakteristik Negara Maju vs Berkembang",
+    "paket": "Bab III: Tantangan Pembangunan Indonesia - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Salah satu tantangan terbesar negara-negara berkembang berpendapatan menengah (middle-income countries), termasuk Indonesia, dalam upayanya naik kelas menjadi Negara Maju berpendapatan tinggi (high-income country) adalah ancaman Middle Income Trap (Jebakan Pendapatan Menengah). Kon- disi Middle Income Trap terjadi apabila suatu negara ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Kehilangan daya saing pada industri padat karya berupah murah, namun belum mampu bersaing dengan negara maju pada industri berteknologi tinggi dan inovasi bernilai tambah karena rendahnya kualitas SDM dan riset"
+      },
+      {
+        "label": "B",
+        "teks": "Berhasil menaikkan pendapatan per kapita penduduknya di atas USD 25.000 per tahun secara merata"
+      },
+      {
+        "label": "C",
+        "teks": "Mengalami surplus perdagangan ekspor produk teknologi tinggi selama tiga dekade berturut-turut"
+      },
+      {
+        "label": "D",
+        "teks": "Memiliki Indeks Pembangunan Manusia (IPM) di atas 0,900"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Middle Income Trap terjadi ketika negara kehilangan daya saing upah murah namun belum mampu bersaing di industri inovatif berteknologi tinggi.",
+    "valid": true
+  },
+  {
+    "nomor": 23,
+    "nomor_global": 103,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Tantangan Pembangunan Indonesia",
+    "materi": "Perjalanan Pembangunan Nasional (Masa Kemerdekaan, Demokrasi Parlementer, Demokrasi Terpimpin, Orde Baru, hingga Reformasi), Ketergantungan Antarruang, Tolok Ukur Pembangunan (PDB, IPM, Indeks Gini), serta Karakteristik Negara Maju vs Berkembang",
+    "paket": "Bab III: Tantangan Pembangunan Indonesia - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Untuk keluar dari jebakan ketergantungan ekspor bahan mentah bernilai jual rendah dan melompat keluar dari Middle Income Trap, pemerintah Indonesia menjalankan strategi Hilirisasi Industri Nasional (seperti mengolah bijih nikel menjadi katoda baterai kendaraan listrik dan mengolah bauksit menjadi alumina/aluminium di dalam negeri). Dampak ekonomi langsung dari hilirisasi industri adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Memindahkan seluruh pabrik pengolahan mineral dari Indonesia ke luar negeri"
+      },
+      {
+        "label": "B",
+        "teks": "Menurunkan harga jual komoditas Indonesia di pasar internasional menjadi lebih murah dari tanah mentah"
+      },
+      {
+        "label": "C",
+        "teks": "Melipatgandakan nilai tambah (value added) komoditas ekspor hingga berkali-kali lipat, menyerap tenaga kerja terampil di dalam negeri, dan memperkuat struktur industri manufaktur nasional"
+      },
+      {
+        "label": "D",
+        "teks": "Mengurangi penerimaan pajak dan devisa ekspor negara"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Hilirisasi mineral di dalam negeri melipatgandakan nilai tambah ekspor dan membuka lapangan kerja industri.",
+    "valid": true
+  },
+  {
+    "nomor": 24,
+    "nomor_global": 104,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Tantangan Pembangunan Indonesia",
+    "materi": "Perjalanan Pembangunan Nasional (Masa Kemerdekaan, Demokrasi Parlementer, Demokrasi Terpimpin, Orde Baru, hingga Reformasi), Ketergantungan Antarruang, Tolok Ukur Pembangunan (PDB, IPM, Indeks Gini), serta Karakteristik Negara Maju vs Berkembang",
+    "paket": "Bab III: Tantangan Pembangunan Indonesia - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Ketergantungan antarruang antara negara-negara maju dan negara-negara berkembang dalam ekonomi global idealnya dibangun di atas prinsip kemitraan yang adil dan saling menguntungkan, bukan eksploitasi baru (neo-kolonialisme). Bentuk kerja sama ekonomi antara negara maju dan negara berkembang yang mencerminkan prinsip keadilan dan keberlanjutan adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Pemindahan pabrik-pabrik berpolusi tinggi ke negara berkembang tanpa instalasi pengolah limbah"
+      },
+      {
+        "label": "B",
+        "teks": "Investasi industri yang disertai alih teknologi (transfer of technology), pelatihan tenaga kerja lokal, kepatuhan pada standar lingkungan hijau, dan perdagangan yang adil (fair trade)"
+      },
+      {
+        "label": "C",
+        "teks": "Pembelian bahan mentah dari negara berkembang dengan harga sangat murah dan penjualan kembali barang jadi dengan harga monopoli"
+      },
+      {
+        "label": "D",
+        "teks": "Pelarangan mahasiswa dari negara berkembang untuk menempuh studi sains di negara maju"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Kemitraan adil negara maju–berkembang wajib mencakup alih teknologi, pelatihan SDM lokal, standar hijau, dan fair trade.",
+    "valid": true
+  },
+  {
+    "nomor": 25,
+    "nomor_global": 105,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Tantangan Pembangunan Indonesia",
+    "materi": "Perjalanan Pembangunan Nasional (Masa Kemerdekaan, Demokrasi Parlementer, Demokrasi Terpimpin, Orde Baru, hingga Reformasi), Ketergantungan Antarruang, Tolok Ukur Pembangunan (PDB, IPM, Indeks Gini), serta Karakteristik Negara Maju vs Berkembang",
+    "paket": "Bab III: Tantangan Pembangunan Indonesia - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Perhatikan indikator pembangunan berikut: (1) Angka Harapan Hidup mencapai 81 tahun; (2) Angka melek huruf penduduk dewasa mencapai 99, 8%; (3) Kontribusi sektor pertanian terhadap PDB hanya 1, 2% namun menggunakan mekanisasi presisi tinggi, sedangkan sektor industri dan jasa menyumbang 98, 8%; (4) Pendapatan per kapita mencapai USD 48.000/exttahun. Negara yang memiliki profil indikator tersebut dikategorikan sebagai ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Masyarakat agraris tradisional pra-industri"
+      },
+      {
+        "label": "B",
+        "teks": "Negara Berkembang berpendapatan rendah (Low-Income Developing Country)"
+      },
+      {
+        "label": "C",
+        "teks": "Negara terbelakang yang mengalami krisis pangan akut"
+      },
+      {
+        "label": "D",
+        "teks": "Negara Maju (Developed Country) dengan kualitas SDM sangat tinggi"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "AHH 81 thn, melek huruf 99, 8%, dominasi industri-jasa 98, 8%, dan PDB per kapita USD 48.000 adalah ciri Negara Maju.",
+    "valid": true
+  },
+  {
+    "nomor": 26,
+    "nomor_global": 106,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Tantangan Pembangunan Indonesia",
+    "materi": "Perjalanan Pembangunan Nasional (Masa Kemerdekaan, Demokrasi Parlementer, Demokrasi Terpimpin, Orde Baru, hingga Reformasi), Ketergantungan Antarruang, Tolok Ukur Pembangunan (PDB, IPM, Indeks Gini), serta Karakteristik Negara Maju vs Berkembang",
+    "paket": "Bab III: Tantangan Pembangunan Indonesia - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Perhatikan bagan perbandingan fokus dan tantangan pembangunan Indonesia lintas periode sejarah berikut! BAGAN DINAMIKA PEMBANGUNAN INDONESIA DARI MASA KE MASA 1. Awal Kemerdekaan (1945–1950): Fokus mempertahankan kedaulatan dari Agresi Militer & diplomasi (Ling- garjati, Renville, Roem-Royen, KMB) −→2. Demokrasi Parlementer (1950–1959): Kabinet sering berganti → Program pembangunan jangka panjang tersendat; keberhasilan KAA 1955 & Deklarasi Djuanda 1957 −→3. Demokrasi Terpimpin (1959–1965): Proyek politik Mercusuar →Hiperinflasi 600% −→4. Orde Baru (1966– 1998): Repelita & Swasembada Beras, namun sentralistik & KKN −→5. Era Reformasi (1998–Sekarang): Desentralisasi (Otonomi Daerah), demokrasi, infrastruktur Indonesia-sentris, & hilirisasi Berdasarkan bagan di atas, mengapa pada masa Demokrasi Parlementer (1950–1959) rencana pem- bangunan ekonomi seperti Rencana Urgensi Perekonomian dan Rencana Pembangunan Lima Tahun (1956–1960) sulit berjalan secara berkesinambungan?",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Karena tingginya instabilitas politik akibat jatuh-bangunnya kabinet dalam waktu singkat (7 kabinet dalam 9 tahun), sehingga program ekonomi menteri sebelumnya sering terhenti sebelum selesai"
+      },
+      {
+        "label": "B",
+        "teks": "Karena tidak adanya sumber daya alam mineral dan perkebunan di wilayah Indonesia pada dekade 1950-an"
+      },
+      {
+        "label": "C",
+        "teks": "Karena pemerintah pusat menerapkan kekuasaan otoriter selama 32 tahun tanpa pergantian perdana menteri"
+      },
+      {
+        "label": "D",
+        "teks": "Karena seluruh wilayah Indonesia belum diakui kedaulatannya oleh negara-negara peserta Konferensi Asia Afrika"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Pada masa Demokrasi Parlementer (1950–1959), sering terjadinya pergantian kabinet dalam waktu singkat menyebabkan program pembangunan ekonomi tidak dapat berjalan berkesinambungan.",
+    "valid": true
+  },
+  {
+    "nomor": 27,
+    "nomor_global": 107,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Tantangan Pembangunan Indonesia",
+    "materi": "Perjalanan Pembangunan Nasional (Masa Kemerdekaan, Demokrasi Parlementer, Demokrasi Terpimpin, Orde Baru, hingga Reformasi), Ketergantungan Antarruang, Tolok Ukur Pembangunan (PDB, IPM, Indeks Gini), serta Karakteristik Negara Maju vs Berkembang",
+    "paket": "Bab III: Tantangan Pembangunan Indonesia - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Memasuki era Reformasi, paradigma pemerintahan dan pembangunan nasional berubah dari Sentralisasi (terpusat di Jakarta) menjadi Desentralisasi (Otonomi Daerah) melalui UU No. 22 Tahun 1999 (yang diperbarui menjadi UU No. 23 Tahun 2014). Tujuan utama pemberian Otonomi Daerah beserta tantangan tata kelola yang harus diwaspadai masyarakat adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Mengizinkan setiap provinsi mencetak mata uang sendiri dan mendirikan angkatan perang terpisah dari NKRI"
+      },
+      {
+        "label": "B",
+        "teks": "Mempercepat pemerataan pembangunan daerah sesuai potensi lokal dan mendekatkan pelayanan publik; namun harus diawasi secara transparan agar tidak muncul penyalahgunaan wewenang atau ko- rupsi APBD di daerah"
+      },
+      {
+        "label": "C",
+        "teks": "Melepaskan tanggung jawab pemerintah pusat terhadap pendidikan dan kesehatan warga di luar Pulau Jawa"
+      },
+      {
+        "label": "D",
+        "teks": "Menghapus Dewan Perwakilan Rakyat Daerah (DPRD) dan Badan Pemeriksa Keuangan (BPK)"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Otonomi Daerah bertujuan mempercepat pemerataan pembangunan dan mendekatkan layanan publik, namun wajib disertai transparansi dan akuntabilitas agar bebas dari korupsi APBD.",
+    "valid": true
+  },
+  {
+    "nomor": 28,
+    "nomor_global": 108,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Tantangan Pembangunan Indonesia",
+    "materi": "Perjalanan Pembangunan Nasional (Masa Kemerdekaan, Demokrasi Parlementer, Demokrasi Terpimpin, Orde Baru, hingga Reformasi), Ketergantungan Antarruang, Tolok Ukur Pembangunan (PDB, IPM, Indeks Gini), serta Karakteristik Negara Maju vs Berkembang",
+    "paket": "Bab III: Tantangan Pembangunan Indonesia - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Perhatikan tabel kebijakan strategis pemerataan pembangunan dan transformasi struktural Indonesia pada dekade terakhir berikut! TABEL KEBIJAKAN PEMERATAAN DAN TRANSFORMASI PEMBANGUNAN NASIONAL Program Strategis Sasaran Utama Mekanisme Dampak Ekonomi 1. Program Tol Laut Kepulauan Terdepan, Terluar, & Terting- gal (3T) khususnya Indonesia Timur Kapal logistik terjadwal & bersubsidi menekan biaya angkut sehingga men- gurangi disparitas (kesenjangan) harga barang pokok antara Jawa dan Luar Jawa 2. Pembangunan IKN Nusantara Pergeseran paradigma dari Jawa-sentris menuju Indonesia-sentris Memeratakan pusat gravitasi pertum- buhan ekonomi ke Kalimantan dan kawasan tengah/timur Indonesia 3. Hilirisasi Industri Pengolahan bijih mineral (nikel, bauksit, tembaga) & komoditas di dalam negeri Melarang ekspor bijih mentah agar ter- cipta nilai tambah (added value) berlipat ganda, transfer teknologi, dan lapangan kerja di dalam negeri 4. Dana Desa & PLBN Desa pinggiran & kawasan perbatasan negara Membangun infrastruktur dasar desa dan Pos Lintas Batas Negara (PLBN) se- bagai beranda kedaulatan ekonomi Berdasarkan tabel di atas, bagaimana mekanisme kerja program Tol Laut dan kebijakan Hilirisasi In- dustri dalam menjawab tantangan struktural perekonomian Indonesia?",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Tol Laut menghapus transportasi kapal laut, sedangkan Hilirisasi Industri menutup seluruh kawasan industri manufaktur nasional"
+      },
+      {
+        "label": "B",
+        "teks": "Tol Laut membangun jalan raya beraspal di atas seluruh permukaan samudra, sedangkan Hilirisasi Industri mewajibkan ekspor bijih tanah mentah tanpa diolah"
+      },
+      {
+        "label": "C",
+        "teks": "Kedua program tersebut bertujuan memusatkan seluruh pabrik dan penduduk Indonesia hanya di Provinsi DKI Jakarta"
+      },
+      {
+        "label": "D",
+        "teks": "Tol Laut menurunkan biaya logistik antarpulau melalui pelayaran kapal kargo terjadwal guna menekan selisih harga barang di wilayah Timur, sedangkan Hilirisasi Industri mengolah bahan mentah di smelter/pabrik dalam negeri untuk melipatgandakan nilai tambah ekspor dan serapan tenaga kerja"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Tol Laut menekan disparitas harga logistik antarpulau (khususnya Indonesia Timur), sedangkan Hilirisasi Industri meningkatkan nilai tambah (added value) dan lapangan kerja di dalam negeri.",
+    "valid": true
+  },
+  {
+    "nomor": 29,
+    "nomor_global": 109,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Tantangan Pembangunan Indonesia",
+    "materi": "Perjalanan Pembangunan Nasional (Masa Kemerdekaan, Demokrasi Parlementer, Demokrasi Terpimpin, Orde Baru, hingga Reformasi), Ketergantungan Antarruang, Tolok Ukur Pembangunan (PDB, IPM, Indeks Gini), serta Karakteristik Negara Maju vs Berkembang",
+    "paket": "Bab III: Tantangan Pembangunan Indonesia - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Indonesia saat ini sedang berada pada periode puncak Bonus Demografi (di mana sekitar 68%–70% penduduknya berada pada usia produktif 15–64 tahun) sekaligus menghadapi disrupsi otoma- tisasi Revolusi Industri 4.0. Peluang emas bonus demografi tersebut justru dapat berubah menjadi bencana demografi (pengangguran massal) apabila ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Pemerintah dan dunia pendidikan gagal membekali angkatan kerja muda dengan keterampilan vokasi, literasi digital, kemampuan berpikir kritis-kreatif, serta perluasan lapangan kerja produktif"
+      },
+      {
+        "label": "B",
+        "teks": "Pelajar Indonesia rajin menguasai pemrograman komputer, bahasa asing, dan kewirausahaan teknologi"
+      },
+      {
+        "label": "C",
+        "teks": "Angka harapan hidup dan derajat kesehatan masyarakat meningkat berkat layanan gizi yang baik"
+      },
+      {
+        "label": "D",
+        "teks": "Industri dalam negeri menyerap lulusan SMK dan perguruan tinggi secara optimal"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Bonus demografi hanya menjadi berkah ekonomi jika angkatan kerja usia produktif dibekali keterampilan vokasi, literasi digital, dan lapangan kerja yang memadai.",
+    "valid": true
+  },
+  {
+    "nomor": 30,
+    "nomor_global": 110,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Tantangan Pembangunan Indonesia",
+    "materi": "Perjalanan Pembangunan Nasional (Masa Kemerdekaan, Demokrasi Parlementer, Demokrasi Terpimpin, Orde Baru, hingga Reformasi), Ketergantungan Antarruang, Tolok Ukur Pembangunan (PDB, IPM, Indeks Gini), serta Karakteristik Negara Maju vs Berkembang",
+    "paket": "Bab III: Tantangan Pembangunan Indonesia - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Perhatikan bagan perbandingan antara indikator Pertumbuhan Ekonomi (Economic Growth) dan Pembangunan Ekonomi (Economic Development) berikut! BAGAN PERBANDINGAN PERTUMBUHAN EKONOMI DAN PEMBANGUNAN EKONOMI Pertumbuhan Ekonomi: Bersifat kuantitatif semata →Diukur dari kenaikan Produk Domestik Bruto (PDB / GDP) dari tahun ke tahun tanpa memandang pemerataan Pembangunan Ekonomi: Bersifat kualitatif & multidimensional →Kenaikan PDB disertai perbaikan struktur sosial, pengurangan ketimpangan (Gini Ratio turun), serta kenaikan Indeks Pembangunan Manusia (IPM / HDI): (1) Kesehatan/UHH, (2) Pendidikan/HLS- RLS, (3) Standar Hidup Layak Berdasarkan bagan di atas, mengapa sebuah negara yang mencatat kenaikan PDB tinggi sebesar 7% per tahun belum tentu dapat dikatakan berhasil melaksanakan pembangunan ekonomi?",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Karena kenaikan PDB otomatis menurunkan angka harapan hidup dan tingkat literasi penduduk"
+      },
+      {
+        "label": "B",
+        "teks": "Karena pembangunan ekonomi hanya diukur dari banyaknya jumlah gedung pencakar langit dan mobil mewah di ibu kota"
+      },
+      {
+        "label": "C",
+        "teks": "Karena jika kenaikan PDB tersebut hanya dinikmati oleh segelintir pemilik modal (Gini Ratio tinggi/timpang) sementara angka kemiskinan, gizi buruk, dan putus sekolah masyarakat luas masih tinggi (IPM rendah), maka kesejahteraan manusia seutuhnya belum tercapai"
+      },
+      {
+        "label": "D",
+        "teks": "Karena Indeks Pembangunan Manusia (IPM) hanya menghitung kekuatan persenjataan militer suatu negara"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Pembangunan ekonomi lebih luas daripada pertumbuhan PDB karena mensyaratkan pemerataan pendapatan (Gini Ratio rendah) dan peningkatan kualitas hidup manusia (IPM).",
+    "valid": true
+  },
+  {
+    "nomor": 31,
+    "nomor_global": 111,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Tantangan Pembangunan Indonesia",
+    "materi": "Perjalanan Pembangunan Nasional (Masa Kemerdekaan, Demokrasi Parlementer, Demokrasi Terpimpin, Orde Baru, hingga Reformasi), Ketergantungan Antarruang, Tolok Ukur Pembangunan (PDB, IPM, Indeks Gini), serta Karakteristik Negara Maju vs Berkembang",
+    "paket": "Bab III: Tantangan Pembangunan Indonesia - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Pemerintah melakukan reformasi kebijakan fiskal dengan mengalihkan sebagian besar anggaran subsidi harga barang (seperti subsidi BBM umum yang konsumtif) menjadi subsidi tepat sasaran berbasis penerima serta belanja produktif. Analisis keuntungan utama kebijakan tersebut bagi keta- hanan APBN dan keadilan sosial adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Menghapus seluruh bantuan pendidikan dan kesehatan bagi warga miskin di perdesaan"
+      },
+      {
+        "label": "B",
+        "teks": "Mencegah subsidi dinikmati secara tidak adil oleh kelompok masyarakat mampu (pemilik mobil prib- adi banyak) dan mengalihkan ruang fiskal APBN untuk membangun sekolah, rumah sakit, irigasi, serta bantuan langsung bagi keluarga prasejahtera"
+      },
+      {
+        "label": "C",
+        "teks": "Membuat harga bahan bakar minyak di Indonesia menjadi yang paling mahal di seluruh dunia"
+      },
+      {
+        "label": "D",
+        "teks": "Mengalihkan seluruh anggaran APBN untuk membiayai perjalanan wisata pejabat ke luar negeri"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Pengalihan subsidi harga barang (BBM umum) ke subsidi tepat sasaran dan belanja produktif (pendidikan, kesehatan, infrastruktur) mewujudkan keadilan fiskal APBN.",
+    "valid": true
+  },
+  {
+    "nomor": 32,
+    "nomor_global": 112,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Tantangan Pembangunan Indonesia",
+    "materi": "Perjalanan Pembangunan Nasional (Masa Kemerdekaan, Demokrasi Parlementer, Demokrasi Terpimpin, Orde Baru, hingga Reformasi), Ketergantungan Antarruang, Tolok Ukur Pembangunan (PDB, IPM, Indeks Gini), serta Karakteristik Negara Maju vs Berkembang",
+    "paket": "Bab III: Tantangan Pembangunan Indonesia - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Pada tanggal 13 Desember 1957, Perdana Menteri Ir. H. Djuanda Kartawidjaja mengumumkan Deklarasi Djuanda yang kemudian diperjuangkan melalui diplomasi internasional hingga diakui secara resmi dalam Konvensi Hukum Laut PBB (UNCLOS 1982). Makna geopolitik dan ekonomi terpenting dari Deklarasi Djuanda bagi kedaulatan wilayah Indonesia adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Membatasi wilayah perairan laut Indonesia hanya sejauh 1 mil dari garis pantai saat pasang naik"
+      },
+      {
+        "label": "B",
+        "teks": "Menyerahkan pengelolaan Selat Malaka, Laut Jawa, dan Laut Banda kepada angkatan laut Belanda"
+      },
+      {
+        "label": "C",
+        "teks": "Mengubah status laut antarpulau dari laut bebas pemisah (Ordonansi 1939 batas 3 mil) menjadi satu kesatuan utuh Negara Kepulauan (Archipelagic State) dengan batas laut teritorial 12 mil sehingga luas wilayah NKRI meningkat sekitar 2, 5 kali lipat"
+      },
+      {
+        "label": "D",
+        "teks": "Memisahkan wilayah Irian Barat dari Negara Kesatuan Republik Indonesia"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Deklarasi Djuanda (13 Desember 1957) menyatukan perairan antarpulau menjadi satu kesatuan Negara Kepulauan (Archipelagic State) yang diakui dalam UNCLOS 1982.",
+    "valid": true
+  },
+  {
+    "nomor": 33,
+    "nomor_global": 113,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Tantangan Pembangunan Indonesia",
+    "materi": "Perjalanan Pembangunan Nasional (Masa Kemerdekaan, Demokrasi Parlementer, Demokrasi Terpimpin, Orde Baru, hingga Reformasi), Ketergantungan Antarruang, Tolok Ukur Pembangunan (PDB, IPM, Indeks Gini), serta Karakteristik Negara Maju vs Berkembang",
+    "paket": "Bab III: Tantangan Pembangunan Indonesia - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Perhatikan tabel perbandingan indikator sosial-ekonomi antara kelompok Negara P dan kelompok Negara Q berikut! TABEL PERBANDINGAN INDIKATOR EKONOMI DAN DEMOGRAFI NEGARA P DAN Q Indikator Pembangunan Kelompok Negara P Kelompok Negara Q 1. Pendapatan per Kapita (PNB/Kapita) Tinggi (> US$13.845/tahun) Rendah hingga Menengah 2. Sektor Ekonomi Dominan Industri Teknologi Tinggi & Jasa Keuangan Pertanian Primer & Ekspor Bahan Mentah 3. Laju Pertumbuhan Penduduk Alami Rendah (0, 1%–0, 6%/tahun) Cukup Tinggi (1, 2%–2, 5%/tahun) 4. Indeks Pembangunan Manusia (IPM) Sangat Tinggi (≥0, 800) Sedang (0, 550–0, 750) Berdasarkan tabel di atas, contoh negara di Benua Asia yang termasuk ke dalam Kelompok Negara P (Negara Maju) serta strategi transformasi yang sedang ditempuh Indonesia (Kelompok Negara Q) untuk naik kelas menjadi negara maju pada visi Indonesia Emas 2045 secara berturut-turut adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Korea Selatan dan Jerman; strategi Indonesia adalah menurunkan angka melek huruf dan menutup sekolah kejuruan"
+      },
+      {
+        "label": "B",
+        "teks": "Nepal, Timor Leste, dan Yaman; strategi Indonesia adalah menghentikan seluruh kegiatan industri manufaktur dan kembali ke ekonomi barter"
+      },
+      {
+        "label": "C",
+        "teks": "Jepang dan Singapura; strategi Indonesia adalah mengekspor seluruh kekayaan tambang dalam ben- tuk tanah mentah tanpa pabrik pengolahan"
+      },
+      {
+        "label": "D",
+        "teks": "Jepang, Korea Selatan, dan Singapura; strategi Indonesia meliputi hilirisasi industri bernilai tambah, penguasaan iptek/ekonomi digital, peningkatan kualitas SDM (pendidikan & kesehatan), serta pemer- ataan infrastruktur"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Negara maju di Asia meliputi Jepang, Korea Selatan, dan Singapura; strategi Indonesia menuju 2045 bertumpu pada hilirisasi, iptek, SDM unggul, dan infrastruktur merata.",
+    "valid": true
+  },
+  {
+    "nomor": 34,
+    "nomor_global": 114,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Tantangan Pembangunan Indonesia",
+    "materi": "Perjalanan Pembangunan Nasional (Masa Kemerdekaan, Demokrasi Parlementer, Demokrasi Terpimpin, Orde Baru, hingga Reformasi), Ketergantungan Antarruang, Tolok Ukur Pembangunan (PDB, IPM, Indeks Gini), serta Karakteristik Negara Maju vs Berkembang",
+    "paket": "Bab III: Tantangan Pembangunan Indonesia - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Pasal 33 UUD Negara Republik Indonesia Tahun 1945 menjadi landasan konstitusional Sistem Ekonomi Pancasila (Demokrasi Ekonomi). Perbedaan prinsipil Sistem Ekonomi Pancasila diband- ingkan dengan Sistem Ekonomi Kapitalis-Liberal maupun Sistem Ekonomi Komando-Etatisme terletak pada ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Perekonomian disusun sebagai usaha bersama berdasar atas asas kekeluargaan, di mana cabang- cabang produksi yang penting bagi negara dan menguasai hajat hidup orang banyak dikuasai oleh negara untuk sebesar-besar kemakmuran rakyat, sembari tetap menghormati peran koperasi dan swasta secara berkeadilan"
+      },
+      {
+        "label": "B",
+        "teks": "Seluruh faktor produksi, tanah, dan usaha kecil warga disita oleh negara sehingga individu dilarang memiliki hak milik pribadi"
+      },
+      {
+        "label": "C",
+        "teks": "Negara sama sekali dilarang mengatur harga bahan pokok, listrik, dan air minum karena semuanya diserahkan pada monopoli korporasi bebas"
+      },
+      {
+        "label": "D",
+        "teks": "Perekonomian dijalankan berdasarkan persaingan bebas yang membenarkan eksploitasi buruh dan perusakan lingkungan"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Sistem Ekonomi Pancasila (Pasal 33 UUD 1945) berlandaskan asas kekeluargaan, penguasaan cabang produksi strategis oleh negara untuk kemakmuran rakyat, serta sinergi BUMN, koperasi, dan swasta.",
+    "valid": true
+  },
+  {
+    "nomor": 35,
+    "nomor_global": 115,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Tantangan Pembangunan Indonesia",
+    "materi": "Perjalanan Pembangunan Nasional (Masa Kemerdekaan, Demokrasi Parlementer, Demokrasi Terpimpin, Orde Baru, hingga Reformasi), Ketergantungan Antarruang, Tolok Ukur Pembangunan (PDB, IPM, Indeks Gini), serta Karakteristik Negara Maju vs Berkembang",
+    "paket": "Bab III: Tantangan Pembangunan Indonesia - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Tindak pidana korupsi dikategorikan sebagai kejahatan luar biasa (extraordinary crime) yang menjadi penghambat serius pembangunan nasional. Apabila anggaran pembangunan jembatan penghubung desa dan gedung sekolah dikorupsi oleh oknum pelaksana proyek melalui pengurangan spesifikasi mutu bahan bangunan, dampak berantai yang langsung diderita oleh masyarakat adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Meningkatnya kepercayaan investor internasional untuk menanamkan modal jangka panjang di daerah tersebut"
+      },
+      {
+        "label": "B",
+        "teks": "Proyek pembangunan selesai lebih cepat dengan kualitas konstruksi tahan gempa seratus tahun"
+      },
+      {
+        "label": "C",
+        "teks": "Infrastruktur jembatan dan sekolah cepat rusak/roboh sehingga membahayakan keselamatan warga, menghambat distribusi hasil tani desa, serta merugikan keuangan negara dan hak pendidikan anak"
+      },
+      {
+        "label": "D",
+        "teks": "Bertambahnya alokasi dana beasiswa penuh bagi seluruh siswa berprestasi di desa tersebut"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Korupsi proyek infrastruktur menyebabkan bangunan cepat rusak, membahayakan keselamatan warga, dan menghambat mobilitas ekonomi desa.",
+    "valid": true
+  },
+  {
+    "nomor": 36,
+    "nomor_global": 116,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Tantangan Pembangunan Indonesia",
+    "materi": "Perjalanan Pembangunan Nasional (Masa Kemerdekaan, Demokrasi Parlementer, Demokrasi Terpimpin, Orde Baru, hingga Reformasi), Ketergantungan Antarruang, Tolok Ukur Pembangunan (PDB, IPM, Indeks Gini), serta Karakteristik Negara Maju vs Berkembang",
+    "paket": "Bab III: Tantangan Pembangunan Indonesia - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "[Pilihan Ganda Kompleks — Analisis Peta Sebaran Negara Maju & Negara Berkembang] Evaluasilah konsep perbandingan sebaran Negara Maju (Utara Global + Australia/NZ/Jepang/Korsel/Singapura) dan Negara Berkembang berikut! Pernyataan geografi ekonomi yang benar berdasarkan panduan teks sebaran negara maju dan berkembang di atas adalah .... (Pilih lebih dari satu jawaban benar) Pernyataan Analisis: (1) Sebagian besar Negara Maju terletak di belahan bumi utara (Amerika Utara, Eropa Barat, serta Jepang dan Korea Selatan di Asia Timur), ditambah Australia, Selandia Baru, dan Singapura di belahan selatan/khatulistiwa. (2) Negara-negara berkembang di Asia, Afrika, dan Amerika Latin memiliki potensi demografi usia muda dan kekayaan sumber daya alam yang menjadi motor pertumbuhan ekonomi dunia. (3) Klasifikasi negara maju dan berkembang tidak ditentukan oleh luas wilayah atau kekayaan tambang semata, melainkan oleh kualitas SDM (IPM), penguasaan IPTEK, dan produktivitas ekonomi per kapita. (4) Seluruh negara yang berada di Benua Asia dan Benua Amerika Selatan berstatus sebagai negara miskin tanpa ada satu pun negara maju maupun kekuatan industri G20. Pernyataan yang tepat adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Pernyataan (1), (2), dan (3) benar"
+      },
+      {
+        "label": "B",
+        "teks": "Pernyataan (1) dan (4) saja yang benar"
+      },
+      {
+        "label": "C",
+        "teks": "Pernyataan (2) dan (4) saja yang benar"
+      },
+      {
+        "label": "D",
+        "teks": "Semua pernyataan (1), (2), (3), dan (4) benar"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Sebaran negara maju (A), potensi demografi negara berkembang (B), dan penentu kemajuan berupa kualitas SDM/IPTEK (C) seluruhnya benar.",
+    "valid": true
+  },
+  {
+    "nomor": 37,
+    "nomor_global": 117,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Tantangan Pembangunan Indonesia",
+    "materi": "Perjalanan Pembangunan Nasional (Masa Kemerdekaan, Demokrasi Parlementer, Demokrasi Terpimpin, Orde Baru, hingga Reformasi), Ketergantungan Antarruang, Tolok Ukur Pembangunan (PDB, IPM, Indeks Gini), serta Karakteristik Negara Maju vs Berkembang",
+    "paket": "Bab III: Tantangan Pembangunan Indonesia - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "[Pilihan Ganda Kompleks — Sejarah Perjuangan & Pembangunan Indonesia] Evaluasilah pernyataan sejarah ketatanegaraan dan pembangunan Indonesia berikut! Pernyataan yang tepat adalah .... Pernyataan Analisis: (1) Deklarasi Djuanda (13 Desember 1957) menyatukan perairan laut di antara pulau-pulau Indonesia menjadi satu kesatuan wilayah Negara Kepulauan (Wawasan Nusantara). (2) Penyelenggaraan Konferensi Asia–Afrika (KAA) di Bandung pada tanggal 18–24 April 1955 meng- hasilkan Dasasila Bandung yang menginspirasi kemerdekaan bangsa-bangsa Asia dan Afrika. (3) Pada Era Reformasi, pelaksanaan otonomi daerah dan pembangunan infrastruktur Indonesia-sentris bertujuan memeratakan pembangunan hingga ke daerah terdepan, terluar, dan tertinggal (3T). (4) Pemilihan Presiden dan Wakil Presiden secara langsung oleh rakyat pertama kali dilaksanakan pada Pemilu tahun 1955. Pernyataan yang tepat adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Pernyataan (1), (2), dan (3) benar"
+      },
+      {
+        "label": "B",
+        "teks": "Pernyataan (1) dan (4) saja yang benar"
+      },
+      {
+        "label": "C",
+        "teks": "Pernyataan (2) dan (4) saja yang benar"
+      },
+      {
+        "label": "D",
+        "teks": "Semua pernyataan (1), (2), (3), dan (4) benar"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Deklarasi Djuanda 1957 (A), KAA Bandung 1955 (B), dan pembangunan Indonesia-sentris (C) benar. Pilpres langsung pertama kali dilaksanakan tahun 2004, bukan 1955 (D salah).",
+    "valid": true
+  },
+  {
+    "nomor": 38,
+    "nomor_global": 118,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Tantangan Pembangunan Indonesia",
+    "materi": "Perjalanan Pembangunan Nasional (Masa Kemerdekaan, Demokrasi Parlementer, Demokrasi Terpimpin, Orde Baru, hingga Reformasi), Ketergantungan Antarruang, Tolok Ukur Pembangunan (PDB, IPM, Indeks Gini), serta Karakteristik Negara Maju vs Berkembang",
+    "paket": "Bab III: Tantangan Pembangunan Indonesia - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "[Tabel Centang Benar / Salah — Sejarah Indonesia Pasca-Kemerdekaan] Berilah tanda centang (✓) pada kolom Benar atau Salah untuk setiap pernyataan sejarah berikut! Pernyataan Evaluasi: (a) Pengakuan kedaulatan Republik Indonesia Serikat (RIS) oleh Belanda secara resmi ditandatangani dalam Konferensi Meja Bundar (KMB) pada tanggal 27 Desember 1949. (b) Dekrit Presiden 5 Juli 1959 menetapkan pembubaran Dewan Konstitu- ante dan berlakunya kembali UUD 1945 sebagai konstitusi negara. (c) Perjuangan Trikora (1961) dan Penentuan Pendapat Rakyat / PEPERA (1969) dilakukan untuk menggabungkan wilayah Timor Timur ke dalam wilayah Belanda. Kombinasi analisis nilai kebenaran (Benar/Salah) yang tepat berturut-turut adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(a) Benar, (b) Benar, (c) Salah"
+      },
+      {
+        "label": "B",
+        "teks": "(a) Benar, (b) Salah, (c) Salah"
+      },
+      {
+        "label": "C",
+        "teks": "(a) Salah, (b) Benar, (c) Benar"
+      },
+      {
+        "label": "D",
+        "teks": "(a) Benar, (b) Benar, (c) Benar"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "(c) Salah, karena Trikora dan PEPERA 1969 dilakukan untuk mengembalikan Irian Barat (Papua) ke pangkuan NKRI.",
+    "valid": true
+  },
+  {
+    "nomor": 39,
+    "nomor_global": 119,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Tantangan Pembangunan Indonesia",
+    "materi": "Perjalanan Pembangunan Nasional (Masa Kemerdekaan, Demokrasi Parlementer, Demokrasi Terpimpin, Orde Baru, hingga Reformasi), Ketergantungan Antarruang, Tolok Ukur Pembangunan (PDB, IPM, Indeks Gini), serta Karakteristik Negara Maju vs Berkembang",
+    "paket": "Bab III: Tantangan Pembangunan Indonesia - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "[Tabel Centang Benar / Salah — Indikator Pembangunan & Karakteristik Negara] Evaluasilah kebe- naran pernyataan ekonomi pembangunan berikut! Pernyataan Evaluasi: (a) Koefisien Gini (Gini Ratio) sebesar 0, 25 menunjukkan distribusi penda- patan masyarakat yang jauh lebih merata dibandingkan Koefisien Gini sebesar 0, 60. (b) Negara Maju memiliki ciri khas angka kelahiran dan pertumbuhan pen- duduk yang sangat tinggi (di atas 3, 5% per tahun) serta angka harapan hidup yang rendah. (c) Strategi hilirisasi industri mineral dan peningkatan kualitas pendidikan vokasi/STEM merupakan kunci bagi Indonesia untuk lolos dari Middle Income Trap. Kombinasi analisis nilai kebenaran (Benar/Salah) yang tepat berturut-turut adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(a) Benar, (b) Salah, (c) Benar"
+      },
+      {
+        "label": "B",
+        "teks": "(a) Benar, (b) Salah, (c) Salah"
+      },
+      {
+        "label": "C",
+        "teks": "(a) Salah, (b) Benar, (c) Benar"
+      },
+      {
+        "label": "D",
+        "teks": "(a) Benar, (b) Benar, (c) Benar"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "(b) Salah, karena Negara Maju justru memiliki angka kelahiran/pertumbuhan penduduk yang rendah dan angka harapan hidup yang tinggi.",
+    "valid": true
+  },
+  {
+    "nomor": 40,
+    "nomor_global": 120,
+    "bab_angka": 3,
+    "bab_nama": "Bab III: Tantangan Pembangunan Indonesia",
+    "materi": "Perjalanan Pembangunan Nasional (Masa Kemerdekaan, Demokrasi Parlementer, Demokrasi Terpimpin, Orde Baru, hingga Reformasi), Ketergantungan Antarruang, Tolok Ukur Pembangunan (PDB, IPM, Indeks Gini), serta Karakteristik Negara Maju vs Berkembang",
+    "paket": "Bab III: Tantangan Pembangunan Indonesia - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Negara Berkembang Z memiliki Produk Domestik Bruto (PDB) riil sebe- sar US$800 miliar dengan jumlah penduduk 200 juta jiwa pada tahun 2024. Pada tahun 2025, PDB riil Negara Z meningkat menjadi US$840 miliar, sedangkan jumlah penduduknya bertambah menjadi 202 juta jiwa. Berapakah laju pertumbuhan ekonomi Negara Z pada tahun 2025 berdasarkan rumus g = PDB2025−PDB2024 PDB2024 × 100%, berapakah PDB per kapita tahun 2024, dan syarat apa yang diperlukan agar pertumbuhan tersebut keluar dari jebakan pendapatan menengah (middle income trap)?",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Laju pertumbuhan ekonomi g = 10% dan PDB per kapita sebesar US$8.000; dilakukan dengan menaikkan utang konsumtif luar negeri"
+      },
+      {
+        "label": "B",
+        "teks": "Laju pertumbuhan ekonomi g = 40% dan PDB per kapita sebesar US$40.000; tidak diperlukan pen- ingkatan mutu pendidikan"
+      },
+      {
+        "label": "C",
+        "teks": "Laju pertumbuhan ekonomi g = 2% dan PDB per kapita sebesar US$1.600; cukup mengandalkan ekspor kayu gelondongan mentah"
+      },
+      {
+        "label": "D",
+        "teks": "Laju pertumbuhan ekonomi g = 5% dan PDB per kapita tahun 2024 sebesar US$4.000; untuk keluar dari middle income trap diperlukan lompatan produktivitas melalui hilirisasi industri berteknologi tinggi, kualitas pendidikan/riset SDM, dan tata kelola bebas korupsi"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Laju pertumbuhan ekonomi g = 840−800 800 × 100% = 40 800 × 100% = 5%. PDB per kapita tahun 2024 = US$800 miliar 200 juta jiwa = US$4.000. Keluar dari middle income trap menuntut transformasi menuju ekonomi berbasis inovasi, hilirisasi, dan SDM unggul. 1. Bentuk Kerja Sama Internasional & Peran Strategis Politik Luar Negeri Bebas-Aktif Indonesia a. Landasan & Tiga Bentuk Kerja Sama Internasional: Politik luar negeri Indonesia berlandaskan Pembukaan UUD 1945 Alinea ke-4 (ikut melaksanakan ketertiban dunia yang berdasarkan kemerdekaan, perdamaian abadi, dan keadilan sosial) dengan prinsip Bebas dan Aktif (dicetuskan Drs. Moh. Hatta dalam pidato Mendayung di Antara Dua Karang, 2 September 1948). Berdasarkan jumlah dan letak geografis anggotanya, kerja sama internasional terbagi menjadi: (1) Kerja Sama Bilateral: kerja sama antara dua negara (contoh: kerja sama Indonesia–Jepang dalam proyek MRT dan IJEPA, Indonesia–Arab Saudi dalam penyelenggaraan haji); (2) Kerja Sama Regional: kerja sama beberapa negara dalam satu kawasan geografis (contoh: ASEAN di Asia Tenggara, Uni Eropa / EU di Eropa, APEC di Asia Pasifik); dan (3) Kerja Sama Multilateral: kerja sama banyak negara dari seluruh dunia tanpa dibatasi kawasan geografis (contoh: PBB / UN, WTO, IMF, World Bank, OKI, G20, Gerakan Non-Blok / GNB). Rujukan resmi: Buku Siswa IPS Ke- las IX Kemendikdasmen (https://buku.kemendikdasmen.go.id/katalog/ilmu-pengetahuan-sosial-untuk-smp- mts-kelas-ix). b. Kontribusi Bersejarah Indonesia di Panggung Dunia: (1) Memelopori Konferensi Asia–Afrika (KAA) di Bandung (18–24 April 1955, melahirkan Dasasila Bandung); (2) Salah satu dari lima pendiri Gerakan Non-Blok (GNB) di Beograd (1961: Ir. Soekarno, Josip Broz Tito, Gamal Abdul Nasser, Jawaharlal Nehru, Kwame Nkrumah); (3) Salah satu dari lima pendiri ASEAN melalui Deklarasi Bangkok (8 Agustus 1967) (Adam Malik dari Indonesia, Tun Abdul Razak dari Malaysia, Narciso Ramos dari Filipina, S. Rajaratnam dari Singapura, dan Thanat Khoman dari Thailand) serta Sekre- tariat Jenderal ASEAN berkedudukan di Jakarta; (4) Pengiriman Kontingen Garuda (Konga) dalam Misi Pemeliharaan Perdamaian PBB sejak 1957; serta (5) Sukses memegang Presidensi G20 Bali (2022) (Recover Together, Recover Stronger) dan Keketuaan ASEAN (2023) (ASEAN Matters: Epicentrum of Growth). 2. Lembaga Khusus PBB, Pengakuan Warisan Budaya UNESCO, & 17 Tujuan SDGs 2030 a. Badan-Badan Khusus PBB & Warisan Budaya UNESCO: Badan khusus PBB meliputi UNESCO (pendidikan, sains, dan kebudayaan), UNICEF (dana anak-anak), WHO (kesehatan dunia), FAO (pangan dan pertanian), ILO (kete- nagakerjaan), dan UNHCR (pengungsi). Warisan budaya dan alam Indonesia yang telah diakui UNESCO antara lain: Candi Borobudur, Candi Prambanan, Situs Manusia Purba Sangiran, Sistem Subak Bali, Tambang Batu Bara Ombilin Sawahlunto, Sumbu Filosofi Yogyakarta, Taman Nasional Komodo, Hutan Hujan Tropis Sumatra, Taman Nasional Lorentz, Taman Nasional Ujung Kulon, serta Warisan Budaya Takbenda seperti Wayang, Keris, Batik (2 Oktober 2009), Angklung, Tari Saman, Noken Papua, Pinisi, Pencak Silat, Gamelan, dan Jamu. b. Tujuan Pembangunan Berkelanjutan (Sustainable Development Goals / SDGs 2030): Disepakati oleh 193 negara PBB pada tahun 2015 (menggantikan MDGs) yang memuat 17 Tujuan Global dalam 4 pilar: Pilar Sosial (Tujuan 1: Tanpa Kemiskinan; 2: Tanpa Kelaparan; 3: Kehidupan Sehat; 4: Pendidikan Berkualitas; 5: Kesetaraan Gender), Pilar Ekonomi (Tujuan 7: Energi Bersih & Terjangkau; 8: Pekerjaan Layak & Pertumbuhan Ekonomi; 9: Industri, Inovasi, & Infrastruktur; 10: Berkurangnya Kesenjangan; 17: Kemitraan untuk Mencapai Tujuan), Pilar Lingkungan (Tujuan 6: Air Bersih & Sanitasi; 11: Kota & Permukiman Berkelanjutan; 12: Konsumsi & Produksi Bertanggung Jawab; 13: Penanganan Perubahan Iklim; 14: Ekosistem Lautan; 15: Ekosistem Daratan), dan Pilar Hukum/Tata Kelola (Tujuan 16: Perdamaian, Keadilan, & Kelembagaan Tangguh). c. Rujukan 40 Soal HOTS Bab IV Kelas 9 (3 Jenis Ujian): (1) OSN IPS SMP & US/TKA: Naskah OSN IPS Kabupaten (https://id.scribd.com/document/874078370/Soal-OSN-IPS-SMP-Kabupaten-Lengkap) & US IPS SMP (https: //id.scribd.com/document/601697832/Ujian-Sekolah-IPS-SMP); (2) MGMP IPS SMP: Bank Soal MGMP IPS Kerja Sama Internasional (https://id.scribd.com/document/891079235/Soal-3-Pembangunan-Perekonomian- Indonesia); (3) ASAT/PAT Kurikulum Merdeka: Soal Sumatif Bab 4 Kerja Sama Dunia & SDGs Kelas 9 (https: //id.scribd.com/document/812349012/Soal-Sumatif-IPS-Kelas-9-Bab-4-Kerja-Sama-Dunia).",
+    "valid": true
+  }
+]

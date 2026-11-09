@@ -1,0 +1,1370 @@
+[
+  {
+    "nomor": 1,
+    "nomor_global": 161,
+    "bab_angka": 5,
+    "bab_nama": "Bab V: Ekonomi Kreatif & Keunggulan Ekonomi",
+    "materi": "Konsep Ekonomi Kreatif, Perlindungan Hak Kekayaan Intelektual (HaKI), 17 Subsektor Industri Kreatif Nusantara, Pusat-Pusat Keunggulan Ekonomi Nasional (PT Freeport, Kilang Balongan/Cilacap, Batik), serta Integrasi Pasar Bebas (MEA, AFTA, RCEP)",
+    "paket": "Bab V: Ekonomi Kreatif & Keunggulan Ekonomi - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Per- hatikan foto aktivitas pengrajin kriya perhiasan mutiara Nusantara sebagai salah satu subsektor unggulan Ekonomi Kreatif Indonesia berikut! Berdasarkan Undang-Undang Nomor 24 Tahun 2019 tentang Ekonomi Kreatif dan konsep John Howkins, apa yang membedakan secara fundamental antara Ekonomi Kreatif (seperti kriya, desain, dan aplikasi digital) dengan Ekonomi Ekstraktif (Pertambangan)?",
+    "gambar": [
+      "/soal/ips/kls9_ips_p158_xref6363_1356x904.jpeg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Ekonomi kreatif hanya dapat dijalankan oleh perusahaan tambang minyak bumi; sedangkan ekonomi ekstraktif dijalankan oleh seniman lukis"
+      },
+      {
+        "label": "B",
+        "teks": "Ekonomi kreatif bertumpu pada kreativitas, ide, gagasan, dan Kekayaan Intelektual (HaKI) manusia yang terbarukan tanpa batas; sedangkan ekonomi ekstraktif bertumpu pada pengambilan sumber daya alam fisik yang jumlahnya terbatas dan dapat habis"
+      },
+      {
+        "label": "C",
+        "teks": "Ekonomi kreatif melarang penggunaan teknologi komputer dan internet; sedangkan ekonomi ekstraktif bebas dari penggunaan mesin"
+      },
+      {
+        "label": "D",
+        "teks": "Ekonomi kreatif menghasilkan bahan mentah batu bara; sedangkan ekonomi ekstraktif menghasilkan film animasi dan aplikasi gim"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Ekonomi kreatif bertumpu pada ide, bakat, dan Kekayaan Intelektual (HaKI) manusia yang terbarukan, sedangkan ekonomi ekstraktif bertumpu pada pengambilan SDA fisik yang terbatas.",
+    "valid": true
+  },
+  {
+    "nomor": 2,
+    "nomor_global": 162,
+    "bab_angka": 5,
+    "bab_nama": "Bab V: Ekonomi Kreatif & Keunggulan Ekonomi",
+    "materi": "Konsep Ekonomi Kreatif, Perlindungan Hak Kekayaan Intelektual (HaKI), 17 Subsektor Industri Kreatif Nusantara, Pusat-Pusat Keunggulan Ekonomi Nasional (PT Freeport, Kilang Balongan/Cilacap, Batik), serta Integrasi Pasar Bebas (MEA, AFTA, RCEP)",
+    "paket": "Bab V: Ekonomi Kreatif & Keunggulan Ekonomi - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Kementerian Pariwisata dan Ekonomi Kreatif (Kemenparekraf) bersama Badan Pusat Statistik (BPS) mencatat bahwa dari 17 subsektor ekonomi kreatif di Indonesia, terdapat tiga subsektor unggulan (top 3 contributors) yang secara konsisten menyumbang lebih dari 75% terhadap total Produk Domestik Bruto (PDB) Ekonomi Kreatif nasional dan menyerap jutaan tenaga kerja. Ketiga subsektor unggulan tersebut adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Televisi, Radio, dan Penerbitan Surat Kabar Cetak"
+      },
+      {
+        "label": "B",
+        "teks": "Arsitektur, Desain Interior, dan Seni Rupa Murni"
+      },
+      {
+        "label": "C",
+        "teks": "Kuliner (±41%), Fesyen (±17%), dan Kriya / Kerajinan (±15%)"
+      },
+      {
+        "label": "D",
+        "teks": "Fotografi, Musik Klasik, dan Periklanan Papan Reklame"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Tiga kontributor terbesar PDB Ekonomi Kreatif Indonesia adalah Kuliner (±41%), Fesyen (±17%), dan Kriya (±15%).",
+    "valid": true
+  },
+  {
+    "nomor": 3,
+    "nomor_global": 163,
+    "bab_angka": 5,
+    "bab_nama": "Bab V: Ekonomi Kreatif & Keunggulan Ekonomi",
+    "materi": "Konsep Ekonomi Kreatif, Perlindungan Hak Kekayaan Intelektual (HaKI), 17 Subsektor Industri Kreatif Nusantara, Pusat-Pusat Keunggulan Ekonomi Nasional (PT Freeport, Kilang Balongan/Cilacap, Batik), serta Integrasi Pasar Bebas (MEA, AFTA, RCEP)",
+    "paket": "Bab V: Ekonomi Kreatif & Keunggulan Ekonomi - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Sekelompok mahasiswa lulusan teknik informatika dan desain di Bandung berkolaborasi menciptakan permainan video edukasi petualangan pahlawan Nusantara untuk perangkat telepon pintar yang diunduh oleh jutaan pengguna di Asia Tenggara, serta membuat serial film kartun 3D untuk televisi nasional. Kedua karya kreatif tersebut termasuk ke dalam subsektor ekonomi kreatif ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Seni Pertunjukan Panggung serta Penerbitan Buku Cetak"
+      },
+      {
+        "label": "B",
+        "teks": "Desain Interior serta Kriya Anyaman Bambu"
+      },
+      {
+        "label": "C",
+        "teks": "Arsitektur Lanskap serta Kuliner Tradisional"
+      },
+      {
+        "label": "D",
+        "teks": "Pengembangan Permainan (Game Developer) serta Film, Animasi, dan Video"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Pembuatan gim edukasi ponsel = subsektor Pengembangan Permainan; pembuatan kartun 3D = subsektor Film, Animasi, dan Video.",
+    "valid": true
+  },
+  {
+    "nomor": 4,
+    "nomor_global": 164,
+    "bab_angka": 5,
+    "bab_nama": "Bab V: Ekonomi Kreatif & Keunggulan Ekonomi",
+    "materi": "Konsep Ekonomi Kreatif, Perlindungan Hak Kekayaan Intelektual (HaKI), 17 Subsektor Industri Kreatif Nusantara, Pusat-Pusat Keunggulan Ekonomi Nasional (PT Freeport, Kilang Balongan/Cilacap, Batik), serta Integrasi Pasar Bebas (MEA, AFTA, RCEP)",
+    "paket": "Bab V: Ekonomi Kreatif & Keunggulan Ekonomi - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Seorang pengrajin di Kasongan (Bantul) dan Jepara mengolah tanah liat, serat alam enceng gondok, serta limbah kayu jati menjadi lampu hias dan aksesori dekorasi rumah bernilai estetika tinggi yang diekspor ke kafe-kafe di Eropa. Kegiatan penciptaan nilai tambah kerajinan tangan berbasis keterampilan dan seni terapan ini termasuk subsektor ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Kriya (Crafts)"
+      },
+      {
+        "label": "B",
+        "teks": "Periklanan (Advertising)"
+      },
+      {
+        "label": "C",
+        "teks": "Aplikasi Piranti Lunak"
+      },
+      {
+        "label": "D",
+        "teks": "Televisi dan Radio"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Kerajinan tangan berbahan tanah liat, serat alam, kayu, logam, dan tekstil tradisional termasuk subsektor Kriya (Crafts).",
+    "valid": true
+  },
+  {
+    "nomor": 5,
+    "nomor_global": 165,
+    "bab_angka": 5,
+    "bab_nama": "Bab V: Ekonomi Kreatif & Keunggulan Ekonomi",
+    "materi": "Konsep Ekonomi Kreatif, Perlindungan Hak Kekayaan Intelektual (HaKI), 17 Subsektor Industri Kreatif Nusantara, Pusat-Pusat Keunggulan Ekonomi Nasional (PT Freeport, Kilang Balongan/Cilacap, Batik), serta Integrasi Pasar Bebas (MEA, AFTA, RCEP)",
+    "paket": "Bab V: Ekonomi Kreatif & Keunggulan Ekonomi - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Dalam pengembangan ekonomi kreatif, pendaftaran Hak Kekayaan Intelektual (HaKI / KI) kepada Direktorat Jenderal Kekayaan Intelektual Kemenkumham sangat penting bagi para kreator, mu- sisi, penulis, penemu teknologi, dan pelaku UMKM. Manfaat ekonomi dan hukum utama dari kepemilikan sertifikat HaKI (Hak Cipta, Paten, Merek, dan Indikasi Geografis) adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Melarang karya seni dan penemuan teknologi tersebut dipasarkan di dalam maupun luar negeri"
+      },
+      {
+        "label": "B",
+        "teks": "Mewajibkan kreator menyerahkan seluruh hasil penjualan karyanya kepada perusahaan asing tanpa imbalan"
+      },
+      {
+        "label": "C",
+        "teks": "Memberikan perlindungan hukum eksklusif dari pembajakan/pemalsuan pihak lain, memungkinkan kreator memperoleh royalti/lisensi ekonomi, serta dapat dijadikan agunan pembiayaan di lembaga keuan- gan"
+      },
+      {
+        "label": "D",
+        "teks": "Menghapuskan nama pencipta asli dari setiap buku, lagu, dan produk inovasi"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Sertifikat HaKI memberikan perlindungan hukum dari pembajakan, hak royalti/lisensi, dan nilai ekonomi kekayaan intelektual.",
+    "valid": true
+  },
+  {
+    "nomor": 6,
+    "nomor_global": 166,
+    "bab_angka": 5,
+    "bab_nama": "Bab V: Ekonomi Kreatif & Keunggulan Ekonomi",
+    "materi": "Konsep Ekonomi Kreatif, Perlindungan Hak Kekayaan Intelektual (HaKI), 17 Subsektor Industri Kreatif Nusantara, Pusat-Pusat Keunggulan Ekonomi Nasional (PT Freeport, Kilang Balongan/Cilacap, Batik), serta Integrasi Pasar Bebas (MEA, AFTA, RCEP)",
+    "paket": "Bab V: Ekonomi Kreatif & Keunggulan Ekonomi - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Kopi Gayo dari Aceh, Kopi Kintamani dari Bali, Lada Putih Muntok dari Bangka, dan Ubi Cilembu dari Sumedang memiliki cita rasa dan karakteristik khas yang terbentuk karena faktor lingkungan geografis alam serta keahlian tradisional masyarakat daerah asalnya. Jenis perlindungan Kekayaan Intelektual yang secara khusus melindungi nama produk khas daerah asal tersebut agar tidak diklaim oleh negara lain disebut ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Rahasia Dagang Resep Pribadi"
+      },
+      {
+        "label": "B",
+        "teks": "Indikasi Geografis (Geographical Indication)"
+      },
+      {
+        "label": "C",
+        "teks": "Desain Tata Letak Sirkuit Terpadu"
+      },
+      {
+        "label": "D",
+        "teks": "Hak Paten Mesin Uap"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Perlindungan hukum atas nama produk yang memiliki kualitas/reputasi khas faktor geografis daerah asal disebut Indikasi Geografis.",
+    "valid": true
+  },
+  {
+    "nomor": 7,
+    "nomor_global": 167,
+    "bab_angka": 5,
+    "bab_nama": "Bab V: Ekonomi Kreatif & Keunggulan Ekonomi",
+    "materi": "Konsep Ekonomi Kreatif, Perlindungan Hak Kekayaan Intelektual (HaKI), 17 Subsektor Industri Kreatif Nusantara, Pusat-Pusat Keunggulan Ekonomi Nasional (PT Freeport, Kilang Balongan/Cilacap, Batik), serta Integrasi Pasar Bebas (MEA, AFTA, RCEP)",
+    "paket": "Bab V: Ekonomi Kreatif & Keunggulan Ekonomi - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Seorang wirausahawan sukses tidak hanya memiliki kemampuan kreatif (menciptakan gagasan baru), tetapi juga harus inovatif. Perbedaan tepat antara perilaku kreatif dan inovatif dalam kewirausahaan adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Kreatif berarti menolak perubahan teknologi; sedangkan inovatif berarti menutup usaha saat meng- hadapi persaingan"
+      },
+      {
+        "label": "B",
+        "teks": "Kreatif adalah menjiplak merek dagang perusahaan lain; sedangkan inovatif adalah menjual barang palsu dengan harga murah"
+      },
+      {
+        "label": "C",
+        "teks": "Kreatif hanya dimiliki oleh seniman lukis; sedangkan inovatif hanya dimiliki oleh pegawai bank"
+      },
+      {
+        "label": "D",
+        "teks": "Kreatif adalah kemampuan melahirkan gagasan/ide orisinal untuk memecahkan masalah; sedangkan inovatif adalah kemampuan menerapkan gagasan tersebut menjadi produk/layanan nyata yang bernilai jual dan diterima pasar"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Kreatif = melahirkan gagasan baru; Inovatif = mewujudkan gagasan tersebut menjadi produk nyata bernilai ekonomi di pasar.",
+    "valid": true
+  },
+  {
+    "nomor": 8,
+    "nomor_global": 168,
+    "bab_angka": 5,
+    "bab_nama": "Bab V: Ekonomi Kreatif & Keunggulan Ekonomi",
+    "materi": "Konsep Ekonomi Kreatif, Perlindungan Hak Kekayaan Intelektual (HaKI), 17 Subsektor Industri Kreatif Nusantara, Pusat-Pusat Keunggulan Ekonomi Nasional (PT Freeport, Kilang Balongan/Cilacap, Batik), serta Integrasi Pasar Bebas (MEA, AFTA, RCEP)",
+    "paket": "Bab V: Ekonomi Kreatif & Keunggulan Ekonomi - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Pemerintah daerah menyelenggarakan festival budaya tahunan (seperti Jember Fashion Carnaval, Solo Batik Carnival, Fes- tival Lembah Baliem, dan Pesta Kesenian Bali) yang memadukan seni pertunjukan, fesyen, musik, kriya, fotografi, dan kuliner lokal. Dampak berganda (multiplier effect) penyelenggaraan festival kreatif tersebut terhadap perekonomian daerah adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Mendatangkan wisatawan domestik/mancanegara, meningkatkan okupansi perhotelan dan trans- portasi lokal, melariskan produk UMKM kuliner/kriya, serta membuka lapangan kerja bagi pemuda daerah"
+      },
+      {
+        "label": "B",
+        "teks": "Menguras habis cadangan devisa negara tanpa memberikan pemasukan apa pun bagi warga lokal"
+      },
+      {
+        "label": "C",
+        "teks": "Mematikan seluruh usaha perhotelan, rumah makan, dan pengrajin cendera mata di kota penyeleng- gara"
+      },
+      {
+        "label": "D",
+        "teks": "Menghilangkan keaslian budaya daerah karena seluruh warga dilarang menonton pertunjukan"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Festival budaya kreatif menggerakkan pariwisata, perhotelan, transportasi, kuliner, kriya UMKM, dan lapangan kerja daerah.",
+    "valid": true
+  },
+  {
+    "nomor": 9,
+    "nomor_global": 169,
+    "bab_angka": 5,
+    "bab_nama": "Bab V: Ekonomi Kreatif & Keunggulan Ekonomi",
+    "materi": "Konsep Ekonomi Kreatif, Perlindungan Hak Kekayaan Intelektual (HaKI), 17 Subsektor Industri Kreatif Nusantara, Pusat-Pusat Keunggulan Ekonomi Nasional (PT Freeport, Kilang Balongan/Cilacap, Batik), serta Integrasi Pasar Bebas (MEA, AFTA, RCEP)",
+    "paket": "Bab V: Ekonomi Kreatif & Keunggulan Ekonomi - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Perhatikan foto udara kawasan tambang terbuka (open-pit mine) Grasberg PT Freeport Indonesia di Kabupaten Mimika, Provinsi Papua Tengah berikut! Berdasarkan foto pusat keunggulan ekonomi nasional di atas, PT Freeport Indonesia mengelola tam- bang bijih tembaga, emas, dan perak di kawasan pegunungan Grasberg, Mimika. Tonggak sejarah kedaulatan ekonomi nasional yang berhasil dicapai Pemerintah Republik Indonesia atas PT Freeport Indonesia pada akhir tahun 2018 dan 2024 adalah ....",
+    "gambar": [
+      "/soal/ips/kls9_ips_p160_xref6424_700x393.jpeg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Penyerahan kembali 100% kepemilikan saham tambang Grasberg kepada perusahaan asing tanpa bagi hasil pajak"
+      },
+      {
+        "label": "B",
+        "teks": "Akuisisi mayoritas saham PT Freeport Indonesia (51, 23%) oleh BUMN pertambangan Indonesia (MIND ID / Inalum) serta pengoperasian pabrik pemurnian (smelter) tembaga terbesar di Gresik untuk hilirisasi di dalam negeri"
+      },
+      {
+        "label": "C",
+        "teks": "Penutupan seluruh kegiatan pertambangan tembaga dan emas di Papua sejak tahun 1967"
+      },
+      {
+        "label": "D",
+        "teks": "Pengubahan tambang Grasberg menjadi lahan perkebunan kelapa sawit dan tebu"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Indonesia melalui BUMN MIND ID telah menguasai 51, 23% saham mayoritas PT Freeport Indonesia dan mengoperasikan smelter tembaga di Gresik.",
+    "valid": true
+  },
+  {
+    "nomor": 10,
+    "nomor_global": 170,
+    "bab_angka": 5,
+    "bab_nama": "Bab V: Ekonomi Kreatif & Keunggulan Ekonomi",
+    "materi": "Konsep Ekonomi Kreatif, Perlindungan Hak Kekayaan Intelektual (HaKI), 17 Subsektor Industri Kreatif Nusantara, Pusat-Pusat Keunggulan Ekonomi Nasional (PT Freeport, Kilang Balongan/Cilacap, Batik), serta Integrasi Pasar Bebas (MEA, AFTA, RCEP)",
+    "paket": "Bab V: Ekonomi Kreatif & Keunggulan Ekonomi - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Pengolahan minyak mentah (crude oil) menjadi Bahan Bakar Minyak (BBM seperti Pertamax, Solar, Avtur), gas LPG, serta bahan baku petrokimia plastik dilakukan di unit-unit Kilang Minyak (Refinery Unit) milik PT Pertamina. Kilang minyak di Indonesia yang memiliki kapasitas pengolahan terbesar (±348.000 barel/hari) dan fasilitas paling lengkap (termasuk satu-satunya penghasil aspal dan pelumas dasar di dalam negeri) adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Kilang Minyak Cepu tradisional"
+      },
+      {
+        "label": "B",
+        "teks": "Kilang Minyak Kasim di Sorong (Papua Barat Daya)"
+      },
+      {
+        "label": "C",
+        "teks": "Kilang Minyak Pangkalan Brandan (Sumatra Utara)"
+      },
+      {
+        "label": "D",
+        "teks": "Kilang Minyak Cilacap (Jawa Tengah)"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Kilang Minyak Cilacap di Jawa Tengah memiliki kapasitas terbesar (±348.000 barel/hari) dan satu-satunya penghasil aspal/pelumas dasar.",
+    "valid": true
+  },
+  {
+    "nomor": 11,
+    "nomor_global": 171,
+    "bab_angka": 5,
+    "bab_nama": "Bab V: Ekonomi Kreatif & Keunggulan Ekonomi",
+    "materi": "Konsep Ekonomi Kreatif, Perlindungan Hak Kekayaan Intelektual (HaKI), 17 Subsektor Industri Kreatif Nusantara, Pusat-Pusat Keunggulan Ekonomi Nasional (PT Freeport, Kilang Balongan/Cilacap, Batik), serta Integrasi Pasar Bebas (MEA, AFTA, RCEP)",
+    "paket": "Bab V: Ekonomi Kreatif & Keunggulan Ekonomi - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Perhatikan daftar lokasi Kilang Minyak (Refinery Unit) PT Pertamina di berbagai pulau di Indonesia berikut: (1) Kilang Pangkalan Brandan dan Kilang Dumai/Putri Tujuh; (2) Kilang Plaju / Sungai Gerong; (3) Kilang Balongan (Indramayu); (4) Kilang Balikpapan; (5) Kilang Kasim (Sorong). Pasangan lokasi provinsi yang tepat untuk kelima kilang minyak tersebut secara berurutan adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(1) Sumatra Utara & Riau; (2) Sumatra Selatan; (3) Jawa Barat; (4) Kalimantan Timur; dan (5) Papua Barat Daya"
+      },
+      {
+        "label": "B",
+        "teks": "(1) Aceh; (2) Lampung; (3) Jawa Timur; (4) Kalimantan Barat; dan (5) Maluku"
+      },
+      {
+        "label": "C",
+        "teks": "(1) Sumatra Barat; (2) Bengkulu; (3) Banten; (4) Sulawesi Selatan; dan (5) Bali"
+      },
+      {
+        "label": "D",
+        "teks": "(1) Kepulauan Riau; (2) Jambi; (3) DIY; (4) Kalimantan Tengah; dan (5) NTT"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Pangkalan Brandan (Sumut) & Dumai (Riau); Plaju (Sumsel); Balongan (Jabar); Balikpapan (Kaltim); Kasim (Papua Barat Daya).",
+    "valid": true
+  },
+  {
+    "nomor": 12,
+    "nomor_global": 172,
+    "bab_angka": 5,
+    "bab_nama": "Bab V: Ekonomi Kreatif & Keunggulan Ekonomi",
+    "materi": "Konsep Ekonomi Kreatif, Perlindungan Hak Kekayaan Intelektual (HaKI), 17 Subsektor Industri Kreatif Nusantara, Pusat-Pusat Keunggulan Ekonomi Nasional (PT Freeport, Kilang Balongan/Cilacap, Batik), serta Integrasi Pasar Bebas (MEA, AFTA, RCEP)",
+    "paket": "Bab V: Ekonomi Kreatif & Keunggulan Ekonomi - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Kilang Minyak Balongan di Kabupaten Indramayu, Jawa Barat yang mulai beroperasi sejak tahun 1994 memiliki peran yang sangat vital dan strategis bagi perekonomian nasional karena ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Hanya memproduksi batu bara mentah untuk diekspor ke Benua Antartika"
+      },
+      {
+        "label": "B",
+        "teks": "Merupakan satu-satunya kilang minyak yang dibangun di puncak Pegunungan Jayawijaya"
+      },
+      {
+        "label": "C",
+        "teks": "Menyuplai pasokan utama Bahan Bakar Minyak (BBM), Avtur Bandara Soekarno-Hatta, dan LPG bagi wilayah ibu kota DKI Jakarta, Banten, dan Jawa Barat yang merupakan pusat aktivitas ekonomi terpadat di Indonesia"
+      },
+      {
+        "label": "D",
+        "teks": "Telah ditutup secara permanen sejak masa kolonial Belanda tahun 1900"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Kilang Balongan di Indramayu menyuplai kebutuhan utama BBM, Avtur, dan LPG kawasan DKI Jakarta, Banten, dan Jawa Barat.",
+    "valid": true
+  },
+  {
+    "nomor": 13,
+    "nomor_global": 173,
+    "bab_angka": 5,
+    "bab_nama": "Bab V: Ekonomi Kreatif & Keunggulan Ekonomi",
+    "materi": "Konsep Ekonomi Kreatif, Perlindungan Hak Kekayaan Intelektual (HaKI), 17 Subsektor Industri Kreatif Nusantara, Pusat-Pusat Keunggulan Ekonomi Nasional (PT Freeport, Kilang Balongan/Cilacap, Batik), serta Integrasi Pasar Bebas (MEA, AFTA, RCEP)",
+    "paket": "Bab V: Ekonomi Kreatif & Keunggulan Ekonomi - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Perhatikan foto keberagaman wastra, kain tradisional, dan busana adat Nusantara sebagai warisan bu- daya sekaligus pusat keunggulan ekonomi kreatif berikut! Wastra dan Batik Nusantara tidak hanya merupakan karya seni budaya, tetapi juga menjadi pusat keung- gulan ekonomi kerakyatan yang menghidupi ratusan ribu pengrajin UMKM di Indonesia. Berdasarkan teknik pembuatannya, mengapa sehelai Batik Tulis / Tenun Tangan memiliki nilai ekonomi dan harga jual yang jauh lebih tinggi dibandingkan tekstil cetak mesin (printing)?",
+    "gambar": [
+      "/soal/ips/kls9_ips_p161_xref6445_685x655.jpeg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Karena Batik Tulis diproduksi menggunakan mesin cetak pabrik otomatis dalam waktu lima detik per helai"
+      },
+      {
+        "label": "B",
+        "teks": "Karena Batik Tulis dikerjakan secara manual titik demi titik menggunakan canting dan malam panas oleh ketekunan tangan pengrajin selama berminggu-minggu hingga berbulan-bulan, sehingga setiap helainya bersifat unik, eksklusif, dan bernilai seni tinggi"
+      },
+      {
+        "label": "C",
+        "teks": "Karena bahan kain Batik Tulis terbuat dari lembaran plastik sintetis sekali pakai"
+      },
+      {
+        "label": "D",
+        "teks": "Karena pemerintah melarang penjualan Batik Cap dan tekstil di seluruh pasar dalam negeri"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Batik Tulis dikerjakan manual dengan canting selama berminggu-minggu hingga berbulan- bulan sehingga bernilai seni dan eksklusivitas tinggi.",
+    "valid": true
+  },
+  {
+    "nomor": 14,
+    "nomor_global": 174,
+    "bab_angka": 5,
+    "bab_nama": "Bab V: Ekonomi Kreatif & Keunggulan Ekonomi",
+    "materi": "Konsep Ekonomi Kreatif, Perlindungan Hak Kekayaan Intelektual (HaKI), 17 Subsektor Industri Kreatif Nusantara, Pusat-Pusat Keunggulan Ekonomi Nasional (PT Freeport, Kilang Balongan/Cilacap, Batik), serta Integrasi Pasar Bebas (MEA, AFTA, RCEP)",
+    "paket": "Bab V: Ekonomi Kreatif & Keunggulan Ekonomi - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Corak dan warna batik di Indonesia mencerminkan karakter geografis dan sosiokultural wilayah penghasilnya. Perbedaan ciri khas antara Batik Pedalaman (Keraton Solo & Yogyakarta) dan Batik Pesisir (Pekalongan, Cire- bon, Lasem, Madura) adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Batik Pedalaman hanya diproduksi di Pulau Kalimantan; sedangkan Batik Pesisir hanya diproduksi di puncak Gunung Merapi"
+      },
+      {
+        "label": "B",
+        "teks": "Batik Pedalaman berwarna merah menyala dengan gambar kapal uap Eropa; sedangkan Batik Pesisir hanya boleh menggunakan warna hitam polos tanpa motif"
+      },
+      {
+        "label": "C",
+        "teks": "Batik Pedalaman bercorak simbolis-filosofis klasik (seperti Parang, Kawung, Sidomukti) dengan warna teduh soga kecokelatan, hitam, dan putih/krem; sedangkan Batik Pesisir bercorak naturalis dinamis (bunga, burung, naga, laut) dengan warna-warna cerah menyala (merah, biru, hijau) hasil akulturasi pedagang lintas bangsa"
+      },
+      {
+        "label": "D",
+        "teks": "Kedua jenis batik tersebut dilarang dikenakan oleh masyarakat umum di luar lingkungan istana"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Batik Pedalaman (Solo/Yogya) bercorak filosofis klasik dengan warna soga cokelat/hitam; Batik Pesisir (Pekalongan/Cirebon/Madura) bercorak naturalis dengan warna cerah akulturatif.",
+    "valid": true
+  },
+  {
+    "nomor": 15,
+    "nomor_global": 175,
+    "bab_angka": 5,
+    "bab_nama": "Bab V: Ekonomi Kreatif & Keunggulan Ekonomi",
+    "materi": "Konsep Ekonomi Kreatif, Perlindungan Hak Kekayaan Intelektual (HaKI), 17 Subsektor Industri Kreatif Nusantara, Pusat-Pusat Keunggulan Ekonomi Nasional (PT Freeport, Kilang Balongan/Cilacap, Batik), serta Integrasi Pasar Bebas (MEA, AFTA, RCEP)",
+    "paket": "Bab V: Ekonomi Kreatif & Keunggulan Ekonomi - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Keberadaan pusat-pusat keunggulan ekonomi di suatu daerah — seperti kawasan indus- tri pengolahan nikel di Morowali/Weda Bay, tambang PT Freeport di Mimika, atau Kilang Pertamina di Balikpapan dan Cilacap — memberikan dampak langsung terhadap mobilitas penduduk dan lembaga sosial, yaitu ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Menurunkan pendapatan asli daerah (PAD) dan menutup seluruh sekolah di sekitar kawasan industri"
+      },
+      {
+        "label": "B",
+        "teks": "Menyebabkan seluruh penduduk asli maupun pendatang mengungsi keluar dari kabupaten tersebut hingga wilayah menjadi kosong"
+      },
+      {
+        "label": "C",
+        "teks": "Menghapuskan kebutuhan akan jaringan jalan raya, pelabuhan laut, dan bandara udara"
+      },
+      {
+        "label": "D",
+        "teks": "Menarik arus migrasi masuk tenaga kerja lintas daerah/provinsi (pull factor), memicu tumbuhnya per- mukiman multikultural, serta mendorong berdirinya sekolah, perguruan tinggi vokasi, rumah sakit, dan pasar di wilayah tersebut"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Pusat keunggulan ekonomi menjadi faktor penarik (pull factor) migrasi tenaga kerja dan memicu tumbuhnya fasilitas pendidikan, kesehatan, serta ekonomi.",
+    "valid": true
+  },
+  {
+    "nomor": 16,
+    "nomor_global": 176,
+    "bab_angka": 5,
+    "bab_nama": "Bab V: Ekonomi Kreatif & Keunggulan Ekonomi",
+    "materi": "Konsep Ekonomi Kreatif, Perlindungan Hak Kekayaan Intelektual (HaKI), 17 Subsektor Industri Kreatif Nusantara, Pusat-Pusat Keunggulan Ekonomi Nasional (PT Freeport, Kilang Balongan/Cilacap, Batik), serta Integrasi Pasar Bebas (MEA, AFTA, RCEP)",
+    "paket": "Bab V: Ekonomi Kreatif & Keunggulan Ekonomi - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Agar keberadaan pusat keunggulan ekonomi pertambangan besar (seperti PT Freeport, PT Vale, PT Bukit Asam, dan Per- tamina) benar-benar memberikan kesejahteraan berkelanjutan bagi masyarakat lokal di sekitar tambang dan tidak meninggalkan kemiskinan saat tambang habis, perusahaan wajib menjalankan program ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Tanggung Jawab Sosial dan Lingkungan Perusahaan (Corporate Social Responsibility / CSR), kemi- traan pemberdayaan UMKM lokal, beasiswa pendidikan/kesehatan masyarakat adat, serta reklamasi la- han pascatambang"
+      },
+      {
+        "label": "B",
+        "teks": "Pengiriman seluruh keuntungan perusahaan ke luar negeri tanpa membayar pajak dan royalti daerah"
+      },
+      {
+        "label": "C",
+        "teks": "Larangan merekrut pemuda-pemudi daerah setempat sebagai karyawan maupun teknisi perusahaan"
+      },
+      {
+        "label": "D",
+        "teks": "Pembuangan limbah tailing tambang secara langsung ke sungai dan kebun sagu warga"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Perusahaan wajib menjalankan program CSR, pemberdayaan UMKM/masyarakat adat, dan reklamasi lingkungan pascatambang.",
+    "valid": true
+  },
+  {
+    "nomor": 17,
+    "nomor_global": 177,
+    "bab_angka": 5,
+    "bab_nama": "Bab V: Ekonomi Kreatif & Keunggulan Ekonomi",
+    "materi": "Konsep Ekonomi Kreatif, Perlindungan Hak Kekayaan Intelektual (HaKI), 17 Subsektor Industri Kreatif Nusantara, Pusat-Pusat Keunggulan Ekonomi Nasional (PT Freeport, Kilang Balongan/Cilacap, Batik), serta Integrasi Pasar Bebas (MEA, AFTA, RCEP)",
+    "paket": "Bab V: Ekonomi Kreatif & Keunggulan Ekonomi - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Dalam perdagangan internasional modern, banyak negara bersepakat mengurangi atau menghapuskan hambatan tarif (bea masuk) maupun hambatan nontarif (kuota) atas arus barang dan jasa lintas batas negara. Kebijakan ekonomi yang meminimalkan intervensi proteksi pemerintah agar barang dan jasa mengalir bebas antarnegara berdasarkan mekanisme pasar ini disebut ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Kebijakan Merkantilisme Kolonial Abad ke-16"
+      },
+      {
+        "label": "B",
+        "teks": "Politik Proteksionisme Ketat dan Autarki"
+      },
+      {
+        "label": "C",
+        "teks": "Perdagangan Bebas (Free Trade / Pasar Bebas)"
+      },
+      {
+        "label": "D",
+        "teks": "Sistem Ekonomi Komando Terpusat"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Penghapusan hambatan tarif dan kuota dalam perdagangan lintas negara disebut Perda- gangan Bebas (Free Trade).",
+    "valid": true
+  },
+  {
+    "nomor": 18,
+    "nomor_global": 178,
+    "bab_angka": 5,
+    "bab_nama": "Bab V: Ekonomi Kreatif & Keunggulan Ekonomi",
+    "materi": "Konsep Ekonomi Kreatif, Perlindungan Hak Kekayaan Intelektual (HaKI), 17 Subsektor Industri Kreatif Nusantara, Pusat-Pusat Keunggulan Ekonomi Nasional (PT Freeport, Kilang Balongan/Cilacap, Batik), serta Integrasi Pasar Bebas (MEA, AFTA, RCEP)",
+    "paket": "Bab V: Ekonomi Kreatif & Keunggulan Ekonomi - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Pada tanggal 28 Januari 1992 di Singapura, para kepala negara ASEAN menyepakati pembentukan AFTA (ASEAN Free Trade Area) melalui skema Common Effective Preferential Tariff (CEPT) yang menurunkan tarif bea masuk barang perdagangan intra-ASEAN menjadi 0–5%. Tujuan strategis pembentukan AFTA bagi perekonomian kawasan Asia Tenggara adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Menaikkan tarif bea masuk barang antarnegara ASEAN hingga mencapai 200%"
+      },
+      {
+        "label": "B",
+        "teks": "Meningkatkan daya saing Asia Tenggara sebagai basis produksi pasar dunia, meningkatkan volume perdagangan intra-ASEAN, dan menarik lebih banyak investasi asing langsung (FDI) ke kawasan ASEAN"
+      },
+      {
+        "label": "C",
+        "teks": "Melarang negara-negara anggota ASEAN melakukan ekspor ke luar kawasan Asia Tenggara"
+      },
+      {
+        "label": "D",
+        "teks": "Menyatukan seluruh angkatan bersenjata negara ASEAN untuk menyerang benua lain"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "AFTA menurunkan tarif intra-ASEAN menjadi 0–5% untuk meningkatkan daya saing produksi dan menarik investasi asing ke ASEAN.",
+    "valid": true
+  },
+  {
+    "nomor": 19,
+    "nomor_global": 179,
+    "bab_angka": 5,
+    "bab_nama": "Bab V: Ekonomi Kreatif & Keunggulan Ekonomi",
+    "materi": "Konsep Ekonomi Kreatif, Perlindungan Hak Kekayaan Intelektual (HaKI), 17 Subsektor Industri Kreatif Nusantara, Pusat-Pusat Keunggulan Ekonomi Nasional (PT Freeport, Kilang Balongan/Cilacap, Batik), serta Integrasi Pasar Bebas (MEA, AFTA, RCEP)",
+    "paket": "Bab V: Ekonomi Kreatif & Keunggulan Ekonomi - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Kerja sama perdagangan bebas antara sepuluh negara anggota ASEAN dan Republik Rakyat Tiongkok yang mulai berlaku penuh sejak 1 Januari 2010 dikenal dengan nama ACFTA (ASEAN–China Free Trade Area). Tantangan nyata yang dihadapi oleh pelaku industri tekstil, alas kaki, dan mainan UMKM di In- donesia akibat berlakunya ACFTA adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Dihapuskannya penggunaan mata uang Rupiah di seluruh pasar tradisional Pulau Jawa"
+      },
+      {
+        "label": "B",
+        "teks": "Terhentinya seluruh pasokan bahan baku komponen elektronik dari Tiongkok ke Indonesia"
+      },
+      {
+        "label": "C",
+        "teks": "Ditolaknya seluruh ekspor batu bara dan minyak kelapa sawit Indonesia oleh pasar Tiongkok"
+      },
+      {
+        "label": "D",
+        "teks": "Membanjirnya produk manufaktur asal Tiongkok dengan harga yang sangat murah di pasar do- mestik akibat efisiensi produksi skala besar (economies of scale), sehingga produsen lokal dituntut meningkatkan efisiensi, kualitas, dan inovasi desain"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "ACFTA menuntut UMKM Indonesia meningkatkan efisiensi dan inovasi desain menghadapi serbuan produk manufaktur murah asal Tiongkok.",
+    "valid": true
+  },
+  {
+    "nomor": 20,
+    "nomor_global": 180,
+    "bab_angka": 5,
+    "bab_nama": "Bab V: Ekonomi Kreatif & Keunggulan Ekonomi",
+    "materi": "Konsep Ekonomi Kreatif, Perlindungan Hak Kekayaan Intelektual (HaKI), 17 Subsektor Industri Kreatif Nusantara, Pusat-Pusat Keunggulan Ekonomi Nasional (PT Freeport, Kilang Balongan/Cilacap, Batik), serta Integrasi Pasar Bebas (MEA, AFTA, RCEP)",
+    "paket": "Bab V: Ekonomi Kreatif & Keunggulan Ekonomi - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Pada bulan November 2020, sepuluh negara ASEAN bersama lima negara mitra dagang utama (Tiongkok, Jepang, Korea Selatan, Australia, dan Selandia Baru) menandatangani perjanjian blok perdagangan bebas terbe- sar di dunia yang mencakup sekitar 30% populasi dan PDB global, yaitu ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "RCEP (Regional Comprehensive Economic Partnership)"
+      },
+      {
+        "label": "B",
+        "teks": "NAFTA (North American Free Trade Agreement)"
+      },
+      {
+        "label": "C",
+        "teks": "EFTA (European Free Trade Association)"
+      },
+      {
+        "label": "D",
+        "teks": "OPEC (Organization of the Petroleum Exporting Countries)"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Blok perdagangan bebas terbesar yang melibatkan 10 negara ASEAN dan 5 negara mitra (Tiongkok, Jepang, Korsel, Australia, Selandia Baru) adalah RCEP.",
+    "valid": true
+  },
+  {
+    "nomor": 21,
+    "nomor_global": 181,
+    "bab_angka": 5,
+    "bab_nama": "Bab V: Ekonomi Kreatif & Keunggulan Ekonomi",
+    "materi": "Konsep Ekonomi Kreatif, Perlindungan Hak Kekayaan Intelektual (HaKI), 17 Subsektor Industri Kreatif Nusantara, Pusat-Pusat Keunggulan Ekonomi Nasional (PT Freeport, Kilang Balongan/Cilacap, Batik), serta Integrasi Pasar Bebas (MEA, AFTA, RCEP)",
+    "paket": "Bab V: Ekonomi Kreatif & Keunggulan Ekonomi - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Uni Eropa (European Union) merupakan bentuk integrasi ekonomi regional paling maju di dunia yang telah mencapai tahap Pasar Tunggal (Single Market) dan Uni Moneter (penggunaan mata uang tunggal Euro oleh negara-negara zona Euro). Tantangan nontarif yang sering dihadapi komoditas ekspor perkebunan dan kehutanan Indonesia (seperti kopi, kakao, kayu olahan, dan kelapa sawit) untuk menembus pasar tunggal Uni Eropa adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Kewajiban mengangkut seluruh barang ekspor menggunakan kereta api darat dari Jakarta ke Brussel"
+      },
+      {
+        "label": "B",
+        "teks": "Ketatnya persyaratan standar mutu kesehatan pangan, sertifikasi kelestarian lingkungan/bebas defor- estasi (SVLK / EUDR), dan jejak karbon rendah"
+      },
+      {
+        "label": "C",
+        "teks": "Larangan penggunaan kemasan berlabel bahasa Inggris pada seluruh peti kemas ekspor"
+      },
+      {
+        "label": "D",
+        "teks": "Tidak adanya masyarakat Eropa yang mengonsumsi kopi, cokelat, maupun produk kayu"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Pasar tunggal Uni Eropa menerapkan standar mutu pangan dan sertifikasi keberlanjutan lingkungan/bebas deforestasi yang ketat.",
+    "valid": true
+  },
+  {
+    "nomor": 22,
+    "nomor_global": 182,
+    "bab_angka": 5,
+    "bab_nama": "Bab V: Ekonomi Kreatif & Keunggulan Ekonomi",
+    "materi": "Konsep Ekonomi Kreatif, Perlindungan Hak Kekayaan Intelektual (HaKI), 17 Subsektor Industri Kreatif Nusantara, Pusat-Pusat Keunggulan Ekonomi Nasional (PT Freeport, Kilang Balongan/Cilacap, Batik), serta Integrasi Pasar Bebas (MEA, AFTA, RCEP)",
+    "paket": "Bab V: Ekonomi Kreatif & Keunggulan Ekonomi - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Pemberlakuan pasar bebas dunia (MEA, ACFTA, RCEP, WTO) membawa peluang positif sekaligus ancaman negatif bagi perekonomian nasional. Pasangan peluang positif dan ancaman negatif pasar bebas yang tepat adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Pasar bebas hanya memberikan keuntungan mutlak tanpa menimbulkan persaingan usaha sama sekali"
+      },
+      {
+        "label": "B",
+        "teks": "Peluang: tertutupnya seluruh pabrik di dalam negeri; Ancaman: meningkatnya ekspor kerajinan lokal ke mancanegara"
+      },
+      {
+        "label": "C",
+        "teks": "Peluang: naiknya tarif bea masuk hingga 100%; Ancaman: hilangnya seluruh barang impor dari pasar swalayan"
+      },
+      {
+        "label": "D",
+        "teks": "Peluang: terbukanya pasar ekspor tanpa bea masuk yang memacu devisa dan transfer teknologi; Ancaman: tersingkirnya produk UMKM lokal yang kurang efisien serta masuknya tenaga kerja asing terampil yang menggeser pekerja lokal tak bersertifikat"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Peluang pasar bebas: perluasan ekspor & alih teknologi; Ancaman: tersingkirnya produk lokal tak efisien & persaingan tenaga kerja terampil.",
+    "valid": true
+  },
+  {
+    "nomor": 23,
+    "nomor_global": 183,
+    "bab_angka": 5,
+    "bab_nama": "Bab V: Ekonomi Kreatif & Keunggulan Ekonomi",
+    "materi": "Konsep Ekonomi Kreatif, Perlindungan Hak Kekayaan Intelektual (HaKI), 17 Subsektor Industri Kreatif Nusantara, Pusat-Pusat Keunggulan Ekonomi Nasional (PT Freeport, Kilang Balongan/Cilacap, Batik), serta Integrasi Pasar Bebas (MEA, AFTA, RCEP)",
+    "paket": "Bab V: Ekonomi Kreatif & Keunggulan Ekonomi - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Pemerintah bersama Kementerian Perindustrian dan Badan Standardisasi Nasional (BSN) menerapkan kewajiban Standar Nasional Indonesia (SNI) bagi produk-produk yang beredar di pasar do- mestik (seperti helm pengaman, mainan anak, peralatan listrik, tabung LPG, dan baja konstruksi). Fungsi strategis penerapan wajib SNI di tengah era pasar bebas adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Melindungi keselamatan dan kesehatan konsumen Indonesia dari barang impor berisiko/berkualitas buruk sekaligus meningkatkan daya saing mutu produk industri dalam negeri"
+      },
+      {
+        "label": "B",
+        "teks": "Mempersulit pengrajin batik dan kuliner tradisional agar tidak bisa berjualan di desa"
+      },
+      {
+        "label": "C",
+        "teks": "Membebaskan seluruh barang impor berbahaya dari pemeriksaan bea cukai di pelabuhan"
+      },
+      {
+        "label": "D",
+        "teks": "Menurunkan kualitas produk buatan pabrik Indonesia agar tidak laku di luar negeri"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Penerapan wajib SNI melindungi keselamatan konsumen dalam negeri sekaligus menjaga standar mutu industri nasional.",
+    "valid": true
+  },
+  {
+    "nomor": 24,
+    "nomor_global": 184,
+    "bab_angka": 5,
+    "bab_nama": "Bab V: Ekonomi Kreatif & Keunggulan Ekonomi",
+    "materi": "Konsep Ekonomi Kreatif, Perlindungan Hak Kekayaan Intelektual (HaKI), 17 Subsektor Industri Kreatif Nusantara, Pusat-Pusat Keunggulan Ekonomi Nasional (PT Freeport, Kilang Balongan/Cilacap, Batik), serta Integrasi Pasar Bebas (MEA, AFTA, RCEP)",
+    "paket": "Bab V: Ekonomi Kreatif & Keunggulan Ekonomi - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Gerakan nasional Bangga Buatan Indonesia (BBI) dan kebijakan peningkatan penggunaan Tingkat Komponen Dalam Negeri (TKDN) dalam pengadaan barang/jasa pemerintah maupun industri elektronik/otomotif bertujuan untuk ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Melarang perusahaan asing membangun pabrik perakitan komponen di wilayah Indonesia"
+      },
+      {
+        "label": "B",
+        "teks": "Mewajibkan seluruh instansi pemerintah membeli barang impor mewah dari luar negeri"
+      },
+      {
+        "label": "C",
+        "teks": "Memperkuat permintaan pasar domestik terhadap produk UMKM dan industri nasional, mengurangi ketergantungan impor, serta menciptakan efek berganda lapangan kerja di dalam negeri"
+      },
+      {
+        "label": "D",
+        "teks": "Menghapuskan seluruh kegiatan ekspor produk kreatif Indonesia ke pasar global"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Gerakan Bangga Buatan Indonesia (BBI) dan kebijakan TKDN memperkuat pasar domestik bagi UMKM dan industri dalam negeri.",
+    "valid": true
+  },
+  {
+    "nomor": 25,
+    "nomor_global": 185,
+    "bab_angka": 5,
+    "bab_nama": "Bab V: Ekonomi Kreatif & Keunggulan Ekonomi",
+    "materi": "Konsep Ekonomi Kreatif, Perlindungan Hak Kekayaan Intelektual (HaKI), 17 Subsektor Industri Kreatif Nusantara, Pusat-Pusat Keunggulan Ekonomi Nasional (PT Freeport, Kilang Balongan/Cilacap, Batik), serta Integrasi Pasar Bebas (MEA, AFTA, RCEP)",
+    "paket": "Bab V: Ekonomi Kreatif & Keunggulan Ekonomi - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Seorang pelajar SMP ingin merintis usaha kreatif (studentpreneur) membuat cendera mata gantungan kunci dan tas kanvas bergambar tokoh pahlawan serta satwa endemik Indonesia yang dipasarkan melalui media sosial sekolah. Langkah pertama paling tepat yang mencerminkan integrasi ekonomi kreatif, literasi digital, dan cinta tanah air adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Mengambil gambar berhak cipta milik seniman lain di internet tanpa izin untuk dicetak dan diklaim sebagai karya sendiri"
+      },
+      {
+        "label": "B",
+        "teks": "Merancang ilustrasi orisinal karya sendiri (menghargai HaKI), menggunakan bahan kanvas ramah lingkungan lokal, menghitung harga pokok produksi secara rasional, dan mempromosikannya dengan konten edukatif yang santun"
+      },
+      {
+        "label": "C",
+        "teks": "Mengimpor gantungan kunci plastik jadi dari luar negeri lalu menempelkan label palsu buatan sendiri"
+      },
+      {
+        "label": "D",
+        "teks": "Menjual produk dengan harga sepuluh kali lipat di atas harga wajar melalui paksaan kepada adik kelas"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Merancang karya orisinal (menghargai HaKI), memakai bahan ramah lingkungan lokal, dan promosi digital santun adalah wujud studentpreneur kreatif.",
+    "valid": true
+  },
+  {
+    "nomor": 26,
+    "nomor_global": 186,
+    "bab_angka": 5,
+    "bab_nama": "Bab V: Ekonomi Kreatif & Keunggulan Ekonomi",
+    "materi": "Konsep Ekonomi Kreatif, Perlindungan Hak Kekayaan Intelektual (HaKI), 17 Subsektor Industri Kreatif Nusantara, Pusat-Pusat Keunggulan Ekonomi Nasional (PT Freeport, Kilang Balongan/Cilacap, Batik), serta Integrasi Pasar Bebas (MEA, AFTA, RCEP)",
+    "paket": "Bab V: Ekonomi Kreatif & Keunggulan Ekonomi - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Perhatikan bagan 17 Subsektor Ekonomi Kreatif Indonesia (Perpres No. 142 Tahun 2018 & UU No. 24 Tahun 2019) beserta kontribusi utamanya terhadap PDB Ekonomi Kreatif nasional berikut! BAGAN EKOSISTEM 17 SUBSEKTOR EKONOMI KREATIF INDONESIA 3 Subsektor Penyumbang PDB Terbesar: (1) Kuliner (±41%), (2) Fesyen (±17%), (3) Kriya/Kerajinan (±15%) Subsektor Digital, Media, & Desain: (4) Aplikasi, (5) Pengembangan Permainan (Game), (6) Animasi, Video, & Film, (7) Fotografi, (8) Desain Komunikasi Visual (DKV), (9) Desain Produk, (10) Desain Interior, (11) Arsitektur, (12) Musik, (13) Penerbitan, (14) Periklanan, (15) Seni Pertunjukan, (16) Seni Rupa, (17) Televisi & Radio Berdasarkan bagan di atas, mengapa pengembangan subsektor Aplikasi, Pengembangan Permainan (Game), serta Animasi & Film ditetapkan pemerintah sebagai subsektor prioritas masa depan yang bersinergi dengan tiga subsektor terbesar (Kuliner, Fesyen, dan Kriya)?",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Karena pemerintah berencana menutup seluruh usaha kuliner, batik, dan kerajinan kayu tradisional di daerah"
+      },
+      {
+        "label": "B",
+        "teks": "Karena subsektor Aplikasi dan Animasi membutuhkan pembabatan hutan lindung dan lahan tambang terbuka yang sangat luas"
+      },
+      {
+        "label": "C",
+        "teks": "Karena subsektor berbasis digital (Aplikasi, Gim, Animasi) memiliki daya ungkit nilai tambah intelektual tanpa batas fisik serta berperan sebagai platform pemasaran, branding, dan distribusi global bagi produk Kuliner, Fesyen, dan Kriya Nusantara"
+      },
+      {
+        "label": "D",
+        "teks": "Karena produk gim dan animasi digital tidak dapat dilindungi oleh Undang-Undang Hak Cipta"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Subsektor Aplikasi, Gim, dan Animasi memiliki skalabilitas digital global tanpa batas fisik dan berperan sebagai pengungkit pemasaran bagi produk Kuliner, Fesyen, dan Kriya.",
+    "valid": true
+  },
+  {
+    "nomor": 27,
+    "nomor_global": 187,
+    "bab_angka": 5,
+    "bab_nama": "Bab V: Ekonomi Kreatif & Keunggulan Ekonomi",
+    "materi": "Konsep Ekonomi Kreatif, Perlindungan Hak Kekayaan Intelektual (HaKI), 17 Subsektor Industri Kreatif Nusantara, Pusat-Pusat Keunggulan Ekonomi Nasional (PT Freeport, Kilang Balongan/Cilacap, Batik), serta Integrasi Pasar Bebas (MEA, AFTA, RCEP)",
+    "paket": "Bab V: Ekonomi Kreatif & Keunggulan Ekonomi - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Keberadaan pusat keunggulan ekonomi seperti Kilang Minyak Pertamina (di Dumai, Cilacap, Balikpapan, Bontang, Kasim, dan Cepu), Tambang Tembaga & Emas Grasberg di Mimika (Papua), serta Sentra Industri Batik di Pekalongan, Solo, dan Yogyakarta memberikan dampak positif berlapis (multiplier effect) ter- hadap wilayah sekitarnya, yaitu ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Menghilangkan kebutuhan akan sarana transportasi darat, laut, maupun udara"
+      },
+      {
+        "label": "B",
+        "teks": "Menyebabkan seluruh penduduk usia produktif meninggalkan wilayah tersebut sehingga daerah men- jadi kosong"
+      },
+      {
+        "label": "C",
+        "teks": "Menurunkan pendapatan asli daerah (PAD) dan menghentikan arus perdagangan antarpulau"
+      },
+      {
+        "label": "D",
+        "teks": "Membangkitkan pembangunan infrastruktur jalan/pelabuhan/bandara, menyerap tenaga kerja lokal, menumbuhkan lembaga sosial-pendidikan-kesehatan, serta memicu tumbuhnya usaha pendukung UMKM di sekitar kawasan"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Pusat keunggulan ekonomi (Kilang Pertamina, Tambang Grasberg, Sentra Batik) mem- berikan multiplier effect berupa pembangunan infrastruktur transportasi, serapan tenaga kerja, tumbuh- nya lembaga pendidikan/kesehatan, dan geliat UMKM.",
+    "valid": true
+  },
+  {
+    "nomor": 28,
+    "nomor_global": 188,
+    "bab_angka": 5,
+    "bab_nama": "Bab V: Ekonomi Kreatif & Keunggulan Ekonomi",
+    "materi": "Konsep Ekonomi Kreatif, Perlindungan Hak Kekayaan Intelektual (HaKI), 17 Subsektor Industri Kreatif Nusantara, Pusat-Pusat Keunggulan Ekonomi Nasional (PT Freeport, Kilang Balongan/Cilacap, Batik), serta Integrasi Pasar Bebas (MEA, AFTA, RCEP)",
+    "paket": "Bab V: Ekonomi Kreatif & Keunggulan Ekonomi - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Perhatikan tabel perbandingan jenis-jenis perlindungan Hak Kekayaan Intelektual (HaKI) bagi pelaku ekonomi kreatif di Indonesia berikut! TABEL INSTRUMEN PERLINDUNGAN HAK KEKAYAAN INTELEKTUAL (HaKI) Jenis HaKI Dasar Hukum di Indonesia Objek Karya Kreatif yang Dilindungi 1. Hak Cipta (Copyright) UU No. 28 Tahun 2014 Karya ilmu pengetahuan, seni, dan sastra (buku, lagu/musik, film, animasi, fotografi, motif batik, program komputer/aplikasi) 2. Paten (Patent) UU No. 13 Tahun 2016 Invensi baru di bidang teknologi (mesin pengolahan baru, formula proses industri) 3. Merek (Trademark) UU No. 20 Tahun 2016 Tanda pembeda berupa gambar, logo, atau nama dagang barang dan jasa 4. Indikasi Geografis UU No. 20 Tahun 2016 Tanda yang menunjukkan daerah asal suatu barang yang karena faktor lingkungan geografis/manusia memberikan reputasi dan kualitas khas (misal: Kopi Arabika Gayo, Lada Putih Muntok, Ubi Cilembu, Tenun Ikat Sikka) Berdasarkan tabel di atas, mengapa pendaftaran sertifikat Indikasi Geografis atas komoditas unggulan daerah seperti Kopi Arabika Gayo (Aceh), Kopi Kintamani (Bali), dan Garam Amed sangat penting bagi kesejahteraan petani serta perajin lokal di pasar internasional?",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Karena mencegah pemalsuan atau klaim sepihak oleh pihak luar negeri atas nama komoditas khas daerah tersebut, sekaligus meningkatkan reputasi keaslian dan harga jual (premium price) yang dinikmati langsung oleh komunitas petani/perajin setempat"
+      },
+      {
+        "label": "B",
+        "teks": "Karena memindahkan hak kepemilikan kebun kopi petani lokal kepada perusahaan multinasional asing"
+      },
+      {
+        "label": "C",
+        "teks": "Karena melarang komoditas tersebut diekspor ke pasar Amerika Serikat, Eropa, maupun Asia Timur"
+      },
+      {
+        "label": "D",
+        "teks": "Karena menyamakan harga kopi spesialti berkualitas tinggi dengan kopi campuran kualitas terendah"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Sertifikat Indikasi Geografis melindungi keaslian nama komoditas khas daerah (seperti Kopi Gayo dan Kopi Kintamani) dari klaim pihak luar sekaligus memberikan harga jual premium bagi petani lokal.",
+    "valid": true
+  },
+  {
+    "nomor": 29,
+    "nomor_global": 189,
+    "bab_angka": 5,
+    "bab_nama": "Bab V: Ekonomi Kreatif & Keunggulan Ekonomi",
+    "materi": "Konsep Ekonomi Kreatif, Perlindungan Hak Kekayaan Intelektual (HaKI), 17 Subsektor Industri Kreatif Nusantara, Pusat-Pusat Keunggulan Ekonomi Nasional (PT Freeport, Kilang Balongan/Cilacap, Batik), serta Integrasi Pasar Bebas (MEA, AFTA, RCEP)",
+    "paket": "Bab V: Ekonomi Kreatif & Keunggulan Ekonomi - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Pemberlakuan Masyarakat Ekonomi ASEAN (MEA / ASEAN Economic Community) sejak akhir tahun 2015 men- jadikan kawasan Asia Tenggara sebagai pasar tunggal dan basis produksi bersama yang membuka arus bebas barang, jasa, investasi, modal, serta tenaga kerja terampil (skilled labor). Tantangan sekaligus peluang utama bagi lulusan pendidikan dan tenaga kerja Indonesia dalam era MEA adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Penutupan seluruh perusahaan swasta di Indonesia bagi tenaga kerja lulusan perguruan tinggi dalam negeri"
+      },
+      {
+        "label": "B",
+        "teks": "Dapat bekerja sebagai dokter, insinyur, atau akuntan di seluruh negara ASEAN tanpa memerlukan ijazah maupun sertifikat keahlian apa pun"
+      },
+      {
+        "label": "C",
+        "teks": "Wajib memiliki sertifikasi kompetensi profesi yang diakui bersama (Mutual Recognition Arrangements / MRA), penguasaan bahasa asing, dan etos kerja tinggi agar mampu bersaing di dalam negeri maupun bekerja secara profesional di negara ASEAN lainnya"
+      },
+      {
+        "label": "D",
+        "teks": "Penghapusan standar mutu barang dan jasa di seluruh kawasan Asia Tenggara"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Menghadapi arus bebas tenaga kerja terampil di MEA menuntut sertifikasi kompetensi profesi (MRA), penguasaan bahasa asing, dan etos kerja unggul.",
+    "valid": true
+  },
+  {
+    "nomor": 30,
+    "nomor_global": 190,
+    "bab_angka": 5,
+    "bab_nama": "Bab V: Ekonomi Kreatif & Keunggulan Ekonomi",
+    "materi": "Konsep Ekonomi Kreatif, Perlindungan Hak Kekayaan Intelektual (HaKI), 17 Subsektor Industri Kreatif Nusantara, Pusat-Pusat Keunggulan Ekonomi Nasional (PT Freeport, Kilang Balongan/Cilacap, Batik), serta Integrasi Pasar Bebas (MEA, AFTA, RCEP)",
+    "paket": "Bab V: Ekonomi Kreatif & Keunggulan Ekonomi - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Perhatikan bagan perbandingan empat organisasi dan perjanjian perdagangan bebas regional/multilateral berikut! BAGAN ORGANISASI DAN PERJANJIAN PASAR BEBAS INTERNASIONAL 1. AFTA (ASEAN Free Trade Area, 1992): Penurunan tarif bea masuk komoditas antarnegara anggota ASEAN hingga 0–5% melalui skema CEPT 2. ACFTA (ASEAN–China Free Trade Area): Kawasan perdagan- gan bebas antara negara-negara ASEAN dan Tiongkok 3. APEC (Asia-Pacific Economic Cooperation, 1989): Kerja sama ekonomi 21 ekonomi lingkar Samudra Pasifik (Bogor Goals 1994) 4. RCEP (Regional Comprehensive Economic Partnership): Blok perdagangan bebas terbesar dunia yang menyatukan 10 ne- gara ASEAN dengan 5 mitra utama (Tiongkok, Jepang, Korea Selatan, Australia, Selandia Baru) Berdasarkan bagan di atas, skema utama yang digunakan oleh AFTA untuk menghapus atau menu- runkan tarif bea masuk barang perdagangan di antara negara-negara anggota ASEAN hingga 0%–5% adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Skema Kuota Proteksi Mutlak dan Embargo Ekonomi"
+      },
+      {
+        "label": "B",
+        "teks": "Skema Common Effective Preferential Tariff (CEPT)"
+      },
+      {
+        "label": "C",
+        "teks": "Skema Politik Dumping Ekstrem antarbenua"
+      },
+      {
+        "label": "D",
+        "teks": "Skema Monopoli Serikat Dagang Hindia Timur"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "AFTA menggunakan skema Common Effective Preferential Tariff (CEPT) untuk menu- runkan tarif bea masuk perdagangan barang antarnegara ASEAN menjadi 0%–5%.",
+    "valid": true
+  },
+  {
+    "nomor": 31,
+    "nomor_global": 191,
+    "bab_angka": 5,
+    "bab_nama": "Bab V: Ekonomi Kreatif & Keunggulan Ekonomi",
+    "materi": "Konsep Ekonomi Kreatif, Perlindungan Hak Kekayaan Intelektual (HaKI), 17 Subsektor Industri Kreatif Nusantara, Pusat-Pusat Keunggulan Ekonomi Nasional (PT Freeport, Kilang Balongan/Cilacap, Batik), serta Integrasi Pasar Bebas (MEA, AFTA, RCEP)",
+    "paket": "Bab V: Ekonomi Kreatif & Keunggulan Ekonomi - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Indonesia memi- liki cadangan bijih nikel, tembaga, dan bauksit yang sangat besar. Dahulu, sebagian besar mineral terse- but diekspor dalam bentuk tanah/bijih mentah (raw material), namun kini pemerintah mewajibkan pen- golahan dan pemurnian di dalam negeri melalui pembangunan pabrik smelter serta ekosistem pabrik baterai kendaraan listrik (EV battery). Dampak strategis kebijakan ini bagi pusat keunggulan ekonomi nasional adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Mempercepat habisnya cadangan mineral tanpa menghasilkan pendapatan bagi daerah penghasil"
+      },
+      {
+        "label": "B",
+        "teks": "Menurunkan harga jual komoditas tambang Indonesia di pasar dunia hingga menjadi tidak bernilai"
+      },
+      {
+        "label": "C",
+        "teks": "Menghilangkan kesempatan bagi insinyur metalurgi Indonesia untuk bekerja di pabrik pengolahan"
+      },
+      {
+        "label": "D",
+        "teks": "Mengubah keunggulan komparatif (kekayaan bahan mentah) menjadi keunggulan kompetitif (industri bernilai tambah tinggi), meningkatkan penerimaan pajak/devisa negara, dan membuka ribuan lapangan kerja teknik bagi SDM Indonesia"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Hilirisasi mineral melalui smelter dan pabrik baterai mengubah keunggulan komparatif bahan mentah menjadi keunggulan kompetitif bernilai tambah tinggi.",
+    "valid": true
+  },
+  {
+    "nomor": 32,
+    "nomor_global": 192,
+    "bab_angka": 5,
+    "bab_nama": "Bab V: Ekonomi Kreatif & Keunggulan Ekonomi",
+    "materi": "Konsep Ekonomi Kreatif, Perlindungan Hak Kekayaan Intelektual (HaKI), 17 Subsektor Industri Kreatif Nusantara, Pusat-Pusat Keunggulan Ekonomi Nasional (PT Freeport, Kilang Balongan/Cilacap, Batik), serta Integrasi Pasar Bebas (MEA, AFTA, RCEP)",
+    "paket": "Bab V: Ekonomi Kreatif & Keunggulan Ekonomi - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Berdasarkan teknik pembuatannya, kain batik Nusantara dibedakan menjadi tiga jenis utama, yaitu: (1) Batik Tulis (dikerjakan secara man- ual menggunakan canting tembaga dan lilin malam panas dengan waktu pengerjaan berminggu-minggu hingga berbulan-bulan), (2) Batik Cap (menggunakan stempel tembaga bermotif), dan (3) Batik Lukis (dilukis langsung di atas kain putih). Mengapa sehelai kain Batik Tulis asli memiliki harga ekonomi yang jauh lebih tinggi dibandingkan kain tekstil bermotif batik hasil mesin cetak pabrik (printing)?",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Karena Batik Tulis memuat nilai kreativitas seni yang unik (tidak ada dua helai yang persis identik), filosofi budaya mendalam, ketelitian keterampilan tangan (craftsmanship) tinggi, serta waktu pengerjaan yang panjang"
+      },
+      {
+        "label": "B",
+        "teks": "Karena kain tekstil mesin cetak pabrik menggunakan lilin malam asli dan canting tembaga tradisional"
+      },
+      {
+        "label": "C",
+        "teks": "Karena Batik Tulis diproduksi secara massal jutaan meter per jam oleh mesin otomatis tanpa tenaga manusia"
+      },
+      {
+        "label": "D",
+        "teks": "Karena Batik Tulis dilarang dipakai oleh masyarakat umum dan hanya boleh disimpan di gudang tekstil"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Batik Tulis bernilai ekonomi tinggi karena keunikan karya seni manual (canting dan malam), filosofi motif, serta ketelitian dan waktu pengerjaan yang panjang.",
+    "valid": true
+  },
+  {
+    "nomor": 33,
+    "nomor_global": 193,
+    "bab_angka": 5,
+    "bab_nama": "Bab V: Ekonomi Kreatif & Keunggulan Ekonomi",
+    "materi": "Konsep Ekonomi Kreatif, Perlindungan Hak Kekayaan Intelektual (HaKI), 17 Subsektor Industri Kreatif Nusantara, Pusat-Pusat Keunggulan Ekonomi Nasional (PT Freeport, Kilang Balongan/Cilacap, Batik), serta Integrasi Pasar Bebas (MEA, AFTA, RCEP)",
+    "paket": "Bab V: Ekonomi Kreatif & Keunggulan Ekonomi - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Perhatikan tabel perbandingan rantai nilai (value chain) komoditas Kakao di Kabupaten Luwu sebelum dan sesudah program pember- dayaan Ekonomi Kreatif berikut! TABEL TRANSFORMASI NILAI TAMBAH KOMODITAS KAKAO LUWU Tahap Pengolahan Bentuk Produk yang Dijual Harga Jual Rata-Rata / Kg Pasar Sasaran Tahap I (Hulu Mentah) Biji kakao basah tanpa fermentasi Rp28.000,00 / kg Tengkulak pengumpul desa Tahap II (Setengah Jadi) Biji kakao kering hasil fermentasi terstandar Rp55.000,00 / kg Pabrik pengolahan nasional Tahap III (Ekonomi Kreatif) Cokelat batang artisanal (bean-to- bar) dengan kemasan desain motif Toraja & pemasaran digital Rp220.000,00 / kg setara Wisatawan, kafe premium, & ekspor ritel Berdasarkan tabel di atas, berapakah kenaikan nilai tambah per kilogram apabila koperasi pemuda desa mengolah biji kakao basah (Tahap I) hingga menjadi produk Cokelat Batang Artisanal (Tahap III), dan subsektor ekonomi kreatif apa saja yang berkolaborasi pada Tahap III?",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Kenaikan nilai tambah sebesar Rp27.000,00/kg; hanya melibatkan sektor pertambangan batu bara"
+      },
+      {
+        "label": "B",
+        "teks": "Kenaikan nilai tambah sebesar Rp192.000,00/kg (naik hampir 8 kali lipat dari Rp28.000,00 men- jadi Rp220.000,00); melibatkan kolaborasi subsektor Kuliner, Desain Komunikasi Visual (desain ke- masan), dan Aplikasi/Pemasaran Digital"
+      },
+      {
+        "label": "C",
+        "teks": "Penurunan nilai tambah sebesar Rp165.000,00/kg karena biaya kemasan lebih mahal dari harga coke- lat"
+      },
+      {
+        "label": "D",
+        "teks": "Kenaikan nilai tambah sebesar Rp55.000,00/kg tanpa melibatkan kreativitas desain maupun kuliner"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Kenaikan nilai tambah dari Tahap I (Rp28.000,00) ke Tahap III (Rp220.000,00) adalah Rp220.000, 00 −Rp28.000, 00 = Rp192.000, 00/kg melalui kolaborasi Kuliner, DKV (kemasan), dan Ap- likasi Digital.",
+    "valid": true
+  },
+  {
+    "nomor": 34,
+    "nomor_global": 194,
+    "bab_angka": 5,
+    "bab_nama": "Bab V: Ekonomi Kreatif & Keunggulan Ekonomi",
+    "materi": "Konsep Ekonomi Kreatif, Perlindungan Hak Kekayaan Intelektual (HaKI), 17 Subsektor Industri Kreatif Nusantara, Pusat-Pusat Keunggulan Ekonomi Nasional (PT Freeport, Kilang Balongan/Cilacap, Batik), serta Integrasi Pasar Bebas (MEA, AFTA, RCEP)",
+    "paket": "Bab V: Ekonomi Kreatif & Keunggulan Ekonomi - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Pemerintah men- gadakan berbagai festival kreatif tahunan seperti Inacraft, Jakarta Fashion Week, Festival Film Indonesia, dan Pekan Kebudayaan Nasional, serta membentuk badan khusus yang memfasilitasi pembiayaan berba- sis Kekayaan Intelektual (IP-Based Financing). Tujuan utama kebijakan pemerintah tersebut terhadap ekosistem ekonomi kreatif nasional adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Mengimpor barang kerajinan tiruan dari luar negeri untuk menggantikan produk perajin Nusantara"
+      },
+      {
+        "label": "B",
+        "teks": "Membatasi perajin daerah agar tidak boleh memamerkan produknya di luar kabupaten asalnya"
+      },
+      {
+        "label": "C",
+        "teks": "Mewajibkan seluruh seniman dan desainer beralih profesi menjadi pegawai administrasi kantor"
+      },
+      {
+        "label": "D",
+        "teks": "Mempertemukan kreator lokal dengan pembeli/investor domestik maupun global, memperluas akses permodalan usaha kreatif, serta meningkatkan apresiasi masyarakat terhadap karya anak bangsa"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Pameran kreatif (Inacraft, JFW) dan pembiayaan berbasis HaKI bertujuan memper- luas akses pasar domestik/global, memfasilitasi permodalan kreator, dan meningkatkan apresiasi karya lokal.",
+    "valid": true
+  },
+  {
+    "nomor": 35,
+    "nomor_global": 195,
+    "bab_angka": 5,
+    "bab_nama": "Bab V: Ekonomi Kreatif & Keunggulan Ekonomi",
+    "materi": "Konsep Ekonomi Kreatif, Perlindungan Hak Kekayaan Intelektual (HaKI), 17 Subsektor Industri Kreatif Nusantara, Pusat-Pusat Keunggulan Ekonomi Nasional (PT Freeport, Kilang Balongan/Cilacap, Batik), serta Integrasi Pasar Bebas (MEA, AFTA, RCEP)",
+    "paket": "Bab V: Ekonomi Kreatif & Keunggulan Ekonomi - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Masuknya Indonesia ke dalam perjanjian kemitraan ekonomi komprehensif regional (RCEP) membuka akses pasar bebas ke negara-negara mitra besar seperti Tiongkok, Jepang, Korea Selatan, Australia, dan Selandia Baru, namun sekaligus membuka pintu masuknya barang impor dari negara-negara tersebut. Strategi paling tepat yang harus dilakukan pelaku UMKM dan industri kreatif Indonesia agar memenangkan persaingan di pasar RCEP adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Meningkatkan standarisasi mutu dan sertifikasi produk (SNI, Halal, ISO), menonjolkan keunikan identi- tas budaya lokal yang tidak dimiliki negara lain, serta memanfaatkan platform digital lintas negara (cross- border e-commerce)"
+      },
+      {
+        "label": "B",
+        "teks": "Menurunkan kualitas bahan baku produk lokal agar cepat rusak saat dipakai konsumen"
+      },
+      {
+        "label": "C",
+        "teks": "Meniru merek dagang perusahaan asing secara ilegal tanpa mendaftarkan merek sendiri"
+      },
+      {
+        "label": "D",
+        "teks": "Menunggu bantuan subsidi tunai tanpa melakukan inovasi desain maupun efisiensi produksi"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Memenangkan persaingan di pasar bebas RCEP menuntut standarisasi mutu (SNI/Halal/ISO), keunikan berbasis budaya lokal, dan pemasaran digital lintas batas.",
+    "valid": true
+  },
+  {
+    "nomor": 36,
+    "nomor_global": 196,
+    "bab_angka": 5,
+    "bab_nama": "Bab V: Ekonomi Kreatif & Keunggulan Ekonomi",
+    "materi": "Konsep Ekonomi Kreatif, Perlindungan Hak Kekayaan Intelektual (HaKI), 17 Subsektor Industri Kreatif Nusantara, Pusat-Pusat Keunggulan Ekonomi Nasional (PT Freeport, Kilang Balongan/Cilacap, Batik), serta Integrasi Pasar Bebas (MEA, AFTA, RCEP)",
+    "paket": "Bab V: Ekonomi Kreatif & Keunggulan Ekonomi - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "[Pilihan Ganda Kompleks — Analisis Ekspor Produk Kreatif & Perdagangan Pasar Bebas] Perhatikan foto asli pameran perdagan- gan internasional Jakarta Fair / Arena PRJ Kemayoran (PT Jakarta International Expo) sebagai ajang promosi produk kreatif nasional dalam persaingan pasar bebas berikut! Pernyataan yang benar mengenai strategi penguatan ekonomi kreatif Indonesia dalam memenangkan persaingan pasar bebas berdasarkan gambar di atas adalah .... (Pilih lebih dari satu jawaban benar) Pernyataan Analisis: (1) Pendaftaran Merek Dagang, Hak Cipta, dan Indikasi Geografis (HaKI) melindungi keunikan produk kreatif Indonesia dari pemalsuan di pasar internasional. (2) Peningkatan kualitas kemasan (packaging), sertifikasi standar mutu internasional (ISO/SNI/Halal), dan pemasaran digital lintas negara (cross-border e-commerce) memperluas pangsa ekspor UMKM. (3) Kolaborasi antara warisan budaya lokal Nusantara dan teknologi desain modern menciptakan unique selling point (keunggulan diferensiasi) yang sulit ditiru oleh produk massal negara lain. (4) Untuk memenangkan persaingan pasar bebas, pelaku ekonomi kreatif Indonesia harus mening- galkan seluruh motif budaya lokal dan meniru merek luar negeri. Pernyataan yang tepat adalah ....",
+    "gambar": [
+      "/soal/ips/kls9_ips_p167_xref6641_1400x932.jpeg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Pernyataan (1), (2), dan (3) benar"
+      },
+      {
+        "label": "B",
+        "teks": "Pernyataan (1) dan (4) saja yang benar"
+      },
+      {
+        "label": "C",
+        "teks": "Pernyataan (2) dan (4) saja yang benar"
+      },
+      {
+        "label": "D",
+        "teks": "Semua pernyataan (1), (2), (3), dan (4) benar"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Perlindungan HaKI (A), sertifikasi mutu & pemasaran digital (B), serta keunikan berbasis budaya lokal (C) adalah kunci memenangkan pasar bebas.",
+    "valid": true
+  },
+  {
+    "nomor": 37,
+    "nomor_global": 197,
+    "bab_angka": 5,
+    "bab_nama": "Bab V: Ekonomi Kreatif & Keunggulan Ekonomi",
+    "materi": "Konsep Ekonomi Kreatif, Perlindungan Hak Kekayaan Intelektual (HaKI), 17 Subsektor Industri Kreatif Nusantara, Pusat-Pusat Keunggulan Ekonomi Nasional (PT Freeport, Kilang Balongan/Cilacap, Batik), serta Integrasi Pasar Bebas (MEA, AFTA, RCEP)",
+    "paket": "Bab V: Ekonomi Kreatif & Keunggulan Ekonomi - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "[Pilihan Ganda Kompleks — Pusat Keunggulan Ekonomi Nasional & Dampaknya] Evaluasilah perny- ataan mengenai pusat-pusat keunggulan ekonomi di Indonesia berikut! Pernyataan yang tepat adalah .... Pernyataan Analisis: (1) Penguasaan mayoritas saham PT Freeport Indonesia (51, 23%) oleh BUMN MIND ID dan pemban- gunan smelter tembaga di Gresik memperkuat kedaulatan dan nilai tambah mineral nasional. (2) Kilang Minyak Cilacap (Jawa Tengah), Kilang Balikpapan (Kalimantan Timur), Kilang Dumai (Riau), dan Kilang Balongan (Jawa Barat) merupakan pusat keunggulan pengolahan energi strategis milik PT Pertamina. (3) Keberadaan pusat keunggulan ekonomi mendorong peningkatan infrastruktur transportasi, penyer- apan tenaga kerja, dan tumbuhnya usaha pendukung (kuliner, kos-kosan, logistik) di daerah sekitar. (4) Pusat keunggulan ekonomi Batik Indonesia hanya terdapat di satu kota saja dan menggunakan bahan baku yang seluruhnya diimpor dari Eropa. Pernyataan yang tepat adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Pernyataan (1), (2), dan (3) benar"
+      },
+      {
+        "label": "B",
+        "teks": "Pernyataan (1) dan (4) saja yang benar"
+      },
+      {
+        "label": "C",
+        "teks": "Pernyataan (2) dan (4) saja yang benar"
+      },
+      {
+        "label": "D",
+        "teks": "Semua pernyataan (1), (2), (3), dan (4) benar"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Akuisisi saham Freeport & smelter Gresik (A), kilang strategis Pertamina (B), dan dampak positif pusat keunggulan ekonomi (C) seluruhnya benar.",
+    "valid": true
+  },
+  {
+    "nomor": 38,
+    "nomor_global": 198,
+    "bab_angka": 5,
+    "bab_nama": "Bab V: Ekonomi Kreatif & Keunggulan Ekonomi",
+    "materi": "Konsep Ekonomi Kreatif, Perlindungan Hak Kekayaan Intelektual (HaKI), 17 Subsektor Industri Kreatif Nusantara, Pusat-Pusat Keunggulan Ekonomi Nasional (PT Freeport, Kilang Balongan/Cilacap, Batik), serta Integrasi Pasar Bebas (MEA, AFTA, RCEP)",
+    "paket": "Bab V: Ekonomi Kreatif & Keunggulan Ekonomi - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "[Tabel Centang Benar / Salah — 17 Subsektor Ekonomi Kreatif & Kewirausahaan] Berilah tanda centang (✓) pada kolom Benar atau Salah untuk setiap pernyataan berikut! Pernyataan Evaluasi: (a) Tiga subsektor penyumbang terbesar terhadap PDB Ekonomi Kreatif Indonesia adalah subsektor Kuliner, Fesyen, dan Kriya (Kerajinan). (b) Pengembangan Permainan (Game Developer), Aplikasi, Desain Komu- nikasi Visual (DKV), serta Film, Animasi, dan Video termasuk dalam 17 subsektor ekonomi kreatif Indonesia. (c) Modal utama dalam ekonomi kreatif adalah eksploitasi batu bara dan minyak mentah sebanyak-banyaknya tanpa memerlukan gagasan maupun kekayaan intelektual. Kombinasi analisis nilai kebenaran (Benar/Salah) yang tepat berturut-turut adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(a) Benar, (b) Benar, (c) Salah"
+      },
+      {
+        "label": "B",
+        "teks": "(a) Benar, (b) Salah, (c) Salah"
+      },
+      {
+        "label": "C",
+        "teks": "(a) Salah, (b) Benar, (c) Benar"
+      },
+      {
+        "label": "D",
+        "teks": "(a) Benar, (b) Benar, (c) Benar"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "(c) Salah, karena modal utama ekonomi kreatif adalah kreativitas, ide, dan Kekayaan Intelektual (HaKI) SDM, bukan eksploitasi tambang fosil.",
+    "valid": true
+  },
+  {
+    "nomor": 39,
+    "nomor_global": 199,
+    "bab_angka": 5,
+    "bab_nama": "Bab V: Ekonomi Kreatif & Keunggulan Ekonomi",
+    "materi": "Konsep Ekonomi Kreatif, Perlindungan Hak Kekayaan Intelektual (HaKI), 17 Subsektor Industri Kreatif Nusantara, Pusat-Pusat Keunggulan Ekonomi Nasional (PT Freeport, Kilang Balongan/Cilacap, Batik), serta Integrasi Pasar Bebas (MEA, AFTA, RCEP)",
+    "paket": "Bab V: Ekonomi Kreatif & Keunggulan Ekonomi - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "[Tabel Centang Benar / Salah — Pusat Keunggulan Ekonomi & Organisasi Pasar Bebas] Evaluasilah kebenaran pernyataan ekonomi berikut! Pernyataan Evaluasi: (a) AFTA (ASEAN Free Trade Area) dan MEA bertujuan menurunkan ham- batan tarif serta memperlancar arus barang, jasa, investasi, dan tenaga kerja terampil di Asia Tenggara. (b) Penerapan wajib Standar Nasional Indonesia (SNI) dan kebijakan Tingkat Komponen Dalam Negeri (TKDN) berfungsi melindungi kon- sumen dan industri nasional di era pasar bebas. (c) PT Freeport Indonesia beroperasi di Provinsi Kalimantan Timur dengan komoditas utama berupa batu bara dan gas alam cair. Kombinasi analisis nilai kebenaran (Benar/Salah) yang tepat berturut-turut adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(a) Benar, (b) Benar, (c) Salah"
+      },
+      {
+        "label": "B",
+        "teks": "(a) Benar, (b) Salah, (c) Salah"
+      },
+      {
+        "label": "C",
+        "teks": "(a) Salah, (b) Benar, (c) Benar"
+      },
+      {
+        "label": "D",
+        "teks": "(a) Benar, (b) Benar, (c) Benar"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "(c) Salah, karena PT Freeport Indonesia beroperasi di Kabupaten Mimika, Provinsi Papua Tengah, dengan komoditas utama tembaga, emas, dan perak.",
+    "valid": true
+  },
+  {
+    "nomor": 40,
+    "nomor_global": 200,
+    "bab_angka": 5,
+    "bab_nama": "Bab V: Ekonomi Kreatif & Keunggulan Ekonomi",
+    "materi": "Konsep Ekonomi Kreatif, Perlindungan Hak Kekayaan Intelektual (HaKI), 17 Subsektor Industri Kreatif Nusantara, Pusat-Pusat Keunggulan Ekonomi Nasional (PT Freeport, Kilang Balongan/Cilacap, Batik), serta Integrasi Pasar Bebas (MEA, AFTA, RCEP)",
+    "paket": "Bab V: Ekonomi Kreatif & Keunggulan Ekonomi - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Sebuah studio gim dan animasi karya pemuda Surabaya berhasil meluncurkan gim edukasi petualangan bertema sejarah Kerajaan Majapahit dan keindahan alam Raja Ampat yang diunduh oleh 2 juta pengguna berbayar di kawasan ASEAN, Jepang, dan Eropa. Pada saat yang sama, stu- dio tersebut berkolaborasi dengan perajin batik dan tenun lokal untuk memproduksi merchandise resmi berlisensi HaKI yang diekspor melalui fasilitas logistik kawasan perdagangan bebas. Analisislah dampak terpadu dari inovasi ekonomi kreatif tersebut terhadap perekonomian dan diplomasi budaya Indonesia!",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Menghasilkan devisa ekspor jasa kreatif dan produk fisik bernilai tambah tinggi tanpa merusak sum- ber daya alam, menyerap tenaga kerja terampil (animator, pemrogram, dan perajin tenun/batik), sekaligus menjadi sarana diplomasi budaya lunak (soft power) yang memperkenalkan sejarah dan pariwisata In- donesia ke dunia"
+      },
+      {
+        "label": "B",
+        "teks": "Menguras cadangan mineral tidak terbarukan di dasar laut Raja Ampat dan merusak situs purbakala Majapahit"
+      },
+      {
+        "label": "C",
+        "teks": "Menyebabkan defisit neraca perdagangan jasa karena seluruh keuntungan disita oleh negara pengun- duh gim"
+      },
+      {
+        "label": "D",
+        "teks": "Menghilangkan lapangan kerja perajin batik tradisional karena digantikan seluruhnya oleh mesin cetak plastik"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Sinergi subsektor Pengembangan Gim/Animasi dengan Fesyen/Kriya berlisensi HaKI menciptakan multiplier effect ekonomi tinggi (devisa ekspor jasa + produk fisik), ramah lingkungan (berbasis modal intelektual), dan memperkuat soft power diplomasi budaya serta pariwisata Indonesia.",
+    "valid": true
+  }
+]

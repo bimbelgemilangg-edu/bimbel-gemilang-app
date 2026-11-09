@@ -1,0 +1,1370 @@
+[
+  {
+    "nomor": 1,
+    "nomor_global": 41,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Perkembangan Ekonomi Digital",
+    "materi": "Evolusi Uang (Kartal, Giral, Elektronik Chip/Server), Peran Lembaga Keuangan (Bank & LKBB), Sistem Pembayaran Digital (QRIS, BI-FAST), Perdagangan Era Digital (E-Commerce B2B, B2C, C2C), serta Literasi dan Keamanan Finansial",
+    "paket": "Bab II: Perkembangan Ekonomi Digital - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Per- hatikan foto transaksi pembayaran digital nontunai (contactless / QRIS) menggunakan ponsel pintar pada terminal kasir di era modern berikut! Sebelum diterapkannya standar QRIS (Quick Response Code Indonesian Standard) oleh Bank In- donesia dan ASPI, seorang pedagang kuliner harus memajang banyak kode QR yang berbeda-beda di mejanya untuk setiap aplikasi pembayaran. Manfaat utama standarisasi satu kode QRIS bagi pelaku UMKM dan konsumen adalah ....",
+    "gambar": [
+      "/soal/ips/kls9_ips_p118_xref4795_850x562.jpeg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Menciptakan interoperabilitas dan efisiensi pembayaran nontunai (satu kode QR dapat dipindai oleh seluruh aplikasi bank dan dompet digital resmi), mempercepat transaksi, serta mencatat riwayat pen- jualan UMKM secara otomatis"
+      },
+      {
+        "label": "B",
+        "teks": "Mewajibkan pedagang UMKM membayar biaya cetak uang logam kepada bank asing"
+      },
+      {
+        "label": "C",
+        "teks": "Melarang penggunaan uang kertas Rupiah di seluruh pasar tradisional perdesaan"
+      },
+      {
+        "label": "D",
+        "teks": "Menghapuskan pengawasan Bank Indonesia terhadap lalu lintas pembayaran nasional"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "QRIS mewujudkan prinsip UNGGUL (Universal, Gampang, Untung, Langsung) melalui interoperabilitas satu kode QR untuk semua aplikasi pembayaran.",
+    "valid": true
+  },
+  {
+    "nomor": 2,
+    "nomor_global": 42,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Perkembangan Ekonomi Digital",
+    "materi": "Evolusi Uang (Kartal, Giral, Elektronik Chip/Server), Peran Lembaga Keuangan (Bank & LKBB), Sistem Pembayaran Digital (QRIS, BI-FAST), Perdagangan Era Digital (E-Commerce B2B, B2C, C2C), serta Literasi dan Keamanan Finansial",
+    "paket": "Bab II: Perkembangan Ekonomi Digital - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Bank Indonesia mengelompokkan uang elektronik (electronic money) berdasarkan media penyimpanan datanya menjadi uang elektronik berbasis cip (chip-based) dan uang elektronik berbasis peladen (server-based). Perbedaan karakteristik teknis dan penggunaan kedua jenis uang elektronik tersebut yang tepat adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Chip-based diterbitkan oleh koperasi sekolah; server-based hanya dapat digunakan di luar negeri"
+      },
+      {
+        "label": "B",
+        "teks": "Chip-based memerlukan kode OTP melalui SMS setiap kali menempelkan kartu di gerbang tol; server- based tidak memerlukan ponsel maupun sinyal internet"
+      },
+      {
+        "label": "C",
+        "teks": "Chip-based menyimpan saldo pada keping kartu fisik dan bertransaksi cepat tanpa koneksi internet (misal di gerbang jalan tol/KRL); server-based menyimpan saldo di peladen penyedia jasa yang diakses lewat aplikasi ponsel berinternet dengan otorisasi PIN"
+      },
+      {
+        "label": "D",
+        "teks": "Kedua jenis uang elektronik tersebut merupakan uang barang (commodity money) yang terbuat dari emas murni"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Chip-based menyimpan dana pada cip kartu untuk transaksi luring cepat; server-based menyimpan dana pada peladen aplikasi berinternet.",
+    "valid": true
+  },
+  {
+    "nomor": 3,
+    "nomor_global": 43,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Perkembangan Ekonomi Digital",
+    "materi": "Evolusi Uang (Kartal, Giral, Elektronik Chip/Server), Peran Lembaga Keuangan (Bank & LKBB), Sistem Pembayaran Digital (QRIS, BI-FAST), Perdagangan Era Digital (E-Commerce B2B, B2C, C2C), serta Literasi dan Keamanan Finansial",
+    "paket": "Bab II: Perkembangan Ekonomi Digital - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Se- orang nasabah berbelanja di pasar swalayan dan membayar menggunakan kartu plastik yang langsung memotong saldo tabungannya sendiri di bank saat itu juga, sedangkan nasabah lain membayar menggu- nakan kartu yang pembayarannya ditalangi terlebih dahulu oleh bank penerbit dan ditagihkan pada bulan berikutnya beserta bunga jika terlambat. Kedua alat pembayaran kartu (APMK) tersebut berturut-turut adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Kartu Kredit dan Bilyet Giro"
+      },
+      {
+        "label": "B",
+        "teks": "Kartu Debit (Debit Card) dan Kartu Kredit (Credit Card)"
+      },
+      {
+        "label": "C",
+        "teks": "Cek Mundur dan Wesel Pos"
+      },
+      {
+        "label": "D",
+        "teks": "Uang Kartal dan Obligasi Negara"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Memotong saldo tabungan sendiri = Kartu Debit; ditalangi bank terlebih dahulu sebagai pinjaman = Kartu Kredit.",
+    "valid": true
+  },
+  {
+    "nomor": 4,
+    "nomor_global": 44,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Perkembangan Ekonomi Digital",
+    "materi": "Evolusi Uang (Kartal, Giral, Elektronik Chip/Server), Peran Lembaga Keuangan (Bank & LKBB), Sistem Pembayaran Digital (QRIS, BI-FAST), Perdagangan Era Digital (E-Commerce B2B, B2C, C2C), serta Literasi dan Keamanan Finansial",
+    "paket": "Bab II: Perkembangan Ekonomi Digital - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Berdasarkan Undang-Undang Republik Indonesia tentang Bank Indonesia dan Pengembangan dan Pen- guatan Sektor Keuangan (UU P2SK), lembaga negara yang memegang wewenang tunggal untuk men- geluarkan dan mengedarkan uang Rupiah, mencabut uang dari peredaran, serta mengatur kelancaran sistem pembayaran nasional (seperti BI-FAST dan QRIS) adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Bursa Efek Indonesia (BEI)"
+      },
+      {
+        "label": "B",
+        "teks": "Otoritas Jasa Keuangan (OJK)"
+      },
+      {
+        "label": "C",
+        "teks": "Lembaga Penjamin Simpanan (LPS)"
+      },
+      {
+        "label": "D",
+        "teks": "Bank Indonesia (BI) sebagai Bank Sentral"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Bank Indonesia (Bank Sentral) memegang wewenang tunggal mengeluarkan/mengedarkan uang Rupiah dan mengatur sistem pembayaran.",
+    "valid": true
+  },
+  {
+    "nomor": 5,
+    "nomor_global": 45,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Perkembangan Ekonomi Digital",
+    "materi": "Evolusi Uang (Kartal, Giral, Elektronik Chip/Server), Peran Lembaga Keuangan (Bank & LKBB), Sistem Pembayaran Digital (QRIS, BI-FAST), Perdagangan Era Digital (E-Commerce B2B, B2C, C2C), serta Literasi dan Keamanan Finansial",
+    "paket": "Bab II: Perkembangan Ekonomi Digital - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Perhatikan gambar/peta resmi pada buku teks berikut! Bank Perekonomian Rakyat (BPR) dan Bank Umum sama-sama menghimpun dana dari masyarakat dalam bentuk tabungan dan deposito serta menyalurkan kredit. Namun, terdapat pembatasan kegiatan usaha yang tidak boleh dilakukan oleh BPR dibandingkan Bank Umum, yaitu ....",
+    "gambar": [
+      "/soal/ips/kls9_ips_p119_xref4816_1200x620.jpeg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "BPR tidak menerima simpanan giro (tidak ikut serta dalam lalu lintas giral pencairan cek) dan tidak melakukan kegiatan usaha jual-beli valuta asing kecuali sebagai pedagang valas berizin"
+      },
+      {
+        "label": "B",
+        "teks": "BPR dilarang memberikan kredit modal kerja kepada pedagang pasar dan UMKM"
+      },
+      {
+        "label": "C",
+        "teks": "BPR dilarang menerima simpanan tabungan dari masyarakat perdesaan"
+      },
+      {
+        "label": "D",
+        "teks": "BPR merupakan satu-satunya lembaga yang berhak mencetak uang kertas Rupiah"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "BPR tidak melayani simpanan giro (cek/bilyet giro) dan tidak melakukan lalu lintas giral.",
+    "valid": true
+  },
+  {
+    "nomor": 6,
+    "nomor_global": 46,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Perkembangan Ekonomi Digital",
+    "materi": "Evolusi Uang (Kartal, Giral, Elektronik Chip/Server), Peran Lembaga Keuangan (Bank & LKBB), Sistem Pembayaran Digital (QRIS, BI-FAST), Perdagangan Era Digital (E-Commerce B2B, B2C, C2C), serta Literasi dan Keamanan Finansial",
+    "paket": "Bab II: Perkembangan Ekonomi Digital - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Perhatikan perbandingan cara kerja Bank Konvensional dan Bank Syariah: Bank Konvensional menggunakan sistem bunga (interest) sebagai imbal hasil simpanan maupun biaya pinjaman, sedangkan Bank Syariah beroperasi berdasarkan prinsip hukum Islam tanpa riba. Akad pada Bank Syariah yang menggunakan sistem bagi hasil keun- tungan usaha kerja sama antara bank dan nasabah disebut ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Akad Bunga Tetap dan Bunga Mengambang"
+      },
+      {
+        "label": "B",
+        "teks": "Akad Mudharabah dan Musyarakah"
+      },
+      {
+        "label": "C",
+        "teks": "Sistem Diskonto Wesel Konvensional"
+      },
+      {
+        "label": "D",
+        "teks": "Kebijakan Pasar Terbuka Sekuler"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Akad kerja sama usaha dengan sistem bagi hasil pada perbankan syariah adalah Mud- harabah dan Musyarakah.",
+    "valid": true
+  },
+  {
+    "nomor": 7,
+    "nomor_global": 47,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Perkembangan Ekonomi Digital",
+    "materi": "Evolusi Uang (Kartal, Giral, Elektronik Chip/Server), Peran Lembaga Keuangan (Bank & LKBB), Sistem Pembayaran Digital (QRIS, BI-FAST), Perdagangan Era Digital (E-Commerce B2B, B2C, C2C), serta Literasi dan Keamanan Finansial",
+    "paket": "Bab II: Perkembangan Ekonomi Digital - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Per- hatikan alur kerja ekosistem Pasar Modal (Bursa Efek Indonesia) berikut: Sebuah perusahaan en- ergi terbarukan membutuhkan tambahan dana jangka panjang sebesar Rp500 miliar untuk membangun pembangkit listrik tenaga surya tanpa ingin menambah beban bunga utang bank, sehingga perusahaan tersebut menjual sebagian bukti kepemilikan perusahaannya kepada masyarakat luas melalui penawaran umum perdana (Initial Public Offering / IPO). Surat berharga bukti kepemilikan perusahaan yang diperda- gangkan tersebut adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Polis Asuransi Kendaraan"
+      },
+      {
+        "label": "B",
+        "teks": "Cek perjalanan (Traveller’s Cheque)"
+      },
+      {
+        "label": "C",
+        "teks": "Bilyet Giro perbankan"
+      },
+      {
+        "label": "D",
+        "teks": "Saham (Stock / Equity)"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Bukti penyertaan kepemilikan modal pada perusahaan terbuka yang diterbitkan lewat IPO di Bursa Efek disebut Saham.",
+    "valid": true
+  },
+  {
+    "nomor": 8,
+    "nomor_global": 48,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Perkembangan Ekonomi Digital",
+    "materi": "Evolusi Uang (Kartal, Giral, Elektronik Chip/Server), Peran Lembaga Keuangan (Bank & LKBB), Sistem Pembayaran Digital (QRIS, BI-FAST), Perdagangan Era Digital (E-Commerce B2B, B2C, C2C), serta Literasi dan Keamanan Finansial",
+    "paket": "Bab II: Perkembangan Ekonomi Digital - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Apabila seorang investor membeli Obligasi Negara Ritel (ORI) atau obligasi korporasi di pasar modal, sedangkan investor lain membeli Saham perusahaan, maka perbedaan jenis imbal hasil (return) utama yang diterima oleh pemegang obligasi dan pemegang saham berturut-turut adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Pemegang obligasi menerima kupon (bunga tetap berkala); pemegang saham menerima dividen (pem- bagian laba perusahaan) dan capital gain (selisih kenaikan harga jual saham)"
+      },
+      {
+        "label": "B",
+        "teks": "Pemegang obligasi menerima dividen; pemegang saham menerima uang pertanggungan klaim kece- lakaan"
+      },
+      {
+        "label": "C",
+        "teks": "Pemegang obligasi menjadi pemilik tetap gedung perusahaan; pemegang saham menjadi kreditur pemberi utang"
+      },
+      {
+        "label": "D",
+        "teks": "Keduanya tidak pernah memiliki risiko fluktuasi harga di pasar sekunder"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Imbal hasil obligasi berupa kupon (bunga tetap); imbal hasil saham berupa dividen dan capital gain.",
+    "valid": true
+  },
+  {
+    "nomor": 9,
+    "nomor_global": 49,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Perkembangan Ekonomi Digital",
+    "materi": "Evolusi Uang (Kartal, Giral, Elektronik Chip/Server), Peran Lembaga Keuangan (Bank & LKBB), Sistem Pembayaran Digital (QRIS, BI-FAST), Perdagangan Era Digital (E-Commerce B2B, B2C, C2C), serta Literasi dan Keamanan Finansial",
+    "paket": "Bab II: Perkembangan Ekonomi Digital - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Pak Hendra membayarkan sejumlah uang secara rutin (premi) kepada sebuah lembaga keuangan bukan bank dengan perjanjian bahwa lembaga tersebut akan memberikan penggantian finansial apabila mobil usaha miliknya mengalami kecelakaan atau kebakaran. Lembaga Keuangan Bukan Bank (LKBB) yang mengalihkan risiko kerugian finansial tersebut adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Pegadaian"
+      },
+      {
+        "label": "B",
+        "teks": "Perusahaan Anjak Piutang (Factoring)"
+      },
+      {
+        "label": "C",
+        "teks": "Perusahaan Asuransi"
+      },
+      {
+        "label": "D",
+        "teks": "Koperasi Konsumsi"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Perusahaan Asuransi mengalihkan risiko kerugian finansial nasabah melalui mekanisme pembayaran premi dan klaim polis.",
+    "valid": true
+  },
+  {
+    "nomor": 10,
+    "nomor_global": 50,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Perkembangan Ekonomi Digital",
+    "materi": "Evolusi Uang (Kartal, Giral, Elektronik Chip/Server), Peran Lembaga Keuangan (Bank & LKBB), Sistem Pembayaran Digital (QRIS, BI-FAST), Perdagangan Era Digital (E-Commerce B2B, B2C, C2C), serta Literasi dan Keamanan Finansial",
+    "paket": "Bab II: Perkembangan Ekonomi Digital - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Perhatikan foto aktivitas belanja pada toko daring (online store / e-commerce) melalui perangkat komputer jinjing dan ponsel pintar berikut! Dalam ekosistem e-commerce seperti pada foto di atas, seorang ibu rumah tangga di Yogyakarta mem- produksi keripik jamur tiram kemasan lalu membuka toko di aplikasi lokapasar (marketplace) untuk men- jual produknya kepada para konsumen individu di seluruh Indonesia. Di sisi lain, seorang desainer grafis lepas (freelancer) mengunggah desain logononya di situs portal kerja dan dibeli oleh sebuah perusahaan korporasi. Kedua model transaksi digital tersebut berturut-turut adalah ....",
+    "gambar": [
+      "/soal/ips/kls9_ips_p120_xref4852_1400x933.jpeg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Business to Business (B2B) dan Government to Citizen (G2C)"
+      },
+      {
+        "label": "B",
+        "teks": "Consumer to Consumer (C2C / Marketplace) dan Consumer to Business (C2B)"
+      },
+      {
+        "label": "C",
+        "teks": "Consumer to Business (C2B) dan Business to Business (B2B)"
+      },
+      {
+        "label": "D",
+        "teks": "Barter tradisional dan monopoli negara"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Penjualan antarindividu lewat marketplace = C2C; pekerja lepas menjual karya desain kepada perusahaan = C2B.",
+    "valid": true
+  },
+  {
+    "nomor": 11,
+    "nomor_global": 51,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Perkembangan Ekonomi Digital",
+    "materi": "Evolusi Uang (Kartal, Giral, Elektronik Chip/Server), Peran Lembaga Keuangan (Bank & LKBB), Sistem Pembayaran Digital (QRIS, BI-FAST), Perdagangan Era Digital (E-Commerce B2B, B2C, C2C), serta Literasi dan Keamanan Finansial",
+    "paket": "Bab II: Perkembangan Ekonomi Digital - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Sebuah pabrik perakitan komputer memesan 10.000 keping prosesor dan layar monitor secara daring melalui portal pengadaan khusus langsung dari pabrik komponen semikonduktor untuk dirakit kembali. Model transaksi perdagangan elektronik antarperusahaan ini diklasifikasikan sebagai ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Consumer to Business (C2B)"
+      },
+      {
+        "label": "B",
+        "teks": "Consumer to Consumer (C2C)"
+      },
+      {
+        "label": "C",
+        "teks": "Business to Business (B2B)"
+      },
+      {
+        "label": "D",
+        "teks": "Citizen to Government (C2G)"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Transaksi pengadaan komponen industri antarperusahaan secara daring merupakan model Business to Business (B2B).",
+    "valid": true
+  },
+  {
+    "nomor": 12,
+    "nomor_global": 52,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Perkembangan Ekonomi Digital",
+    "materi": "Evolusi Uang (Kartal, Giral, Elektronik Chip/Server), Peran Lembaga Keuangan (Bank & LKBB), Sistem Pembayaran Digital (QRIS, BI-FAST), Perdagangan Era Digital (E-Commerce B2B, B2C, C2C), serta Literasi dan Keamanan Finansial",
+    "paket": "Bab II: Perkembangan Ekonomi Digital - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Inovasi Financial Technology (Fintech) jenis Peer-to-Peer (P2P) Lending (Layanan Pendanaan Bersama Berbasis Teknologi Informasi) yang terdaftar dan berizin resmi di OJK memberikan manfaat inklusi keuangan bagi pelaku usaha mikro yang belum memiliki agunan sertifikat tanah (unbankable), yaitu ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Mencetak uang kertas sendiri untuk dibagikan di media sosial"
+      },
+      {
+        "label": "B",
+        "teks": "Memberikan pinjaman tanpa batas yang tidak perlu dikembalikan oleh peminjam"
+      },
+      {
+        "label": "C",
+        "teks": "Menyadap seluruh buku telepon dan galeri foto pribadi nasabah untuk melakukan teror intimidasi"
+      },
+      {
+        "label": "D",
+        "teks": "Mempertemukan pemberi dana (lender) dan peminjam modal usaha (borrower) secara langsung melalui platform aplikasi digital dengan proses verifikasi cepat dan bunga transparan sesuai ketentuan OJK"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Fintech P2P Lending berizin OJK mempertemukan pemberi pinjaman (lender) dan pem- injam (borrower) secara transparan.",
+    "valid": true
+  },
+  {
+    "nomor": 13,
+    "nomor_global": 53,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Perkembangan Ekonomi Digital",
+    "materi": "Evolusi Uang (Kartal, Giral, Elektronik Chip/Server), Peran Lembaga Keuangan (Bank & LKBB), Sistem Pembayaran Digital (QRIS, BI-FAST), Perdagangan Era Digital (E-Commerce B2B, B2C, C2C), serta Literasi dan Keamanan Finansial",
+    "paket": "Bab II: Perkembangan Ekonomi Digital - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Per- hatikan ciri-ciri layanan pinjaman daring berikut: (1) Ditawarkan secara agresif melalui pesan singkat SMS/WhatsApp pribadi tanpa diminta; (2) Tidak memiliki izin resmi dan tidak terdaftar di situs OJK; (3) Meminta akses ke seluruh kontak telepon, galeri foto, dan lokasi ponsel peminjam; (4) Mengenakan bunga dan denda harian yang sangat mencekik tanpa batas plafon. Ciri-ciri di atas menunjukkan karakteristik ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Pinjaman daring ilegal (Pinjol Ilegal) yang wajib dihindari dan dilaporkan ke Satgas PASTI / OJK"
+      },
+      {
+        "label": "B",
+        "teks": "Kredit Usaha Rakyat (KUR) dari bank pemerintah resmi"
+      },
+      {
+        "label": "C",
+        "teks": "Layanan pinjaman gadai emas di PT Pegadaian (Persero)"
+      },
+      {
+        "label": "D",
+        "teks": "Koperasi Simpan Pinjam sekolah yang diawasi guru"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Ditawarkan lewat SMS/WA pribadi, tanpa izin OJK, menyadap kontak/galeri, dan bunga tak terbatas adalah ciri mutlak Pinjol Ilegal.",
+    "valid": true
+  },
+  {
+    "nomor": 14,
+    "nomor_global": 54,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Perkembangan Ekonomi Digital",
+    "materi": "Evolusi Uang (Kartal, Giral, Elektronik Chip/Server), Peran Lembaga Keuangan (Bank & LKBB), Sistem Pembayaran Digital (QRIS, BI-FAST), Perdagangan Era Digital (E-Commerce B2B, B2C, C2C), serta Literasi dan Keamanan Finansial",
+    "paket": "Bab II: Perkembangan Ekonomi Digital - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Kemudahan fitur pembayaran tunda (Buy Now Pay Later / PayLater) pada aplikasi belanja daring dan tiket perjalanan bagaikan pisau bermata dua bagi generasi muda. Dampak negatif psikologis dan fi- nansial apabila seseorang menggunakan fitur PayLater secara tidak bijak untuk membeli barang-barang keinginan sesaat (impulsive buying) adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Bebas dari kewajiban membayar tagihan belanja untuk selamanya"
+      },
+      {
+        "label": "B",
+        "teks": "Meningkatnya saldo tabungan dana darurat secara otomatis setiap kali berbelanja"
+      },
+      {
+        "label": "C",
+        "teks": "Terjebak perilaku konsumtif dan tumpukan utang berbunga/berdenda yang merusak skor riwayat kredit (SLIK OJK) di masa depan"
+      },
+      {
+        "label": "D",
+        "teks": "Diterimanya penghargaan sebagai nasabah penabung teladan dari Bank Indonesia"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Penyalahgunaan PayLater untuk belanja impulsif memicu jeratan utang konsumtif dan merusak catatan kredit (SLIK OJK).",
+    "valid": true
+  },
+  {
+    "nomor": 15,
+    "nomor_global": 55,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Perkembangan Ekonomi Digital",
+    "materi": "Evolusi Uang (Kartal, Giral, Elektronik Chip/Server), Peran Lembaga Keuangan (Bank & LKBB), Sistem Pembayaran Digital (QRIS, BI-FAST), Perdagangan Era Digital (E-Commerce B2B, B2C, C2C), serta Literasi dan Keamanan Finansial",
+    "paket": "Bab II: Perkembangan Ekonomi Digital - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Se- orang penipu mengirim pesan WhatsApp yang menyamar sebagai petugas bank resmi dan mengirimkan tautan situs web palsu (‘https://klik-hadiah-bank-palsu.xyz‘) atau file aplikasi ‘.apk‘ undangan pernikahan untuk mencuri username, password, dan kode OTP (One-Time Password) korban. Modus kejahatan siber ini disebut ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Kebijakan moneter operasi pasar terbuka"
+      },
+      {
+        "label": "B",
+        "teks": "Phishing dan Social Engineering (rekayasa sosial manipulasi psikologis)"
+      },
+      {
+        "label": "C",
+        "teks": "Diversifikasi portofolio investasi reksa dana"
+      },
+      {
+        "label": "D",
+        "teks": "Transaksi kliring antarbank BI-FAST"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Tautan palsu pencuri kredensial disebut phishing, dan manipulasi psikologis meminta OTP disebut social engineering.",
+    "valid": true
+  },
+  {
+    "nomor": 16,
+    "nomor_global": 56,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Perkembangan Ekonomi Digital",
+    "materi": "Evolusi Uang (Kartal, Giral, Elektronik Chip/Server), Peran Lembaga Keuangan (Bank & LKBB), Sistem Pembayaran Digital (QRIS, BI-FAST), Perdagangan Era Digital (E-Commerce B2B, B2C, C2C), serta Literasi dan Keamanan Finansial",
+    "paket": "Bab II: Perkembangan Ekonomi Digital - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Ketika seorang nasabah mengambil uang tunai di mesin ATM yang sepi, pelaku kejahatan memasang alat pembaca pita magnetik tersembunyi pada mulut slot kartu ATM serta kamera mikro pengintip tombol PIN untuk menggandakan data kartu nasabah. Kejahatan pencurian data fisik kartu di mesin ATM ini dikenal dengan istilah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Hedging valas"
+      },
+      {
+        "label": "B",
+        "teks": "Crowdfunding"
+      },
+      {
+        "label": "C",
+        "teks": "E-wallet top-up"
+      },
+      {
+        "label": "D",
+        "teks": "Skimming"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Pencurian data pita magnetik kartu di mulut mesin ATM menggunakan alat pembaca ilegal disebut skimming.",
+    "valid": true
+  },
+  {
+    "nomor": 17,
+    "nomor_global": 57,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Perkembangan Ekonomi Digital",
+    "materi": "Evolusi Uang (Kartal, Giral, Elektronik Chip/Server), Peran Lembaga Keuangan (Bank & LKBB), Sistem Pembayaran Digital (QRIS, BI-FAST), Perdagangan Era Digital (E-Commerce B2B, B2C, C2C), serta Literasi dan Keamanan Finansial",
+    "paket": "Bab II: Perkembangan Ekonomi Digital - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Kode OTP (One-Time Password) yang dikirimkan melalui SMS atau aplikasi ke ponsel nasabah saat melakukan transaksi finansial digital bersifat sangat rahasia. Mengapa bank dan penyedia dompet digital selalu mencantumkan peringatan keras: \"JANGAN BERIKAN KODE OTP KEPADA SIAPA PUN TERMA- SUK PETUGAS BANK\"?",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Karena kode OTP adalah kunci otorisasi terakhir (Two-Factor Authentication) yang jika diketahui pihak lain dapat langsung digunakan untuk menguras saldo rekening atau mengambil alih akun"
+      },
+      {
+        "label": "B",
+        "teks": "Karena kode OTP adalah nomor rekening publik yang digunakan untuk menerima transfer gaji"
+      },
+      {
+        "label": "C",
+        "teks": "Karena petugas bank tidak memahami cara membaca angka pada layar komputer"
+      },
+      {
+        "label": "D",
+        "teks": "Karena kode OTP hanya berlaku selama sepuluh tahun untuk satu kali pendaftaran"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Kode OTP adalah kunci otorisasi transaksi; memberikannya kepada penipu sama dengan menyerahkan akses pengurasan saldo.",
+    "valid": true
+  },
+  {
+    "nomor": 18,
+    "nomor_global": 58,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Perkembangan Ekonomi Digital",
+    "materi": "Evolusi Uang (Kartal, Giral, Elektronik Chip/Server), Peran Lembaga Keuangan (Bank & LKBB), Sistem Pembayaran Digital (QRIS, BI-FAST), Perdagangan Era Digital (E-Commerce B2B, B2C, C2C), serta Literasi dan Keamanan Finansial",
+    "paket": "Bab II: Perkembangan Ekonomi Digital - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Selain menjaga kerahasiaan PIN dan kode OTP, pengguna kartu debit dan kartu kredit wajib melindungi tiga digit angka keamanan yang tercetak di bagian belakang kartu agar tidak difoto oleh orang lain saat membayar di kasir. Tiga digit kode keamanan kartu untuk transaksi daring tersebut dinamakan ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Nomor Pokok Wajib Pajak (NPWP)"
+      },
+      {
+        "label": "B",
+        "teks": "CVV (Card Verification Value) atau CVC (Card Verification Code)"
+      },
+      {
+        "label": "C",
+        "teks": "Kode Pos Wilayah Kecamatan"
+      },
+      {
+        "label": "D",
+        "teks": "Nomor Induk Kependudukan (NIK)"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Tiga digit angka keamanan di belakang kartu debit/kredit untuk otorisasi transaksi daring adalah CVV / CVC.",
+    "valid": true
+  },
+  {
+    "nomor": 19,
+    "nomor_global": 59,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Perkembangan Ekonomi Digital",
+    "materi": "Evolusi Uang (Kartal, Giral, Elektronik Chip/Server), Peran Lembaga Keuangan (Bank & LKBB), Sistem Pembayaran Digital (QRIS, BI-FAST), Perdagangan Era Digital (E-Commerce B2B, B2C, C2C), serta Literasi dan Keamanan Finansial",
+    "paket": "Bab II: Perkembangan Ekonomi Digital - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "So- siolog Manuel Castells menjelaskan bahwa perkembangan pesat teknologi informasi dan internet telah melahirkan struktur sosial baru yang disebut Masyarakat Jaringan (Network Society). Ciri utama aktiv- itas ekonomi dan sosial dalam masyarakat jaringan adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Hilangnya profesi di bidang teknologi informasi, analisis data, dan logistik"
+      },
+      {
+        "label": "B",
+        "teks": "Seluruh interaksi manusia hanya dapat dilakukan secara tatap muka di satu balai desa"
+      },
+      {
+        "label": "C",
+        "teks": "Terhentinya perdagangan internasional karena setiap negara menutup jaringan komunikasi"
+      },
+      {
+        "label": "D",
+        "teks": "Informasi, modal, dan kolaborasi kerja mengalir secara real-time melintasi batas geografis melalui simpul-simpul jaringan digital global"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Network Society (Manuel Castells) ditandai oleh aliran informasi dan transaksi ekonomi secara real-time melalui jejaring digital.",
+    "valid": true
+  },
+  {
+    "nomor": 20,
+    "nomor_global": 60,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Perkembangan Ekonomi Digital",
+    "materi": "Evolusi Uang (Kartal, Giral, Elektronik Chip/Server), Peran Lembaga Keuangan (Bank & LKBB), Sistem Pembayaran Digital (QRIS, BI-FAST), Perdagangan Era Digital (E-Commerce B2B, B2C, C2C), serta Literasi dan Keamanan Finansial",
+    "paket": "Bab II: Perkembangan Ekonomi Digital - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Transformasi ekonomi digital mengubah lanskap ketenagakerjaan secara signifikan: beberapa pekerjaan rutin-manual seperti penjaga gerbang tol tunai dan kasir konvensional berkurang karena otomatisasi, namun di sisi lain tumbuh jutaan lapangan kerja baru seperti pengembang aplikasi, analis keamanan siber, kreator konten, kurir logistik e-commerce, dan mitra pengemudi daring. Kompetensi utama yang harus dikuasai pelajar SMP untuk menyongsong dunia kerja era digital adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Literasi digital, kemampuan berpikir kritis (critical thinking), pemecahan masalah kompleks, kreativitas, dan kemampuan belajar sepanjang hayat (lifelong learning)"
+      },
+      {
+        "label": "B",
+        "teks": "Menghafal nomor telepon seluruh penduduk kota secara manual tanpa memahami komputer"
+      },
+      {
+        "label": "C",
+        "teks": "Menolak penggunaan perangkat komputer dan internet di sekolah"
+      },
+      {
+        "label": "D",
+        "teks": "Mengandalkan keterampilan mengetik menggunakan mesin ketik pita mekanik"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Era digital menuntut penguasaan literasi digital, berpikir kritis, kreativitas, dan kemampuan belajar sepanjang hayat.",
+    "valid": true
+  },
+  {
+    "nomor": 21,
+    "nomor_global": 61,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Perkembangan Ekonomi Digital",
+    "materi": "Evolusi Uang (Kartal, Giral, Elektronik Chip/Server), Peran Lembaga Keuangan (Bank & LKBB), Sistem Pembayaran Digital (QRIS, BI-FAST), Perdagangan Era Digital (E-Commerce B2B, B2C, C2C), serta Literasi dan Keamanan Finansial",
+    "paket": "Bab II: Perkembangan Ekonomi Digital - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Se- buah aplikasi investasi bodong menggunakan Skema Ponzi, yaitu membayarkan \"keuntungan\" kepada anggota lama bukan dari hasil keuntungan usaha riil yang produktif, melainkan dari uang setoran pendaf- taran anggota-anggota baru yang direkrut secara berantai. Apa yang pasti terjadi pada Skema Ponzi ketika laju penambahan anggota baru berhenti?",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Perusahaan skema Ponzi tersebut otomatis berubah menjadi bank pemerintah resmi"
+      },
+      {
+        "label": "B",
+        "teks": "Seluruh anggota akan tetap menerima keuntungan tetap 50% per bulan dari Bank Indonesia"
+      },
+      {
+        "label": "C",
+        "teks": "Skema tersebut langsung runtuh (kolaps) dan mayoritas anggota yang bergabung belakangan men- galami kerugian total karena dana mereka dibawa kabur pengelola"
+      },
+      {
+        "label": "D",
+        "teks": "Lembaga Penjamin Simpanan (LPS) akan mengganti seluruh kerugian peserta skema Ponzi ilegal"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Skema Ponzi menggunakan uang anggota baru untuk membayar anggota lama sehingga pasti runtuh (kolaps) saat rekrutmen macet.",
+    "valid": true
+  },
+  {
+    "nomor": 22,
+    "nomor_global": 62,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Perkembangan Ekonomi Digital",
+    "materi": "Evolusi Uang (Kartal, Giral, Elektronik Chip/Server), Peran Lembaga Keuangan (Bank & LKBB), Sistem Pembayaran Digital (QRIS, BI-FAST), Perdagangan Era Digital (E-Commerce B2B, B2C, C2C), serta Literasi dan Keamanan Finansial",
+    "paket": "Bab II: Perkembangan Ekonomi Digital - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Lembaga Penjamin Simpanan (LPS) menjamin simpanan nasabah di bank yang beroperasi di Indonesia (hingga Rp2 miliar per nasabah per bank) apabila memenuhi syarat 3T. Ketiga syarat penjaminan LPS (3T) tersebut adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Tersembunyi dari laporan pajak, Tingkat bunga 50% per bulan, dan Tanpa identitas KTP"
+      },
+      {
+        "label": "B",
+        "teks": "Tercatat dalam pembukuan bank, Tingkat bunga simpanan tidak melebihi bunga penjaminan LPS, dan Tidak melakukan tindakan yang merugikan bank (misal kredit macet/fraud)"
+      },
+      {
+        "label": "C",
+        "teks": "Tertulis di media sosial, Terdaftar di aplikasi pinjol ilegal, dan Tunai di rumah"
+      },
+      {
+        "label": "D",
+        "teks": "Terbatas untuk warga asing, Tanpa buku tabungan, dan Tidak diasuransikan"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Syarat penjaminan LPS (3T): Tercatat di pembukuan bank, Tingkat bunga tidak melebihi bunga LPS, dan Tidak merugikan bank.",
+    "valid": true
+  },
+  {
+    "nomor": 23,
+    "nomor_global": 63,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Perkembangan Ekonomi Digital",
+    "materi": "Evolusi Uang (Kartal, Giral, Elektronik Chip/Server), Peran Lembaga Keuangan (Bank & LKBB), Sistem Pembayaran Digital (QRIS, BI-FAST), Perdagangan Era Digital (E-Commerce B2B, B2C, C2C), serta Literasi dan Keamanan Finansial",
+    "paket": "Bab II: Perkembangan Ekonomi Digital - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Ketika se- orang konsumen membeli sepatu olahraga melalui aplikasi marketplace resmi, uang yang ditransfer oleh pembeli tidak langsung masuk ke rekening penjual, melainkan ditahan sementara di Rekening Bersama (Escrow Account) milik pihak marketplace dan baru diteruskan kepada penjual setelah barang diterima pembeli sesuai pesanan. Fungsi mekanisme Escrow Account ini adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Menghambat pengiriman barang hingga berbulan-bulan"
+      },
+      {
+        "label": "B",
+        "teks": "Mengambil alih uang pembeli menjadi milik perusahaan marketplace selamanya"
+      },
+      {
+        "label": "C",
+        "teks": "Melindungi pembeli dari risiko penipuan barang tidak dikirim sekaligus menjamin kepastian pemba- yaran bagi penjual yang jujur"
+      },
+      {
+        "label": "D",
+        "teks": "Memaksa pembeli dan penjual bertemu langsung di kantor pusat bank sentral"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Rekening Bersama (Escrow Account) menahan dana hingga barang diterima sesuai pesanan guna melindungi pembeli dan penjual.",
+    "valid": true
+  },
+  {
+    "nomor": 24,
+    "nomor_global": 64,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Perkembangan Ekonomi Digital",
+    "materi": "Evolusi Uang (Kartal, Giral, Elektronik Chip/Server), Peran Lembaga Keuangan (Bank & LKBB), Sistem Pembayaran Digital (QRIS, BI-FAST), Perdagangan Era Digital (E-Commerce B2B, B2C, C2C), serta Literasi dan Keamanan Finansial",
+    "paket": "Bab II: Perkembangan Ekonomi Digital - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Di era ekonomi digital, pe- merintah Indonesia mulai menerapkan pengenaan Pajak Pertambahan Nilai Perdagangan Melalui Sis- tem Elektronik (PPN PMSE) terhadap produk digital luar negeri (seperti langganan aplikasi streaming film/musik dan perangkat lunak asing) serta mengatur perdagangan sosial (social commerce). Tujuan kebijakan regulasi ini adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Melarang masyarakat Indonesia membuat karya musik dan aplikasi lokal"
+      },
+      {
+        "label": "B",
+        "teks": "Mematikan seluruh usaha mikro, kecil, dan menengah (UMKM) di Indonesia"
+      },
+      {
+        "label": "C",
+        "teks": "Membebaskan seluruh perusahaan raksasa multinasional asing dari segala kewajiban pajak di Indone- sia"
+      },
+      {
+        "label": "D",
+        "teks": "Menciptakan kesetaraan berusaha (level playing field) antara pelaku usaha dalam negeri (UMKM) dan perusahaan digital global serta mengoptimalkan penerimaan pajak negara"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Pengaturan pajak PMSE dan social commerce bertujuan menciptakan kesetaraan usaha (level playing field) bagi UMKM domestik.",
+    "valid": true
+  },
+  {
+    "nomor": 25,
+    "nomor_global": 65,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Perkembangan Ekonomi Digital",
+    "materi": "Evolusi Uang (Kartal, Giral, Elektronik Chip/Server), Peran Lembaga Keuangan (Bank & LKBB), Sistem Pembayaran Digital (QRIS, BI-FAST), Perdagangan Era Digital (E-Commerce B2B, B2C, C2C), serta Literasi dan Keamanan Finansial",
+    "paket": "Bab II: Perkembangan Ekonomi Digital - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Seorang pelajar SMP menerima uang saku bulanan secara nontunai melalui dompet digital dari orang tuanya. Tin- dakan yang paling mencerminkan kecerdasan finansial digital (digital financial literacy) bagi pelajar tersebut adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Mencatat setiap transaksi pengeluaran di aplikasi, membatasi belanja keinginan (flash sale konsumtif), mengaktifkan verifikasi dua langkah (PIN/biometrik), dan menyisihkan sebagian saldo ke tabungan pelajar"
+      },
+      {
+        "label": "B",
+        "teks": "Menghabiskan seluruh uang saku pada hari pertama untuk membeli voucher permainan daring dan meminjam saldo teman"
+      },
+      {
+        "label": "C",
+        "teks": "Membagikan tangkapan layar kode QR dan PIN dompet digitalnya ke akun media sosial publik"
+      },
+      {
+        "label": "D",
+        "teks": "Mengklik seluruh tautan undian berhadiah mencurigakan yang masuk melalui grup pesan singkat"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Mencatat pengeluaran, menahan belanja impulsif, menjaga keamanan akun, dan menabung mencerminkan literasi finansial digital.",
+    "valid": true
+  },
+  {
+    "nomor": 26,
+    "nomor_global": 66,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Perkembangan Ekonomi Digital",
+    "materi": "Evolusi Uang (Kartal, Giral, Elektronik Chip/Server), Peran Lembaga Keuangan (Bank & LKBB), Sistem Pembayaran Digital (QRIS, BI-FAST), Perdagangan Era Digital (E-Commerce B2B, B2C, C2C), serta Literasi dan Keamanan Finansial",
+    "paket": "Bab II: Perkembangan Ekonomi Digital - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Perhatikan bagan evolusi instrumen pembayaran dan jenis uang dalam perekonomian berikut! BAGAN EVOLUSI ALAT PEMBAYARAN DAN JENIS UANG MODERN 1. Uang Barang (Commodity Money): Garam, kerang, emas/perak (Full Bodied Money) −→2. Uang Kartal (Fiat Money): Uang kertas & logam yang diterbitkan Bank Indonesia (alat bayar sah wajib diterima) −→3. Uang Giral (Demand Deposit): Cek, bilyet giro, kartu debit bank umum −→4. Uang Elektronik (E-Money): Berbasis Chip (Card-Based) (Flazz, e-Money, Brizzi, TapCash untuk tol/KRL) & Berbasis Server (Server- Based) (GoPay, OVO, DANA, ShopeePay dengan standar QRIS) Berdasarkan bagan di atas, perbedaan teknis paling mendasar antara uang elektronik berbasis chip (card-based) seperti kartu pembayaran gerbang tol dengan uang elektronik berbasis server (server- based) seperti dompet digital pada telepon pintar adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Kedua jenis uang elektronik tersebut merupakan uang penuh (full bodied money) yang nilai intrinsik bahan kartunya sama dengan nilai nominal saldonya"
+      },
+      {
+        "label": "B",
+        "teks": "Uang elektronik berbasis chip diterbitkan oleh kantor pos desa, sedangkan berbasis server hanya boleh digunakan untuk transaksi barter barang pertanian"
+      },
+      {
+        "label": "C",
+        "teks": "Uang elektronik berbasis chip menyimpan data saldo langsung di dalam keping microchip kartu se- hingga transaksi dapat dilakukan secara luring (offline) dalam hitungan detik, sedangkan berbasis server menyimpan saldo di peladen pusat penerbit sehingga memerlukan koneksi internet saat bertransaksi"
+      },
+      {
+        "label": "D",
+        "teks": "Kartu Kredit (credit card) termasuk uang elektronik berbasis chip karena tidak menimbulkan tagihan utang kepada penggunanya"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Uang elektronik berbasis chip menyimpan saldo pada keping kartu (transaksi luring cepat untuk tol/KRL), sedangkan berbasis server menyimpan saldo pada peladen penerbit (wajib terhubung internet, misal QRIS dompet digital).",
+    "valid": true
+  },
+  {
+    "nomor": 27,
+    "nomor_global": 67,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Perkembangan Ekonomi Digital",
+    "materi": "Evolusi Uang (Kartal, Giral, Elektronik Chip/Server), Peran Lembaga Keuangan (Bank & LKBB), Sistem Pembayaran Digital (QRIS, BI-FAST), Perdagangan Era Digital (E-Commerce B2B, B2C, C2C), serta Literasi dan Keamanan Finansial",
+    "paket": "Bab II: Perkembangan Ekonomi Digital - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Pak Andi memiliki sebidang tanah seluas 200 m2 di Kota Semarang. Karena dimutasi kerja secara permanen ke Kota Bandung, Pak Andi menjual tanahnya di Semarang dan menggunakan uang hasil penjualan tersebut untuk membeli rumah dan tanah yang setara di Kota Bandung. Ilustrasi tindakan Pak Andi menunjukkan fungsi turunan uang sebagai ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Alat satuan hitung nilai barang (unit of account) tanpa transaksi jual beli"
+      },
+      {
+        "label": "B",
+        "teks": "Alat pemindah kekayaan (modal) dari satu lokasi geografis ke lokasi lainnya"
+      },
+      {
+        "label": "C",
+        "teks": "Alat spekulasi valuta asing di bursa berjangka internasional"
+      },
+      {
+        "label": "D",
+        "teks": "Alat barter langsung antarkomoditas pertanian"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Menjual tanah di Semarang untuk membeli tanah di Bandung menunjukkan fungsi turunan uang sebagai alat pemindah kekayaan.",
+    "valid": true
+  },
+  {
+    "nomor": 28,
+    "nomor_global": 68,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Perkembangan Ekonomi Digital",
+    "materi": "Evolusi Uang (Kartal, Giral, Elektronik Chip/Server), Peran Lembaga Keuangan (Bank & LKBB), Sistem Pembayaran Digital (QRIS, BI-FAST), Perdagangan Era Digital (E-Commerce B2B, B2C, C2C), serta Literasi dan Keamanan Finansial",
+    "paket": "Bab II: Perkembangan Ekonomi Digital - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Perhatikan tabel perbandingan wewenang tiga lembaga utama dalam sistem keuangan Indonesia berikut! TABEL PEMBAGIAN WEWENANG OTORITAS KEUANGAN DI INDONESIA Nama Lembaga Tujuan Utama Tugas & Wewenang Pokok 1. Bank Indonesia (BI) Mencapai dan memelihara kestabilan ni- lai Rupiah (terhadap barang/inflasi & mata uang asing) Menetapkan kebijakan moneter (suku bunga BI-Rate, Operasi Pasar Ter- buka), mengatur sistem pembayaran (QRIS, BI-FAST), serta mengeluarkan dan mengedarkan uang Rupiah 2. Otoritas Jasa Keuangan (OJK) Mewujudkan sektor jasa keuangan yang teratur, adil, transparan, akuntabel, dan melindungi konsumen Mengatur dan mengawasi kegiatan jasa keuangan di sektor Perbankan, Pasar Modal, dan Industri Keuangan Non- Bank (IKNB/Fintech) 3. Lembaga Penjamin Simpanan (LPS) Menjaga kepercayaan masyarakat ter- hadap sistem perbankan nasional Menjamin simpanan nasabah penyim- pan di bank (tabungan, deposito, giro) dan melakukan resolusi bank gagal Berdasarkan tabel di atas, apabila masyarakat menemukan maraknya aplikasi pinjaman daring (pinjol) ilegal dan investasi bodong yang merugikan konsumen, serta ketika bank sentral melakukan Operasi Pasar Terbuka dengan menjual Sertifikat Bank Indonesia untuk menyerap kelebihan uang beredar saat inflasi, lembaga yang berwenang menangani kedua hal tersebut secara berturut-turut adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Badan Pemeriksa Keuangan (BPK) serta Mahkamah Konstitusi (MK)"
+      },
+      {
+        "label": "B",
+        "teks": "Lembaga Penjamin Simpanan (LPS) serta Pegadaian Cabang Kabupaten"
+      },
+      {
+        "label": "C",
+        "teks": "Koperasi Simpan Pinjam Desa serta Perusahaan Asuransi Kendaraan Bermotor"
+      },
+      {
+        "label": "D",
+        "teks": "Otoritas Jasa Keuangan (OJK melalui Satgas PASTI dan perlindungan konsumen) serta Bank Indone- sia (BI sebagai pemegang otoritas kebijakan moneter)"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Pengawasan pinjol/investasi dan perlindungan konsumen keuangan adalah wewenang OJK, sedangkan Operasi Pasar Terbuka (kebijakan moneter) adalah wewenang Bank Indonesia (BI).",
+    "valid": true
+  },
+  {
+    "nomor": 29,
+    "nomor_global": 69,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Perkembangan Ekonomi Digital",
+    "materi": "Evolusi Uang (Kartal, Giral, Elektronik Chip/Server), Peran Lembaga Keuangan (Bank & LKBB), Sistem Pembayaran Digital (QRIS, BI-FAST), Perdagangan Era Digital (E-Commerce B2B, B2C, C2C), serta Literasi dan Keamanan Finansial",
+    "paket": "Bab II: Perkembangan Ekonomi Digital - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Sebagai mata uang resmi Negara Kesatuan Republik Indonesia, keaslian uang kertas Rupiah perlu dikenali oleh setiap warga masyarakat agar terhindar dari peredaran uang palsu. Metode standar yang ditetapkan oleh Bank Indonesia untuk memeriksa ciri-ciri keaslian uang Rupiah (seperti benang penga- man, tanda air/watermark gambar pahlawan, dan cetakan terasa kasar/intaglio) adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Metode 3D (Dilihat, Diraba, dan Diterawang)"
+      },
+      {
+        "label": "B",
+        "teks": "Metode pencucian uang kertas menggunakan larutan pemutih kimia"
+      },
+      {
+        "label": "C",
+        "teks": "Metode penimbangan berat kertas menggunakan timbangan emas"
+      },
+      {
+        "label": "D",
+        "teks": "Metode pemindaian nomor seri melalui mesin fotokopi hitam putih"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Keaslian uang kertas Rupiah dikenali dengan metode 3D: Dilihat, Diraba, dan Diter- awang.",
+    "valid": true
+  },
+  {
+    "nomor": 30,
+    "nomor_global": 70,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Perkembangan Ekonomi Digital",
+    "materi": "Evolusi Uang (Kartal, Giral, Elektronik Chip/Server), Peran Lembaga Keuangan (Bank & LKBB), Sistem Pembayaran Digital (QRIS, BI-FAST), Perdagangan Era Digital (E-Commerce B2B, B2C, C2C), serta Literasi dan Keamanan Finansial",
+    "paket": "Bab II: Perkembangan Ekonomi Digital - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Perhatikan bagan tiga pilar etika kewargaan digital (Digital Citizenship) dalam Masyarakat Jaringan (Network Society) menurut Mike Ribble berikut! BAGAN TIGA PILAR INTERAKSI MASYARAKAT JARINGAN DIGITAL (MIKE RIBBLE) 1. EDUCATE (Menyadari & Belajar): Terus mempelajari literasi informasi, cara kerja komunikasi digital, dan transaksi e-commerce secara benar 2. RESPECT (Menghormati): Menjaga etiket sopan santun (neti- quette), menghargai hak cipta karya orang lain, dan tidak melakukan perundungan siber (cyberbullying) 3. PROTECT (Melindungi): Menjaga kerahasiaan data pribadi, password, PIN, dan kode OTP dari kejahatan siber (phishing/scam) Berdasarkan bagan konsep Mike Ribble di atas, tindakan seorang pelajar SMP yang selalu mencan- tumkan sumber asli saat mengutip karya tulis di internet, tidak menyebarkan ujaran kebencian di kolom komentar media sosial, serta menghargai pendapat anggota komunitas virtual lintas negara merupakan perwujudan langsung dari prinsip ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Undermining (merusak reputasi pengguna lain secara anonim di media sosial)"
+      },
+      {
+        "label": "B",
+        "teks": "Respect (menghormati sesama warga digital, hak kekayaan intelektual, dan etika berinteraksi di ruang siber)"
+      },
+      {
+        "label": "C",
+        "teks": "Phishing (memancing data kata sandi dan nomor kartu identitas orang lain)"
+      },
+      {
+        "label": "D",
+        "teks": "Hoaxing (memproduksi informasi palsu demi meraih jumlah tayangan tinggi)"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Menghargai hak cipta karya orang lain dan menjaga kesantunan berkomunikasi di internet merupakan pilar Respect (Menghormati) dalam kewargaan digital Mike Ribble.",
+    "valid": true
+  },
+  {
+    "nomor": 31,
+    "nomor_global": 71,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Perkembangan Ekonomi Digital",
+    "materi": "Evolusi Uang (Kartal, Giral, Elektronik Chip/Server), Peran Lembaga Keuangan (Bank & LKBB), Sistem Pembayaran Digital (QRIS, BI-FAST), Perdagangan Era Digital (E-Commerce B2B, B2C, C2C), serta Literasi dan Keamanan Finansial",
+    "paket": "Bab II: Perkembangan Ekonomi Digital - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Dalam pengelolaan sebuah koperasi simpan pinjam, kekuasaan tertinggi berada di tangan Rapat Anggota. Apabila ditemukan oknum pengurus koperasi yang menyalahgunakan wewenang dan mengge- lapkan dana simpanan anggota sehingga koperasi mengalami kerugian serius sebelum akhir tahun buku, langkah konstitusional yang harus segera ditempuh oleh para anggota koperasi adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Meminta bank sentral luar negeri untuk mengganti kerugian koperasi tanpa audit"
+      },
+      {
+        "label": "B",
+        "teks": "Membubarkan seluruh kegiatan usaha anggota dan membakar kantor koperasi secara sepihak"
+      },
+      {
+        "label": "C",
+        "teks": "Membiarkan oknum pengurus tersebut tetap menjabat hingga sepuluh tahun ke depan"
+      },
+      {
+        "label": "D",
+        "teks": "Mengadakan Rapat Anggota Luar Biasa (RALB) untuk meminta pertanggungjawaban pengurus, memberhentikan oknum yang bersangkutan, dan menempuh jalur hukum"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Penyelewengan pengurus koperasi sebelum akhir tahun buku ditangani melalui Rapat Anggota Luar Biasa (RALB) sebagai pemegang kekuasaan tertinggi koperasi.",
+    "valid": true
+  },
+  {
+    "nomor": 32,
+    "nomor_global": 72,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Perkembangan Ekonomi Digital",
+    "materi": "Evolusi Uang (Kartal, Giral, Elektronik Chip/Server), Peran Lembaga Keuangan (Bank & LKBB), Sistem Pembayaran Digital (QRIS, BI-FAST), Perdagangan Era Digital (E-Commerce B2B, B2C, C2C), serta Literasi dan Keamanan Finansial",
+    "paket": "Bab II: Perkembangan Ekonomi Digital - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Kemajuan perdagangan elektronik (e-commerce) dan sistem pembayaran dompet digital (e-wallet) memberikan efisiensi tinggi, namun masih menghadapi kendala adopsi di kalangan pedagang pasar tra- disional berusia lanjut dan warga di daerah pelosok. Solusi kebijakan yang paling inklusif dan tepat sasaran untuk mengatasi tantangan tersebut adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Meningkatkan sosialisasi, pendampingan literasi digital secara langsung kepada pedagang pasar tra- disional, serta memperluas pemerataan jaringan internet ke daerah terpencil"
+      },
+      {
+        "label": "B",
+        "teks": "Melarang penggunaan uang kertas dan logam Rupiah secara mendadak di seluruh pasar tradisional desa"
+      },
+      {
+        "label": "C",
+        "teks": "Mencabut seluruh mesin ATM dan kantor bank unit desa agar warga terpaksa berbelanja ke kota besar"
+      },
+      {
+        "label": "D",
+        "teks": "Membebankan biaya pajak tambahan sebesar 50% bagi pedagang kecil yang belum memiliki telepon pintar"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Peningkatan adopsi pembayaran digital di pasar tradisional dilakukan melalui sosialisasi, pelatihan pendampingan langsung, dan perluasan infrastruktur internet.",
+    "valid": true
+  },
+  {
+    "nomor": 33,
+    "nomor_global": 73,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Perkembangan Ekonomi Digital",
+    "materi": "Evolusi Uang (Kartal, Giral, Elektronik Chip/Server), Peran Lembaga Keuangan (Bank & LKBB), Sistem Pembayaran Digital (QRIS, BI-FAST), Perdagangan Era Digital (E-Commerce B2B, B2C, C2C), serta Literasi dan Keamanan Finansial",
+    "paket": "Bab II: Perkembangan Ekonomi Digital - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Perhatikan tabel perbandingan empat model bisnis transaksi E-Commerce berikut! TABEL MATRIKS MODEL TRANSAKSI PERDAGANGAN ELEKTRONIK (E-COMMERCE) Model Bisnis Pelaku Transaksi Contoh Aktivitas Nyata 1. B2B (Business to Business) Perusahaan −→Perusahaan Pabrik tekstil menjual ribuan rol kain secara daring melalui portal grosir kepada perusahaan garmen pakaian jadi 2. B2C (Business to Consumer) Perusahaan Resmi −→ Konsumen Akhir Toko daring resmi (official store) merek sepatu menjual produk langsung kepada pembeli ritel 3. C2C (Consumer to Consumer) Individu −→Individu (via Marketplace) Seorang warga menjual sepeda bekas atau kera- jinan rumahan miliknya kepada warga lain melalui lokapasar 4. C2B (Consumer to Business) Individu Profesional −→ Perusahaan Fotografer/desainer lepas menjual lisensi foto dan desain logo karyanya kepada perusahaan perik- lanan Berdasarkan tabel di atas, apabila seorang desainer grafis dan komposer musik independen di Bandung mengunggah karya desain serta audio buatannya ke platform digital, lalu sebuah perusahaan televisi nasional membeli lisensi karya tersebut untuk iklan komersial perusahaan, maka transaksi tersebut ter- masuk model ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Sistem barter komoditas pangan tradisional tanpa media internet"
+      },
+      {
+        "label": "B",
+        "teks": "Business to Business (B2B) antarperusahaan pertambangan batu bara"
+      },
+      {
+        "label": "C",
+        "teks": "Consumer to Business (C2B) karena individu kreator menawarkan nilai produk/jasa keahliannya untuk dibeli dan digunakan oleh entitas bisnis/perusahaan"
+      },
+      {
+        "label": "D",
+        "teks": "Government to Citizen (G2C) dalam pembayaran pajak bumi dan bangunan"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Kreator individu yang menjual lisensi desain/musik karyanya kepada perusahaan televisi untuk iklan komersial merupakan model transaksi Consumer to Business (C2B).",
+    "valid": true
+  },
+  {
+    "nomor": 34,
+    "nomor_global": 74,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Perkembangan Ekonomi Digital",
+    "materi": "Evolusi Uang (Kartal, Giral, Elektronik Chip/Server), Peran Lembaga Keuangan (Bank & LKBB), Sistem Pembayaran Digital (QRIS, BI-FAST), Perdagangan Era Digital (E-Commerce B2B, B2C, C2C), serta Literasi dan Keamanan Finansial",
+    "paket": "Bab II: Perkembangan Ekonomi Digital - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Dalam kurikulum pendidikan literasi finansial bagi pelajar SMP, terdapat enam cakupan utama literasi finansial, yaitu: (1) Mengenali pemasukan (earning), (2) Mengelola pengeluaran (spending), (3) Merancang tabungan (saving), (4) Merancang alokasi berbagi (sharing), (5) Mengenali investasi (invest- ing), dan (6) Mengenali praktik tidak baik serta kejahatan finansial (protecting). Ketika seorang pekerja menerima gaji kotor bulanan, komponen wajib yang harus dipotong terlebih dahulu untuk mengetahui penghasilan bersih (take home pay) adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Daftar barang impian di dalam keranjang belanja aplikasi marketplace"
+      },
+      {
+        "label": "B",
+        "teks": "Pajak penghasilan (PPh), iuran wajib jaminan kesehatan/ketenagakerjaan (BPJS), dan potongan ke- wajiban resmi lainnya"
+      },
+      {
+        "label": "C",
+        "teks": "Hadiah ulang tahun yang belum jadi dibeli untuk teman sekolah"
+      },
+      {
+        "label": "D",
+        "teks": "Keuntungan dividen saham yang diperoleh dari bursa efek"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Penghasilan bersih (take home pay) diperoleh setelah penghasilan kotor dikurangi pajak penghasilan (PPh) dan iuran wajib (BPJS/pensiun).",
+    "valid": true
+  },
+  {
+    "nomor": 35,
+    "nomor_global": 75,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Perkembangan Ekonomi Digital",
+    "materi": "Evolusi Uang (Kartal, Giral, Elektronik Chip/Server), Peran Lembaga Keuangan (Bank & LKBB), Sistem Pembayaran Digital (QRIS, BI-FAST), Perdagangan Era Digital (E-Commerce B2B, B2C, C2C), serta Literasi dan Keamanan Finansial",
+    "paket": "Bab II: Perkembangan Ekonomi Digital - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Seorang pembeli memesan laptop seharga Rp8.500.000,00 di sebuah aplikasi marketplace. Penjual meminta pembeli untuk mem- batalkan pesanan di dalam aplikasi dan mentransfer uang secara langsung ke rekening pribadi penjual di luar aplikasi dengan iming-iming diskon Rp1.500.000,00. Mengapa permintaan penjual tersebut sangat berbahaya dan wajib ditolak oleh pembeli yang memiliki literasi digital?",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Karena transfer langsung ke rekening orang tidak dikenal dijamin 100% oleh Lembaga Penjamin Sim- panan"
+      },
+      {
+        "label": "B",
+        "teks": "Karena rekening bersama (escrow account) aplikasi akan menahan barang pembeli selamanya"
+      },
+      {
+        "label": "C",
+        "teks": "Karena transaksi di luar rekening bersama (escrow account) aplikasi menghilangkan jaminan perlin- dungan pembeli, sehingga uang rawan dibawa kabur penipu tanpa barang dikirim"
+      },
+      {
+        "label": "D",
+        "teks": "Karena berbelanja melalui sistem resmi marketplace dilarang oleh Bank Indonesia"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Bertransaksi di luar rekening bersama (escrow account) lokapasar sangat berisiko penipuan karena dana langsung masuk ke rekening pelaku tanpa jaminan pengiriman barang.",
+    "valid": true
+  },
+  {
+    "nomor": 36,
+    "nomor_global": 76,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Perkembangan Ekonomi Digital",
+    "materi": "Evolusi Uang (Kartal, Giral, Elektronik Chip/Server), Peran Lembaga Keuangan (Bank & LKBB), Sistem Pembayaran Digital (QRIS, BI-FAST), Perdagangan Era Digital (E-Commerce B2B, B2C, C2C), serta Literasi dan Keamanan Finansial",
+    "paket": "Bab II: Perkembangan Ekonomi Digital - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "[Pilihan Ganda Kompleks — Analisis Literasi Finansial & Perencanaan Keuangan Digital] Perhatikan tabel resmi pencatatan Buku Kas Keluarga Andi (Pemasukan, Pengeluaran, dan Saldo) dalam literasi pengelolaan keuangan berikut! Pernyataan yang benar mengenai literasi finansial dan pemanfaatan layanan keuangan digital berdasarkan gambar di atas adalah .... (Pilih lebih dari satu jawaban benar) Pernyataan Analisis: (1) Pencatatan arus kas digital memudahkan individu memantau porsi pengeluaran kebutuhan pokok, keinginan, dan tabungan secara real-time. (2) Sebelum berinvestasi pada aplikasi fintech atau reksa dana daring, masyarakat wajib memastikan platform tersebut terdaftar dan diawasi secara resmi oleh Otoritas Jasa Keuangan (OJK). (3) Penggunaan fitur pembayaran nontunai (QRIS/transfer BI-FAST) harus tetap diiringi pengendalian diri agar tidak terjebak fenomena painless paying (belanja impulsif karena tidak melihat fisik uang keluar). (4) Semua tawaran investasi di media sosial yang menjanjikan keuntungan pasti 25% per minggu tanpa risiko merupakan produk resmi Bank Sentral. Pernyataan yang tepat adalah ....",
+    "gambar": [
+      "/soal/ips/kls9_ips_p126_xref5038_1160x740.jpeg"
+    ],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Pernyataan (1), (2), dan (3) benar"
+      },
+      {
+        "label": "B",
+        "teks": "Pernyataan (1) dan (4) saja yang benar"
+      },
+      {
+        "label": "C",
+        "teks": "Pernyataan (2) dan (4) saja yang benar"
+      },
+      {
+        "label": "D",
+        "teks": "Semua pernyataan (1), (2), (3), dan (4) benar"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Pencatatan arus kas (A), verifikasi izin OJK (B), dan pengendalian belanja nontunai (C) adalah pilar literasi finansial.",
+    "valid": true
+  },
+  {
+    "nomor": 37,
+    "nomor_global": 77,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Perkembangan Ekonomi Digital",
+    "materi": "Evolusi Uang (Kartal, Giral, Elektronik Chip/Server), Peran Lembaga Keuangan (Bank & LKBB), Sistem Pembayaran Digital (QRIS, BI-FAST), Perdagangan Era Digital (E-Commerce B2B, B2C, C2C), serta Literasi dan Keamanan Finansial",
+    "paket": "Bab II: Perkembangan Ekonomi Digital - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "[Pil- ihan Ganda Kompleks — Lembaga Keuangan & Ekosistem E-Commerce] Evaluasilah pernyataan mengenai lembaga keuangan dan perdagangan digital berikut! Pernyataan yang tepat adalah .... Pernyataan Analisis: (1) Transaksi jual-beli antarpengguna di platform lokapasar (marketplace) dengan perlindungan reken- ing bersama (escrow account) merupakan contoh model Consumer to Consumer (C2C). (2) Layanan BI-FAST yang dikembangkan Bank Indonesia memungkinkan transfer dana antarbank secara real-time (24 jam/7 hari) dengan biaya administrasi yang jauh lebih murah. (3) Pegadaian, Perusahaan Asuransi, Dana Pensiun, dan Perusahaan Pembiayaan (Leasing) termasuk dalam kategori Lembaga Keuangan Bukan Bank (LKBB). (4) Uang elektronik berbasis cip (chip-based) pada kartu tol wajib terhubung dengan sinyal Wi-Fi dan kode OTP SMS setiap kali ditempelkan pada gardu tol. Pernyataan yang tepat adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Pernyataan (1), (2), dan (3) benar"
+      },
+      {
+        "label": "B",
+        "teks": "Pernyataan (1) dan (4) saja yang benar"
+      },
+      {
+        "label": "C",
+        "teks": "Pernyataan (2) dan (4) saja yang benar"
+      },
+      {
+        "label": "D",
+        "teks": "Semua pernyataan (1), (2), (3), dan (4) benar"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Lokapasar dengan escrow adalah C2C (A), BI-FAST melayani transfer real-time murah (B), dan Pegadaian/Asuransi/Leasing adalah LKBB (C). Kartu tol chip-based bekerja secara luring tanpa Wi-Fi/OTP (D salah).",
+    "valid": true
+  },
+  {
+    "nomor": 38,
+    "nomor_global": 78,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Perkembangan Ekonomi Digital",
+    "materi": "Evolusi Uang (Kartal, Giral, Elektronik Chip/Server), Peran Lembaga Keuangan (Bank & LKBB), Sistem Pembayaran Digital (QRIS, BI-FAST), Perdagangan Era Digital (E-Commerce B2B, B2C, C2C), serta Literasi dan Keamanan Finansial",
+    "paket": "Bab II: Perkembangan Ekonomi Digital - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "[Tabel Centang Benar / Salah — Alat Pembayaran & Lembaga Keuangan] Berilah tanda centang (✓) pada kolom Benar atau Salah untuk setiap pernyataan ekonomi moneter berikut! Pernyataan Evaluasi: (a) Standar kode QR nasional (QRIS) diterbitkan untuk menyatukan berba- gai pembayaran digital agar satu kode QR dapat dipindai oleh berbagai aplikasi pembayaran berizin. (b) Kartu Kredit adalah kartu pembayaran yang langsung memotong saldo tabungan milik nasabah sendiri pada saat digesek di mesin EDC tanpa menimbulkan utang. (c) Otoritas Jasa Keuangan (OJK) bertugas menyelenggarakan sistem pengaturan dan pengawasan terintegrasi terhadap sektor perbankan, pasar modal, dan IKNB. Kombinasi analisis nilai kebenaran (Benar/Salah) yang tepat berturut-turut adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(a) Benar, (b) Salah, (c) Benar"
+      },
+      {
+        "label": "B",
+        "teks": "(a) Benar, (b) Salah, (c) Salah"
+      },
+      {
+        "label": "C",
+        "teks": "(a) Salah, (b) Benar, (c) Benar"
+      },
+      {
+        "label": "D",
+        "teks": "(a) Benar, (b) Benar, (c) Benar"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "(b) Salah, karena kartu yang langsung memotong saldo tabungan nasabah sendiri adalah Kartu Debit, bukan Kartu Kredit.",
+    "valid": true
+  },
+  {
+    "nomor": 39,
+    "nomor_global": 79,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Perkembangan Ekonomi Digital",
+    "materi": "Evolusi Uang (Kartal, Giral, Elektronik Chip/Server), Peran Lembaga Keuangan (Bank & LKBB), Sistem Pembayaran Digital (QRIS, BI-FAST), Perdagangan Era Digital (E-Commerce B2B, B2C, C2C), serta Literasi dan Keamanan Finansial",
+    "paket": "Bab II: Perkembangan Ekonomi Digital - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "[Tabel Centang Benar / Salah — Keamanan Siber & E-Commerce] Evaluasilah kebenaran pernyataan keamanan transaksi digital berikut! Pernyataan Evaluasi: (a) Tindakan penipuan yang mengelabui korban melalui tautan situs web palsu atau pesan psikologis agar korban menyerahkan PIN dan kode OTP disebut phishing dan social engineering. (b) Buy Now Pay Later (PayLater) merupakan fasilitas hibah uang gratis dari aplikasi belanja daring yang tidak perlu dibayar kembali oleh peng- guna. (c) Penerapan Two-Factor Authentication (2FA) serta kerahasiaan PIN, CVV, dan kode OTP merupakan benteng utama keamanan akun keuangan digital. Kombinasi analisis nilai kebenaran (Benar/Salah) yang tepat berturut-turut adalah ....",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "(a) Benar, (b) Salah, (c) Benar"
+      },
+      {
+        "label": "B",
+        "teks": "(a) Benar, (b) Salah, (c) Salah"
+      },
+      {
+        "label": "C",
+        "teks": "(a) Salah, (b) Benar, (c) Benar"
+      },
+      {
+        "label": "D",
+        "teks": "(a) Benar, (b) Benar, (c) Benar"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "(b) Salah, karena PayLater adalah fasilitas pinjaman/utang yang wajib dibayar kembali beserta biaya/bunganya.",
+    "valid": true
+  },
+  {
+    "nomor": 40,
+    "nomor_global": 80,
+    "bab_angka": 2,
+    "bab_nama": "Bab II: Perkembangan Ekonomi Digital",
+    "materi": "Evolusi Uang (Kartal, Giral, Elektronik Chip/Server), Peran Lembaga Keuangan (Bank & LKBB), Sistem Pembayaran Digital (QRIS, BI-FAST), Perdagangan Era Digital (E-Commerce B2B, B2C, C2C), serta Literasi dan Keamanan Finansial",
+    "paket": "Bab II: Perkembangan Ekonomi Digital - Kelas IX SMP",
+    "kelas": 9,
+    "mapel": "IPS",
+    "bacaan": null,
+    "teks_soal": "Bu Dina memiliki dana pendidikan anak sebesar Rp20.000.000,00 yang akan digunakan 3 tahun men- datang. Jika laju inflasi rata-rata adalah 4% per tahun, menyimpan uang tersebut di celengan rumah (0% bunga) akan membuat daya beli riil uangnya tergerus inflasi. Bu Dina kemudian membandingkan dua alternatif: (1) Deposito Bank Umum berizin OJK/LPS dengan bunga bersih 4, 5% per tahun, atau (2) Tawaran ’Investasi Koin Ajaib’ di grup Telegram tanpa izin OJK yang menjanjikan bunga tetap 30% per bulan. Evaluasilah keputusan finansial yang paling tepat bagi Bu Dina!",
+    "gambar": [],
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Membelanjakan seluruh dana pendidikan tersebut untuk membeli gawai terbaru secara kredit konsumtif"
+      },
+      {
+        "label": "B",
+        "teks": "Memasukkan seluruh dana pendidikan Rp20.000.000,00 ke dalam ’Investasi Koin Ajaib’ di Telegram agar cepat berlipat ganda dalam sebulan"
+      },
+      {
+        "label": "C",
+        "teks": "Menyimpan seluruh uang kertas Rp20.000.000,00 di dalam lemari kayu rumah agar nilainya naik dua kali lipat"
+      },
+      {
+        "label": "D",
+        "teks": "Memilih Deposito Bank Umum (atau SBN Ritel) yang berizin OJK dan dijamin LPS karena memberikan imbal hasil di atas laju inflasi (4, 5% > 4%) secara aman, serta menolak tawaran ’Investasi Koin Ajaib’ karena berindikasi kuat skema Ponzi/investasi bodong (high return tidak logis tanpa dasar usaha)"
+      }
+    ],
+    "kunci_jawaban": "D",
+    "pembahasan": "Prinsip utama literasi finansial OJK adalah 2L (Legal dan Logis). Imbal hasil 30% per bulan tanpa risiko adalah tidak logis dan tidak legal (skema Ponzi). Deposito resmi/SBN Ritel menjaga nilai riil uang di atas inflasi (4, 5% > 4%) dengan keamanan terjamin. 1. Perjalanan Sejarah Politik & Pembangunan Indonesia (1945 s.d. Reformasi) a. Masa Mempertahankan Kemerdekaan (1945–1949): Bangsa Indonesia menempuh dua jalur simultan menghadapi Sekutu dan NICA/Belanda: (1) Perjuangan Fisik Bersenjata: Pertempuran Surabaya (10 November 1945), Palagan Am- barawa (Kolonel Sudirman), Bandung Lautan Api (23 Maret 1946), Medan Area, Puputan Margarana Bali (I Gusti Ngu- rah Rai), dan Serangan Umum 1 Maret 1949 di Yogyakarta; serta (2) Perjuangan Diplomasi: Perundingan Linggarjati (November 1946: Belanda mengakui de facto Jawa, Sumatra, Madura →dilanggar Agresi Militer Belanda I 21 Juli 1947), Komisi Tiga Negara (KTN: Australia, Belgia, AS), Perundingan Renville (Januari 1948 →dilanggar Agresi Militer Be- landa II 19 Desember 1948 yang melahirkan PDRI Syafruddin Prawiranegara di Bukittinggi), Perundingan Roem–Royen (7 Mei 1949), hingga Konferensi Meja Bundar (KMB) di Den Haag (23 Agustus–2 November 1949) yang menghasilkan pengakuan kedaulatan RIS pada 27 Desember 1949 dan kembali ke NKRI pada 17 Agustus 1950. b. Masa Demokrasi Parlementer (1950–1959) & Demokrasi Terpimpin (1959–1965): Masa Parlementer menggu- nakan UUDS 1950 dengan 7 pergantian kabinet (Natsir, Sukiman, Wilopo, Ali Sostroamidjojo I, Burhanuddin Harahap, Ali Sostroamidjojo II, Djuanda) dan mencatat prestasi besar: Pemilu Pertama 1955, Konferensi Asia–Afrika (KAA) Ban- dung 1955, dan Deklarasi Djuanda (13 Desember 1957) yang menyatukan laut antarpulau Indonesia dari 3 mil (TZMKO 1939) menjadi negara kepulauan utuh (Archipelagic State 12 mil). Kegagalan Konstituante melahirkan Dekrit Presiden 5 Juli 1959 yang menandai masa Demokrasi Terpimpin: pembebasan Irian Barat melalui Trikora (19 Desember 1961) dan PEPERA (1969), namun diwarnai konfrontasi Malaysia (Dwikora) dan tragedi G30S/PKI. c. Masa Orde Baru (1966–1998) & Masa Reformasi (1998–Sekarang): Orde Baru fokus pada pembangunan ekonomi (Pelita, Revolusi Hijau, KB, SD Inpres, Puskesmas), namun sentralisasi kekuasaan, pembatasan demokrasi, dan krisis moneter 1997/1998 memicu gerakan mahasiswa menuntut Enam Agenda Reformasi hingga Presiden Soeharto mundur pada 21 Mei 1998. Era Reformasi melahirkan amandemen UUD 1945, pembatasan masa jabatan presiden, otonomi daerah, pembentukan KPK & MK, Pemilu Presiden langsung (sejak 2004), serta pembangunan infrastruktur konektivitas merata (Indonesia-sentris) dan hilirisasi industri menuju Indonesia Emas 2045. Rujukan resmi: Buku Siswa IPS Ke- las IX Kemendikdasmen (https://buku.kemendikdasmen.go.id/katalog/ilmu-pengetahuan-sosial-untuk-smp- mts-kelas-ix). 2. Tolok Ukur Kemajuan Pembangunan & Karakteristik Negara Maju vs Negara Berkembang a. Pertumbuhan Ekonomi vs Pembangunan Ekonomi, IPM, dan Rasio Gini: Pertumbuhan Ekonomi mengukur kenaikan kuantitatif output barang/jasa (PDB / GDP dan pendapatan per kapita) tanpa memandang pemerataan, dengan rumus: gt = PDBt −PDBt−1 PDBt−1 × 100% sedangkan Pembangunan Ekonomi mencakup peningkatan kualitas hidup masyarakat (IPM / HDI), transformasi struktur ekonomi dari agraris ke industri/jasa, serta pemerataan distribusi pendapatan yang diukur dengan Koefisien Gini (Gini Ratio, nilai 0 s.d. 1): mendekati 0 berarti ketimpangan rendah (sangat merata), mendekati 1 berarti ketimpangan sangat tinggi. b. Indikator Negara Maju (Developed Countries) vs Negara Berkembang (Developing Countries): Negara Maju (contoh: Jepang, Singapura, Korea Selatan, AS, Kanada, Jerman, Inggris, Prancis, Australia) bercirikan pendapatan per kapita tinggi, pertumbuhan penduduk rendah, angka harapan hidup dan literasi tinggi, dominasi sektor industri teknologi tinggi/jasa, serta ekspor manufaktur. Negara Berkembang bercirikan pertumbuhan penduduk relatif tinggi, ketergantungan pada ekspor komoditas primer/bahan mentah, dan sedang bertransformasi menuju industri. c. Rujukan 40 Soal HOTS Bab III Kelas 9 (3 Jenis Ujian): (1) OSN IPS SMP & US/ASPD: Naskah OSN IPS Kabu- paten (https://id.scribd.com/document/874078370/Soal-OSN-IPS-SMP-Kabupaten-Lengkap) & OSN IPS 2024 (https://id.scribd.com/document/708107668/OSN-IPS-SMP-2024); (2) MGMP IPS SMP: Bank Soal US MGMP IPS SMP (https://id.scribd.com/document/700602251/SOAL-UJIAN-SEKOLAH-MGMP-IPS-2021-2022); (3) ASAT/PAT Kurikulum Merdeka: Soal Sumatif Bab 3 Tantangan Pembangunan Indonesia Kelas 9 (https://id.scribd.com/ document/795612834/Soal-Sumatif-IPS-Kelas-9-Bab-3-Tantangan-Pembangunan-Indonesia).",
+    "valid": true
+  }
+]
