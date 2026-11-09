@@ -1,0 +1,687 @@
+# /Users/macbook/.gemini/antigravity/scratch/bimbel-gemilang-app/scripts/data_tpm_bahasa_indonesia.py
+import os, base64
+
+IMG_DIR = '/Users/macbook/.gemini/antigravity/scratch/bimbel-gemilang-app/public/soal/tryout_tpm_bindo_paket_b'
+
+def get_b64(filename):
+    path = os.path.join(IMG_DIR, filename)
+    if not os.path.exists(path):
+        return ""
+    ext = os.path.splitext(filename)[1].lower().replace('.', '')
+    mime = 'image/png' if ext == 'png' else 'image/jpeg'
+    with open(path, 'rb') as f:
+        data = base64.b64encode(f.read()).decode('utf-8')
+    return f"data:{mime};base64,{data}"
+
+PAKET_BIN = "TPM 2 SMP Kota Yogyakarta - Bahasa Indonesia Paket B"
+
+# WACANA 1: Baluran
+WACANA_1 = """Pernahkah kamu mendengar tentang Taman Nasional Baluran? Tempat tersebut ada di Situbondo, Jawa Timur. Taman Nasional Baluran didirikan tahun 1980 pada lahan seluas 25.000 ha. Baluran dijuluki Afrika van Java atau Little Africa in Java. Julukan ini diberikan karena pemandangannya unik. Lanskap padang rumput didominasi oleh sabana kering dan keberadaan satwa liar besar hidup bebas di habitat tersebut. Oleh karena itu, Baluran menjadi tujuan wajib untuk kamu yang suka satwa liar.<br><br>Ciri khas Taman Nasional Baluran adalah Padang Savana Bekol. Tempat tersebut berupa hamparan padang rumput yang luas. Banyak satwa liar berkeliaran bebas mencari makanan di sana. Satwa liar yang menjadi maskot di kawasan tersebut adalah Banteng (Bos javanicus). Banteng adalah jenis sapi liar yang besar. Selain Banteng, ada pula kawanan rusa dan kerbau liar.<br><br>Taman Nasional Baluran memiliki keanekaragaman hayati. Di sana terdapat 444 jenis flora. Dari jumlah tersebut, 265 jenis dapat dijadikan obat. Taman Nasional ini juga menjadi surga bagi fauna. Ada 196 jenis burung yang cantik dan 28 jenis mamalia di sana. Berbagai jenis ikan dan reptilia juga hidup di Baluran. Bahkan, 47 jenis satwa dilindungi tinggal di kawasan tersebut.<br><br>Baluran berfungsi sebagai cagar alam dan objek wisata. Tempat tersebut menawarkan banyak objek seru. Kamu bisa mengunjungi Evergreen Forest, Pantai Bama, Gua Jepang, Curah Tangis, Dermaga, dan Candi Bang. Tak heran jika Baluran merupakan kombinasi sempurna. Kamu bisa melihat satwa, menikmati pantai, dan belajar sejarah di sana."""
+
+# WACANA 2: Bioetanol
+WACANA_2 = """Limbah kulit pisang merupakan salah satu sampah organik yang jumlahnya cukup besar dan sering tidak dimanfaatkan. Jika dibiarkan menumpuk, limbah ini dapat menimbulkan bau serta meningkatkan permasalahan lingkungan. Namun, kulit pisang sebenarnya mengandung karbohidrat yang dapat diolah menjadi bioetanol melalui proses fermentasi. Bioetanol merupakan bahan bakar ramah lingkungan yang dapat digunakan sebagai energi alternatif. Oleh karena itu, pemanfaatan limbah kulit pisang menjadi bioetanol menjadi langkah produktif dalam mengurangi sampah sekaligus mendukung energi berkelanjutan.<br><br><b>Alat dan Bahan</b><br>• Kulit pisang<br>• Gula pasir<br>• Ragi (yeast)<br>• Air bersih<br><br><b>Langkah-Langkah</b><br>1. Cuci kulit pisang, potong kecil, lalu masukkan ke blender.<br>2. Tambahkan air, lalu blender hingga halus.<br>3. Rebus campuran tersebut menggunakan panci dan kompor selama ±15 menit agar steril dan keluar karbohidratnya.<br>4. Dinginkan hingga suhu sekitar 30–35°C, cek suhunya dengan termometer.<br>5. Tambahkan gula dan ragi, lalu aduk rata.<br>6. Tuang ke dalam botol fermentasi dan tutup rapat.<br>7. Fermentasikan selama 5–7 hari di suhu ruang.<br>8. Setelah fermentasi, saring cairan menggunakan kain saring.<br>9. Distilasi cairan dengan memanaskannya pada suhu 78°C untuk memisahkan bioetanol dari air.<br>10. Tampung uap yang terkondensasi sebagai bioetanol murni dengan botol.<br><br>Pemanfaatan limbah kulit pisang sebagai bahan dasar pembuatan bioetanol merupakan cara efektif untuk mengurangi sampah organik sekaligus menghasilkan energi alternatif yang ramah lingkungan. Proses fermentasi dan distilasi memungkinkan limbah yang tidak bernilai menjadi produk yang bermanfaat bagi kebutuhan energi.<br><br><i>Glosarium:</i><br>• distilasi: proses memanaskan benda cair atau padat hingga berubah menjadi uap.<br>• kondensasi: perubahan uap air atau benda gas menjadi benda cair."""
+
+# WACANA 3: Dua Teks Berita
+WACANA_3 = """<b>Teks 1</b><br>Kompas.com - Perilaku sehari-hari memiliki peran besar dalam menentukan kesehatan keluarga, terutama anak-anak. Penelitian pakar kesehatan masyarakat asal Amerika Serikat (AS), J Michael McGinnis menyatakan bahwa perilaku menyumbang 30-40 persen terhadap status gizi dan kesehatan seseorang. Angka ini lebih besar dibandingkan faktor pelayanan kesehatan maupun lingkungan. “Artinya, kebiasaan sederhana di rumah, seperti cara makan, menjaga kebersihan, dan pola asuh punya pengaruh langsung terhadap masa depan anak,” ujar Redaktur Lembaga Kantor Berita Nasional (LKBN) Antara, dalam rilis pers yang diterima Kompas.com, Jumat (7/11/2025). Salah satu persoalan gizi kronis yang masih banyak dialami anak-anak Indonesia adalah stunting. Persoalan tersebut tidak bisa hanya diatasi dengan memberikan suplemen vitamin secara rutin dengan takaran pas.<br><br><b>Teks 2</b><br>Kompas.com - Pendidikan anak usia dini (PAUD) sering dipandang hanya bergantung pada kualitas guru, kurikulum, atau fasilitas sekolah. Praktisi pendidikan menjelaskan bahwa keberhasilan PAUD terletak pada sinergi antara satuan PAUD dan orang tua. “Pendidikan anak usia dini tidak bisa berhasil jika rumah dan sekolah berjalan sendiri-sendiri. Anak butuh irama yang selaras antara guru dan orang tua,” ujarnya dalam keterangan resmi, Jumat (29/8/2025). Dijelaskan pula bagi orang tua, pendidikan adalah investasi jiwa, bukan sekadar proses formal. Mereka ingin setiap langkah kecil anak, entah menyapa guru, mencoba permainan baru, atau berbagi mainan, menjadi kebanggaan dan cermin nilai yang ditanamkan di rumah."""
+
+# WACANA 4: Pembelian Impulsif
+WACANA_4 = """Pembelian impulsif atau impulse buying adalah tindakan konsumen membeli barang tanpa perencanaan. Fenomena ini sering kali terjadi karena adanya dorongan yang mendadak atau perasaan yang kuat terhadap suatu produk. Pembelian impulsif terjadi saat konsumen tergoda untuk membeli sesuatu hanya karena adanya stimulus tertentu, seperti penawaran diskon atau promosi yang menarik perhatian mereka. Tindakan ini dapat terjadi di mana saja, baik di toko konvensional maupun di belanja online.<br><br>Dalam buku Consumer Behavior: Concepts and Applications karya David L. Loudon dan Albert J. Della Bitta disebutkan bahwa beberapa faktor memiliki pengaruh signifikan terhadap perilaku pembelian impulsif. Faktor yang pertama mencakup karakteristik produk. Produk yang ditawarkan dengan harga diskon atau promosi menarik dapat memikat konsumen untuk melakukan pembelian impulsif. Faktor kedua berupa strategi pemasaran. Konsep self service dan iklan dapat memengaruhi keputusan pembelian konsumen secara impulsif. Faktor terakhir karakteristik individu konsumen. Dorongan untuk memberi penghargaan kepada diri sendiri dapat memicu tindakan pembelian impulsif.<br><br>Konsekuensi pembelian impulsif adalah pemborosan yang dapat mengancam kesehatan finansial seseorang. Ketika terjerumus dalam kebiasaan pembelian impulsif, mereka cenderung membeli barang yang tidak mereka butuhkan atau tidak sesuai dengan keuangan mereka. Hal ini dapat mengakibatkan akumulasi utang kartu kredit atau keuangan yang tidak stabil dalam jangka panjang.<br><br>Oleh karena itu, pembelian impulsif bukanlah sesuatu yang harus dihindari, melainkan lebih kepada kesadaran terjadinya suatu risiko. Dengan meningkatkan kesadaran di balik pembelian impulsif, konsumen dapat mengembangkan strategi untuk mengelola godaan tersebut. Misalnya, membuat daftar belanjaan sebelumnya atau memberikan batasan waktu sebelum membuat keputusan pembelian."""
+
+# WACANA 5: Superman
+WACANA_5 = """Film Superman terbaru tayang di bioskop Indonesia pada 9 Juli 2025. Kehadiran film bergenre superhero ini menjadi penanda baru jagat perfilman yang tengah diremajakan oleh sutradara James Gunn. Saat ini, film Superman sudah meraih dua nominasi. Pertama adalah nominasi kategori Best Summer 2025 Blockbuster Trailer dalam Golden Trailer Award. Sementara nominasi kedua adalah Most Anticipated Film dalam Astra Midseason Award.<br><br>Film ini menceritakan kisah legendaris sang manusia baja mendapatkan babak baru yang lebih emosional, lebih manusiawi, sebab lebih membumi dari sebelumnya. Adegan awal langsung dibuka dengan pertempuran kemudian dilanjutkan dengan cerita berlapis yang dijamin tidak membosankan. Dengan narasi yang mengalir antara ketegangan dan perenungan, Superman menyuguhkan perjalanan menembus krisis identitas, pengkhianatan, dan pertanyaan eksistensial yang mendalam.<br><br>Alur dalam film Superman terbilang runtut. Seperti yang diharapkan produser James Gunn dan sinematografi Henry Braham yang pernah menggarap film Guardians of The Galaxy, film ini bernuansa lebih cerah. Hal itu berbeda dengan nuansa warna gelap ala film superhero sebelumnya yang menegaskan bahwa “Superman sebagai simbol harapan”. Efek visual adegan aksi superman terbang juga sangat memukau, detail, dan memberikan efek nyata. Sayangnya, ada beberapa adegan humor yang disisipi isu serius sehingga terkesan garing.<br><br>Film Superman bukan hanya pergantian aktor semata, melainkan sebagai tonggak baru. Film ini dapat ditonton dengan nyaman tanpa harus menonton serial sebelumnya. Film Superman layak ditonton semua kalangan."""
+
+# WACANA 6: Dua Teks Lingkungan
+WACANA_6_T1 = """<b>Teks 1</b><br>Saat ini, dunia menghadapi tiga krisis lingkungan, yaitu perubahan iklim, hilangnya keanekaragaman hayati, dan meningkatnya polusi. Tiga krisis tersebut semakin parah dengan tingginya jumlah sampah plastik. Plastik sulit terurai sehingga mempercepat kerusakan ekosistem. Indonesia termasuk salah satu negara penghasil sampah plastik terbesar. Berdasarkan data Sistem Informasi Pengelolaan Sampah Nasional (SIPSN) tahun 2024, sebanyak 19,74% dari 34,2 juta ton sampah merupakan sampah plastik. Angka ini meningkat dibandingkan tahun 2023 sebesar 19,26%. Hal ini menunjukkan bahwa masalah sampah plastik semakin mendesak untuk segera ditangani. Oleh karena itu, upaya serius berbagai pihak perlu dilakukan untuk mengurangi penggunaan plastik sekali pakai dan meningkatkan pengelolaan sampah. Pemerintah, pelaku usaha, dan masyarakat harus bekerja sama dalam menerapkan kebiasaan ramah lingkungan, seperti memilah sampah, mendaur ulang, dan mengurangi produk sekali pakai."""
+WACANA_6_T2 = """<b>Teks 2 (Infografis Lestarikan Lingkungan Lewat Keseharian - CNN Indonesia):</b><br>Kegiatan ramah lingkungan yang dapat dilakukan sehari-hari:<br>• Pakai tas belanja dan bawa tumbler untuk mengurangi jumlah sampah plastik.<br>• Ganti tisu dengan sapu tangan untuk menekan jumlah sampah.<br>• AC dan lampu tak perlu dinyalakan seharian untuk menghemat penggunaan listrik.<br>• Bepergian pakai transportasi umum untuk mengurangi polusi udara.<br>• Masak secukupnya sesuai kebutuhan, selalu habiskan makanan agar tidak jadi sampah.<br>• Pisahkan sampah organik dan anorganik.<br>• Daur ulang baju yang sudah rusak/tak dipakai menjadi lap, keset, tatakan gelas, dll.<br>• Tidak membakar sampah untuk mengurangi polusi asap hasil pembakaran."""
+
+# WACANA 7: Puisi Elegi Hujan
+WACANA_7 = """<b>Elegi Hujan</b><br><br>Lewat kaca jendela<br>Kutemui lembap sisa gerimis menangis<br>Merindu angin kemarau tahun lalu<br>Menitipkan salam selamat tinggal<br>Pada daun yang jatuh<br>Pada bunga yang hanyut oleh arus<br>Sebelum cikal buah menampakkan wujudnya<br>Dan bergurau bersama desau angin<br>Dari gunung yang kehilangan pepohonan<br><br>Pelan-pelan kucari dirimu di antara rengkuhan kehilangan<br>Bisu mencekam menatap bumi yang porak-poranda<br>Siang yang sepi, malam yang mati<br>Mentari dan rembulan tak mampu membangkitkan<br>Sisa tawamu yang tenggelam<br>Oleh hujan yang membawa seribu kematian"""
+
+# WACANA 8: Cerita Mak Inang
+WACANA_8 = """Deru pesawat terbang itu kian nyaring begitu melewati tempatnya berjongkok. Ia menghentikan gerakan tangannya. Mengiringi pesawat itu lenyap dari mata lamurnya. Lalu, tangannya kembali meraih cucian pakaian yang tak kunjung habis itu. Beberapa detik sekali, tangan keriputnya berhenti, lalu ia menampari pipi dan kaki. Nyamuk di belantara beton ternyata lebih ganas ketimbang nyamuk-nyamuk rimba yang saban pagi menggigit kulitnya saat menyadap karet.<br><br>Ia adalah Mak Inang. Belum genap satu purnama perempuan tua itu tiba di Jakarta. Ia melihat rumah kontrakan yang berdesak-desakan macam jamur kuping di kebun karetnya yang mengembang bila musim hujan. Hidungnya pun belum akrab dengan bau bacin selokan berair hitam kental yang mengalir di belakang kontrakannya. Bahkan, Mak Inang masih sering terkaget-kaget bila tikus-tikus got Jakarta berseliweran. Jika bisa, saat itu juga ia ingin kembali ke kampungnya.<br><br>Sesungguhnya, ia pun masih tak percaya kalau akhirnya ia menjejakkan kaki di Jakarta yang kerap diceritakan orang-orang di kampungnya. Suatu tempat yang megah dan menakjubkan dalam cerita Mak Rifah, Mak Sangkut, dan beberapa perempuan kampung karibnya. Sesuatu yang terdengar seperti surganya dunia. Hal itu membuat Mak Inang bersemangat mengadu nasib. Serba mewah, serba manis, serba indah untuk dibayangkan, tapi kenyataannya bertolak belakang. Dengan peristiwa yang dialaminya ini, Mak Inang lebih selektif dalam menanggapi cerita orang lain."""
+
+# WACANA 9: Cerita Batu Murka
+WACANA_9 = """Di perbatasan negara Jantara dan Hestina, berdiri kokoh pegunungan Waturaga. Pegunungan itu berbentuk seperti wajah raksasa yang tertidur. Awalnya, pegunungan itu damai dan terjaga. Kini, mulai berubah karena modernisasi.<br><br>PT Rakusantara menerima izin dari pemerintah Jantara. Puluhan ekskavator dan alat lainnya mulai diturunkan di pegunungan Waturaga. Tujuan utama mereka emas murni terbaik di jagat raya.<br><br>Kokohnya batu di pegunungan Waturaga membuat peralatan banyak yang rusak. Akhirnya, perusahaan menciptakan ekskavator penghancur dengan bahan tungsten, yaitu logam terkuat. Dengan alat itu, sebagian pegunungan Waturaga mulai dikeruk. Waktu terus berlalu dari musim ke musim, bor tercanggih sampai dinamit terkuat digunakan untuk memecahkan batu di sekitar pegunungan Waturaga. Setiap batuan runtuh diledakkan, warga sekitar merasakan getaran aneh, bukan karena ledakan, tapi seolah gunung kesakitan.<br><br>Saat bulan purnama, lubang tambang PT Rakusantara berhasil menemukan emas di kedalaman puluhan kilometer. Mereka meledakkannya agar mudah dikeruk. Seketika, batuan Waturaga bergerak hidup.<br><br>Batu itu bangkit. Waturaga setinggi ratusan meter berdiri gagah dengan kulit bergerigi batuan karst diselimuti lumut purba. Matanya merah pertanda marah. Ia meraung sehingga menimbulkan gelombang yang merusak alat berat dan rumah warga. Kaki Waturaga mengayun menghantam area pertambangan. Alat berat diinjak-injak seperti mainan kecil. Para penambang lari kocar-kacir. Kemudian, Waturaga melompat, menimbulkan runtuhan gunung dan tanah sampai menyapu para pekerja dan beberapa desa.<br><br>Waturaga benar-benar murka karena dikhianati manusia dengan mengeksploitasinya. Ia melangkah menuju pusat pemerintahan. Segala yang dilewati hancur berantakan. Seluruh pasukan dikerahkan. Namun, Waturaga tak mempan dengan senjata apa pun. Akhirnya, porak-porandalah seluruh negara."""
+
+# WACANA 10: 3R Sampah
+WACANA_10 = """Belakangan ini sampah menjadi perhatian dunia karena permasalahan yang terus ditimbulkan. Salah satunya berdampak bagi kesehatan manusia. Hal tersebut terjadi karena masih banyak orang yang enggan mendaur ulang sampah sehingga sampah terus menumpuk. Oleh karena itu, pemanfaatan kembali sampah penting dilakukan.<br><br>Sampah organik dan anorganik yang dihasilkan masyarakat masih bisa digunakan. Pemanfaatan sampah pada dasarnya tidak memerlukan waktu lama, tetapi membutuhkan kreativitas dan ketekunan. Konsep reduce (mengurangi), reuse (menggunakan kembali), dan recycle (mendaur ulang) merupakan pengelolaan sampah yang mudah diterapkan dalam kehidupan sehari-hari yang dikenal dengan 3R.<br><br>Konsep 3R ini bertujuan untuk meminimalkan sampah dan dampak negatifnya terhadap lingkungan. Mengurangi sampah bisa dilakukan dengan membatasi penggunaan barang sekali pakai, menggunakan tas belanja yang dapat digunakan ulang, dan menggunakan barang-barang yang ramah lingkungan. Menggunakan kembali bisa dilakukan dengan menggunakan botol minum isi ulang, menggunakan baju bekas untuk lap, dan menggunakan kaleng atau kardus sebagai wadah. Upaya tersebut jauh lebih baik daripada membakar sampah yang dapat menghasilkan biogas. Mendaur ulang bisa dilakukan dengan cara memilah sampah organik dan anorganik. Sampah organik dapat dimanfaatkan menjadi komposter. Selain itu, daur ulang juga dapat dilakukan dengan memanfaatkan abu sebagai bahan konstruksi.<br><br>Sampah memang tidak terlepas dari kehidupan manusia dan seringkali menimbulkan masalah. Akan tetapi, bukan berarti tidak ada solusi untuk hal itu. Perilaku disiplin menerapkan 3R akan menciptakan lingkungan yang lestari dan asri."""
+
+SOAL_BAHASA_INDONESIA = [
+    {
+        "nomor": 1,
+        "tipe": "pg_sederhana",
+        "paket": PAKET_BIN,
+        "kesulitan": "mudah",
+        "kelas": "9",
+        "mapel": "Bahasa Indonesia",
+        "materi": "Menemukan Informasi Tersurat Teks Deskripsi",
+        "cp": "Peserta didik dapat mengidentifikasi informasi tersurat tentang maskot fauna pada teks wacana.",
+        "grup": "wacana_baluran",
+        "bacaan_judul": "Petualangan di Afrika van Java",
+        "bacaan_gambar": {"src": get_b64("teks1_baluran.jpeg"), "alt": "Sabana Bekol Taman Nasional Baluran Situbondo"},
+        "bacaan": WACANA_1,
+        "teks_soal": "Satwa apa yang menjadi maskot Taman Nasional Baluran?",
+        "opsi": [
+            {"label": "A", "teks": "Kerbau."},
+            {"label": "B", "teks": "Reptilia."},
+            {"label": "C", "teks": "Mamalia."},
+            {"label": "D", "teks": "Banteng."}
+        ],
+        "kunci": "D",
+        "pembahasan": "Berdasarkan paragraf kedua wacana: 'Satwa liar yang menjadi maskot di kawasan tersebut adalah Banteng (Bos javanicus). Banteng adalah jenis sapi liar yang besar.' Jadi, maskot Taman Nasional Baluran adalah Banteng (opsi D)."
+    },
+    {
+        "nomor": 2,
+        "tipe": "pg_sederhana",
+        "paket": PAKET_BIN,
+        "kesulitan": "sedang",
+        "kelas": "9",
+        "mapel": "Bahasa Indonesia",
+        "materi": "Menganalisis Rincian Informasi Teks Deskripsi",
+        "cp": "Peserta didik dapat menganalisis data keanekaragaman flora dan fauna secara akurat berdasarkan teks.",
+        "grup": "wacana_baluran",
+        "bacaan": WACANA_1,
+        "teks_soal": "Taman Nasional Baluran memiliki keanekaragaman hayati. Keanekaragaman apa saja yang ada di kawasan tersebut?",
+        "opsi": [
+            {"label": "A", "teks": "Taman Nasional Baluran memiliki 265 jenis fauna yang berkhasiat sebagai bahan obat-obatan tradisional."},
+            {"label": "B", "teks": "Baluran memiliki 444 jenis flora sekaligus menjadi habitat berbagai jenis fauna termasuk satwa yang dilindungi."},
+            {"label": "C", "teks": "Cagar alam Baluran menjadi habitat asli bagi 28 jenis mamalia, 196 satwa yang dilindungi, dan berbagai reptilia."},
+            {"label": "D", "teks": "Kawasan Baluran menjadi tempat tinggal 196 jenis satwa liar yang dilindungi pemerintah, seperti mamalia dan reptil."}
+        ],
+        "kunci": "B",
+        "pembahasan": "Berdasarkan paragraf ketiga wacana: 'Di sana terdapat 444 jenis flora... Ada 196 jenis burung... 28 jenis mamalia... berbagai jenis ikan dan reptilia... Bahkan, 47 jenis satwa dilindungi tinggal di kawasan tersebut.' Opsi B tepat merangkum keberadaan 444 jenis flora serta habitat fauna termasuk satwa yang dilindungi."
+    },
+    {
+        "nomor": 3,
+        "tipe": "benar_salah",
+        "paket": PAKET_BIN,
+        "kesulitan": "sedang",
+        "kelas": "9",
+        "mapel": "Bahasa Indonesia",
+        "materi": "Hubungan Antarparagraf Teks Deskripsi",
+        "cp": "Peserta didik dapat mengevaluasi keterkaitan ide pokok paragraf penutup dengan paragraf penjelas sebelumnya.",
+        "grup": "wacana_baluran",
+        "bacaan": WACANA_1,
+        "teks_soal": "Mengapa informasi pada paragraf keempat sesuai dengan penjelasan paragraf kedua dan ketiga?<br>Tentukan Benar atau Salah untuk setiap pernyataan berikut:",
+        "pernyataan": [
+            {"teks": "A. Menyimpulkan daya tarik objek Taman Nasional Baluran secara keseluruhan.", "jawaban": "Benar"},
+            {"teks": "B. Merinci keanekaragaman flora, fauna, dan objek wisata di sekitar kawasan Baluran.", "jawaban": "Salah"},
+            {"teks": "C. Menegaskan fungsi Taman Nasional Baluran sebagai cagar alam dan destinasi wisata.", "jawaban": "Benar"}
+        ],
+        "kunci": "A: Benar, B: Salah, C: Benar",
+        "pembahasan": "Paragraf keempat menyatakan bahwa Baluran berfungsi sebagai cagar alam dan objek wisata yang merupakan kombinasi sempurna untuk melihat satwa (paragraf 2), menikmati alam dan pantai, serta belajar sejarah (paragraf 3). Pernyataan A Benar (menyimpulkan daya tarik secara keseluruhan). Pernyataan B Salah (fungsi merinci secara detail ada pada paragraf kedua dan ketiga, bukan paragraf keempat). Pernyataan C Benar (menegaskan fungsi ganda cagar alam dan destinasi wisata)."
+    },
+    {
+        "nomor": 4,
+        "tipe": "pg_sederhana",
+        "paket": PAKET_BIN,
+        "kesulitan": "mudah",
+        "kelas": "9",
+        "mapel": "Bahasa Indonesia",
+        "materi": "Makna Kata / Istilah Teks Prosedur",
+        "cp": "Peserta didik dapat menentukan makna kata teknis bidang lingkungan dan sains pada teks prosedur.",
+        "grup": "wacana_bioetanol",
+        "bacaan_judul": "Bagaimana Cara Membuat Bioetanol dari Limbah Kulit Pisang?",
+        "bacaan": WACANA_2,
+        "teks_soal": "Apa makna kata energi yang terdapat dalam teks tersebut?",
+        "opsi": [
+            {"label": "A", "teks": "Kemampuan melakukan fermentasi."},
+            {"label": "B", "teks": "Daya yang digunakan untuk distilasi."},
+            {"label": "C", "teks": "Sumber daya yang dapat dimanfaatkan."},
+            {"label": "D", "teks": "Tenaga yang melekat pada limbah organik."}
+        ],
+        "kunci": "C",
+        "pembahasan": "Dalam konteks kalimat 'Bioetanol merupakan bahan bakar ramah lingkungan yang dapat digunakan sebagai energi alternatif' dan 'produk yang bermanfaat bagi kebutuhan energi', kata energi bermakna daya atau sumber daya pembangkit/tenaga yang dapat dimanfaatkan untuk menggerakkan mesin atau aktivitas manusia (opsi C)."
+    },
+    {
+        "nomor": 5,
+        "tipe": "pg_kompleks",
+        "paket": PAKET_BIN,
+        "kesulitan": "sedang",
+        "kelas": "9",
+        "mapel": "Bahasa Indonesia",
+        "materi": "Memprediksi Kejadian Berdasarkan Prosedur",
+        "cp": "Peserta didik dapat memprediksi dampak perubahan perlakuan durasi perebusan pada prosedur pembuatan bioetanol.",
+        "grup": "wacana_bioetanol",
+        "bacaan": WACANA_2,
+        "teks_soal": "Apa yang akan terjadi jika campuran hasil blender direbus selama 5 menit?<br>Pilihlah jawaban yang benar! Jawaban benar lebih dari satu.",
+        "opsi": [
+            {"label": "1", "teks": "Bioetanol akan sulit dipisahkan dari campuran cairan."},
+            {"label": "2", "teks": "Campuran hasil blender akan terkontaminasi zat asing."},
+            {"label": "3", "teks": "Karbohidrat akan sulit untuk dikeluarkan dari campuran."},
+            {"label": "4", "teks": "Uap tidak akan terbentuk karena kurangnya pemanasan."}
+        ],
+        "kunci": "2, 3",
+        "pembahasan": "Langkah ke-3 teks menyatakan: 'Rebus campuran tersebut menggunakan panci dan kompor selama ±15 menit agar steril dan keluar karbohidratnya.' Jika hanya direbus selama 5 menit (kurang dari waktu optimal 15 menit), maka sterilisasi belum sempurna sehingga berisiko terkontaminasi zat/mikroba asing (pernyataan 2), dan karbohidrat belum optimal keluar/diekstraksi dari serat kulit pisang (pernyataan 3). Jadi jawaban benar adalah 2 dan 3."
+    },
+    {
+        "nomor": 6,
+        "tipe": "benar_salah",
+        "paket": PAKET_BIN,
+        "kesulitan": "sedang",
+        "kelas": "9",
+        "mapel": "Bahasa Indonesia",
+        "materi": "Menilai Kelengkapan Struktur Teks Prosedur",
+        "cp": "Peserta didik dapat mengevaluasi kelengkapan komponen alat, bahan, dan langkah-langkah teks prosedur.",
+        "grup": "wacana_bioetanol",
+        "bacaan": WACANA_2,
+        "teks_soal": "Mengapa struktur dalam teks tentang cara membuat bioetanol kurang lengkap?<br>Tentukan Benar atau Salah untuk setiap pernyataan berikut:",
+        "pernyataan": [
+            {"teks": "A. Tujuan pembuatan bioetanol dari kulit pisang tidak dijelaskan dalam teks.", "jawaban": "Salah"},
+            {"teks": "B. Alat yang digunakan dalam pembuatan bioetanol tidak dicantumkan.", "jawaban": "Benar"},
+            {"teks": "C. Langkah-langkah tidak dijabarkan dengan lengkap dan berurutan.", "jawaban": "Salah"}
+        ],
+        "kunci": "A: Salah, B: Benar, C: Salah",
+        "pembahasan": "Pernyataan A Salah karena tujuan pembuatan bioetanol sudah dipaparkan dengan jelas di paragraf pertama (mengurangi sampah organik dan bahan bakar ramah lingkungan). Pernyataan B Benar karena pada subjudul 'Alat dan Bahan', hanya dicantumkan bahan (kulit pisang, gula, ragi, air), sedangkan alat (blender, panci, kompor, botol fermentasi, kain saring, termometer, alat distilasi) tidak dimasukkan dalam daftar alat. Pernyataan C Salah karena langkah-langkah 1 sampai 10 sudah sangat lengkap, runtut, dan berurutan."
+    },
+    {
+        "nomor": 7,
+        "tipe": "pg_sederhana",
+        "paket": PAKET_BIN,
+        "kesulitan": "mudah",
+        "kelas": "9",
+        "mapel": "Bahasa Indonesia",
+        "materi": "Menemukan Informasi Tersurat Teks Berita",
+        "cp": "Peserta didik dapat mengidentifikasi faktor perilaku yang memengaruhi status gizi anak pada teks berita.",
+        "grup": "wacana_berita",
+        "bacaan_judul": "Perbandingan Dua Teks Berita Kesehatan dan Pendidikan",
+        "bacaan": WACANA_3,
+        "teks_soal": "Berdasarkan teks 1, kebiasaan apa yang berpengaruh terhadap status gizi dan kesehatan?",
+        "opsi": [
+            {"label": "A", "teks": "Pemberian suplemen, pola makan bergizi, dan pelayanan kesehatan."},
+            {"label": "B", "teks": "Pola asuh yang baik, menjaga kebersihan, dan menjaga status gizi."},
+            {"label": "C", "teks": "Pelayanan kesehatan, vitamin tambahan, dan menjaga kebersihan."},
+            {"label": "D", "teks": "Pola makan bergizi, menjaga kebersihan, dan pola asuh yang baik."}
+        ],
+        "kunci": "D",
+        "pembahasan": "Berdasarkan kutipan langsung Teks 1: 'kebiasaan sederhana di rumah, seperti cara makan, menjaga kebersihan, dan pola asuh punya pengaruh langsung terhadap masa depan anak.' Maka kebiasaan yang berpengaruh adalah pola makan bergizi, menjaga kebersihan, dan pola asuh yang baik (opsi D)."
+    },
+    {
+        "nomor": 8,
+        "tipe": "pg_sederhana",
+        "paket": PAKET_BIN,
+        "kesulitan": "sedang",
+        "kelas": "9",
+        "mapel": "Bahasa Indonesia",
+        "materi": "Menyusun Bagan Alur Ide Pokok Teks Berita",
+        "cp": "Peserta didik dapat menentukan bagan urutan ide pokok yang tepat pada teks berita PAUD.",
+        "grup": "wacana_berita",
+        "bacaan": WACANA_3,
+        "teks_soal": "Bagan yang sesuai dengan bagian-bagian penting teks berita 2 adalah ….",
+        "opsi": [
+            {"label": "A", "teks": "[Pentingnya sinergi antara satuan PAUD dan orang tua dalam keberhasilan pendidikan anak usia dini] → [Pendidikan anak usia dini tidak efektif jika rumah dan sekolah berjalan sendiri-sendiri] → [Dengan menciptakan irama yang selaras antara guru dan orang tua dalam mendampingi anak]"},
+            {"label": "B", "teks": "[Pendidikan anak usia dini tidak efektif jika rumah dan sekolah berjalan sendiri-sendiri] → [Pentingnya kerja sama antara anak usia dini dengan guru dalam keberhasilan pendidikan anak usia dini] → [Dengan menciptakan irama yang selaras antara guru dan orang tua dalam mendampingi anak]"},
+            {"label": "C", "teks": "[Pentingnya kerja sama kedua orang tua dalam keberhasilan pendidikan anak usia dini] → [Pendidikan anak usia dini akan efektif jika dilakukan di sekolah] → [Dengan menciptakan irama yang selaras antara guru dan orang tua dalam mendampingi anak]"},
+            {"label": "D", "teks": "[Pendidikan anak usia dini efektif jika rumah dan sekolah berjalan sendiri-sendiri] → [Pentingnya sinergi antara guru dengan karyawan dalam keberhasilan pendidikan anak usia dini] → [Dengan menciptakan irama yang selaras antara guru dan orang tua dalam mendampingi anak]"}
+        ],
+        "kunci": "A",
+        "pembahasan": "Alur ide pokok Teks 2 secara runtut: (1) Pernyataan umum pentingnya sinergi antara satuan PAUD dan orang tua; (2) Penjelasan bahwa PAUD tidak akan berhasil jika rumah dan sekolah berjalan sendiri-sendiri; (3) Solusi berupa menciptakan irama yang selaras antara guru dan orang tua dalam mendampingi anak. Bagan A merefleksikan urutan logis ini secara tepat."
+    },
+    {
+        "nomor": 9,
+        "tipe": "benar_salah",
+        "paket": PAKET_BIN,
+        "kesulitan": "sedang",
+        "kelas": "9",
+        "mapel": "Bahasa Indonesia",
+        "materi": "Kaidah Kebahasaan Dua Teks Berita",
+        "cp": "Peserta didik dapat membandingkan ciri kebahasaan konjungsi penjelas, kata ganti penunjuk, dan kalimat langsung pada dua teks berita.",
+        "grup": "wacana_berita",
+        "bacaan": WACANA_3,
+        "teks_soal": "Pernyataan manakah yang sesuai dengan kebahasaan pada kedua teks tersebut?<br>Pilihlah Benar atau Salah untuk pernyataan-pernyataan berikut:",
+        "pernyataan": [
+            {"teks": "A. Konjungsi penjelas digunakan dalam kedua teks.", "jawaban": "Benar"},
+            {"teks": "B. Kedua teks menggunakan kata ganti penunjuk.", "jawaban": "Benar"},
+            {"teks": "C. Kedua teks memuat kalimat langsung dari ahli pendidikan.", "jawaban": "Salah"}
+        ],
+        "kunci": "A: Benar, B: Benar, C: Salah",
+        "pembahasan": "Pernyataan A Benar karena kedua teks memuat konjungsi penjelas 'bahwa' (Teks 1: 'menyatakan bahwa...', Teks 2: 'menjelaskan bahwa...'). Pernyataan B Benar karena kedua teks menggunakan kata ganti penunjuk 'ini' dan 'tersebut' (Teks 1: 'Angka ini...', 'Persoalan tersebut...', Teks 2: 'Hal itu...'). Pernyataan C Salah karena Teks 1 memuat kutipan dari redaktur LKBN Antara dan pakar kesehatan masyarakat (bukan ahli pendidikan); hanya Teks 2 yang mengutip praktisi pendidikan."
+    },
+    {
+        "nomor": 10,
+        "tipe": "pg_sederhana",
+        "paket": PAKET_BIN,
+        "kesulitan": "mudah",
+        "kelas": "9",
+        "mapel": "Bahasa Indonesia",
+        "materi": "Mengidentifikasi Kata Kunci Teks Eksposisi",
+        "cp": "Peserta didik dapat mengidentifikasi deretan kata yang memicu fenomena pembelian impulsif.",
+        "grup": "wacana_impulsif",
+        "bacaan_judul": "Pembelian Impulsif: Fenomena Belanja Tak Terduga di Era Modern",
+        "bacaan": WACANA_4,
+        "teks_soal": "Deretan kata manakah yang menjadi pemicu munculnya fenomena pembelian impulsif?",
+        "opsi": [
+            {"label": "A", "teks": "penawaran diskon, promosi menarik, tergoda membeli"},
+            {"label": "B", "teks": "promosi menarik, belanja online, membutuhkan barang"},
+            {"label": "C", "teks": "meningkatnya kesadaran, tergoda membeli, promosi menarik"},
+            {"label": "D", "teks": "stimulus tertentu, dorongan kuat terhadap produk, keuangan stabil"}
+        ],
+        "kunci": "A",
+        "pembahasan": "Berdasarkan paragraf pertama dan kedua teks wacana: pembelian impulsif terjadi saat konsumen 'tergoda untuk membeli sesuatu' karena adanya stimulus berupa 'penawaran diskon' atau 'promosi menarik'. Jadi deretan kata pemicu yang tepat adalah opsi A."
+    },
+    {
+        "nomor": 11,
+        "tipe": "pg_sederhana",
+        "paket": PAKET_BIN,
+        "kesulitan": "mudah",
+        "kelas": "9",
+        "mapel": "Bahasa Indonesia",
+        "materi": "Menentukan Tujuan Penulisan Teks",
+        "cp": "Peserta didik dapat menentukan tujuan komunikatif penulisan teks tentang perilaku impulse buying.",
+        "grup": "wacana_impulsif",
+        "bacaan": WACANA_4,
+        "teks_soal": "Tujuan penulisan teks tersebut adalah ….",
+        "opsi": [
+            {"label": "A", "teks": "menginformasikan tentang perilaku pembelian impulsif"},
+            {"label": "B", "teks": "memaparkan manfaat pembelian impulsif bagi diri sendiri"},
+            {"label": "C", "teks": "menjelaskan kepada masyarakat tentang perilaku hidup hemat"},
+            {"label": "D", "teks": "menghindarkan masyarakat dari penawaran pembelian impulsif"}
+        ],
+        "kunci": "A",
+        "pembahasan": "Teks memaparkan pengertian impulse buying, faktor-faktor penyebab menurut literatur psikologi konsumen, risiko finansial, dan cara mengelolanya. Tujuan utamanya adalah menginformasikan kepada pembaca mengenai perilaku pembelian impulsif secara komprehensif (opsi A)."
+    },
+    {
+        "nomor": 12,
+        "tipe": "benar_salah",
+        "paket": PAKET_BIN,
+        "kesulitan": "sedang",
+        "kelas": "9",
+        "mapel": "Bahasa Indonesia",
+        "materi": "Mengevaluasi Tindakan Logis Berdasarkan Teks",
+        "cp": "Peserta didik dapat menilai kesesuaian tindakan konsumen dalam mengelola risiko pembelian impulsif.",
+        "grup": "wacana_impulsif",
+        "bacaan": WACANA_4,
+        "teks_soal": "Setelah memahami risiko pembelian impulsif, apa yang sebaiknya dilakukan masyarakat dalam kehidupan sehari-hari berdasarkan isi teks tersebut?<br>Tentukan Benar atau Salah untuk setiap pernyataan berikut:",
+        "pernyataan": [
+            {"teks": "A. Membuat daftar barang yang akan dibeli sebelum berbelanja.", "jawaban": "Benar"},
+            {"teks": "B. Mempertimbangkan kembali kebutuhan barang yang akan dibeli.", "jawaban": "Benar"},
+            {"teks": "C. Membeli barang karena ada potongan harga sebagai apresiasi diri.", "jawaban": "Salah"}
+        ],
+        "kunci": "A: Benar, B: Benar, C: Salah",
+        "pembahasan": "Paragraf terakhir menyarankan konsumen mengelola godaan dengan 'membuat daftar belanjaan sebelumnya atau memberikan batasan waktu sebelum membuat keputusan pembelian'. Pernyataan A Benar (membuat daftar belanja). Pernyataan B Benar (mempertimbangkan kembali kebutuhan agar tidak boros). Pernyataan C Salah karena membeli barang hanya karena diskon untuk self-reward adalah bentuk pembelian impulsif yang tidak terencana."
+    },
+    {
+        "nomor": 13,
+        "tipe": "pg_sederhana",
+        "paket": PAKET_BIN,
+        "kesulitan": "mudah",
+        "kelas": "9",
+        "mapel": "Bahasa Indonesia",
+        "materi": "Membedakan Fakta dan Opini Teks Ulasan",
+        "cp": "Peserta didik dapat mengidentifikasi kalimat opini pada teks ulasan film.",
+        "grup": "wacana_superman",
+        "bacaan_judul": "Superman: Kebangkitan dan Harapan dari Langit",
+        "bacaan_gambar": {"src": get_b64("teks5_superman.jpeg"), "alt": "Poster Film Superman 2025 disutradarai James Gunn"},
+        "bacaan": WACANA_5,
+        "teks_soal": "Kalimat opini yang tepat berdasarkan teks tersebut adalah …",
+        "opsi": [
+            {"label": "A", "teks": "Saat ini film Superman sudah meraih dua nominasi."},
+            {"label": "B", "teks": "Film Superman menjadi penanda baru jagat perfilman."},
+            {"label": "C", "teks": "Nominasi Most Anticipated Film diraih oleh film Superman."},
+            {"label": "D", "teks": "Film Superman meraih Best Summer 2025 Blockbuster Trailer."}
+        ],
+        "kunci": "B",
+        "pembahasan": "Kalimat pada opsi B: 'Film Superman menjadi penanda baru jagat perfilman' merupakan opini/pandangan subjektif pengulas. Sebaliknya, opsi A, C, dan D merupakan fakta yang mencantumkan capaian resmi nominasi penghargaan film (Golden Trailer Award dan Astra Midseason Award)."
+    },
+    {
+        "nomor": 14,
+        "tipe": "pg_sederhana",
+        "paket": PAKET_BIN,
+        "kesulitan": "sedang",
+        "kelas": "9",
+        "mapel": "Bahasa Indonesia",
+        "materi": "Keterkaitan Antarparagraf Teks Ulasan",
+        "cp": "Peserta didik dapat menganalisis hubungan pertimbangan kelebihan/kekurangan pada paragraf evaluasi dengan simpulan kelayakan tonton.",
+        "grup": "wacana_superman",
+        "bacaan": WACANA_5,
+        "teks_soal": "Apa kaitan antara paragraf ketiga dengan paragraf keempat?",
+        "opsi": [
+            {"label": "A", "teks": "Penjelasan unsur-unsur humor menjadikan film Superman layak ditonton oleh segala usia."},
+            {"label": "B", "teks": "Penggambaran kelebihan visual menjadi dasar film Superman direkomendasikan untuk anak-anak."},
+            {"label": "C", "teks": "Perincian kelebihan film menjadi salah satu alasan film ini layak ditonton meskipun terdapat kekurangan."},
+            {"label": "D", "teks": "Penilaian positif pada unsur sinematografi menguatkan pendapat bahwa film ini cocok untuk penggemar superhero."}
+        ],
+        "kunci": "C",
+        "pembahasan": "Paragraf ketiga merinci kelebihan (alur runtut, nuansa cerah, efek visual aksi terbang memukau) dan menyebut kekurangan kecil (humor garing). Paragraf keempat menyimpulkan film tersebut merupakan tonggak baru dan layak ditonton semua kalangan. Jadi, rincian kelebihan di paragraf 3 menjadi dasar penilaian kelayakan tonton di paragraf 4 (opsi C)."
+    },
+    {
+        "nomor": 15,
+        "tipe": "benar_salah",
+        "paket": PAKET_BIN,
+        "kesulitan": "sedang",
+        "kelas": "9",
+        "mapel": "Bahasa Indonesia",
+        "materi": "Analisis Kesalahan Konjungsi Teks Ulasan",
+        "cp": "Peserta didik dapat mengevaluasi fungsi semantis konjungsi saat, sebab, dan bahwa.",
+        "grup": "wacana_superman",
+        "bacaan": WACANA_5,
+        "teks_soal": "Teks ulasan tersebut terdapat kesalahan penggunaan konjungsi. Alasan manakah yang mendukung pernyataan tersebut?<br>Tentukan Benar atau Salah untuk setiap pernyataan berikut:",
+        "pernyataan": [
+            {"teks": "A. Konjungsi saat tidak menunjukkan hubungan penyebab.", "jawaban": "Benar"},
+            {"teks": "B. Konjungsi sebab tidak menyatakan hubungan penambahan.", "jawaban": "Benar"},
+            {"teks": "C. Konjungsi bahwa bukan merupakan hubungan temporal.", "jawaban": "Benar"}
+        ],
+        "kunci": "A: Benar, B: Benar, C: Benar",
+        "pembahasan": "Pernyataan A Benar karena 'saat' adalah konjungsi temporal (waktu), bukan penyebab (kausalitas). Pernyataan B Benar karena 'sebab' adalah konjungsi kausalitas, bukan konjungsi koordinatif penambahan (aditif). Pernyataan C Benar karena 'bahwa' adalah konjungsi penjelas/komplementor, bukan konjungsi temporal. Ketiga pernyataan secara tata bahasa benar menjelaskan fungsi asli konjungsi tersebut."
+    },
+    {
+        "nomor": 16,
+        "tipe": "pg_sederhana",
+        "paket": PAKET_BIN,
+        "kesulitan": "mudah",
+        "kelas": "9",
+        "mapel": "Bahasa Indonesia",
+        "materi": "Membaca Informasi Infografis",
+        "cp": "Peserta didik dapat mengidentifikasi tindakan pelestarian lingkungan dari wacana infografis.",
+        "grup": "wacana_lingkungan",
+        "bacaan_judul": "Krisis Lingkungan dan Upaya Pelestarian Keseharian",
+        "bacaan_gambar": {"src": get_b64("teks6_infografis_lingkungan.jpeg"), "alt": "Infografis CNN Indonesia Lestarikan Lingkungan Lewat Keseharian"},
+        "bacaan": WACANA_6_T1 + "<br><br>" + WACANA_6_T2,
+        "teks_soal": "Berdasarkan teks 2, kegiatan yang termasuk melestarikan lingkungan adalah …",
+        "opsi": [
+            {"label": "A", "teks": "Tidak membakar sampah, mendaur ulang baju baru, menghemat listrik."},
+            {"label": "B", "teks": "Memilah sampah, menggunakan transportasi pribadi, membawa tumbler."},
+            {"label": "C", "teks": "Menanam pohon, menggunakan transportasi umum, menghabiskan makanan."},
+            {"label": "D", "teks": "Memakai tas belanja, makan secukupnya, mematikan peralatan yang tidak dipakai."}
+        ],
+        "kunci": "D",
+        "pembahasan": "Berdasarkan infografis Teks 2: 'Pakai tas belanja', 'Masak secukupnya... selalu habiskan makanan', dan 'AC dan lampu tak perlu dinyalakan seharian' (mematikan peralatan yang tidak dipakai). Opsi D seluruhnya memuat butir-butir yang tercantum secara akurat pada infografis."
+    },
+    {
+        "nomor": 17,
+        "tipe": "pg_sederhana",
+        "paket": PAKET_BIN,
+        "kesulitan": "sedang",
+        "kelas": "9",
+        "mapel": "Bahasa Indonesia",
+        "materi": "Menyusun Bagan Alur Pemikiran Teks Berita Lingkungan",
+        "cp": "Peserta didik dapat menentukan diagram alur hubungan logis paragraf teks berita masalah sampah plastik.",
+        "grup": "wacana_lingkungan",
+        "bacaan": WACANA_6_T1 + "<br><br>" + WACANA_6_T2,
+        "teks_soal": "Bagan yang sesuai dengan bagian penting teks 1 adalah …",
+        "opsi": [
+            {"label": "A", "teks": "[Indonesia penyumbang sampah plastik] → [Kerja sama dalam penanganan sampah] → [Dunia menghadapi tiga krisis lingkungan] → [Sampah plastik memperparah krisis lingkungan]"},
+            {"label": "B", "teks": "[Dunia menghadapi tiga krisis lingkungan] → [Indonesia penyumbang sampah plastik] → [Sampah plastik memperparah krisis lingkungan] → [Kerja sama dalam penanganan sampah]"},
+            {"label": "C", "teks": "[Indonesia penyumbang sampah plastik] → [Dunia menghadapi tiga krisis lingkungan] → [Kerja sama dalam penanganan sampah] → [Sampah plastik memperparah krisis lingkungan]"},
+            {"label": "D", "teks": "[Dunia menghadapi tiga krisis lingkungan] → [Sampah plastik memperparah krisis lingkungan] → [Indonesia penyumbang sampah plastik] → [Kerja sama dalam penanganan sampah]"}
+        ],
+        "kunci": "D",
+        "pembahasan": "Urutan pokok pikiran Teks 1: (1) Dunia menghadapi tiga krisis lingkungan (iklim, hayati, polusi); (2) Sampah plastik memperparah krisis lingkungan karena sulit terurai; (3) Indonesia termasuk negara penyumbang sampah plastik terbesar berdasarkan data SIPSN; (4) Perlunya kerja sama pemerintah, pelaku usaha, dan masyarakat dalam penanganan sampah. Alur logis ini tepat ditunjukkan oleh bagan D."
+    },
+    {
+        "nomor": 18,
+        "tipe": "benar_salah",
+        "paket": PAKET_BIN,
+        "kesulitan": "sedang",
+        "kelas": "9",
+        "mapel": "Bahasa Indonesia",
+        "materi": "Menilai Kredibilitas Sumber Data Teks",
+        "cp": "Peserta didik dapat menilai alasan keandalan data statistik resmi pemerintah pada teks berita.",
+        "grup": "wacana_lingkungan",
+        "bacaan": WACANA_6_T1 + "<br><br>" + WACANA_6_T2,
+        "teks_soal": "Setelah membaca kedua teks tersebut, Hasan menilai bahwa informasi teks 1 lebih terpercaya daripada teks 2. Pernyataan manakah yang mendukung penilaian Hasan?<br>Tentukan Benar atau Salah untuk setiap pernyataan!",
+        "pernyataan": [
+            {"teks": "A. Terdapat pernyataan ahli.", "jawaban": "Salah"},
+            {"teks": "B. Informasi diperoleh dari karya ilmiah.", "jawaban": "Salah"},
+            {"teks": "C. Memuat data resmi dari pemerintah.", "jawaban": "Benar"}
+        ],
+        "kunci": "A: Salah, B: Salah, C: Benar",
+        "pembahasan": "Teks 1 memuat data statistik resmi pemerintah dari Sistem Informasi Pengelolaan Sampah Nasional (SIPSN) tahun 2024 dan 2023 dengan angka persentase konkret (19,74% dari 34,2 juta ton sampah). Pernyataan A Salah karena teks 1 tidak mengutip pernyataan ahli perorangan. Pernyataan B Salah karena teks bukan berasal dari jurnal/karya ilmiah melainkan data portal berita dan kementerian. Pernyataan C Benar karena memuat data resmi instansi pemerintah."
+    },
+    {
+        "nomor": 19,
+        "tipe": "pg_sederhana",
+        "paket": PAKET_BIN,
+        "kesulitan": "mudah",
+        "kelas": "9",
+        "mapel": "Bahasa Indonesia",
+        "materi": "Menyimpulkan Nilai Keteladanan Puisi",
+        "cp": "Peserta didik dapat menyimpulkan amanat dan keteladanan menjaga kelestarian alam pada puisi.",
+        "grup": "wacana_puisi",
+        "bacaan_judul": "Elegi Hujan",
+        "bacaan_gambar": {"src": get_b64("teks7_puisi_elegi_hujan.jpeg"), "alt": "Karya Puisi Elegi Hujan berlatar suasana gerimis dan bunga berguguran"},
+        "bacaan": WACANA_7,
+        "teks_soal": "Keteladanan apa yang dapat kamu peroleh dari puisi “Elegi Hujan”?",
+        "opsi": [
+            {"label": "A", "teks": "Waspada ketika bencana melanda."},
+            {"label": "B", "teks": "Musim hujan harus selalu disyukuri."},
+            {"label": "C", "teks": "Berdoalah saat cobaan yang datang."},
+            {"label": "D", "teks": "Jagalah alam agar bumi tidak rusak."}
+        ],
+        "kunci": "D",
+        "pembahasan": "Puisi 'Elegi Hujan' menggambarkan bencana air bah dan duka kematian yang bermula 'Dari gunung yang kehilangan pepohonan' hingga menyebabkan 'bumi yang porak-poranda'. Nilai keteladanan yang paling mendasar adalah ajakan untuk menjaga kelestarian alam dan hutan agar bumi tidak rusak dan tidak mendatangkan petaka banjir (opsi D)."
+    },
+    {
+        "nomor": 20,
+        "tipe": "pg_kompleks",
+        "paket": PAKET_BIN,
+        "kesulitan": "sedang",
+        "kelas": "9",
+        "mapel": "Bahasa Indonesia",
+        "materi": "Memaknai Larik Puisi Bernuansa Kiasan",
+        "cp": "Peserta didik dapat menginterpretasi makna konotatif larik puisi duka bencana alam.",
+        "grup": "wacana_puisi",
+        "bacaan": WACANA_7,
+        "teks_soal": "Apa makna yang terkandung dalam larik Oleh hujan yang membawa seribu kematian dalam puisi tersebut?<br>Pilihlah jawaban yang benar! Jawaban benar lebih dari satu.",
+        "opsi": [
+            {"label": "1", "teks": "Duka mendalam karena bencana banjir."},
+            {"label": "2", "teks": "Banjir menyebabkan kesengsaraan manusia."},
+            {"label": "3", "teks": "Banjir menimbulkan korban jiwa yang banyak."},
+            {"label": "4", "teks": "Korban jiwa dan harta benda disebabkan banjir."}
+        ],
+        "kunci": "1, 2, 3",
+        "pembahasan": "Larik 'Oleh hujan yang membawa seribu kematian' menggunakan majas hiperbola ('seribu kematian') yang menggambarkan dahsyatnya musibah banjir yang merenggut banyak korban jiwa (pernyataan 3), memicu kepedihan dan kesengsaraan hidup warga yang selamat (pernyataan 2), serta melahirkan suasana duka cita mendalam atas orang-orang terkasih yang tenggelam (pernyataan 1). Jadi pernyataan 1, 2, dan 3 benar."
+    },
+    {
+        "nomor": 21,
+        "tipe": "benar_salah",
+        "paket": PAKET_BIN,
+        "kesulitan": "sedang",
+        "kelas": "9",
+        "mapel": "Bahasa Indonesia",
+        "materi": "Menentukan Tanggapan Emosional Pembaca Puisi",
+        "cp": "Peserta didik dapat mengevaluasi respons afektif empati, kesedihan, dan keprihatinan terhadap puisi Elegi Hujan.",
+        "grup": "wacana_puisi",
+        "bacaan": WACANA_7,
+        "teks_soal": "Tanggapan emosional yang sesuai dengan isi puisi tersebut adalah ….<br>Tentukan Sesuai atau Tidak Sesuai untuk setiap pernyataan berikut:",
+        "pernyataan": [
+            {"teks": "A. Empati terhadap sesama manusia.", "jawaban": "Benar"},
+            {"teks": "B. Sedih saat melihat kerusakan alam.", "jawaban": "Benar"},
+            {"teks": "C. Kesal terhadap pelaku kerusakan lingkungan.", "jawaban": "Benar"}
+        ],
+        "kunci": "A: Benar, B: Benar, C: Benar",
+        "pembahasan": "Pembaca puisi tergerak secara emosional: empati mendalam terhadap korban yang kehilangan keluarga ('sisa tawamu yang tenggelam'), rasa sedih melihat alam yang hancur ('bumi yang porak-poranda'), serta rasa kesal/geram terhadap pihak perusak hutan di pegunungan yang menyebabkan petaka. Ketiga tanggapan emosional tersebut sesuai."
+    },
+    {
+        "nomor": 22,
+        "tipe": "pg_sederhana",
+        "paket": PAKET_BIN,
+        "kesulitan": "mudah",
+        "kelas": "9",
+        "mapel": "Bahasa Indonesia",
+        "materi": "Menemukan Informasi Tersurat Cerita Pendek",
+        "cp": "Peserta didik dapat menemukan aktivitas tokoh utama pada saat peristiwa tertentu terjadi.",
+        "grup": "wacana_makinang",
+        "bacaan_judul": "Kisah Mak Inang di Belantara Beton",
+        "bacaan": WACANA_8,
+        "teks_soal": "Apa yang sedang dilakukan Mak Inang ketika ada pesawat terbang melintas?",
+        "opsi": [
+            {"label": "A", "teks": "Menyadap karet."},
+            {"label": "B", "teks": "Mencuci pakaian."},
+            {"label": "C", "teks": "Menampari pipi dan kaki."},
+            {"label": "D", "teks": "Melihat rumah kontrakan."}
+        ],
+        "kunci": "B",
+        "pembahasan": "Berdasarkan paragraf pertama cerita: 'Deru pesawat terbang itu kian nyaring begitu melewati tempatnya berjongkok. Ia menghentikan gerakan tangannya... Lalu, tangannya kembali meraih cucian pakaian yang tak kunjung habis itu.' Jadi Mak Inang sedang mencuci pakaian (opsi B)."
+    },
+    {
+        "nomor": 23,
+        "tipe": "pg_kompleks",
+        "paket": PAKET_BIN,
+        "kesulitan": "sedang",
+        "kelas": "9",
+        "mapel": "Bahasa Indonesia",
+        "materi": "Menganalisis Perubahan Karakter Tokoh",
+        "cp": "Peserta didik dapat mengidentifikasi dinamika perubahan psikologis dan watak tokoh cerita.",
+        "grup": "wacana_makinang",
+        "bacaan": WACANA_8,
+        "teks_soal": "Bagaimana perubahan karakter Mak Inang sebelum dan setelah ke Jakarta?<br>Pilihlah jawaban yang benar! Jawaban benar lebih dari satu.",
+        "opsi": [
+            {"label": "1", "teks": "Awalnya Mak Inang mudah percaya, setelah tinggal di Jakarta Mak Inang lebih mawas diri."},
+            {"label": "2", "teks": "Sebelumnya Mak Inang sangat sederhana, sesampainya di Jakarta kehidupannya sangat mewah."},
+            {"label": "3", "teks": "Semula Mak Inang optimis dengan kehidupan Jakarta, sesampai di sana Mak Inang menjadi pesimis."},
+            {"label": "4", "teks": "Mulanya Mak Inang bersemangat untuk merantau ke Jakarta, ketika di sana ia menyerah pada kehidupan."}
+        ],
+        "kunci": "1, 3",
+        "pembahasan": "Sebelum ke Jakarta, Mak Inang mudah percaya pada cerita manis perempuan sekampungnya dan sangat bersemangat/optimis ('sesuatu yang terdengar seperti surganya dunia'). Setelah hidup di Jakarta di tengah kontrakan kumuh, ia sadar kenyataan bertolak belakang sehingga menjadi pesimis ingin pulang ke kampung serta lebih mawas diri/selektif dalam mempercayai cerita orang lain. Pernyataan 1 dan 3 benar."
+    },
+    {
+        "nomor": 24,
+        "tipe": "benar_salah",
+        "paket": PAKET_BIN,
+        "kesulitan": "sedang",
+        "kelas": "9",
+        "mapel": "Bahasa Indonesia",
+        "materi": "Penerapan Nilai Kehidupan dari Cerita",
+        "cp": "Peserta didik dapat merefleksikan nilai-nilai moral cerita Mak Inang dalam kehidupan nyata.",
+        "grup": "wacana_makinang",
+        "bacaan": WACANA_8,
+        "teks_soal": "Setelah membaca kisah Mak Inang, apa yang bisa dilakukan seseorang untuk menerapkan nilai-nilai sesuai cerita?<br>Tentukan Benar atau Salah untuk setiap pernyataan berikut:",
+        "pernyataan": [
+            {"teks": "A. Berbicara apa adanya tidak perlu dilebih-lebihkan.", "jawaban": "Benar"},
+            {"teks": "B. Rajin membantu mengerjakan pekerjaan orang tua.", "jawaban": "Salah"},
+            {"teks": "C. Mempercayai setiap perkataan orang lain.", "jawaban": "Salah"}
+        ],
+        "kunci": "A: Benar, B: Salah, C: Salah",
+        "pembahasan": "Pernyataan A Benar karena cerita mengkritik sikap melebih-lebihkan keadaan kota yang menyesatkan orang lain. Pernyataan B Salah karena bukan merupakan pesan sentral cerita perantauan Mak Inang. Pernyataan C Salah karena cerita justru mengajarkan agar tidak mudah percaya begitu saja pada perkataan orang lain tanpa kroscek kenyataan."
+    },
+    {
+        "nomor": 25,
+        "tipe": "pg_sederhana",
+        "paket": PAKET_BIN,
+        "kesulitan": "mudah",
+        "kelas": "9",
+        "mapel": "Bahasa Indonesia",
+        "materi": "Menemukan Informasi Tersurat Cerita Fantasi",
+        "cp": "Peserta didik dapat menemukan latar tempat keberadaan objek tambang pada cerita fantasi.",
+        "grup": "wacana_batumurka",
+        "bacaan_judul": "Batu Murka",
+        "bacaan": WACANA_9,
+        "teks_soal": "Di mana letak emas murni terbaik di jagat raya?",
+        "opsi": [
+            {"label": "A", "teks": "Negara Hestina."},
+            {"label": "B", "teks": "Pegunungan Waturaga."},
+            {"label": "C", "teks": "Pusat pemerintahan Jantara."},
+            {"label": "D", "teks": "Desa dekat pegunungan Waturaga."}
+        ],
+        "kunci": "B",
+        "pembahasan": "Berdasarkan paragraf kedua: 'Puluhan ekskavator dan alat lainnya mulai diturunkan di pegunungan Waturaga. Tujuan utama mereka emas murni terbaik di jagat raya.' Letak emas murni tersebut berada di Pegunungan Waturaga (opsi B)."
+    },
+    {
+        "nomor": 26,
+        "tipe": "pg_kompleks",
+        "paket": PAKET_BIN,
+        "kesulitan": "sedang",
+        "kelas": "9",
+        "mapel": "Bahasa Indonesia",
+        "materi": "Menyimpulkan Pesan Moral Cerita Fantasi",
+        "cp": "Peserta didik dapat menyimpulkan pesan moral cerita fantasi bertema eksploitasi alam.",
+        "grup": "wacana_batumurka",
+        "bacaan": WACANA_9,
+        "teks_soal": "Pesan moral apakah yang diperoleh dari cerita “Batu Murka”?<br>Pilihlah jawaban yang benar! Jawaban benar lebih dari satu.",
+        "opsi": [
+            {"label": "1", "teks": "Jagalah alam agar tidak merugikan masyarakat."},
+            {"label": "2", "teks": "Manfaatkanlah kekayaan alam semaksimal mungkin."},
+            {"label": "3", "teks": "Masyarakat harus turut serta menciptakan kedamaian."},
+            {"label": "4", "teks": "Setiap perbuatan akan mendapatkan balasan setimpal."}
+        ],
+        "kunci": "1, 4",
+        "pembahasan": "Cerita 'Batu Murka' memperlihatkan bagaimana kerakusan manusia mengeksploitasi pegunungan demi emas mengakibatkan bangkitnya raksasa batu yang memorak-porandakan seluruh negara. Pesan moralnya: (1) Jagalah kelestarian alam agar tidak mendatangkan bencana bagi masyarakat; (4) Setiap tindakan serakah yang merusak alam akan menuai balasan setimpal berupa malapetaka. Jawaban benar adalah 1 dan 4."
+    },
+    {
+        "nomor": 27,
+        "tipe": "benar_salah",
+        "paket": PAKET_BIN,
+        "kesulitan": "sedang",
+        "kelas": "9",
+        "mapel": "Bahasa Indonesia",
+        "materi": "Menilai Ketepatan Karakterisasi Tokoh Cerita",
+        "cp": "Peserta didik dapat mengevaluasi kesesuaian pendapat pembaca mengenai karakter tokoh pada cerita Batu Murka.",
+        "grup": "wacana_batumurka",
+        "bacaan": WACANA_9,
+        "teks_soal": "Setelah membaca cerita, Silas, Roan, dan Gaharu berpendapat sebagai berikut:<br>• Silas: “Waturaga ternyata dendam terhadap oknum yang mengeksploitasinya sehingga ia memporak-porandakan negara.”<br>• Roan: “Kalau menurutku, PT Rakusantara mencerminkan kerakusan manusia sehingga merusak alam.”<br>• Gaharu: “Menurutku Pemerintah Jantara sudah bijak dalam mengeluarkan izin kepada perusahaan karena berdasarkan penelitian.”<br><br>Pendapat siapakah yang tepat untuk menilai karakter tokoh dalam cerita tersebut?<br>Tentukan Benar atau Salah untuk setiap pernyataan berikut:",
+        "pernyataan": [
+            {"teks": "A. Silas karena alam yang dirusak bisa menimbulkan bencana bagi wilayah sekitar.", "jawaban": "Salah"},
+            {"teks": "B. Gaharu karena izin pertambangan sudah berdasarkan penelitian sebelumnya.", "jawaban": "Salah"},
+            {"teks": "C. Roan karena penambangan yang dilakukan oleh perusahaan untuk keuntungan sendiri.", "jawaban": "Benar"}
+        ],
+        "kunci": "A: Salah, B: Salah, C: Benar",
+        "pembahasan": "Pernyataan C Benar karena pendapat Roan tepat menilai karakterisasi PT Rakusantara sebagai perlambang kerakusan korporasi tambang yang semata-mata mengejar keuntungan materiil sampai merusak alam. Pernyataan A Salah karena Silas menilai dari sudut dendam Waturaga (alasan di pernyataan A tidak nyambung dengan pendapat Silas). Pernyataan B Salah karena pemerintah Jantara terbukti lalai dan tidak bijak mengizinkan perusakan alam demi keuntungan sepihak."
+    },
+    {
+        "nomor": 28,
+        "tipe": "pg_sederhana",
+        "paket": PAKET_BIN,
+        "kesulitan": "sedang",
+        "kelas": "9",
+        "mapel": "Bahasa Indonesia",
+        "materi": "Ketepatan Penggunaan Istilah Ilmiah Lingkungan",
+        "cp": "Peserta didik dapat mengidentifikasi istilah teknis yang tidak tepat penggunaannya dalam konteks kalimat pengolahan sampah.",
+        "grup": "wacana_3r",
+        "bacaan_judul": "Pentingnya Konsep 3R dalam Pemanfaatan Kembali Sampah",
+        "bacaan_gambar": {"src": get_b64("teks10_kerajinan_3r.jpeg"), "alt": "Pameran kerajinan produk daur ulang dari sampah plastik dan koran bekas"},
+        "bacaan": WACANA_10,
+        "teks_soal": "Istilah yang tidak sesuai dalam teks tersebut adalah ….",
+        "opsi": [
+            {"label": "A", "teks": "lestari, konstruksi"},
+            {"label": "B", "teks": "solusi, daur ulang"},
+            {"label": "C", "teks": "biogas, komposter"},
+            {"label": "D", "teks": "organik, anorganik"}
+        ],
+        "kunci": "C",
+        "pembahasan": "Dalam teks terdapat kalimat janggal: 'membakar sampah yang dapat menghasilkan biogas' (pembakaran terbuka tidak menghasilkan biogas, melainkan karbon dioksida/polusi asap; biogas dihasilkan dari fermentasi anaerobik kotoran/sampah organik). Selain itu, 'Sampah organik dapat dimanfaatkan menjadi komposter' juga tidak tepat (komposter adalah alat/wadah pengomposan, sedangkan produk hasilnya adalah kompos). Jadi istilah yang tidak sesuai adalah biogas dan komposter (opsi C)."
+    },
+    {
+        "nomor": 29,
+        "tipe": "pg_kompleks",
+        "paket": PAKET_BIN,
+        "kesulitan": "sedang",
+        "kelas": "9",
+        "mapel": "Bahasa Indonesia",
+        "materi": "Memprediksi Dampak Sosial Penerapan Konsep 3R",
+        "cp": "Peserta didik dapat memprediksi dampak sosial dan ekonomi pelaksanaan konsep reduce, reuse, recycle di masyarakat.",
+        "grup": "wacana_3r",
+        "bacaan": WACANA_10,
+        "teks_soal": "Konsep 3R merupakan cara mudah untuk mengatasi masalah sampah. Jika 3R ini dilaksanakan, kemungkinan apa yang akan terjadi di masyarakat?<br>Pilihlah jawaban yang benar! Jawaban benar lebih dari satu.",
+        "opsi": [
+            {"label": "1", "teks": "Petugas kebersihan perlu diperhatikan kesejahteraannya oleh warga penghasil sampah."},
+            {"label": "2", "teks": "Sampah di depo-depo memerlukan penanganan yang lebih cepat dan tepat agar tidak menumpuk."},
+            {"label": "3", "teks": "Pihak pendaur ulang mendapatkan bahan produksinya berupa sampah dari masyarakat."},
+            {"label": "4", "teks": "Pemilahan sampah akan ditindaklanjuti sampai dapat dimanfaatkan kembali oleh masyarakat."}
+        ],
+        "kunci": "3, 4",
+        "pembahasan": "Jika konsep 3R berjalan optimal: pemilahan sampah organik dan anorganik dari rumah tangga akan terus ditindaklanjuti hingga menjadi bahan baku daur ulang dan komposting yang bermanfaat (pernyataan 4), dan pelaku industri kreatif/pendaur ulang akan memperoleh pasokan bahan baku sampah yang bersih dan terpilah secara berkelanjutan (pernyataan 3). Jadi pernyataan 3 dan 4 benar."
+    },
+    {
+        "nomor": 30,
+        "tipe": "benar_salah",
+        "paket": PAKET_BIN,
+        "kesulitan": "sedang",
+        "kelas": "9",
+        "mapel": "Bahasa Indonesia",
+        "materi": "Menilai Kesesuaian Ilustrasi terhadap Teks",
+        "cp": "Peserta didik dapat mengevaluasi keterwakilan pesan ilustrasi visual terhadap isi wacana konsep 3R.",
+        "grup": "wacana_3r",
+        "bacaan": WACANA_10,
+        "teks_soal": "Mengapa penyajian ilustrasi kurang mendukung isi wacana?<br>Tentukan Benar atau Salah untuk setiap pernyataan berikut:",
+        "pernyataan": [
+            {"teks": "A. Tidak menguatkan pembahasan konsep reuse dalam 3R.", "jawaban": "Salah"},
+            {"teks": "B. Belum menggambarkan konsep 3R secara menyeluruh.", "jawaban": "Benar"},
+            {"teks": "C. Kurang mencerminkan penjelasan tujuan konsep 3R.", "jawaban": "Benar"}
+        ],
+        "kunci": "A: Salah, B: Benar, C: Benar",
+        "pembahasan": "Foto ilustrasi pada wacana hanya menampilkan kerajinan tangan dari daur ulang (recycle/reuse parsial), tetapi tidak mencakup konsep reduce (pengurangan timbulan sampah di sumbernya). Pernyataan A Salah karena kerajinan baju/wadah justru relevan dengan reuse. Pernyataan B Benar karena foto belum mencerminkan ketiga pilar 3R (reduce, reuse, recycle) secara utuh dan menyeluruh. Pernyataan C Benar karena gambar tersebut belum mencerminkan tujuan pelestarian lingkungan hidup bebas sampah secara luas sebagaimana dibahas di teks."
+    }
+]
+
+print("Data Bahasa Indonesia (30 Soal) Loaded Successfully")
