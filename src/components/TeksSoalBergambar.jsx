@@ -15,6 +15,7 @@
 // ============================================================
 
 import RenderMath from './RenderMath';
+import RenderTable from './RenderTable';
 import { pisahTeksDanGambar } from '../utils/penempatanGambar';
 // 🔥 2026-11-04 (putusan owner: tampilan sekelas CBT profesional, wajib
 // sama dari sisi guru sampai siswa): tipografi naskah diambil dari SATU
@@ -30,11 +31,15 @@ export default function TeksSoalBergambar({
   teks,
   gambarUrls = [],
   gambarMeta = null,
+  tabelSoal = null,
+  tabel_soal = null,
+  tabel = null,
   region = 'badan',
   onKlikGambar = null,
   gayaTeks = {},
   gayaGambar = {},
 }) {
+  const tabelData = tabelSoal || tabel_soal || tabel;
   const segmen = pisahTeksDanGambar(teks, gambarUrls, { meta: gambarMeta, region });
   const gayaGambarFinal = {
     display: 'block',
@@ -68,6 +73,7 @@ export default function TeksSoalBergambar({
           />
         );
       })}
+      {tabelData && <RenderTable table={tabelData} />}
     </>
   );
 }

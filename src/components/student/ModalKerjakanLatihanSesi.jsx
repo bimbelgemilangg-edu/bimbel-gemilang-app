@@ -92,13 +92,32 @@ export default function ModalKerjakanLatihanSesi({
   }, [latihan, cleanStudentId, studentId, schedule]);
 
   const [nomorAktif, setNomorAktif] = useState(0);
-  const [jawabanUser, setJawabanUser] = useState({}); // { [soalId]: labelOpsi }
+  const [jawabanUser, setJawabanUser] = useState({}); // { [soalId]: labelOpsi | array }
   const [submitting, setSubmitting] = useState(false);
   const [selesaiTerkirim, setSelesaiTerkirim] = useState(false);
 
+  const getTipeSoal = (s) => {
+    if (!s) return 'pg';
+    if (/benar|salah|bs/i.test(s.tipe || '') || (Array.isArray(s.pernyataan) && s.pernyataan.length > 0)) return 'bs';
+    if (/kompleks|multi/i.test(s.tipe || '')) return 'multi';
+    return 'pg';
+  };
+
+  const isSoalTerjawab = (s, id) => {
+    const j = jawabanUser[id];
+    if (j == null) return false;
+    const t = getTipeSoal(s);
+    if (t === 'multi') return Array.isArray(j) && j.length > 0;
+    if (t === 'bs') {
+      const baris = Array.isArray(s?.pernyataan) ? s.pernyataan : [];
+      return Array.isArray(j) && (baris.length === 0 || j.length === baris.length) && j.length > 0 && j.every((x) => x !== undefined);
+    }
+    return j !== '';
+  };
+
   const soalSekarang = soalListAcak[nomorAktif] || null;
   const totalSoal = soalListAcak.length;
-  const jumlahTerjawab = Object.keys(jawabanUser).length;
+  const jumlahTerjawab = soalListAcak.filter((s, idx) => isSoalTerjawab(s, s.id || idx)).length;
 
   const handlePilihOpsi = (label) => {
     if (!soalSekarang) return;
@@ -106,6 +125,24 @@ export default function ModalKerjakanLatihanSesi({
       ...prev,
       [soalSekarang.id || nomorAktif]: label,
     }));
+  };
+
+  const handlePilihMulti = (label) => {
+    if (!soalSekarang) return;
+    const id = soalSekarang.id || nomorAktif;
+    const cur = Array.isArray(jawabanUser[id]) ? [...jawabanUser[id]] : [];
+    const idx = cur.indexOf(label);
+    if (idx >= 0) cur.splice(idx, 1);
+    else cur.push(label);
+    setJawabanUser((prev) => ({ ...prev, [id]: cur }));
+  };
+
+  const handlePilihBs = (r, val) => {
+    if (!soalSekarang) return;
+    const id = soalSekarang.id || nomorAktif;
+    const cur = Array.isArray(jawabanUser[id]) ? [...jawabanUser[id]] : [];
+    cur[r] = val;
+    setJawabanUser((prev) => ({ ...prev, [id]: cur }));
   };
 
   const handleKirimJawaban = async () => {
@@ -127,8 +164,36 @@ export default function ModalKerjakanLatihanSesi({
       soalListAcak.forEach((soal, idx) => {
         const idSoal = soal.id || idx;
         const pilihan = jawabanUser[idSoal];
-        if (pilihan && String(pilihan).toUpperCase() === String(soal.kunciJawaban || 'A').toUpperCase()) {
-          benar++;
+        if (pilihan == null) return;
+        const t = getTipeSoal(soal);
+        if (t === 'bs') {
+          const kunciArr = Array.isArray(soal.kunciJawaban)
+            ? soal.kunciJawaban
+            : (Array.isArray(soal.pernyataan) ? soal.pernyataan.map((_, i) => (soal.kunciJawaban?.[i])) : []);
+          if (Array.isArray(pilihan) && kunciArr.length > 0) {
+            let match = 0;
+            kunciArr.forEach((kVal, r) => {
+              const pVal = pilihan[r];
+              if (pVal == null) return;
+              const kBool = kVal === true || kVal === 0 || String(kVal).toLowerCase() === 'b' || String(kVal).toLowerCase() === 'benar';
+              const pBool = pVal === true || pVal === 0 || String(pVal).toLowerCase() === 'b' || String(pVal).toLowerCase() === 'benar';
+              if (pBool === kBool) match++;
+            });
+            if (match === kunciArr.length) benar++;
+            else benar += (match / kunciArr.length);
+          }
+        } else if (t === 'multi') {
+          const kunciArr = Array.isArray(soal.kunciJawaban)
+            ? soal.kunciJawaban
+            : String(soal.kunciJawaban || '').split(',').map((x) => x.trim().toUpperCase());
+          if (Array.isArray(pilihan) && kunciArr.length > 0 && pilihan.length === kunciArr.length) {
+            const pUpper = pilihan.map((x) => String(x).toUpperCase());
+            if (kunciArr.every((k) => pUpper.includes(String(k).toUpperCase()))) benar++;
+          }
+        } else {
+          if (pilihan && String(pilihan).toUpperCase() === String(soal.kunciJawaban || 'A').toUpperCase()) {
+            benar++;
+          }
         }
       });
 
@@ -400,7 +465,7 @@ export default function ModalKerjakanLatihanSesi({
               <div style={{ display: 'flex', gap: 6, marginTop: 8, overflowX: 'auto', paddingBottom: 2 }}>
                 {soalListAcak.map((s, idx) => {
                   const idS = s.id || idx;
-                  const isAnswered = Boolean(jawabanUser[idS]);
+                  const isAnswered = isSoalTerjawab(s, idS);
                   const isActive = idx === nomorAktif;
                   return (
                     <button
@@ -435,70 +500,201 @@ export default function ModalKerjakanLatihanSesi({
                     <TeksSoalBergambar
                       teks={soalSekarang.teksSoal}
                       gambarUrls={soalSekarang.gambarUrls || []}
+                      tabelSoal={soalSekarang.tabelSoal || soalSekarang.tabel_soal || soalSekarang.tabel}
                       gayaTeks={{ fontSize: 14.5, lineHeight: 1.65, color: '#0f172a' }}
                       gayaGambar={{ maxHeight: 260, margin: '12px auto', borderRadius: 8, border: '1px solid #e2e8f0', display: 'block' }}
                     />
                   </div>
 
-                  {/* Pilihan Ganda Opsi dengan RenderMath */}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                    {(soalSekarang.opsiTampil || soalSekarang.opsiJawaban || []).map((op, oIdx) => {
-                      const label = typeof op === 'object' ? op.label : ['A', 'B', 'C', 'D', 'E'][oIdx];
-                      const teks = typeof op === 'object' ? op.teks : String(op);
-                      const isSelected = jawabanUser[soalSekarang.id || nomorAktif] === label;
+                  {/* Render Jawaban sesuai Tipe Soal (PG / PG Kompleks / Benar-Salah) */}
+                  {(() => {
+                    const tSoal = getTipeSoal(soalSekarang);
+                    const curJawaban = jawabanUser[soalSekarang.id || nomorAktif];
 
+                    if (tSoal === 'bs') {
+                      const baris = Array.isArray(soalSekarang.pernyataan) ? soalSekarang.pernyataan : [];
                       return (
-                        <div
-                          key={oIdx}
-                          onClick={() => handlePilihOpsi(label)}
-                          style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 12,
-                            padding: '12px 14px',
-                            borderRadius: 12,
-                            background: isSelected ? '#f0fdf4' : '#ffffff',
-                            border: isSelected ? '2px solid #16a34a' : '1px solid #e2e8f0',
-                            cursor: 'pointer',
-                            transition: '0.15s',
-                          }}
-                        >
-                          <div
-                            style={{
-                              width: 30,
-                              height: 30,
-                              borderRadius: '50%',
-                              background: isSelected ? '#16a34a' : '#f1f5f9',
-                              color: isSelected ? '#ffffff' : '#475569',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              fontSize: 12.5,
-                              fontWeight: 800,
-                              flexShrink: 0,
-                            }}
-                          >
-                            {label}
+                        <div style={{ marginTop: 12, border: '1px solid #e2e8f0', borderRadius: 12, overflow: 'hidden', background: '#fff' }}>
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 76px 76px', background: '#4f46e5', color: '#fff', fontSize: 11.5, fontWeight: 800 }}>
+                            <span style={{ padding: '10px 14px' }}>Pernyataan</span>
+                            <span style={{ padding: '10px 4px', textAlign: 'center', borderLeft: '1px solid rgba(255,255,255,.25)' }}>Benar</span>
+                            <span style={{ padding: '10px 4px', textAlign: 'center', borderLeft: '1px solid rgba(255,255,255,.25)' }}>Salah</span>
                           </div>
-                          <div style={{ fontSize: 13.5, color: isSelected ? '#15803d' : '#1e293b', fontWeight: isSelected ? 600 : 400, flex: 1, minWidth: 0 }}>
-                            <RenderMath text={teks} />
-                            {Array.isArray(op.gambar) && op.gambar.length > 0 && (
-                              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 6 }}>
-                                {op.gambar.map((g, gi) => (
-                                  <img
-                                    key={gi}
-                                    src={typeof g === 'string' ? g : g?.url}
-                                    alt={`Gambar opsi ${label}`}
-                                    style={{ maxHeight: 100, borderRadius: 6, border: '1px solid #cbd5e1' }}
-                                  />
-                                ))}
+                          {baris.map((b, rIdx) => {
+                            const bVal = Array.isArray(curJawaban) ? curJawaban[rIdx] : undefined;
+                            const teksB = typeof b === 'string' ? b : (b?.teks || b?.pernyataan || String(b));
+                            return (
+                              <div key={rIdx} style={{ display: 'grid', gridTemplateColumns: '1fr 76px 76px', borderTop: '1px solid #eef1f6', background: rIdx % 2 === 0 ? '#fafafa' : '#fff' }}>
+                                <div style={{ padding: '12px 14px', fontSize: 13.5, lineHeight: 1.55 }}>
+                                  <span style={{ fontWeight: 700, marginRight: 6 }}>{rIdx + 1}.</span>
+                                  <RenderMath text={teksB} />
+                                </div>
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', borderLeft: '1px solid #eef1f6', padding: '6px 0' }}>
+                                  <button
+                                    type="button"
+                                    onClick={() => handlePilihBs(rIdx, true)}
+                                    style={{
+                                      width: 40,
+                                      height: 40,
+                                      borderRadius: '50%',
+                                      border: bVal === true ? '2px solid #16a34a' : '1px solid #cbd5e1',
+                                      background: bVal === true ? '#16a34a' : '#ffffff',
+                                      color: bVal === true ? '#ffffff' : '#64748b',
+                                      fontWeight: 800,
+                                      fontSize: 12.5,
+                                      cursor: 'pointer',
+                                      transition: '0.15s',
+                                    }}
+                                  >
+                                    B
+                                  </button>
+                                </div>
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', borderLeft: '1px solid #eef1f6', padding: '6px 0' }}>
+                                  <button
+                                    type="button"
+                                    onClick={() => handlePilihBs(rIdx, false)}
+                                    style={{
+                                      width: 40,
+                                      height: 40,
+                                      borderRadius: '50%',
+                                      border: bVal === false ? '2px solid #dc2626' : '1px solid #cbd5e1',
+                                      background: bVal === false ? '#dc2626' : '#ffffff',
+                                      color: bVal === false ? '#ffffff' : '#64748b',
+                                      fontWeight: 800,
+                                      fontSize: 12.5,
+                                      cursor: 'pointer',
+                                      transition: '0.15s',
+                                    }}
+                                  >
+                                    S
+                                  </button>
+                                </div>
                               </div>
-                            )}
+                            );
+                          })}
+                        </div>
+                      );
+                    }
+
+                    if (tSoal === 'multi') {
+                      const arr = Array.isArray(curJawaban) ? curJawaban : [];
+                      return (
+                        <div>
+                          <div style={{ fontSize: 12, fontWeight: 700, color: '#4338ca', background: '#eef2ff', padding: '6px 12px', borderRadius: 8, marginBottom: 10 }}>
+                            ☑️ Centang semua pernyataan yang benar (jawaban benar bisa lebih dari satu).
+                          </div>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                            {(soalSekarang.opsiTampil || soalSekarang.opsiJawaban || []).map((op, oIdx) => {
+                              const label = typeof op === 'object' ? op.label : ['A', 'B', 'C', 'D', 'E'][oIdx];
+                              const teks = typeof op === 'object' ? op.teks : String(op);
+                              const isSelected = arr.includes(label);
+                              return (
+                                <div
+                                  key={oIdx}
+                                  onClick={() => handlePilihMulti(label)}
+                                  style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 12,
+                                    padding: '12px 14px',
+                                    borderRadius: 12,
+                                    background: isSelected ? '#f0fdf4' : '#ffffff',
+                                    border: isSelected ? '2px solid #16a34a' : '1px solid #e2e8f0',
+                                    cursor: 'pointer',
+                                    transition: '0.15s',
+                                  }}
+                                >
+                                  <div
+                                    style={{
+                                      width: 28,
+                                      height: 28,
+                                      borderRadius: 6,
+                                      border: isSelected ? '2px solid #16a34a' : '2px solid #cbd5e1',
+                                      background: isSelected ? '#16a34a' : '#ffffff',
+                                      color: '#ffffff',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'center',
+                                      fontSize: 13,
+                                      fontWeight: 800,
+                                      flexShrink: 0,
+                                    }}
+                                  >
+                                    {isSelected ? '✓' : ''}
+                                  </div>
+                                  <div style={{ fontSize: 13.5, color: isSelected ? '#15803d' : '#1e293b', fontWeight: isSelected ? 600 : 400, flex: 1, minWidth: 0 }}>
+                                    <RenderMath text={teks} />
+                                  </div>
+                                </div>
+                              );
+                            })}
                           </div>
                         </div>
                       );
-                    })}
-                  </div>
+                    }
+
+                    // Default PG biasa
+                    return (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                        {(soalSekarang.opsiTampil || soalSekarang.opsiJawaban || []).map((op, oIdx) => {
+                          const label = typeof op === 'object' ? op.label : ['A', 'B', 'C', 'D', 'E'][oIdx];
+                          const teks = typeof op === 'object' ? op.teks : String(op);
+                          const isSelected = curJawaban === label;
+
+                          return (
+                            <div
+                              key={oIdx}
+                              onClick={() => handlePilihOpsi(label)}
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 12,
+                                padding: '12px 14px',
+                                borderRadius: 12,
+                                background: isSelected ? '#f0fdf4' : '#ffffff',
+                                border: isSelected ? '2px solid #16a34a' : '1px solid #e2e8f0',
+                                cursor: 'pointer',
+                                transition: '0.15s',
+                              }}
+                            >
+                              <div
+                                style={{
+                                  width: 30,
+                                  height: 30,
+                                  borderRadius: '50%',
+                                  background: isSelected ? '#16a34a' : '#f1f5f9',
+                                  color: isSelected ? '#ffffff' : '#475569',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  fontSize: 12.5,
+                                  fontWeight: 800,
+                                  flexShrink: 0,
+                                }}
+                              >
+                                {label}
+                              </div>
+                              <div style={{ fontSize: 13.5, color: isSelected ? '#15803d' : '#1e293b', fontWeight: isSelected ? 600 : 400, flex: 1, minWidth: 0 }}>
+                                <RenderMath text={teks} />
+                                {Array.isArray(op.gambar) && op.gambar.length > 0 && (
+                                  <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 6 }}>
+                                    {op.gambar.map((g, gi) => (
+                                      <img
+                                        key={gi}
+                                        src={typeof g === 'string' ? g : g?.url}
+                                        alt={`Gambar opsi ${label}`}
+                                        style={{ maxHeight: 100, borderRadius: 6, border: '1px solid #cbd5e1' }}
+                                      />
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    );
+                  })()}
                 </div>
               ) : (
                 <div style={{ padding: 24, textAlign: 'center', color: '#94a3b8' }}>

@@ -22,17 +22,55 @@ import React from 'react';
 import 'katex/dist/katex.min.css';
 import { InlineMath, BlockMath } from 'react-katex';
 import { pecahSegmenMatematika, sumberKaTeX } from '../utils/segmenMatematika.js';
+import { renderLatexHtml } from '../utils/renderLatexHtml.js';
+
+function ubahMarkdownTableDanGambar(teks) {
+  if (!teks || typeof teks !== 'string') return teks;
+  let hasil = teks;
+
+  // 1. Ekstraksi markdown table: | a | b | \n |---|---| \n | c | d |
+  const reTable = /(?:^|\n)(\|[^\n]+\|\r?\n\|(?:\s*:?-+:?\s*\|)+\r?\n(?:\|[^\n]+\|\r?\n?)+)/g;
+  hasil = hasil.replace(reTable, (match) => {
+    const lines = match.trim().split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+    if (lines.length < 2) return match;
+    const parseCells = (line) => line.replace(/^\|/, '').replace(/\|$/, '').split('|').map((c) => c.trim());
+    const headerCells = parseCells(lines[0]);
+    const bodyLines = lines.slice(2);
+    const ths = headerCells.map((h) => `<th style="border:1px solid #cbd5e1;padding:8px 10px;background:#f1f5f9;font-weight:700;">${h}</th>`).join('');
+    const trs = bodyLines.map((b) => {
+      const cells = parseCells(b);
+      return `<tr>${cells.map((c) => `<td style="border:1px solid #cbd5e1;padding:8px 10px;vertical-align:top;">${c}</td>`).join('')}</tr>`;
+    }).join('');
+    return `\n<div class="nsk-tabel" style="overflow-x:auto;margin:10px 0;"><table style="width:100%;border-collapse:collapse;border:1px solid #cbd5e1;background:#fff;border-radius:8px;"><thead><tr>${ths}</tr></thead><tbody>${trs}</tbody></table></div>\n`;
+  });
+
+  // 2. Ekstraksi markdown image: ![alt](url)
+  hasil = hasil.replace(/!\[(.*?)\]\((https?:\/\/[^\s)]+)\)/g, '<img src="$2" alt="$1" style="max-width:100%;height:auto;border-radius:8px;margin:8px auto;display:block;" />');
+
+  return hasil;
+}
 
 export default function RenderMath({ text }) {
   if (!text) return null;
-  // 🔥 2026-10-23: pemecah lama di sini pakai titik yang TIDAK melewati \n,
-  // sehingga $$ multiline lolos sebagai teks mentah di try out. Kini pakai
-  // SATU SUMBER utils/segmenMatematika + kebijakan ukuran seragam (layar =
-  // kertas).
+
+  const raw = String(text);
+  const diproses = ubahMarkdownTableDanGambar(raw);
+
+  // Jika teks memuat tag HTML (tabel, gambar, paragraf, div, bold, dll), render dengan renderLatexHtml
+  if (/<(table|thead|tbody|tr|th|td|img|div|p|span|b|strong|i|em|ul|ol|li)\b/i.test(diproses)) {
+    return (
+      <span
+        className="gb-math-html"
+        style={{ display: 'inline-block', width: '100%' }}
+        dangerouslySetInnerHTML={{ __html: renderLatexHtml(diproses) }}
+      />
+    );
+  }
+
   // pre-line: baris buku (bullet/step) tetap baris di try out & latihan
   return (
     <span style={{ whiteSpace: 'pre-line' }}>
-      {pecahSegmenMatematika(text).map((seg, i) => {
+      {pecahSegmenMatematika(raw).map((seg, i) => {
         if (seg.jenis === 'teks') return <React.Fragment key={i}>{seg.isi}</React.Fragment>;
         const math = sumberKaTeX(seg);
         return seg.jenis === 'blok'

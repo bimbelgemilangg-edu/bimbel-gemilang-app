@@ -430,12 +430,28 @@ const StudentDashboard = () => {
 
         const fetchedSchedules = schedSnap.docs
           .map(d => ({ id: d.id, ...d.data() }))
-          .filter(sch => sch.students?.some(s => 
-            s === studentId || s.id === studentId || s.studentId === studentId ||
-            s === resolvedDocId || s.id === resolvedDocId ||
-            s === nimVal || s.studentId === nimVal ||
-            (s.nama && realName && s.nama.trim().toLowerCase() === realName.trim().toLowerCase())
-          ))
+          .filter(sch => {
+            const matchSiswa = (arr) => Array.isArray(arr) && arr.some(s => 
+              s === studentId || s?.id === studentId || s?.studentId === studentId ||
+              s === resolvedDocId || s?.id === resolvedDocId ||
+              s === nimVal || s?.studentId === nimVal ||
+              (s?.nama && realName && s.nama.trim().toLowerCase() === realName.trim().toLowerCase())
+            );
+            if (matchSiswa(sch.students)) return true;
+            if (matchSiswa(sch.siswa)) return true;
+            if (Array.isArray(sch.studentIds) && (
+              sch.studentIds.includes(studentId) ||
+              sch.studentIds.includes(nimVal) ||
+              (resolvedDocId && sch.studentIds.includes(resolvedDocId))
+            )) return true;
+            const kls = sch.targetKelas || sch.kelas || sch.grade;
+            if (kls && studentKelas && (
+              String(kls).trim().toLowerCase() === String(studentKelas).trim().toLowerCase() ||
+              String(studentKelas).includes(String(kls)) ||
+              String(kls).includes(String(studentKelas))
+            )) return true;
+            return false;
+          })
           .sort((a, b) => (a.start || '').localeCompare(b.start || ''))
           .slice(0, 5);
         setTodaySchedules(fetchedSchedules);
@@ -1256,7 +1272,7 @@ const StudentDashboard = () => {
                       </div>
 
                       {/* Latihan Pemahaman Sesi Tatap Muka (Blind Submission) */}
-                      {sch.latihanSesi && sch.latihanSesi.status === 'aktif' && (() => {
+                      {sch.latihanSesi && sch.latihanSesi.status !== 'ditutup' && (sch.latihanSesi.status === 'aktif' || (Array.isArray(sch.latihanSesi.soalList) && sch.latihanSesi.soalList.length > 0)) && (() => {
                         const cleanId = String(studentId || '').replace(/[^a-zA-Z0-9_-]/g, '_');
                         const hasilSiswa = sch.latihanSesi.hasil?.[cleanId] || (studentNim && sch.latihanSesi.hasil?.[studentNim]) || null;
                         const sudahKirim = Boolean(hasilSiswa);
@@ -1397,7 +1413,7 @@ const StudentDashboard = () => {
                       })()}
 
                       {/* Jalur Belajar Mandiri dari Rumah bila Izin/Sakit tanpa Kuis Sesi Aktif */}
-                      {(att?.status === 'Izin' || att?.status === 'Sakit') && (!sch.latihanSesi || sch.latihanSesi.status !== 'aktif') && (
+                      {(att?.status === 'Izin' || att?.status === 'Sakit') && (!sch.latihanSesi || sch.latihanSesi.status === 'ditutup' || (!sch.latihanSesi.status && (!sch.latihanSesi.soalList || sch.latihanSesi.soalList.length === 0))) && (
                         <div
                           style={{
                             marginTop: 8,

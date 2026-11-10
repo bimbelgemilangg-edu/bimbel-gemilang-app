@@ -64,3 +64,35 @@ html {
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
+
+/* Styling Tabel di Soal / Pembahasan / Modul Belajar */
+.gb-math-html table,
+.nsk-tabel table,
+.modmod table {
+  border-collapse: collapse !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 10px 0 !important;
+  font-size: 13.5px !important;
+  background: #ffffff !important;
+  border-radius: 8px !important;
+  border: 1px solid #cbd5e1 !important;
+}
+.gb-math-html table th,
+.gb-math-html table td,
+.nsk-tabel table th,
+.nsk-tabel table td,
+.modmod table th,
+.modmod table td {
+  border: 1px solid #cbd5e1 !important;
+  padding: 8px 12px !important;
+  text-align: left !important;
+  vertical-align: top !important;
+}
+.gb-math-html table th,
+.nsk-tabel table th,
+.modmod table th {
+  background-color: #f1f5f9 !important;
+  font-weight: 700 !important;
+  color: #1e293b !important;
+}

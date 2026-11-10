@@ -148,17 +148,36 @@ export function normalisasiButirSoal(rawSoal, idx = 0) {
     rawSoal.optionImages || []
   );
 
-  const rawKunci = rawSoal.kunciJawaban ?? rawSoal.kunci ?? rawSoal.jawabanBenar ?? rawSoal.correctAnswer ?? rawSoal.correct ?? 'A';
-  let kunci = String(rawKunci).toUpperCase().trim();
-  // Jika kunci adalah index angka (misal 0 -> 'A', 1 -> 'B')
-  if (/^[0-4]$/.test(kunci)) {
-    kunci = HURUF_OPSI[parseInt(kunci, 10)] || 'A';
+  const rawKunci = rawSoal.kunciJawaban ?? rawSoal.kunci ?? rawSoal.jawaban ?? rawSoal.jawabanBenar ?? rawSoal.correctAnswer ?? rawSoal.correct ?? 'A';
+  let kunci;
+  if (Array.isArray(rawKunci)) {
+    kunci = rawKunci;
+  } else if (typeof rawKunci === 'boolean') {
+    kunci = rawKunci;
+  } else {
+    kunci = String(rawKunci ?? '').toUpperCase().trim();
+    // Jika kunci adalah index angka (misal 0 -> 'A', 1 -> 'B')
+    if (/^[0-4]$/.test(kunci)) {
+      kunci = HURUF_OPSI[parseInt(kunci, 10)] || 'A';
+    }
   }
+
+  const pernyataan = Array.isArray(rawSoal.pernyataan)
+    ? rawSoal.pernyataan
+    : (Array.isArray(rawSoal.baris)
+      ? rawSoal.baris
+      : (Array.isArray(rawSoal.tabel_benar_salah) ? rawSoal.tabel_benar_salah : []));
+
+  const tabelSoal = rawSoal.tabelSoal || rawSoal.tabel_soal || rawSoal.tabel || rawSoal.bacaan?.tabelSoal || null;
 
   return {
     id: rawSoal.id || `soal-${idx + 1}`,
     nomor: rawSoal.nomor || idx + 1,
     teksSoal: teks,
+    tipe: rawSoal.tipe || rawSoal.jenis || (pernyataan.length > 0 ? 'benar_salah' : 'pg'),
+    tabelSoal,
+    pernyataan,
+    kolom: Array.isArray(rawSoal.kolom) && rawSoal.kolom.length > 0 ? rawSoal.kolom : ['Benar', 'Salah'],
     opsiJawaban,
     kunciJawaban: kunci,
     pembahasan: String(rawSoal.pembahasan || rawSoal.explanation || '').trim(),

@@ -16,6 +16,7 @@ import { cariSesiByKode, gabungSesi, dengarSesi, dengarRelawanSiswa, ajukanMaju,
 // Turn 91: mode ujian (semua soal + timer mundur) pakai komponen bersama
 // dengan reader materi v2.
 import { UjianPaketBoard } from './belajar/BelajarReader';
+import RenderTable from '../../components/RenderTable';
 import { flushLiveActions, listLiveActions, queueLiveAction } from '../../services/liveOutbox';
 import '../../components/buku/liveSession.css';
 
@@ -183,6 +184,37 @@ export default function LiveSessionStudent() {
   const tahapAktif = tahapDenganId(sesi?.tahapKelas);
   const timerDetik = sisaTimer(sesi, clockNow);
 
+  const stemTeks = soal ? (soal.teks || soal.soal || soal.teksSoal || '') : '';
+  const daftarPilihan = soal
+    ? (Array.isArray(soal.pilihan) && soal.pilihan.length
+        ? soal.pilihan
+        : Array.isArray(soal.opsi) && soal.opsi.length
+        ? soal.opsi
+        : Array.isArray(soal.opsiJawaban)
+        ? soal.opsiJawaban
+        : [])
+    : [];
+  const daftarPernyataan = soal
+    ? (Array.isArray(soal.pernyataan) && soal.pernyataan.length
+        ? soal.pernyataan
+        : Array.isArray(soal.baris) && soal.baris.length
+        ? soal.baris
+        : Array.isArray(soal.tabel_benar_salah)
+        ? soal.tabel_benar_salah
+        : [])
+    : [];
+
+  const tipeSoalLive = (
+    soal?.kunci?.tipe ||
+    (daftarPernyataan.length > 0 ? 'bs' : null) ||
+    (soal?.tipe && /benar|salah|bs/i.test(soal.tipe) ? 'bs' : null) ||
+    (soal?.tipe && /multi|kompleks/i.test(soal.tipe) ? 'multi' : null) ||
+    (Array.isArray(soal?.jawaban) && soal?.jawaban.length > 1 ? 'multi' : null) ||
+    'pg'
+  );
+
+  const tabelSoalLive = soal ? (soal.tabelSoal || soal.tabel_soal || soal.tabel || null) : null;
+
   async function gabung() {
     setErr('');
     try {
@@ -199,7 +231,20 @@ export default function LiveSessionStudent() {
     if (idxSoal == null || !soal) return;
     if (terkirim[idxSoal] !== undefined || kirimGuard.current[idxSoal]) return;
     kirimGuard.current[idxSoal] = true;
-    const benar = cekBenar(soal.kunci, jw);
+    let benar = false;
+    if (soal.kunci) {
+      benar = cekBenar(soal.kunci, jw);
+    } else if (soal.jawaban !== undefined) {
+      if (tipeSoalLive === 'pg') {
+        benar = jw === soal.jawaban;
+      } else if (tipeSoalLive === 'multi') {
+        const k = Array.isArray(soal.jawaban) ? soal.jawaban : [];
+        benar = Array.isArray(jw) && jw.length === k.length && k.every((x) => jw.includes(x));
+      } else if (tipeSoalLive === 'bs') {
+        const k = Array.isArray(soal.jawaban) ? soal.jawaban : [];
+        benar = Array.isArray(jw) && jw.length === k.length && jw.every((v, i) => v === (k[i] === 0 || k[i] === true));
+      }
+    }
     const payload = { siswaId, nama, soalIdx: idxSoal, jawaban: jw, benar };
     setTerkirim((t) => ({ ...t, [idxSoal]: benar }));
     if (!online) {
@@ -260,17 +305,25 @@ export default function LiveSessionStudent() {
 
   function ringkasPilihan() {
     if (!soal || pilih === null) return null;
-    if (soal.kunci?.tipe === 'pg') {
+    if (tipeSoalLive === 'pg') {
       const i = pilih;
-      return <div style={S.pilihItem}>🔒 <b>{String.fromCharCode(65 + i)}.</b> <span className="modmod" dangerouslySetInnerHTML={{ __html: soal.pilihanHtml?.[i] || bersihVerdikt(soal.pilihan[i] || '') }} /></div>;
+      const op = daftarPilihan[i] || '';
+      return (
+        <div style={S.pilihItem}>
+          🔒 <b>{String.fromCharCode(65 + i)}.</b>{' '}
+          <span className="modmod" dangerouslySetInnerHTML={{ __html: soal.pilihanHtml?.[i] || bersihVerdikt(op) }} />
+        </div>
+      );
     }
-    if (soal.kunci?.tipe === 'multi') {
+    if (tipeSoalLive === 'multi') {
       return (Array.isArray(pilih) ? pilih : []).map((i) => (
-        <div key={i} style={S.pilihItem}>🔒 ✓ <span className="modmod" dangerouslySetInnerHTML={{ __html: soal.pilihanHtml?.[i] || bersihVerdikt(soal.pilihan[i] || '') }} /></div>
+        <div key={i} style={S.pilihItem}>
+          🔒 ✓ <span className="modmod" dangerouslySetInnerHTML={{ __html: soal.pilihanHtml?.[i] || bersihVerdikt(daftarPilihan[i] || '') }} />
+        </div>
       ));
     }
-    if (soal.kunci?.tipe === 'bs') {
-      return (soal.pernyataan || []).map((p, i) => (
+    if (tipeSoalLive === 'bs') {
+      return daftarPernyataan.map((p, i) => (
         <div key={i} style={S.pilihItem}>
           🔒 {i + 1}. <span className="modmod" dangerouslySetInnerHTML={{ __html: renderLiveMath(soal.pernyataanHtml?.[i] || bersihVerdikt(p)) }} /> → <b>{pilih[i] === true ? 'Benar' : pilih[i] === false ? 'Salah' : '—'}</b>
         </div>
@@ -359,7 +412,12 @@ export default function LiveSessionStudent() {
           {gambarNow ? (
             <div className="modmod" style={S.gambarBox} dangerouslySetInnerHTML={{ __html: renderLiveMath(gambarNow) }} />
           ) : (
-            <div className="modmod live-stem" style={{ fontSize: 14, lineHeight: 1.6, marginBottom: 12 }} dangerouslySetInnerHTML={{ __html: renderLiveMath(soal.teks) }} />
+            <div className="modmod live-stem" style={{ fontSize: 14, lineHeight: 1.6, marginBottom: 12 }} dangerouslySetInnerHTML={{ __html: renderLiveMath(stemTeks) }} />
+          )}
+          {tabelSoalLive && (
+            <div style={{ marginBottom: 12 }}>
+              <RenderTable table={tabelSoalLive} />
+            </div>
           )}
           {!gambarNow && soal.gambarUrls && soal.gambarUrls.length > 0 && (
             <div style={{ marginBottom: 10 }}>
@@ -369,16 +427,18 @@ export default function LiveSessionStudent() {
             </div>
           )}
 
-          {soal.kunci && soal.kunci.tipe === 'pg' && (soal.pilihan || []).map((p, i) => {
+          {tipeSoalLive === 'pg' && daftarPilihan.map((p, i) => {
             const sel = pilih === i;
+            const kuncVal = soal.kunci?.pg ?? soal.jawaban ?? soal.kunciJawaban;
+            const isKunci = terbuka && (kuncVal === i || (typeof kuncVal === 'string' && kuncVal.toUpperCase() === String.fromCharCode(65 + i)));
             if (sudah) {
               return (
-                <div key={i} style={{ ...S.opsi(sel, terbuka && soal.kunci.pg === i, terbuka), cursor: 'default' }}>
+                <div key={i} style={{ ...S.opsi(sel, isKunci, terbuka), cursor: 'default' }}>
                   <span style={{ fontWeight: 800 }}>{String.fromCharCode(65 + i)}.</span>
                   <span style={{ flex: 1 }} className="modmod"
                     dangerouslySetInnerHTML={{ __html: renderLiveMath(soal.pilihanHtml?.[i] || bersihVerdikt(p)) }} />
                   {sel && '🔒'}
-                  {terbuka && soal.kunci.pg === i && '✅'}
+                  {isKunci && '✅'}
                 </div>
               );
             }
@@ -391,14 +451,15 @@ export default function LiveSessionStudent() {
               </button>
             );
           })}
-          {!sudah && !terbuka && soal.kunci && soal.kunci.tipe === 'pg' && (
+          {!sudah && !terbuka && tipeSoalLive === 'pg' && daftarPilihan.length > 0 && (
             <div style={S.hintKunci}>⚡ Ketuk satu jawaban — jawaban langsung terkirim & terkunci, tidak bisa dipindah lagi.</div>
           )}
 
-          {soal.kunci && soal.kunci.tipe === 'multi' && (soal.pilihan || []).map((p, i) => {
+          {tipeSoalLive === 'multi' && daftarPilihan.map((p, i) => {
             const arr = Array.isArray(pilih) ? pilih : [];
             const a = arr.includes(i);
-            const k = terbuka && (soal.kunci.multi || []).includes(i);
+            const kunciArr = soal.kunci?.multi || (Array.isArray(soal.jawaban) ? soal.jawaban : (Array.isArray(soal.kunciJawaban) ? soal.kunciJawaban : []));
+            const k = terbuka && kunciArr.includes(i);
             if (sudah) {
               return (
                 <div key={i} style={{ ...S.opsi(a, k, terbuka), cursor: 'default' }}>
@@ -420,16 +481,17 @@ export default function LiveSessionStudent() {
             );
           })}
 
-          {soal.kunci && soal.kunci.tipe === 'bs' && (soal.pernyataan || []).length > 0 && (
+          {tipeSoalLive === 'bs' && daftarPernyataan.length > 0 && (
             <div style={S.cbt}>
               <div style={S.cbtHead}>
                 <span style={S.cbtHeadText}>Pernyataan</span>
                 <span style={S.cbtHeadOpt}>Benar</span>
                 <span style={S.cbtHeadOpt}>Salah</span>
               </div>
-              {(soal.pernyataan || []).map((p, i) => {
+              {daftarPernyataan.map((p, i) => {
                 const arr = Array.isArray(pilih) ? [...pilih] : [];
-                const kunciB = (soal.kunci.bs || [])[i];
+                const rawKunci = (soal.kunci?.bs || (Array.isArray(soal.jawaban) ? soal.jawaban : (Array.isArray(soal.kunciJawaban) ? soal.kunciJawaban : [])))[i];
+                const kunciB = rawKunci === true || rawKunci === 0 || String(rawKunci).toLowerCase() === 'b' || String(rawKunci).toLowerCase() === 'benar';
                 const sayaSalah = terbuka && arr[i] !== undefined && arr[i] !== kunciB;
                 return (
                   <div key={i} style={S.cbtRow(sayaSalah)}>
@@ -438,12 +500,24 @@ export default function LiveSessionStudent() {
                         dangerouslySetInnerHTML={{ __html: renderLiveMath(soal.pernyataanHtml?.[i] || bersihVerdikt(p)) }} />
                     </div>
                     <div style={S.cbtOpt}>
-                      <button style={S.cbtBtn(arr[i] === true, terbuka && kunciB === true, terbuka)} disabled={sudah || terbuka}
-                        onClick={() => { const a = [...(Array.isArray(pilih) ? pilih : [])]; a[i] = true; setPilih(a); }}>B</button>
+                      <button
+                        type="button"
+                        style={S.cbtBtn(arr[i] === true, terbuka && kunciB === true, terbuka)}
+                        disabled={sudah || terbuka}
+                        onClick={() => { const a = [...(Array.isArray(pilih) ? pilih : [])]; a[i] = true; setPilih(a); }}
+                      >
+                        B
+                      </button>
                     </div>
                     <div style={S.cbtOpt}>
-                      <button style={S.cbtBtn(arr[i] === false, terbuka && kunciB === false, terbuka)} disabled={sudah || terbuka}
-                        onClick={() => { const a = [...(Array.isArray(pilih) ? pilih : [])]; a[i] = false; setPilih(a); }}>S</button>
+                      <button
+                        type="button"
+                        style={S.cbtBtn(arr[i] === false, terbuka && kunciB === false, terbuka)}
+                        disabled={sudah || terbuka}
+                        onClick={() => { const a = [...(Array.isArray(pilih) ? pilih : [])]; a[i] = false; setPilih(a); }}
+                      >
+                        S
+                      </button>
                     </div>
                   </div>
                 );
@@ -451,14 +525,24 @@ export default function LiveSessionStudent() {
             </div>
           )}
 
-          {soal && !soal.pilihan?.length && !soal.pernyataan?.length && (
+          {soal && !daftarPilihan.length && !daftarPernyataan.length && (
             <div style={{ background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 8, padding: 10, fontSize: 12.5, color: '#92400e' }}>
               ⚠️ Opsi soal ini tidak terbaca dari modul. Beri tahu guru — sesi akan dimulai ulang dengan parser yang sudah diperbaiki.
             </div>
           )}
 
-          {!sudah && !terbuka && soal.kunci && soal.kunci.tipe !== 'pg' && (
-            <button style={S.btn} disabled={pilih === null || (Array.isArray(pilih) && pilih.length === 0)} onClick={() => kirimNow(pilih)}>📤 Kirim Jawaban</button>
+          {!sudah && !terbuka && tipeSoalLive !== 'pg' && (
+            <button
+              style={S.btn}
+              disabled={
+                pilih === null ||
+                (tipeSoalLive === 'multi' && Array.isArray(pilih) && pilih.length === 0) ||
+                (tipeSoalLive === 'bs' && daftarPernyataan.length > 0 && (!Array.isArray(pilih) || pilih.filter((x) => x !== undefined).length < daftarPernyataan.length))
+              }
+              onClick={() => kirimNow(pilih)}
+            >
+              📤 Kirim Jawaban
+            </button>
           )}
 
           {sudah && !terbuka && (

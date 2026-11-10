@@ -1182,7 +1182,9 @@ export default function TryOutView() {
                 gayaTeks={{ marginBottom: 10 }}
                 gayaGambar={{ maxHeight: 280, marginBottom: 10 }}
               />
-              {s.tabelSoal && <RenderTable table={s.tabelSoal} />}
+              {(s.tabelSoal || s.tabel_soal || s.tabel || s.bacaan?.tabelSoal || s.stimulus?.tabel) && (
+                <RenderTable table={s.tabelSoal || s.tabel_soal || s.tabel || s.bacaan?.tabelSoal || s.stimulus?.tabel} />
+              )}
               <PenahanErrorSoal soalId={s.id}>
                 <RendererSoal
                   soal={s}
@@ -1516,7 +1518,9 @@ export default function TryOutView() {
             soal (mis. kunci determinasi biologi) -- SAMA SEKALI GAK
             PERNAH DIRENDER, padahal komponennya udah lama ada, cuma
             kepakai di preview admin doang. */}
-        {soalAktif.tabelSoal && <RenderTable table={soalAktif.tabelSoal} />}
+        {(soalAktif.tabelSoal || soalAktif.tabel_soal || soalAktif.tabel || soalAktif.bacaan?.tabelSoal || soalAktif.stimulus?.tabel) && (
+          <RenderTable table={soalAktif.tabelSoal || soalAktif.tabel_soal || soalAktif.tabel || soalAktif.bacaan?.tabelSoal || soalAktif.stimulus?.tabel} />
+        )}
         <PenahanErrorSoal soalId={soalAktif.id}>
           <RendererSoal
             soal={soalAktif}

@@ -23,6 +23,7 @@ import {
   Presentation, PanelRight, Crown, History,
 } from 'lucide-react';
 import { MathText } from '../../../components/MathText';
+import RenderTable from '../../../components/RenderTable';
 // Turn 93: mode baca guru = dokumen bersih (tanpa kartu interaktif siswa).
 import BacaGuruSections, { BacaGuruKuis } from '../../../components/belajar/BacaGuru';
 // Turn 95: tab Riwayat Latihan (pengganti Diskusi) + pencatatan percobaan.
@@ -59,7 +60,33 @@ const XP_BENAR = 10;
 //   'tabel'   : PGK kategori -- tiap baris pilih satu kolom
 //               (mis. Benar/Salah atau Mungkin/Tidak Mungkin)
 // ============================================================
-const tipeSoal = (s) => String(s?.tipe || 'pg');
+const tipeSoal = (s) => {
+  const raw = String(s?.tipe || s?.format || s?.jenis || 'pg').toLowerCase().trim();
+  if (/^(benar[_\s-]?salah|bs|true[_\s-]?false|tabel[_\s-]?benar[_\s-]?salah|tabel)$/.test(raw) || /benar.*salah/i.test(raw)) return 'tabel';
+  if (/^(pg[_\s-]?multi|pg[_\s-]?kompleks|kompleks|multi)$/.test(raw) || /kompleks/i.test(raw)) return 'pgMulti';
+  if (/^(jodoh|menjodohkan)$/.test(raw)) return 'jodoh';
+  if (/^(isian|isian[_\s-]?singkat|numerik)$/.test(raw)) return 'isian';
+  if (/^(uraian|esai)$/.test(raw)) return 'uraian';
+  if ((Array.isArray(s?.pernyataan) && s.pernyataan.length > 0) || (Array.isArray(s?.baris) && s.baris.length > 0)) {
+    return 'tabel';
+  }
+  return 'pg';
+};
+
+const barisSoal = (s) => (
+  (Array.isArray(s?.baris) && s.baris.length > 0) ? s.baris :
+  (Array.isArray(s?.pernyataan) && s.pernyataan.length > 0) ? s.pernyataan :
+  (Array.isArray(s?.tabel_benar_salah) && s.tabel_benar_salah.length > 0) ? s.tabel_benar_salah :
+  []
+);
+
+const opsiSoal = (s) => (
+  (Array.isArray(s?.opsi) && s.opsi.length > 0) ? s.opsi :
+  (Array.isArray(s?.opsiJawaban) && s.opsiJawaban.length > 0) ? s.opsiJawaban :
+  (Array.isArray(s?.pilihan) && s.pilihan.length > 0) ? s.pilihan :
+  (Array.isArray(s?.options) && s.options.length > 0) ? s.options :
+  []
+);
 
 // PETUNJUK CARA MENJAWAB per jenis (blueprint TKA standar terbaru,
 // arahan owner Turn 39): algoritma pengguna ditampilkan sebagai hint.
@@ -76,10 +103,25 @@ const HINT_JAWAB = {
 const kreditSoal = (s, jaw) => {
   const t = tipeSoal(s);
   if (t === 'tabel') {
-    const k = s.jawaban || [];
-    if (!Array.isArray(jaw) || !k.length) return 0;
-    const benar = k.filter((c, r) => jaw[r] === c).length;
-    return benar / k.length;
+    const k = Array.isArray(s.jawaban)
+      ? s.jawaban
+      : (Array.isArray(s.kunciJawaban)
+        ? s.kunciJawaban
+        : (Array.isArray(s.kunci?.bs) ? s.kunci.bs : []));
+    const bars = barisSoal(s);
+    const totalBaris = Math.max(k.length, bars.length);
+    if (!Array.isArray(jaw) || !totalBaris) return 0;
+    let benar = 0;
+    for (let r = 0; r < totalBaris; r++) {
+      const siswaPilih = jaw[r];
+      const kunciVal = k[r];
+      if (siswaPilih == null || kunciVal == null) continue;
+      if (kunciVal === true && (siswaPilih === 0 || siswaPilih === true || String(siswaPilih).toLowerCase() === 'b' || String(siswaPilih).toLowerCase() === 'benar')) benar++;
+      else if (kunciVal === false && (siswaPilih === 1 || siswaPilih === false || String(siswaPilih).toLowerCase() === 's' || String(siswaPilih).toLowerCase() === 'salah')) benar++;
+      else if (siswaPilih === kunciVal) benar++;
+      else if (String(siswaPilih).toLowerCase() === String(kunciVal).toLowerCase()) benar++;
+    }
+    return benar / totalBaris;
   }
   if (t === 'jodoh') {
     const k = s.jawaban || [];
@@ -88,23 +130,28 @@ const kreditSoal = (s, jaw) => {
     return benar / k.length;
   }
   if (t === 'pgMulti') {
-    const k = s.jawaban || [];
-    return Array.isArray(jaw) && k.length && jaw.length === k.length
-      && k.every((x) => jaw.includes(x)) ? 1 : 0;
+    const k = Array.isArray(s.jawaban)
+      ? s.jawaban
+      : (Array.isArray(s.kunciJawaban)
+        ? s.kunciJawaban
+        : (Array.isArray(s.kunci?.multi) ? s.kunci.multi : []));
+    if (!Array.isArray(jaw) || !k.length || jaw.length !== k.length) return 0;
+    return k.every((x) => jaw.includes(x)) ? 1 : 0;
   }
   if (t === 'isian') {
     const norm = (x) => String(x ?? '').trim().toLowerCase()
       .replace(/\s+/g, ' ').replace(/,/g, '.');
-    return norm(jaw) === norm(s.jawaban) ? 1 : 0;
+    return norm(jaw) === norm(s.jawaban ?? s.kunciJawaban) ? 1 : 0;
   }
   if (t === 'uraian') return 0; // dinilai mandiri vs referensi
-  return jaw === s.jawaban ? 1 : 0;
+  const k = s.jawaban ?? s.kunciJawaban ?? (typeof s.kunci?.pg === 'number' ? s.kunci.pg : 0);
+  return jaw === k ? 1 : 0;
 };
 // Turn 89 (koreksi owner): teks soal/stimulus sering MULTIPARAGRAF
 // (kutipan cerpen/teks). Pecah pada baris kosong supaya bacaan tidak
 // menjadi satu blok panjang; baris pembuka "Bacalah ..." dimiringkan
 // seperti cetakan buku, batang soal di akhir ditebalkan.
-export function TeksSoal({ teks, style }) {
+export function TeksSoal({ teks, style, tabelSoal = null }) {
   const paras = String(teks || '').split(/\n{2,}/).map((p) => p.trim()).filter(Boolean);
   const adaBacalah = paras.length > 1 && /^Bacalah\b/.test(paras[0]);
   return (
@@ -124,6 +171,7 @@ export function TeksSoal({ teks, style }) {
           </p>
         );
       })}
+      {tabelSoal && <RenderTable table={tabelSoal} />}
     </div>
   );
 }
@@ -134,8 +182,8 @@ const jawabanLengkap = (s, jaw) => {
   const t = tipeSoal(s);
   if (t === 'pgMulti') return Array.isArray(jaw) && jaw.length > 0;
   if (t === 'tabel') {
-    return Array.isArray(jaw) && jaw.length === (s.baris || []).length
-      && jaw.every((x) => x != null);
+    const bars = barisSoal(s);
+    return Array.isArray(jaw) && (bars.length === 0 || jaw.length === bars.length) && jaw.length > 0 && jaw.every((x) => x != null);
   }
   if (t === 'jodoh') {
     return Array.isArray(jaw) && jaw.length === (s.premis || []).length
@@ -1450,10 +1498,15 @@ function fmtKunciSingkat(soal) {
 // Dipakai juga oleh sesi bank-soal (LiveSessionTeacher) sehingga
 // mode lepas-satu-per-satu tidak lagi dipakai untuk sesi baru.
 // ============================================================
-export function UjianPaketBoard({ sessionId, kuis, indexes, sesi, siswaId, nama, materiId = '', babId = '', babJudul = '' }) {
+export function UjianPaketBoard({ sessionId, kuis, indexes, sesi, siswaId, nama, materiId = '', babId = '', babJudul = '', ...rest }) {
   const [jw, setJw] = useState({});
   const [hasil, setHasil] = useState(null);
   const [now, setNow] = useState(() => Date.now());
+
+  const daftarKuis = kuis || rest.paket || sesi?.daftarSoal || [];
+  const idxList = Array.isArray(indexes) ? indexes : daftarKuis.map((_, i) => i);
+  const sId = sessionId || rest.sesiId || sesi?.id || '';
+
   useEffect(() => {
     const id = window.setInterval(() => setNow(Date.now()), 1000);
     return () => window.clearInterval(id);
@@ -1469,32 +1522,32 @@ export function UjianPaketBoard({ sessionId, kuis, indexes, sesi, siswaId, nama,
     // Turn 96: progres dikirim realtime per perubahan jawaban — bila
     // guru mengakhiri sesi di tengah jalan, jawaban siswa sudah ada
     // di server dan tetap terkumpul lewat auto-submit.
-    kirimJawabanLive(sessionId, i, v).catch(() => {});
+    kirimJawabanLive(sId, i, v).catch(() => {});
   };
-  const terjawab = indexes.filter((i) => jawabanLengkap(kuis[i], jw[i])).length;
-  const lengkapSemua = terjawab === indexes.length;
+  const terjawab = idxList.filter((i) => jawabanLengkap(daftarKuis[i], jw[i])).length;
+  const lengkapSemua = terjawab === idxList.length;
 
   async function kumpul(auto = false) {
     if (hasil) return;
-    const kredit = indexes.map((i) => kreditSoal(kuis[i], jw[i] ?? null));
-    const skor = Math.round((kredit.reduce((a, b) => a + b, 0) / Math.max(1, indexes.length)) * 100);
-    const h = { skor, kredit, terjawab, total: indexes.length, auto };
+    const kredit = idxList.map((i) => kreditSoal(daftarKuis[i], jw[i] ?? null));
+    const skor = Math.round((kredit.reduce((a, b) => a + b, 0) / Math.max(1, idxList.length)) * 100);
+    const h = { skor, kredit, terjawab, total: idxList.length, auto };
     setHasil(h);
     try {
-      await Promise.all(indexes.map((i) => kirimJawabanLive(sessionId, i, jw[i] ?? null)));
-      await kumpulkanUjian(sessionId, {
+      await Promise.all(idxList.map((i) => kirimJawabanLive(sId, i, jw[i] ?? null)));
+      await kumpulkanUjian(sId, {
         siswaId, nama, skor,
         benar: kredit.reduce((a, b) => a + b, 0),
-        total: indexes.length, terjawab,
+        total: idxList.length, terjawab,
       });
       // Turn 95: masuk riwayat latihan siswa (tab Riwayat Latihan).
       // Turn 97: id idempoten per sesi — submit ulang/auto tidak menduplikat.
       catatRiwayatLatihan(siswaId, {
         jenis: 'ujian', kode: sesi?.kode || '', materiId, babId, babJudul,
         nilai: skor, benar: kredit.reduce((a, b) => a + b, 0),
-        total: indexes.length,
-        perSoal: indexes.map((i) => ({ i, kredit: kreditSoal(kuis[i], jw[i] ?? null), jaw: jw[i] ?? null })),
-      }, `ujian_${sessionId}`);
+        total: idxList.length,
+        perSoal: idxList.map((i) => ({ i, kredit: kreditSoal(daftarKuis[i], jw[i] ?? null), jaw: jw[i] ?? null })),
+      }, `ujian_${sId}`);
     } catch { /* nilai tetap tampil lokal bila offline */ }
   }
   // eslint-disable-next-line react-hooks/set-state-in-effect, react-hooks/exhaustive-deps
@@ -1524,6 +1577,7 @@ export function UjianPaketBoard({ sessionId, kuis, indexes, sesi, siswaId, nama,
     const fmt = tipeSoal(soal);
     const v = jw[i];
     if (fmt === 'tabel') {
+      const bars = barisSoal(soal);
       return (
         <div style={S.tabelWrap}>
           <table style={S.tabel}>
@@ -1534,12 +1588,13 @@ export function UjianPaketBoard({ sessionId, kuis, indexes, sesi, siswaId, nama,
               </tr>
             </thead>
             <tbody>
-              {(soal.baris || []).map((bar, r) => (
+              {bars.map((bar, r) => (
                 <tr key={r}>
                   <td style={S.tabelSel}><MathText text={bar} /></td>
                   {kolomSoal(soal).map((k, c) => {
                     const pil = Array.isArray(v) ? v[r] : undefined;
-                    const kunc = (soal.jawaban || [])[r] === c;
+                    const kuncVal = (Array.isArray(soal.jawaban) ? soal.jawaban : (Array.isArray(soal.kunciJawaban) ? soal.kunciJawaban : []))[r];
+                    const kunc = kuncVal === c || (kuncVal === true && c === 0) || (kuncVal === false && c === 1);
                     return (
                       <td key={c} style={S.tabelSelTengah}>
                         <button type="button" disabled={kunci}
@@ -1569,11 +1624,12 @@ export function UjianPaketBoard({ sessionId, kuis, indexes, sesi, siswaId, nama,
     }
     if (fmt === 'pgMulti') {
       const arr = Array.isArray(v) ? v : [];
+      const ops = opsiSoal(soal);
       return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
-          {(soal.opsi || []).map((op, j) => {
+          {ops.map((op, j) => {
             const a = arr.includes(j);
-            const kunc = kunci && (soal.jawaban || []).includes(j);
+            const kunc = kunci && (Array.isArray(soal.jawaban) ? soal.jawaban : (Array.isArray(soal.kunciJawaban) ? soal.kunciJawaban : [])).includes(j);
             return (
               <button key={j} type="button" disabled={kunci}
                 onClick={() => jawab(i, a ? arr.filter((x) => x !== j) : [...arr, j].sort((x, y) => x - y))}
@@ -1605,11 +1661,13 @@ export function UjianPaketBoard({ sessionId, kuis, indexes, sesi, siswaId, nama,
       );
     }
     // pg (default)
+    const ops = opsiSoal(soal);
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
-        {(soal.opsi || []).map((op, j) => {
+        {ops.map((op, j) => {
           const a = v === j;
-          const kunc = kunci && soal.jawaban === j;
+          const kuncVal = soal.jawaban ?? soal.kunciJawaban;
+          const kunc = kunci && (kuncVal === j || (typeof kuncVal === 'string' && kuncVal.toUpperCase() === String.fromCharCode(65 + j)));
           return (
             <button key={j} type="button" disabled={kunci}
               onClick={() => jawab(i, j)}
@@ -1632,7 +1690,7 @@ export function UjianPaketBoard({ sessionId, kuis, indexes, sesi, siswaId, nama,
   return (
     <>
       <div style={S.liveHead}>
-        📝 MODE UJIAN • {indexes.length} soal
+        📝 MODE UJIAN • {idxList.length} soal
         {sisaMs !== null && !hasil && (
           <span style={{
             marginLeft: 'auto', fontVariantNumeric: 'tabular-nums', fontWeight: 900,
@@ -1647,12 +1705,12 @@ export function UjianPaketBoard({ sessionId, kuis, indexes, sesi, siswaId, nama,
       {!hasil ? (
         <>
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 }}>
-            {indexes.map((i) => (
+            {idxList.map((i) => (
               <button key={i} type="button"
                 onClick={() => document.getElementById(`uj-${i}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
                 style={{
-                  width: 30, height: 30, borderRadius: 9, border: '1.5px solid ' + (jw[i] !== undefined && jawabanLengkap(kuis[i], jw[i]) ? T.biru : T.garis),
-                  background: jw[i] !== undefined && jawabanLengkap(kuis[i], jw[i]) ? T.kotakBiru : '#fff',
+                  width: 30, height: 30, borderRadius: 9, border: '1.5px solid ' + (jw[i] !== undefined && jawabanLengkap(daftarKuis[i], jw[i]) ? T.biru : T.garis),
+                  background: jw[i] !== undefined && jawabanLengkap(daftarKuis[i], jw[i]) ? T.kotakBiru : '#fff',
                   color: T.biruDalam, fontWeight: 800, fontSize: 12, cursor: 'pointer',
                 }}>
                 {i + 1}
@@ -1663,18 +1721,18 @@ export function UjianPaketBoard({ sessionId, kuis, indexes, sesi, siswaId, nama,
             Kerjakan semua soal — tombol kumpul aktif setelah semua terjawab.
             Waktu habis = terkirim otomatis.
           </div>
-          {indexes.map((i) => (
+          {idxList.map((i) => (
             <div key={i} id={`uj-${i}`} style={{ ...S.kartuKuisUjian, scrollMarginTop: 80 }}>
               <div style={S.soalNomor}>Soal {i + 1}</div>
-              {kuis[i].soalGambar && <img src={kuis[i].soalGambar} alt="Gambar soal" style={S.soalGambar} />}
-              {(kuis[i].opsiGambar || []).length > 0 && null}
-              <TeksSoal teks={kuis[i].soal} style={S.soalTeks} />
-              {renderJawab(kuis[i], i)}
+              {daftarKuis[i].soalGambar && <img src={daftarKuis[i].soalGambar} alt="Gambar soal" style={S.soalGambar} />}
+              {(daftarKuis[i].opsiGambar || []).length > 0 && null}
+              <TeksSoal teks={daftarKuis[i].soal || daftarKuis[i].teks} style={S.soalTeks} tabelSoal={daftarKuis[i].tabelSoal || daftarKuis[i].tabel_soal || daftarKuis[i].tabel} />
+              {renderJawab(daftarKuis[i], i)}
             </div>
           ))}
           <button type="button" style={{ ...S.btn, opacity: lengkapSemua ? 1 : 0.5 }}
             disabled={!lengkapSemua} onClick={() => kumpul()}>
-             Kumpulkan ({terjawab}/{indexes.length} terjawab)
+             Kumpulkan ({terjawab}/{idxList.length} terjawab)
           </button>
         </>
       ) : (
@@ -1758,7 +1816,7 @@ function LiveKuis({ sessionId, soal, idx, total, sesi }) {
       {soal.soalGambar && (
         <img src={soal.soalGambar} alt="Gambar soal" style={S.soalGambar} />
       )}
-      <TeksSoal teks={soal.soal} style={S.soalTeks} />
+      <TeksSoal teks={soal.soal || soal.teks} style={S.soalTeks} tabelSoal={soal.tabelSoal || soal.tabel_soal || soal.tabel} />
       {fmt === 'tabel' ? (
         <div style={S.tabelWrap}>
           <table style={S.tabel}>
@@ -1771,7 +1829,7 @@ function LiveKuis({ sessionId, soal, idx, total, sesi }) {
               </tr>
             </thead>
             <tbody>
-              {(soal.baris || []).map((bar, r) => (
+              {barisSoal(soal).map((bar, r) => (
                 <tr key={r}>
                   <td style={S.tabelSel}><MathText text={bar} /></td>
                   {kolomSoal(soal).map((k, c) => (
@@ -1799,7 +1857,7 @@ function LiveKuis({ sessionId, soal, idx, total, sesi }) {
             ☑️ Centang semua pernyataan yang benar — jawaban bisa lebih dari satu.
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {(soal.opsi || []).map((op, j) => (
+            {opsiSoal(soal).map((op, j) => (
               <button key={j} type="button"
                 style={{
                   ...S.opsi,
@@ -1849,7 +1907,7 @@ function LiveKuis({ sessionId, soal, idx, total, sesi }) {
           onChange={(e) => setPilihan(e.target.value)} />
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {(soal.opsi || []).map((op, j) => (
+          {opsiSoal(soal).map((op, j) => (
             <button key={j} type="button"
               style={{
                 ...S.opsi,

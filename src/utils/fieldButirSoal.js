@@ -118,9 +118,28 @@ export function gambarButirDari(soal) {
   const list = sumber
     .map((g) => (typeof g === 'string' ? g : String(g?.url || g?.uploadedUrl || '')))
     .filter(Boolean);
-  if (soal?.qImage && typeof soal.qImage === 'string' && !list.includes(soal.qImage)) {
-    list.push(soal.qImage);
+  
+  const kunciTunggal = [soal?.qImage, soal?.gambarUrl, soal?.soalGambar, soal?.imageUrl, soal?.image, soal?.mediaUrl];
+  for (const item of kunciTunggal) {
+    if (item && typeof item === 'string' && !list.includes(item.trim())) {
+      list.push(item.trim());
+    }
   }
+
+  // Wacana / stimulus gambar
+  const st = soal?.bacaan || soal?.stimulus || soal?.wacana;
+  if (st && typeof st === 'object') {
+    if (Array.isArray(st.gambar)) {
+      st.gambar.forEach((g) => {
+        const u = typeof g === 'string' ? g : String(g?.url || g?.uploadedUrl || '');
+        if (u && !list.includes(u.trim())) list.push(u.trim());
+      });
+    }
+    if (typeof st.gambarUrl === 'string' && st.gambarUrl.trim() && !list.includes(st.gambarUrl.trim())) {
+      list.push(st.gambarUrl.trim());
+    }
+  }
+
   return list;
 }
 

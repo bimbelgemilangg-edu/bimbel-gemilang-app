@@ -1224,7 +1224,9 @@ export default function LatihanHarianPage() {
                 di soal (mis. kunci determinasi biologi) -- SAMA SEKALI
                 GAK PERNAH DIRENDER, padahal komponennya udah lama ada,
                 cuma kepakai di preview admin doang. */}
-            {soalAktif.tabelSoal && <RenderTable table={soalAktif.tabelSoal} />}
+            {(soalAktif.tabelSoal || soalAktif.tabel_soal || soalAktif.tabel) && (
+              <RenderTable table={soalAktif.tabelSoal || soalAktif.tabel_soal || soalAktif.tabel} />
+            )}
 
             {/* 🔥 ROMBAK: dulu begitu klik "Cek Jawaban", opsi langsung
                 berubah hijau/merah + muncul pembahasan di sini juga.
@@ -1448,7 +1450,9 @@ export default function LatihanHarianPage() {
                         ))}
                       </div>
                     )}
-                    {item.soal.tabelSoal && <RenderTable table={item.soal.tabelSoal} />}
+                    {(item.soal.tabelSoal || item.soal.tabel_soal || item.soal.tabel) && (
+                      <RenderTable table={item.soal.tabelSoal || item.soal.tabel_soal || item.soal.tabel} />
+                    )}
                     <div style={{ fontSize: 12.5, color: '#475569', marginBottom: 4 }}>
                       Jawabanmu: <strong>{String.fromCharCode(65 + item.jawabanIndex)}. {renderMath(teksOpsi(item.jawabanIndex))}</strong>
                     </div>
