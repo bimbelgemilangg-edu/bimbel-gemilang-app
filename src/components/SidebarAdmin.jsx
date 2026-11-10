@@ -269,8 +269,9 @@ const SidebarAdmin = () => {
       ]
     },
     {
-      label: '📋 PENDAFTARAN',
+      label: '📋 PENDAFTARAN & EVENT',
       items: [
+        { name: 'TOBK Akbar & Lomba',  path: '/admin/tobk-publik',         icon: <Trophy size={18} />, badge: 'EVENT', badgeColor: '#3b82f6' },
         { name: 'Pendaftaran Online',  path: '/admin/pendaftaran',         icon: <UserPlus size={18} />,  badge: badgePendaftaran > 0 ? badgePendaftaran : null, badgeColor: '#f59e0b' },
         { name: 'Manajemen Harga',     path: '/admin/pendaftaran/harga',   icon: <DollarSign size={18} /> },
         { name: 'Lamaran Tentor/Staff',path: '/admin/pendaftaran/tentor',  icon: <Briefcase size={18} />, badge: badgeLamaranTentor > 0 ? badgeLamaranTentor : null, badgeColor: '#8b5cf6' },

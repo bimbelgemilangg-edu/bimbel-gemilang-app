@@ -49,6 +49,7 @@ const GRUP = [
       { path: '/admin/perpustakaan', nama: 'Perpustakaan Konten', ikon: Library, desc: 'SATU pohon jenjang → mapel → bab untuk mencari soal, buku digital, dan paket try out dari tiga sumber sekaligus.' },
       { path: '/admin/bank-soal/terbitkan', nama: 'Terbitkan Kuis', ikon: Rocket, desc: 'Menerbitkan kuis dari bank soal ke guru/siswa.' },
       { path: '/admin/bank-soal/hasil', nama: 'Hasil Kuis', ikon: ClipboardCheck, desc: 'Rekap jawaban & nilai kuis yang sudah dikerjakan.' },
+      { path: '/admin/tobk-publik', nama: 'TOBK Akbar & Lomba (Publik)', ikon: Trophy, desc: 'Kendali event try out publik, lomba, tes minat bakat, token ujian, webcam AI proctor, dan ekspor database leads marketing (Zero Storage Bloat).' },
       { path: '/admin/bank-soal/tryout-otomatis', nama: 'Try Out Otomatis', ikon: Trophy, desc: 'Meracik paket try out otomatis dari bank soal.' },
       { path: '/admin/bank-soal/terbitkan-tryout', nama: 'Terbitkan Try Out', ikon: Rocket, desc: 'Menerbitkan try out ke siswa beserta aturannya.' },
       { path: '/admin/bank-soal/hasil-tryout', nama: 'Hasil Try Out', ikon: ClipboardCheck, desc: 'Skor, pembahasan, dan analisis jawaban try out.' },

@@ -49,6 +49,15 @@ import PendaftaranOnline from './pages/PendaftaranOnline';
 import PendaftaranTentor from './pages/PendaftaranTentor';
 
 // ============================================================
+// TOBK GEMILANG & EVENT PUBLIK (Try Out Akbar, Lomba, Marketing Leads)
+// ============================================================
+import TobkPortalPage from './pages/public/tobk/TobkPortalPage';
+import TobkRuangTungguPage from './pages/public/tobk/TobkRuangTungguPage';
+import TobkCbtPage from './pages/public/tobk/TobkCbtPage';
+import TobkSelesaiPage from './pages/public/tobk/TobkSelesaiPage';
+import KelolaTobkPublikPage from './pages/admin/tobk/KelolaTobkPublikPage';
+
+// ============================================================
 // ADMIN - PENDAFTARAN
 // ============================================================
 import ManageOnlineRegistration from './pages/admin/pendaftaran/ManageOnlineRegistration';
@@ -611,11 +620,18 @@ function App() {
         <Route path="/pendaftaran" element={<PendaftaranOnline />} />
         <Route path="/pendaftaran-tentor" element={<PendaftaranTentor />} />
 
+        {/* TOBK GEMILANG & EVENT PUBLIK (Try Out Akbar, Lomba, Marketing) */}
+        <Route path="/tobk" element={<TobkPortalPage />} />
+        <Route path="/tobk/ruang-tunggu" element={<TobkRuangTungguPage />} />
+        <Route path="/tobk/cbt" element={<TobkCbtPage />} />
+        <Route path="/tobk/selesai" element={<TobkSelesaiPage />} />
+
         {/* ====================================================
             ADMIN
             ==================================================== */}
 
         <Route path="/admin" element={<AdminRoute><Dashboard /></AdminRoute>} />
+        <Route path="/admin/tobk-publik" element={<AdminRoute><KelolaTobkPublikPage /></AdminRoute>} />
         <Route path="/admin/analisis" element={<AdminRoute><DashboardAnalisis /></AdminRoute>} />
         <Route path="/admin/students" element={<AdminRoute><StudentList /></AdminRoute>} />
         <Route path="/admin/students/add" element={<AdminRoute><AddStudent /></AdminRoute>} />
