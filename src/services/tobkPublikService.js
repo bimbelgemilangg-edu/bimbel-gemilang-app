@@ -98,9 +98,6 @@ export const SESI_RESMI_TKA_2026 = {
   }
 };
 
-// Preset Flat Lama (Sebagai Fallback Kompatibilitas)
-export const SOAL_PRESET_UTBK = SUBTES_RESMI_UTBK_2026.flatMap((s) => s.soal);
-
 // Helper: Ambil data backup lokal
 function getLocalEvents() {
   try {
