@@ -17,7 +17,7 @@ import {
   collection, doc, getDoc, getDocs, setDoc, query, where, serverTimestamp
 } from 'firebase/firestore';
 import { useProfilSiswa } from '../../utils/profilSiswa';
-import { tanggalLokalStr, waktuLokalStr } from '../../utils/waktuLokal';
+import { tanggalLokalStr } from '../../utils/waktuLokal';
 import { kunciDokumenAbsensi, daftarQueryAbsensi, gabungkanDokUnik } from '../../utils/identitasAbsensi';
 
 export default function ScanAbsensiPage() {
@@ -190,7 +190,7 @@ export default function ScanAbsensiPage() {
                 }
 
                 const today = tanggalLokalStr();
-                const nowTime = waktuLokalStr ? waktuLokalStr() : new Date().toLocaleTimeString('id-ID');
+                const nowTime = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
                 const docKey = kunciDokumenAbsensi(studentId || studentDocId, today, data.scheduleId || '');
 
                 await setDoc(doc(db, "attendance", docKey), {
@@ -274,7 +274,7 @@ export default function ScanAbsensiPage() {
     setPesanSuksesFoto('');
     try {
       const today = tanggalLokalStr();
-      const nowTime = waktuLokalStr ? waktuLokalStr() : new Date().toLocaleTimeString('id-ID');
+      const nowTime = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
       const docKey = kunciDokumenAbsensi(studentId || studentDocId, today, selectedScheduleId || 'manual');
       const matched = todaySchedules.find(s => s.id === selectedScheduleId);
 
