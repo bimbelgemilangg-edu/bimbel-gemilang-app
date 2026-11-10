@@ -186,7 +186,6 @@ soal_bindo = [
         "grup": bcn_1["grup"],
         "teks_soal": "Tentukan kesesuaian pernyataan berikut dengan isi teks tersebut!",
         "tabel": {
-            "gambar_tabel": "/soal/tryout_tpm_bindo_paket_a/q2_tabel_kesesuaian_pernyataan.png",
             "headers": ["Pernyataan", "Sesuai", "Tidak Sesuai"],
             "rows": [
                 ["A. Penyediaan ruang terbuka hijau terkendala lahan yang terbatas.", "✓", ""],
@@ -432,7 +431,6 @@ soal_bindo = [
         "grup": bcn_6["grup"],
         "teks_soal": "Tentukan kebenaran opini penulis berikut berdasarkan teks tersebut!",
         "tabel": {
-            "gambar_tabel": "/soal/tryout_tpm_bindo_paket_a/q16_tabel_kebenaran_opini.png",
             "headers": ["Pernyataan", "Benar", "Salah"],
             "rows": [
                 ["A. Film Na Willa menjadi sorotan karena memadukan alur drama yang emosional dengan sinematografi yang kuat.", "✓", ""],
@@ -508,7 +506,6 @@ soal_bindo = [
         "grup": bcn_7["grup"],
         "teks_soal": "Ide pokok paragraf ketiga teks tersebut adalah …. Tentukan benar atau salah pada setiap pernyataan berikut!",
         "tabel": {
-            "gambar_tabel": "/soal/tryout_tpm_bindo_paket_a/q20_tabel_ide_pokok_benar_salah.png",
             "headers": ["Pernyataan", "Benar", "Salah"],
             "rows": [
                 ["A. risiko alergi dan peradangan bagi pemakainya", "", "✓"],
@@ -625,7 +622,6 @@ Ungkapan perasaan siapakah yang paling sesuai dengan isi puisi tersebut?""",
         "grup": bcn_9["grup"],
         "teks_soal": "Tentukan sesuai atau tidak sesuai terkait peristiwa yang mungkin terjadi dari cerita tersebut!",
         "tabel": {
-            "gambar_tabel": "/soal/tryout_tpm_bindo_paket_a/q26_tabel_prediksi_peristiwa.png",
             "headers": ["Prediksi peristiwa", "Sesuai", "Tidak Sesuai"],
             "rows": [
                 ["A. Banyak warga yang mengikuti kegiatan peduli lingkungan yang dilakukan Maya dan teman-temannya.", "✓", ""],
@@ -725,7 +721,6 @@ soal_matematika = [
         "tipe": "pg_sederhana",
         "teks_soal": "Dalam seleksi Olimpiade Sains tersedia 40 butir soal dengan pedoman penskoran sebagai berikut:\nSeorang peserta menjawab 37 butir soal dan 32 di antaranya benar. Skor yang diperoleh peserta tersebut adalah ….",
         "tabel": {
-            "gambar_tabel": "/soal/tryout_tka_matematika_paket_b/q1_tabel_pedoman_skor.png",
             "headers": ["Tiap Butir Soal", "Skor"],
             "rows": [
                 ["Benar", "3"],
@@ -780,7 +775,6 @@ soal_matematika = [
         "gambarUrls": ["/soal/tryout_tka_matematika_paket_b/q4_dinding_rumah.png"],
         "teks_soal": "Gambar berikut merupakan salah satu sisi dinding rumah.\nPaman akan mengecat dinding tersebut. Di toko tersedia dua kemasan cat dengan merek yang sama seperti pada tabel.\nBerapa banyak cat kemasan A dan B yang harus dibeli paman agar biaya yang dikeluarkan minimum?",
         "tabel": {
-            "gambar_tabel": "/soal/tryout_tka_matematika_paket_b/q4_tabel_kemasan_cat.png",
             "headers": ["Kemasan", "Kemampuan pengecatan dengan kualitas baik/ kg", "Kemasan Tersedia", "Harga tiap Kemasan"],
             "rows": [
                 ["A", "10 m²", "2 kg", "Rp50.000,00"],
@@ -849,23 +843,14 @@ Denah tersebut digambar dengan skala 1 : 50 dan satuan angka pada gambar adalah 
         "mapel": "Matematika",
         "materi": "Operasi Bentuk Akar",
         "tipe": "benar_salah",
-        "teks_soal": "Diketahui dua bilangan P = 3√3 − 4 dan Q = 4√3 + 5.\nTentukan benar atau salah setiap pernyataan berikut:",
-        "tabel": {
-            "gambar_tabel": "/soal/tryout_tka_matematika_paket_b/q8_tabel_pernyataan_akar.png",
-            "headers": ["Pernyataan", "Benar", "Salah"],
-            "rows": [
-                ["(1) P + Q = 7√3 + 9", "", "✓"],
-                ["(2) P − Q = −√3 − 9", "✓", ""],
-                ["(3) P × Q = 16 − √3", "✓", ""]
-            ]
-        },
+        "teks_soal": "Diketahui dua bilangan $P = 3\\sqrt{3} - 4$ dan $Q = 4\\sqrt{3} + 5$.\nTentukan benar atau salah setiap pernyataan berikut:",
         "pernyataan": [
-            {"teks": "(1) P + Q = 7√3 + 9", "kunci": "Salah"},
-            {"teks": "(2) P − Q = −√3 − 9", "kunci": "Benar"},
-            {"teks": "(3) P × Q = 16 − √3", "kunci": "Benar"}
+            {"teks": "(1) $P + Q = 7\\sqrt{3} + 9$", "kunci": "Salah"},
+            {"teks": "(2) $P - Q = -\\sqrt{3} - 9$", "kunci": "Benar"},
+            {"teks": "(3) $P \\times Q = 16 - \\sqrt{3}$", "kunci": "Benar"}
         ],
         "kunci": {"1": "Salah", "2": "Benar", "3": "Benar"},
-        "pembahasan": "P + Q = (3√3 - 4) + (4√3 + 5) = 7√3 + 1 (maka (1) Salah). P - Q = (3√3 - 4) - (4√3 + 5) = -√3 - 9 ((2) Benar). P × Q = (3√3 - 4)(4√3 + 5) = 36 + 15√3 - 16√3 - 20 = 16 - √3 ((3) Benar)."
+        "pembahasan": "$P + Q = (3\\sqrt{3} - 4) + (4\\sqrt{3} + 5) = 7\\sqrt{3} + 1$ (maka (1) Salah).\n$P - Q = (3\\sqrt{3} - 4) - (4\\sqrt{3} + 5) = -\\sqrt{3} - 9$ ((2) Benar).\n$P \\times Q = (3\\sqrt{3} - 4)(4\\sqrt{3} + 5) = 36 + 15\\sqrt{3} - 16\\sqrt{3} - 20 = 16 - \\sqrt{3}$ ((3) Benar)."
     },
     {
         "nomor": 9,
@@ -956,7 +941,6 @@ Pilih lebih dari satu pernyataan yang benar dari pernyataan-pernyataan berikut:"
         "gambarUrls": ["/soal/tryout_tka_matematika_paket_b/q14_diagram_panah_fungsi.png"],
         "teks_soal": "Perhatikan diagram panah berikut!\nTentukan benar atau salah untuk setiap pernyataan berikut:",
         "tabel": {
-            "gambar_tabel": "/soal/tryout_tka_matematika_paket_b/q14_tabel_pernyataan_fungsi.png",
             "headers": ["Pernyataan", "Benar", "Salah"],
             "rows": [
                 ["A. Rumus fungsi adalah f(x) = 2x − 2", "", "✓"],
@@ -1011,7 +995,6 @@ Pilih lebih dari satu pernyataan yang benar dari pernyataan-pernyataan berikut:"
         "gambarUrls": ["/soal/tryout_tka_matematika_paket_b/q17_garis_sudut.png"],
         "teks_soal": "Perhatikan gambar!\nBerdasarkan informasi pada gambar, tentukan benar atau salah untuk setiap pernyataan berikut:",
         "tabel": {
-            "gambar_tabel": "/soal/tryout_tka_matematika_paket_b/q17_tabel_pernyataan_sudut.png",
             "headers": ["Pernyataan", "Benar", "Salah"],
             "rows": [
                 ["A. Nilai a = 55°", "✓", ""],
@@ -1036,7 +1019,6 @@ Pilih lebih dari satu pernyataan yang benar dari pernyataan-pernyataan berikut:"
         "teks_soal": """Perhatikan gambar! Yusuf berada di puncak gedung (C). Ia melihat mobil A (hijau) dan mobil B (merah). Dasar gedung (D) tempat Yusuf berada terletak segaris dengan kedua mobil tersebut.
 Berdasarkan informasi pada gambar, tentukan benar atau salah untuk setiap pernyataan berikut:""",
         "tabel": {
-            "gambar_tabel": "/soal/tryout_tka_matematika_paket_b/q18_tabel_pernyataan_gedung.png",
             "headers": ["Pernyataan", "Benar", "Salah"],
             "rows": [
                 ["A. Jarak mobil A (hijau) dengan gedung (AD) = 60 meter.", "✓", ""],
@@ -1144,7 +1126,6 @@ Bangun datar tersebut merupakan gabungan antara belah ketupat ABFG dan trapesium
         "gambarUrls": ["/soal/tryout_tka_matematika_paket_b/q24_jaring_jaring_bangun.png"],
         "teks_soal": "Perhatikan gambar jaring-jaring bangun ruang sisi datar berikut!\nTentukan benar atau salah dari setiap pernyataan berikut:",
         "tabel": {
-            "gambar_tabel": "/soal/tryout_tka_matematika_paket_b/q24_tabel_pernyataan_jaring.png",
             "headers": ["Pernyataan", "Benar", "Salah"],
             "rows": [
                 ["A. Gambar nomor 1 adalah jaring-jaring kubus", "✓", ""],
@@ -1215,7 +1196,6 @@ Bangun datar tersebut merupakan gabungan antara belah ketupat ABFG dan trapesium
         "tipe": "pg_kompleks",
         "teks_soal": "Perhatikan tabel tinggi badan siswa!\nTentukan lebih dari satu pernyataan yang benar terkait dari tabel tersebut!",
         "tabel": {
-            "gambar_tabel": "/soal/tryout_tka_matematika_paket_b/q28_tabel_tinggi_badan.png",
             "headers": ["Tinggi siswa (cm)", "152", "154", "155", "158", "160", "161", "162"],
             "rows": [
                 ["Frekuensi", "1", "3", "6", "4", "3", "2", "1"]
@@ -1254,7 +1234,6 @@ Bangun datar tersebut merupakan gabungan antara belah ketupat ABFG dan trapesium
         "teks_soal": """Seorang peternak ayam memiliki 4 buah mesin penetas telor dengan kapasitas dan tingkat keberhasilan yang berbeda-beda. Data hasil penetasan dari keempat mesin tersebut disajikan dalam tabel berikut:
 Mesin penetas memiliki kualitas paling baik dan efektif tinggi adalah ….""",
         "tabel": {
-            "gambar_tabel": "/soal/tryout_tka_matematika_paket_b/q30_tabel_mesin_penetas.png",
             "headers": ["Nama Mesin", "Jumlah Telor yang Diisi", "Jumlah Telor yang Menetas"],
             "rows": [
                 ["Mesin Alpha", "40 butir", "34 butir"],

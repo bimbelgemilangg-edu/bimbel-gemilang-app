@@ -61,15 +61,13 @@ def generate_html_document(title, subtitle, questions):
                 art_lines.append(f'    <p>{p.strip()}</p>')
         art_lines.append('  </div>')
         
-        # Tabel Soal jika ada
+        # Tabel Soal jika ada (hanya untuk data tabel asli, BUKAN untuk tabel pernyataan benar_salah yang sudah ada di pernyataan)
+        # Sesuai arahan: Tabel TIDAK PERLU di-crop sebagai gambar; sistem merendernya sebagai tabel HTML/CBT native yang rapi.
         tabel = q.get("tabel")
-        if tabel:
+        if tabel and tipe not in ['benar_salah', 'pg_kategori']:
             art_lines.append('  <div data-field="tabel_soal">')
-            if tabel.get("gambar_tabel"):
-                art_lines.append(f'    <div class="tabel-gambar-preview" style="margin-bottom:8px;"><img src="{tabel["gambar_tabel"]}" alt="Tabel Soal {nomor}" style="max-width:100%; border:1px solid #cbd5e1; border-radius:6px;" /></div>')
             if tabel.get("headers") and tabel.get("rows"):
-                tbl_field = ' data-field="tabel_benar_salah"' if tipe in ['benar_salah', 'pg_kategori'] else ''
-                art_lines.append(f'    <table{tbl_field} border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse; width:100%; margin:8px 0; font-size:13.5px;">')
+                art_lines.append('    <table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse; width:100%; margin:8px 0; font-size:13.5px;">')
                 art_lines.append('      <thead><tr style="background:#f1f5f9;">')
                 for h in tabel["headers"]:
                     art_lines.append(f'        <th style="border:1px solid #cbd5e1; padding:8px;">{h}</th>')

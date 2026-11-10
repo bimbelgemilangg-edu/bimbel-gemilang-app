@@ -45,7 +45,6 @@
     "grup": "stimulus_lingkungan_jogja",
     "teks_soal": "Tentukan kesesuaian pernyataan berikut dengan isi teks tersebut!",
     "tabel": {
-      "gambar_tabel": "/soal/tryout_tpm_bindo_paket_a/q2_tabel_kesesuaian_pernyataan.png",
       "headers": [
         "Pernyataan",
         "Sesuai",
@@ -566,7 +565,6 @@
     "grup": "stimulus_film_na_willa",
     "teks_soal": "Tentukan kebenaran opini penulis berikut berdasarkan teks tersebut!",
     "tabel": {
-      "gambar_tabel": "/soal/tryout_tpm_bindo_paket_a/q16_tabel_kebenaran_opini.png",
       "headers": [
         "Pernyataan",
         "Benar",
@@ -731,7 +729,6 @@
     "grup": "stimulus_makeup_remaja",
     "teks_soal": "Ide pokok paragraf ketiga teks tersebut adalah …. Tentukan benar atau salah pada setiap pernyataan berikut!",
     "tabel": {
-      "gambar_tabel": "/soal/tryout_tpm_bindo_paket_a/q20_tabel_ide_pokok_benar_salah.png",
       "headers": [
         "Pernyataan",
         "Benar",
@@ -975,7 +972,6 @@
     "grup": "stimulus_cerita_maya",
     "teks_soal": "Tentukan sesuai atau tidak sesuai terkait peristiwa yang mungkin terjadi dari cerita tersebut!",
     "tabel": {
-      "gambar_tabel": "/soal/tryout_tpm_bindo_paket_a/q26_tabel_prediksi_peristiwa.png",
       "headers": [
         "Prediksi peristiwa",
         "Sesuai",

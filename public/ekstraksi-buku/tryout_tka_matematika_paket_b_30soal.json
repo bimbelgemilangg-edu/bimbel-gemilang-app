@@ -6,7 +6,6 @@
     "tipe": "pg_sederhana",
     "teks_soal": "Dalam seleksi Olimpiade Sains tersedia 40 butir soal dengan pedoman penskoran sebagai berikut:\nSeorang peserta menjawab 37 butir soal dan 32 di antaranya benar. Skor yang diperoleh peserta tersebut adalah ….",
     "tabel": {
-      "gambar_tabel": "/soal/tryout_tka_matematika_paket_b/q1_tabel_pedoman_skor.png",
       "headers": [
         "Tiap Butir Soal",
         "Skor"
@@ -115,7 +114,6 @@
     ],
     "teks_soal": "Gambar berikut merupakan salah satu sisi dinding rumah.\nPaman akan mengecat dinding tersebut. Di toko tersedia dua kemasan cat dengan merek yang sama seperti pada tabel.\nBerapa banyak cat kemasan A dan B yang harus dibeli paman agar biaya yang dikeluarkan minimum?",
     "tabel": {
-      "gambar_tabel": "/soal/tryout_tka_matematika_paket_b/q4_tabel_kemasan_cat.png",
       "headers": [
         "Kemasan",
         "Kemampuan pengecatan dengan kualitas baik/ kg",
@@ -250,43 +248,18 @@
     "mapel": "Matematika",
     "materi": "Operasi Bentuk Akar",
     "tipe": "benar_salah",
-    "teks_soal": "Diketahui dua bilangan P = 3√3 − 4 dan Q = 4√3 + 5.\nTentukan benar atau salah setiap pernyataan berikut:",
-    "tabel": {
-      "gambar_tabel": "/soal/tryout_tka_matematika_paket_b/q8_tabel_pernyataan_akar.png",
-      "headers": [
-        "Pernyataan",
-        "Benar",
-        "Salah"
-      ],
-      "rows": [
-        [
-          "(1) P + Q = 7√3 + 9",
-          "",
-          "✓"
-        ],
-        [
-          "(2) P − Q = −√3 − 9",
-          "✓",
-          ""
-        ],
-        [
-          "(3) P × Q = 16 − √3",
-          "✓",
-          ""
-        ]
-      ]
-    },
+    "teks_soal": "Diketahui dua bilangan $P = 3\\sqrt{3} - 4$ dan $Q = 4\\sqrt{3} + 5$.\nTentukan benar atau salah setiap pernyataan berikut:",
     "pernyataan": [
       {
-        "teks": "(1) P + Q = 7√3 + 9",
+        "teks": "(1) $P + Q = 7\\sqrt{3} + 9$",
         "kunci": "Salah"
       },
       {
-        "teks": "(2) P − Q = −√3 − 9",
+        "teks": "(2) $P - Q = -\\sqrt{3} - 9$",
         "kunci": "Benar"
       },
       {
-        "teks": "(3) P × Q = 16 − √3",
+        "teks": "(3) $P \\times Q = 16 - \\sqrt{3}$",
         "kunci": "Benar"
       }
     ],
@@ -295,7 +268,7 @@
       "2": "Benar",
       "3": "Benar"
     },
-    "pembahasan": "P + Q = (3√3 - 4) + (4√3 + 5) = 7√3 + 1 (maka (1) Salah). P - Q = (3√3 - 4) - (4√3 + 5) = -√3 - 9 ((2) Benar). P × Q = (3√3 - 4)(4√3 + 5) = 36 + 15√3 - 16√3 - 20 = 16 - √3 ((3) Benar)."
+    "pembahasan": "$P + Q = (3\\sqrt{3} - 4) + (4\\sqrt{3} + 5) = 7\\sqrt{3} + 1$ (maka (1) Salah).\n$P - Q = (3\\sqrt{3} - 4) - (4\\sqrt{3} + 5) = -\\sqrt{3} - 9$ ((2) Benar).\n$P \\times Q = (3\\sqrt{3} - 4)(4\\sqrt{3} + 5) = 36 + 15\\sqrt{3} - 16\\sqrt{3} - 20 = 16 - \\sqrt{3}$ ((3) Benar)."
   },
   {
     "nomor": 9,
@@ -452,7 +425,6 @@
     ],
     "teks_soal": "Perhatikan diagram panah berikut!\nTentukan benar atau salah untuk setiap pernyataan berikut:",
     "tabel": {
-      "gambar_tabel": "/soal/tryout_tka_matematika_paket_b/q14_tabel_pernyataan_fungsi.png",
       "headers": [
         "Pernyataan",
         "Benar",
@@ -564,7 +536,6 @@
     ],
     "teks_soal": "Perhatikan gambar!\nBerdasarkan informasi pada gambar, tentukan benar atau salah untuk setiap pernyataan berikut:",
     "tabel": {
-      "gambar_tabel": "/soal/tryout_tka_matematika_paket_b/q17_tabel_pernyataan_sudut.png",
       "headers": [
         "Pernyataan",
         "Benar",
@@ -619,7 +590,6 @@
     ],
     "teks_soal": "Perhatikan gambar! Yusuf berada di puncak gedung (C). Ia melihat mobil A (hijau) dan mobil B (merah). Dasar gedung (D) tempat Yusuf berada terletak segaris dengan kedua mobil tersebut.\nBerdasarkan informasi pada gambar, tentukan benar atau salah untuk setiap pernyataan berikut:",
     "tabel": {
-      "gambar_tabel": "/soal/tryout_tka_matematika_paket_b/q18_tabel_pernyataan_gedung.png",
       "headers": [
         "Pernyataan",
         "Benar",
@@ -831,7 +801,6 @@
     ],
     "teks_soal": "Perhatikan gambar jaring-jaring bangun ruang sisi datar berikut!\nTentukan benar atau salah dari setiap pernyataan berikut:",
     "tabel": {
-      "gambar_tabel": "/soal/tryout_tka_matematika_paket_b/q24_tabel_pernyataan_jaring.png",
       "headers": [
         "Pernyataan",
         "Benar",
@@ -973,7 +942,6 @@
     "tipe": "pg_kompleks",
     "teks_soal": "Perhatikan tabel tinggi badan siswa!\nTentukan lebih dari satu pernyataan yang benar terkait dari tabel tersebut!",
     "tabel": {
-      "gambar_tabel": "/soal/tryout_tka_matematika_paket_b/q28_tabel_tinggi_badan.png",
       "headers": [
         "Tinggi siswa (cm)",
         "152",
@@ -1059,7 +1027,6 @@
     "tipe": "pg_sederhana",
     "teks_soal": "Seorang peternak ayam memiliki 4 buah mesin penetas telor dengan kapasitas dan tingkat keberhasilan yang berbeda-beda. Data hasil penetasan dari keempat mesin tersebut disajikan dalam tabel berikut:\nMesin penetas memiliki kualitas paling baik dan efektif tinggi adalah ….",
     "tabel": {
-      "gambar_tabel": "/soal/tryout_tka_matematika_paket_b/q30_tabel_mesin_penetas.png",
       "headers": [
         "Nama Mesin",
         "Jumlah Telor yang Diisi",
