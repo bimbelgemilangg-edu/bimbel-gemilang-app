@@ -1,15 +1,15 @@
 // src/pages/public/tobk/TobkCbtPage.jsx
 // ============================================================
-// LEMBAR UJIAN CBT TOBK PUBLIK GEMILANG (100% STANDAR RESMI)
-// SISTEM BLOCK TIME UTBK-SNBT 2026 (7 Subtes) & TKA 2026 (75 Menit, Jeda 1m)
+// LEMBAR UJIAN CBT TOBK PUBLIK GEMILANG (E-UJIAN RESMI)
+// 100% PERSIS TAMPILAN E-UJIAN + SISTEM PENILAIAN KATKIEL / IRT TERSEMBUNYI
 // ============================================================
 
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Clock, ShieldAlert, AlertTriangle, CheckCircle, ChevronLeft,
-  ChevronRight, Bookmark, Camera, Menu, X, Type, Send, LogOut,
-  Maximize2, ArrowRight, Play, Sparkles, AlertCircle
+  Menu, Bell, Settings, User, Monitor, BookOpen, LogOut,
+  ChevronLeft, ChevronRight, CheckSquare, Square, Clock,
+  ArrowRight, ShieldAlert, CheckCircle2
 } from 'lucide-react';
 import {
   ambilSesiPesertaAktif, ambilEventTobkById, ambilEventTobkAktifPublik,
@@ -30,7 +30,7 @@ export default function TobkCbtPage() {
   // Tahap Ujian: 'mengerjakan' | 'transisi_subtes'
   const [tahap, setTahap] = useState('mengerjakan');
 
-  // Navigasi Subtes (Block Time)
+  // Navigasi Subtes & Soal
   const [subtesAktifIndex, setSubtesAktifIndex] = useState(0);
   const [indexSoal, setIndexSoal] = useState(0);
 
@@ -45,24 +45,21 @@ export default function TobkCbtPage() {
   const [sisaDetikTransisi, setSisaDetikTransisi] = useState(15);
   const [bisaLanjutTransisi, setBisaLanjutTransisi] = useState(false);
 
-  // Ukuran Font
-  const [fontSizeLevel, setFontSizeLevel] = useState('normal');
+  // Toggle Sidebar Mobile
+  const [sidebarBuka, setSidebarBuka] = useState(false);
+  const [paletBukaMobile, setPaletBukaMobile] = useState(false);
 
-  // Palet Soal Drawer
-  const [showPalet, setShowPalet] = useState(false);
-
-  // Anti-Cheat 3 Strike
+  // Anti-Cheat & 3 Strike
   const [pelanggaran, setPelanggaran] = useState([]);
   const [modalStrike, setModalStrike] = useState(null);
-  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
-  // Webcam Proctor
+  // Webcam Proctor (PIP Discreet)
   const videoRef = useRef(null);
   const streamRef = useRef(null);
 
   // Modal Konfirmasi Selesai Subtes / Ujian
   const [showModalKonfirmasi, setShowModalKonfirmasi] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
 
   // 1. Inisialisasi Ujian
   useEffect(() => {
@@ -162,7 +159,7 @@ export default function TobkCbtPage() {
         setModalStrike({
           strike: totalStrike,
           judul: '⛔ DISKUALIFIKASI OTOMATIS',
-          pesan: `Anda telah melakukan ${totalStrike} kali pelanggaran (meninggalkan layar ujian). Sesuai aturan CBT Gemilang, ujian Anda otomatis dihentikan dan didiskualifikasi!`,
+          pesan: `Anda telah melakukan ${totalStrike} kali pelanggaran (meninggalkan jendela ujian). Sesuai aturan CBT Gemilang, ujian Anda otomatis dihentikan dan didiskualifikasi!`,
           fatal: true,
         });
         handleProsesSelesaiAkhir(true, baru);
@@ -189,7 +186,6 @@ export default function TobkCbtPage() {
     const handleWindowBlur = () => catatPelanggaran('pindah_tab');
     const handleFullscreenChange = () => {
       const fs = !!(document.fullscreenElement || document.webkitFullscreenElement);
-      setIsFullscreen(fs);
       if (!fs && !submitting) catatPelanggaran('keluar_fullscreen');
     };
     const handleContextMenu = (e) => { e.preventDefault(); return false; };
@@ -257,28 +253,21 @@ export default function TobkCbtPage() {
     return () => clearInterval(intervalTransisi);
   }, [tahap]);
 
-  // Aksi Saat Waktu Subtes Habis
   const handleWaktuSubtesHabis = () => {
     if (subtesAktifIndex < subtesList.length - 1) {
-      // Masuk Masa Transisi
       mulaiMasaTransisi();
     } else {
-      // Seluruh Subtes Selesai
       handleProsesSelesaiAkhir(false);
     }
   };
 
-  // Mulai Masa Transisi Menuju Subtes Berikutnya
   const mulaiMasaTransisi = () => {
     setShowModalKonfirmasi(false);
-    setShowPalet(false);
-
     const durasiJeda = Number(eventData?.jedaTransisiDetik) || 15;
     setSisaDetikTransisi(durasiJeda);
     setTahap('transisi_subtes');
   };
 
-  // Masuk ke Subtes Berikutnya (Tombol Biru Diklik)
   const handleLanjutKeSubtesBerikutnya = () => {
     if (!bisaLanjutTransisi) return;
 
@@ -291,16 +280,13 @@ export default function TobkCbtPage() {
     setTahap('mengerjakan');
   };
 
-  // Format Timer Jam:Menit:Detik
+  // Format Jam:Menit:Detik
   const formatTimer = (totalDetik) => {
     const jam = Math.floor(totalDetik / 3600);
     const sisa = totalDetik % 3600;
     const menit = Math.floor(sisa / 60);
     const detik = sisa % 60;
-    if (jam > 0) {
-      return `${jam.toString().padStart(2, '0')}:${menit.toString().padStart(2, '0')}:${detik.toString().padStart(2, '0')}`;
-    }
-    return `${menit.toString().padStart(2, '0')}:${detik.toString().padStart(2, '0')}`;
+    return `${jam.toString().padStart(2, '0')}:${menit.toString().padStart(2, '0')}:${detik.toString().padStart(2, '0')}`;
   };
 
   // Pilih Jawaban
@@ -318,7 +304,7 @@ export default function TobkCbtPage() {
     simpanJawabanPeserta(peserta?.pesertaId, jawaban, baru, pelanggaran);
   };
 
-  // Hitung Skor & Selesaikan Ujian Keseluruhan
+  // Hitung Skor (Pola Katkiel / IRT Skala 200–800 di Balik Layar)
   const handleProsesSelesaiAkhir = async (isDiskualifikasi = false, customPelanggaran = null) => {
     setSubmitting(true);
 
@@ -326,25 +312,48 @@ export default function TobkCbtPage() {
     let benar = 0;
     let salah = 0;
     let kosong = 0;
+    let totalBobotTerkumpul = 0;
+    let totalMaksBobot = 0;
 
     semuaSoal.forEach((soal) => {
+      // Bobot soal berdasarkan subtes / mata pelajaran (Katkiel / UTBK IRT)
+      const mapelLow = (soal.mapel || '').toLowerCase();
+      let bobotSoal = 1.0;
+      if (mapelLow.includes('matematika') || mapelLow.includes('kuantitatif')) {
+        bobotSoal = 1.25;
+      } else if (mapelLow.includes('penalaran')) {
+        bobotSoal = 1.15;
+      } else if (mapelLow.includes('inggris')) {
+        bobotSoal = 1.1;
+      }
+
+      totalMaksBobot += bobotSoal;
+
       const jawab = jawaban[soal.id];
       if (!jawab) {
         kosong++;
       } else if (jawab === soal.kunciJawaban) {
         benar++;
+        totalBobotTerkumpul += bobotSoal;
       } else {
         salah++;
       }
     });
 
     const totalSoal = semuaSoal.length || 1;
+    // Skala Persentase Dasar
     const skorPersen = Math.round((benar / totalSoal) * 100);
+
+    // Skala Resmi UTBK 200–800 (IRT Equivalent)
+    const rasioBobot = totalMaksBobot > 0 ? totalBobotTerkumpul / totalMaksBobot : 0;
+    const skorSkalaUtbk = Math.round(200 + rasioBobot * 600);
+
     const totalPel = (customPelanggaran || pelanggaran).length;
 
     const hasilPayload = {
       statusUjian: isDiskualifikasi ? 'diskualifikasi' : 'selesai',
-      skor: isDiskualifikasi ? 0 : skorPersen,
+      skor: isDiskualifikasi ? 0 : skorSkalaUtbk, // Skala UTBK 200–800
+      skorPersen: isDiskualifikasi ? 0 : skorPersen,
       totalBenar: isDiskualifikasi ? 0 : benar,
       totalSalah: isDiskualifikasi ? totalSoal : salah,
       totalKosong: kosong,
@@ -366,7 +375,7 @@ export default function TobkCbtPage() {
     navigate('/tobk/selesai', { state: { hasil: hasilPayload, peserta, eventData } });
   };
 
-  // Subtes & Soal Aktif
+  // Subtes & Soal Berjalan
   const subtesAktif = subtesList[subtesAktifIndex] || { nama: 'Subtes', soal: [] };
   const daftarSoalSubtes = subtesAktif.soal || [];
   const soalSekarang = daftarSoalSubtes[indexSoal] || null;
@@ -374,22 +383,14 @@ export default function TobkCbtPage() {
   const sudahDijawab = (id) => jawaban[id] !== undefined && jawaban[id] !== '';
   const isRagu = (id) => !!ragu[id];
 
-  // Hitung Soal Ragu di Subtes Berjalan
   const jumlahRaguDiSubtes = useMemo(() => {
     return daftarSoalSubtes.filter((s) => !!ragu[s.id]).length;
   }, [daftarSoalSubtes, ragu]);
 
-  // Ukuran Font Dinamis
-  const fontStyles = useMemo(() => {
-    if (fontSizeLevel === 'small') return { soal: '14px', opsi: '13px', line: 1.5 };
-    if (fontSizeLevel === 'large') return { soal: '19px', opsi: '17px', line: 1.7 };
-    return { soal: '16px', opsi: '15px', line: 1.6 };
-  }, [fontSizeLevel]);
-
   if (loading) {
     return (
-      <div style={{ minHeight: '100vh', background: '#0f172a', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'sans-serif' }}>
-        Mempersiapkan Lembar Soal CBT...
+      <div style={{ minHeight: '100vh', background: '#f1f5f9', color: '#334155', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'sans-serif' }}>
+        Memuat Ujian E-Ujian Gemilang...
       </div>
     );
   }
@@ -399,47 +400,40 @@ export default function TobkCbtPage() {
     const subtesBerikutnya = subtesList[subtesAktifIndex + 1];
 
     return (
-      <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px', fontFamily: 'system-ui, -apple-system, sans-serif' }}>
-        <div style={{ background: '#ffffff', color: '#0f172a', borderRadius: '20px', maxWidth: '580px', width: '100%', padding: '36px 28px', textAlign: 'center', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)' }}>
-          <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: '#dbeafe', color: '#2563eb', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+      <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%)', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px', fontFamily: 'system-ui, -apple-system, sans-serif' }}>
+        <div style={{ background: '#ffffff', color: '#0f172a', borderRadius: '16px', maxWidth: '540px', width: '100%', padding: '36px 28px', textAlign: 'center', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.3)' }}>
+          <div style={{ width: '60px', height: '60px', borderRadius: '50%', background: '#dbeafe', color: '#1d4ed8', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
             <Clock size={32} />
           </div>
 
-          <div style={{ display: 'inline-flex', background: '#eff6ff', color: '#1d4ed8', padding: '4px 12px', borderRadius: '16px', fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', marginBottom: '8px' }}>
-            Regulasi UTBK / TKA · Point of No Return
-          </div>
-
-          <h2 style={{ fontSize: '22px', fontWeight: 800, margin: '0 0 10px', color: '#0f172a' }}>
+          <h2 style={{ fontSize: '20px', fontWeight: 800, margin: '0 0 10px', color: '#0f172a' }}>
             Masa Transisi Menuju Subtes Berikutnya
           </h2>
 
-          <p style={{ fontSize: '14px', color: '#64748b', lineHeight: 1.6, margin: '0 0 20px' }}>
-            Waktu pengerjaan untuk <strong>{subtesAktif.nama}</strong> telah ditutup. Sesuai regulasi nasional, Anda <strong>tidak dapat kembali</strong> ke subtes sebelumnya.
+          <p style={{ fontSize: '13px', color: '#64748b', lineHeight: 1.6, margin: '0 0 20px' }}>
+            Waktu pengerjaan untuk <strong>{subtesAktif.nama}</strong> telah ditutup. Sesuai regulasi UTBK/TKA, Anda <strong>tidak dapat kembali</strong> ke subtes sebelumnya.
           </p>
 
-          {/* Info Subtes Berikutnya */}
-          <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '14px', padding: '16px', marginBottom: '24px', textAlign: 'left' }}>
+          <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '16px', marginBottom: '24px', textAlign: 'left' }}>
             <div style={{ fontSize: '11px', color: '#64748b', textTransform: 'uppercase', fontWeight: 700, marginBottom: '4px' }}>
               Subtes Berikutnya:
             </div>
-            <div style={{ fontSize: '16px', fontWeight: 800, color: '#1e3a8a', marginBottom: '4px' }}>
+            <div style={{ fontSize: '16px', fontWeight: 800, color: '#1d4ed8', marginBottom: '4px' }}>
               {subtesBerikutnya?.nama}
             </div>
-            <div style={{ fontSize: '12px', color: '#475569', display: 'flex', gap: '16px' }}>
-              <span>⏱️ Durasi: <strong>{subtesBerikutnya?.durasiMenit || 20} Menit</strong></span>
-              <span>📝 Jumlah Soal: <strong>{subtesBerikutnya?.soal?.length || subtesBerikutnya?.targetSoal || 20} Butir</strong></span>
+            <div style={{ fontSize: '12px', color: '#475569' }}>
+              ⏱️ Durasi: <strong>{subtesBerikutnya?.durasiMenit || 20} Menit</strong> · 📝 Jumlah Soal: <strong>{subtesBerikutnya?.soal?.length || subtesBerikutnya?.targetSoal || 20} Butir</strong>
             </div>
           </div>
 
-          {/* Hitung Mundur Jeda & Tombol Biru */}
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
             {!bisaLanjutTransisi ? (
               <div style={{ fontSize: '13px', color: '#dc2626', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <Clock size={16} /> Menunggu waktu transisi: {sisaDetikTransisi} detik
+                <Clock size={16} /> Waktu jeda transisi: {sisaDetikTransisi} detik
               </div>
             ) : (
               <div style={{ fontSize: '13px', color: '#16a34a', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <CheckCircle size={16} /> Waktu jeda selesai! Anda dapat melanjutkan ujian.
+                <CheckCircle2 size={16} /> Jeda selesai! Silakan klik tombol biru untuk lanjut.
               </div>
             )}
 
@@ -448,27 +442,27 @@ export default function TobkCbtPage() {
               disabled={!bisaLanjutTransisi}
               style={{
                 width: '100%',
-                maxWidth: '360px',
-                padding: '14px 24px',
-                borderRadius: '12px',
+                maxWidth: '340px',
+                padding: '13px 24px',
+                borderRadius: '8px',
                 border: 'none',
                 background: bisaLanjutTransisi ? '#2563eb' : '#94a3b8',
                 color: '#ffffff',
-                fontSize: '15px',
-                fontWeight: 800,
+                fontSize: '14px',
+                fontWeight: 700,
                 cursor: bisaLanjutTransisi ? 'pointer' : 'not-allowed',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: '8px',
                 boxShadow: bisaLanjutTransisi ? '0 4px 14px rgba(37,99,235,0.4)' : 'none',
-                transition: 'all 0.3s ease',
+                transition: 'all 0.25s ease',
               }}
             >
               {bisaLanjutTransisi ? (
-                <>MULAI SUBTES BERIKUTNYA <ArrowRight size={18} /></>
+                <>MULAI SUBTES BERIKUTNYA <ArrowRight size={16} /></>
               ) : (
-                <>⏳ Menunggu Jeda Transisi ({sisaDetikTransisi}s)</>
+                <>⏳ Menunggu Jeda ({sisaDetikTransisi}s)</>
               )}
             </button>
           </div>
@@ -477,230 +471,573 @@ export default function TobkCbtPage() {
     );
   }
 
-  // ── LAYAR CBT PENGERJAAN NORMAL (BLOCK TIME) ──
+  // ── TAMPILAN PERSIS E-UJIAN ──
   return (
     <div
       style={{
         minHeight: '100vh',
         background: '#f1f5f9',
-        color: '#0f172a',
-        fontFamily: 'system-ui, -apple-system, sans-serif',
+        fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
         display: 'flex',
         flexDirection: 'column',
         userSelect: 'none',
       }}
     >
-      {/* ── TOP BAR CBT STANDAR NASIONAL ── */}
+      {/* ── TOP NAVBAR BIRU (E-UJIAN) ── */}
       <header
         style={{
-          background: '#0f172a',
-          color: '#ffffff',
-          padding: '10px 16px',
+          background: '#2563eb', // Royal Blue
+          height: '52px',
+          padding: '0 20px',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
-          zIndex: 50,
-          flexWrap: 'wrap',
-          gap: '10px',
+          color: '#ffffff',
+          boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+          zIndex: 100,
         }}
       >
-        {/* Identitas Subtes Berjalan */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <img src="/pwa-192x192.png" alt="Logo" style={{ width: '32px', height: '32px', borderRadius: '6px' }} />
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ background: '#3b82f6', color: '#fff', fontSize: '10px', fontWeight: 800, padding: '2px 6px', borderRadius: '4px' }}>
-                SUBTES {subtesAktifIndex + 1}/{subtesList.length}
-              </span>
-              <span style={{ fontSize: '13px', fontWeight: 800, color: '#f59e0b' }}>
-                {subtesAktif.nama}
-              </span>
-            </div>
-            <div style={{ fontSize: '11px', color: '#94a3b8' }}>
-              {peserta?.nama} · {peserta?.asalSekolah || 'Peserta'}
-            </div>
-          </div>
-        </div>
-
-        {/* Indikator Block Time Countdown */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            background: sisaDetikSubtes < 300 ? '#dc2626' : '#1e293b',
-            border: `1px solid ${sisaDetikSubtes < 300 ? '#ef4444' : '#334155'}`,
-            padding: '6px 14px',
-            borderRadius: '8px',
-            animation: sisaDetikSubtes < 300 ? 'pulse 1s infinite' : 'none',
-          }}
-        >
-          <Clock size={16} style={{ color: sisaDetikSubtes < 300 ? '#ffffff' : '#38bdf8' }} />
-          <div>
-            <div style={{ fontSize: '9px', color: sisaDetikSubtes < 300 ? '#fecaca' : '#94a3b8', textTransform: 'uppercase' }}>
-              Sisa Waktu Subtes
-            </div>
-            <div style={{ fontFamily: 'monospace', fontSize: '16px', fontWeight: 800, letterSpacing: '1px' }}>
-              {formatTimer(sisaDetikSubtes)}
-            </div>
-          </div>
-        </div>
-
-        {/* Kontrol CBT (Font Size, Palet Soal, Selesai Subtes) */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <div style={{ display: 'flex', background: '#1e293b', borderRadius: '6px', border: '1px solid #334155', overflow: 'hidden' }}>
-            <button
-              onClick={() => setFontSizeLevel('small')}
-              style={{ background: fontSizeLevel === 'small' ? '#2563eb' : 'transparent', color: '#fff', border: 'none', padding: '5px 8px', fontSize: '11px', cursor: 'pointer' }}
-              title="Font Kecil"
-            >
-              A-
-            </button>
-            <button
-              onClick={() => setFontSizeLevel('normal')}
-              style={{ background: fontSizeLevel === 'normal' ? '#2563eb' : 'transparent', color: '#fff', border: 'none', padding: '5px 8px', fontSize: '11px', cursor: 'pointer' }}
-              title="Font Normal"
-            >
-              A
-            </button>
-            <button
-              onClick={() => setFontSizeLevel('large')}
-              style={{ background: fontSizeLevel === 'large' ? '#2563eb' : 'transparent', color: '#fff', border: 'none', padding: '5px 8px', fontSize: '11px', cursor: 'pointer' }}
-              title="Font Besar"
-            >
-              A+
-            </button>
-          </div>
-
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <span style={{ fontSize: '18px', fontWeight: 800, letterSpacing: '0.5px' }}>
+            E-Ujian
+          </span>
           <button
-            onClick={() => setShowPalet(!showPalet)}
+            onClick={() => setSidebarBuka(!sidebarBuka)}
             style={{
-              display: 'inline-flex', alignItems: 'center', gap: '6px',
-              background: '#334155', color: '#fff', border: 'none',
-              padding: '6px 12px', borderRadius: '6px', fontSize: '12px', fontWeight: 600,
-              cursor: 'pointer'
+              background: 'transparent',
+              border: 'none',
+              color: '#ffffff',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              padding: '4px',
             }}
           >
-            <Menu size={14} /> Daftar Soal ({indexSoal + 1}/{daftarSoalSubtes.length})
+            <Menu size={20} />
           </button>
+        </div>
 
-          {subtesAktifIndex < subtesList.length - 1 ? (
-            <button
-              onClick={() => setShowModalKonfirmasi(true)}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <div style={{ position: 'relative', cursor: 'pointer' }}>
+            <Bell size={18} />
+            <span
               style={{
-                display: 'inline-flex', alignItems: 'center', gap: '6px',
-                background: '#2563eb', color: '#fff', border: 'none',
-                padding: '6px 14px', borderRadius: '6px', fontSize: '12px', fontWeight: 700,
-                cursor: 'pointer'
+                position: 'absolute',
+                top: '-2px',
+                right: '-2px',
+                width: '7px',
+                height: '7px',
+                background: '#ef4444',
+                borderRadius: '50%',
               }}
-            >
-              Selesai Subtes <ChevronRight size={14} />
-            </button>
-          ) : (
-            <button
-              onClick={() => setShowModalKonfirmasi(true)}
-              style={{
-                display: 'inline-flex', alignItems: 'center', gap: '6px',
-                background: '#059669', color: '#fff', border: 'none',
-                padding: '6px 14px', borderRadius: '6px', fontSize: '12px', fontWeight: 700,
-                cursor: 'pointer'
-              }}
-            >
-              <Send size={13} /> Selesai Ujian
-            </button>
-          )}
+            />
+          </div>
+          <Settings size={18} style={{ cursor: 'pointer' }} />
         </div>
       </header>
 
-      {/* ── AREA LEMBAR SOAL ── */}
-      <div style={{ flex: 1, display: 'flex', overflow: 'hidden', position: 'relative' }}>
-        <main style={{ flex: 1, padding: '24px 20px 80px', overflowY: 'auto', maxWidth: '850px', margin: '0 auto', width: '100%', boxSizing: 'border-box' }}>
+      {/* ── KONTEN UTAMA: 3 KOLOM PERSIS SCREENSHOT ── */}
+      <div style={{ flex: 1, display: 'flex', position: 'relative', overflow: 'hidden' }}>
+        {/* 1. SIDEBAR KIRI (USER & SISWA MENU) */}
+        <aside
+          style={{
+            width: '240px',
+            background: '#ffffff',
+            borderRight: '1px solid #e2e8f0',
+            display: 'flex',
+            flexDirection: 'column',
+            padding: '24px 16px',
+            boxSizing: 'border-box',
+            flexShrink: 0,
+            overflowY: 'auto',
+          }}
+          className="eujian-sidebar"
+        >
+          {/* Profil Avatar & Nama */}
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', marginBottom: '24px' }}>
+            <div
+              style={{
+                width: '64px',
+                height: '64px',
+                borderRadius: '50%',
+                background: '#f1f5f9',
+                border: '2px solid #cbd5e1',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#64748b',
+                marginBottom: '10px',
+              }}
+            >
+              <User size={36} />
+            </div>
+            <div style={{ fontSize: '14px', fontWeight: 700, color: '#0f172a' }}>
+              {peserta?.nama || 'Siswa Demo1'}
+            </div>
+            <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>
+              {peserta?.asalSekolah ? `${peserta.asalSekolah}` : 'Siswa E-Ujian'}
+            </div>
+          </div>
+
+          {/* Menu Items */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '13px' }}>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                padding: '10px 12px',
+                borderRadius: '6px',
+                color: '#334155',
+                cursor: 'pointer',
+              }}
+            >
+              <Monitor size={16} />
+              <span>Dashboard</span>
+            </div>
+
+            <div style={{ fontSize: '10px', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.5px', margin: '14px 0 4px 12px' }}>
+              SISWA MENU
+            </div>
+
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '10px 12px',
+                borderRadius: '6px',
+                color: '#334155',
+                cursor: 'pointer',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <BookOpen size={16} />
+                <span>E-Learning</span>
+              </div>
+              <ChevronRight size={14} style={{ color: '#94a3b8' }} />
+            </div>
+
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                padding: '10px 12px',
+                borderRadius: '6px',
+                color: '#2563eb',
+                background: '#eff6ff',
+                fontWeight: 600,
+                cursor: 'pointer',
+              }}
+            >
+              <BookOpen size={16} />
+              <span>Daftar Ruang Ujian</span>
+            </div>
+
+            <div style={{ fontSize: '10px', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.5px', margin: '14px 0 4px 12px' }}>
+              USER MENU
+            </div>
+
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                padding: '10px 12px',
+                borderRadius: '6px',
+                color: '#334155',
+                cursor: 'pointer',
+              }}
+            >
+              <User size={16} />
+              <span>Profil</span>
+            </div>
+
+            <div
+              onClick={() => {
+                if (window.confirm('Yakin ingin keluar dari ruang ujian?')) navigate('/tobk');
+              }}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                padding: '10px 12px',
+                borderRadius: '6px',
+                color: '#dc2626',
+                cursor: 'pointer',
+              }}
+            >
+              <LogOut size={16} />
+              <span>Keluar</span>
+            </div>
+          </div>
+        </aside>
+
+        {/* 2. KOLOM TENGAH: KOTAK SOAL PERSIS SCREENSHOT */}
+        <main
+          style={{
+            flex: 1,
+            padding: '24px 20px',
+            overflowY: 'auto',
+            display: 'flex',
+            flexDirection: 'column',
+          }}
+        >
           {soalSekarang ? (
-            <div style={{ background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '14px', padding: '24px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-              {/* Header Butir Soal */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #f1f5f9', paddingBottom: '12px', marginBottom: '18px' }}>
-                <span style={{ fontSize: '12px', background: '#eff6ff', color: '#1d4ed8', padding: '4px 10px', borderRadius: '6px', fontWeight: 700 }}>
-                  {subtesAktif.nama}
-                </span>
-                <span style={{ fontSize: '13px', fontWeight: 700, color: '#475569' }}>
-                  Soal Nomor {indexSoal + 1} dari {daftarSoalSubtes.length}
-                </span>
+            <div
+              style={{
+                background: '#ffffff',
+                border: '1px solid #e2e8f0',
+                borderRadius: '8px',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+                display: 'flex',
+                flexDirection: 'column',
+                minHeight: '480px',
+              }}
+            >
+              {/* Header Box: SOAL NO. [ 1 ] dan Two-Tone SISA WAKTU */}
+              <div
+                style={{
+                  padding: '16px 20px',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  borderBottom: '1px solid #f1f5f9',
+                }}
+              >
+                {/* SOAL NO. 1 */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ fontSize: '13px', fontWeight: 800, color: '#334155', letterSpacing: '0.5px' }}>
+                    SOAL NO.
+                  </span>
+                  <span
+                    style={{
+                      background: '#2563eb', // Blue badge
+                      color: '#ffffff',
+                      fontSize: '12px',
+                      fontWeight: 800,
+                      padding: '3px 9px',
+                      borderRadius: '4px',
+                    }}
+                  >
+                    {indexSoal + 1}
+                  </span>
+                </div>
+
+                {/* Two-Tone Timer Pill: [ SISA WAKTU ] [ 01:59:56 ] */}
+                <div
+                  style={{
+                    display: 'flex',
+                    borderRadius: '4px',
+                    overflow: 'hidden',
+                    fontSize: '12px',
+                    fontWeight: 700,
+                    boxShadow: '0 1px 2px rgba(0,0,0,0.1)',
+                  }}
+                >
+                  <div
+                    style={{
+                      background: '#4f46e5', // Dark Violet/Indigo
+                      color: '#ffffff',
+                      padding: '6px 12px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      letterSpacing: '0.5px',
+                    }}
+                  >
+                    SISA WAKTU
+                  </div>
+                  <div
+                    style={{
+                      background: sisaDetikSubtes < 300 ? '#dc2626' : '#0284c7', // Cyan/Blue
+                      color: '#ffffff',
+                      padding: '6px 12px',
+                      fontFamily: 'monospace',
+                      fontSize: '13px',
+                      letterSpacing: '0.5px',
+                    }}
+                  >
+                    {formatTimer(sisaDetikSubtes)}
+                  </div>
+                </div>
               </div>
 
-              {/* Teks Soal */}
-              <div style={{ fontSize: fontStyles.soal, lineHeight: fontStyles.line, color: '#1e293b', marginBottom: '24px', whiteSpace: 'pre-line' }}>
-                <RenderMath text={soalSekarang.teksSoal || soalSekarang.soal || ''} />
-              </div>
+              {/* Teks Soal & Garis Bawah Pembatas */}
+              <div style={{ padding: '20px 24px 10px', flex: 1 }}>
+                <div
+                  style={{
+                    fontSize: '14px',
+                    lineHeight: 1.7,
+                    color: '#334155',
+                    paddingBottom: '16px',
+                    borderBottom: '1px solid #f1f5f9',
+                    marginBottom: '20px',
+                    whiteSpace: 'pre-line',
+                  }}
+                >
+                  <RenderMath text={soalSekarang.teksSoal || soalSekarang.soal || ''} />
+                </div>
 
-              {/* Pilihan Jawaban */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                {soalSekarang.opsiJawaban && soalSekarang.opsiJawaban.map((opsi) => {
-                  const terpilih = jawaban[soalSekarang.id] === opsi.key;
+                {/* Pilihan Radio Opsi (arang, kayu, abu, tanah persis screenshot) */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  {soalSekarang.opsiJawaban && soalSekarang.opsiJawaban.map((opsi) => {
+                    const terpilih = jawaban[soalSekarang.id] === opsi.key;
 
-                  return (
-                    <div
-                      key={opsi.key}
-                      onClick={() => handlePilihOpsi(soalSekarang.id, opsi.key)}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'flex-start',
-                        gap: '12px',
-                        padding: '12px 16px',
-                        borderRadius: '10px',
-                        border: `2px solid ${terpilih ? '#2563eb' : '#e2e8f0'}`,
-                        background: terpilih ? '#eff6ff' : '#ffffff',
-                        cursor: 'pointer',
-                        transition: 'all 0.15s ease',
-                      }}
-                    >
-                      <div
+                    return (
+                      <label
+                        key={opsi.key}
+                        onClick={() => handlePilihOpsi(soalSekarang.id, opsi.key)}
                         style={{
-                          width: '26px',
-                          height: '26px',
-                          borderRadius: '50%',
-                          background: terpilih ? '#2563eb' : '#f1f5f9',
-                          color: terpilih ? '#ffffff' : '#475569',
                           display: 'flex',
                           alignItems: 'center',
-                          justifyContent: 'center',
-                          fontWeight: 700,
-                          fontSize: '13px',
-                          flexShrink: 0,
-                          marginTop: '2px',
+                          gap: '12px',
+                          cursor: 'pointer',
+                          fontSize: '14px',
+                          color: '#334155',
+                          userSelect: 'none',
                         }}
                       >
-                        {opsi.key}
-                      </div>
+                        {/* Radio Circle */}
+                        <span
+                          style={{
+                            width: '16px',
+                            height: '16px',
+                            borderRadius: '50%',
+                            border: `2px solid ${terpilih ? '#2563eb' : '#94a3b8'}`,
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            flexShrink: 0,
+                            background: '#ffffff',
+                          }}
+                        >
+                          {terpilih && (
+                            <span
+                              style={{
+                                width: '8px',
+                                height: '8px',
+                                borderRadius: '50%',
+                                background: '#2563eb',
+                              }}
+                            />
+                          )}
+                        </span>
 
-                      <div style={{ fontSize: fontStyles.opsi, color: terpilih ? '#1e3a8a' : '#334155', lineHeight: 1.5 }}>
-                        <RenderMath text={opsi.teks || ''} />
-                      </div>
-                    </div>
-                  );
-                })}
+                        <span>
+                          <RenderMath text={opsi.teks || ''} />
+                        </span>
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Tombol Aksi Bawah: < Soal Sebelumnya | ☐ Ragu-Ragu | Soal Selanjutnya > */}
+              <div
+                style={{
+                  padding: '20px 24px',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  borderTop: '1px solid #f1f5f9',
+                  background: '#fafafa',
+                  borderRadius: '0 0 8px 8px',
+                  flexWrap: 'wrap',
+                  gap: '10px',
+                }}
+              >
+                {/* Tombol Kiri: Soal Sebelumnya */}
+                <button
+                  onClick={() => setIndexSoal((prev) => Math.max(0, prev - 1))}
+                  disabled={indexSoal === 0}
+                  style={{
+                    background: '#2563eb', // Blue button
+                    color: '#ffffff',
+                    border: 'none',
+                    padding: '9px 18px',
+                    borderRadius: '5px',
+                    fontSize: '13px',
+                    fontWeight: 600,
+                    cursor: indexSoal === 0 ? 'not-allowed' : 'pointer',
+                    opacity: indexSoal === 0 ? 0.6 : 1,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                  }}
+                >
+                  &lt; Soal Sebelumnya
+                </button>
+
+                {/* Tombol Tengah: Ragu-Ragu (Amber/Golden Orange) */}
+                <button
+                  onClick={() => handleToggleRagu(soalSekarang?.id)}
+                  style={{
+                    background: '#f59e0b', // Amber/Yellow
+                    color: '#ffffff',
+                    border: 'none',
+                    padding: '9px 20px',
+                    borderRadius: '5px',
+                    fontSize: '13px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                  }}
+                >
+                  {isRagu(soalSekarang?.id) ? (
+                    <CheckSquare size={16} />
+                  ) : (
+                    <Square size={16} />
+                  )}
+                  Ragu-Ragu
+                </button>
+
+                {/* Tombol Kanan: Soal Selanjutnya / Selesai Subtes */}
+                {indexSoal < daftarSoalSubtes.length - 1 ? (
+                  <button
+                    onClick={() => setIndexSoal((prev) => Math.min(daftarSoalSubtes.length - 1, prev + 1))}
+                    style={{
+                      background: '#2563eb', // Blue button
+                      color: '#ffffff',
+                      border: 'none',
+                      padding: '9px 18px',
+                      borderRadius: '5px',
+                      fontSize: '13px',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                    }}
+                  >
+                    Soal Selanjutnya &gt;
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => setShowModalKonfirmasi(true)}
+                    style={{
+                      background: subtesAktifIndex < subtesList.length - 1 ? '#2563eb' : '#059669',
+                      color: '#ffffff',
+                      border: 'none',
+                      padding: '9px 20px',
+                      borderRadius: '5px',
+                      fontSize: '13px',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                    }}
+                  >
+                    {subtesAktifIndex < subtesList.length - 1 ? 'Selesai Subtes >' : 'Selesai Ujian >'}
+                  </button>
+                )}
               </div>
             </div>
           ) : (
             <div style={{ textAlign: 'center', padding: '40px', color: '#64748b' }}>
-              Memuat butir soal subtes...
+              Memuat soal...
             </div>
           )}
         </main>
 
-        {/* ── FLOATING WEBCAM PIP (Picture-In-Picture Pengawas AI) ── */}
+        {/* 3. PANEL KANAN: NOMOR SOAL GRID 3 KOLOM PERSIS SCREENSHOT */}
+        <aside
+          style={{
+            width: '200px',
+            background: '#ffffff',
+            borderLeft: '1px solid #e2e8f0',
+            padding: '20px 16px',
+            boxSizing: 'border-box',
+            flexShrink: 0,
+            overflowY: 'auto',
+          }}
+        >
+          <div
+            style={{
+              fontSize: '13px',
+              fontWeight: 800,
+              color: '#334155',
+              paddingBottom: '10px',
+              borderBottom: '2px solid #cbd5e1',
+              marginBottom: '16px',
+              textAlign: 'center',
+              letterSpacing: '0.5px',
+            }}
+          >
+            NOMOR SOAL
+          </div>
+
+          {/* Grid 3 Kolom */}
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(3, 1fr)',
+              gap: '8px',
+            }}
+          >
+            {daftarSoalSubtes.map((s, idx) => {
+              const terjawab = sudahDijawab(s.id);
+              const raguAktif = isRagu(s.id);
+              const isCurrent = idx === indexSoal;
+
+              let bg = '#ffffff';
+              let fg = '#334155';
+              let border = '#cbd5e1';
+
+              if (terjawab) {
+                bg = '#22c55e'; // Green answered
+                fg = '#ffffff';
+                border = '#16a34a';
+              }
+              if (raguAktif) {
+                bg = '#f59e0b'; // Amber ragu
+                fg = '#ffffff';
+                border = '#d97706';
+              }
+
+              return (
+                <button
+                  key={s.id || idx}
+                  onClick={() => setIndexSoal(idx)}
+                  style={{
+                    height: '38px',
+                    borderRadius: '5px',
+                    border: `1px solid ${isCurrent ? '#2563eb' : border}`,
+                    background: bg,
+                    color: fg,
+                    fontWeight: 700,
+                    fontSize: '12px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    boxShadow: isCurrent ? '0 0 0 2px #93c5fd' : 'none',
+                    transition: 'all 0.15s ease',
+                  }}
+                >
+                  {idx + 1}
+                </button>
+              );
+            })}
+          </div>
+        </aside>
+
+        {/* ── WEBCAM AI PROCTOR DISKRIT (Floating PIP) ── */}
         <div
           style={{
             position: 'fixed',
-            bottom: '76px',
-            right: '20px',
-            width: '150px',
-            height: '112px',
+            bottom: '16px',
+            right: '216px',
+            width: '130px',
+            height: '98px',
             background: '#020617',
-            borderRadius: '10px',
+            borderRadius: '6px',
             border: '2px solid #22c55e',
             overflow: 'hidden',
-            boxShadow: '0 10px 25px rgba(0,0,0,0.3)',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
             zIndex: 40,
             display: 'flex',
             flexDirection: 'column',
@@ -719,230 +1056,46 @@ export default function TobkCbtPage() {
               bottom: 0,
               left: 0,
               right: 0,
-              background: 'rgba(0,0,0,0.7)',
+              background: 'rgba(0,0,0,0.65)',
               color: '#4ade80',
-              fontSize: '9px',
+              fontSize: '8px',
               fontWeight: 700,
-              padding: '2px 4px',
+              padding: '2px',
               textAlign: 'center',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '4px',
             }}
           >
-            <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#22c55e', display: 'inline-block' }} />
-            AI Proctor Aktif
+            ● AI Proctor Aktif
           </div>
         </div>
-
-        {/* ── DRAWER PALET SOAL (Daftar Nomor Subtes Berjalan) ── */}
-        {showPalet && (
-          <aside
-            style={{
-              position: 'fixed',
-              top: '52px',
-              right: 0,
-              bottom: '64px',
-              width: '320px',
-              background: '#ffffff',
-              borderLeft: '1px solid #cbd5e1',
-              boxShadow: '-4px 0 12px rgba(0,0,0,0.1)',
-              zIndex: 45,
-              display: 'flex',
-              flexDirection: 'column',
-              padding: '16px',
-              boxSizing: 'border-box',
-            }}
-          >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', borderBottom: '1px solid #f1f5f9', paddingBottom: '10px' }}>
-              <span style={{ fontWeight: 700, fontSize: '14px', color: '#0f172a' }}>Palet Nomor ({subtesAktif.nama})</span>
-              <button onClick={() => setShowPalet(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748b' }}>
-                <X size={18} />
-              </button>
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '6px', fontSize: '11px', color: '#475569', marginBottom: '14px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <span style={{ width: '12px', height: '12px', background: '#22c55e', borderRadius: '3px' }} />
-                <span>Terjawab</span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <span style={{ width: '12px', height: '12px', background: '#eab308', borderRadius: '3px' }} />
-                <span>Ragu-ragu</span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <span style={{ width: '12px', height: '12px', background: '#f1f5f9', border: '1px solid #cbd5e1', borderRadius: '3px' }} />
-                <span>Belum</span>
-              </div>
-            </div>
-
-            <div style={{ flex: 1, overflowY: 'auto', display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '8px', alignContent: 'start' }}>
-              {daftarSoalSubtes.map((s, idx) => {
-                const terjawab = sudahDijawab(s.id);
-                const raguAktif = isRagu(s.id);
-                const isCurrent = idx === indexSoal;
-
-                let bg = '#ffffff';
-                let fg = '#0f172a';
-                let border = '#cbd5e1';
-
-                if (terjawab) {
-                  bg = '#22c55e';
-                  fg = '#ffffff';
-                  border = '#16a34a';
-                }
-                if (raguAktif) {
-                  bg = '#eab308';
-                  fg = '#ffffff';
-                  border = '#ca8a04';
-                }
-
-                return (
-                  <button
-                    key={s.id || idx}
-                    onClick={() => {
-                      setIndexSoal(idx);
-                      setShowPalet(false);
-                    }}
-                    style={{
-                      height: '42px',
-                      borderRadius: '8px',
-                      border: `2px solid ${isCurrent ? '#2563eb' : border}`,
-                      background: bg,
-                      color: fg,
-                      fontWeight: 700,
-                      fontSize: '13px',
-                      cursor: 'pointer',
-                      boxShadow: isCurrent ? '0 0 0 2px #93c5fd' : 'none',
-                    }}
-                  >
-                    {idx + 1}
-                  </button>
-                );
-              })}
-            </div>
-          </aside>
-        )}
       </div>
 
-      {/* ── BOTTOM NAV BAR ── */}
-      <footer
-        style={{
-          position: 'fixed',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          background: '#ffffff',
-          borderTop: '1px solid #cbd5e1',
-          padding: '10px 20px',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          zIndex: 40,
-        }}
-      >
-        <button
-          onClick={() => setIndexSoal((prev) => Math.max(0, prev - 1))}
-          disabled={indexSoal === 0}
-          style={{
-            display: 'inline-flex', alignItems: 'center', gap: '6px',
-            background: indexSoal === 0 ? '#f1f5f9' : '#2563eb',
-            color: indexSoal === 0 ? '#94a3b8' : '#ffffff',
-            border: 'none', padding: '9px 18px', borderRadius: '8px',
-            fontSize: '13px', fontWeight: 600, cursor: indexSoal === 0 ? 'not-allowed' : 'pointer'
-          }}
-        >
-          <ChevronLeft size={16} /> Sebelumnya
-        </button>
-
-        <button
-          onClick={() => handleToggleRagu(soalSekarang?.id)}
-          style={{
-            display: 'inline-flex', alignItems: 'center', gap: '6px',
-            background: isRagu(soalSekarang?.id) ? '#fef9c3' : '#f8fafc',
-            border: `1px solid ${isRagu(soalSekarang?.id) ? '#ca8a04' : '#cbd5e1'}`,
-            color: isRagu(soalSekarang?.id) ? '#854d0e' : '#475569',
-            padding: '9px 16px', borderRadius: '8px', fontSize: '13px', fontWeight: 700,
-            cursor: 'pointer'
-          }}
-        >
-          <Bookmark size={15} fill={isRagu(soalSekarang?.id) ? '#ca8a04' : 'none'} />
-          Ragu-ragu
-        </button>
-
-        {indexSoal < daftarSoalSubtes.length - 1 ? (
-          <button
-            onClick={() => setIndexSoal((prev) => Math.min(daftarSoalSubtes.length - 1, prev + 1))}
-            style={{
-              display: 'inline-flex', alignItems: 'center', gap: '6px',
-              background: '#2563eb', color: '#ffffff',
-              border: 'none', padding: '9px 18px', borderRadius: '8px',
-              fontSize: '13px', fontWeight: 600, cursor: 'pointer'
-            }}
-          >
-            Berikutnya <ChevronRight size={16} />
-          </button>
-        ) : subtesAktifIndex < subtesList.length - 1 ? (
-          <button
-            onClick={() => setShowModalKonfirmasi(true)}
-            style={{
-              display: 'inline-flex', alignItems: 'center', gap: '6px',
-              background: '#2563eb', color: '#ffffff',
-              border: 'none', padding: '9px 20px', borderRadius: '8px',
-              fontSize: '13px', fontWeight: 700, cursor: 'pointer',
-              boxShadow: '0 2px 8px rgba(37,99,235,0.3)'
-            }}
-          >
-            Selesai Subtes <ArrowRight size={16} />
-          </button>
-        ) : (
-          <button
-            onClick={() => setShowModalKonfirmasi(true)}
-            style={{
-              display: 'inline-flex', alignItems: 'center', gap: '6px',
-              background: '#059669', color: '#ffffff',
-              border: 'none', padding: '9px 20px', borderRadius: '8px',
-              fontSize: '13px', fontWeight: 700, cursor: 'pointer',
-              boxShadow: '0 2px 8px rgba(5,150,105,0.3)'
-            }}
-          >
-            <Send size={15} /> Selesai & Kirim
-          </button>
-        )}
-      </footer>
-
-      {/* ── MODAL KONFIRMASI SELESAI SUBTES / UJIAN (DENGAN CEK RAGU-RAGU) ── */}
+      {/* ── MODAL KONFIRMASI SELESAI DENGAN DETEKSI RAGU-RAGU ── */}
       {showModalKonfirmasi && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '16px' }}>
-          <div style={{ background: '#ffffff', borderRadius: '16px', maxWidth: '460px', width: '100%', padding: '24px', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.2)' }}>
-            <h3 style={{ margin: '0 0 12px', fontSize: '18px', fontWeight: 800, color: '#0f172a' }}>
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '16px' }}>
+          <div style={{ background: '#ffffff', borderRadius: '12px', maxWidth: '440px', width: '100%', padding: '24px', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.2)' }}>
+            <h3 style={{ margin: '0 0 12px', fontSize: '17px', fontWeight: 700, color: '#0f172a' }}>
               {subtesAktifIndex < subtesList.length - 1
-                ? `Konfirmasi Selesai: ${subtesAktif.nama}`
-                : 'Konfirmasi Selesai Seluruh Ujian'}
+                ? `Kunci Subtes: ${subtesAktif.nama}`
+                : 'Selesaikan Ujian CBT'}
             </h3>
 
-            {/* Peringatan Ragu-ragu (Regulasi TKA & UTBK) */}
             {jumlahRaguDiSubtes > 0 && (
-              <div style={{ background: '#fef3c7', border: '1px solid #fcd34d', borderRadius: '10px', padding: '12px', marginBottom: '14px', display: 'flex', alignItems: 'flex-start', gap: '8px', color: '#92400e', fontSize: '12px' }}>
-                <AlertCircle size={18} style={{ flexShrink: 0, marginTop: '2px' }} />
-                <div>
-                  <strong>Perhatian Ragu-ragu:</strong> Masih ada <strong>{jumlahRaguDiSubtes} butir soal</strong> yang Anda tandai ragu-ragu di subtes ini. Pastikan jawaban sudah mantap sebelum mengunci.
-                </div>
+              <div style={{ background: '#fef3c7', border: '1px solid #fcd34d', borderRadius: '8px', padding: '10px 12px', marginBottom: '14px', fontSize: '12px', color: '#92400e' }}>
+                ⚠️ <strong>Perhatian:</strong> Masih ada <strong>{jumlahRaguDiSubtes} butir soal</strong> yang Anda tandai Ragu-Ragu.
               </div>
             )}
 
             <p style={{ fontSize: '13px', color: '#64748b', margin: '0 0 20px', lineHeight: 1.5 }}>
               {subtesAktifIndex < subtesList.length - 1
-                ? `Setelah Anda mengunci subtes ini, Anda TIDAK DAPAT KEMBALI ke butir soal ${subtesAktif.nama}. Apakah Anda yakin ingin melanjutkan ke masa transisi?`
-                : 'Seluruh subtes telah selesai. Apakah Anda yakin ingin mengirim lembar jawaban sekarang?'}
+                ? `Setelah mengunci subtes ini, Anda tidak dapat kembali ke butir soal ini lagi. Lanjut ke masa transisi?`
+                : 'Seluruh butir soal telah selesai dikerjakan. Apakah Anda yakin ingin mengirim lembar jawaban?'}
             </p>
 
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
               <button
                 type="button"
                 onClick={() => setShowModalKonfirmasi(false)}
-                style={{ background: '#f1f5f9', border: 'none', padding: '8px 16px', borderRadius: '8px', fontSize: '13px', fontWeight: 600, color: '#475569', cursor: 'pointer' }}
+                style={{ background: '#f1f5f9', border: 'none', padding: '8px 16px', borderRadius: '6px', fontSize: '13px', fontWeight: 600, color: '#475569', cursor: 'pointer' }}
               >
                 Periksa Lagi
               </button>
@@ -958,11 +1111,11 @@ export default function TobkCbtPage() {
                 }}
                 style={{
                   background: subtesAktifIndex < subtesList.length - 1 ? '#2563eb' : '#059669',
-                  color: '#ffffff', border: 'none', padding: '8px 20px', borderRadius: '8px',
-                  fontSize: '13px', fontWeight: 800, cursor: 'pointer'
+                  color: '#ffffff', border: 'none', padding: '8px 20px', borderRadius: '6px',
+                  fontSize: '13px', fontWeight: 700, cursor: 'pointer'
                 }}
               >
-                {subtesAktifIndex < subtesList.length - 1 ? 'Kunci & Lanjut Transisi ▶' : 'Kirim Ujian Sekarang'}
+                {subtesAktifIndex < subtesList.length - 1 ? 'Kunci Subtes >' : 'Kirim Ujian'}
               </button>
             </div>
           </div>
@@ -972,12 +1125,12 @@ export default function TobkCbtPage() {
       {/* ── MODAL 3-STRIKE KECURANGAN ── */}
       {modalStrike && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '16px' }}>
-          <div style={{ background: '#ffffff', borderRadius: '16px', maxWidth: '460px', width: '100%', padding: '24px', textAlign: 'center', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)' }}>
-            <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: modalStrike.fatal ? '#fee2e2' : '#fef3c7', color: modalStrike.fatal ? '#dc2626' : '#d97706', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
-              <ShieldAlert size={32} />
+          <div style={{ background: '#ffffff', borderRadius: '14px', maxWidth: '440px', width: '100%', padding: '24px', textAlign: 'center', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)' }}>
+            <div style={{ width: '52px', height: '52px', borderRadius: '50%', background: modalStrike.fatal ? '#fee2e2' : '#fef3c7', color: modalStrike.fatal ? '#dc2626' : '#d97706', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px' }}>
+              <ShieldAlert size={28} />
             </div>
 
-            <h3 style={{ fontSize: '18px', fontWeight: 800, color: modalStrike.fatal ? '#b91c1c' : '#b45309', margin: '0 0 10px' }}>
+            <h3 style={{ fontSize: '17px', fontWeight: 800, color: modalStrike.fatal ? '#b91c1c' : '#b45309', margin: '0 0 10px' }}>
               {modalStrike.judul}
             </h3>
 
@@ -991,7 +1144,7 @@ export default function TobkCbtPage() {
                   setModalStrike(null);
                   masukFullscreen();
                 }}
-                style={{ background: '#2563eb', color: '#ffffff', border: 'none', padding: '10px 24px', borderRadius: '8px', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }}
+                style={{ background: '#2563eb', color: '#ffffff', border: 'none', padding: '9px 22px', borderRadius: '6px', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }}
               >
                 Saya Mengerti & Kembali ke Soal
               </button>
