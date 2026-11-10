@@ -746,9 +746,22 @@ export default function TobkCbtPage() {
         display: 'flex',
         flexDirection: 'column',
         userSelect: 'none',
+        position: 'relative',
       }}
     >
-      {/* ── TOP NAVBAR BIRU (E-UJIAN) ── */}
+      {/* ── PEMBUNGKUS KONTEN UJIAN (BLUR SAAT DIJEDA, HP TETAP STAY) ── */}
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          flex: 1,
+          filter: eventData?.isPaused ? 'blur(8px)' : 'none',
+          pointerEvents: eventData?.isPaused ? 'none' : 'auto',
+          userSelect: eventData?.isPaused ? 'none' : 'auto',
+          transition: 'filter 0.3s ease',
+        }}
+      >
+        {/* ── TOP NAVBAR BIRU (E-UJIAN) ── */}
       <header
         style={{
           background: '#2563eb',
@@ -1544,6 +1557,7 @@ export default function TobkCbtPage() {
           </div>
         </div>
       </div>
+      </div>
 
       {/* ── MODAL KONFIRMASI KELUAR / AKHIRI UJIAN (BEBAS BLANK SCREEN) ── */}
       {showModalKeluar && (
@@ -1691,13 +1705,14 @@ export default function TobkCbtPage() {
         </div>
       )}
 
-      {/* ── OVERLAY JEDA UJIAN RESMI (SHOLAT & ISTIRAHAT) ── */}
+      {/* ── OVERLAY JEDA UJIAN RESMI (SHOLAT & ISTIRAHAT) -- LAYAR BLUR, HP TETAP STAY ── */}
       {eventData?.isPaused && (
         <div style={{
           position: 'fixed',
           inset: 0,
-          background: 'rgba(15, 23, 42, 0.94)',
+          background: 'rgba(15, 23, 42, 0.65)',
           backdropFilter: 'blur(10px)',
+          WebkitBackdropFilter: 'blur(10px)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -1709,24 +1724,24 @@ export default function TobkCbtPage() {
             borderRadius: '24px',
             maxWidth: '560px',
             width: '100%',
-            padding: '36px 32px',
+            padding: '34px 28px',
             textAlign: 'center',
-            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.45)',
             border: '1px solid #e2e8f0'
           }}>
             {/* Mosque Icon */}
             <div style={{
-              width: '84px',
-              height: '84px',
+              width: '80px',
+              height: '80px',
               borderRadius: '50%',
               background: '#fef3c7',
               color: '#d97706',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              fontSize: '42px',
-              margin: '0 auto 18px',
-              boxShadow: '0 10px 20px rgba(217, 119, 6, 0.2)'
+              fontSize: '40px',
+              margin: '0 auto 16px',
+              boxShadow: '0 10px 20px rgba(217, 119, 6, 0.18)'
             }}>
               🕌
             </div>
@@ -1744,57 +1759,61 @@ export default function TobkCbtPage() {
               letterSpacing: '0.5px',
               marginBottom: '12px'
             }}>
-              <CheckCircle2 size={14} /> WAKTU UJIAN DIBEKUKAN • JAWABAN AMAN
+              <CheckCircle2 size={14} /> SISA WAKTU {formatTimer(sisaDetikSubtes)} DIBEKUKAN • JAWABAN AMAN
             </div>
 
-            <h2 style={{ fontSize: '22px', fontWeight: 800, color: '#0f172a', margin: '0 0 10px' }}>
+            <h2 style={{ fontSize: '22px', fontWeight: 800, color: '#0f172a', margin: '0 0 8px' }}>
               UJIAN SEDANG DIJEDA
             </h2>
 
             <div style={{
-              fontSize: '15px',
+              fontSize: '14.5px',
               fontWeight: 700,
               color: '#d97706',
               background: '#fffbeb',
               padding: '10px 18px',
               borderRadius: '12px',
-              marginBottom: '18px',
+              marginBottom: '16px',
               border: '1px dashed #fcd34d'
             }}>
               {eventData.pauseAlasan || 'Waktu Sholat & Istirahat'}
             </div>
 
-            <p style={{ fontSize: '13.5px', color: '#475569', lineHeight: 1.6, margin: '0 0 20px' }}>
-              Ujian sedang dijeda oleh Pengawas / Admin. Seluruh jawaban Anda telah tersimpan secara otomatis,
-              <strong> timer pengerjaan dibekukan ({formatTimer(sisaDetikSubtes)})</strong>, dan <strong>pengawasan anti-cheat ditangguhkan sementara</strong>.
+            <p style={{ fontSize: '13px', color: '#475569', lineHeight: 1.6, margin: '0 0 18px' }}>
+              Ujian sedang dijeda oleh Pengawas / Admin. Seluruh jawaban Anda telah tersimpan otomatis,
+              <strong> timer pengerjaan dibekukan</strong>, dan <strong>pengawasan anti-cheat ditangguhkan sementara</strong>.
             </p>
 
             <div style={{
               background: '#f8fafc',
               border: '1px solid #e2e8f0',
               borderRadius: '14px',
-              padding: '16px',
+              padding: '14px 16px',
               fontSize: '12.5px',
               color: '#334155',
               lineHeight: 1.7,
-              marginBottom: '24px',
+              marginBottom: '22px',
               textAlign: 'left'
             }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ color: '#0284c7', fontWeight: 800 }}>📱</span>
+                <span><strong>Layar HP Anda tetap stay di halaman ini (tidak akan keluar / hilang).</strong></span>
+              </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <span style={{ color: '#16a34a', fontWeight: 800 }}>✓</span>
                 <span><strong>Silakan menunaikan ibadah Sholat / Istirahat sejenak.</strong></span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <span style={{ color: '#16a34a', fontWeight: 800 }}>✓</span>
-                <span>Sisa waktu pengerjaan tidak akan berkurang sama sekali.</span>
+                <span>Sisa waktu pengerjaan ({formatTimer(sisaDetikSubtes)}) aman dan tidak berkurang sama sekali.</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <span style={{ color: '#16a34a', fontWeight: 800 }}>✓</span>
-                <span>Anda tidak akan dikenakan sanksi saat meninggalkan layar / kamera.</span>
+                <span>Anda tidak akan dikenakan sanksi saat meninggalkan layar HP / kamera.</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <span style={{ color: '#0284c7', fontWeight: 800 }}>⏳</span>
-                <span>Layar ujian akan otomatis terbuka kembali saat Admin melanjutkan sesi.</span>
+                <span>Begitu Admin melanjutkan, layar akan otomatis aktif kembali tanpa reload.</span>
               </div>
             </div>
 
@@ -1808,7 +1827,7 @@ export default function TobkCbtPage() {
               background: '#f0f9ff',
               border: '1px solid #bae6fd',
               color: '#0284c7',
-              fontSize: '13px',
+              fontSize: '12.5px',
               fontWeight: 600
             }}>
               <span style={{
@@ -1819,7 +1838,7 @@ export default function TobkCbtPage() {
                 display: 'inline-block',
                 boxShadow: '0 0 0 4px rgba(2, 132, 199, 0.2)'
               }} />
-              Menunggu instruksi pengawas untuk melanjutkan...
+              Standby • Menunggu instruksi pengawas untuk melanjutkan...
             </div>
           </div>
         </div>

@@ -1345,7 +1345,14 @@ export default function TryOutView() {
   const pctSisa = totalMsSubtes > 0 ? Math.max(0, Math.min(100, (sisaMs / totalMsSubtes) * 100)) : 0;
 
   return (
-    <div style={st.latarUjian}><div style={kolom(lebar < 640 ? 640 : 820)}>
+    <div style={st.latarUjian}>
+      <div style={{
+        ...kolom(lebar < 640 ? 640 : 820),
+        filter: paket?.isPaused ? 'blur(8px)' : 'none',
+        pointerEvents: paket?.isPaused ? 'none' : 'auto',
+        userSelect: paket?.isPaused ? 'none' : 'auto',
+        transition: 'filter 0.3s ease',
+      }}>
       {/* Kamera: PiP terlihat = bukti nyala + sumber foto */}
       {paket.wajibKamera && (
         <div style={st.camPip} title="Kamera pengawasan aktif">
@@ -1662,13 +1669,14 @@ export default function TryOutView() {
         </div>
       )}
 
-      {/* OVERLAY JEDA UJIAN (WAKTU SHOLAT & ISTIRAHAT) */}
+      {/* OVERLAY JEDA UJIAN (WAKTU SHOLAT & ISTIRAHAT) -- LAYAR BLUR, HP TETAP STAY */}
       {paket?.isPaused && (
         <div style={{
           position: 'fixed',
           inset: 0,
-          background: 'rgba(15, 23, 42, 0.94)',
-          backdropFilter: 'blur(8px)',
+          background: 'rgba(15, 23, 42, 0.65)',
+          backdropFilter: 'blur(10px)',
+          WebkitBackdropFilter: 'blur(10px)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -1680,21 +1688,22 @@ export default function TryOutView() {
             borderRadius: 20,
             maxWidth: 520,
             width: '100%',
-            padding: '32px 26px',
+            padding: '30px 24px',
             textAlign: 'center',
-            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.45)',
+            border: '1px solid #e2e8f0'
           }}>
             <div style={{
-              width: 76,
-              height: 76,
+              width: 72,
+              height: 72,
               borderRadius: '50%',
               background: '#fef3c7',
               color: '#d97706',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              fontSize: 38,
-              margin: '0 auto 16px',
+              fontSize: 36,
+              margin: '0 auto 14px',
               boxShadow: '0 8px 16px rgba(217, 119, 6, 0.15)'
             }}>
               🕌
@@ -1706,51 +1715,52 @@ export default function TryOutView() {
               gap: 6,
               background: '#ecfdf5',
               color: '#059669',
-              padding: '6px 14px',
+              padding: '5px 12px',
               borderRadius: 20,
-              fontSize: 12,
+              fontSize: 11.5,
               fontWeight: 700,
               marginBottom: 10
             }}>
-              <CheckCircle2 size={14} /> TIMER DIBEKUKAN • JAWABAN TERSIMPAN
+              <CheckCircle2 size={13} /> SISA WAKTU {teksWaktu} DIBEKUKAN • JAWABAN AMAN
             </div>
 
-            <h2 style={{ fontSize: 20, fontWeight: 800, color: '#0f172a', margin: '0 0 8px' }}>
+            <h2 style={{ fontSize: 20, fontWeight: 800, color: '#0f172a', margin: '0 0 6px' }}>
               TRY OUT SEDANG DIJEDA
             </h2>
 
             <div style={{
-              fontSize: 14,
+              fontSize: 13.5,
               fontWeight: 700,
               color: '#d97706',
               background: '#fffbeb',
               padding: '8px 16px',
               borderRadius: 10,
-              marginBottom: 16,
+              marginBottom: 14,
               border: '1px dashed #fcd34d'
             }}>
               {paket.pauseAlasan || 'Waktu Sholat & Istirahat'}
             </div>
 
-            <p style={{ fontSize: 13, color: '#475569', lineHeight: 1.6, margin: '0 0 18px' }}>
-              Try out sedang dijeda oleh Guru/Admin. Seluruh jawabanmu sudah tersimpan aman, <strong>timer pengerjaan dihentikan</strong>, dan <strong>pengawasan anti-cheat ditangguhkan sementara</strong>.
+            <p style={{ fontSize: 12.5, color: '#475569', lineHeight: 1.5, margin: '0 0 16px' }}>
+              Try out sedang dijeda oleh Guru/Admin. Seluruh jawabanmu sudah tersimpan aman, <strong>timer pengerjaan dibekukan</strong>, dan <strong>pengawasan anti-cheat ditangguhkan</strong>.
             </p>
 
             <div style={{
               background: '#f8fafc',
               border: '1px solid #e2e8f0',
               borderRadius: 12,
-              padding: 14,
+              padding: 12,
               fontSize: 12,
               color: '#334155',
               lineHeight: 1.6,
-              marginBottom: 20,
+              marginBottom: 18,
               textAlign: 'left'
             }}>
-              <div>✓ <strong>Silakan menunaikan ibadah Sholat / Istirahat sejenak.</strong></div>
-              <div>✓ Sisa waktu ujianmu tidak akan berkurang sedikit pun.</div>
-              <div>✓ Tidak ada catatan pelanggaran selama masa jeda.</div>
-              <div>⏳ Layar ujian akan otomatis berlanjut begitu Admin melanjutkan sesi.</div>
+              <div>📱 <strong>Layar HP Anda tetap stay di halaman ini (tidak akan keluar / hilang).</strong></div>
+              <div>🕌 <strong>Silakan menunaikan ibadah Sholat / Istirahat sejenak.</strong></div>
+              <div>⏱️ Sisa waktu pengerjaan ({teksWaktu}) aman dan tidak berkurang.</div>
+              <div>🛡️ Bebas meninggalkan layar HP / kamera tanpa takut terkena sanksi.</div>
+              <div>⏳ Begitu Admin klik lanjutkan, layar HP akan otomatis aktif kembali.</div>
             </div>
 
             <div style={{
@@ -1761,7 +1771,7 @@ export default function TryOutView() {
               borderRadius: 20,
               background: '#f0f9ff',
               color: '#0284c7',
-              fontSize: 12.5,
+              fontSize: 12,
               fontWeight: 600
             }}>
               <span style={{
@@ -1771,7 +1781,7 @@ export default function TryOutView() {
                 background: '#0284c7',
                 display: 'inline-block'
               }} />
-              Menunggu instruksi guru / admin untuk melanjutkan...
+              Standby • Menunggu instruksi admin untuk melanjutkan...
             </div>
           </div>
         </div>

@@ -59,7 +59,7 @@ import { peringatanSesiBerjalan } from '../../../utils/pulihKirimHasilTryOut.js'
 import {
   ArrowLeft, Loader2, Send, ShoppingCart, Trash2, CheckCircle2, AlertTriangle,
   Timer, ShieldAlert, Camera, ListChecks, Layers, Folder, FolderOpen, ChevronDown, ChevronUp, ChevronRight, Sparkles,
-  Pencil, RotateCcw, Printer, BookOpen,
+  Pencil, RotateCcw, Printer, BookOpen, Pause, Play,
 } from 'lucide-react';
 // 🔥 BARU (2026-10-08, permintaan owner sambil mengirim tangkapan layar
 // halaman ini: "selain terbit ke siswa aku mau kasih tombol print soal
@@ -692,6 +692,47 @@ export default function TerbitkanTryOutPage() {
     }
   }, [muatDaftarTerbit]);
 
+  // Saklar Jeda Ujian (Sholat / Istirahat) -- Layar HP Siswa Stay & Blur, Timer Beku
+  const handleToggleJedaPaket = useCallback(async (paket) => {
+    if (!paket) return;
+    const statusBaru = !paket.isPaused;
+    let alasan = 'Waktu Sholat & Istirahat';
+    if (statusBaru) {
+      const input = window.prompt(
+        `Jeda Try Out "${paket.judul}" untuk Waktu Sholat / Istirahat.\n\nTimer seluruh siswa akan dibekukan, layar HP siswa akan stay & blur, dan anti-cheat ditangguhkan.\n\nMasukkan alasan jeda:`,
+        'Waktu Sholat Dzuhur & Istirahat'
+      );
+      if (input === null) return;
+      alasan = input.trim() || 'Waktu Sholat & Istirahat';
+    } else {
+      const konfirm = window.confirm(
+        `Lanjutkan try out "${paket.judul}" sekarang?\n\nLayar HP siswa akan kembali normal (blur hilang) dan timer dilanjutkan kembali.`
+      );
+      if (!konfirm) return;
+    }
+
+    try {
+      await updateDoc(doc(db, 'tryout_paket', paket.id), {
+        isPaused: statusBaru,
+        pauseAlasan: statusBaru ? alasan : '',
+        pauseTimestamp: statusBaru ? new Date().toISOString() : null,
+        resumeTimestamp: !statusBaru ? new Date().toISOString() : null,
+        updatedAt: serverTimestamp(),
+      });
+      setDaftarTerbit((prev) =>
+        prev.map((item) =>
+          item.id === paket.id
+            ? { ...item, isPaused: statusBaru, pauseAlasan: statusBaru ? alasan : '' }
+            : item
+        )
+      );
+      alert(statusBaru ? `⏸️ Try Out "${paket.judul}" berhasil dijeda (${alasan})!` : `▶️ Try Out "${paket.judul}" dilanjutkan kembali!`);
+    } catch (err) {
+      console.error('Gagal toggle jeda:', err);
+      alert('Gagal mengubah status jeda: ' + (err?.message || err));
+    }
+  }, []);
+
   // 🔥 BARU: hapus PERMANEN (beda dari nonaktifkan). Begitu dihapus,
   // dokumennya beneran lenyap dari koleksi tryout_paket -- otomatis
   // gak akan muncul lagi di DaftarTryOutPage.jsx (siswa), karena
@@ -1160,6 +1201,44 @@ export default function TerbitkanTryOutPage() {
                     </div>
                   </div>
                   <span style={{ fontSize: 11, fontWeight: 700, color: st.warna, whiteSpace: 'nowrap' }}>{st.label}</span>
+                  {p.isPaused && (
+                    <span style={{
+                      fontSize: 10,
+                      fontWeight: 800,
+                      background: '#fffbeb',
+                      border: '1.5px solid #f59e0b',
+                      color: '#b45309',
+                      padding: '2px 7px',
+                      borderRadius: 6,
+                      whiteSpace: 'nowrap',
+                    }}>
+                      ⏸️ DIJEDA ({p.pauseAlasan || 'Sholat'})
+                    </span>
+                  )}
+                  {/* Tombol Jeda (Sholat / Istirahat) -- Layar HP siswa tetap stay & blur, timer beku */}
+                  <button
+                    type="button"
+                    onClick={() => handleToggleJedaPaket(p)}
+                    title={p.isPaused ? "Lanjutkan kembali pengerjaan try out ini" : "Jeda try out untuk waktu sholat/istirahat. Layar HP siswa akan tetap stay dan blur, timer dibekukan."}
+                    style={{
+                      fontSize: 11,
+                      padding: '4px 10px',
+                      borderRadius: 6,
+                      border: `1.5px solid ${p.isPaused ? '#16a34a' : '#f59e0b'}`,
+                      background: p.isPaused ? '#f0fdf4' : '#fffbeb',
+                      cursor: 'pointer',
+                      color: p.isPaused ? '#15803d' : '#b45309',
+                      fontWeight: 700,
+                      whiteSpace: 'nowrap',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 4,
+                      boxShadow: p.isPaused ? '0 1px 3px rgba(22,163,74,0.25)' : 'none'
+                    }}
+                  >
+                    {p.isPaused ? <Play size={12} /> : <Pause size={12} />}
+                    {p.isPaused ? 'Lanjutkan' : 'Jeda (Sholat)'}
+                  </button>
                   {/* 🔥 BARU (2026-10-08, permintaan owner: "selain terbit
                       ke siswa aku mau kasih tombol print soal yang udah
                       di tata ... tinggal print"): satu klik dari kartu
