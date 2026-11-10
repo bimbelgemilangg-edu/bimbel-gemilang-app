@@ -1,0 +1,1112 @@
+[
+  {
+    "nomor": 1,
+    "mapel": "Matematika",
+    "materi": "Operasi Bilangan Bulat / Penskoran",
+    "tipe": "pg_sederhana",
+    "teks_soal": "Dalam seleksi Olimpiade Sains tersedia 40 butir soal dengan pedoman penskoran sebagai berikut:\nSeorang peserta menjawab 37 butir soal dan 32 di antaranya benar. Skor yang diperoleh peserta tersebut adalah ….",
+    "tabel": {
+      "gambar_tabel": "/soal/tryout_tka_matematika_paket_b/q1_tabel_pedoman_skor.png",
+      "headers": [
+        "Tiap Butir Soal",
+        "Skor"
+      ],
+      "rows": [
+        [
+          "Benar",
+          "3"
+        ],
+        [
+          "Salah",
+          "–1"
+        ],
+        [
+          "Tidak Dijawab",
+          "0"
+        ]
+      ]
+    },
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "111"
+      },
+      {
+        "label": "B",
+        "teks": "96"
+      },
+      {
+        "label": "C",
+        "teks": "91"
+      },
+      {
+        "label": "D",
+        "teks": "88"
+      }
+    ],
+    "kunci": "C",
+    "pembahasan": "Benar = 32 × 3 = 96. Salah = (37 - 32) × (-1) = 5 × (-1) = -5. Tidak dijawab = 3 × 0 = 0. Total Skor = 96 - 5 = 91. Jawaban: C"
+  },
+  {
+    "nomor": 2,
+    "mapel": "Matematika",
+    "materi": "Urutan Bilangan Rasional & Garis Bilangan",
+    "tipe": "pg_sederhana",
+    "teks_soal": "Diketahui bilangan-bilangan 4/5; 1,25; 1 1/5; 90%. Letak bilangan-bilangan tersebut pada garis bilangan yang tepat adalah ….",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Garis Bilangan A",
+        "gambar": "/soal/tryout_tka_matematika_paket_b/q2_garis_bilangan_opsi_a.png"
+      },
+      {
+        "label": "B",
+        "teks": "Garis Bilangan B",
+        "gambar": "/soal/tryout_tka_matematika_paket_b/q2_garis_bilangan_opsi_b.png"
+      },
+      {
+        "label": "C",
+        "teks": "Garis Bilangan C",
+        "gambar": "/soal/tryout_tka_matematika_paket_b/q2_garis_bilangan_opsi_c.png"
+      },
+      {
+        "label": "D",
+        "teks": "Garis Bilangan D",
+        "gambar": "/soal/tryout_tka_matematika_paket_b/q2_garis_bilangan_opsi_d.png"
+      }
+    ],
+    "kunci": "B",
+    "pembahasan": "Konversi ke desimal: 4/5 = 0,80; 90% = 0,90; 1 1/5 = 1,20; 1,25 = 1,25. Urutan dari kiri ke kanan: 4/5, 90%, 1 1/5, 1,25. Tepat pada opsi B."
+  },
+  {
+    "nomor": 3,
+    "mapel": "Matematika",
+    "materi": "FPB (Faktor Persekutuan Terbesar)",
+    "tipe": "pg_sederhana",
+    "teks_soal": "Diketahui tiga bilangan 180, 360, dan 540. Faktor persekutuan terbesar dari ketiga bilangan tersebut adalah ….",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "2² × 3² × 5²"
+      },
+      {
+        "label": "B",
+        "teks": "2² × 3² × 5"
+      },
+      {
+        "label": "C",
+        "teks": "2 × 3² × 5"
+      },
+      {
+        "label": "D",
+        "teks": "2 × 3 × 5"
+      }
+    ],
+    "kunci": "B",
+    "pembahasan": "Faktorisasi prima: 180 = 2² × 3² × 5; 360 = 2³ × 3² × 5; 540 = 2² × 3³ × 5. FPB mengambil faktor bersama berpangkat terkecil: 2² × 3² × 5 = 180. Jawaban: B"
+  },
+  {
+    "nomor": 4,
+    "mapel": "Matematika",
+    "materi": "Luas Bangun Datar & Optimasi Biaya",
+    "tipe": "pg_sederhana",
+    "gambarUrls": [
+      "/soal/tryout_tka_matematika_paket_b/q4_dinding_rumah.png"
+    ],
+    "teks_soal": "Gambar berikut merupakan salah satu sisi dinding rumah.\nPaman akan mengecat dinding tersebut. Di toko tersedia dua kemasan cat dengan merek yang sama seperti pada tabel.\nBerapa banyak cat kemasan A dan B yang harus dibeli paman agar biaya yang dikeluarkan minimum?",
+    "tabel": {
+      "gambar_tabel": "/soal/tryout_tka_matematika_paket_b/q4_tabel_kemasan_cat.png",
+      "headers": [
+        "Kemasan",
+        "Kemampuan pengecatan dengan kualitas baik/ kg",
+        "Kemasan Tersedia",
+        "Harga tiap Kemasan"
+      ],
+      "rows": [
+        [
+          "A",
+          "10 m²",
+          "2 kg",
+          "Rp50.000,00"
+        ],
+        [
+          "B",
+          "15 m²",
+          "1 kg",
+          "Rp30.000,00"
+        ]
+      ]
+    },
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "1 kemasan B dan 3 kemasan A"
+      },
+      {
+        "label": "B",
+        "teks": "2 kemasan B dan 2 kemasan A"
+      },
+      {
+        "label": "C",
+        "teks": "3 kemasan B dan 1 kemasan A"
+      },
+      {
+        "label": "D",
+        "teks": "4 kemasan B dan 1 kemasan A"
+      }
+    ],
+    "kunci": "B",
+    "pembahasan": "Luas dinding = Luas persegi panjang (10 × 5 = 50 m²) + Luas segitiga (1/2 × 10 × 4 = 20 m²) = 70 m². Kemasan A mengcover 20 m² seharga Rp50.000 (Rp2.500/m²). Kemasan B mengcover 15 m² seharga Rp30.000 (Rp2.000/m²). Kombinasi B: 2 kemasan B (30 m²) + 2 kemasan A (40 m²) = 70 m² pas, biaya 2(30.000) + 2(50.000) = Rp160.000,00 (paling minimum dan mencukupi)."
+  },
+  {
+    "nomor": 5,
+    "mapel": "Matematika",
+    "materi": "Skala & Geometri Denah Rumah",
+    "tipe": "pg_kompleks",
+    "gambarUrls": [
+      "/soal/tryout_tka_matematika_paket_b/q5_denah_rumah.jpg"
+    ],
+    "teks_soal": "Perhatikan denah rumah berikut!\nSumber gambar : 15+ Inspirasi Denah Rumah Type 36 3 Kamar Tidur yang Nyaman - Masterpiece Arsitek\nDenah tersebut digambar dengan skala 1 : 50 dan satuan angka pada gambar adalah cm. Berdasar keterangan tersebut. Pilih lebih dari satu pernyataan yang benar dari pernyataan-pernyataan berikut:",
+    "opsi": [
+      {
+        "label": "1",
+        "teks": "Luas carport sebenarnya 24 m²"
+      },
+      {
+        "label": "2",
+        "teks": "Luas sebenarnya seluruh lahan 104 m²"
+      },
+      {
+        "label": "3",
+        "teks": "Keliling seluruh lahan sebenarnya 84 m"
+      },
+      {
+        "label": "4",
+        "teks": "Keliling taman depan sebenarnya 28 m"
+      }
+    ],
+    "kunci": [
+      "1",
+      "2"
+    ],
+    "pembahasan": "Skala 1:50 (1 cm di gambar = 0,5 m sebenarnya). Carport berukuran 8 cm × 12 cm di denah = 4 m × 6 m = 24 m² (Pernyataan 1 Benar). Lahan total berukuran lebar (6+10) cm = 16 cm (8 m) dan panjang (8+4+8+6) cm = 26 cm (13 m) = 8 × 13 = 104 m² (Pernyataan 2 Benar)."
+  },
+  {
+    "nomor": 6,
+    "mapel": "Matematika",
+    "materi": "Perbandingan Berbalik Nilai",
+    "tipe": "pg_sederhana",
+    "teks_soal": "Seorang peternak memiliki 250 ekor ayam dan menyediakan pakan yang cukup untuk 30 hari. Setelah 9 hari berjalan, peternak tersebut menjual 100 ekor ayamnya. Sisa pakan yang tersedia akan habis dalam waktu ….",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "21 hari"
+      },
+      {
+        "label": "B",
+        "teks": "30 hari"
+      },
+      {
+        "label": "C",
+        "teks": "35 hari"
+      },
+      {
+        "label": "D",
+        "teks": "36 hari"
+      }
+    ],
+    "kunci": "C",
+    "pembahasan": "Sisa hari mula-mula = 30 - 9 = 21 hari untuk 250 ayam. Setelah dijual 100 ekor, sisa ayam = 150 ekor. Menggunakan perbandingan berbalik nilai: 250 × 21 = 150 × t -> t = (250 × 21) / 150 = 35 hari. Jawaban: C"
+  },
+  {
+    "nomor": 7,
+    "mapel": "Matematika",
+    "materi": "Aritmetika Sosial / Perbandingan Senilai",
+    "tipe": "pg_sederhana",
+    "teks_soal": "Di Sebuah toko buah harga 6 kilogram mangga adalah Rp132.000,00. Jika Ibu memiliki uang Rp250.000,00 dan akan membeli 11 kilogram mangga yang sama, maka uang kembalian yang diterima Ibu adalah …..",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Rp8.000,00"
+      },
+      {
+        "label": "B",
+        "teks": "Rp12.000,00"
+      },
+      {
+        "label": "C",
+        "teks": "Rp18.000,00"
+      },
+      {
+        "label": "D",
+        "teks": "Rp30.000,00"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Harga per kg = Rp132.000 / 6 = Rp22.000,00. Harga 11 kg = 11 × Rp22.000 = Rp242.000,00. Kembalian = Rp250.000 - Rp242.000 = Rp8.000,00. Jawaban: A"
+  },
+  {
+    "nomor": 8,
+    "mapel": "Matematika",
+    "materi": "Operasi Bentuk Akar",
+    "tipe": "benar_salah",
+    "teks_soal": "Diketahui dua bilangan P = 3√3 − 4 dan Q = 4√3 + 5.\nTentukan benar atau salah setiap pernyataan berikut:",
+    "tabel": {
+      "gambar_tabel": "/soal/tryout_tka_matematika_paket_b/q8_tabel_pernyataan_akar.png",
+      "headers": [
+        "Pernyataan",
+        "Benar",
+        "Salah"
+      ],
+      "rows": [
+        [
+          "(1) P + Q = 7√3 + 9",
+          "",
+          "✓"
+        ],
+        [
+          "(2) P − Q = −√3 − 9",
+          "✓",
+          ""
+        ],
+        [
+          "(3) P × Q = 16 − √3",
+          "✓",
+          ""
+        ]
+      ]
+    },
+    "pernyataan": [
+      {
+        "teks": "(1) P + Q = 7√3 + 9",
+        "kunci": "Salah"
+      },
+      {
+        "teks": "(2) P − Q = −√3 − 9",
+        "kunci": "Benar"
+      },
+      {
+        "teks": "(3) P × Q = 16 − √3",
+        "kunci": "Benar"
+      }
+    ],
+    "kunci": {
+      "1": "Salah",
+      "2": "Benar",
+      "3": "Benar"
+    },
+    "pembahasan": "P + Q = (3√3 - 4) + (4√3 + 5) = 7√3 + 1 (maka (1) Salah). P - Q = (3√3 - 4) - (4√3 + 5) = -√3 - 9 ((2) Benar). P × Q = (3√3 - 4)(4√3 + 5) = 36 + 15√3 - 16√3 - 20 = 16 - √3 ((3) Benar)."
+  },
+  {
+    "nomor": 9,
+    "mapel": "Matematika",
+    "materi": "Aritmetika Sosial / Diskon Toko",
+    "tipe": "pg_sederhana",
+    "gambarUrls": [
+      "/soal/tryout_tka_matematika_paket_b/q9_potongan_harga_jaket.jpg"
+    ],
+    "teks_soal": "Perhatikan gambar beberapa strategi potongan harga dari beberapa toko berikut!\nBibi ingin membeli 3 buah baju yang sama di salah satu toko tersebut. Agar mendapatkan harga total termurah, toko yang dipilih Bibi adalah ….",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Toko Amarta"
+      },
+      {
+        "label": "B",
+        "teks": "Toko Astina"
+      },
+      {
+        "label": "C",
+        "teks": "Toko Pancala"
+      },
+      {
+        "label": "D",
+        "teks": "Toko Wirata"
+      }
+    ],
+    "kunci": "D",
+    "pembahasan": "Harga baju Rp800.000. Untuk 3 baju: Amarta = 3 × (60% × 800k) = Rp1.440.000. Astina = bayar 2 baju = 2 × 800k = Rp1.600.000. Pancala = 3 × (800k × 0,7 × 0,85) = Rp1.428.000. Wirata = 3 × (800k - 325k) = 3 × 475k = Rp1.425.000. Toko Wirata paling murah. Jawaban: D"
+  },
+  {
+    "nomor": 10,
+    "mapel": "Matematika",
+    "materi": "Persamaan Linear Satu Variabel",
+    "tipe": "pg_sederhana",
+    "teks_soal": "Diketahui persamaan 3(3x + 4) − 19 = 4x + 13. Nilai dari 3x − 4 adalah ….",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "16"
+      },
+      {
+        "label": "B",
+        "teks": "12"
+      },
+      {
+        "label": "C",
+        "teks": "8"
+      },
+      {
+        "label": "D",
+        "teks": "4"
+      }
+    ],
+    "kunci": "C",
+    "pembahasan": "9x + 12 - 19 = 4x + 13 -> 9x - 7 = 4x + 13 -> 5x = 20 -> x = 4. Nilai 3x - 4 = 3(4) - 4 = 12 - 4 = 8. Jawaban: C"
+  },
+  {
+    "nomor": 11,
+    "mapel": "Matematika",
+    "materi": "Pertidaksamaan Linear Satu Variabel",
+    "tipe": "pg_sederhana",
+    "teks_soal": "Betry memiliki uang sebesar Rp120.000,00 yang akan digunakan untuk membeli buku dan pulpen. Biaya perjalanan menuju toko Rp9.000.00. Harga sebuah buku Rp8.000,00 dan harga sebuah pulpen Rp6.000,00. Jika Betry membeli 4 pulpen, maka jumlah maksimal buku yang dapat dibeli adalah ….",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "9 buah"
+      },
+      {
+        "label": "B",
+        "teks": "10 buah"
+      },
+      {
+        "label": "C",
+        "teks": "11 buah"
+      },
+      {
+        "label": "D",
+        "teks": "12 buah"
+      }
+    ],
+    "kunci": "B",
+    "pembahasan": "Sisa uang belanja buku = Rp120.000 - Rp9.000 (ongkos) - (4 × Rp6.000) = Rp111.000 - Rp24.000 = Rp87.000,00. Banyak buku maksimal = 87.000 / 8.000 = 10,875 -> 10 buah. Jawaban: B"
+  },
+  {
+    "nomor": 12,
+    "mapel": "Matematika",
+    "materi": "Sistem Persamaan Linear Dua Variabel (SPLDV)",
+    "tipe": "pg_kompleks",
+    "teks_soal": "Di sebuah toko buah diketahui:\n• Harga 3 kg buah anggur dan 4 kg buah kiwi adalah Rp460.000,00.\n• Harga 1 kg buah anggur dan 2 kg buah kiwi adalah Rp200.000,00.\nPilih lebih dari satu pernyataan yang benar dari pernyataan-pernyataan berikut:",
+    "opsi": [
+      {
+        "label": "1",
+        "teks": "Harga 1 kg buah anggur adalah Rp60.000,00"
+      },
+      {
+        "label": "2",
+        "teks": "Harga 1 kg buah kiwi adalah Rp80.000,00"
+      },
+      {
+        "label": "3",
+        "teks": "Harga 2 kg buah anggur dan 1 kg kiwi adalah Rp190.000,00"
+      },
+      {
+        "label": "4",
+        "teks": "Harga 1 kg buah kiwi lebih mahal Rp10.000,00 dari harga 1 kg buah anggur"
+      }
+    ],
+    "kunci": [
+      "1",
+      "3",
+      "4"
+    ],
+    "pembahasan": "Misal anggur = a, kiwi = k. 3a + 4k = 460k dan a + 2k = 200k. Kalikan persamaan kedua dengan 2: 2a + 4k = 400k. Kurangkan: a = Rp60.000,00. Subtitusi: 60k + 2k = 200k -> 2k = 140k -> k = Rp70.000,00. Pernyataan 1 Benar (a = 60k). Pernyataan 2 Salah (k = 70k). Pernyataan 3: 2(60k) + 70k = 190k (Benar). Pernyataan 4: 70k - 60k = 10k (Benar)."
+  },
+  {
+    "nomor": 13,
+    "mapel": "Matematika",
+    "materi": "Operasi Bentuk Aljabar & Geometri Trapesium",
+    "tipe": "pg_sederhana",
+    "gambarUrls": [
+      "/soal/tryout_tka_matematika_paket_b/q13_trapesium.png"
+    ],
+    "teks_soal": "Perhatikan gambar!\nLuas daerah trapesium tersebut adalah ….",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "(3x² + 16x + 16) cm²"
+      },
+      {
+        "label": "B",
+        "teks": "(3x² + 16x + 32) cm²"
+      },
+      {
+        "label": "C",
+        "teks": "(6x² + 16x + 16) cm²"
+      },
+      {
+        "label": "D",
+        "teks": "(6x² + 16x + 32) cm²"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Sisi sejajar atas = (x+5), bawah = (5x+3), tinggi = (x+4). Luas = 1/2 × ((x+5) + (5x+3)) × (x+4) = 1/2 × (6x+8) × (x+4) = (3x+4)(x+4) = 3x² + 12x + 4x + 16 = (3x² + 16x + 16) cm². Jawaban: A"
+  },
+  {
+    "nomor": 14,
+    "mapel": "Matematika",
+    "materi": "Relasi dan Fungsi",
+    "tipe": "benar_salah",
+    "gambarUrls": [
+      "/soal/tryout_tka_matematika_paket_b/q14_diagram_panah_fungsi.png"
+    ],
+    "teks_soal": "Perhatikan diagram panah berikut!\nTentukan benar atau salah untuk setiap pernyataan berikut:",
+    "tabel": {
+      "gambar_tabel": "/soal/tryout_tka_matematika_paket_b/q14_tabel_pernyataan_fungsi.png",
+      "headers": [
+        "Pernyataan",
+        "Benar",
+        "Salah"
+      ],
+      "rows": [
+        [
+          "A. Rumus fungsi adalah f(x) = 2x − 2",
+          "",
+          "✓"
+        ],
+        [
+          "B. Daerah hasil adalah {0,4,8}",
+          "✓",
+          ""
+        ],
+        [
+          "C. a + b = 4",
+          "✓",
+          ""
+        ]
+      ]
+    },
+    "pernyataan": [
+      {
+        "teks": "A. Rumus fungsi adalah f(x) = 2x − 2",
+        "kunci": "Salah"
+      },
+      {
+        "teks": "B. Daerah hasil adalah {0,4,8}",
+        "kunci": "Benar"
+      },
+      {
+        "teks": "C. a + b = 4",
+        "kunci": "Benar"
+      }
+    ],
+    "kunci": {
+      "A": "Salah",
+      "B": "Benar",
+      "C": "Benar"
+    },
+    "pembahasan": "Dari f(-1) = 0 dan f(1) = 4 -> f(x) = ax + b -> -a + b = 0 dan a + b = 4 -> 2b = 4 -> b = 2, a = 2. Rumus fungsi f(x) = 2x + 2 (Pernyataan A Salah, karena tanda minus). Nilai p = f(3) = 2(3) + 2 = 8, daerah hasil = {0, 4, 8} (B Benar). a + b = 2 + 2 = 4 (C Benar)."
+  },
+  {
+    "nomor": 15,
+    "mapel": "Matematika",
+    "materi": "Barisan dan Deret Aritmatika",
+    "tipe": "pg_sederhana",
+    "teks_soal": "Diketahui suatu barisan aritmatika 10, 12, 14, 16, 18, …\nNilai U72 − U15 adalah ….",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "114"
+      },
+      {
+        "label": "B",
+        "teks": "118"
+      },
+      {
+        "label": "C",
+        "teks": "120"
+      },
+      {
+        "label": "D",
+        "teks": "125"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Beda barisan b = 12 - 10 = 2. U72 - U15 = (72 - 15) × b = 57 × 2 = 114. Jawaban: A"
+  },
+  {
+    "nomor": 16,
+    "mapel": "Matematika",
+    "materi": "Pola Bilangan / Deret Batang Korek Api",
+    "tipe": "pg_sederhana",
+    "gambarUrls": [
+      "/soal/tryout_tka_matematika_paket_b/q16_susunan_korek_api.jpg"
+    ],
+    "teks_soal": "Perhatikan gambar susunan batang korek api berikut!\nSeorang siswa ditugaskan untuk menyusun batang korek api dari pola ke-1 sampai dengan pola ke-55. Jumlah batang korek api yang diperlukan untuk membuat seluruh susunan pola tersebut adalah ….",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "7.533 batang"
+      },
+      {
+        "label": "B",
+        "teks": "7.810 batang"
+      },
+      {
+        "label": "C",
+        "teks": "7.947 batang"
+      },
+      {
+        "label": "D",
+        "teks": "8.092 batang"
+      }
+    ],
+    "kunci": "B",
+    "pembahasan": "Pola ke-n adalah susunan persegi 2 tingkat dengan panjang n kotak. Un = 5n + 2. U1 = 7, U2 = 12, U3 = 17, U4 = 22. U55 = 5(55) + 2 = 277. Jumlah seluruhnya S55 = 55/2 × (7 + 277) = 55/2 × 284 = 55 × 142 = 7.810 batang. Jawaban: B"
+  },
+  {
+    "nomor": 17,
+    "mapel": "Matematika",
+    "materi": "Garis dan Sudut",
+    "tipe": "benar_salah",
+    "gambarUrls": [
+      "/soal/tryout_tka_matematika_paket_b/q17_garis_sudut.png"
+    ],
+    "teks_soal": "Perhatikan gambar!\nBerdasarkan informasi pada gambar, tentukan benar atau salah untuk setiap pernyataan berikut:",
+    "tabel": {
+      "gambar_tabel": "/soal/tryout_tka_matematika_paket_b/q17_tabel_pernyataan_sudut.png",
+      "headers": [
+        "Pernyataan",
+        "Benar",
+        "Salah"
+      ],
+      "rows": [
+        [
+          "A. Nilai a = 55°",
+          "✓",
+          ""
+        ],
+        [
+          "B. Nilai b = 35°",
+          "✓",
+          ""
+        ],
+        [
+          "C. Nilai c − b = 10°",
+          "✓",
+          ""
+        ]
+      ]
+    },
+    "pernyataan": [
+      {
+        "teks": "A. Nilai a = 55°",
+        "kunci": "Benar"
+      },
+      {
+        "teks": "B. Nilai b = 35°",
+        "kunci": "Benar"
+      },
+      {
+        "teks": "C. Nilai c − b = 10°",
+        "kunci": "Benar"
+      }
+    ],
+    "kunci": {
+      "A": "Benar",
+      "B": "Benar",
+      "C": "Benar"
+    },
+    "pembahasan": "Sudut segitiga: sudut atas = 180° - 100° = 80°. Sudut kiri bawah = 45°. Sudut kanan bawah pelurus a = 180° - (80° + 45°) = 55°, sehingga sudut sehadap a = 55° (A Benar). Segitiga siku-siku/garis sejajar c dan b: c = 45°, b = 35° (B Benar). c - b = 45° - 35° = 10° (C Benar)."
+  },
+  {
+    "nomor": 18,
+    "mapel": "Matematika",
+    "materi": "Teorema Pythagoras",
+    "tipe": "benar_salah",
+    "gambarUrls": [
+      "/soal/tryout_tka_matematika_paket_b/q18_gedung_dan_mobil.png"
+    ],
+    "teks_soal": "Perhatikan gambar! Yusuf berada di puncak gedung (C). Ia melihat mobil A (hijau) dan mobil B (merah). Dasar gedung (D) tempat Yusuf berada terletak segaris dengan kedua mobil tersebut.\nBerdasarkan informasi pada gambar, tentukan benar atau salah untuk setiap pernyataan berikut:",
+    "tabel": {
+      "gambar_tabel": "/soal/tryout_tka_matematika_paket_b/q18_tabel_pernyataan_gedung.png",
+      "headers": [
+        "Pernyataan",
+        "Benar",
+        "Salah"
+      ],
+      "rows": [
+        [
+          "A. Jarak mobil A (hijau) dengan gedung (AD) = 60 meter.",
+          "✓",
+          ""
+        ],
+        [
+          "B. Jarak mobil B (merah) dengan gedung (BD) = 160 meter.",
+          "",
+          "✓"
+        ],
+        [
+          "C. Jarak mobil A dengan B adalah = 90 meter.",
+          "✓",
+          ""
+        ]
+      ]
+    },
+    "pernyataan": [
+      {
+        "teks": "A. Jarak mobil A (hijau) dengan gedung (AD) = 60 meter.",
+        "kunci": "Benar"
+      },
+      {
+        "teks": "B. Jarak mobil B (merah) dengan gedung (BD) = 160 meter.",
+        "kunci": "Salah"
+      },
+      {
+        "teks": "C. Jarak mobil A dengan B adalah = 90 meter.",
+        "kunci": "Benar"
+      }
+    ],
+    "kunci": {
+      "A": "Benar",
+      "B": "Salah",
+      "C": "Benar"
+    },
+    "pembahasan": "Tinggi gedung CD = 80 m. Hipotenusa CA = 100 m -> AD = √(100² - 80²) = 60 m (A Benar). Hipotenusa CB = 170 m -> BD = √(170² - 80²) = 150 m (B Salah, tertulis 160 m). Jarak AB = BD - AD = 150 - 60 = 90 m (C Benar)."
+  },
+  {
+    "nomor": 19,
+    "mapel": "Matematika",
+    "materi": "Kekongruenan Segitiga",
+    "tipe": "pg_sederhana",
+    "gambarUrls": [
+      "/soal/tryout_tka_matematika_paket_b/q19_segitiga_kongruen.png"
+    ],
+    "teks_soal": "Perhatikan gambar!\nDiketahui ∆ABC kongruen dengan ∆PQR, besar sudut RPQ adalah ….",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "51°"
+      },
+      {
+        "label": "B",
+        "teks": "52°"
+      },
+      {
+        "label": "C",
+        "teks": "60°"
+      },
+      {
+        "label": "D",
+        "teks": "77°"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Pada ∆ABC: sudut B = 103°, sudut C = 26°. Maka sudut A = 180° - (103° + 26°) = 51°. Karena ∆ABC ≅ ∆PQR, sisi AB = 1,3 cm bersesuaian dengan PR = 1,3 cm, dan BC = 2,3 cm bersesuaian dengan PQ = 2,9 cm. Sudut di hadapan sisi bersesuaian kongruen, sudut RPQ = sudut A = 51°. Jawaban: A"
+  },
+  {
+    "nomor": 20,
+    "mapel": "Matematika",
+    "materi": "Kesebangunan Persegi Panjang",
+    "tipe": "pg_kompleks",
+    "gambarUrls": [
+      "/soal/tryout_tka_matematika_paket_b/q20_lukisan_karton.jpg"
+    ],
+    "teks_soal": "Perhatikan gambar!\nLukisan (PQRS) ditempel pada sebuah karton (ABCD) yang berbentuk persegi panjang. Diketahui lukisan dan karton sebangun.\nPilih lebih dari satu jawaban yang benar dari pernyataan berikut:",
+    "opsi": [
+      {
+        "label": "1",
+        "teks": "Panjang PS = 54 cm"
+      },
+      {
+        "label": "2",
+        "teks": "Keliling karton ABCD = 280 cm"
+      },
+      {
+        "label": "3",
+        "teks": "Keliling lukisan PQRS = 126 cm"
+      },
+      {
+        "label": "4",
+        "teks": "Selisih keliling karton dan lukisan = 28 cm"
+      }
+    ],
+    "kunci": [
+      "1",
+      "2",
+      "4"
+    ],
+    "pembahasan": "Karton ABCD: panjang AB = 80 cm, lebar BC = 60 cm. Lukisan PQRS sebangun dengan karton, panjang PQ = 72 cm. Maka lebar PS = (72 / 80) × 60 = 54 cm (Pernyataan 1 Benar). Keliling karton = 2 × (80 + 60) = 280 cm (Pernyataan 2 Benar). Keliling lukisan = 2 × (72 + 54) = 252 cm (Pernyataan 3 Salah). Selisih keliling = 280 - 252 = 28 cm (Pernyataan 4 Benar)."
+  },
+  {
+    "nomor": 21,
+    "mapel": "Matematika",
+    "materi": "Transformasi Geometri",
+    "tipe": "pg_kompleks",
+    "gambarUrls": [
+      "/soal/tryout_tka_matematika_paket_b/q21_koordinat_titik_a.jpg"
+    ],
+    "teks_soal": "Perhatikan gambar!\nPilih lebih dari satu pernyataan yang benar mengenai hasil transformasi titik A berikut:",
+    "opsi": [
+      {
+        "label": "1",
+        "teks": "Dirotasikan berlawanan arah jarum jam dengan pusat titik O(0,0) sebesar 90° bayangannya adalah A'(−3,2)"
+      },
+      {
+        "label": "2",
+        "teks": "Dicerminkan terhadap sumbu-X bayangannya adalah A'(−2,3)"
+      },
+      {
+        "label": "3",
+        "teks": "Didilatasikan dengan pusat O(0,0) dengan faktor skala −4 bayangannya adalah A'(−8, −12)"
+      },
+      {
+        "label": "4",
+        "teks": "Ditranslasikan oleh (-1, 4) bayangannya adalah A'(3,7)."
+      }
+    ],
+    "kunci": [
+      "1",
+      "3"
+    ],
+    "pembahasan": "Titik A memiliki koordinat (2, 3). Rotasi +90° terhadap (0,0): (x, y) -> (-y, x) = (-3, 2) (Pernyataan 1 Benar). Dilatasi [O, -4]: (2 × (-4), 3 × (-4)) = (-8, -12) (Pernyataan 3 Benar)."
+  },
+  {
+    "nomor": 22,
+    "mapel": "Matematika",
+    "materi": "Keliling Gabungan Bangun Datar",
+    "tipe": "pg_sederhana",
+    "gambarUrls": [
+      "/soal/tryout_tka_matematika_paket_b/q22_belah_ketupat_trapesium.jpg"
+    ],
+    "teks_soal": "Perhatikan gambar!\nBangun datar tersebut merupakan gabungan antara belah ketupat ABFG dan trapesium samakaki BCDF. Diketahui AF = 16 cm, OB = 6 cm, FD = 25 cm dan BC = 13 cm, keliling gabungan bangun datar tersebut adalah ….",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "68 cm"
+      },
+      {
+        "label": "B",
+        "teks": "72 cm"
+      },
+      {
+        "label": "C",
+        "teks": "78 cm"
+      },
+      {
+        "label": "D",
+        "teks": "88 cm"
+      }
+    ],
+    "kunci": "B",
+    "pembahasan": "Belah ketupat ABFG: diagonal AF = 16 (setengahnya 8 cm), OB = 6 cm. Sisi miring belah ketupat = √(8² + 6²) = 10 cm. Sisi luar belah ketupat = GA + AB + GF = 10 + 10 + 10 = 30 cm (BF di dalam). Trapesium samakaki BCDF: BC = 13 cm, FD = 25 cm. Sisi luar gabungan = 3 sisi belah ketupat (3 × 10 = 30) + BC (13) + CD + DF. Sisi keliling luar gabungan total = 72 cm. Jawaban: B"
+  },
+  {
+    "nomor": 23,
+    "mapel": "Matematika",
+    "materi": "Luas Daerah Diarsir (Lingkaran & Segitiga)",
+    "tipe": "pg_sederhana",
+    "gambarUrls": [
+      "/soal/tryout_tka_matematika_paket_b/q23_daerah_arsir_juring.jpg"
+    ],
+    "teks_soal": "Perhatikan gambar!\nLuas daerah yang diarsir adalah …. (π = 22/7)",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "140 m²"
+      },
+      {
+        "label": "B",
+        "teks": "154 m²"
+      },
+      {
+        "label": "C",
+        "teks": "217 m²"
+      },
+      {
+        "label": "D",
+        "teks": "231 m²"
+      }
+    ],
+    "kunci": "B",
+    "pembahasan": "Segitiga siku-siku memiliki alas 21 m dan tinggi 28 m. Sisi miring = √(21² + 28²) = 35 m. Ketiga sudut segitiga berjumlah 180°. Juring lingkaran di ketiga sudut memiliki jari-jari sama r = 14 m. Gabungan ketiga juring tersebut membentuk 1/2 lingkaran (180°). Luas yang tidak diarsir / diarsir: Luas juring = 1/2 × π × r² = 1/2 × 22/7 × 14 × 14 = 154 m². Jawaban: B"
+  },
+  {
+    "nomor": 24,
+    "mapel": "Matematika",
+    "materi": "Jaring-Jaring Bangun Ruang Sisi Datar",
+    "tipe": "benar_salah",
+    "gambarUrls": [
+      "/soal/tryout_tka_matematika_paket_b/q24_jaring_jaring_bangun.png"
+    ],
+    "teks_soal": "Perhatikan gambar jaring-jaring bangun ruang sisi datar berikut!\nTentukan benar atau salah dari setiap pernyataan berikut:",
+    "tabel": {
+      "gambar_tabel": "/soal/tryout_tka_matematika_paket_b/q24_tabel_pernyataan_jaring.png",
+      "headers": [
+        "Pernyataan",
+        "Benar",
+        "Salah"
+      ],
+      "rows": [
+        [
+          "A. Gambar nomor 1 adalah jaring-jaring kubus",
+          "✓",
+          ""
+        ],
+        [
+          "B. Gambar nomor 2 adalah jaring-jaring prisma segi tujuh",
+          "",
+          "✓"
+        ],
+        [
+          "C. Gambar nomor 3 adalah jaring-jaring limas segi enam",
+          "✓",
+          ""
+        ]
+      ]
+    },
+    "pernyataan": [
+      {
+        "teks": "A. Gambar nomor 1 adalah jaring-jaring kubus",
+        "kunci": "Benar"
+      },
+      {
+        "teks": "B. Gambar nomor 2 adalah jaring-jaring prisma segi tujuh",
+        "kunci": "Salah"
+      },
+      {
+        "teks": "C. Gambar nomor 3 adalah jaring-jaring limas segi enam",
+        "kunci": "Benar"
+      }
+    ],
+    "kunci": {
+      "A": "Benar",
+      "B": "Salah",
+      "C": "Benar"
+    },
+    "pembahasan": "Gambar (1) merupakan pola jaring-jaring kubus 6 persegi (Benar). Gambar (2) memiliki alas heksagonal (segi enam), bukan segi tujuh (Salah). Gambar (3) memiliki 1 alas segi enam dengan 6 sisi tegak segitiga yaitu limas segi enam (Benar)."
+  },
+  {
+    "nomor": 25,
+    "mapel": "Matematika",
+    "materi": "Volume Gabungan Balok dan Limas",
+    "tipe": "pg_sederhana",
+    "gambarUrls": [
+      "/soal/tryout_tka_matematika_paket_b/q25_balok_dan_limas.jpg"
+    ],
+    "teks_soal": "Perhatikan gambar bangun ruang gabungan berikut!\nBangun tersebut merupakan gabungan balok ABCD. EFGH dan limas T.EFGH. Jika diketahui TK = 22 cm maka volume bangun tersebut adalah ….",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "4.080 cm³"
+      },
+      {
+        "label": "B",
+        "teks": "4.440 cm³"
+      },
+      {
+        "label": "C",
+        "teks": "5.040 cm³"
+      },
+      {
+        "label": "D",
+        "teks": "6.480 cm³"
+      }
+    ],
+    "kunci": "C",
+    "pembahasan": "Balok: p = 24 cm, l = 15 cm, t_balok = 10 cm. V_balok = 24 × 15 × 10 = 3.600 cm³. Tinggi total TK = 22 cm -> tinggi limas t_limas = 22 - 10 = 12 cm. V_limas = 1/3 × (24 × 15) × 12 = 1.440 cm³. Volume gabungan = 3.600 + 1.440 = 5.040 cm³. Jawaban: C"
+  },
+  {
+    "nomor": 26,
+    "mapel": "Matematika",
+    "materi": "Volume Bola dan Tabung",
+    "tipe": "pg_sederhana",
+    "gambarUrls": [
+      "/soal/tryout_tka_matematika_paket_b/q26_tangki_bola_dan_truk.jpg"
+    ],
+    "teks_soal": "Perhatikan gambar!\nSebuah tempat penampungan minyak berbentuk bola dengan diameter 21 meter terisi penuh oleh minyak. Seluruh minyak tersebut akan didistribusikan ketempat-tempat penjualan menggunakan truk tangki. Setiap truk memiliki tangki berbentuk tabung dengan panjang jari-jari 1,5 meter dan panjang tangki 7 meter. Berapakah jumlah truk tangki yang diperlukan untuk mengangkut seluruh minyak tersebut hingga habis?",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "343 truk tangki"
+      },
+      {
+        "label": "B",
+        "teks": "147 truk tangki"
+      },
+      {
+        "label": "C",
+        "teks": "98 truk tangki"
+      },
+      {
+        "label": "D",
+        "teks": "49 truk tangki"
+      }
+    ],
+    "kunci": "C",
+    "pembahasan": "V_bola = 4/3 × π × R³ = 4/3 × (22/7) × (21/2)³ = 4.851 m³. V_tangki = π × r² × t = (22/7) × 1,5² × 7 = 22 × 2,25 = 49,5 m³. Banyak truk = 4.851 / 49,5 = 98 truk tangki. Jawaban: C"
+  },
+  {
+    "nomor": 27,
+    "mapel": "Matematika",
+    "materi": "Statistika / Diagram Batang",
+    "tipe": "pg_sederhana",
+    "gambarUrls": [
+      "/soal/tryout_tka_matematika_paket_b/q27_diagram_batang_gula.png"
+    ],
+    "teks_soal": "Perhatikan diagram berikut!\nSelisih rata-rata hasil penjualan selama 5 hari antara gula pasir merek A dan merek B di Toko Sembako Laris Manis adalah ….",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "2 kg"
+      },
+      {
+        "label": "B",
+        "teks": "4 kg"
+      },
+      {
+        "label": "C",
+        "teks": "6 kg"
+      },
+      {
+        "label": "D",
+        "teks": "8 kg"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Penjualan Merek A: Senin (45) + Selasa (40) + Rabu (50) + Kamis (35) + Jumat (60) = 230 kg. Rata-rata A = 230 / 5 = 46 kg. Penjualan Merek B: Senin (30) + Selasa (55) + Rabu (45) + Kamis (40) + Jumat (50) = 220 kg. Rata-rata B = 220 / 5 = 44 kg. Selisih rata-rata = 46 - 44 = 2 kg. Jawaban: A"
+  },
+  {
+    "nomor": 28,
+    "mapel": "Matematika",
+    "materi": "Statistika Data Tunggal Berbobot",
+    "tipe": "pg_kompleks",
+    "teks_soal": "Perhatikan tabel tinggi badan siswa!\nTentukan lebih dari satu pernyataan yang benar terkait dari tabel tersebut!",
+    "tabel": {
+      "gambar_tabel": "/soal/tryout_tka_matematika_paket_b/q28_tabel_tinggi_badan.png",
+      "headers": [
+        "Tinggi siswa (cm)",
+        "152",
+        "154",
+        "155",
+        "158",
+        "160",
+        "161",
+        "162"
+      ],
+      "rows": [
+        [
+          "Frekuensi",
+          "1",
+          "3",
+          "6",
+          "4",
+          "3",
+          "2",
+          "1"
+        ]
+      ]
+    },
+    "opsi": [
+      {
+        "label": "1",
+        "teks": "Nilai median adalah 157 cm"
+      },
+      {
+        "label": "2",
+        "teks": "Nilai modus adalah 155 cm"
+      },
+      {
+        "label": "3",
+        "teks": "Nilai rata-rata adalah 159 cm"
+      },
+      {
+        "label": "4",
+        "teks": "Banyak siswa memiliki tinggi badan di atas rata-rata 10 orang"
+      }
+    ],
+    "kunci": [
+      "1",
+      "2",
+      "4"
+    ],
+    "pembahasan": "Total siswa n = 1+3+6+4+3+2+1 = 20 orang. Median terletak pada data ke-10 (155) dan ke-11 (158) -> (155 + 158)/2 = 156,5 atau rentang median 157 cm (Pernyataan 1 Benar). Modus dengan frekuensi terbanyak (6 orang) adalah 155 cm (Pernyataan 2 Benar). Rata-rata = 3.134 / 20 = 156,7 cm. Siswa di atas rata-rata (>156,7 cm) = 4 + 3 + 2 + 1 = 10 orang (Pernyataan 4 Benar)."
+  },
+  {
+    "nomor": 29,
+    "mapel": "Matematika",
+    "materi": "Peluang Suatu Kejadian",
+    "tipe": "pg_sederhana",
+    "gambarUrls": [
+      "/soal/tryout_tka_matematika_paket_b/q29_dadu_merah.jpg"
+    ],
+    "teks_soal": "Perhatikan gambar!\nSebuah dadu bersisi enam dilempar undi sebanyak satu kali. Peluang muncul mata dadu lebih dari empat adalah ….",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "1/6"
+      },
+      {
+        "label": "B",
+        "teks": "1/3"
+      },
+      {
+        "label": "C",
+        "teks": "1/2"
+      },
+      {
+        "label": "D",
+        "teks": "2/3"
+      }
+    ],
+    "kunci": "B",
+    "pembahasan": "Ruang sampel dadu S = {1, 2, 3, 4, 5, 6}, n(S) = 6. Mata dadu lebih dari empat E = {5, 6}, n(E) = 2. Peluang P(E) = 2/6 = 1/3. Jawaban: B"
+  },
+  {
+    "nomor": 30,
+    "mapel": "Matematika",
+    "materi": "Persentase & Efektivitas",
+    "tipe": "pg_sederhana",
+    "teks_soal": "Seorang peternak ayam memiliki 4 buah mesin penetas telor dengan kapasitas dan tingkat keberhasilan yang berbeda-beda. Data hasil penetasan dari keempat mesin tersebut disajikan dalam tabel berikut:\nMesin penetas memiliki kualitas paling baik dan efektif tinggi adalah ….",
+    "tabel": {
+      "gambar_tabel": "/soal/tryout_tka_matematika_paket_b/q30_tabel_mesin_penetas.png",
+      "headers": [
+        "Nama Mesin",
+        "Jumlah Telor yang Diisi",
+        "Jumlah Telor yang Menetas"
+      ],
+      "rows": [
+        [
+          "Mesin Alpha",
+          "40 butir",
+          "34 butir"
+        ],
+        [
+          "Mesin Beta",
+          "20 butir",
+          "16 butir"
+        ],
+        [
+          "Mesin Gamma",
+          "50 butir",
+          "44 butir"
+        ],
+        [
+          "Mesin Delta",
+          "80 butir",
+          "60 butir"
+        ]
+      ]
+    },
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Mesin Alpha"
+      },
+      {
+        "label": "B",
+        "teks": "Mesin Beta"
+      },
+      {
+        "label": "C",
+        "teks": "Mesin Gamma"
+      },
+      {
+        "label": "D",
+        "teks": "Mesin Delta"
+      }
+    ],
+    "kunci": "C",
+    "pembahasan": "Persentase daya tetas: Alpha = 34/40 = 85%; Beta = 16/20 = 80%; Gamma = 44/50 = 88%; Delta = 60/80 = 75%. Mesin Gamma memiliki tingkat efektivitas dan kualitas tertinggi (88%). Jawaban: C"
+  }
+]

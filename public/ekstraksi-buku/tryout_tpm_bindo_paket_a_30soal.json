@@ -1,0 +1,1172 @@
+[
+  {
+    "nomor": 1,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Makna Istilah / Kosakata",
+    "tipe": "pg_sederhana",
+    "bacaan": {
+      "grup": "stimulus_lingkungan_jogja",
+      "judul": "Kondisi Lingkungan Perkotaan Yogyakarta",
+      "teks": "Kondisi lingkungan perkotaan Yogyakarta menghadapi tekanan signifikan akibat urbanisasi pesat, pertumbuhan populasi, dan keterbatasan lahan. Isu paling mendesak adalah pengelolaan sampah, yang telah mencapai tahap \"darurat sampah\" sejak penutupan permanen Tempat Pemrosesan Akhir (TPA) Piyungan. Kota ini menghasilkan sekitar 300 ton sampah per hari, melebihi kapasitas penanganan lokal, yang menyebabkan penumpukan sampah liar. Pemerintah kota berupaya mengatasi ini melalui pelarangan plastik sekali pakai dan mengoptimalkan pengolahan sampah dari sumbernya, tetapi tantangan logistik tetap besar.\nSelain sampah, masalah lingkungan lain yang menonjol adalah kualitas udara dan minimnya Ruang Terbuka Hijau (RTH). Tingkat polusi udara sering berada dalam kategori sedang karena padatnya aktivitas kendaraan bermotor. Di sisi lain, realisasi RTH publik di Yogyakarta baru mencapai sekitar 2,6 juta m², sangat jauh dari target minimal 30% yang diamanatkan undang-undang. Keterbatasan lahan menjadi penghalang utama dalam penyediaan ruang hijau yang diperlukan untuk menjaga keseimbangan ekologis kota."
+    },
+    "grup": "stimulus_lingkungan_jogja",
+    "teks_soal": "Makna istilah kapasitas yang sesuai dengan isi teks tersebut adalah …",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "kemampuan untuk menampung sesuatu"
+      },
+      {
+        "label": "B",
+        "teks": "kewenangan jabatan sesorang dalam organisasi."
+      },
+      {
+        "label": "C",
+        "teks": "keterbatasan kemampuan menyelesaikan masalah"
+      },
+      {
+        "label": "D",
+        "teks": "kemampuan mental untuk memahami atau melakukan sesuatu"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Dalam teks konteks 'melebihi kapasitas penanganan lokal', kapasitas bermakna daya tampung atau ruang tampung fasilitas pengolahan sampah."
+  },
+  {
+    "nomor": 2,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Kesesuaian Pernyataan Teks",
+    "tipe": "benar_salah",
+    "bacaan": {
+      "grup": "stimulus_lingkungan_jogja",
+      "judul": "Kondisi Lingkungan Perkotaan Yogyakarta",
+      "teks": "Kondisi lingkungan perkotaan Yogyakarta menghadapi tekanan signifikan akibat urbanisasi pesat, pertumbuhan populasi, dan keterbatasan lahan. Isu paling mendesak adalah pengelolaan sampah, yang telah mencapai tahap \"darurat sampah\" sejak penutupan permanen Tempat Pemrosesan Akhir (TPA) Piyungan. Kota ini menghasilkan sekitar 300 ton sampah per hari, melebihi kapasitas penanganan lokal, yang menyebabkan penumpukan sampah liar. Pemerintah kota berupaya mengatasi ini melalui pelarangan plastik sekali pakai dan mengoptimalkan pengolahan sampah dari sumbernya, tetapi tantangan logistik tetap besar.\nSelain sampah, masalah lingkungan lain yang menonjol adalah kualitas udara dan minimnya Ruang Terbuka Hijau (RTH). Tingkat polusi udara sering berada dalam kategori sedang karena padatnya aktivitas kendaraan bermotor. Di sisi lain, realisasi RTH publik di Yogyakarta baru mencapai sekitar 2,6 juta m², sangat jauh dari target minimal 30% yang diamanatkan undang-undang. Keterbatasan lahan menjadi penghalang utama dalam penyediaan ruang hijau yang diperlukan untuk menjaga keseimbangan ekologis kota."
+    },
+    "grup": "stimulus_lingkungan_jogja",
+    "teks_soal": "Tentukan kesesuaian pernyataan berikut dengan isi teks tersebut!",
+    "tabel": {
+      "gambar_tabel": "/soal/tryout_tpm_bindo_paket_a/q2_tabel_kesesuaian_pernyataan.png",
+      "headers": [
+        "Pernyataan",
+        "Sesuai",
+        "Tidak Sesuai"
+      ],
+      "rows": [
+        [
+          "A. Penyediaan ruang terbuka hijau terkendala lahan yang terbatas.",
+          "✓",
+          ""
+        ],
+        [
+          "B. Kapasitas penanganan lokal mampu mengatasi masalah sampah",
+          "",
+          "✓"
+        ],
+        [
+          "C. Urbanisasi dan pertumbuhan penduduk menyebabkan masalah lingkungan.",
+          "✓",
+          ""
+        ]
+      ]
+    },
+    "pernyataan": [
+      {
+        "teks": "Penyediaan ruang terbuka hijau terkendala lahan yang terbatas.",
+        "kunci": "Sesuai"
+      },
+      {
+        "teks": "Kapasitas penanganan lokal mampu mengatasi masalah sampah",
+        "kunci": "Tidak Sesuai"
+      },
+      {
+        "teks": "Urbanisasi dan pertumbuhan penduduk menyebabkan masalah lingkungan.",
+        "kunci": "Sesuai"
+      }
+    ],
+    "kunci": {
+      "A": "Sesuai",
+      "B": "Tidak Sesuai",
+      "C": "Sesuai"
+    },
+    "pembahasan": "Pernyataan A dan C sesuai dengan isi paragraf 1 dan 2. Pernyataan B tidak sesuai karena teks secara tegas menyatakan sampah 'melebihi kapasitas penanganan lokal'."
+  },
+  {
+    "nomor": 3,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Gagasan Pendukung Paragraf",
+    "tipe": "pg_sederhana",
+    "bacaan": {
+      "grup": "stimulus_lingkungan_jogja",
+      "judul": "Kondisi Lingkungan Perkotaan Yogyakarta",
+      "teks": "Kondisi lingkungan perkotaan Yogyakarta menghadapi tekanan signifikan akibat urbanisasi pesat, pertumbuhan populasi, dan keterbatasan lahan. Isu paling mendesak adalah pengelolaan sampah, yang telah mencapai tahap \"darurat sampah\" sejak penutupan permanen Tempat Pemrosesan Akhir (TPA) Piyungan. Kota ini menghasilkan sekitar 300 ton sampah per hari, melebihi kapasitas penanganan lokal, yang menyebabkan penumpukan sampah liar. Pemerintah kota berupaya mengatasi ini melalui pelarangan plastik sekali pakai dan mengoptimalkan pengolahan sampah dari sumbernya, tetapi tantangan logistik tetap besar.\nSelain sampah, masalah lingkungan lain yang menonjol adalah kualitas udara dan minimnya Ruang Terbuka Hijau (RTH). Tingkat polusi udara sering berada dalam kategori sedang karena padatnya aktivitas kendaraan bermotor. Di sisi lain, realisasi RTH publik di Yogyakarta baru mencapai sekitar 2,6 juta m², sangat jauh dari target minimal 30% yang diamanatkan undang-undang. Keterbatasan lahan menjadi penghalang utama dalam penyediaan ruang hijau yang diperlukan untuk menjaga keseimbangan ekologis kota."
+    },
+    "grup": "stimulus_lingkungan_jogja",
+    "teks_soal": "Gagasan pendukung paragraf pertama yang sesuai adalah …",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Realisasi RTH publik baru mencapai 2,6 juta m²."
+      },
+      {
+        "label": "B",
+        "teks": "Penumpukan sampah liar diakibatkan tingginya produksi sampah yang melebihi kapasitas penanganan lokal."
+      },
+      {
+        "label": "C",
+        "teks": "Tingkat polusi udara sering berada dalam kategori sedang."
+      },
+      {
+        "label": "D",
+        "teks": "Ketersediaan lahan yang semakin berkurang diakibatkan oleh banyaknya ruang terbuka hijau."
+      }
+    ],
+    "kunci": "B",
+    "pembahasan": "Gagasan pendukung pada paragraf 1 menerangkan bahwa kota menghasilkan 300 ton sampah per hari yang melebihi kapasitas sehingga timbul penumpukan sampah liar."
+  },
+  {
+    "nomor": 4,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Istilah Bidang Media Sosial",
+    "tipe": "pg_kompleks",
+    "bacaan": {
+      "grup": "stimulus_youtube_shorts",
+      "judul": "Cara Membuat Konten YouTube Shorts",
+      "sumber": "support.google.com/youtube",
+      "teks": "YouTube Shorts merupakan fitur YouTube yang memungkinkan pengguna membagikan video pendek berdurasi singkat. Konten ini banyak diminati karena mudah dibuat, menarik, dan cepat menjangkau penonton. Oleh karena itu, diperlukan pemahaman yang tepat mengenai langkah-langkah pembuatannya agar hasil video sesuai dengan ketentuan.\nLangkah-langkah\n1. Pastikan Anda telah memiliki akun YouTube yang aktif dan aplikasi YouTube telah terpasang di perangkat yang digunakan.\n2. Siapkan ide atau konsep video yang akan dibuat agar isi konten lebih terarah dan mudah dipahami penonton.\n3. Rekam video menggunakan kamera ponsel dengan posisi vertikal atau rasio 9:16.\n4. Pastikan durasi video tidak lebih dari 60 detik agar sesuai dengan ketentuan YouTube Shorts.\n5. Setelah merekam, buka aplikasi YouTube di ponsel yang digunakan.\n6. Tekan ikon tanda tambah (+) yang berada di bagian bawah layar.\n7. Pilih menu Buat Short atau Upload video sesuai kebutuhan.\n8. Jika memilih unggah video, pastikan kembali format video sudah vertikal.\n9. Tambahkan judul yang menarik dan relevan dengan isi video agar penonton tertarik.\n10. Sertakan tagar #Shorts pada judul atau deskripsi agar video terdeteksi sebagai YouTube Shorts.\n11. Atur audiens video menjadi privat, kemudian pilih untuk anak-anak atau umum, sesuai sasaran penonton.\n12. Periksa kembali seluruh bagian video sebelum dipublikasikan.\n13. Tekan tombol Upload untuk mengunggah video ke YouTube.\n14. Tunggu hingga proses unggahan selesai dengan sempurna.\n15. Setelah proses selesai, YouTube Shorts siap ditonton oleh pengguna lain.\nDengan mengikuti langkah-langkah tersebut secara berurutan, siapa pun dapat membuat dan membagikan konten YouTube Shorts secara mudah, aman, dan praktis."
+    },
+    "grup": "stimulus_youtube_shorts",
+    "teks_soal": "Pilihlah jawaban lebih dari satu!\nIstilah media sosial yang terdapat pada teks tersebut adalah ….",
+    "opsi": [
+      {
+        "label": "1",
+        "teks": "upload"
+      },
+      {
+        "label": "2",
+        "teks": "relevan"
+      },
+      {
+        "label": "3",
+        "teks": "konsep"
+      },
+      {
+        "label": "4",
+        "teks": "audiens"
+      }
+    ],
+    "kunci": [
+      "1",
+      "4"
+    ],
+    "pembahasan": "Istilah khas dalam media sosial dan platform video adalah 'upload' (mengunggah konten) dan 'audiens' (pemirsa/penonton sasaran)."
+  },
+  {
+    "nomor": 5,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Tujuan Teks Prosedur",
+    "tipe": "pg_sederhana",
+    "bacaan": {
+      "grup": "stimulus_youtube_shorts",
+      "judul": "Cara Membuat Konten YouTube Shorts",
+      "sumber": "support.google.com/youtube",
+      "teks": "YouTube Shorts merupakan fitur YouTube yang memungkinkan pengguna membagikan video pendek berdurasi singkat. Konten ini banyak diminati karena mudah dibuat, menarik, dan cepat menjangkau penonton. Oleh karena itu, diperlukan pemahaman yang tepat mengenai langkah-langkah pembuatannya agar hasil video sesuai dengan ketentuan.\nLangkah-langkah\n1. Pastikan Anda telah memiliki akun YouTube yang aktif dan aplikasi YouTube telah terpasang di perangkat yang digunakan.\n2. Siapkan ide atau konsep video yang akan dibuat agar isi konten lebih terarah dan mudah dipahami penonton.\n3. Rekam video menggunakan kamera ponsel dengan posisi vertikal atau rasio 9:16.\n4. Pastikan durasi video tidak lebih dari 60 detik agar sesuai dengan ketentuan YouTube Shorts.\n5. Setelah merekam, buka aplikasi YouTube di ponsel yang digunakan.\n6. Tekan ikon tanda tambah (+) yang berada di bagian bawah layar.\n7. Pilih menu Buat Short atau Upload video sesuai kebutuhan.\n8. Jika memilih unggah video, pastikan kembali format video sudah vertikal.\n9. Tambahkan judul yang menarik dan relevan dengan isi video agar penonton tertarik.\n10. Sertakan tagar #Shorts pada judul atau deskripsi agar video terdeteksi sebagai YouTube Shorts.\n11. Atur audiens video menjadi privat, kemudian pilih untuk anak-anak atau umum, sesuai sasaran penonton.\n12. Periksa kembali seluruh bagian video sebelum dipublikasikan.\n13. Tekan tombol Upload untuk mengunggah video ke YouTube.\n14. Tunggu hingga proses unggahan selesai dengan sempurna.\n15. Setelah proses selesai, YouTube Shorts siap ditonton oleh pengguna lain.\nDengan mengikuti langkah-langkah tersebut secara berurutan, siapa pun dapat membuat dan membagikan konten YouTube Shorts secara mudah, aman, dan praktis."
+    },
+    "grup": "stimulus_youtube_shorts",
+    "teks_soal": "Tujuan dibuatnya teks prosedur tersebut adalah ….",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "membujuk pembaca agar menjadi YouTuber Shorts terkenal"
+      },
+      {
+        "label": "B",
+        "teks": "mendeskripsikan kelebihan dan kekurangan aplikasi YouTube"
+      },
+      {
+        "label": "C",
+        "teks": "menghibur pembaca dengan cerita pengalaman membuat video shorts"
+      },
+      {
+        "label": "D",
+        "teks": "menjelaskan langkah-langkah membuat YouTube Shorts dengan benar"
+      }
+    ],
+    "kunci": "D",
+    "pembahasan": "Teks prosedur tersebut memaparkan tahapan sistematis (langkah 1 sampai 15) untuk memandu pembaca membuat YouTube Shorts secara tepat dan benar."
+  },
+  {
+    "nomor": 6,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Ketepatan Isi Teks Prosedur",
+    "tipe": "pg_sederhana",
+    "bacaan": {
+      "grup": "stimulus_youtube_shorts",
+      "judul": "Cara Membuat Konten YouTube Shorts",
+      "sumber": "support.google.com/youtube",
+      "teks": "YouTube Shorts merupakan fitur YouTube yang memungkinkan pengguna membagikan video pendek berdurasi singkat. Konten ini banyak diminati karena mudah dibuat, menarik, dan cepat menjangkau penonton. Oleh karena itu, diperlukan pemahaman yang tepat mengenai langkah-langkah pembuatannya agar hasil video sesuai dengan ketentuan.\nLangkah-langkah\n1. Pastikan Anda telah memiliki akun YouTube yang aktif dan aplikasi YouTube telah terpasang di perangkat yang digunakan.\n2. Siapkan ide atau konsep video yang akan dibuat agar isi konten lebih terarah dan mudah dipahami penonton.\n3. Rekam video menggunakan kamera ponsel dengan posisi vertikal atau rasio 9:16.\n4. Pastikan durasi video tidak lebih dari 60 detik agar sesuai dengan ketentuan YouTube Shorts.\n5. Setelah merekam, buka aplikasi YouTube di ponsel yang digunakan.\n6. Tekan ikon tanda tambah (+) yang berada di bagian bawah layar.\n7. Pilih menu Buat Short atau Upload video sesuai kebutuhan.\n8. Jika memilih unggah video, pastikan kembali format video sudah vertikal.\n9. Tambahkan judul yang menarik dan relevan dengan isi video agar penonton tertarik.\n10. Sertakan tagar #Shorts pada judul atau deskripsi agar video terdeteksi sebagai YouTube Shorts.\n11. Atur audiens video menjadi privat, kemudian pilih untuk anak-anak atau umum, sesuai sasaran penonton.\n12. Periksa kembali seluruh bagian video sebelum dipublikasikan.\n13. Tekan tombol Upload untuk mengunggah video ke YouTube.\n14. Tunggu hingga proses unggahan selesai dengan sempurna.\n15. Setelah proses selesai, YouTube Shorts siap ditonton oleh pengguna lain.\nDengan mengikuti langkah-langkah tersebut secara berurutan, siapa pun dapat membuat dan membagikan konten YouTube Shorts secara mudah, aman, dan praktis."
+    },
+    "grup": "stimulus_youtube_shorts",
+    "teks_soal": "Berdasarkan teks tersebut, bagian yang tidak sesuai adalah ….",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "tahapan pembuatan konten YouTube Shorts, karena disajikan secara tidak urut"
+      },
+      {
+        "label": "B",
+        "teks": "pengaturan audiens, karena video diprivat tidak bisa ditonton pengguna lain"
+      },
+      {
+        "label": "C",
+        "teks": "alat dan bahan, karena tidak mendukung pembuatan konten YouTube Shorts"
+      },
+      {
+        "label": "D",
+        "teks": "durasi video, karena seharunya video bisa dibuat sekitar 8 menit atau lebih"
+      }
+    ],
+    "kunci": "B",
+    "pembahasan": "Pada langkah nomor 11 tertulis 'Atur audiens video menjadi privat', yang tidak sesuai dengan tujuan mempublikasikan video agar ditonton pengguna lain."
+  },
+  {
+    "nomor": 7,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Pokok-Pokok Berita",
+    "tipe": "pg_kompleks",
+    "bacaan": {
+      "grup": "stimulus_tangerang_10k",
+      "judul": "Saatnya Para Pelari Bercerita",
+      "sumber": "Kompas, 7 Desember 2025, dengan penyesuaian",
+      "teks": "Pelari di Tangerang 10K tidak hanya berlomba. Sekitar 2.500 peserta juga akan melintasi titik-titik menarik di Kota Tangerang. Dengan berlari, mereka berbagi cerita tentang apa saja, mulai dari ambisi berdiri di podium hingga harapan tentang kota yang terus bertumbuh. Aneka kisah itu dituangkan dalam Tangerang 10K, ajang lari yang bakal diikuti 2.500 peserta dari berbagai daerah, Minggu (7/12/2025).\nAntusiasme pelari untuk berbagi cerita itu tampak saat pengambilan race pack Tangerang 10K di Pasific Garden, Kota Tangerang, Banten, Sabtu (6/12). Sejak pukul 10.00 WIB, para peserta bergantian menuliskan pesan hingga harapan di papan “Whats your running story?”.\nBeberapa tulisan itu mengandung harapan, seperti “semoga podium ya” atau “wong mbatu (orang Batu) ke Tangerang 10K, podium yuk”. Ada juga yang lucu, seperti “lari pagi itu sehat, lari dari kenyataan itu tidak sehat, jujurly (jujur), aku mls (malas) sekali lari, tp (tapi) okelah”.\nMeskipun beragam, berbagai coretan itu menunjukkan antusiame pelari mengikuti ajang yang digelar Pemerintah Kota Tangerang bersama harian Kompas (Kompas.id) dan Bank BJB.\nJoliansyah (24) dan Wandi Agustian (25), misalnya, sengaja terbang dari Belitung Timur, Bangka Belitung, Jumat (5/12). “Sebenarnya kami bertiga, tetapi yang satu lagi baru berangkat hari ini. Makanya, race pack-nya saya ambilkan,” ucap Joliansyah yang menenteng dua tas race pack berisi jersei, nomor BIB atau nomor dada, dan produk pendukung lainnya. Demi Tangerang 10K, ia juga menyewa penginapan setempat."
+    },
+    "grup": "stimulus_tangerang_10k",
+    "teks_soal": "Pilihlah jawaban lebih dari satu!\nPernyataan yang merupakan pokok-pokok berita tersebut adalah ...",
+    "opsi": [
+      {
+        "label": "1",
+        "teks": "Jumlah pelari yang mengikuti Tangerang 10K sekitar 2.500 dan berasal dari berbagai daerah dan negara."
+      },
+      {
+        "label": "2",
+        "teks": "Tangerang 10K dilaksanakan pada hari Minggu, 7 Desember 2025 di Pasific Garden, Kota Tangerang, Banten."
+      },
+      {
+        "label": "3",
+        "teks": "Penyelenggara Tangerang 10K adalah Pemerintah Kota Tangerang bersama harian Kompas (Kompas.id)."
+      },
+      {
+        "label": "4",
+        "teks": "Para peserta Tangerang 10K menuliskan pesan hingga harapan di papan “Whats your running story?”"
+      }
+    ],
+    "kunci": [
+      "3",
+      "4"
+    ],
+    "pembahasan": "Pernyataan 3 dan 4 benar sesuai isi teks berita. Pernyataan 1 keliru karena di teks hanya disebut 'berbagai daerah' (bukan mancanegara/negara), dan pernyataan 2 keliru karena Pasific Garden adalah lokasi pengambilan race pack pada Sabtu (6/12)."
+  },
+  {
+    "nomor": 8,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Tindakan Berdasarkan Berita",
+    "tipe": "pg_kompleks",
+    "bacaan": {
+      "grup": "stimulus_tangerang_10k",
+      "judul": "Saatnya Para Pelari Bercerita",
+      "sumber": "Kompas, 7 Desember 2025, dengan penyesuaian",
+      "teks": "Pelari di Tangerang 10K tidak hanya berlomba. Sekitar 2.500 peserta juga akan melintasi titik-titik menarik di Kota Tangerang. Dengan berlari, mereka berbagi cerita tentang apa saja, mulai dari ambisi berdiri di podium hingga harapan tentang kota yang terus bertumbuh. Aneka kisah itu dituangkan dalam Tangerang 10K, ajang lari yang bakal diikuti 2.500 peserta dari berbagai daerah, Minggu (7/12/2025).\nAntusiasme pelari untuk berbagi cerita itu tampak saat pengambilan race pack Tangerang 10K di Pasific Garden, Kota Tangerang, Banten, Sabtu (6/12). Sejak pukul 10.00 WIB, para peserta bergantian menuliskan pesan hingga harapan di papan “Whats your running story?”.\nBeberapa tulisan itu mengandung harapan, seperti “semoga podium ya” atau “wong mbatu (orang Batu) ke Tangerang 10K, podium yuk”. Ada juga yang lucu, seperti “lari pagi itu sehat, lari dari kenyataan itu tidak sehat, jujurly (jujur), aku mls (malas) sekali lari, tp (tapi) okelah”.\nMeskipun beragam, berbagai coretan itu menunjukkan antusiame pelari mengikuti ajang yang digelar Pemerintah Kota Tangerang bersama harian Kompas (Kompas.id) dan Bank BJB.\nJoliansyah (24) dan Wandi Agustian (25), misalnya, sengaja terbang dari Belitung Timur, Bangka Belitung, Jumat (5/12). “Sebenarnya kami bertiga, tetapi yang satu lagi baru berangkat hari ini. Makanya, race pack-nya saya ambilkan,” ucap Joliansyah yang menenteng dua tas race pack berisi jersei, nomor BIB atau nomor dada, dan produk pendukung lainnya. Demi Tangerang 10K, ia juga menyewa penginapan setempat."
+    },
+    "grup": "stimulus_tangerang_10k",
+    "teks_soal": "Pilihlah jawaban lebih dari satu!\nHal yang dapat dilakukan pihak-pihak nonpemerintah untuk menggiatkan olahraga di masyarakat adalah ....",
+    "opsi": [
+      {
+        "label": "1",
+        "teks": "melakukan kegiatan olahraga yang menguntungkan secara finansial"
+      },
+      {
+        "label": "2",
+        "teks": "mendirikan kelompok-kelompok olahraga yang berbiaya murah atau gratis"
+      },
+      {
+        "label": "3",
+        "teks": "menjadi sponsor penyelenggaraan kegiatan olahraga yang bersifat massal"
+      },
+      {
+        "label": "4",
+        "teks": "melaksanakan kegiatan olahraga jika didanai oleh pemerintah"
+      }
+    ],
+    "kunci": [
+      "2",
+      "3"
+    ],
+    "pembahasan": "Upaya nyata non-pemerintah untuk memajukan olahraga masyarakat adalah menyediakan wadah komunitas olahraga murah/gratis dan menjadi sponsor pendukung kegiatan olahraga massal."
+  },
+  {
+    "nomor": 9,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Kelengkapan Unsur Berita (Adiksimba)",
+    "tipe": "pg_sederhana",
+    "bacaan": {
+      "grup": "stimulus_tangerang_10k",
+      "judul": "Saatnya Para Pelari Bercerita",
+      "sumber": "Kompas, 7 Desember 2025, dengan penyesuaian",
+      "teks": "Pelari di Tangerang 10K tidak hanya berlomba. Sekitar 2.500 peserta juga akan melintasi titik-titik menarik di Kota Tangerang. Dengan berlari, mereka berbagi cerita tentang apa saja, mulai dari ambisi berdiri di podium hingga harapan tentang kota yang terus bertumbuh. Aneka kisah itu dituangkan dalam Tangerang 10K, ajang lari yang bakal diikuti 2.500 peserta dari berbagai daerah, Minggu (7/12/2025).\nAntusiasme pelari untuk berbagi cerita itu tampak saat pengambilan race pack Tangerang 10K di Pasific Garden, Kota Tangerang, Banten, Sabtu (6/12). Sejak pukul 10.00 WIB, para peserta bergantian menuliskan pesan hingga harapan di papan “Whats your running story?”.\nBeberapa tulisan itu mengandung harapan, seperti “semoga podium ya” atau “wong mbatu (orang Batu) ke Tangerang 10K, podium yuk”. Ada juga yang lucu, seperti “lari pagi itu sehat, lari dari kenyataan itu tidak sehat, jujurly (jujur), aku mls (malas) sekali lari, tp (tapi) okelah”.\nMeskipun beragam, berbagai coretan itu menunjukkan antusiame pelari mengikuti ajang yang digelar Pemerintah Kota Tangerang bersama harian Kompas (Kompas.id) dan Bank BJB.\nJoliansyah (24) dan Wandi Agustian (25), misalnya, sengaja terbang dari Belitung Timur, Bangka Belitung, Jumat (5/12). “Sebenarnya kami bertiga, tetapi yang satu lagi baru berangkat hari ini. Makanya, race pack-nya saya ambilkan,” ucap Joliansyah yang menenteng dua tas race pack berisi jersei, nomor BIB atau nomor dada, dan produk pendukung lainnya. Demi Tangerang 10K, ia juga menyewa penginapan setempat."
+    },
+    "grup": "stimulus_tangerang_10k",
+    "teks_soal": "Apa yang membuat teks tersebut belum memuat unsur-unsur berita secara lengkap?",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Teks tersebut belum memuat peristiwa apa yang diberitakan."
+      },
+      {
+        "label": "B",
+        "teks": "Tempat pelaksanaan kegiatan belum dibahas dalam teks tersebut."
+      },
+      {
+        "label": "C",
+        "teks": "Teks tersebut belum menjelaskan siapa saja yang terlibat dalam peristiwa."
+      },
+      {
+        "label": "D",
+        "teks": "Alasan penyelenggaraan kegiatan belum disampaikan dalam teks tersebut."
+      }
+    ],
+    "kunci": "D",
+    "pembahasan": "Teks telah memuat apa (Tangerang 10K), siapa (peserta/panitia), di mana (Kota Tangerang), dan kapan (Minggu 7/12/2025), namun belum memaparkan unsur Mengapa (alasan/latar belakang resmi diselenggarakannya ajang)."
+  },
+  {
+    "nomor": 10,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Menemukan Informasi Tersurat",
+    "tipe": "pg_sederhana",
+    "bacaan": {
+      "grup": "stimulus_banjir_sumatra",
+      "judul": "Bencana Banjir Bandang dan Tanah Longsor di Sumatera",
+      "sumber": "cnbcindonesia.com",
+      "teks": "Bencana banjir bandang dan tanah longsor yang melanda Sumatra Barat, Sumatra Utara dan Aceh pada akhir November lalu terjadi karena beberapa penyebab seperti curah hujan tinggi. Namun juga ada alasan lain yakni kerusakan ekosistem hutan di hulu Daerah Aliran Sungai (DAS) karena deforestasi.\nMenurut Peneliti Hidrologi Hutan dan Konservasi DAS UGM, Hatma Suryatmojo, hutan di wilayah DAS memiliki peranan seperti penyangga hidrologis. Ini bisa menjadi spons untuk menyerap air hujan ke dalam tanah, seraya menahannya untuk tidak langsung masuk ke sungai.\nDari hasil berbagai penelitian di hutan tropis alami Kalimantan dan Sumatera, kemampuan hutan di wilayah tersebut menahan dan menampung air hujan di tajuk mencapai 15-35% dari hujan. Dengan permukaan tanah yang tidak terganggu bisa memasukkan air ke dalam tanah mencapai 55%, jadi limpasan permukaan ke badan sungai hanya 10-20% saja. Sementara itu, kemampuan hutan mengembalikan air ke atmosfer lewat proses evapotranspirasi mencapai 25 hingga 40 persen dari total hujan."
+    },
+    "grup": "stimulus_banjir_sumatra",
+    "teks_soal": "Berdasarkan teks tersebut yang dapat menjadi spons untuk menyerap air ke dalam tanah seraya menahan untuk tidak langsung masuk ke sungai menunjuk pada ….",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "hutan di wilayah DAS"
+      },
+      {
+        "label": "B",
+        "teks": "hutan tropis Kalimantan"
+      },
+      {
+        "label": "C",
+        "teks": "hutan tropis Sumatera"
+      },
+      {
+        "label": "D",
+        "teks": "hutan hasil deforestasi"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Paragraf kedua secara eksplisit menyatakan: 'hutan di wilayah DAS memiliki peranan seperti penyangga hidrologis. Ini bisa menjadi spons untuk menyerap air hujan ke dalam tanah'."
+  },
+  {
+    "nomor": 11,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Identifikasi Peristiwa Teks",
+    "tipe": "pg_sederhana",
+    "bacaan": {
+      "grup": "stimulus_banjir_sumatra",
+      "judul": "Bencana Banjir Bandang dan Tanah Longsor di Sumatera",
+      "sumber": "cnbcindonesia.com",
+      "teks": "Bencana banjir bandang dan tanah longsor yang melanda Sumatra Barat, Sumatra Utara dan Aceh pada akhir November lalu terjadi karena beberapa penyebab seperti curah hujan tinggi. Namun juga ada alasan lain yakni kerusakan ekosistem hutan di hulu Daerah Aliran Sungai (DAS) karena deforestasi.\nMenurut Peneliti Hidrologi Hutan dan Konservasi DAS UGM, Hatma Suryatmojo, hutan di wilayah DAS memiliki peranan seperti penyangga hidrologis. Ini bisa menjadi spons untuk menyerap air hujan ke dalam tanah, seraya menahannya untuk tidak langsung masuk ke sungai.\nDari hasil berbagai penelitian di hutan tropis alami Kalimantan dan Sumatera, kemampuan hutan di wilayah tersebut menahan dan menampung air hujan di tajuk mencapai 15-35% dari hujan. Dengan permukaan tanah yang tidak terganggu bisa memasukkan air ke dalam tanah mencapai 55%, jadi limpasan permukaan ke badan sungai hanya 10-20% saja. Sementara itu, kemampuan hutan mengembalikan air ke atmosfer lewat proses evapotranspirasi mencapai 25 hingga 40 persen dari total hujan."
+    },
+    "grup": "stimulus_banjir_sumatra",
+    "teks_soal": "Peristiwa yang terjadi pada kutipan teks tersebut adalah ….",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "deforestasi hutan"
+      },
+      {
+        "label": "B",
+        "teks": "bencana hidrologis"
+      },
+      {
+        "label": "C",
+        "teks": "curah hujan yang tinggi"
+      },
+      {
+        "label": "D",
+        "teks": "bencana banjir dan tanah longsor"
+      }
+    ],
+    "kunci": "D",
+    "pembahasan": "Peristiwa utama yang melanda wilayah Sumatera Barat, Sumatera Utara, dan Aceh pada akhir November adalah bencana banjir bandang dan tanah longsor."
+  },
+  {
+    "nomor": 12,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Tindakan Pencegahan Bencana",
+    "tipe": "pg_sederhana",
+    "bacaan": {
+      "grup": "stimulus_banjir_sumatra",
+      "judul": "Bencana Banjir Bandang dan Tanah Longsor di Sumatera",
+      "sumber": "cnbcindonesia.com",
+      "teks": "Bencana banjir bandang dan tanah longsor yang melanda Sumatra Barat, Sumatra Utara dan Aceh pada akhir November lalu terjadi karena beberapa penyebab seperti curah hujan tinggi. Namun juga ada alasan lain yakni kerusakan ekosistem hutan di hulu Daerah Aliran Sungai (DAS) karena deforestasi.\nMenurut Peneliti Hidrologi Hutan dan Konservasi DAS UGM, Hatma Suryatmojo, hutan di wilayah DAS memiliki peranan seperti penyangga hidrologis. Ini bisa menjadi spons untuk menyerap air hujan ke dalam tanah, seraya menahannya untuk tidak langsung masuk ke sungai.\nDari hasil berbagai penelitian di hutan tropis alami Kalimantan dan Sumatera, kemampuan hutan di wilayah tersebut menahan dan menampung air hujan di tajuk mencapai 15-35% dari hujan. Dengan permukaan tanah yang tidak terganggu bisa memasukkan air ke dalam tanah mencapai 55%, jadi limpasan permukaan ke badan sungai hanya 10-20% saja. Sementara itu, kemampuan hutan mengembalikan air ke atmosfer lewat proses evapotranspirasi mencapai 25 hingga 40 persen dari total hujan."
+    },
+    "grup": "stimulus_banjir_sumatra",
+    "teks_soal": "Tindakan yang tepat bagi kita untuk mencegah peristiwa tersebut terulang adalah …",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "mencintai lingkungan dengan berperan serta pada kegiatan pelestarian lingkungan."
+      },
+      {
+        "label": "B",
+        "teks": "mengusulkan pada yang berwenang untuk menghukum pelaku deforestasi hutan."
+      },
+      {
+        "label": "C",
+        "teks": "mendukung agar pembelajaran terkait lingkungan hidup termuat pada kurikulum."
+      },
+      {
+        "label": "D",
+        "teks": "merancang undang-undang tentang pentingnya menjaga ekosistem hutan."
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Peran serta aktif sebagai warga masyarakat dalam pelestarian lingkungan dan reboisasi merupakan tindakan nyata yang dapat dilakukan oleh siapapun untuk mencegah bencana longsor dan banjir."
+  },
+  {
+    "nomor": 13,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Ketepatan Penggunaan Istilah",
+    "tipe": "pg_kompleks",
+    "bacaan": {
+      "grup": "stimulus_gaya_hidup_ginjal",
+      "judul": "Gaya Hidup Remaja dan Ancaman Gagal Ginjal: Bahaya di Balik Junk Food dan Minuman Manis",
+      "gambar": [
+        "/soal/tryout_tpm_bindo_paket_a/teks13_junk_food_ginjal.jpg"
+      ],
+      "sumber": "1. kompas.com/tren dengan perubahan\n2. indonesiabaik.id/infografis dengan perubahan",
+      "teks": "Gaya hidup remaja kini semakin praktis. Namun, tanpa disadari dapat membawa dampak serius bagi kesehatan, termasuk risiko gagal ginjal. Ginjal berfungsi menyaring limbah, menjaga keseimbangan cairan, serta mengatur mineral penting dalam tubuh. Sayangnya, kebiasaan mengonsumsi makanan cepat saji, minuman manis, dan kurang minum air putih membuat ginjal bekerja lebih keras dari seharusnya.\nBanyak remaja gemar mengonsumsi junk food, seperti pizza, sosis, dan makanan instan. Akibatnya, asupan garam, lemak, dan kalori yang tinggi dalam makanan tersebut dapat meningkatkan tekanan darah sehingga memicu kerusakan ginjal dalam jangka panjang. Selain itu, kebiasaan mengonsumsi minuman bersoda, minuman energi, dan jus kemasan yang mengandung gula serta zat tambahan menyebabkan kerja ginjal menjadi lebih berat dan akan menimbulkan karbonasi. Hal ini mengakibatkan risiko gangguan kesehatan ginjal, seperti batu ginjal, semakin meningkat.\nDokter menegaskan bahwa pola hidup sehat sangat penting untuk menjaga fungsi ginjal tetap optimal. Remaja dianjurkan mengonsumsi makanan bergizi seimbang, rutin berolahraga, mencukupi kebutuhan air putih, serta menghindari rokok dan alkohol. Bagi remaja yang memiliki penyakit, seperti diabetes atau hipertensi, pemeriksaan kesehatan secara rutin sangat diperlukan untuk mencegah fertilisasi pada ginjal.\nKasus gagal ginjal akut bahkan pernah meningkat pada anak-anak dan remaja. Kondisi ini ditandai dengan gejala berupa mual, muntah, demam, diare, hingga berkurangnya jumlah urine. Hal tersebut menunjukkan agar gangguan ginjal tidak hanya menyerang orang dewasa.\nOleh karena itu, remaja perlu lebih bijak dalam memilih makanan dan minuman. Gaya hidup sehat sejak dini bukan sekadar tren, melainkan investasi penting demi kesehatan ginjal dan masa depan yang lebih baik."
+    },
+    "grup": "stimulus_gaya_hidup_ginjal",
+    "teks_soal": "Pilihlah jawaban yang benar! Jawaban benar lebih dari satu.\nKata/istilah manakah yang tidak sesuai kaidah pada teks tersebut?",
+    "opsi": [
+      {
+        "label": "1",
+        "teks": "fertilisasi"
+      },
+      {
+        "label": "2",
+        "teks": "karbonasi"
+      },
+      {
+        "label": "3",
+        "teks": "hipertensi"
+      },
+      {
+        "label": "4",
+        "teks": "diabetes"
+      }
+    ],
+    "kunci": [
+      "1",
+      "2"
+    ],
+    "pembahasan": "Istilah 'fertilisasi' (pembuahan) dan 'karbonasi' (pemberian gas asam arang) tidak tepat digunakan dalam konteks patologi medis kerusakan fungsi filtrasi dan batu ginjal."
+  },
+  {
+    "nomor": 14,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Pola Pengembangan Paragraf",
+    "tipe": "pg_sederhana",
+    "bacaan": {
+      "grup": "stimulus_gaya_hidup_ginjal",
+      "judul": "Gaya Hidup Remaja dan Ancaman Gagal Ginjal: Bahaya di Balik Junk Food dan Minuman Manis",
+      "gambar": [
+        "/soal/tryout_tpm_bindo_paket_a/teks13_junk_food_ginjal.jpg"
+      ],
+      "sumber": "1. kompas.com/tren dengan perubahan\n2. indonesiabaik.id/infografis dengan perubahan",
+      "teks": "Gaya hidup remaja kini semakin praktis. Namun, tanpa disadari dapat membawa dampak serius bagi kesehatan, termasuk risiko gagal ginjal. Ginjal berfungsi menyaring limbah, menjaga keseimbangan cairan, serta mengatur mineral penting dalam tubuh. Sayangnya, kebiasaan mengonsumsi makanan cepat saji, minuman manis, dan kurang minum air putih membuat ginjal bekerja lebih keras dari seharusnya.\nBanyak remaja gemar mengonsumsi junk food, seperti pizza, sosis, dan makanan instan. Akibatnya, asupan garam, lemak, dan kalori yang tinggi dalam makanan tersebut dapat meningkatkan tekanan darah sehingga memicu kerusakan ginjal dalam jangka panjang. Selain itu, kebiasaan mengonsumsi minuman bersoda, minuman energi, dan jus kemasan yang mengandung gula serta zat tambahan menyebabkan kerja ginjal menjadi lebih berat dan akan menimbulkan karbonasi. Hal ini mengakibatkan risiko gangguan kesehatan ginjal, seperti batu ginjal, semakin meningkat.\nDokter menegaskan bahwa pola hidup sehat sangat penting untuk menjaga fungsi ginjal tetap optimal. Remaja dianjurkan mengonsumsi makanan bergizi seimbang, rutin berolahraga, mencukupi kebutuhan air putih, serta menghindari rokok dan alkohol. Bagi remaja yang memiliki penyakit, seperti diabetes atau hipertensi, pemeriksaan kesehatan secara rutin sangat diperlukan untuk mencegah fertilisasi pada ginjal.\nKasus gagal ginjal akut bahkan pernah meningkat pada anak-anak dan remaja. Kondisi ini ditandai dengan gejala berupa mual, muntah, demam, diare, hingga berkurangnya jumlah urine. Hal tersebut menunjukkan agar gangguan ginjal tidak hanya menyerang orang dewasa.\nOleh karena itu, remaja perlu lebih bijak dalam memilih makanan dan minuman. Gaya hidup sehat sejak dini bukan sekadar tren, melainkan investasi penting demi kesehatan ginjal dan masa depan yang lebih baik."
+    },
+    "grup": "stimulus_gaya_hidup_ginjal",
+    "teks_soal": "Pola pengembangan manakah yang digunakan pada paragraf kedua dalam teks tersebut?",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "perbandingan"
+      },
+      {
+        "label": "B",
+        "teks": "kronologis"
+      },
+      {
+        "label": "C",
+        "teks": "kausalitas"
+      },
+      {
+        "label": "D",
+        "teks": "ilustrasi"
+      }
+    ],
+    "kunci": "C",
+    "pembahasan": "Paragraf 2 disusun dengan hubungan sebab-akibat (kausalitas): konsumsi junk food berlemak dan berkadar garam tinggi mengakibatkan lonjakan tekanan darah sehingga memicu kerusakan ginjal."
+  },
+  {
+    "nomor": 15,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Ketepatan Penggunaan Konjungsi",
+    "tipe": "pg_sederhana",
+    "bacaan": {
+      "grup": "stimulus_gaya_hidup_ginjal",
+      "judul": "Gaya Hidup Remaja dan Ancaman Gagal Ginjal: Bahaya di Balik Junk Food dan Minuman Manis",
+      "gambar": [
+        "/soal/tryout_tpm_bindo_paket_a/teks13_junk_food_ginjal.jpg"
+      ],
+      "sumber": "1. kompas.com/tren dengan perubahan\n2. indonesiabaik.id/infografis dengan perubahan",
+      "teks": "Gaya hidup remaja kini semakin praktis. Namun, tanpa disadari dapat membawa dampak serius bagi kesehatan, termasuk risiko gagal ginjal. Ginjal berfungsi menyaring limbah, menjaga keseimbangan cairan, serta mengatur mineral penting dalam tubuh. Sayangnya, kebiasaan mengonsumsi makanan cepat saji, minuman manis, dan kurang minum air putih membuat ginjal bekerja lebih keras dari seharusnya.\nBanyak remaja gemar mengonsumsi junk food, seperti pizza, sosis, dan makanan instan. Akibatnya, asupan garam, lemak, dan kalori yang tinggi dalam makanan tersebut dapat meningkatkan tekanan darah sehingga memicu kerusakan ginjal dalam jangka panjang. Selain itu, kebiasaan mengonsumsi minuman bersoda, minuman energi, dan jus kemasan yang mengandung gula serta zat tambahan menyebabkan kerja ginjal menjadi lebih berat dan akan menimbulkan karbonasi. Hal ini mengakibatkan risiko gangguan kesehatan ginjal, seperti batu ginjal, semakin meningkat.\nDokter menegaskan bahwa pola hidup sehat sangat penting untuk menjaga fungsi ginjal tetap optimal. Remaja dianjurkan mengonsumsi makanan bergizi seimbang, rutin berolahraga, mencukupi kebutuhan air putih, serta menghindari rokok dan alkohol. Bagi remaja yang memiliki penyakit, seperti diabetes atau hipertensi, pemeriksaan kesehatan secara rutin sangat diperlukan untuk mencegah fertilisasi pada ginjal.\nKasus gagal ginjal akut bahkan pernah meningkat pada anak-anak dan remaja. Kondisi ini ditandai dengan gejala berupa mual, muntah, demam, diare, hingga berkurangnya jumlah urine. Hal tersebut menunjukkan agar gangguan ginjal tidak hanya menyerang orang dewasa.\nOleh karena itu, remaja perlu lebih bijak dalam memilih makanan dan minuman. Gaya hidup sehat sejak dini bukan sekadar tren, melainkan investasi penting demi kesehatan ginjal dan masa depan yang lebih baik."
+    },
+    "grup": "stimulus_gaya_hidup_ginjal",
+    "teks_soal": "Penggunaan konjungsi manakah yang tidak sesuai kaidah pada teks tersebut?",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Penggunaan konjungsi sehingga pada paragraf dua kalimat kedua tidak tepat karena menguatkan hubungan kausalitas."
+      },
+      {
+        "label": "B",
+        "teks": "Penggunaan konjungsi namun pada paragraf pertama kalimat kedua tidak tepat karena menunjukkan hubungan pertentangan.."
+      },
+      {
+        "label": "C",
+        "teks": "Penggunaan konjungsi dan pada paragraf pertama kalimat terakhir tidak tepat karena menandai hubungan penambahan."
+      },
+      {
+        "label": "D",
+        "teks": "Penggunaan konjungsi agar pada paragraf keempat kalimat terakhir tidak tepat karena menyatakan hubungan penjelasan."
+      }
+    ],
+    "kunci": "D",
+    "pembahasan": "Pada kalimat 'Hal tersebut menunjukkan agar gangguan ginjal tidak hanya menyerang orang dewasa', konjungsi 'agar' keliru karena fungsinya adalah penanda tujuan, sedangkan klausa tersebut memerlukan konjungsi penerang/penjelas 'bahwa'."
+  },
+  {
+    "nomor": 16,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Opini Penulis Teks Ulasan",
+    "tipe": "benar_salah",
+    "bacaan": {
+      "grup": "stimulus_film_na_willa",
+      "judul": "Film Na Willa: Mengungkap Cerita di Balik Keindahan",
+      "sumber": "tradisifilm.com",
+      "teks": "Film Na Willa menjadi sorotan karena memadukan alur drama yang emosional dengan sinematografi yang kuat. Ceritanya berpusat pada Willa, seorang wanita muda yang berjuang menghadapi berbagai kesulitan hidup sambil mencari jati diri dan tujuan. Perjalanan Willa memperlihatkan konflik batin, keberanian, keraguan, serta ketekunan untuk tetap melangkah meskipun penuh ketidakpastian.\nKekuatan film ini terletak pada visual yang tertata rapi, permainan warna dan cahaya yang membangun suasana, serta musik yang menyatu dengan emosi setiap adegan. Karakter pendukung — keluarga, teman, hingga antagonis — menambah lapisan konflik dan dinamika cerita.\nAkting para pemain, terutama pemeran Willa, terasa autentik dan natural. Penyutradaraan yang detail membuat setiap adegan memiliki makna, menghadirkan ketegangan, kehangatan, dan refleksi personal. Tema utama film ini adalah pencarian jati diri serta keteguhan hati menghadapi tantangan hidup, disertai pesan tentang arti hubungan manusia: dukungan, kasih sayang, dan konflik yang membentuk karakter.\nDengan narasi yang mendalam, tak mudah ditebak, dan kaya emosi, Na Willa bukan hanya hiburan, tetapi pengalaman yang menginspirasi dan relevan dengan kehidupan nyata."
+    },
+    "grup": "stimulus_film_na_willa",
+    "teks_soal": "Tentukan kebenaran opini penulis berikut berdasarkan teks tersebut!",
+    "tabel": {
+      "gambar_tabel": "/soal/tryout_tpm_bindo_paket_a/q16_tabel_kebenaran_opini.png",
+      "headers": [
+        "Pernyataan",
+        "Benar",
+        "Salah"
+      ],
+      "rows": [
+        [
+          "A. Film Na Willa menjadi sorotan karena memadukan alur drama yang emosional dengan sinematografi yang kuat.",
+          "✓",
+          ""
+        ],
+        [
+          "B. Akting para pemain, terutama pemeran Willa, terasa autentik dan natural.",
+          "✓",
+          ""
+        ],
+        [
+          "C. Tokoh utamanya bernama Willa, seorang wanita muda yang berjuang menghadapi berbagai kesulitan hidup",
+          "",
+          "✓"
+        ]
+      ]
+    },
+    "pernyataan": [
+      {
+        "teks": "Film Na Willa menjadi sorotan karena memadukan alur drama yang emosional dengan sinematografi yang kuat.",
+        "kunci": "Benar"
+      },
+      {
+        "teks": "Akting para pemain, terutama pemeran Willa, terasa autentik dan natural.",
+        "kunci": "Benar"
+      },
+      {
+        "teks": "Tokoh utamanya bernama Willa, seorang wanita muda yang berjuang menghadapi berbagai kesulitan hidup",
+        "kunci": "Salah"
+      }
+    ],
+    "kunci": {
+      "A": "Benar",
+      "B": "Benar",
+      "C": "Salah"
+    },
+    "pembahasan": "Pernyataan A dan B merupakan opini evaluatif penulis terhadap kualitas film. Pernyataan C bukan opini, melainkan fakta sinopsis cerita."
+  },
+  {
+    "nomor": 17,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Simpulan Teks Ulasan",
+    "tipe": "pg_sederhana",
+    "bacaan": {
+      "grup": "stimulus_film_na_willa",
+      "judul": "Film Na Willa: Mengungkap Cerita di Balik Keindahan",
+      "sumber": "tradisifilm.com",
+      "teks": "Film Na Willa menjadi sorotan karena memadukan alur drama yang emosional dengan sinematografi yang kuat. Ceritanya berpusat pada Willa, seorang wanita muda yang berjuang menghadapi berbagai kesulitan hidup sambil mencari jati diri dan tujuan. Perjalanan Willa memperlihatkan konflik batin, keberanian, keraguan, serta ketekunan untuk tetap melangkah meskipun penuh ketidakpastian.\nKekuatan film ini terletak pada visual yang tertata rapi, permainan warna dan cahaya yang membangun suasana, serta musik yang menyatu dengan emosi setiap adegan. Karakter pendukung — keluarga, teman, hingga antagonis — menambah lapisan konflik dan dinamika cerita.\nAkting para pemain, terutama pemeran Willa, terasa autentik dan natural. Penyutradaraan yang detail membuat setiap adegan memiliki makna, menghadirkan ketegangan, kehangatan, dan refleksi personal. Tema utama film ini adalah pencarian jati diri serta keteguhan hati menghadapi tantangan hidup, disertai pesan tentang arti hubungan manusia: dukungan, kasih sayang, dan konflik yang membentuk karakter.\nDengan narasi yang mendalam, tak mudah ditebak, dan kaya emosi, Na Willa bukan hanya hiburan, tetapi pengalaman yang menginspirasi dan relevan dengan kehidupan nyata."
+    },
+    "grup": "stimulus_film_na_willa",
+    "teks_soal": "Simpulan paling akurat yang merangkum keseluruhan teks adalah …",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Na Willa menekankan konflik batin tokoh utama sehingga aspek lain menjadi kurang menonjol."
+      },
+      {
+        "label": "B",
+        "teks": "Na Willa menggabungkan unsur cerita, visual, musik, dan akting untuk menghadirkan pengalaman menonton yang bermakna."
+      },
+      {
+        "label": "C",
+        "teks": "Na Willa terutama ingin menunjukkan pentingnya karakter pendukung dalam membangun alur cerita."
+      },
+      {
+        "label": "D",
+        "teks": "Na Willa berhasil karena sutradaranya fokus pada sinematografi dan mengabaikan emosi tokoh."
+      }
+    ],
+    "kunci": "B",
+    "pembahasan": "Teks mengulas secara komprehensif keunggulan alur, visual, tata musik, dan akting para pemain yang terpadu menjadi karya yang menginspirasi."
+  },
+  {
+    "nomor": 18,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Hubungan Judul dengan Isi Teks",
+    "tipe": "pg_sederhana",
+    "bacaan": {
+      "grup": "stimulus_film_na_willa",
+      "judul": "Film Na Willa: Mengungkap Cerita di Balik Keindahan",
+      "sumber": "tradisifilm.com",
+      "teks": "Film Na Willa menjadi sorotan karena memadukan alur drama yang emosional dengan sinematografi yang kuat. Ceritanya berpusat pada Willa, seorang wanita muda yang berjuang menghadapi berbagai kesulitan hidup sambil mencari jati diri dan tujuan. Perjalanan Willa memperlihatkan konflik batin, keberanian, keraguan, serta ketekunan untuk tetap melangkah meskipun penuh ketidakpastian.\nKekuatan film ini terletak pada visual yang tertata rapi, permainan warna dan cahaya yang membangun suasana, serta musik yang menyatu dengan emosi setiap adegan. Karakter pendukung — keluarga, teman, hingga antagonis — menambah lapisan konflik dan dinamika cerita.\nAkting para pemain, terutama pemeran Willa, terasa autentik dan natural. Penyutradaraan yang detail membuat setiap adegan memiliki makna, menghadirkan ketegangan, kehangatan, dan refleksi personal. Tema utama film ini adalah pencarian jati diri serta keteguhan hati menghadapi tantangan hidup, disertai pesan tentang arti hubungan manusia: dukungan, kasih sayang, dan konflik yang membentuk karakter.\nDengan narasi yang mendalam, tak mudah ditebak, dan kaya emosi, Na Willa bukan hanya hiburan, tetapi pengalaman yang menginspirasi dan relevan dengan kehidupan nyata."
+    },
+    "grup": "stimulus_film_na_willa",
+    "teks_soal": "Alasan yang paling tepat mengapa judul tersebut sesuai dengan isi teks adalah …",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Karena film Na Willa hanya menampilkan keindahan visual dan kurang mementingkan karakter cerita tokohnya."
+      },
+      {
+        "label": "B",
+        "teks": "Karena teks menjelaskan bahwa penonton lebih memperhatikan keindahan musik dibandingkan rangkaian ceritanya."
+      },
+      {
+        "label": "C",
+        "teks": "Karena teks menunjukkan bahwa di balik sinematografi yang indah terdapat konflik, pesan moral, dan perjalanan tokoh yang penuh makna."
+      },
+      {
+        "label": "D",
+        "teks": "Karena judul ingin menegaskan bahwa sebuah film drama selalu menyajkan keindahan sinematografi dan sekaligus menginspirasi."
+      }
+    ],
+    "kunci": "C",
+    "pembahasan": "Judul 'Mengungkap Cerita di Balik Keindahan' sangat tepat karena teks membeberkan bahwa keindahan visual film menjadi medium penyampai pesan moral dan pergulatan batin Willa."
+  },
+  {
+    "nomor": 19,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Bagan Pokok Pikiran Teks",
+    "tipe": "pg_sederhana",
+    "bacaan": {
+      "grup": "stimulus_makeup_remaja",
+      "judul": "Dampak Negatif Make Up di Kalangan Remaja",
+      "sumber": "mediaindonesia.com/jelita",
+      "teks": "Penggunaan make up di kalangan pelajar saat ini semakin marak seiring berkembangnya media sosial dan standar kecantikan yang banyak ditampilkan oleh publik figur. Hal tersebut membuat banyak remaja mengikut tren publik figur yang mereka idolakan. Mereka menggunakan make up untuk meningkatkan rasa percaya diri dan menunjang penampilan di lingkungan sekolah. Tanpa mereka sadari kebiasaan menggunakan make up secara berlebihan dapat menimbulkan berbagai dampak negatif terhadap kesehatan remaja.\nPada usia remaja, kondisi kulit masih sensitif dan belum sepenuhnya stabil karena masa pertumbuhan. Kulit lebih rentan terhadap zat kimia yang terdapat dalam produk kosmetik. Pemakaian make up yang terlalu tebal dan terlalu sering menyebabkan pori-pori tersumbat, jerawat, iritasi, hingga infeksi kulit apabila kebersihan wajah tidak dijaga dengan baik.\nPenggunaan make up berlebihan juga dapat memengaruhi kesehatan mata dan pernapasan. Produk seperti maskara, eyeliner, dan bedak tabur berisiko masuk ke mata atau terhirup, sehingga dapat menimbulkan iritasi. Tidak jarang pelajar menggunakan make up tanpa memperhatikan kualitas produk, tanggal kedaluwarsa, maupun kecocokan dengan jenis kulit. Hal ini memperbesar risiko alergi dan peradangan bagi pemakainya\nDampak lain yang tidak kalah penting adalah pengaruhnya terhadap kesehatan mental remaja. Ketergantungan pada make up dapat membentuk pola pikir bahwa penampilan alami tidak cukup menarik tanpa riasan. Akibatnya, rasa percaya diri menjadi bergantung pada make up dan memicu kecemasan berlebihan terhadap penilaian orang lain. Oleh karena itu, diperlukan edukasi bagi pelajar mengenai penggunaan make up yang wajar serta pentingnya menjaga kesehatan fisik dan mental secara seimbang."
+    },
+    "grup": "stimulus_makeup_remaja",
+    "teks_soal": "Bagan yang sesuai dengan pokok-pokok teks tersebut adalah ….",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Bagan A: Penyebab -> Kesehatan Kulit -> Kesehatan Mata dan Pernapasan -> Kesehatan Jasmani dan Solusi",
+        "gambar": "/soal/tryout_tpm_bindo_paket_a/q19_bagan_opsi_a.png"
+      },
+      {
+        "label": "B",
+        "teks": "Bagan B: Penyebab -> Kesehatan Mata dan Pernapasan -> Kesehatan Kulit -> Kesehatan Mental dan Solusi",
+        "gambar": "/soal/tryout_tpm_bindo_paket_a/q19_bagan_opsi_b.png"
+      },
+      {
+        "label": "C",
+        "teks": "Bagan C: Tren Publik Figur -> Kesehatan Mata dan Pernapasan -> Kesehatan Kulit -> Kesehatan Mental dan Solusi",
+        "gambar": "/soal/tryout_tpm_bindo_paket_a/q19_bagan_opsi_c.png"
+      },
+      {
+        "label": "D",
+        "teks": "Bagan D: Penyebab -> Kesehatan Kulit -> Kesehatan Mata dan Pernapasan -> Kesehatan Mental dan Solusi",
+        "gambar": "/soal/tryout_tpm_bindo_paket_a/q19_bagan_opsi_d.png"
+      }
+    ],
+    "kunci": "D",
+    "pembahasan": "Urutan pokok pikiran teks per paragraf adalah: Paragraf 1 (Penyebab), Paragraf 2 (Kesehatan Kulit), Paragraf 3 (Kesehatan Mata dan Pernapasan), Paragraf 4 (Kesehatan Mental dan Solusi). Susunan ini tepat pada Bagan D."
+  },
+  {
+    "nomor": 20,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Ide Pokok Paragraf",
+    "tipe": "benar_salah",
+    "bacaan": {
+      "grup": "stimulus_makeup_remaja",
+      "judul": "Dampak Negatif Make Up di Kalangan Remaja",
+      "sumber": "mediaindonesia.com/jelita",
+      "teks": "Penggunaan make up di kalangan pelajar saat ini semakin marak seiring berkembangnya media sosial dan standar kecantikan yang banyak ditampilkan oleh publik figur. Hal tersebut membuat banyak remaja mengikut tren publik figur yang mereka idolakan. Mereka menggunakan make up untuk meningkatkan rasa percaya diri dan menunjang penampilan di lingkungan sekolah. Tanpa mereka sadari kebiasaan menggunakan make up secara berlebihan dapat menimbulkan berbagai dampak negatif terhadap kesehatan remaja.\nPada usia remaja, kondisi kulit masih sensitif dan belum sepenuhnya stabil karena masa pertumbuhan. Kulit lebih rentan terhadap zat kimia yang terdapat dalam produk kosmetik. Pemakaian make up yang terlalu tebal dan terlalu sering menyebabkan pori-pori tersumbat, jerawat, iritasi, hingga infeksi kulit apabila kebersihan wajah tidak dijaga dengan baik.\nPenggunaan make up berlebihan juga dapat memengaruhi kesehatan mata dan pernapasan. Produk seperti maskara, eyeliner, dan bedak tabur berisiko masuk ke mata atau terhirup, sehingga dapat menimbulkan iritasi. Tidak jarang pelajar menggunakan make up tanpa memperhatikan kualitas produk, tanggal kedaluwarsa, maupun kecocokan dengan jenis kulit. Hal ini memperbesar risiko alergi dan peradangan bagi pemakainya\nDampak lain yang tidak kalah penting adalah pengaruhnya terhadap kesehatan mental remaja. Ketergantungan pada make up dapat membentuk pola pikir bahwa penampilan alami tidak cukup menarik tanpa riasan. Akibatnya, rasa percaya diri menjadi bergantung pada make up dan memicu kecemasan berlebihan terhadap penilaian orang lain. Oleh karena itu, diperlukan edukasi bagi pelajar mengenai penggunaan make up yang wajar serta pentingnya menjaga kesehatan fisik dan mental secara seimbang."
+    },
+    "grup": "stimulus_makeup_remaja",
+    "teks_soal": "Ide pokok paragraf ketiga teks tersebut adalah …. Tentukan benar atau salah pada setiap pernyataan berikut!",
+    "tabel": {
+      "gambar_tabel": "/soal/tryout_tpm_bindo_paket_a/q20_tabel_ide_pokok_benar_salah.png",
+      "headers": [
+        "Pernyataan",
+        "Benar",
+        "Salah"
+      ],
+      "rows": [
+        [
+          "A. risiko alergi dan peradangan bagi pemakainya",
+          "",
+          "✓"
+        ],
+        [
+          "B. pengaruh akibat penggunaan make up berlebihan",
+          "✓",
+          ""
+        ],
+        [
+          "C. akibat penggunaan make up tanpa memperhatikan kualitas",
+          "",
+          "✓"
+        ]
+      ]
+    },
+    "pernyataan": [
+      {
+        "teks": "risiko alergi dan peradangan bagi pemakainya",
+        "kunci": "Salah"
+      },
+      {
+        "teks": "pengaruh akibat penggunaan make up berlebihan",
+        "kunci": "Benar"
+      },
+      {
+        "teks": "akibat penggunaan make up tanpa memperhatikan kualitas",
+        "kunci": "Salah"
+      }
+    ],
+    "kunci": {
+      "A": "Salah",
+      "B": "Benar",
+      "C": "Salah"
+    },
+    "pembahasan": "Ide pokok paragraf 3 termuat pada kalimat utama: 'Penggunaan make up berlebihan juga dapat memengaruhi kesehatan mata dan pernapasan'."
+  },
+  {
+    "nomor": 21,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Refleksi dan Dampak Positif Teks",
+    "tipe": "pg_kompleks",
+    "bacaan": {
+      "grup": "stimulus_makeup_remaja",
+      "judul": "Dampak Negatif Make Up di Kalangan Remaja",
+      "sumber": "mediaindonesia.com/jelita",
+      "teks": "Penggunaan make up di kalangan pelajar saat ini semakin marak seiring berkembangnya media sosial dan standar kecantikan yang banyak ditampilkan oleh publik figur. Hal tersebut membuat banyak remaja mengikut tren publik figur yang mereka idolakan. Mereka menggunakan make up untuk meningkatkan rasa percaya diri dan menunjang penampilan di lingkungan sekolah. Tanpa mereka sadari kebiasaan menggunakan make up secara berlebihan dapat menimbulkan berbagai dampak negatif terhadap kesehatan remaja.\nPada usia remaja, kondisi kulit masih sensitif dan belum sepenuhnya stabil karena masa pertumbuhan. Kulit lebih rentan terhadap zat kimia yang terdapat dalam produk kosmetik. Pemakaian make up yang terlalu tebal dan terlalu sering menyebabkan pori-pori tersumbat, jerawat, iritasi, hingga infeksi kulit apabila kebersihan wajah tidak dijaga dengan baik.\nPenggunaan make up berlebihan juga dapat memengaruhi kesehatan mata dan pernapasan. Produk seperti maskara, eyeliner, dan bedak tabur berisiko masuk ke mata atau terhirup, sehingga dapat menimbulkan iritasi. Tidak jarang pelajar menggunakan make up tanpa memperhatikan kualitas produk, tanggal kedaluwarsa, maupun kecocokan dengan jenis kulit. Hal ini memperbesar risiko alergi dan peradangan bagi pemakainya\nDampak lain yang tidak kalah penting adalah pengaruhnya terhadap kesehatan mental remaja. Ketergantungan pada make up dapat membentuk pola pikir bahwa penampilan alami tidak cukup menarik tanpa riasan. Akibatnya, rasa percaya diri menjadi bergantung pada make up dan memicu kecemasan berlebihan terhadap penilaian orang lain. Oleh karena itu, diperlukan edukasi bagi pelajar mengenai penggunaan make up yang wajar serta pentingnya menjaga kesehatan fisik dan mental secara seimbang."
+    },
+    "grup": "stimulus_makeup_remaja",
+    "teks_soal": "Pilihlah jawaban yang tepat lebih dari satu!\nHal positif yang mungkin terjadi setelah memahami isi teks tersebut adalah …",
+    "opsi": [
+      {
+        "label": "1",
+        "teks": "Pemahaman terhadap dampak negatif make up dapat mendorong remaja menggunakan make up secara lebih wajar dan tidak berlebihan."
+      },
+      {
+        "label": "2",
+        "teks": "Tren publik figur membuat remaja wajib untuk menggunakan make up setiap hari agar penampilan tetap menarik di lingkungan sekolah."
+      },
+      {
+        "label": "3",
+        "teks": "Kesadaran akan risiko kesehatan membuat remaja lebih memperhatikan kebersihan wajah serta kualitas produk kosmetik yang digunakan."
+      },
+      {
+        "label": "4",
+        "teks": "Keinginan untuk berubah karena penggunaan make up tidak memiliki pengaruh terhadap kesehatan mental remaja selama digunakan oleh pelajar"
+      }
+    ],
+    "kunci": [
+      "1",
+      "3"
+    ],
+    "pembahasan": "Dampak positif membaca teks edukatif kesehatan kulit remaja adalah pembaca menggunakan make up secara wajar serta lebih selektif menjaga kebersihan wajah dan memilih kosmetik teruji."
+  },
+  {
+    "nomor": 22,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Suasana Puisi",
+    "tipe": "pg_sederhana",
+    "bacaan": {
+      "grup": "stimulus_puisi_kartini",
+      "judul": "Dari Raden Ajeng Kartini untuk Maria Magdalena Pariyem",
+      "gambar": [
+        "/soal/tryout_tpm_bindo_paket_a/teks22_puisi_kartini_lilin.jpg"
+      ],
+      "sumber": "Puisi: Joko Pinurbo / Foto: iStock",
+      "teks": "...\nRaden Ajeng Kartini terbatuk-batuk\ndi bawah cahaya lampu remang-remang.\nTangan masih menyurat di atas kertas.\nHati melemas pada berkas-berkas cemas.\nAngin merambat lewat kain dan kebaya.\nDingin merayap hingga sanggulnya.\nDan anak-anak kesunyian bergelayutan\npada bulu matanya yang sayup,\nyang mengungkai cahaya redup.\n\n“Sering kubayangkan, Dinda,\nperempuan-perempuan perkasa\nberbondong-bondong menyunggi matahari,\nmenggendong bukit-bukit tandus\ndi gugusan pegunungan seribu\nmenuju hingar bingar pasar palawija\ndi keheningan langit Jogja.\nKubayangkan pula ladang-ladang karang\ndirambah, disiangi kaki-kaki telanjang\ndengan darah sepanjang zaman.”\n\nKereta api hitam membelah malam,\nmembangunkan si lelap dari tidur panjang.\nJari masih menulis bersama gerimis,\nbersama angin dan kenangan. Di telapak tangannya\nperahu-perahu dilayarkan ke daratan-daratan hijau,\nnegeri-negeri jauh tak terjangkau\n..."
+    },
+    "grup": "stimulus_puisi_kartini",
+    "teks_soal": "Baris-baris puisi “di bawah cahaya lampu remang-remang”, “pada bulu matanya yang sayup, yang mengungkai cahaya redup” dan “Kereta api hitam membelah malam” memperkuat suasana ...",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "muram"
+      },
+      {
+        "label": "B",
+        "teks": "duka"
+      },
+      {
+        "label": "C",
+        "teks": "hening"
+      },
+      {
+        "label": "D",
+        "teks": "sepi"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Diksi 'lampu remang-remang', 'bulu mata sayup', 'cahaya redup', dan 'kereta hitam membelah malam' secara konsisten membangun suasana kesedihan yang hening, suram, dan muram."
+  },
+  {
+    "nomor": 23,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Citraan (Imaji) Puisi",
+    "tipe": "pg_sederhana",
+    "bacaan": {
+      "grup": "stimulus_puisi_kartini",
+      "judul": "Dari Raden Ajeng Kartini untuk Maria Magdalena Pariyem",
+      "gambar": [
+        "/soal/tryout_tpm_bindo_paket_a/teks22_puisi_kartini_lilin.jpg"
+      ],
+      "sumber": "Puisi: Joko Pinurbo / Foto: iStock",
+      "teks": "...\nRaden Ajeng Kartini terbatuk-batuk\ndi bawah cahaya lampu remang-remang.\nTangan masih menyurat di atas kertas.\nHati melemas pada berkas-berkas cemas.\nAngin merambat lewat kain dan kebaya.\nDingin merayap hingga sanggulnya.\nDan anak-anak kesunyian bergelayutan\npada bulu matanya yang sayup,\nyang mengungkai cahaya redup.\n\n“Sering kubayangkan, Dinda,\nperempuan-perempuan perkasa\nberbondong-bondong menyunggi matahari,\nmenggendong bukit-bukit tandus\ndi gugusan pegunungan seribu\nmenuju hingar bingar pasar palawija\ndi keheningan langit Jogja.\nKubayangkan pula ladang-ladang karang\ndirambah, disiangi kaki-kaki telanjang\ndengan darah sepanjang zaman.”\n\nKereta api hitam membelah malam,\nmembangunkan si lelap dari tidur panjang.\nJari masih menulis bersama gerimis,\nbersama angin dan kenangan. Di telapak tangannya\nperahu-perahu dilayarkan ke daratan-daratan hijau,\nnegeri-negeri jauh tak terjangkau\n..."
+    },
+    "grup": "stimulus_puisi_kartini",
+    "teks_soal": "“Kubayangkan pula ladang-ladang karang dirambah, disiangi kaki-kaki telanjang dengan darah sepanjang zaman.” Baris-baris puisi tersebut menggunakan citraan ....",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "visual"
+      },
+      {
+        "label": "B",
+        "teks": "audio"
+      },
+      {
+        "label": "C",
+        "teks": "gerak"
+      },
+      {
+        "label": "D",
+        "teks": "penciuman"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Kata 'Kubayangkan', 'ladang-ladang karang', 'kaki-kaki telanjang', dan 'darah' merangsang indra penglihatan (citraan visual)."
+  },
+  {
+    "nomor": 24,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Apresiasi dan Interpretasi Puisi",
+    "tipe": "pg_sederhana",
+    "bacaan": {
+      "grup": "stimulus_puisi_kartini",
+      "judul": "Dari Raden Ajeng Kartini untuk Maria Magdalena Pariyem",
+      "gambar": [
+        "/soal/tryout_tpm_bindo_paket_a/teks22_puisi_kartini_lilin.jpg"
+      ],
+      "sumber": "Puisi: Joko Pinurbo / Foto: iStock",
+      "teks": "...\nRaden Ajeng Kartini terbatuk-batuk\ndi bawah cahaya lampu remang-remang.\nTangan masih menyurat di atas kertas.\nHati melemas pada berkas-berkas cemas.\nAngin merambat lewat kain dan kebaya.\nDingin merayap hingga sanggulnya.\nDan anak-anak kesunyian bergelayutan\npada bulu matanya yang sayup,\nyang mengungkai cahaya redup.\n\n“Sering kubayangkan, Dinda,\nperempuan-perempuan perkasa\nberbondong-bondong menyunggi matahari,\nmenggendong bukit-bukit tandus\ndi gugusan pegunungan seribu\nmenuju hingar bingar pasar palawija\ndi keheningan langit Jogja.\nKubayangkan pula ladang-ladang karang\ndirambah, disiangi kaki-kaki telanjang\ndengan darah sepanjang zaman.”\n\nKereta api hitam membelah malam,\nmembangunkan si lelap dari tidur panjang.\nJari masih menulis bersama gerimis,\nbersama angin dan kenangan. Di telapak tangannya\nperahu-perahu dilayarkan ke daratan-daratan hijau,\nnegeri-negeri jauh tak terjangkau\n..."
+    },
+    "grup": "stimulus_puisi_kartini",
+    "gambarUrls": [
+      "/soal/tryout_tpm_bindo_paket_a/q24_tabel_ungkapan_perasaan.png"
+    ],
+    "teks_soal": "Berikut ini adalah ungkapan perasaan Ari, Ira, Eni, dan Ani setelah membaca puisi tersebut.\nAri : Saya merasa prihatin terhadap para perempuan yang harus berjuang keras dan gigih menghadapi hidup yang berat.\nIra : Saya bersyukur sekali karena masih ada yang memperhatikan nasib para perempuan yang harus mengolah ladang.\nEni : Saya sungguh terharu atas perjuangan Raden Ajeng Kartini dalam memajukan kaum perempuan Indonesia.\nAni : Saya merasa biasa saja melihat nasib para perempuan harus bekerja keras di ladang karang dan menjual hasil palawijanya ke kota.\n\nUngkapan perasaan siapakah yang paling sesuai dengan isi puisi tersebut?",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Ari"
+      },
+      {
+        "label": "B",
+        "teks": "Ira"
+      },
+      {
+        "label": "C",
+        "teks": "Eni"
+      },
+      {
+        "label": "D",
+        "teks": "Ani"
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Ungkapan Ari mencerminkan empati mendalam terhadap penderitaan dan kegigihan perempuan perkasa yang digambarkan menyunggi matahari dan menggendong bukit tandus."
+  },
+  {
+    "nomor": 25,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Kerangka Cerita",
+    "tipe": "pg_sederhana",
+    "bacaan": {
+      "grup": "stimulus_cerita_maya",
+      "judul": "Cahaya di Tengah Puing-Puing",
+      "sumber": "bola.com/ragam",
+      "teks": "Di sebuah kota kecil yang dikelilingi oleh pegunungan hijau, tinggallah seorang anak bernama Maya. Maya adalah gadis yang sangat peduli terhadap lingkungan sekitarnya. Ia selalu terpesona oleh keindahan alam sekitar dan berusaha keras untuk menjaga kebersihan dan keindahan kota tempat tinggalnya.\nSuatu hari, kota mereka dilanda badai besar. Angin kencang dan hujan deras merobohkan pohon-pohon dan merusak banyak bangunan di sekitar. Setelah badai mereda, Maya melihat banyaknya sampah dan puing-puing yang tersebar di mana-mana.\nTak lama setelah badai, Maya bersama teman-temannya memutuskan untuk melakukan aksi bersih-bersih. Dengan semangat yang tinggi, mereka mengumpulkan sampah-sampah dan merapikan puing-puing yang berserakan.\nSaat mereka membersihkan lingkungan, Maya menyadari betapa pentingnya menjaga alam. Ia mengajak teman-temannya untuk membuat kotak-kotak sampah di berbagai sudut kota, memasang spanduk tentang pentingnya daur ulang, serta mengajak warga untuk turut serta dalam menjaga kebersihan lingkungan."
+    },
+    "grup": "stimulus_cerita_maya",
+    "teks_soal": "Kerangka cerita tersebut yang paling tepat adalah ….",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Maya gadis yang rajin- Kota Maya terkena badai- Banyak bangunan roboh – Maya mengajak masyarakat membersihkan sampah sisa banjir – mereka membuat gerakan donasi banjir"
+      },
+      {
+        "label": "B",
+        "teks": "Kota Maya terkena badai – Banyak bangunan roboh – Maya membersihkan sampah – Maya membuat kotak sampah."
+      },
+      {
+        "label": "C",
+        "teks": "Maya sangat peduli lingkungan – Kota Maya terkena badai – Banyak pohon tumbang – Maya membuat kotak- kotak sampah - Maya mengajak teman-teman untuk membersihkan ."
+      },
+      {
+        "label": "D",
+        "teks": "Maya sangat peduli lingkungan – Kota Maya terkena badai – Banyak pohon tumbang dan bangunan rusak – Maya mengajak teman-teman untuk membersihkan - Ia bersama teman-teman membuat kotak- kotak sampah – Ia memasang sapnduk peduli lingkungan."
+      }
+    ],
+    "kunci": "D",
+    "pembahasan": "Kerangka D memuat seluruh urutan kronologis cerita secara runtut dari orientasi, komplikasi badai, resolusi aksi bersih-bersih, hingga koda ajakan menjaga kebersihan."
+  },
+  {
+    "nomor": 26,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Prediksi Kelanjutan Cerita",
+    "tipe": "benar_salah",
+    "bacaan": {
+      "grup": "stimulus_cerita_maya",
+      "judul": "Cahaya di Tengah Puing-Puing",
+      "sumber": "bola.com/ragam",
+      "teks": "Di sebuah kota kecil yang dikelilingi oleh pegunungan hijau, tinggallah seorang anak bernama Maya. Maya adalah gadis yang sangat peduli terhadap lingkungan sekitarnya. Ia selalu terpesona oleh keindahan alam sekitar dan berusaha keras untuk menjaga kebersihan dan keindahan kota tempat tinggalnya.\nSuatu hari, kota mereka dilanda badai besar. Angin kencang dan hujan deras merobohkan pohon-pohon dan merusak banyak bangunan di sekitar. Setelah badai mereda, Maya melihat banyaknya sampah dan puing-puing yang tersebar di mana-mana.\nTak lama setelah badai, Maya bersama teman-temannya memutuskan untuk melakukan aksi bersih-bersih. Dengan semangat yang tinggi, mereka mengumpulkan sampah-sampah dan merapikan puing-puing yang berserakan.\nSaat mereka membersihkan lingkungan, Maya menyadari betapa pentingnya menjaga alam. Ia mengajak teman-temannya untuk membuat kotak-kotak sampah di berbagai sudut kota, memasang spanduk tentang pentingnya daur ulang, serta mengajak warga untuk turut serta dalam menjaga kebersihan lingkungan."
+    },
+    "grup": "stimulus_cerita_maya",
+    "teks_soal": "Tentukan sesuai atau tidak sesuai terkait peristiwa yang mungkin terjadi dari cerita tersebut!",
+    "tabel": {
+      "gambar_tabel": "/soal/tryout_tpm_bindo_paket_a/q26_tabel_prediksi_peristiwa.png",
+      "headers": [
+        "Prediksi peristiwa",
+        "Sesuai",
+        "Tidak Sesuai"
+      ],
+      "rows": [
+        [
+          "A. Banyak warga yang mengikuti kegiatan peduli lingkungan yang dilakukan Maya dan teman-temannya.",
+          "✓",
+          ""
+        ],
+        [
+          "B. Maya diusir dari kota tersebut karena membuat repot warga yang masih dilanda kesusahan.",
+          "",
+          "✓"
+        ],
+        [
+          "C. Maya mendapatkan apresiasi dari warga karena upayanya dalam peduli lingkungan.",
+          "✓",
+          ""
+        ]
+      ]
+    },
+    "pernyataan": [
+      {
+        "teks": "Banyak warga yang mengikuti kegiatan peduli lingkungan yang dilakukan Maya dan teman-temannya.",
+        "kunci": "Sesuai"
+      },
+      {
+        "teks": "Maya diusir dari kota tersebut karena membuat repot warga yang masih dilanda kesusahan.",
+        "kunci": "Tidak Sesuai"
+      },
+      {
+        "teks": "Maya mendapatkan apresiasi dari warga karena upayanya dalam peduli lingkungan.",
+        "kunci": "Sesuai"
+      }
+    ],
+    "kunci": {
+      "A": "Sesuai",
+      "B": "Tidak Sesuai",
+      "C": "Sesuai"
+    },
+    "pembahasan": "Kelanjutan yang logis adalah warga menyambut positif dan tergerak mengikuti inisiatif peduli lingkungan Maya (A dan C sesuai; B tidak sesuai)."
+  },
+  {
+    "nomor": 27,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Nilai Kehidupan / Amanat Cerita",
+    "tipe": "pg_sederhana",
+    "bacaan": {
+      "grup": "stimulus_cerita_maya",
+      "judul": "Cahaya di Tengah Puing-Puing",
+      "sumber": "bola.com/ragam",
+      "teks": "Di sebuah kota kecil yang dikelilingi oleh pegunungan hijau, tinggallah seorang anak bernama Maya. Maya adalah gadis yang sangat peduli terhadap lingkungan sekitarnya. Ia selalu terpesona oleh keindahan alam sekitar dan berusaha keras untuk menjaga kebersihan dan keindahan kota tempat tinggalnya.\nSuatu hari, kota mereka dilanda badai besar. Angin kencang dan hujan deras merobohkan pohon-pohon dan merusak banyak bangunan di sekitar. Setelah badai mereda, Maya melihat banyaknya sampah dan puing-puing yang tersebar di mana-mana.\nTak lama setelah badai, Maya bersama teman-temannya memutuskan untuk melakukan aksi bersih-bersih. Dengan semangat yang tinggi, mereka mengumpulkan sampah-sampah dan merapikan puing-puing yang berserakan.\nSaat mereka membersihkan lingkungan, Maya menyadari betapa pentingnya menjaga alam. Ia mengajak teman-temannya untuk membuat kotak-kotak sampah di berbagai sudut kota, memasang spanduk tentang pentingnya daur ulang, serta mengajak warga untuk turut serta dalam menjaga kebersihan lingkungan."
+    },
+    "grup": "stimulus_cerita_maya",
+    "teks_soal": "Pelajaran yang relevan untuk diterapkan di lingkungan sekolah dari peristiwa yang dilakukan Maya adalah …",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Mengajak teman-teman untuk bersih-bersih apabila kena banjir."
+      },
+      {
+        "label": "B",
+        "teks": "Peduli lingkungan dengan membuang sampah pada tempatnya."
+      },
+      {
+        "label": "C",
+        "teks": "Mengimbau OSIS agar membuat program terkait peduli lingkungan."
+      },
+      {
+        "label": "D",
+        "teks": "Pihak sekolah agar melibatkan pihak lain dalam menangani sampah."
+      }
+    ],
+    "kunci": "B",
+    "pembahasan": "Nilai karakter mendasar yang dapat langsung diterapkan oleh setiap siswa di sekolah adalah senantiasa membuang sampah pada tempatnya dan merawat kebersihan kelas."
+  },
+  {
+    "nomor": 28,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Latar Suasana Cerita Fantasi",
+    "tipe": "pg_sederhana",
+    "bacaan": {
+      "grup": "stimulus_cerita_serindit",
+      "judul": "Pahlawan Negeri Serindit",
+      "gambar": [
+        "/soal/tryout_tpm_bindo_paket_a/teks28_cerita_serindit_hutan.jpg"
+      ],
+      "sumber": "https://id.pngtree.com/freebackground/animation-woodland-path_3177912.html",
+      "teks": "Di negeri yang indah dan subur, bernama Serindit, sinar matahari berlimpah dan burung-burung bernyanyi merdu. Tanah yang kaya dengan hasil alam membuat penduduknya hidup makmur dan bahagia. Namun, suatu hari, keserakahan sekelompok orang mulai mengancam keseimbangan alam negeri.\nKelompok itu dipimpin Kapten Hitam, seorang yang tamak dan tidak peduli lingkungan, mulai mengeruk bumi Serindit. Mereka mengeksploitasi biji-biji berharga, seperti timah, emas, hingga pasir kaolin yang istimewa. Tanah yang subur mulai tandus, sungai-sungai menjadi keruh, sinar matahari mulai redup, dan hewan-hewan meninggalkan rumahnya.\nBeberapa anak muda Serindit, yaitu Pelawan, Nyatoh, Meranti, dan Bulin, tidak bisa diam melihat negeri yang rusak. Mereka memutuskan berjuang mengembalikan Serindit ke masa kejayaan.\nPelawan menjadi pemimpin kelompok. Nyatoh, yang dapat berkomunikasi dengan hewan, menjadi mata-mata. Meranti, menjadi pelindung mereka. Lalu Bulin, sebagai pengirim pesan.\nMereka memulai perjalanan mengunjungi Dewi Alam, penguasa Serindit. Dewi Alam memberikan petunjuk untuk mengalahkan Kapten Hitam dan pasukannya.\nPertarungan sengit terjadi antara kelompok Pelawan dan pasukan Kapten Hitam yang bersenjata lengkap. Tanah berguncang, air bergelombang, dan angin berhembus kencang mengiringi perlawanan Pelawan dan kawan-kawan.\n“Awas, Pelawan, lihat di belakangmu!” Meranti berteriak saat prajurit Kapten Hitam akan menusuk Pelawan. \nAir sungai tiba-tiba menerjang kelompok Kapten Hitam karena digerakkan Meranti. Melalui kekuatan dan kerja sama, kelompok Pelawan akhirnya berhasil mengalahkan Kapten Hitam dan pasukannya.\nNegeri Serindit pun mulai pulih. Tanahnya subur kembali, sungai-sungai menjadi jernih, dan hewan-hewan kembali ke sarang mereka. Pelawan, Nyatoh, Meranti, dan Bulin menjadi pahlawan yang mengembalikan kejayaan negeri. Mereka dianggap sebagai “Cahaya Negeri Serindit”."
+    },
+    "grup": "stimulus_cerita_serindit",
+    "teks_soal": "Pernyataan manakah yang menunjukkan latar suasana di Negeri Serindit saat Kapten Hitam mulai menguasai negeri?",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Air bergelombang menemani Negeri Serindit."
+      },
+      {
+        "label": "B",
+        "teks": "Angin berhembus kencang di Negeri Serindit."
+      },
+      {
+        "label": "C",
+        "teks": "Tanah Serindit mulai mengalami kegersangan."
+      },
+      {
+        "label": "D",
+        "teks": "Negeri Serindit dilimpahi oleh sinar matahari."
+      }
+    ],
+    "kunci": "C",
+    "pembahasan": "Paragraf kedua menyebutkan eksploitasi tambang menyebabkan 'Tanah yang subur mulai tandus (gersang), sungai-sungai menjadi keruh, sinar matahari mulai redup'."
+  },
+  {
+    "nomor": 29,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Nilai Moral Cerita Fantasi",
+    "tipe": "pg_sederhana",
+    "bacaan": {
+      "grup": "stimulus_cerita_serindit",
+      "judul": "Pahlawan Negeri Serindit",
+      "gambar": [
+        "/soal/tryout_tpm_bindo_paket_a/teks28_cerita_serindit_hutan.jpg"
+      ],
+      "sumber": "https://id.pngtree.com/freebackground/animation-woodland-path_3177912.html",
+      "teks": "Di negeri yang indah dan subur, bernama Serindit, sinar matahari berlimpah dan burung-burung bernyanyi merdu. Tanah yang kaya dengan hasil alam membuat penduduknya hidup makmur dan bahagia. Namun, suatu hari, keserakahan sekelompok orang mulai mengancam keseimbangan alam negeri.\nKelompok itu dipimpin Kapten Hitam, seorang yang tamak dan tidak peduli lingkungan, mulai mengeruk bumi Serindit. Mereka mengeksploitasi biji-biji berharga, seperti timah, emas, hingga pasir kaolin yang istimewa. Tanah yang subur mulai tandus, sungai-sungai menjadi keruh, sinar matahari mulai redup, dan hewan-hewan meninggalkan rumahnya.\nBeberapa anak muda Serindit, yaitu Pelawan, Nyatoh, Meranti, dan Bulin, tidak bisa diam melihat negeri yang rusak. Mereka memutuskan berjuang mengembalikan Serindit ke masa kejayaan.\nPelawan menjadi pemimpin kelompok. Nyatoh, yang dapat berkomunikasi dengan hewan, menjadi mata-mata. Meranti, menjadi pelindung mereka. Lalu Bulin, sebagai pengirim pesan.\nMereka memulai perjalanan mengunjungi Dewi Alam, penguasa Serindit. Dewi Alam memberikan petunjuk untuk mengalahkan Kapten Hitam dan pasukannya.\nPertarungan sengit terjadi antara kelompok Pelawan dan pasukan Kapten Hitam yang bersenjata lengkap. Tanah berguncang, air bergelombang, dan angin berhembus kencang mengiringi perlawanan Pelawan dan kawan-kawan.\n“Awas, Pelawan, lihat di belakangmu!” Meranti berteriak saat prajurit Kapten Hitam akan menusuk Pelawan. \nAir sungai tiba-tiba menerjang kelompok Kapten Hitam karena digerakkan Meranti. Melalui kekuatan dan kerja sama, kelompok Pelawan akhirnya berhasil mengalahkan Kapten Hitam dan pasukannya.\nNegeri Serindit pun mulai pulih. Tanahnya subur kembali, sungai-sungai menjadi jernih, dan hewan-hewan kembali ke sarang mereka. Pelawan, Nyatoh, Meranti, dan Bulin menjadi pahlawan yang mengembalikan kejayaan negeri. Mereka dianggap sebagai “Cahaya Negeri Serindit”."
+    },
+    "grup": "stimulus_cerita_serindit",
+    "teks_soal": "Setelah membaca “Pahlawan Negeri Serindit”, nilai moral apa yang dapat kamu temukan?",
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Berani membela kebenaran."
+      },
+      {
+        "label": "B",
+        "teks": "Generasi muda paling tangguh."
+      },
+      {
+        "label": "C",
+        "teks": "Bertanggung jawab atas perbuatan."
+      },
+      {
+        "label": "D",
+        "teks": "Kekuatan harus dimanfaatkan optimal."
+      }
+    ],
+    "kunci": "A",
+    "pembahasan": "Nilai moral utama adalah keberanian kaum muda (Pelawan dan kawan-kawan) membela kebenaran dan menjaga kelestarian alam melawan keserakahan penjajah."
+  },
+  {
+    "nomor": 30,
+    "mapel": "Bahasa Indonesia",
+    "materi": "Unsur Intrinsik Cerita Fantasi",
+    "tipe": "pg_kompleks",
+    "bacaan": {
+      "grup": "stimulus_cerita_serindit",
+      "judul": "Pahlawan Negeri Serindit",
+      "gambar": [
+        "/soal/tryout_tpm_bindo_paket_a/teks28_cerita_serindit_hutan.jpg"
+      ],
+      "sumber": "https://id.pngtree.com/freebackground/animation-woodland-path_3177912.html",
+      "teks": "Di negeri yang indah dan subur, bernama Serindit, sinar matahari berlimpah dan burung-burung bernyanyi merdu. Tanah yang kaya dengan hasil alam membuat penduduknya hidup makmur dan bahagia. Namun, suatu hari, keserakahan sekelompok orang mulai mengancam keseimbangan alam negeri.\nKelompok itu dipimpin Kapten Hitam, seorang yang tamak dan tidak peduli lingkungan, mulai mengeruk bumi Serindit. Mereka mengeksploitasi biji-biji berharga, seperti timah, emas, hingga pasir kaolin yang istimewa. Tanah yang subur mulai tandus, sungai-sungai menjadi keruh, sinar matahari mulai redup, dan hewan-hewan meninggalkan rumahnya.\nBeberapa anak muda Serindit, yaitu Pelawan, Nyatoh, Meranti, dan Bulin, tidak bisa diam melihat negeri yang rusak. Mereka memutuskan berjuang mengembalikan Serindit ke masa kejayaan.\nPelawan menjadi pemimpin kelompok. Nyatoh, yang dapat berkomunikasi dengan hewan, menjadi mata-mata. Meranti, menjadi pelindung mereka. Lalu Bulin, sebagai pengirim pesan.\nMereka memulai perjalanan mengunjungi Dewi Alam, penguasa Serindit. Dewi Alam memberikan petunjuk untuk mengalahkan Kapten Hitam dan pasukannya.\nPertarungan sengit terjadi antara kelompok Pelawan dan pasukan Kapten Hitam yang bersenjata lengkap. Tanah berguncang, air bergelombang, dan angin berhembus kencang mengiringi perlawanan Pelawan dan kawan-kawan.\n“Awas, Pelawan, lihat di belakangmu!” Meranti berteriak saat prajurit Kapten Hitam akan menusuk Pelawan. \nAir sungai tiba-tiba menerjang kelompok Kapten Hitam karena digerakkan Meranti. Melalui kekuatan dan kerja sama, kelompok Pelawan akhirnya berhasil mengalahkan Kapten Hitam dan pasukannya.\nNegeri Serindit pun mulai pulih. Tanahnya subur kembali, sungai-sungai menjadi jernih, dan hewan-hewan kembali ke sarang mereka. Pelawan, Nyatoh, Meranti, dan Bulin menjadi pahlawan yang mengembalikan kejayaan negeri. Mereka dianggap sebagai “Cahaya Negeri Serindit”."
+    },
+    "grup": "stimulus_cerita_serindit",
+    "teks_soal": "Pilihlah jawaban yang benar! Jawaban benar lebih dari satu.\nPendapat manakah yang sesuai untuk menggambarkan unsur pembangun karya sastra atau unsur intrinsik pada teks tersebut?",
+    "opsi": [
+      {
+        "label": "1",
+        "teks": "Latar tempat menampilkan situasi nyata agar pembaca semakin percaya."
+      },
+      {
+        "label": "2",
+        "teks": "Tema cerita tentang menjaga kelestarian alam berfungsi sebagai pendidikan."
+      },
+      {
+        "label": "3",
+        "teks": "Tokoh-tokoh yang ditampilkan memiliki karakter pemberani layak untuk ditiru."
+      },
+      {
+        "label": "4",
+        "teks": "Alur yang digunakan dalam cerita merupakan alur maju sehingga mudah dipahami."
+      }
+    ],
+    "kunci": [
+      "2",
+      "3",
+      "4"
+    ],
+    "pembahasan": "Cerita fantasi ini beralur maju (awal negeri makmur -> dirusak -> dilawan -> pulih), mengusung tema pendidikan pelestarian alam, serta menghadirkan tokoh pemberani yang patut diteladani."
+  }
+]
