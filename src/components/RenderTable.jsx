@@ -27,7 +27,22 @@ function safeString(v) {
 export default function RenderTable({ table }) {
   const header = safeArray(table?.header || table?.headers || table?.kolom);
   const rows = safeArray(table?.baris || table?.rows || table?.data);
-  if (!header.length && !rows.length) return null;
+  const gambarTabel = table?.gambar_tabel || table?.gambar || table?.url || null;
+
+  if (!header.length && !rows.length) {
+    if (gambarTabel) {
+      return (
+        <div style={{ marginTop: 12, marginBottom: 12, textAlign: 'center' }}>
+          <img
+            src={gambarTabel}
+            alt="Tabel Soal"
+            style={{ maxWidth: '100%', maxHeight: '420px', borderRadius: 8, border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', display: 'inline-block' }}
+          />
+        </div>
+      );
+    }
+    return null;
+  }
 
   return (
     <div style={{ marginTop: 10, marginBottom: 10, overflowX: 'auto', border: '1px solid #d1d5db', borderRadius: 10, background: '#fff' }}>

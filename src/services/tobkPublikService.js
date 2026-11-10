@@ -30,73 +30,19 @@ const LOCAL_STORAGE_KEY_SESI = 'gemilang_tobk_peserta_session';
 export { SUBTES_RESMI_UTBK_2026, SOAL_PRESET_UTBK } from '../data/utbk2026KatkielData';
 
 // ============================================================
-// 2. PRESET STANDAR RESMI TKA 2026 (SESI 75 MENIT - KEMENDIKDASMEN)
+// 2. PRESET STANDAR RESMI TKA 2026 (SESI 75 MENIT - MKKS SMP/MTS DIY)
+// 100% Naskah Asli Ujian:
+// - Paket B: Matematika Wajib & Numerasi (30 Soal - 75 Menit)
+// - Paket A: Bahasa Indonesia & Literasi (30 Soal - 75 Menit)
+// Lengkap dengan crop gambar diagram 300 DPI, tabel presisi & diagram opsi
 // ============================================================
-export const SESI_RESMI_TKA_2026 = {
-  matematika: {
-    id: 'tka_mtk_2026',
-    nama: 'TKA 2026: Matematika Wajib & Numerasi',
-    durasiMenit: 75, // 75 menit untuk 25 soal (~3 menit/soal)
-    targetSoal: 25,
-    jedaTransisiDetik: 60, // 1 menit jeda transisi
-    soal: [
-      {
-        id: 'tka_m_01',
-        nomor: 1,
-        mapel: 'Matematika Wajib (TKA)',
-        teksSoal: 'Diketahui barisan aritmetika dengan suku ke-3 adalah 14 dan suku ke-7 adalah 26. Jumlah 20 suku pertama deret tersebut adalah ...',
-        opsiJawaban: [
-          { key: 'A', teks: '680' },
-          { key: 'B', teks: '710' },
-          { key: 'C', teks: '730' },
-          { key: 'D', teks: '770' },
-          { key: 'E', teks: '820' },
-        ],
-        kunciJawaban: 'C',
-        pembahasan: '$U_7 - U_3 = 4b = 12 \\Rightarrow b = 3$. $U_3 = a + 2(3) = 14 \\Rightarrow a = 8$. $S_{20} = \\frac{20}{2} [2(8) + 19(3)] = 10 [16 + 57] = 730$ (C).'
-      },
-      {
-        id: 'tka_m_02',
-        nomor: 2,
-        mapel: 'Matematika Wajib (TKA)',
-        teksSoal: 'Nilai dari $\\lim_{x \\to 3} \\frac{x^2 - 9}{2x - 6}$ adalah ...',
-        opsiJawaban: [
-          { key: 'A', teks: '1.5' },
-          { key: 'B', teks: '2' },
-          { key: 'C', teks: '3' },
-          { key: 'D', teks: '4.5' },
-          { key: 'E', teks: '6' },
-        ],
-        kunciJawaban: 'C',
-        pembahasan: 'Faktorkan: $\\frac{(x-3)(x+3)}{2(x-3)} = \\frac{x+3}{2}$. Substitusi $x = 3$: $\\frac{3+3}{2} = 3$ (C).'
-      }
-    ]
-  },
-  literasi_indo: {
-    id: 'tka_indo_2026',
-    nama: 'TKA 2026: B. Indonesia & Literasi',
-    durasiMenit: 75,
-    targetSoal: 30,
-    jedaTransisiDetik: 60,
-    soal: [
-      {
-        id: 'tka_i_01',
-        nomor: 1,
-        mapel: 'B. Indonesia (TKA)',
-        teksSoal: 'Bacalah kutipan tajuk rencana berikut:\n\n"Ketahanan pangan nasional tidak semata bertumpu pada beras. Diversifikasi konsumsi umbi-umbian dan sagu mutlak digencarkan agar gejolak harga pangan global tidak mengguncang ekonomi keluarga rentan."\n\nOpini penulis dalam kutipan tajuk rencana tersebut adalah ...',
-        opsiJawaban: [
-          { key: 'A', teks: 'Harga beras dunia terus melambung tinggi.' },
-          { key: 'B', teks: 'Diversifikasi konsumsi pangan lokal harus digencarkan demi ketahanan pangan.' },
-          { key: 'C', teks: 'Masyarakat miskin enggan beralih mengonsumsi sagu.' },
-          { key: 'D', teks: 'Pemerintah gagal menstabilkan harga beras impor.' },
-          { key: 'E', teks: 'Keluarga rentan lebih menyukai umbi-umbian.' },
-        ],
-        kunciJawaban: 'B',
-        pembahasan: 'Opini penulis diungkapkan lewat anjuran "mutlak digencarkan agar gejolak harga pangan global tidak mengguncang ekonomi" (B).'
-      }
-    ]
-  }
-};
+export {
+  SESI_RESMI_TKA_2026,
+  SOAL_TKA_2026_SMP_MTK_PAKET_B,
+  SOAL_TKA_2026_SMP_BINDO_PAKET_A,
+  PAKET_RESMI_TKA_2026_SMP_MTK_PAKET_B,
+  PAKET_RESMI_TKA_2026_SMP_BINDO_PAKET_A
+} from '../data/tka2026DiyData';
 
 // Helper: Ambil data backup lokal
 function getLocalEvents() {

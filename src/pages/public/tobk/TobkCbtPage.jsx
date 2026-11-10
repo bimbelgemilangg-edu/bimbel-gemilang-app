@@ -358,9 +358,23 @@ export default function TobkCbtPage() {
     return `${jam.toString().padStart(2, '0')}:${menit.toString().padStart(2, '0')}:${detik.toString().padStart(2, '0')}`;
   };
 
-  // Pilih Jawaban
+  // Pilih Jawaban Opsi Tunggal
   const handlePilihOpsi = (soalId, opsiKey) => {
     const baru = { ...jawaban, [soalId]: opsiKey };
+    setJawaban(baru);
+    simpanJawabanPeserta(peserta?.pesertaId, baru, ragu, pelanggaran);
+  };
+
+  // Pilih Jawaban Pernyataan Majemuk (Benar/Salah atau Sesuai/Tidak Sesuai)
+  const handlePilihPernyataan = (soalId, pKey, pilihanVal) => {
+    const prev = (typeof jawaban[soalId] === 'object' && jawaban[soalId] !== null) ? jawaban[soalId] : {};
+    const baru = {
+      ...jawaban,
+      [soalId]: {
+        ...prev,
+        [pKey]: pilihanVal,
+      },
+    };
     setJawaban(baru);
     simpanJawabanPeserta(peserta?.pesertaId, baru, ragu, pelanggaran);
   };
@@ -398,9 +412,22 @@ export default function TobkCbtPage() {
       totalMaksBobot += bobotSoal;
 
       const jawab = jawaban[soal.id];
-      if (!jawab) {
+      const kunci = soal.kunciJawaban || soal.kunci;
+      if (!jawab || (typeof jawab === 'object' && Object.keys(jawab).length === 0)) {
         kosong++;
-      } else if (jawab === soal.kunciJawaban) {
+      } else if (typeof kunci === 'object' && kunci !== null && typeof jawab === 'object') {
+        const keys = Object.keys(kunci);
+        const cocok = keys.filter((k) => String(jawab[k] || '').toLowerCase() === String(kunci[k] || '').toLowerCase()).length;
+        if (cocok === keys.length) {
+          benar++;
+          totalBobotTerkumpul += bobotSoal;
+        } else if (cocok > 0) {
+          totalBobotTerkumpul += bobotSoal * (cocok / keys.length);
+          salah++;
+        } else {
+          salah++;
+        }
+      } else if (String(jawab).trim().toUpperCase() === String(kunci).trim().toUpperCase()) {
         benar++;
         totalBobotTerkumpul += bobotSoal;
       } else {
@@ -432,9 +459,22 @@ export default function TobkCbtPage() {
         sMaksBobot += bobotSoal;
 
         const ans = jawaban[soal.id];
-        if (!ans) {
+        const kunci = soal.kunciJawaban || soal.kunci;
+        if (!ans || (typeof ans === 'object' && Object.keys(ans).length === 0)) {
           sKosong++;
-        } else if (ans === soal.kunciJawaban) {
+        } else if (typeof kunci === 'object' && kunci !== null && typeof ans === 'object') {
+          const keys = Object.keys(kunci);
+          const cocok = keys.filter((k) => String(ans[k] || '').toLowerCase() === String(kunci[k] || '').toLowerCase()).length;
+          if (cocok === keys.length) {
+            sBenar++;
+            sBobotTerkumpul += bobotSoal;
+          } else if (cocok > 0) {
+            sBobotTerkumpul += bobotSoal * (cocok / keys.length);
+            sSalah++;
+          } else {
+            sSalah++;
+          }
+        } else if (String(ans).trim().toUpperCase() === String(kunci).trim().toUpperCase()) {
           sBenar++;
           sBobotTerkumpul += bobotSoal;
         } else {
@@ -505,7 +545,12 @@ export default function TobkCbtPage() {
   const daftarSoalSubtes = subtesAktif.soal || [];
   const soalSekarang = daftarSoalSubtes[indexSoal] || null;
 
-  const sudahDijawab = (id) => jawaban[id] !== undefined && jawaban[id] !== '';
+  const sudahDijawab = (id) => {
+    const v = jawaban[id];
+    if (v === undefined || v === null || v === '') return false;
+    if (typeof v === 'object') return Object.keys(v).length > 0;
+    return true;
+  };
   const isRagu = (id) => !!ragu[id];
 
   const jumlahRaguDiSubtes = useMemo(() => {
@@ -1037,73 +1082,141 @@ export default function TobkCbtPage() {
                   )}
                 </div>
 
-                {/* Pilihan Radio Opsi */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                  {daftarOpsi.map((opsi) => {
-                    const terpilih = String(jawaban[soalSekarang.id] || '').toUpperCase() === String(opsi.key).toUpperCase();
+                {/* Pilihan Opsi Tunggal ATAU Pernyataan Majemuk (TKA / AKM / UTBK) */}
+                {daftarOpsi.length > 0 ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    {daftarOpsi.map((opsi) => {
+                      const terpilih = String(jawaban[soalSekarang.id] || '').toUpperCase() === String(opsi.key).toUpperCase();
 
-                    return (
-                      <label
-                        key={opsi.key}
-                        onClick={() => handlePilihOpsi(soalSekarang.id, opsi.key)}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'flex-start',
-                          gap: '12px',
-                          cursor: 'pointer',
-                          fontSize: '14px',
-                          color: '#334155',
-                          userSelect: 'none',
-                        }}
-                      >
-                        {/* Radio Circle */}
-                        <span
+                      return (
+                        <label
+                          key={opsi.key}
+                          onClick={() => handlePilihOpsi(soalSekarang.id, opsi.key)}
                           style={{
-                            width: '18px',
-                            height: '18px',
-                            borderRadius: '50%',
-                            border: `2px solid ${terpilih ? '#2563eb' : '#94a3b8'}`,
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            flexShrink: 0,
-                            marginTop: '2px',
-                            background: '#ffffff',
+                            display: 'flex',
+                            alignItems: 'flex-start',
+                            gap: '12px',
+                            cursor: 'pointer',
+                            fontSize: '14px',
+                            color: '#334155',
+                            userSelect: 'none',
                           }}
                         >
-                          {terpilih && (
-                            <span
-                              style={{
-                                width: '8px',
-                                height: '8px',
-                                borderRadius: '50%',
-                                background: '#2563eb',
-                              }}
-                            />
-                          )}
-                        </span>
+                          {/* Radio Circle */}
+                          <span
+                            style={{
+                              width: '18px',
+                              height: '18px',
+                              borderRadius: '50%',
+                              border: `2px solid ${terpilih ? '#2563eb' : '#94a3b8'}`,
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              flexShrink: 0,
+                              marginTop: '2px',
+                              background: '#ffffff',
+                            }}
+                          >
+                            {terpilih && (
+                              <span
+                                style={{
+                                  width: '8px',
+                                  height: '8px',
+                                  borderRadius: '50%',
+                                  background: '#2563eb',
+                                }}
+                              />
+                            )}
+                          </span>
 
-                        <div style={{ flex: 1 }}>
-                          {opsi.teks && <RenderMath text={opsi.teks} />}
-                          {opsi.gambar && (
-                            <img
-                              src={opsi.gambar}
-                              alt={`Opsi ${opsi.key}`}
-                              style={{
-                                maxWidth: '100%',
-                                maxHeight: '160px',
-                                borderRadius: '6px',
-                                marginTop: '6px',
-                                display: 'block',
-                                border: '1px solid #e2e8f0',
-                              }}
-                            />
-                          )}
-                        </div>
-                      </label>
-                    );
-                  })}
-                </div>
+                          <div style={{ flex: 1 }}>
+                            {opsi.teks && <RenderMath text={opsi.teks} />}
+                            {opsi.gambar && (
+                              <img
+                                src={opsi.gambar}
+                                alt={`Opsi ${opsi.key}`}
+                                style={{
+                                  maxWidth: '100%',
+                                  maxHeight: '160px',
+                                  borderRadius: '6px',
+                                  marginTop: '6px',
+                                  display: 'block',
+                                  border: '1px solid #e2e8f0',
+                                }}
+                              />
+                            )}
+                          </div>
+                        </label>
+                      );
+                    })}
+                  </div>
+                ) : (soalSekarang.pernyataan && Array.isArray(soalSekarang.pernyataan) && soalSekarang.pernyataan.length > 0) ? (
+                  <div style={{ marginTop: '16px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '10px', padding: '16px' }}>
+                    <div style={{ fontSize: '12px', fontWeight: 700, color: '#475569', textTransform: 'uppercase', marginBottom: '12px', letterSpacing: '0.5px' }}>
+                      📋 Tentukan Kesesuaian Tiap Pernyataan:
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                      {(() => {
+                        const isSesuai = JSON.stringify(soalSekarang.kunci || soalSekarang.kunciJawaban || '').toLowerCase().includes('sesuai');
+                        const pilihan1 = isSesuai ? 'Sesuai' : 'Benar';
+                        const pilihan2 = isSesuai ? 'Tidak Sesuai' : 'Salah';
+                        const jawabMap = (typeof jawaban[soalSekarang.id] === 'object' && jawaban[soalSekarang.id] !== null) ? jawaban[soalSekarang.id] : {};
+
+                        return soalSekarang.pernyataan.map((p, pIdx) => {
+                          const pKey = String.fromCharCode(65 + pIdx); // 'A', 'B', 'C'
+                          const altKey = String(pIdx + 1); // '1', '2', '3'
+                          const currentPilih = jawabMap[pKey] || jawabMap[altKey] || jawabMap[p.id] || '';
+                          const teksP = typeof p === 'string' ? p : (p.teks || p.pernyataan || '');
+
+                          return (
+                            <div key={pIdx} style={{ background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '8px', padding: '12px 14px', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
+                              <div style={{ flex: '1 1 300px', fontSize: '13px', color: '#1e293b', lineHeight: 1.5 }}>
+                                <span style={{ fontWeight: 700, marginRight: '6px', color: '#2563eb' }}>{pKey}.</span>
+                                <RenderMath text={teksP} />
+                              </div>
+                              <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
+                                <button
+                                  type="button"
+                                  onClick={() => handlePilihPernyataan(soalSekarang.id, pKey, pilihan1)}
+                                  style={{
+                                    padding: '6px 14px',
+                                    borderRadius: '6px',
+                                    fontSize: '12px',
+                                    fontWeight: 700,
+                                    cursor: 'pointer',
+                                    border: currentPilih.toLowerCase() === pilihan1.toLowerCase() ? '2px solid #2563eb' : '1px solid #cbd5e1',
+                                    background: currentPilih.toLowerCase() === pilihan1.toLowerCase() ? '#eff6ff' : '#ffffff',
+                                    color: currentPilih.toLowerCase() === pilihan1.toLowerCase() ? '#1d4ed8' : '#64748b',
+                                    transition: 'all 0.15s ease'
+                                  }}
+                                >
+                                  ✓ {pilihan1}
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handlePilihPernyataan(soalSekarang.id, pKey, pilihan2)}
+                                  style={{
+                                    padding: '6px 14px',
+                                    borderRadius: '6px',
+                                    fontSize: '12px',
+                                    fontWeight: 700,
+                                    cursor: 'pointer',
+                                    border: currentPilih.toLowerCase() === pilihan2.toLowerCase() ? '2px solid #ef4444' : '1px solid #cbd5e1',
+                                    background: currentPilih.toLowerCase() === pilihan2.toLowerCase() ? '#fef2f2' : '#ffffff',
+                                    color: currentPilih.toLowerCase() === pilihan2.toLowerCase() ? '#b91c1c' : '#64748b',
+                                    transition: 'all 0.15s ease'
+                                  }}
+                                >
+                                  ✗ {pilihan2}
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        });
+                      })()}
+                    </div>
+                  </div>
+                ) : null}
               </div>
 
               {/* Tombol Aksi Bawah: < Soal Sebelumnya | ☐ Ragu-Ragu | Soal Selanjutnya > */}

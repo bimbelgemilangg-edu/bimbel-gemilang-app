@@ -141,26 +141,26 @@ export default function KelolaTobkPublikPage() {
     } else if (fmt === 'TKA_2026_MTK') {
       setFormEvent((prev) => ({
         ...prev,
-        judul: 'TKA 2026: MATEMATIKA WAJIB & NUMERASI',
+        judul: 'TKA 2026: MATEMATIKA WAJIB & NUMERASI (PAKET B DIY)',
         kategori: 'TKA SMP / SMA',
         formatUjian: 'TKA_2026_MTK',
         modeTimer: 'per-subtes',
         durasiMenit: 75,
         jedaTransisiDetik: 60,
         sumberSoal: 'preset_tka_mtk',
-        keterangan: 'TKA 2026 Matematika Wajib (25 Soal, 75 Menit, Rata-rata 3 mnt/soal)',
+        keterangan: 'TKA 2026 Matematika Paket B MKKS DIY (30 Soal Lengkap, 75 Menit)',
       }));
     } else if (fmt === 'TKA_2026_INDO') {
       setFormEvent((prev) => ({
         ...prev,
-        judul: 'TKA 2026: B. INDONESIA & LITERASI',
+        judul: 'TKA 2026: B. INDONESIA & LITERASI (PAKET A DIY)',
         kategori: 'TKA SMP / SMA',
         formatUjian: 'TKA_2026_INDO',
         modeTimer: 'per-subtes',
         durasiMenit: 75,
         jedaTransisiDetik: 60,
         sumberSoal: 'preset_tka_indo',
-        keterangan: 'TKA 2026 B. Indonesia & Literasi (30 Soal, 75 Menit)',
+        keterangan: 'TKA 2026 B. Indonesia Paket A MKKS DIY (30 Soal Lengkap, 75 Menit)',
       }));
     } else {
       setFormEvent((prev) => ({
@@ -802,9 +802,9 @@ export default function KelolaTobkPublikPage() {
                   onChange={(e) => setFormEvent({ ...formEvent, sumberSoal: e.target.value })}
                   style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px', background: '#f8fafc', fontWeight: 600 }}
                 >
-                  <option value="preset_utbk_2026">⭐ [PRESET RESMI] UTBK-SNBT 2026 (7 Subtes Block Time - 195 Menit)</option>
-                  <option value="preset_tka_mtk">📐 [PRESET RESMI] TKA 2026: Matematika Wajib & Numerasi (25 Soal, 75m)</option>
-                  <option value="preset_tka_indo">📖 [PRESET RESMI] TKA 2026: B. Indonesia & Literasi (30 Soal, 75m)</option>
+                  <option value="preset_utbk_2026">⭐ [PRESET RESMI] UTBK-SNBT 2026 (7 Subtes Block Time - 160 Soal, 195 Menit)</option>
+                  <option value="preset_tka_mtk">📐 [PRESET RESMI] TKA 2026: Matematika Paket B (30 Soal MKKS DIY, 75m)</option>
+                  <option value="preset_tka_indo">📖 [PRESET RESMI] TKA 2026: B. Indonesia Paket A (30 Soal MKKS DIY, 75m)</option>
                   
                   {/* Paket dari Bank Soal Bimbel jika ada */}
                   {paketBimbelList.length > 0 && (
