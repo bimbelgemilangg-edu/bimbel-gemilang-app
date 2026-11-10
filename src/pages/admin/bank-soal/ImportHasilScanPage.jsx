@@ -1811,16 +1811,24 @@ function parseHTMLStatements(container) {
   if (!container) return [];
   const rows = Array.from(container.querySelectorAll('tr'));
   if (rows.length === 0) {
-    // Dukung format daftar li/p jika AI tidak menggunakan tag <table>
-    const listItems = Array.from(container.querySelectorAll('li, p'));
+    // Dukung format daftar li/p/div/.baris-pernyataan/[data-kunci] jika AI tidak menggunakan tag <table>
+    let listItems = Array.from(container.querySelectorAll('li, p, .baris-pernyataan, [data-kunci], [data-jawaban]'));
+    if (listItems.length === 0) {
+      listItems = Array.from(container.children).filter(el => el.tagName !== 'SCRIPT' && el.tagName !== 'STYLE');
+    }
     if (listItems.length > 0) {
       return listItems.map((item) => {
         let t = htmlNodeText(item).trim();
         if (!t) return null;
-        let ans = safeString(item.getAttribute('data-jawaban') || '').trim();
-        const m = t.match(/\s*(?:\(|\[)?(benar|salah|true|false|b|s)(?:\)|\])?\s*$/i);
+        let ans = safeString(item.getAttribute('data-jawaban') || item.getAttribute('data-kunci') || '').trim();
+        const m = t.match(/\s*(?:\(|\[)?(benar|salah|sesuai|tidak sesuai|true|false|b|s)(?:\)|\])?\s*$/i);
         if (m) {
-          if (!ans) ans = /^(b|benar|true)$/i.test(m[1]) ? 'Benar' : 'Salah';
+          if (!ans) {
+            const low = m[1].toLowerCase();
+            if (low === 'sesuai') ans = 'Sesuai';
+            else if (low === 'tidak sesuai') ans = 'Tidak Sesuai';
+            else ans = /^(b|benar|true)$/i.test(low) ? 'Benar' : 'Salah';
+          }
           t = t.slice(0, m.index).trim();
         }
         return t ? { teks: t, jawaban: ans } : null;
@@ -1828,6 +1836,12 @@ function parseHTMLStatements(container) {
     }
     return [];
   }
+
+  // Cek apakah header tabel menggunakan "Sesuai / Tidak Sesuai"
+  const allHeadersText = Array.from(container.querySelectorAll('th')).map(th => htmlNodeText(th).toLowerCase()).join(' ');
+  const isSesuaiKategori = allHeadersText.includes('sesuai');
+  const labelPositif = isSesuaiKategori ? 'Sesuai' : 'Benar';
+  const labelNegatif = isSesuaiKategori ? 'Tidak Sesuai' : 'Salah';
 
   return rows.map(row => {
     const cells = Array.from(row.querySelectorAll(':scope > th, :scope > td'));
@@ -1843,45 +1857,47 @@ function parseHTMLStatements(container) {
     // 2) Teks sel pertama atau kedua secara eksplisit bertuliskan kata kolom header
     const sel0 = (teksSel[0] || '').toLowerCase();
     const sel1 = (teksSel[1] || '').toLowerCase();
-    if (/^(pernyataan|statement|keterangan)$/i.test(sel0)) return null;
-    if (/^(no\.?|nomor)$/i.test(sel0) && /^(pernyataan|statement|keterangan)$/i.test(sel1)) return null;
+    if (/^(pernyataan|statement|keterangan|prediksi peristiwa)$/i.test(sel0)) return null;
+    if (/^(no\.?|nomor)$/i.test(sel0) && /^(pernyataan|statement|keterangan|prediksi peristiwa)$/i.test(sel1)) return null;
 
     // 3) Kolom Benar dan Salah berdampingan di sel-sel pendek sebagai label header
     const hasBenarCol = teksSel.some(t => /^(benar|true|sesuai)$/i.test(t));
     const hasSalahCol = teksSel.some(t => /^(salah|false|tidak sesuai)$/i.test(t));
-    if (hasBenarCol && hasSalahCol && sel0.length < 15 && sel1.length < 15) return null;
+    if (hasBenarCol && hasSalahCol && sel0.length < 20 && sel1.length < 20) return null;
 
     let text, answer;
+
+    const rowAttrAns = safeString(row.getAttribute('data-jawaban') || row.getAttribute('data-kunci') || '').trim();
 
     if (cells.length >= 4) {
       // Format "No | Pernyataan | Benar (centang) | Salah (centang)"
       text = teksSel[1];
       const benarDicentang = selBerisiCentang(cells[2]);
       const salahDicentang = selBerisiCentang(cells[3]);
-      if (benarDicentang && !salahDicentang) answer = 'Benar';
-      else if (salahDicentang && !benarDicentang) answer = 'Salah';
-      else answer = safeString(row.getAttribute('data-jawaban') || '').trim();
+      if (benarDicentang && !salahDicentang) answer = labelPositif;
+      else if (salahDicentang && !benarDicentang) answer = labelNegatif;
+      else answer = rowAttrAns;
     } else if (cells.length === 3) {
       // Cek apakah cells[0] adalah nomor urut (format: No | Pernyataan | Jawaban)
       if (/^\d+[.)]?$/.test(teksSel[0])) {
         text = teksSel[1];
-        const val = safeString(row.getAttribute('data-jawaban') || teksSel[2]).trim();
-        if (/^(b|benar|true|1)$/i.test(val)) answer = 'Benar';
-        else if (/^(s|salah|false|0)$/i.test(val)) answer = 'Salah';
+        const val = safeString(rowAttrAns || teksSel[2]).trim();
+        if (/^(b|benar|true|1|sesuai)$/i.test(val)) answer = labelPositif;
+        else if (/^(s|salah|false|0|tidak sesuai)$/i.test(val)) answer = labelNegatif;
         else answer = val;
       } else {
         // Format "Pernyataan | Benar (centang) | Salah (centang)" tanpa kolom No
         text = teksSel[0];
         const benarDicentang = selBerisiCentang(cells[1]);
         const salahDicentang = selBerisiCentang(cells[2]);
-        if (benarDicentang && !salahDicentang) answer = 'Benar';
-        else if (salahDicentang && !benarDicentang) answer = 'Salah';
-        else answer = safeString(row.getAttribute('data-jawaban') || '').trim();
+        if (benarDicentang && !salahDicentang) answer = labelPositif;
+        else if (salahDicentang && !benarDicentang) answer = labelNegatif;
+        else answer = rowAttrAns;
       }
     } else {
       // Format 2 kolom: Pernyataan | Jawaban langsung sebagai teks
       text = teksSel[0];
-      answer = safeString(row.getAttribute('data-jawaban') || teksSel[1]).trim();
+      answer = safeString(rowAttrAns || teksSel[1]).trim();
     }
 
     if (!text) return null;
@@ -2183,7 +2199,14 @@ function parseHTMLMaster(raw) {
         catatanEkorJawaban.push(...ekor.catatan);
         return ekor.teks;
       })(),
-      pernyataan: parseHTMLStatements(tfNode),
+      pernyataan: (() => {
+        let p = parseHTMLStatements(tfNode);
+        if (!p.length && ['benar_salah', 'pg_kategori'].includes(tipe) && tableQuestionNode) {
+          const dariTabel = parseHTMLStatements(tableQuestionNode);
+          if (dariTabel.length > 0) p = dariTabel;
+        }
+        return p;
+      })(),
       tabel_benar_salah: parseHTMLStatements(categoryNode),
       pasangan: parseHTMLPairs(matchingNode),
       gambar: parseHTMLImages(imageNode),

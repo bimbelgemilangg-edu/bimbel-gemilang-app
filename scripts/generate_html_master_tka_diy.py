@@ -99,12 +99,13 @@ def generate_html_document(title, subtitle, questions):
                 art_lines.append(f'    <li data-label="{label}">{" ".join(isi)}</li>')
             art_lines.append('  </ol>')
             
-        # Pernyataan jika ada (untuk benar_salah)
+        # Pernyataan jika ada (untuk benar_salah / pg_kategori)
         if q.get("pernyataan"):
-            art_lines.append('  <div data-field="pernyataan">')
+            art_lines.append('  <ul data-field="pernyataan">')
             for p in q["pernyataan"]:
-                art_lines.append(f'    <div class="baris-pernyataan" data-kunci="{p.get("kunci", "Benar")}">{p.get("teks", "")}</div>')
-            art_lines.append('  </div>')
+                k_val = p.get("kunci", "Benar")
+                art_lines.append(f'    <li data-jawaban="{k_val}">{p.get("teks", "")}</li>')
+            art_lines.append('  </ul>')
             
         # Kunci Jawaban & Pembahasan
         if isinstance(kunci, list):
