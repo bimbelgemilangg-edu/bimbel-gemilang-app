@@ -56,11 +56,16 @@ export default function KodeSoalSiswaPage() {
   const baris = useMemo(() => {
     const keluar = [];
     for (const { sesi, paket } of sesiList) {
+      const kunciAktif = paket.tampilkanKunci !== false;
+      const pembahasanAktif = paket.tampilkanPembahasan !== false;
+      // Bila kunci dan pembahasan dikunci admin, jangan tampilkan soal paket ini di arsip kode soal
+      if (!kunciAktif && !pembahasanAktif) continue;
+
       (paket.daftarSoal || []).forEach((soal, i) => {
         const kode = kodeSoalSiswa({ mapel: paket.mapel || paket.targetKategori || '', paket, nomor: i + 1 });
         if (cari && !cocokCariKode(kode, cari) && !String(i + 1).includes(cari)) return;
         const skor = skorSatuSoal(soal, (sesi.jawaban || {})[soal.id]);
-        keluar.push({ kode, nomor: i + 1, soal, sesi, paket, skor });
+        keluar.push({ kode, nomor: i + 1, soal, sesi, paket, skor, kunciAktif });
       });
     }
     return keluar;
@@ -110,9 +115,13 @@ export default function KodeSoalSiswaPage() {
                 <span style={{ fontSize: 11.5, color: '#334155', flex: 1, minWidth: 140, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {teksSoalDari(b.soal).slice(0, 70)}
                 </span>
-                {b.skor != null && (b.skor > 0
-                  ? <CheckCircle2 size={15} color="#16a34a" />
-                  : <XCircle size={15} color="#dc2626" />)}
+                {b.kunciAktif ? (
+                  b.skor != null && (b.skor > 0
+                    ? <CheckCircle2 size={15} color="#16a34a" />
+                    : <XCircle size={15} color="#dc2626" />)
+                ) : (
+                  <span style={{ fontSize: 11, color: '#64748b' }}>🔒</span>
+                )}
                 <button type="button" onClick={() => setTinjau(b)} style={{ border: '1px solid #c7d2fe', background: '#eef2ff', color: '#3730a3', borderRadius: 8, padding: '4px 9px', fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>
                   lihat
                 </button>
@@ -136,10 +145,16 @@ export default function KodeSoalSiswaPage() {
               <MathText text={teksSoalDari(tinjau.soal)} />
             </div>
             {(tinjau.soal.gambarUrls || []).map((u, ui) => <img key={ui} src={u} alt="" style={{ maxWidth: '100%', maxHeight: 200, border: '1px solid #e2e8f0', borderRadius: 8, marginBottom: 8 }} />)}
-            <RendererPgSederhana soal={tinjau.soal} jawabanTerpilih={(tinjau.sesi.jawaban || {})[tinjau.soal.id]} modeTinjau disabled />
-            <div style={{ fontSize: 12, marginTop: 10, color: tinjau.skor > 0 ? '#166534' : '#991b1b', fontWeight: 700 }}>
-              {tinjau.skor > 0 ? '✓ jawabanmu benar' : ('✗ jawabanmu keliru — kunci: ' + String(tinjau.soal.kunciJawaban || '-'))}
-            </div>
+            <RendererPgSederhana soal={tinjau.soal} jawabanTerpilih={(tinjau.sesi.jawaban || {})[tinjau.soal.id]} modeTinjau disabled sembunyikanKunci={!tinjau.kunciAktif} />
+            {tinjau.kunciAktif ? (
+              <div style={{ fontSize: 12, marginTop: 10, color: tinjau.skor > 0 ? '#166534' : '#991b1b', fontWeight: 700 }}>
+                {tinjau.skor > 0 ? '✓ jawabanmu benar' : ('✗ jawabanmu keliru — kunci: ' + String(tinjau.soal.kunciJawaban || '-'))}
+              </div>
+            ) : (
+              <div style={{ fontSize: 12, marginTop: 10, color: '#1e40af', fontWeight: 700 }}>
+                🔒 Kunci jawaban dibahas bersama tentor di sesi kelas.
+              </div>
+            )}
           </div>
         </div>
       )}

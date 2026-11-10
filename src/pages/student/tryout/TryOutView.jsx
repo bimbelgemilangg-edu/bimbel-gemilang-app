@@ -1139,146 +1139,210 @@ export default function TryOutView() {
           xpFinal={hasilAkhir?.xpFinal}
         />
 
-        <div style={{ fontSize: 12.5, fontWeight: 800, color: '#fff', margin: '20px 0 10px', letterSpacing: 0.4 }}>📋 TINJAU JAWABAN</div>
-        {paket.tampilkanKunci === false && (
-          <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 12, padding: '12px 16px', marginBottom: 14, color: '#334155', fontSize: 12.5, lineHeight: 1.5 }}>
-            🔒 <b>Mode Pembahasan Bersama Tentor:</b> Kunci jawaban dan pembahasan untuk try out ini dinonaktifkan di aplikasi agar dapat dibahas bersama Tentor di kelas. Pilihan jawabanmu tetap tersimpan rapi di bawah.
-          </div>
-        )}
-        {/* 🔥 ROMBAK (2026-10-12, arahan owner): evaluasi hanya terjadi bila
-            siswa benar-benar melihat LETAK salahnya. Tombol ini menyusun
-            daftar nomor salah + sidik jari kode sumbernya secara mekanis
-            (ringkasReviewHasil.js) supaya bawaan ke tentor tidak lagi
-            "nomor 3" yang ambigu antar paket. */}
+        {/* 🔥 PENGATURAN AKSES TINJAUAN (KUNCI & PEMBAHASAN)
+            Jika admin menonaktifkan kedua pengaturan (tampilkanKunci === false && tampilkanPembahasan === false):
+            Siswa HANYA melihat tiket skor akhir. Rincian butir soal, bacaan, gambar, pilihan jawaban,
+            dan per-soal akurasi TIDAK DITAMPILKAN SAMA SEKALI demi menjaga kerahasiaan naskah ujian.
+            Hanya jika admin mengedit paket dan membuka aksesnya, tinjauan soal akan muncul. */}
         {(() => {
-          const daftar = daftarSalahUntukTentor(paket.daftarSoal.map((s2, i2) => ({
-            nomor: i2 + 1,
-            skor: skorSatuSoal(s2, jawaban[s2.id]),
-            kode: pisahKodeSumber(teksSoalDari(s2)).kode || '',
-          })));
-          if (!daftar.length) return null;
+          const kunciAktif = paket.tampilkanKunci !== false;
+          const pembahasanAktif = paket.tampilkanPembahasan !== false;
+          const bolehTinjau = kunciAktif || pembahasanAktif;
+
+          if (!bolehTinjau) {
+            return (
+              <div style={{
+                background: '#ffffff',
+                borderRadius: 16,
+                padding: '28px 20px',
+                margin: '22px 0 16px',
+                textAlign: 'center',
+                border: '1px solid #e2e8f0',
+                boxShadow: '0 4px 16px rgba(15,23,42,0.06)'
+              }}>
+                <div style={{
+                  width: 56,
+                  height: 56,
+                  borderRadius: '50%',
+                  background: '#fef3c7',
+                  border: '2px solid #fde68a',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: 26,
+                  margin: '0 auto 14px'
+                }}>
+                  🔒
+                </div>
+                <div style={{ fontSize: 16, fontWeight: 800, color: '#0f172a', marginBottom: 6 }}>
+                  Kunci Jawaban & Pembahasan Dinonaktifkan
+                </div>
+                <p style={{ fontSize: 13, color: '#64748b', lineHeight: 1.6, maxWidth: 460, margin: '0 auto 16px' }}>
+                  Rincian butir soal, pilihan jawaban, dan pembahasan dikunci oleh admin untuk menjaga kerahasiaan naskah ujian. Soal akan dibahas bersama tentor pada sesi kelas.
+                </p>
+                <div style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  background: '#f0fdf4',
+                  border: '1px solid #bbf7d0',
+                  color: '#166534',
+                  padding: '7px 16px',
+                  borderRadius: 999,
+                  fontSize: 12,
+                  fontWeight: 700
+                }}>
+                  ✓ Seluruh jawaban Anda telah tersimpan aman di server
+                </div>
+              </div>
+            );
+          }
+
           return (
-            <div style={{ marginBottom: 10 }}>
-              {/* 🔥 2026-10-25 (revisi owner): fitur SALIN & arahan "tempel di
-                  chat" DIHAPUS dari layar siswa. Siswa cukup menunjukkan
-                  daftar nomor ini (atau soalnya) ke tentor secara langsung. */}
-              <div style={{ fontSize: 12, color: '#e2e8f0', fontWeight: 700, marginBottom: 8 }}>
-                {daftar.length} nomor untuk dibahas bersama tentor: {daftar.map((d) => d.nomor).join(', ')}
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-              <button
-                type="button"
-                onClick={() => navigate('/siswa/kode-soal')}
-                style={{ padding: '9px 14px', borderRadius: 10, border: '1px solid #fdba74', background: '#ffedd5', color: '#9a3412', fontSize: 12, fontWeight: 800, cursor: 'pointer' }}
-              >
-                🔖 Arsip kode soalku
-              </button>
-              </div>
-            </div>
-          );
-        })()}
-        {paket.daftarSoal.map((s, i) => {
-          const skor = skorSatuSoal(s, jawaban[s.id]);
-          const belumDijawab = soalBelumDijawab(s, jawaban[s.id]);
-          return (
-            <div key={s.id} style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 14, padding: 14, marginBottom: 12, boxShadow: '0 2px 10px rgba(15,23,42,0.08)' }}>
-              <div style={{ fontSize: 11.5, color: skor >= 0.99 ? '#16a34a' : skor > 0 ? '#d97706' : '#dc2626', fontWeight: 700, marginBottom: 6 }}>
-                Soal {i + 1} -- akurasi {Math.round(skor * 100)}%{belumDijawab ? ' (Tidak dijawab)' : ''}
-              </div>
-              {(() => {
-                const bcn = bacaanDari(s);
-                if (!bcn) return null;
+            <>
+              <div style={{ fontSize: 12.5, fontWeight: 800, color: '#fff', margin: '20px 0 10px', letterSpacing: 0.4 }}>📋 TINJAU JAWABAN</div>
+              {!kunciAktif && (
+                <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 12, padding: '12px 16px', marginBottom: 14, color: '#334155', fontSize: 12.5, lineHeight: 1.5 }}>
+                  🔒 <b>Mode Pembahasan Bersama Tentor:</b> Kunci jawaban untuk try out ini dinonaktifkan di aplikasi agar dapat dibahas bersama Tentor di kelas. Anda dapat melihat pembahasan materi di bawah tanpa indikator kunci benar/salah.
+                </div>
+              )}
+              {/* Evaluasi nomor salah hanya ditampilkan bila kunci terbuka (agar tidak membocorkan nomor mana yang benar/salah) */}
+              {kunciAktif && (() => {
+                const daftar = daftarSalahUntukTentor(paket.daftarSoal.map((s2, i2) => ({
+                  nomor: i2 + 1,
+                  skor: skorSatuSoal(s2, jawaban[s2.id]),
+                  kode: pisahKodeSumber(teksSoalDari(s2)).kode || '',
+                })));
+                if (!daftar.length) return null;
                 return (
-                  <div style={{ background: '#f8fafc', borderRadius: 8, padding: 10, marginBottom: 10, ...GAYA_TEKS_BACAAN, whiteSpace: 'pre-wrap' }}>
-                    {bcn.judul && <div style={{ fontWeight: 800, fontSize: 12.5, color: '#0f172a', marginBottom: 4 }}>{bcn.judul}</div>}
-                    {bcn.gambar && bcn.gambar.length > 0 && (
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 8 }}>
-                        {bcn.gambar.map((g, gi) => {
-                          const url = typeof g === 'string' ? g : g?.url || g?.uploadedUrl;
-                          if (!url) return null;
-                          return <img key={gi} src={url} alt="" style={{ maxWidth: '100%', maxHeight: 200, borderRadius: 8, border: '1px solid #e2e8f0' }} />;
-                        })}
-                      </div>
-                    )}
-                    {bcn.teks && <RenderMath text={bcn.teks} />}
-                    {bcn.tabel && <RenderTable table={bcn.tabel} />}
+                  <div style={{ marginBottom: 10 }}>
+                    <div style={{ fontSize: 12, color: '#e2e8f0', fontWeight: 700, marginBottom: 8 }}>
+                      {daftar.length} nomor untuk dibahas bersama tentor: {daftar.map((d) => d.nomor).join(', ')}
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                      <button
+                        type="button"
+                        onClick={() => navigate('/siswa/kode-soal')}
+                        style={{ padding: '9px 14px', borderRadius: 10, border: '1px solid #fdba74', background: '#ffedd5', color: '#9a3412', fontSize: 12, fontWeight: 800, cursor: 'pointer' }}
+                      >
+                        🔖 Arsip kode soalku
+                      </button>
+                    </div>
                   </div>
                 );
               })()}
-              <div style={{ ...st.kodeChip, color: '#9a3412', background: '#ffedd5', border: '1px solid #fdba74' }}>
-                🔖 {kodeSoalSiswa({ mapel: paket.mapel || paket.targetKategori || '', paket, nomor: i + 1 })}
-              </div>
-              {pisahKodeSumber(teksSoalDari(s)).kode && (
-                <div style={st.kodeChip}>{pisahKodeSumber(teksSoalDari(s)).kode}</div>
-              )}
-              <TeksSoalBergambar
-                teks={pisahKodeSumber(teksSoalDari(s)).teks}
-                soal={s}
-                gambarUrls={gambarButirDari(s)}
-                gambarMeta={s.gambarMeta || null}
-                gayaTeks={{ marginBottom: 10 }}
-                gayaGambar={{ maxHeight: 280, marginBottom: 10 }}
-              />
-              {(s.tabelSoal || s.tabel_soal || s.tabel || s.bacaan?.tabelSoal || s.stimulus?.tabel) && (
-                <RenderTable table={s.tabelSoal || s.tabel_soal || s.tabel || s.bacaan?.tabelSoal || s.stimulus?.tabel} />
-              )}
-              <PenahanErrorSoal soalId={s.id}>
-                <RendererSoal
-                  soal={s}
-                  jawabanTerpilih={jawaban[s.id]}
-                  modeTinjau
-                  sembunyikanKunci={paket.tampilkanKunci === false}
-                />
-              </PenahanErrorSoal>
-
-              {/* Status Jawaban & Kunci */}
-              {paket.tampilkanKunci !== false ? (
-                <div style={{ marginTop: 10, display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 6 }}>
-                  <span style={{ background: skor >= 0.99 ? '#f0fdf4' : '#fef2f2', border: skor >= 0.99 ? '1px solid #bbf7d0' : '1px solid #fecaca', color: skor >= 0.99 ? '#166534' : '#991b1b', borderRadius: 999, padding: '2px 9px', fontSize: 11, fontWeight: 800 }}>
-                    jawabanmu: {belumDijawab ? '—' : (skor >= 0.99 ? 'Benar' : 'Salah')}
-                  </span>
-                  <span style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', color: '#166534', borderRadius: 999, padding: '2px 9px', fontSize: 11, fontWeight: 800 }}>
-                    kunci: {kunciTampil(s.kunciJawaban)}
-                  </span>
-                </div>
-              ) : (
-                <div style={{ marginTop: 10, display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 6 }}>
-                  <span style={{ background: '#f8fafc', border: '1px solid #e2e8f0', color: '#475569', borderRadius: 999, padding: '2px 9px', fontSize: 11, fontWeight: 800 }}>
-                    jawabanmu telah tersimpan {belumDijawab ? '(tidak dijawab)' : ''}
-                  </span>
-                  <span style={{ background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1e40af', borderRadius: 999, padding: '2px 9px', fontSize: 11, fontWeight: 800 }}>
-                    🔒 Kunci & pembahasan dibahas bersama tentor di kelas
-                  </span>
-                </div>
-              )}
-
-              {/* Pembahasan Soal */}
-              {s.pembahasan && paket.tampilkanPembahasan !== false && (
-                skor <= 0 ? (
-                  <div style={{ background: '#f5f3ff', borderRadius: 8, padding: 10, fontSize: 12.5, color: '#4c1d95', marginTop: 8 }}>
-                    <div style={{ fontWeight: 800, marginBottom: 4 }}>❗ Kamu salah di sini — simak pembahasannya:</div>
-                    <RenderPembahasan teks={s.pembahasan} />
-                  </div>
-                ) : (
-                  <details style={{ marginTop: 8 }}>
-                    <summary style={{ fontSize: 12.5, fontWeight: 800, color: '#3949AB', cursor: 'pointer' }}>
-                      Lihat pembahasan ▾
-                    </summary>
-                    <div style={{ marginTop: 6, background: '#f5f3ff', borderRadius: 8, padding: 10, fontSize: 12.5, color: '#4c1d95' }}>
-                      <RenderPembahasan teks={s.pembahasan} />
+              {paket.daftarSoal.map((s, i) => {
+                const skor = skorSatuSoal(s, jawaban[s.id]);
+                const belumDijawab = soalBelumDijawab(s, jawaban[s.id]);
+                return (
+                  <div key={s.id} style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 14, padding: 14, marginBottom: 12, boxShadow: '0 2px 10px rgba(15,23,42,0.08)' }}>
+                    {/* Header Nomor Soal: Jangan tampilkan persentase akurasi & warna bila kunci ditutup */}
+                    {kunciAktif ? (
+                      <div style={{ fontSize: 11.5, color: skor >= 0.99 ? '#16a34a' : skor > 0 ? '#d97706' : '#dc2626', fontWeight: 700, marginBottom: 6 }}>
+                        Soal {i + 1} -- akurasi {Math.round(skor * 100)}%{belumDijawab ? ' (Tidak dijawab)' : ''}
+                      </div>
+                    ) : (
+                      <div style={{ fontSize: 12, color: '#334155', fontWeight: 700, marginBottom: 6 }}>
+                        Soal {i + 1}{belumDijawab ? ' (Tidak dijawab)' : ''}
+                      </div>
+                    )}
+                    {(() => {
+                      const bcn = bacaanDari(s);
+                      if (!bcn) return null;
+                      return (
+                        <div style={{ background: '#f8fafc', borderRadius: 8, padding: 10, marginBottom: 10, ...GAYA_TEKS_BACAAN, whiteSpace: 'pre-wrap' }}>
+                          {bcn.judul && <div style={{ fontWeight: 800, fontSize: 12.5, color: '#0f172a', marginBottom: 4 }}>{bcn.judul}</div>}
+                          {bcn.gambar && bcn.gambar.length > 0 && (
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 8 }}>
+                              {bcn.gambar.map((g, gi) => {
+                                const url = typeof g === 'string' ? g : g?.url || g?.uploadedUrl;
+                                if (!url) return null;
+                                return <img key={gi} src={url} alt="" style={{ maxWidth: '100%', maxHeight: 200, borderRadius: 8, border: '1px solid #e2e8f0' }} />;
+                              })}
+                            </div>
+                          )}
+                          {bcn.teks && <RenderMath text={bcn.teks} />}
+                          {bcn.tabel && <RenderTable table={bcn.tabel} />}
+                        </div>
+                      );
+                    })()}
+                    <div style={{ ...st.kodeChip, color: '#9a3412', background: '#ffedd5', border: '1px solid #fdba74' }}>
+                      🔖 {kodeSoalSiswa({ mapel: paket.mapel || paket.targetKategori || '', paket, nomor: i + 1 })}
                     </div>
-                  </details>
-                )
-              )}
+                    {pisahKodeSumber(teksSoalDari(s)).kode && (
+                      <div style={st.kodeChip}>{pisahKodeSumber(teksSoalDari(s)).kode}</div>
+                    )}
+                    <TeksSoalBergambar
+                      teks={pisahKodeSumber(teksSoalDari(s)).teks}
+                      soal={s}
+                      gambarUrls={gambarButirDari(s)}
+                      gambarMeta={s.gambarMeta || null}
+                      gayaTeks={{ marginBottom: 10 }}
+                      gayaGambar={{ maxHeight: 280, marginBottom: 10 }}
+                    />
+                    {(s.tabelSoal || s.tabel_soal || s.tabel || s.bacaan?.tabelSoal || s.stimulus?.tabel) && (
+                      <RenderTable table={s.tabelSoal || s.tabel_soal || s.tabel || s.bacaan?.tabelSoal || s.stimulus?.tabel} />
+                    )}
+                    <PenahanErrorSoal soalId={s.id}>
+                      <RendererSoal
+                        soal={s}
+                        jawabanTerpilih={jawaban[s.id]}
+                        modeTinjau
+                        sembunyikanKunci={!kunciAktif}
+                      />
+                    </PenahanErrorSoal>
 
-              {s.pembahasan && paket.tampilkanPembahasan === false && (
-                <div style={{ marginTop: 8, background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 10, padding: '8px 12px', fontSize: 11.5, color: '#075985', lineHeight: 1.6 }}>
-                  💡 Pembahasan soal ini tidak dibuka di aplikasi agar dapat dibahas langsung bersama tentor di kelas. Catat nomor soal ini dan sebutkan kode paket <b>{kodePaketTampil(paket)}</b> saat sesi pembahasan.
-                </div>
-              )}
-            </div>
+                    {/* Status Jawaban & Kunci: Hanya muncul bila kunci dibuka */}
+                    {kunciAktif ? (
+                      <div style={{ marginTop: 10, display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 6 }}>
+                        <span style={{ background: skor >= 0.99 ? '#f0fdf4' : '#fef2f2', border: skor >= 0.99 ? '1px solid #bbf7d0' : '1px solid #fecaca', color: skor >= 0.99 ? '#166534' : '#991b1b', borderRadius: 999, padding: '2px 9px', fontSize: 11, fontWeight: 800 }}>
+                          jawabanmu: {belumDijawab ? '—' : (skor >= 0.99 ? 'Benar' : 'Salah')}
+                        </span>
+                        <span style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', color: '#166534', borderRadius: 999, padding: '2px 9px', fontSize: 11, fontWeight: 800 }}>
+                          kunci: {kunciTampil(s.kunciJawaban)}
+                        </span>
+                      </div>
+                    ) : (
+                      <div style={{ marginTop: 10, display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 6 }}>
+                        <span style={{ background: '#f8fafc', border: '1px solid #e2e8f0', color: '#475569', borderRadius: 999, padding: '2px 9px', fontSize: 11, fontWeight: 800 }}>
+                          jawabanmu telah tersimpan {belumDijawab ? '(tidak dijawab)' : ''}
+                        </span>
+                        <span style={{ background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1e40af', borderRadius: 999, padding: '2px 9px', fontSize: 11, fontWeight: 800 }}>
+                          🔒 Kunci & pembahasan dibahas bersama tentor di kelas
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Pembahasan Soal */}
+                    {s.pembahasan && pembahasanAktif && (
+                      skor <= 0 && kunciAktif ? (
+                        <div style={{ background: '#f5f3ff', borderRadius: 8, padding: 10, fontSize: 12.5, color: '#4c1d95', marginTop: 8 }}>
+                          <div style={{ fontWeight: 800, marginBottom: 4 }}>❗ Simak pembahasannya:</div>
+                          <RenderPembahasan teks={s.pembahasan} />
+                        </div>
+                      ) : (
+                        <details style={{ marginTop: 8 }}>
+                          <summary style={{ fontSize: 12.5, fontWeight: 800, color: '#3949AB', cursor: 'pointer' }}>
+                            Lihat pembahasan ▾
+                          </summary>
+                          <div style={{ marginTop: 6, background: '#f5f3ff', borderRadius: 8, padding: 10, fontSize: 12.5, color: '#4c1d95' }}>
+                            <RenderPembahasan teks={s.pembahasan} />
+                          </div>
+                        </details>
+                      )
+                    )}
+
+                    {s.pembahasan && !pembahasanAktif && (
+                      <div style={{ marginTop: 8, background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 10, padding: '8px 12px', fontSize: 11.5, color: '#075985', lineHeight: 1.6 }}>
+                        💡 Pembahasan soal ini tidak dibuka di aplikasi agar dapat dibahas langsung bersama tentor di kelas. Catat nomor soal ini dan sebutkan kode paket <b>{kodePaketTampil(paket)}</b> saat sesi pembahasan.
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </>
           );
-        })}
+        })()}
 
         {/* 🗺️ Arahkan kembali ke Roadmap Belajar jika ini paket ekspedisi roadmap */}
         {(paket?.jalurUjianAi || searchParams.get('jalur') === 'ai') ? (
@@ -1300,9 +1364,14 @@ export default function TryOutView() {
             </button>
           </>
         ) : (
-          <button type="button" onClick={() => navigate('/siswa/dashboard')} style={st.tombolUtama}>
-            Kembali ke Dashboard
-          </button>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <button type="button" onClick={() => navigate('/siswa/tryout')} style={st.tombolUtama}>
+              Kembali ke Daftar Try Out
+            </button>
+            <button type="button" onClick={() => navigate('/siswa/dashboard')} style={st.tombolSekunder}>
+              Kembali ke Dashboard
+            </button>
+          </div>
         )}
       </div></div>
     );

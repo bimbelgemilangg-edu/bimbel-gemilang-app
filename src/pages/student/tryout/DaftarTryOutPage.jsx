@@ -258,13 +258,17 @@ export default function DaftarTryOutPage() {
                       <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 13, fontWeight: 800, color: '#16a34a', justifyContent: 'flex-end' }}>
                         <CheckCircle2 size={14} /> akurasi {x.p.sesi?.totalSkorPersen}%
                       </div>
-                      <div style={{ fontSize: 10.5, color: '#7c3aed', fontWeight: 700 }}>belajar kembali →</div>
+                      {x.p.tampilkanKunci === false && x.p.tampilkanPembahasan === false ? (
+                        <div style={{ fontSize: 10.5, color: '#64748b', fontWeight: 700 }}>🔒 Lihat Nilai Akhir →</div>
+                      ) : (
+                        <div style={{ fontSize: 10.5, color: '#7c3aed', fontWeight: 700 }}>belajar kembali →</div>
+                      )}
                     </div>
                   </button>
                 ))}
               </div>
               <div style={{ fontSize: 10.5, color: '#94a3b8', marginTop: 6 }}>
-                Membuka riwayat menampilkan tinjauan: soal yang salah memuat pembahasan terbuka dan daftar nomor yang bisa kamu salin untuk dibahas tentor.
+                Membuka riwayat menampilkan tiket skor akhir ujian, skala pencapaian, serta pembahasan soal jika dibuka oleh admin.
               </div>
             </div>
           )}
