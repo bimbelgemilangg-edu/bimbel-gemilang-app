@@ -6203,6 +6203,22 @@ function QuestionPreview({ question, mathReady, onCropImage, imageStatus = {}, d
           "pg_kategori" (field tabel_benar_salah) -- bentuknya sama. */}
       {(q.tabel_benar_salah?.length > 0 || q.pernyataan?.length > 0) && (() => {
         const baris = q.tabel_benar_salah?.length ? q.tabel_benar_salah : q.pernyataan;
+        const allJawaban = baris.map(item => (typeof item === 'object' ? safeString(item.jawaban) : '').trim().toLowerCase());
+        const hasSesuai = allJawaban.some(j => j.includes('sesuai') || j === 's');
+        const teksSoalLow = (q.teks_soal || '').toLowerCase();
+        
+        let labelKolom1 = 'Benar';
+        let labelKolom2 = 'Salah';
+        if (hasSesuai || teksSoalLow.includes('kesesuaian') || teksSoalLow.includes('sesuai atau tidak')) {
+          labelKolom1 = 'Sesuai';
+          labelKolom2 = 'Tidak Sesuai';
+        }
+
+        const validValues = [
+          'benar', 'true', 'ya', 'b', '1', 'sesuai', 'fakta', 'setuju', 'tepat',
+          'salah', 'false', 'tidak', 's', '0', 'tidak sesuai', 'tidak_sesuai', 'bukan fakta', 'opini', 'tidak setuju', 'tidak tepat'
+        ];
+
         return (
           <div style={{ marginTop: '16px', borderRadius: '10px', border: '1px solid #cbd5e1', overflow: 'hidden', backgroundColor: '#ffffff' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13.5px' }}>
@@ -6210,8 +6226,8 @@ function QuestionPreview({ question, mathReady, onCropImage, imageStatus = {}, d
                 <tr style={{ backgroundColor: '#1e293b' }}>
                   <th style={{ width: '36px', padding: '10px 8px', textAlign: 'center', color: '#e2e8f0', fontWeight: '600', fontSize: '12px', borderRight: '1px solid #334155' }}>No</th>
                   <th style={{ padding: '10px 14px', textAlign: 'left', color: '#e2e8f0', fontWeight: '600', fontSize: '12px' }}>Pernyataan</th>
-                  <th style={{ width: '76px', padding: '10px 6px', textAlign: 'center', color: '#e2e8f0', fontWeight: '600', fontSize: '12px', borderLeft: '1px solid #334155' }}>Benar</th>
-                  <th style={{ width: '76px', padding: '10px 6px', textAlign: 'center', color: '#e2e8f0', fontWeight: '600', fontSize: '12px', borderLeft: '1px solid #334155' }}>Salah</th>
+                  <th style={{ width: '92px', padding: '10px 6px', textAlign: 'center', color: '#e2e8f0', fontWeight: '600', fontSize: '12px', borderLeft: '1px solid #334155' }}>{labelKolom1}</th>
+                  <th style={{ width: '92px', padding: '10px 6px', textAlign: 'center', color: '#e2e8f0', fontWeight: '600', fontSize: '12px', borderLeft: '1px solid #334155' }}>{labelKolom2}</th>
                 </tr>
               </thead>
               <tbody>
@@ -6219,8 +6235,8 @@ function QuestionPreview({ question, mathReady, onCropImage, imageStatus = {}, d
                   const teks = typeof item === 'object' ? (item.pernyataan || item.teks || '') : String(item);
                   const jawabanRaw = typeof item === 'object' ? safeString(item.jawaban) : '';
                   const jawabanNorm = jawabanRaw.trim().toLowerCase();
-                  const isBenar = ['benar', 'true', 'ya', 'b'].includes(jawabanNorm);
-                  const isSalah = ['salah', 'false', 'tidak', 's'].includes(jawabanNorm);
+                  const isKolom1 = ['benar', 'true', 'ya', 'b', '1', 'sesuai', 'fakta', 'setuju', 'tepat'].includes(jawabanNorm);
+                  const isKolom2 = ['salah', 'false', 'tidak', 's', '0', 'tidak sesuai', 'tidak_sesuai', 'bukan fakta', 'opini', 'tidak setuju', 'tidak tepat'].includes(jawabanNorm);
 
                   return (
                     <tr key={index} style={{ borderTop: index > 0 ? '1px solid #e2e8f0' : 'none', backgroundColor: index % 2 === 0 ? '#ffffff' : '#f8fafc' }}>
@@ -6234,9 +6250,9 @@ function QuestionPreview({ question, mathReady, onCropImage, imageStatus = {}, d
                         <span style={{
                           display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
                           width: '22px', height: '22px', borderRadius: '4px',
-                          border: isBenar ? '2px solid #15803d' : '1.5px solid #cbd5e1',
-                          backgroundColor: isBenar ? '#15803d' : 'transparent',
-                          color: isBenar ? '#ffffff' : 'transparent',
+                          border: isKolom1 ? '2px solid #15803d' : '1.5px solid #cbd5e1',
+                          backgroundColor: isKolom1 ? '#15803d' : 'transparent',
+                          color: isKolom1 ? '#ffffff' : 'transparent',
                           fontSize: '13px', fontWeight: '700', lineHeight: 1,
                         }}>✓</span>
                       </td>
@@ -6244,9 +6260,9 @@ function QuestionPreview({ question, mathReady, onCropImage, imageStatus = {}, d
                         <span style={{
                           display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
                           width: '22px', height: '22px', borderRadius: '4px',
-                          border: isSalah ? '2px solid #b91c1c' : '1.5px solid #cbd5e1',
-                          backgroundColor: isSalah ? '#b91c1c' : 'transparent',
-                          color: isSalah ? '#ffffff' : 'transparent',
+                          border: isKolom2 ? '2px solid #b91c1c' : '1.5px solid #cbd5e1',
+                          backgroundColor: isKolom2 ? '#b91c1c' : 'transparent',
+                          color: isKolom2 ? '#ffffff' : 'transparent',
                           fontSize: '13px', fontWeight: '700', lineHeight: 1,
                         }}>✓</span>
                       </td>
@@ -6257,10 +6273,10 @@ function QuestionPreview({ question, mathReady, onCropImage, imageStatus = {}, d
             </table>
             {baris.some(item => {
               const j = (typeof item === 'object' ? safeString(item.jawaban) : '').trim().toLowerCase();
-              return !['benar', 'true', 'ya', 'b', 'salah', 'false', 'tidak', 's'].includes(j);
+              return !validValues.includes(j);
             }) && (
               <div style={{ padding: '8px 14px', fontSize: '11.5px', color: '#b45309', backgroundColor: '#fffbeb', borderTop: '1px solid #fde68a' }}>
-                ⚠️ Ada pernyataan yang jawabannya belum jelas Benar/Salah — kolom dikosongkan, cek manual sebelum simpan.
+                ⚠️ Ada pernyataan yang jawabannya belum jelas — kolom dikosongkan, cek manual sebelum simpan.
               </div>
             )}
           </div>

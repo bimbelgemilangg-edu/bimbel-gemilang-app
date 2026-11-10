@@ -109,6 +109,8 @@ def generate_html_document(title, subtitle, questions):
         # Kunci Jawaban & Pembahasan
         if isinstance(kunci, list):
             kunci_val = ",".join(str(k) for k in kunci)
+        elif isinstance(kunci, dict):
+            kunci_val = "-".join(str(v) for v in kunci.values())
         else:
             kunci_val = str(kunci)
         art_lines.append(f'  <meta data-field="kunci_jawaban" data-value="{kunci_val}" />')

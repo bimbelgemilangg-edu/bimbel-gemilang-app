@@ -194,9 +194,9 @@ soal_bindo = [
             ]
         },
         "pernyataan": [
-            {"teks": "Penyediaan ruang terbuka hijau terkendala lahan yang terbatas.", "kunci": "Sesuai"},
-            {"teks": "Kapasitas penanganan lokal mampu mengatasi masalah sampah", "kunci": "Tidak Sesuai"},
-            {"teks": "Urbanisasi dan pertumbuhan penduduk menyebabkan masalah lingkungan.", "kunci": "Sesuai"}
+            {"teks": "A. Penyediaan ruang terbuka hijau terkendala lahan yang terbatas.", "kunci": "Sesuai"},
+            {"teks": "B. Kapasitas penanganan lokal mampu mengatasi masalah sampah", "kunci": "Tidak Sesuai"},
+            {"teks": "C. Urbanisasi dan pertumbuhan penduduk menyebabkan masalah lingkungan.", "kunci": "Sesuai"}
         ],
         "kunci": {"A": "Sesuai", "B": "Tidak Sesuai", "C": "Sesuai"},
         "pembahasan": "Pernyataan A dan C sesuai dengan isi paragraf 1 dan 2. Pernyataan B tidak sesuai karena teks secara tegas menyatakan sampah 'melebihi kapasitas penanganan lokal'."
@@ -439,9 +439,9 @@ soal_bindo = [
             ]
         },
         "pernyataan": [
-            {"teks": "Film Na Willa menjadi sorotan karena memadukan alur drama yang emosional dengan sinematografi yang kuat.", "kunci": "Benar"},
-            {"teks": "Akting para pemain, terutama pemeran Willa, terasa autentik dan natural.", "kunci": "Benar"},
-            {"teks": "Tokoh utamanya bernama Willa, seorang wanita muda yang berjuang menghadapi berbagai kesulitan hidup", "kunci": "Salah"}
+            {"teks": "A. Film Na Willa menjadi sorotan karena memadukan alur drama yang emosional dengan sinematografi yang kuat.", "kunci": "Benar"},
+            {"teks": "B. Akting para pemain, terutama pemeran Willa, terasa autentik dan natural.", "kunci": "Benar"},
+            {"teks": "C. Tokoh utamanya bernama Willa, seorang wanita muda yang berjuang menghadapi berbagai kesulitan hidup", "kunci": "Salah"}
         ],
         "kunci": {"A": "Benar", "B": "Benar", "C": "Salah"},
         "pembahasan": "Pernyataan A dan B merupakan opini evaluatif penulis terhadap kualitas film. Pernyataan C bukan opini, melainkan fakta sinopsis cerita."
@@ -514,9 +514,9 @@ soal_bindo = [
             ]
         },
         "pernyataan": [
-            {"teks": "risiko alergi dan peradangan bagi pemakainya", "kunci": "Salah"},
-            {"teks": "pengaruh akibat penggunaan make up berlebihan", "kunci": "Benar"},
-            {"teks": "akibat penggunaan make up tanpa memperhatikan kualitas", "kunci": "Salah"}
+            {"teks": "A. risiko alergi dan peradangan bagi pemakainya", "kunci": "Salah"},
+            {"teks": "B. pengaruh akibat penggunaan make up berlebihan", "kunci": "Benar"},
+            {"teks": "C. akibat penggunaan make up tanpa memperhatikan kualitas", "kunci": "Salah"}
         ],
         "kunci": {"A": "Salah", "B": "Benar", "C": "Salah"},
         "pembahasan": "Ide pokok paragraf 3 termuat pada kalimat utama: 'Penggunaan make up berlebihan juga dapat memengaruhi kesehatan mata dan pernapasan'."
@@ -630,9 +630,9 @@ Ungkapan perasaan siapakah yang paling sesuai dengan isi puisi tersebut?""",
             ]
         },
         "pernyataan": [
-            {"teks": "Banyak warga yang mengikuti kegiatan peduli lingkungan yang dilakukan Maya dan teman-temannya.", "kunci": "Sesuai"},
-            {"teks": "Maya diusir dari kota tersebut karena membuat repot warga yang masih dilanda kesusahan.", "kunci": "Tidak Sesuai"},
-            {"teks": "Maya mendapatkan apresiasi dari warga karena upayanya dalam peduli lingkungan.", "kunci": "Sesuai"}
+            {"teks": "A. Banyak warga yang mengikuti kegiatan peduli lingkungan yang dilakukan Maya dan teman-temannya.", "kunci": "Sesuai"},
+            {"teks": "B. Maya diusir dari kota tersebut karena membuat repot warga yang masih dilanda kesusahan.", "kunci": "Tidak Sesuai"},
+            {"teks": "C. Maya mendapatkan apresiasi dari warga karena upayanya dalam peduli lingkungan.", "kunci": "Sesuai"}
         ],
         "kunci": {"A": "Sesuai", "B": "Tidak Sesuai", "C": "Sesuai"},
         "pembahasan": "Kelanjutan yang logis adalah warga menyambut positif dan tergerak mengikuti inisiatif peduli lingkungan Maya (A dan C sesuai; B tidak sesuai)."
