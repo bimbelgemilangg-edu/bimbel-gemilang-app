@@ -372,6 +372,10 @@ const StudentDashboard = () => {
         if (sSnap?.exists()) {
           const data = sSnap.data();
           setStudentProfile(data);
+          const fotoVal = data.fotoUrl || data.photoUrl || data.foto || data.avatarUrl || '';
+          if (fotoVal) {
+            localStorage.setItem('studentFotoUrl', fotoVal);
+          }
           kelasVal = data.kelasSekolah || '';
           programVal = data.kategori || 'Reguler';
           nimVal = data.studentId || data.id || studentId;
@@ -709,84 +713,23 @@ const StudentDashboard = () => {
     <div style={{ paddingBottom: isMobile ? 70 : 0 }}>
       <style>{`@keyframes skeletonShine { 0%{background-position:100% 50%} 100%{background-position:0 50%} } @keyframes fadeSlideIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} } .sd-card { animation: fadeSlideIn 0.25s ease-out; } .sd-task-item:hover, .sd-survey-btn:hover { filter: brightness(0.97); }`}</style>
       <div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 18, flexWrap: 'wrap', gap: 10 }}>
-          <div>
-            <p style={{ margin: 0, fontSize: 12, color: '#94a3b8', fontWeight: 600 }}>{greeting.icon} {greeting.text}</p>
-            <h1 style={{ margin: '2px 0 0', fontSize: isMobile ? 20 : 25, fontWeight: 800, color: '#1e293b' }}><ChipTargetSiswa studentId={studentId} profil={studentProfile} />{studentName}!</h1>
-            <p style={{ color: '#64748b', marginTop: 5, fontSize: 12 }}>
+        {/* Baris Atas: Nama Siswa & Bell Notifikasi (selalu sejajar tanpa terputus banner) */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14, gap: 12 }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <h1 style={{ margin: '2px 0 0', fontSize: isMobile ? 20 : 25, fontWeight: 800, color: '#1e293b', wordBreak: 'break-word' }}>
+              <ChipTargetSiswa studentId={studentId} profil={studentProfile} />{studentName}!
+            </h1>
+            <p style={{ color: '#64748b', marginTop: 4, fontSize: 12 }}>
               {(studentProfile?.kategori || studentProgram || 'Reguler')} • Kelas {studentProfile?.kelasSekolah || studentKelas || '-'}
               {studentNim && <span style={{ marginLeft: 8, fontSize: 10, background: '#eef2ff', color: '#4338ca', padding: '2px 8px', borderRadius: 20, fontWeight: 700 }}>🆔 {studentNim}</span>}
             </p>
-            {/* 🔥 BARU (2026-10-10): kartu target rasionalisasi kampus. Me-render
-                null untuk siswa yang tidak didaftarkan admin, jadi dashboard
-                SD/SMP/kelas 10-11 tidak berubah sedikit pun. */}
-            <KartuTargetSiswa studentId={studentId} profil={studentProfile} />
-
-            {/* 🗺️ BANNER ROADMAP BELAJAR — Khusus Kelas 6 SD, 9 SMP, 12 SMA/UTBK (Tanpa Deadline) */}
-            {(() => {
-              const k = studentProfile?.kelas || studentProfile?.kelasSekolah || studentKelas || (typeof localStorage !== 'undefined' ? localStorage.getItem('studentGrade') || localStorage.getItem('studentKelas') : '');
-              const j = studentProfile?.jenjang || (typeof localStorage !== 'undefined' ? localStorage.getItem('studentGrade') : '');
-              const targetUjian = deteksiJenjangUjianAkhir({ ...studentProfile, kelas: k, jenjang: j });
-              if (!targetUjian) return null;
-
-              const isUtbk = targetUjian.jenjang === 'SMA' || String(k).toLowerCase().includes('12') || String(k).toLowerCase().includes('utbk');
-              const judulRoadmap = isUtbk ? 'Roadmap UTBK-SNBT' : targetUjian.jenjang === 'SD' ? 'Roadmap TKA SD' : 'Roadmap TKA SMP';
-              const taglineRoadmap = isUtbk
-                ? 'Pantau perjalanan kemampuan UTBK/SNBT-mu real time'
-                : 'Pantau perjalanan kemampuan TKA-mu real time';
-
-              return (
-                <div
-                  onClick={() => navigate('/siswa/roadmap')}
-                  style={{
-                    marginTop: 14,
-                    background: 'linear-gradient(135deg, #0d9488 0%, #047857 100%)',
-                    borderRadius: 20,
-                    padding: '16px 20px',
-                    color: '#ffffff',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    cursor: 'pointer',
-                    boxShadow: '0 6px 20px rgba(13, 148, 136, 0.28)',
-                    position: 'relative',
-                    overflow: 'hidden',
-                  }}
-                  title={`Buka ${judulRoadmap}`}
-                >
-                  <div style={{ position: 'relative', zIndex: 2, maxWidth: '80%' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-                      <span style={{ background: '#f59e0b', color: '#1e293b', fontSize: 10, fontWeight: 900, padding: '2px 8px', borderRadius: 99 }}>
-                        {targetUjian.labelBadge}
-                      </span>
-                      <span style={{ fontSize: 11, fontWeight: 700, color: '#ccfbf1' }}>
-                        Simulasi Bertahap Tanpa Deadline
-                      </span>
-                    </div>
-                    <div style={{ fontSize: 16.5, fontWeight: 900, color: '#ffffff' }}>
-                      {judulRoadmap}
-                    </div>
-                    <div style={{ fontSize: 12.5, color: '#e6fffa', marginTop: 3, fontWeight: 500 }}>
-                      {taglineRoadmap} 🚀
-                    </div>
-                  </div>
-                  <div style={{ position: 'relative', zIndex: 2 }}>
-                    <div style={{
-                      width: 46, height: 46, borderRadius: '50%',
-                      background: 'rgba(255,255,255,0.22)',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                    }}>
-                      <Rocket size={22} color="#ffffff" />
-                    </div>
-                  </div>
-                </div>
-              );
-            })()}
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, position: 'relative' }}>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, position: 'relative', flexShrink: 0 }}>
             <button
+              type="button"
               onClick={() => setShowNotifPanel(v => !v)}
+              aria-label="Kotak Masuk Notifikasi"
               style={{
                 position: 'relative', width: 42, height: 42, borderRadius: 14,
                 background: 'white', border: '1px solid #e2e8f0', cursor: 'pointer',
@@ -810,8 +753,13 @@ const StudentDashboard = () => {
               <>
                 <div onClick={() => setShowNotifPanel(false)} style={{ position: 'fixed', inset: 0, zIndex: 998 }} />
                 <div style={{
-                  position: 'absolute', top: 50, right: 0,
-                  width: isMobile ? 'calc(100vw - 32px)' : 360, maxWidth: 380, maxHeight: 440,
+                  position: isMobile ? 'fixed' : 'absolute',
+                  top: isMobile ? 68 : 50,
+                  left: isMobile ? 12 : 'auto',
+                  right: isMobile ? 12 : 0,
+                  width: isMobile ? 'calc(100vw - 24px)' : 360,
+                  maxWidth: isMobile ? 'calc(100vw - 24px)' : 380,
+                  maxHeight: isMobile ? 'calc(100vh - 160px)' : 440,
                   background: 'white', borderRadius: 16, boxShadow: '0 16px 40px rgba(0,0,0,0.18)',
                   border: '1px solid #e2e8f0', zIndex: 999, overflow: 'hidden', display: 'flex', flexDirection: 'column',
                 }}>
@@ -866,12 +814,82 @@ const StudentDashboard = () => {
               </>
             )}
             {!isMobile && (
-              <button onClick={() => setIsScanning(true)} style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#1e293b', color: 'white', border: 'none', padding: '11px 20px', borderRadius: 14, fontWeight: 700, fontSize: 13, cursor: 'pointer', boxShadow: '0 4px 12px rgba(30,41,59,0.2)' }}>
+              <button
+                type="button"
+                onClick={() => navigate('/siswa/scan-absensi')}
+                style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#1e293b', color: 'white', border: 'none', padding: '11px 20px', borderRadius: 14, fontWeight: 700, fontSize: 13, cursor: 'pointer', boxShadow: '0 4px 12px rgba(30,41,59,0.2)' }}
+              >
                 <Camera size={17} /> Scan Absen
               </button>
             )}
           </div>
         </div>
+
+        {/* Target Kampus & Banner Roadmap (di bawah baris nama & notif) */}
+        <KartuTargetSiswa studentId={studentId} profil={studentProfile} />
+
+        {/* 🗺️ BANNER ROADMAP BELAJAR — Khusus Kelas 6 SD, 9 SMP, 12 SMA/UTBK (Tanpa Deadline) */}
+        {(() => {
+          const k = studentProfile?.kelas || studentProfile?.kelasSekolah || studentKelas || (typeof localStorage !== 'undefined' ? localStorage.getItem('studentGrade') || localStorage.getItem('studentKelas') : '');
+          const j = studentProfile?.jenjang || (typeof localStorage !== 'undefined' ? localStorage.getItem('studentGrade') : '');
+          const targetUjian = deteksiJenjangUjianAkhir({ ...studentProfile, kelas: k, jenjang: j });
+          if (!targetUjian) return null;
+
+          const isUtbk = targetUjian.jenjang === 'SMA' || String(k).toLowerCase().includes('12') || String(k).toLowerCase().includes('utbk');
+          const judulRoadmap = isUtbk ? 'Roadmap UTBK-SNBT' : targetUjian.jenjang === 'SD' ? 'Roadmap TKA SD' : 'Roadmap TKA SMP';
+          const taglineRoadmap = isUtbk
+            ? 'Pantau perjalanan kemampuan UTBK/SNBT-mu real time'
+            : 'Pantau perjalanan kemampuan TKA-mu real time';
+
+          return (
+            <div
+              onClick={() => navigate('/siswa/roadmap')}
+              style={{
+                marginTop: 10,
+                marginBottom: 16,
+                background: 'linear-gradient(135deg, #0d9488 0%, #047857 100%)',
+                borderRadius: 20,
+                padding: '16px 20px',
+                color: '#ffffff',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                cursor: 'pointer',
+                boxShadow: '0 6px 20px rgba(13, 148, 136, 0.28)',
+                position: 'relative',
+                overflow: 'hidden',
+              }}
+              title={`Buka ${judulRoadmap}`}
+            >
+              <div style={{ position: 'relative', zIndex: 2, maxWidth: '80%' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+                  <span style={{ background: '#f59e0b', color: '#1e293b', fontSize: 10, fontWeight: 900, padding: '2px 8px', borderRadius: 99 }}>
+                    {targetUjian.labelBadge}
+                  </span>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: '#ccfbf1' }}>
+                    Simulasi Bertahap Tanpa Deadline
+                  </span>
+                </div>
+                <div style={{ fontSize: 16.5, fontWeight: 900, color: '#ffffff' }}>
+                  {judulRoadmap}
+                </div>
+                <div style={{ fontSize: 12.5, color: '#e6fffa', marginTop: 3, fontWeight: 500 }}>
+                  {taglineRoadmap} 🚀
+                </div>
+              </div>
+              <div style={{ position: 'relative', zIndex: 2 }}>
+                <div style={{
+                  width: 46, height: 46, borderRadius: '50%',
+                  background: 'rgba(255,255,255,0.22)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                }}>
+                  <Rocket size={22} color="#ffffff" />
+                </div>
+              </div>
+            </div>
+          );
+        })()}
 
         {(() => {
           const { level, xpProgress, xpKebutuhan } = hitungLevelDariXp(progresXp);
@@ -1605,7 +1623,12 @@ const StudentDashboard = () => {
             nama={studentName}
             nim={studentNim}
             student={studentProfile}
-            onUpdated={(patch) => setStudentProfile((prev) => ({ ...(prev || {}), ...patch }))}
+            onUpdated={(patch) => {
+              setStudentProfile((prev) => ({ ...(prev || {}), ...patch }));
+              if (patch?.fotoUrl) {
+                localStorage.setItem('studentFotoUrl', patch.fotoUrl);
+              }
+            }}
           />
         </div>
       </div>
@@ -1727,15 +1750,6 @@ const StudentDashboard = () => {
             setProgresXp((xp) => xp + 30);
           }}
         />
-      )}
-
-      {isMobile && (
-        <button onClick={() => setIsScanning(true)} style={{
-          position: 'fixed', bottom: 'max(20px, calc(env(safe-area-inset-bottom) + 12px))', right: 20,
-          width: 56, height: 56, borderRadius: '50%', background: '#1e293b', color: 'white', border: 'none',
-          boxShadow: '0 8px 20px rgba(0,0,0,0.3)', zIndex: 900, cursor: 'pointer',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-        }}><Camera size={22} /></button>
       )}
     </div>
   );

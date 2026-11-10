@@ -21,6 +21,7 @@ test('slot lain & rute tak dikenal', () => {
   assert.equal(menuAktifBawah('/siswa/tryout/p1'), 'tryout');
   assert.equal(menuAktifBawah('/siswa/jadwal'), 'jadwal');
   assert.equal(menuAktifBawah('/siswa/absensi'), 'absensi');
+  assert.equal(menuAktifBawah('/siswa/scan-absensi'), 'absensi');
   assert.equal(menuAktifBawah('/admin/buku'), '');
 });
 

@@ -49,6 +49,7 @@ const KUNCI = {
   NAMA: 'studentName',
   KELAS: 'studentKelas',
   DOC: 'studentDocId',
+  FOTO: 'studentFotoUrl',
 };
 
 const JEDA_SEGARKAN_MS = 60 * 1000;
@@ -60,12 +61,13 @@ let profilSaatIni = null;
 
 function bacaProfilSiswaSync() {
   if (typeof localStorage === 'undefined') {
-    return { nama: 'Siswa', kelas: '', docId: null };
+    return { nama: 'Siswa', kelas: '', docId: null, fotoUrl: '' };
   }
   return {
     nama: localStorage.getItem(KUNCI.NAMA) || 'Siswa',
     kelas: localStorage.getItem(KUNCI.KELAS) || '',
     docId: localStorage.getItem(KUNCI.DOC) || null,
+    fotoUrl: localStorage.getItem(KUNCI.FOTO) || '',
   };
 }
 
@@ -95,19 +97,22 @@ function langganan(fn) {
 export function putuskanPembaruanProfil(tersimpan, server) {
   const namaCache = tersimpan?.nama || 'Siswa';
   const kelasCache = tersimpan?.kelas || '';
+  const fotoCache = tersimpan?.fotoUrl || '';
 
   // Server tidak memberi objek apa pun (dokumen hilang, jaringan putus
   // di tengah jalan, bug): JANGAN anggap itu "kelas jadi kosong".
   // Mengosongkan profil siswa karena kegagalan membaca adalah cara
   // paling cepat membuat HP siswa menampilkan blank.
   if (!server || typeof server !== 'object') {
-    return { berubah: false, nama: namaCache, kelas: kelasCache };
+    return { berubah: false, nama: namaCache, kelas: kelasCache, fotoUrl: fotoCache };
   }
 
   const nama = String(server.nama ?? '').trim() || namaCache;
   const kelas = String(server.kelasSekolah ?? '').trim();
-  const berubah = nama !== namaCache || kelas !== kelasCache;
-  return { berubah, nama, kelas };
+  const rawFoto = server.fotoUrl ?? server.photoUrl ?? server.foto ?? server.avatarUrl;
+  const fotoUrl = rawFoto !== undefined ? String(rawFoto || '').trim() : fotoCache;
+  const berubah = nama !== namaCache || kelas !== kelasCache || (rawFoto !== undefined && fotoUrl !== fotoCache);
+  return { berubah, nama, kelas, fotoUrl };
 }
 
 /**
@@ -145,12 +150,15 @@ export async function segarkanProfilSiswa(paksa = false) {
       const snap = await getDoc(doc(db, 'students', tersimpan.docId));
       if (!snap.exists()) return tersimpan;
 
-      const { berubah, nama, kelas } = putuskanPembaruanProfil(tersimpan, snap.data());
+      const { berubah, nama, kelas, fotoUrl } = putuskanPembaruanProfil(tersimpan, snap.data());
       if (!berubah) return tersimpan;
 
       localStorage.setItem(KUNCI.NAMA, nama);
       localStorage.setItem(KUNCI.KELAS, kelas);
-      const profil = { ...tersimpan, nama, kelas };
+      if (fotoUrl !== undefined) {
+        localStorage.setItem(KUNCI.FOTO, fotoUrl);
+      }
+      const profil = { ...tersimpan, nama, kelas, fotoUrl };
       umumkan(profil);
       return profil;
     } catch (e) {

@@ -13,10 +13,10 @@
 // ============================================================
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Home, Rocket, GraduationCap, Calendar, UserCheck } from 'lucide-react';
+import { Home, Rocket, GraduationCap, Calendar, UserCheck, Camera } from 'lucide-react';
 import { DAFTAR_MENU_BAWAH, menuAktifBawah, navBawahSembunyiDiRute } from '../utils/menuBawahSiswa';
 
-const IKON = { Home, Rocket, GraduationCap, Calendar, UserCheck };
+const IKON = { Home, Rocket, GraduationCap, Calendar, UserCheck, Camera };
 
 export default function BottomNavSiswa() {
   const [mobile, setMobile] = useState(() => (typeof window === 'undefined' ? false : window.innerWidth <= 820));

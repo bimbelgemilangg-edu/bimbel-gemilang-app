@@ -210,6 +210,7 @@ import StudentSchedule from './pages/student/StudentSchedule';
 import StudentFinanceSiswa from './pages/student/StudentFinance';
 import StudentGrades from './pages/student/StudentGrades';
 import StudentAttendanceSiswa from './pages/student/StudentAttendance';
+import ScanAbsensiPage from './pages/student/ScanAbsensiPage';
 import StudentElearning from './pages/student/StudentElearning';
 // MATERI v2 -- rombak tampilan materi belajar
 // (rencana: docs/RENCANA-ROMBAK-MATERI.md)
@@ -428,8 +429,17 @@ const SiswaLayout = ({ children }) => {
               <small style={{ color: '#7f8c8d', fontSize: 10 }}>Portal Siswa</small>
             </div>
           </div>
-          <div style={gayaAvatarSiswa}>
-            {profilSiswa.nama?.charAt(0) || 'S'}
+          <div style={{ ...gayaAvatarSiswa, overflow: 'hidden' }}>
+            {(profilSiswa.fotoUrl || (typeof localStorage !== 'undefined' ? localStorage.getItem('studentFotoUrl') : '')) ? (
+              <img
+                src={profilSiswa.fotoUrl || localStorage.getItem('studentFotoUrl')}
+                alt={profilSiswa.nama || 'Siswa'}
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                onError={(e) => { e.currentTarget.style.display = 'none'; }}
+              />
+            ) : (
+              profilSiswa.nama?.charAt(0) || 'S'
+            )}
           </div>
         </header>
         <div style={gayaIsiSiswa(isMobile)}>
@@ -1035,6 +1045,7 @@ function App() {
           element={<SiswaPage><StudentLeaderboard /></SiswaPage>}
         />
         <Route path="/siswa/absensi" element={<SiswaPage><StudentAttendanceSiswa /></SiswaPage>} />
+        <Route path="/siswa/scan-absensi" element={<SiswaPage><ScanAbsensiPage /></SiswaPage>} />
         <Route path="/siswa/modul/:id" element={<SiswaPageBelajar fitur="Materi Modul"><ModulSiswaWrapper /></SiswaPageBelajar>} />
         <Route path="/siswa/kuis/:id" element={<SiswaPageBelajar fitur="Kuis"><KuisSiswaWrapper /></SiswaPageBelajar>} />
         <Route path="/siswa/survei/:id" element={<SiswaPage><StudentSurveyView /></SiswaPage>} />

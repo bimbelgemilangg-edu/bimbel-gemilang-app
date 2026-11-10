@@ -12,7 +12,7 @@ export const DAFTAR_MENU_BAWAH = [
   { id: 'tryout', label: 'Try Out', rute: '/siswa/tryout', icon: 'Rocket' },
   { id: 'akses', label: 'Akses Belajar', rute: '/siswa/akses-belajar', icon: 'GraduationCap', tengah: true },
   { id: 'jadwal', label: 'Jadwal', rute: '/siswa/jadwal', icon: 'Calendar' },
-  { id: 'absensi', label: 'Absensi', rute: '/siswa/absensi', icon: 'UserCheck' },
+  { id: 'absensi', label: 'Scan Absensi', rute: '/siswa/scan-absensi', icon: 'Camera' },
 ];
 
 /**
@@ -56,7 +56,7 @@ export function menuAktifBawah(pathname = '') {
     || p.startsWith('/siswa/kuis')) return 'akses';
   if (p.startsWith('/siswa/tryout')) return 'tryout';
   if (p.startsWith('/siswa/jadwal')) return 'jadwal';
-  if (p.startsWith('/siswa/absensi') || p.startsWith('/siswa/kehadiran')) return 'absensi';
+  if (p.startsWith('/siswa/absensi') || p.startsWith('/siswa/kehadiran') || p.startsWith('/siswa/scan-absensi')) return 'absensi';
   if (p.startsWith('/siswa/dashboard')) return 'beranda';
   return '';
 }

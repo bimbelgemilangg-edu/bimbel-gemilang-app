@@ -230,6 +230,7 @@ const LoginSiswa = () => {
           localStorage.setItem("studentName", studentData.nama || "Siswa");
           localStorage.setItem("studentKelas", studentData.kelasSekolah || "");
           localStorage.setItem("studentGrade", studentData.kelasSekolah || "");
+          localStorage.setItem("studentFotoUrl", studentData.fotoUrl || studentData.photoUrl || studentData.foto || studentData.avatarUrl || "");
           
           console.log("✅ Login berhasil - Student ID:", studentId);
           

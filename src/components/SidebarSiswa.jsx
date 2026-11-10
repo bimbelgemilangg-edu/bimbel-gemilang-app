@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
-  LogOut, X, Home, BarChart2, BookOpen, Wallet, Trophy, TrendingUp, GraduationCap, Calendar, ClipboardCheck, Hash, Library, Target, Rocket, Flame,
+  LogOut, X, Home, BarChart2, BookOpen, Wallet, Trophy, TrendingUp, GraduationCap, Calendar, ClipboardCheck, Hash, Library, Target, Rocket, Flame, Camera,
 } from 'lucide-react';
 import { useProfilSiswa } from '../utils/profilSiswa';
 import { useDataTargetKampus } from '../services/dataTargetKampus';
@@ -24,6 +24,7 @@ const SidebarSiswa = ({ activeMenu, setActiveMenu, isOpen, setIsOpen }) => {
     name: profil.nama || 'Siswa',
     nim: localStorage.getItem('studentNim') || localStorage.getItem('studentId') || '',
     kelas: profil.kelas || localStorage.getItem('studentGrade') || '',
+    fotoUrl: profil.fotoUrl || (typeof localStorage !== 'undefined' ? localStorage.getItem('studentFotoUrl') : '') || '',
   };
 
   // ===== EFFECTS =====
@@ -87,6 +88,8 @@ const SidebarSiswa = ({ activeMenu, setActiveMenu, isOpen, setIsOpen }) => {
   // 📙 20 Okt: pintu eksplisit buku PDF di sidebar (desktop & drawer)
   { id: 'bukupdf', label: 'Buku PDF Gemilang', icon: <BookOpen size={18} />, path: '/siswa/buku-pdf', color: '#f97316' },
         { id: 'jadwal', label: 'Jadwal', icon: <Calendar size={18} />, path: '/siswa/jadwal', color: '#ec4899' },
+        // 📷 Scan Absensi: Pemindaian QR absensi tatap muka & foto kehadiran
+        { id: 'scan-absensi', label: 'Scan Absensi', icon: <Camera size={18} />, path: '/siswa/scan-absensi', color: '#059669', badge: 'Kamera' },
         // 🔥 Menu ini sebelumnya TIDAK PERNAH ADA sejak awal, padahal
         // halaman & rutenya (/siswa/absensi) sudah lengkap dan berfungsi.
         { id: 'absensi', label: 'Kehadiran', icon: <ClipboardCheck size={18} />, path: '/siswa/absensi', color: '#14b8a6' },
@@ -126,10 +129,12 @@ const SidebarSiswa = ({ activeMenu, setActiveMenu, isOpen, setIsOpen }) => {
       localStorage.removeItem("isSiswaLoggedIn");
       localStorage.removeItem("role");
       localStorage.removeItem("studentId");
+      localStorage.removeItem("studentDocId");
       localStorage.removeItem("studentName");
       localStorage.removeItem("studentNim");
       localStorage.removeItem("studentKelas");
       localStorage.removeItem("studentGrade");
+      localStorage.removeItem("studentFotoUrl");
       navigate('/login-siswa');
     }
   };
@@ -187,8 +192,17 @@ const SidebarSiswa = ({ activeMenu, setActiveMenu, isOpen, setIsOpen }) => {
         {/* PROFILE CARD — sekadar identitas (nama, ID, kelas), TANPA fitur
             upload foto profil (memang tidak diperlukan). */}
         <div style={styles.profileCard}>
-          <div style={styles.profileAvatar}>
-            {getInitials(studentData.name)}
+          <div style={{ ...styles.profileAvatar, overflow: 'hidden' }}>
+            {studentData.fotoUrl ? (
+              <img
+                src={studentData.fotoUrl}
+                alt={studentData.name}
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                onError={(e) => { e.currentTarget.style.display = 'none'; }}
+              />
+            ) : (
+              getInitials(studentData.name)
+            )}
           </div>
           <div style={styles.profileInfo}>
             <div style={styles.profileName}>{studentData.name}</div>
