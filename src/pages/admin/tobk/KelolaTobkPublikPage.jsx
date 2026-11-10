@@ -9,12 +9,14 @@ import {
   Trophy, Users, Key, Clock, ShieldCheck, Download, Trash2,
   PlusCircle, RefreshCw, ExternalLink, CheckCircle, AlertTriangle,
   Search, Filter, PlayCircle, StopCircle, ArrowRight, Share2, Sparkles,
-  Layers, Check, HelpCircle, Printer, FileSpreadsheet, FileText, X
+  Layers, Check, HelpCircle, Printer, FileSpreadsheet, FileText, X,
+  Pause, Play
 } from 'lucide-react';
 import { db } from '../../../firebase';
 import { collection, getDocs } from 'firebase/firestore';
 import {
   ambilSemuaEventTobk, simpanEventTobk, toggleTokenEventTobk,
+  toggleJedaEventTobk, dengarEventTobk,
   ambilSemuaLeadsTobk, eksporLeadsCsv, eksporRekapNilaiExcel, bersihkanDataEventTobk,
   SUBTES_RESMI_UTBK_2026, SESI_RESMI_TKA_2026, SOAL_PRESET_UTBK
 } from '../../../services/tobkPublikService';
@@ -56,6 +58,12 @@ export default function KelolaTobkPublikPage() {
   // Modal Cetak / Preview PDF Rekap Nilai
   const [showModalCetakPdf, setShowModalCetakPdf] = useState(false);
 
+  // Modal Jeda Ujian (Sholat / Istirahat)
+  const [showModalJeda, setShowModalJeda] = useState(false);
+  const [opsiAlasanJeda, setOpsiAlasanJeda] = useState('Waktu Sholat Dzuhur & Istirahat');
+  const [alasanKustom, setAlasanKustom] = useState('');
+  const [jedaLoading, setJedaLoading] = useState(false);
+
   // Muat data awal
   const muatData = async () => {
     setLoading(true);
@@ -89,6 +97,15 @@ export default function KelolaTobkPublikPage() {
     muatData();
   }, []);
 
+  // Live Sync status event (jeda ujian, token, konfigurasi) secara real-time
+  useEffect(() => {
+    if (!selectedEventId) return;
+    const unsub = dengarEventTobk(selectedEventId, (evBaru) => {
+      setEvents((prev) => prev.map((e) => (e.id === evBaru.id ? { ...e, ...evBaru } : e)));
+    });
+    return () => unsub();
+  }, [selectedEventId]);
+
   const handlePilihEvent = async (eId) => {
     setSelectedEventId(eId);
     setRefreshing(true);
@@ -111,6 +128,74 @@ export default function KelolaTobkPublikPage() {
     setEvents((prev) =>
       prev.map((e) => (e.id === currentEvent.id ? { ...e, tokenAktif: statusBaru } : e))
     );
+  };
+
+  const handleBukaModalJeda = () => {
+    setOpsiAlasanJeda('Waktu Sholat Dzuhur & Istirahat');
+    setAlasanKustom('');
+    setShowModalJeda(true);
+  };
+
+  const handleTerapkanJeda = async () => {
+    if (!currentEvent) return;
+    const finalAlasan = opsiAlasanJeda === 'kustom'
+      ? (alasanKustom.trim() || 'Waktu Sholat & Istirahat')
+      : opsiAlasanJeda;
+
+    setJedaLoading(true);
+    try {
+      await toggleJedaEventTobk(currentEvent.id, true, finalAlasan);
+      setEvents((prev) =>
+        prev.map((e) =>
+          e.id === currentEvent.id
+            ? {
+                ...e,
+                isPaused: true,
+                statusUjian: 'dijeda',
+                pauseAlasan: finalAlasan,
+                pauseTimestamp: new Date().toISOString(),
+              }
+            : e
+        )
+      );
+      setShowModalJeda(false);
+    } catch (err) {
+      console.error('Gagal menjeda ujian:', err);
+      alert('Gagal menjeda ujian: ' + (err?.message || err));
+    } finally {
+      setJedaLoading(false);
+    }
+  };
+
+  const handleLanjutkanUjian = async () => {
+    if (!currentEvent) return;
+    const konfirmasi = window.confirm(
+      'Lanjutkan ujian sekarang?\n\nTimer seluruh peserta akan kembali berjalan dan sistem pengawasan anti-cheat akan aktif kembali.'
+    );
+    if (!konfirmasi) return;
+
+    setJedaLoading(true);
+    try {
+      await toggleJedaEventTobk(currentEvent.id, false, '');
+      setEvents((prev) =>
+        prev.map((e) =>
+          e.id === currentEvent.id
+            ? {
+                ...e,
+                isPaused: false,
+                statusUjian: 'berjalan',
+                pauseAlasan: '',
+                resumeTimestamp: new Date().toISOString(),
+              }
+            : e
+        )
+      );
+    } catch (err) {
+      console.error('Gagal melanjutkan ujian:', err);
+      alert('Gagal melanjutkan ujian: ' + (err?.message || err));
+    } finally {
+      setJedaLoading(false);
+    }
   };
 
   const generateRandomToken = () => {
@@ -452,6 +537,83 @@ export default function KelolaTobkPublikPage() {
                 </div>
               </div>
 
+              {/* Saklar Live Jeda Ujian (Sholat / Istirahat) */}
+              <div style={{
+                background: currentEvent.isPaused ? '#fffbeb' : '#f8fafc',
+                border: `1.5px solid ${currentEvent.isPaused ? '#f59e0b' : '#e2e8f0'}`,
+                borderRadius: '12px',
+                padding: '16px',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                boxShadow: currentEvent.isPaused ? '0 4px 12px rgba(245, 158, 11, 0.15)' : 'none'
+              }}>
+                <div>
+                  <div style={{ fontSize: '12px', color: currentEvent.isPaused ? '#b45309' : '#64748b', fontWeight: 600, marginBottom: '6px' }}>
+                    Kontrol Waktu Ujian (Sholat / Jeda)
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+                    <span style={{ fontSize: '13px', fontWeight: 700, color: currentEvent.isPaused ? '#d97706' : '#15803d' }}>
+                      {currentEvent.isPaused ? '⏸️ UJIAN SEDANG DIJEDA' : '🟢 UJIAN SEDANG BERJALAN'}
+                    </span>
+                  </div>
+                  <div style={{ fontSize: '11px', color: '#64748b', marginTop: '4px' }}>
+                    {currentEvent.isPaused
+                      ? `Alasan: ${currentEvent.pauseAlasan || 'Sholat'}`
+                      : 'Timer aktif di semua perangkat siswa'}
+                  </div>
+                </div>
+                <div style={{ marginTop: '12px' }}>
+                  {currentEvent.isPaused ? (
+                    <button
+                      onClick={handleLanjutkanUjian}
+                      disabled={jedaLoading}
+                      style={{
+                        width: '100%',
+                        background: '#16a34a',
+                        color: '#fff',
+                        border: 'none',
+                        padding: '8px 14px',
+                        borderRadius: '6px',
+                        fontSize: '11px',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '6px'
+                      }}
+                    >
+                      <Play size={14} />
+                      Lanjutkan Ujian (Mulai Lagi)
+                    </button>
+                  ) : (
+                    <button
+                      onClick={handleBukaModalJeda}
+                      disabled={jedaLoading}
+                      style={{
+                        width: '100%',
+                        background: '#d97706',
+                        color: '#fff',
+                        border: 'none',
+                        padding: '8px 14px',
+                        borderRadius: '6px',
+                        fontSize: '11px',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '6px'
+                      }}
+                    >
+                      <Pause size={14} />
+                      Jeda Ujian (Sholat / Istirahat)
+                    </button>
+                  )}
+                </div>
+              </div>
+
               {/* Info Aturan Ujian */}
               <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '16px' }}>
                 <div style={{ fontSize: '12px', color: '#64748b', fontWeight: 600, textTransform: 'uppercase', marginBottom: '6px' }}>
@@ -465,6 +627,82 @@ export default function KelolaTobkPublikPage() {
               </div>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Banner Peringatan Ujian Sedang Dijeda */}
+      {currentEvent?.isPaused && (
+        <div style={{
+          background: 'linear-gradient(135deg, #d97706 0%, #b45309 100%)',
+          color: '#ffffff',
+          padding: '16px 20px',
+          borderRadius: '14px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '16px',
+          marginBottom: '20px',
+          boxShadow: '0 8px 20px -4px rgba(217, 119, 6, 0.4)',
+          border: '1px solid #f59e0b'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+            <div style={{
+              width: '44px',
+              height: '44px',
+              borderRadius: '12px',
+              background: 'rgba(255, 255, 255, 0.2)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '22px'
+            }}>
+              🕌
+            </div>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontWeight: 800, fontSize: '15px' }}>
+                  UJIAN SEDANG DIJEDA: {currentEvent.pauseAlasan || 'Waktu Sholat & Istirahat'}
+                </span>
+                <span style={{
+                  background: '#fef3c7',
+                  color: '#92400e',
+                  fontSize: '11px',
+                  fontWeight: 800,
+                  padding: '2px 8px',
+                  borderRadius: '6px'
+                }}>
+                  TIMER DIBEKUKAN
+                </span>
+              </div>
+              <div style={{ fontSize: '12.5px', opacity: 0.95, marginTop: '2px' }}>
+                Timer di seluruh layar siswa berhenti total & pengawasan anti-cheat ditangguhkan. Siswa dapat menunaikan ibadah dengan tenang tanpa takut kehilangan waktu / diskualifikasi.
+              </div>
+            </div>
+          </div>
+
+          <button
+            onClick={handleLanjutkanUjian}
+            disabled={jedaLoading}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              background: '#ffffff',
+              color: '#b45309',
+              border: 'none',
+              padding: '10px 20px',
+              borderRadius: '10px',
+              fontWeight: 800,
+              fontSize: '13px',
+              cursor: 'pointer',
+              whiteSpace: 'nowrap',
+              boxShadow: '0 4px 10px rgba(0,0,0,0.15)',
+              transition: 'transform 0.15s'
+            }}
+          >
+            <Play size={16} />
+            Lanjutkan Ujian Sekarang
+          </button>
         </div>
       )}
 
@@ -882,6 +1120,183 @@ export default function KelolaTobkPublikPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Jeda Ujian (Sholat / Istirahat) */}
+      {showModalJeda && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          backgroundColor: 'rgba(15, 23, 42, 0.65)',
+          backdropFilter: 'blur(4px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 10000,
+          padding: '20px'
+        }}>
+          <div style={{
+            backgroundColor: '#ffffff',
+            borderRadius: '16px',
+            width: '100%',
+            maxWidth: '520px',
+            padding: '24px',
+            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.2)',
+            border: '1px solid #e2e8f0'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div style={{
+                  width: '38px',
+                  height: '38px',
+                  borderRadius: '10px',
+                  background: '#fef3c7',
+                  color: '#d97706',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '20px'
+                }}>
+                  🕌
+                </div>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '17px', fontWeight: 700, color: '#0f172a' }}>
+                    Jeda Pengerjaan Try Out
+                  </h3>
+                  <p style={{ margin: '2px 0 0', fontSize: '12px', color: '#64748b' }}>
+                    Bekukan waktu untuk sholat & istirahat bersama
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowModalJeda(false)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8' }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Penjelasan Keamanan Timer & Anti-Cheat */}
+            <div style={{
+              background: '#f8fafc',
+              border: '1px solid #e2e8f0',
+              borderRadius: '10px',
+              padding: '12px',
+              fontSize: '12px',
+              color: '#475569',
+              lineHeight: 1.5,
+              marginBottom: '16px'
+            }}>
+              <div>⏱️ <strong>Timer Dibekukan:</strong> Sisa detik seluruh siswa berhenti total (zero lost time).</div>
+              <div>🛡️ <strong>Anti-Cheat Suspend:</strong> Deteksi tab/fullscreen & webcam dinonaktifkan sementara sehingga siswa tidak terkena sanksi saat beribadah.</div>
+              <div>💾 <strong>Jawaban Tersimpan:</strong> Seluruh progres siswa aman tersimpan di cloud server.</div>
+            </div>
+
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#1e293b', marginBottom: '8px' }}>
+                Pilih Alasan Jeda:
+              </label>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {[
+                  { id: 'Waktu Sholat Dzuhur & Istirahat', label: '🕌 Waktu Sholat Dzuhur & Istirahat (Siang)', desc: 'Cocok untuk jeda tengah hari' },
+                  { id: 'Waktu Sholat Ashar', label: '🕌 Waktu Sholat Ashar (Sore)', desc: 'Jeda ibadah ashar' },
+                  { id: 'Waktu Sholat Maghrib & Makan Malam', label: '🕌 Waktu Sholat Maghrib & Makan Malam (Petang)', desc: 'Jeda petang / isya' },
+                  { id: 'Istirahat / Coffee Break (15 Menit)', label: '☕ Istirahat / Coffee Break', desc: 'Jeda peregangan siswa' },
+                  { id: 'kustom', label: '✏️ Alasan Khusus / Lainnya...', desc: 'Ketik alasan sendiri' },
+                ].map((opt) => (
+                  <label
+                    key={opt.id}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'flex-start',
+                      gap: '10px',
+                      padding: '10px 12px',
+                      borderRadius: '8px',
+                      border: `1.5px solid ${opsiAlasanJeda === opt.id ? '#d97706' : '#e2e8f0'}`,
+                      background: opsiAlasanJeda === opt.id ? '#fffbeb' : '#ffffff',
+                      cursor: 'pointer',
+                      transition: 'all 0.15s'
+                    }}
+                  >
+                    <input
+                      type="radio"
+                      name="alasanJeda"
+                      value={opt.id}
+                      checked={opsiAlasanJeda === opt.id}
+                      onChange={() => setOpsiAlasanJeda(opt.id)}
+                      style={{ marginTop: '3px' }}
+                    />
+                    <div>
+                      <div style={{ fontSize: '13px', fontWeight: 600, color: '#1e293b' }}>{opt.label}</div>
+                      <div style={{ fontSize: '11.5px', color: '#64748b' }}>{opt.desc}</div>
+                    </div>
+                  </label>
+                ))}
+              </div>
+
+              {opsiAlasanJeda === 'kustom' && (
+                <div style={{ marginTop: '10px' }}>
+                  <input
+                    type="text"
+                    placeholder="Tulis alasan jeda (akan tampil di layar seluruh siswa)..."
+                    value={alasanKustom}
+                    onChange={(e) => setAlasanKustom(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '10px 12px',
+                      borderRadius: '8px',
+                      border: '1px solid #cbd5e1',
+                      fontSize: '13px',
+                      outline: 'none',
+                      boxSizing: 'border-box'
+                    }}
+                  />
+                </div>
+              )}
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '20px' }}>
+              <button
+                type="button"
+                onClick={() => setShowModalJeda(false)}
+                style={{
+                  background: '#f1f5f9',
+                  color: '#475569',
+                  border: 'none',
+                  padding: '9px 16px',
+                  borderRadius: '8px',
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  cursor: 'pointer'
+                }}
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                onClick={handleTerapkanJeda}
+                disabled={jedaLoading}
+                style={{
+                  background: '#d97706',
+                  color: '#ffffff',
+                  border: 'none',
+                  padding: '9px 18px',
+                  borderRadius: '8px',
+                  fontSize: '13px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}
+              >
+                <Pause size={15} />
+                {jedaLoading ? 'Menjeda...' : 'Terapkan Jeda Sekarang'}
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -16,15 +16,16 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 
-function hitungSisaMs(waktuMulaiMs, durasiMenit, sekarangMs) {
+function hitungSisaMs(waktuMulaiMs, durasiMenit, sekarangMs, jedaMs = 0) {
   const totalMs = durasiMenit * 60 * 1000;
-  const terpakaiMs = sekarangMs - waktuMulaiMs;
+  const terpakaiMs = Math.max(0, (sekarangMs - waktuMulaiMs) - (jedaMs || 0));
   return Math.max(0, totalMs - terpakaiMs);
 }
 
 /**
  * @param {object} opsi
  *   - aktif: boolean -- timer jalan cuma kalau ini true
+ *   - isPaused: boolean -- jika true, timer dibekukan (misal waktu sholat)
  *   - modeTimer: 'total' | 'per-subtes'
  *   - waktuMulaiMs: kapan try out ini dimulai (dari Firestore Timestamp.toMillis())
  *   - durasiTotalMenit: dipakai kalau modeTimer 'total'
@@ -35,6 +36,7 @@ function hitungSisaMs(waktuMulaiMs, durasiMenit, sekarangMs) {
  */
 export function useTimerTryOut({
   aktif,
+  isPaused = false,
   modeTimer,
   waktuMulaiMs,
   durasiTotalMenit,
@@ -45,6 +47,22 @@ export function useTimerTryOut({
 }) {
   const [sisaMs, setSisaMs] = useState(0);
   const sudahLaporHabis = useRef(false);
+  const jedaAkumulasiRef = useRef(0);
+  const waktuMulaiJedaRef = useRef(null);
+
+  useEffect(() => {
+    if (isPaused) {
+      if (!waktuMulaiJedaRef.current) {
+        waktuMulaiJedaRef.current = Date.now();
+      }
+    } else {
+      if (waktuMulaiJedaRef.current) {
+        jedaAkumulasiRef.current += (Date.now() - waktuMulaiJedaRef.current);
+        waktuMulaiJedaRef.current = null;
+      }
+    }
+  }, [isPaused]);
+
   // 🔥 BARU (bug kehilangan jawaban ditemukan 2026-10-08): callback
   // `onHabis` DIPANGGIL LEWAT REF, bukan lewat closure interval. Kalau
   // dipakai langsung, interval (yang cuma dibuat ulang saat `aktif`
@@ -59,15 +77,18 @@ export function useTimerTryOut({
 
   const hitungUlang = useCallback(() => {
     const sekarang = Date.now();
+    const jedaAktif = waktuMulaiJedaRef.current ? (sekarang - waktuMulaiJedaRef.current) : 0;
+    const totalJeda = jedaAkumulasiRef.current + jedaAktif;
+
     if (modeTimer === 'per-subtes') {
       const durasi = subtes?.[subtesAktifIndex]?.durasiMenit || 0;
-      return hitungSisaMs(waktuMulaiSubtesMs || sekarang, durasi, sekarang);
+      return hitungSisaMs(waktuMulaiSubtesMs || sekarang, durasi, sekarang, totalJeda);
     }
-    return hitungSisaMs(waktuMulaiMs || sekarang, durasiTotalMenit || 0, sekarang);
+    return hitungSisaMs(waktuMulaiMs || sekarang, durasiTotalMenit || 0, sekarang, totalJeda);
   }, [modeTimer, waktuMulaiMs, durasiTotalMenit, subtes, subtesAktifIndex, waktuMulaiSubtesMs]);
 
   useEffect(() => {
-    if (!aktif) return;
+    if (!aktif || isPaused) return;
     sudahLaporHabis.current = false;
     // SENGAJA: tanpa set awal ini, timer menampilkan "00:00" selama 1
     // detik pertama tiap pindah subtes (interval pertama baru menandai
@@ -87,7 +108,7 @@ export function useTimerTryOut({
     return () => clearInterval(interval);
     // onHabis DIPANGGIL LEWAT REF (lihat atas) jadi sengaja TIDAK masuk
     // deps: interval gak perlu dibuat ulang tiap jawaban berubah.
-  }, [aktif, hitungUlang]);
+  }, [aktif, isPaused, hitungUlang]);
 
   const menit = Math.floor(sisaMs / 60000);
   const detik = Math.floor((sisaMs % 60000) / 1000);

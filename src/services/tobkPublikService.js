@@ -16,7 +16,8 @@
 import { db } from '../firebase';
 import {
   collection, doc, getDoc, getDocs, addDoc, setDoc, updateDoc,
-  deleteDoc, query, where, orderBy, serverTimestamp, writeBatch
+  deleteDoc, query, where, orderBy, serverTimestamp, writeBatch,
+  onSnapshot
 } from 'firebase/firestore';
 
 const LOCAL_STORAGE_KEY_EVENTS = 'gemilang_tobk_events_backup';
@@ -190,6 +191,60 @@ export async function toggleTokenEventTobk(eventId, aktif) {
   return true;
 }
 
+/**
+ * Saklar Live Jeda Ujian (Sholat / Istirahat) oleh Admin.
+ * Membekukan timer di seluruh layar siswa dan menangguhkan deteksi pelanggaran anti-cheat.
+ */
+export async function toggleJedaEventTobk(eventId, isPaused, alasan = 'Waktu Sholat & Istirahat') {
+  const payload = {
+    isPaused: Boolean(isPaused),
+    statusUjian: isPaused ? 'dijeda' : 'berjalan',
+    pauseAlasan: isPaused ? (alasan || 'Waktu Sholat & Istirahat') : '',
+    pauseTimestamp: isPaused ? new Date().toISOString() : null,
+    resumeTimestamp: !isPaused ? new Date().toISOString() : null,
+    updatedAt: new Date().toISOString(),
+  };
+
+  try {
+    await updateDoc(doc(db, 'tobk_events', eventId), payload);
+  } catch (err) {
+    console.warn('[TOBK] Gagal toggle jeda Firestore:', err);
+  }
+
+  const locals = getLocalEvents();
+  const item = locals.find((e) => e.id === eventId);
+  if (item) {
+    Object.assign(item, payload);
+    saveLocalEvents(locals);
+  }
+  return true;
+}
+
+/**
+ * Mendengarkan perubahan event TOBK secara real-time (live sync jeda ujian, token, status).
+ */
+export function dengarEventTobk(eventId, callback) {
+  if (!eventId) return () => {};
+  try {
+    const unsub = onSnapshot(
+      doc(db, 'tobk_events', eventId),
+      (snap) => {
+        if (snap.exists()) {
+          const data = { id: snap.id, ...snap.data() };
+          callback(data);
+        }
+      },
+      (err) => {
+        console.warn('[TOBK] onSnapshot error:', err);
+      }
+    );
+    return unsub;
+  } catch (err) {
+    console.warn('[TOBK] Gagal dengarEventTobk:', err);
+    return () => {};
+  }
+}
+
 // ------------------------------------------------------------
 // 2. PENDAFTARAN PESERTA & LEADS MARKETING
 // ------------------------------------------------------------
@@ -273,7 +328,7 @@ export async function validasiTokenPeserta(eventId, inputToken) {
 // 3. SESI PENGERJAAN & SUBMIT CBT
 // ------------------------------------------------------------
 
-export async function simpanJawabanPeserta(pesertaId, jawabanMap, raguMap = {}, pelanggaranList = []) {
+export async function simpanJawabanPeserta(pesertaId, jawabanMap, raguMap = {}, pelanggaranList = [], extraMeta = {}) {
   if (!pesertaId) return;
 
   const payload = {
@@ -281,6 +336,7 @@ export async function simpanJawabanPeserta(pesertaId, jawabanMap, raguMap = {}, 
     jawaban: jawabanMap,
     ragu: raguMap,
     pelanggaran: pelanggaranList,
+    ...extraMeta,
     updatedAt: new Date().toISOString(),
   };
 

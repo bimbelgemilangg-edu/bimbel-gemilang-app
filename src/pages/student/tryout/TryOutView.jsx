@@ -31,6 +31,7 @@ import { db } from '../../../firebase';
 import { filterSoalTryOutByMapelSiswa } from '../../../utils/aksesKontenSiswa';
 import {
   doc, getDoc, addDoc, updateDoc, setDoc, collection, query, where, getDocs, serverTimestamp,
+  onSnapshot
 } from 'firebase/firestore';
 import { ArrowLeft, Camera, ShieldAlert, Clock, CheckCircle2  , FileText, Award, Timer, ChevronLeft, ChevronDown } from 'lucide-react';
 
@@ -437,6 +438,24 @@ export default function TryOutView() {
     return () => clearInterval(id);
   }, [tahap, muatPaketDanSesi]);
 
+  // Live Sync status paket (Jeda Ujian untuk Sholat / Istirahat oleh Admin)
+  useEffect(() => {
+    if (!paketId) return undefined;
+    const unsub = onSnapshot(doc(db, 'tryout_paket', paketId), (snap) => {
+      if (snap.exists()) {
+        const d = snap.data();
+        setPaket((prev) => (prev ? {
+          ...prev,
+          isPaused: Boolean(d.isPaused),
+          pauseAlasan: d.pauseAlasan || '',
+        } : prev));
+      }
+    }, (err) => {
+      console.warn('onSnapshot tryout_paket error:', err);
+    });
+    return () => unsub();
+  }, [paketId]);
+
   // Daftar soal yang SEDANG BOLEH dikerjakan -- kalau mode per-subtes,
   // cuma soal di subtes aktif (soal di subtes lain/sebelumnya TIDAK
   // ditampilkan lagi -- sesuai aturan "gak bisa balik").
@@ -571,7 +590,7 @@ export default function TryOutView() {
   const {
     pelanggaran, showPeringatan, tutupPeringatan, statusKamera, videoRef, cobaAmbilFoto,
   } = useDeteksiKecuranganTryOut({
-    aktif: tahap === 'mengerjakan',
+    aktif: tahap === 'mengerjakan' && !paket?.isPaused,
     wajibKamera: !!paket?.wajibKamera,
     onFotoTersimpan: handleFotoTersimpan,
   });
@@ -844,6 +863,7 @@ export default function TryOutView() {
 
   const { teksWaktu, hampirHabis, sisaMs } = useTimerTryOut({
     aktif: tahap === 'mengerjakan',
+    isPaused: Boolean(paket?.isPaused),
     modeTimer: paket?.modeTimer,
     waktuMulaiMs,
     durasiTotalMenit: paket?.durasiTotalMenit,
@@ -1638,6 +1658,121 @@ export default function TryOutView() {
               Ini pelanggaran ke-{pelanggaran.length}. Kejadian ini tercatat dan akan memotong XP try out ini.
             </div>
             <button onClick={tutupPeringatan} style={st.tombolUtama}>Mengerti, Lanjutkan</button>
+          </div>
+        </div>
+      )}
+
+      {/* OVERLAY JEDA UJIAN (WAKTU SHOLAT & ISTIRAHAT) */}
+      {paket?.isPaused && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          background: 'rgba(15, 23, 42, 0.94)',
+          backdropFilter: 'blur(8px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 9999,
+          padding: 16
+        }}>
+          <div style={{
+            background: '#ffffff',
+            borderRadius: 20,
+            maxWidth: 520,
+            width: '100%',
+            padding: '32px 26px',
+            textAlign: 'center',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
+          }}>
+            <div style={{
+              width: 76,
+              height: 76,
+              borderRadius: '50%',
+              background: '#fef3c7',
+              color: '#d97706',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: 38,
+              margin: '0 auto 16px',
+              boxShadow: '0 8px 16px rgba(217, 119, 6, 0.15)'
+            }}>
+              🕌
+            </div>
+
+            <div style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 6,
+              background: '#ecfdf5',
+              color: '#059669',
+              padding: '6px 14px',
+              borderRadius: 20,
+              fontSize: 12,
+              fontWeight: 700,
+              marginBottom: 10
+            }}>
+              <CheckCircle2 size={14} /> TIMER DIBEKUKAN • JAWABAN TERSIMPAN
+            </div>
+
+            <h2 style={{ fontSize: 20, fontWeight: 800, color: '#0f172a', margin: '0 0 8px' }}>
+              TRY OUT SEDANG DIJEDA
+            </h2>
+
+            <div style={{
+              fontSize: 14,
+              fontWeight: 700,
+              color: '#d97706',
+              background: '#fffbeb',
+              padding: '8px 16px',
+              borderRadius: 10,
+              marginBottom: 16,
+              border: '1px dashed #fcd34d'
+            }}>
+              {paket.pauseAlasan || 'Waktu Sholat & Istirahat'}
+            </div>
+
+            <p style={{ fontSize: 13, color: '#475569', lineHeight: 1.6, margin: '0 0 18px' }}>
+              Try out sedang dijeda oleh Guru/Admin. Seluruh jawabanmu sudah tersimpan aman, <strong>timer pengerjaan dihentikan</strong>, dan <strong>pengawasan anti-cheat ditangguhkan sementara</strong>.
+            </p>
+
+            <div style={{
+              background: '#f8fafc',
+              border: '1px solid #e2e8f0',
+              borderRadius: 12,
+              padding: 14,
+              fontSize: 12,
+              color: '#334155',
+              lineHeight: 1.6,
+              marginBottom: 20,
+              textAlign: 'left'
+            }}>
+              <div>✓ <strong>Silakan menunaikan ibadah Sholat / Istirahat sejenak.</strong></div>
+              <div>✓ Sisa waktu ujianmu tidak akan berkurang sedikit pun.</div>
+              <div>✓ Tidak ada catatan pelanggaran selama masa jeda.</div>
+              <div>⏳ Layar ujian akan otomatis berlanjut begitu Admin melanjutkan sesi.</div>
+            </div>
+
+            <div style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 8,
+              padding: '6px 16px',
+              borderRadius: 20,
+              background: '#f0f9ff',
+              color: '#0284c7',
+              fontSize: 12.5,
+              fontWeight: 600
+            }}>
+              <span style={{
+                width: 8,
+                height: 8,
+                borderRadius: '50%',
+                background: '#0284c7',
+                display: 'inline-block'
+              }} />
+              Menunggu instruksi guru / admin untuk melanjutkan...
+            </div>
           </div>
         </div>
       )}

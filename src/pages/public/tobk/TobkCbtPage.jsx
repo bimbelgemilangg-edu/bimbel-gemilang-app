@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 import {
   ambilSesiPesertaAktif, ambilEventTobkById, ambilEventTobkAktifPublik,
-  simpanJawabanPeserta, selesaikanUjianTobk,
+  simpanJawabanPeserta, selesaikanUjianTobk, dengarEventTobk,
   SUBTES_RESMI_UTBK_2026, SOAL_PRESET_UTBK
 } from '../../../services/tobkPublikService';
 import RenderMath from '../../../components/RenderMath';
@@ -118,9 +118,9 @@ export default function TobkCbtPage() {
 
       // Timer Subtes Pertama
       const durasiPertamaMenit = Number(sList[0]?.durasiMenit) || 30;
-      setSisaDetikSubtes(Math.round(durasiPertamaMenit * 60));
+      let detikAwal = Math.round(durasiPertamaMenit * 60);
 
-      // Ambil Backup Jawaban
+      // Ambil Backup Jawaban & Sisa Waktu
       try {
         const rawJawab = localStorage.getItem(`tobk_jawaban_${sesi.pesertaId}`);
         if (rawJawab) {
@@ -128,14 +128,63 @@ export default function TobkCbtPage() {
           if (parsed.jawaban) setJawaban(parsed.jawaban);
           if (parsed.ragu) setRagu(parsed.ragu);
           if (parsed.pelanggaran) setPelanggaran(parsed.pelanggaran);
+          if (parsed.subtesAktifIndex !== undefined && Number(parsed.subtesAktifIndex) < sList.length) {
+            setSubtesAktifIndex(Number(parsed.subtesAktifIndex));
+          }
+          if (parsed.indexSoal !== undefined) {
+            setIndexSoal(Number(parsed.indexSoal));
+          }
+        }
+
+        const savedDetik = localStorage.getItem(`tobk_sisa_detik_${sesi.pesertaId}`);
+        if (savedDetik && Number(savedDetik) > 5) {
+          detikAwal = Number(savedDetik);
         }
       } catch (e) {}
 
+      setSisaDetikSubtes(detikAwal);
       setLoading(false);
       masukFullscreen();
     }
     init();
   }, [navigate]);
+
+  // Live Sync status event TOBK (Live Jeda Ujian, Token, Status)
+  useEffect(() => {
+    const eId = peserta?.eventId || eventData?.id;
+    if (!eId) return;
+
+    // 1. Real-time Firestore listener
+    const unsub = dengarEventTobk(eId, (updatedEv) => {
+      if (updatedEv) {
+        setEventData((prev) => ({ ...prev, ...updatedEv }));
+      }
+    });
+
+    // 2. Fallback polling setiap 3 detik
+    const pollInterval = setInterval(async () => {
+      try {
+        const evBaru = await ambilEventTobkById(eId);
+        if (evBaru) {
+          setEventData((prev) => ({ ...prev, ...evBaru }));
+        }
+      } catch (err) {}
+    }, 3000);
+
+    return () => {
+      unsub();
+      clearInterval(pollInterval);
+    };
+  }, [peserta?.eventId, eventData?.id]);
+
+  // Simpan sisa detik ke local backup
+  useEffect(() => {
+    if (peserta?.pesertaId && sisaDetikSubtes > 0) {
+      try {
+        localStorage.setItem(`tobk_sisa_detik_${peserta.pesertaId}`, String(sisaDetikSubtes));
+      } catch (e) {}
+    }
+  }, [sisaDetikSubtes, peserta?.pesertaId]);
 
   // 2. Hubungkan Kamera Pengawas (Cross-Device Sequential Fallback)
   const hubungkanKamera = useCallback(async () => {
@@ -209,7 +258,8 @@ export default function TobkCbtPage() {
 
   // 3. Deteksi Pelanggaran (Kiosk Anti-Curang)
   const catatPelanggaran = useCallback((tipe) => {
-    if (submitting || showModalKeluar || showModalKonfirmasi) return;
+    // Abaikan jika ujian sedang dijeda (sholat/istirahat), submitting, atau modal keluar aktif
+    if (submitting || showModalKeluar || showModalKonfirmasi || eventData?.isPaused) return;
 
     setPelanggaran((prev) => {
       const baru = [...prev, { tipe, time: new Date().toISOString() }];
@@ -233,25 +283,32 @@ export default function TobkCbtPage() {
         });
       }
 
-      simpanJawabanPeserta(peserta?.pesertaId, jawaban, ragu, baru);
+      simpanJawabanPeserta(peserta?.pesertaId, jawaban, ragu, baru, {
+        sisaDetikSubtes,
+        subtesAktifIndex,
+        indexSoal
+      });
       return baru;
     });
-  }, [submitting, showModalKeluar, showModalKonfirmasi, eventData, peserta, jawaban, ragu]);
+  }, [submitting, showModalKeluar, showModalKonfirmasi, eventData, peserta, jawaban, ragu, sisaDetikSubtes, subtesAktifIndex, indexSoal]);
 
   useEffect(() => {
     if (loading || submitting) return;
 
     const handleVisibilityChange = () => {
+      if (eventData?.isPaused) return;
       if (document.hidden && !showModalKeluar && !showModalKonfirmasi && !submitting) {
         catatPelanggaran('pindah_tab');
       }
     };
     const handleWindowBlur = () => {
+      if (eventData?.isPaused) return;
       if (!showModalKeluar && !showModalKonfirmasi && !submitting) {
         catatPelanggaran('pindah_tab');
       }
     };
     const handleFullscreenChange = () => {
+      if (eventData?.isPaused) return;
       const fs = !!(document.fullscreenElement || document.webkitFullscreenElement);
       if (!fs && !submitting && !showModalKeluar && !showModalKonfirmasi) {
         catatPelanggaran('keluar_fullscreen');
@@ -283,11 +340,11 @@ export default function TobkCbtPage() {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('beforeunload', handleBeforeUnload);
     };
-  }, [loading, submitting, showModalKeluar, showModalKonfirmasi, catatPelanggaran]);
+  }, [loading, submitting, showModalKeluar, showModalKonfirmasi, catatPelanggaran, eventData?.isPaused]);
 
-  // 4. Timer Blok Waktu Subtes (Block Time)
+  // 4. Timer Blok Waktu Subtes (Block Time) -- Berhenti Total Saat Ujian Dijeda (Zero Lost Time)
   useEffect(() => {
-    if (loading || submitting || tahap !== 'mengerjakan') return;
+    if (loading || submitting || tahap !== 'mengerjakan' || eventData?.isPaused) return;
 
     const timerInterval = setInterval(() => {
       setSisaDetikSubtes((prev) => {
@@ -301,11 +358,11 @@ export default function TobkCbtPage() {
     }, 1000);
 
     return () => clearInterval(timerInterval);
-  }, [loading, submitting, tahap, subtesAktifIndex]);
+  }, [loading, submitting, tahap, subtesAktifIndex, eventData?.isPaused]);
 
-  // 5. Timer Jeda Antar-Subtes (Tombol Biru)
+  // 5. Timer Jeda Antar-Subtes (Tombol Biru) -- Juga Dijeda Jika Ujian Sedang Dijeda
   useEffect(() => {
-    if (tahap !== 'transisi_subtes') return;
+    if (tahap !== 'transisi_subtes' || eventData?.isPaused) return;
 
     setBisaLanjutTransisi(false);
     const intervalTransisi = setInterval(() => {
@@ -320,7 +377,7 @@ export default function TobkCbtPage() {
     }, 1000);
 
     return () => clearInterval(intervalTransisi);
-  }, [tahap]);
+  }, [tahap, eventData?.isPaused]);
 
   const handleWaktuSubtesHabis = () => {
     if (subtesAktifIndex < subtesList.length - 1) {
@@ -1630,6 +1687,140 @@ export default function TobkCbtPage() {
                 Saya Mengerti & Kembali ke Soal
               </button>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* ── OVERLAY JEDA UJIAN RESMI (SHOLAT & ISTIRAHAT) ── */}
+      {eventData?.isPaused && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          background: 'rgba(15, 23, 42, 0.94)',
+          backdropFilter: 'blur(10px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 99999,
+          padding: '20px'
+        }}>
+          <div style={{
+            background: '#ffffff',
+            borderRadius: '24px',
+            maxWidth: '560px',
+            width: '100%',
+            padding: '36px 32px',
+            textAlign: 'center',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
+            border: '1px solid #e2e8f0'
+          }}>
+            {/* Mosque Icon */}
+            <div style={{
+              width: '84px',
+              height: '84px',
+              borderRadius: '50%',
+              background: '#fef3c7',
+              color: '#d97706',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '42px',
+              margin: '0 auto 18px',
+              boxShadow: '0 10px 20px rgba(217, 119, 6, 0.2)'
+            }}>
+              🕌
+            </div>
+
+            <div style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              background: '#ecfdf5',
+              color: '#059669',
+              padding: '6px 14px',
+              borderRadius: '20px',
+              fontSize: '12px',
+              fontWeight: 700,
+              letterSpacing: '0.5px',
+              marginBottom: '12px'
+            }}>
+              <CheckCircle2 size={14} /> WAKTU UJIAN DIBEKUKAN • JAWABAN AMAN
+            </div>
+
+            <h2 style={{ fontSize: '22px', fontWeight: 800, color: '#0f172a', margin: '0 0 10px' }}>
+              UJIAN SEDANG DIJEDA
+            </h2>
+
+            <div style={{
+              fontSize: '15px',
+              fontWeight: 700,
+              color: '#d97706',
+              background: '#fffbeb',
+              padding: '10px 18px',
+              borderRadius: '12px',
+              marginBottom: '18px',
+              border: '1px dashed #fcd34d'
+            }}>
+              {eventData.pauseAlasan || 'Waktu Sholat & Istirahat'}
+            </div>
+
+            <p style={{ fontSize: '13.5px', color: '#475569', lineHeight: 1.6, margin: '0 0 20px' }}>
+              Ujian sedang dijeda oleh Pengawas / Admin. Seluruh jawaban Anda telah tersimpan secara otomatis,
+              <strong> timer pengerjaan dibekukan ({formatTimer(sisaDetikSubtes)})</strong>, dan <strong>pengawasan anti-cheat ditangguhkan sementara</strong>.
+            </p>
+
+            <div style={{
+              background: '#f8fafc',
+              border: '1px solid #e2e8f0',
+              borderRadius: '14px',
+              padding: '16px',
+              fontSize: '12.5px',
+              color: '#334155',
+              lineHeight: 1.7,
+              marginBottom: '24px',
+              textAlign: 'left'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ color: '#16a34a', fontWeight: 800 }}>✓</span>
+                <span><strong>Silakan menunaikan ibadah Sholat / Istirahat sejenak.</strong></span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ color: '#16a34a', fontWeight: 800 }}>✓</span>
+                <span>Sisa waktu pengerjaan tidak akan berkurang sama sekali.</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ color: '#16a34a', fontWeight: 800 }}>✓</span>
+                <span>Anda tidak akan dikenakan sanksi saat meninggalkan layar / kamera.</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ color: '#0284c7', fontWeight: 800 }}>⏳</span>
+                <span>Layar ujian akan otomatis terbuka kembali saat Admin melanjutkan sesi.</span>
+              </div>
+            </div>
+
+            {/* Waiting Pulse */}
+            <div style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '10px',
+              padding: '8px 18px',
+              borderRadius: '30px',
+              background: '#f0f9ff',
+              border: '1px solid #bae6fd',
+              color: '#0284c7',
+              fontSize: '13px',
+              fontWeight: 600
+            }}>
+              <span style={{
+                width: '10px',
+                height: '10px',
+                borderRadius: '50%',
+                background: '#0284c7',
+                display: 'inline-block',
+                boxShadow: '0 0 0 4px rgba(2, 132, 199, 0.2)'
+              }} />
+              Menunggu instruksi pengawas untuk melanjutkan...
+            </div>
           </div>
         </div>
       )}

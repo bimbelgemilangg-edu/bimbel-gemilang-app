@@ -17,7 +17,7 @@ import { cocokkanTargetPaket } from '../../../utils/cocokkanTargetPaket';
 import { hitungSkalaSesi } from '../../../utils/hitungSkalaSesi';
 import {
   ArrowLeft, Trophy, Loader2, CheckCircle2, Clock, XCircle, ShieldAlert, RotateCcw, Ticket,
-  Download, FileText, FileSpreadsheet,
+  Download, FileText, FileSpreadsheet, Pause, Play,
 } from 'lucide-react';
 import { unduhRekapHasilTryOutPdf, unduhRaporIndividuTryOutPdf, unduhRekapHasilTryOutCsv } from '../../../utils/laporanTryOutPdf';
 import { hitungTotalSkor, skorSatuSoal, soalBelumDijawab, pilihSoalDinilai } from '../../../utils/skorSoalTryOut';
@@ -402,6 +402,48 @@ export default function HasilTryOutAdminPage() {
     setSedangHitungUlang(null);
   }, [paketTerpilih]);
 
+  const handleToggleJedaPaket = async () => {
+    if (!paketTerpilih) return;
+    const statusBaru = !paketTerpilih.isPaused;
+    let alasan = 'Waktu Sholat & Istirahat';
+    if (statusBaru) {
+      const input = window.prompt(
+        'Jeda Try Out untuk Waktu Sholat / Istirahat.\n\nTimer siswa akan dibekukan dan anti-cheat ditangguhkan.\nMasukkan alasan jeda:',
+        'Waktu Sholat Dzuhur & Istirahat'
+      );
+      if (input === null) return;
+      alasan = input.trim() || 'Waktu Sholat & Istirahat';
+    } else {
+      const konfirm = window.confirm('Lanjutkan try out sekarang?\n\nTimer seluruh siswa akan kembali berjalan.');
+      if (!konfirm) return;
+    }
+
+    try {
+      await updateDoc(doc(db, 'tryout_paket', paketTerpilih.id), {
+        isPaused: statusBaru,
+        pauseAlasan: statusBaru ? alasan : '',
+        pauseTimestamp: statusBaru ? new Date().toISOString() : null,
+        resumeTimestamp: !statusBaru ? new Date().toISOString() : null,
+        updatedAt: serverTimestamp(),
+      });
+      setPaketTerpilih((prev) => ({
+        ...prev,
+        isPaused: statusBaru,
+        pauseAlasan: statusBaru ? alasan : '',
+      }));
+      setDaftarPaket((prev) =>
+        prev.map((p) =>
+          p.id === paketTerpilih.id
+            ? { ...p, isPaused: statusBaru, pauseAlasan: statusBaru ? alasan : '' }
+            : p
+        )
+      );
+      alert(statusBaru ? `⏸️ Try Out berhasil dijeda (${alasan})!` : '▶️ Try Out dilanjutkan kembali!');
+    } catch (err) {
+      alert('Gagal mengubah status jeda: ' + err.message);
+    }
+  };
+
   const simpanSusulan = async () => {
     if (!paketTerpilih || busySusulan) return;
     const sudahAda = baris.some((b) => (b.student.studentId || b.student.id) === susulanSiswa && b.sesi);
@@ -545,8 +587,73 @@ export default function HasilTryOutAdminPage() {
                       <FileSpreadsheet size={15} color="#16a34a" />
                       Excel / CSV
                     </button>
+
+                    <button
+                      type="button"
+                      onClick={handleToggleJedaPaket}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 6,
+                        background: paketTerpilih.isPaused ? '#16a34a' : '#d97706',
+                        color: '#ffffff',
+                        border: 'none',
+                        borderRadius: 8,
+                        padding: '8px 13px',
+                        fontSize: 12,
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                      }}
+                      title={paketTerpilih.isPaused ? "Lanjutkan tryout siswa" : "Jeda tryout untuk waktu sholat / istirahat"}
+                    >
+                      {paketTerpilih.isPaused ? <Play size={14} /> : <Pause size={14} />}
+                      {paketTerpilih.isPaused ? 'Lanjutkan Tryout' : 'Jeda Tryout (Sholat)'}
+                    </button>
                   </div>
                 </div>
+
+                {/* Banner Peringatan Ujian Sedang Dijeda */}
+                {paketTerpilih.isPaused && (
+                  <div style={{
+                    background: '#fffbeb',
+                    border: '1px solid #fcd34d',
+                    borderRadius: 10,
+                    padding: '12px 16px',
+                    marginBottom: 14,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    color: '#92400e',
+                    fontSize: 13,
+                    boxShadow: '0 2px 8px rgba(245, 158, 11, 0.15)'
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <span style={{ fontSize: 20 }}>🕌</span>
+                      <div>
+                        <div style={{ fontWeight: 800 }}>TRY OUT SEDANG DIJEDA: {paketTerpilih.pauseAlasan || 'Waktu Sholat & Istirahat'}</div>
+                        <div style={{ fontSize: 11.5, color: '#b45309' }}>Timer di layar seluruh siswa dibekukan & pengawasan anti-cheat disuspend. Siswa dapat beribadah tanpa terkena sanksi.</div>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleToggleJedaPaket}
+                      style={{
+                        background: '#16a34a',
+                        color: '#ffffff',
+                        border: 'none',
+                        borderRadius: 6,
+                        padding: '7px 14px',
+                        fontSize: 12,
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        whiteSpace: 'nowrap'
+                      }}
+                    >
+                      ▶️ Lanjutkan Tryout
+                    </button>
+                  </div>
+                )}
 
                 {/* 🔥 BARU (2026-10-08): panel jawaban TERTAHAN -- data anak
                     yang sesinya direset saat layarnya masih terbuka. Sebelum
