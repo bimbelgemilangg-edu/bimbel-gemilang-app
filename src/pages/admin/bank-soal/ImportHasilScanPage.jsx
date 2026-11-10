@@ -1140,8 +1140,10 @@ export function normalizeSoal(qMasuk, idx) {
 
     const normalisasi = (t) => {
       const low = t.toLowerCase();
-      if (/^(benar|b|true|1)$/.test(low)) return 'Benar';
-      if (/^(salah|s|false|0)$/.test(low)) return 'Salah';
+      if (/(tidak\s*sesuai|tdk\s*sesuai)/.test(low)) return 'Tidak Sesuai';
+      if (/sesuai/.test(low)) return 'Sesuai';
+      if (/(salah|false|\b0\b|\bs\b)/.test(low)) return 'Salah';
+      if (/(benar|true|\b1\b|\bb\b)/.test(low)) return 'Benar';
       return '';
     };
     const tokenValid = token.map(normalisasi);
@@ -1812,9 +1814,29 @@ function parseHTMLStatements(container) {
   const rows = Array.from(container.querySelectorAll('tr'));
   if (rows.length === 0) {
     // Dukung format daftar li/p/div/.baris-pernyataan/[data-kunci] jika AI tidak menggunakan tag <table>
-    let listItems = Array.from(container.querySelectorAll('li, p, .baris-pernyataan, [data-kunci], [data-jawaban]'));
+    let listItems = Array.from(container.querySelectorAll('li, p, div, .baris-pernyataan, [data-kunci], [data-jawaban]'));
     if (listItems.length === 0) {
       listItems = Array.from(container.children).filter(el => el.tagName !== 'SCRIPT' && el.tagName !== 'STYLE');
+    }
+    // Jika tidak ada elemen anak (mis. teks polos multiline di dalam div)
+    if (listItems.length === 0) {
+      const rawText = htmlNodeText(container).trim();
+      const lines = rawText.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+      if (lines.length > 0) {
+        return lines.map(line => {
+          let t = line;
+          let ans = '';
+          const m = t.match(/\s*(?:\(|\[)?(benar|salah|sesuai|tidak sesuai|true|false|b|s)(?:\)|\])?\s*$/i);
+          if (m) {
+            const low = m[1].toLowerCase();
+            if (low === 'sesuai') ans = 'Sesuai';
+            else if (low === 'tidak sesuai') ans = 'Tidak Sesuai';
+            else ans = /^(b|benar|true)$/i.test(low) ? 'Benar' : 'Salah';
+            t = t.slice(0, m.index).trim();
+          }
+          return t ? { teks: t, jawaban: ans } : null;
+        }).filter(Boolean);
+      }
     }
     if (listItems.length > 0) {
       return listItems.map((item) => {
@@ -2201,13 +2223,26 @@ function parseHTMLMaster(raw) {
       })(),
       pernyataan: (() => {
         let p = parseHTMLStatements(tfNode);
-        if (!p.length && ['benar_salah', 'pg_kategori'].includes(tipe) && tableQuestionNode) {
-          const dariTabel = parseHTMLStatements(tableQuestionNode);
-          if (dariTabel.length > 0) p = dariTabel;
+        if (!p.length && ['benar_salah', 'pg_kategori'].includes(tipe)) {
+          const target = tableQuestionNode || categoryNode || node.querySelector('table');
+          if (target) {
+            const dariTarget = parseHTMLStatements(target);
+            if (dariTarget.length > 0) p = dariTarget;
+          }
         }
         return p;
       })(),
-      tabel_benar_salah: parseHTMLStatements(categoryNode),
+      tabel_benar_salah: (() => {
+        let t = parseHTMLStatements(categoryNode);
+        if (!t.length && ['benar_salah', 'pg_kategori'].includes(tipe)) {
+          const target = tfNode || tableQuestionNode || node.querySelector('table');
+          if (target) {
+            const dariTarget = parseHTMLStatements(target);
+            if (dariTarget.length > 0) t = dariTarget;
+          }
+        }
+        return t;
+      })(),
       pasangan: parseHTMLPairs(matchingNode),
       gambar: parseHTMLImages(imageNode),
       tabel_soal: tableSoal,
@@ -5124,11 +5159,44 @@ Ikuti PERSIS format/skema HTML di bawah ini buat cara nulis soalnya (struktur da
             </div>
 
             <div>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
-                <label style={{ fontSize: '12px', color: '#6b7280' }}>Paste {format === 'html' ? 'HTML MASTER' : format.toUpperCase()}</label>
-                <span style={{ fontSize: '11px', color: '#9ca3af' }}>
-                  Bisa 1 file gabungan banyak paket — otomatis dikelompokkan
-                </span>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px', flexWrap: 'wrap', gap: 6 }}>
+                <label style={{ fontSize: '12px', color: '#6b7280', fontWeight: 600 }}>Paste {format === 'html' ? 'HTML MASTER' : format.toUpperCase()}</label>
+                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      try {
+                        const res = await fetch('/bank-soal/IMPOR-TKA-SMP-BAHASA-INDONESIA-PAKET-A.html');
+                        const text = await res.text();
+                        setFormat('html');
+                        setRawInput(text);
+                        runParse(text, 'html');
+                      } catch (e) {
+                        alert('Gagal memuat template TKA B. Indonesia: ' + e.message);
+                      }
+                    }}
+                    style={{ fontSize: '11px', background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1d4ed8', padding: '3px 8px', borderRadius: '6px', cursor: 'pointer', fontWeight: 700 }}
+                  >
+                    📖 Muat TKA B. Indonesia (30 Soal)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      try {
+                        const res = await fetch('/bank-soal/IMPOR-TKA-SMP-MATEMATIKA-PAKET-B.html');
+                        const text = await res.text();
+                        setFormat('html');
+                        setRawInput(text);
+                        runParse(text, 'html');
+                      } catch (e) {
+                        alert('Gagal memuat template TKA Matematika: ' + e.message);
+                      }
+                    }}
+                    style={{ fontSize: '11px', background: '#f0fdf4', border: '1px solid #bbf7d0', color: '#166534', padding: '3px 8px', borderRadius: '6px', cursor: 'pointer', fontWeight: 700 }}
+                  >
+                    📐 Muat TKA Matematika (30 Soal)
+                  </button>
+                </div>
               </div>
 
               <textarea
