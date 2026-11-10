@@ -9,13 +9,13 @@ import {
   Trophy, Users, Key, Clock, ShieldCheck, Download, Trash2,
   PlusCircle, RefreshCw, ExternalLink, CheckCircle, AlertTriangle,
   Search, Filter, PlayCircle, StopCircle, ArrowRight, Share2, Sparkles,
-  Layers, Check, HelpCircle
+  Layers, Check, HelpCircle, Printer, FileSpreadsheet, FileText, X
 } from 'lucide-react';
 import { db } from '../../../firebase';
 import { collection, getDocs } from 'firebase/firestore';
 import {
   ambilSemuaEventTobk, simpanEventTobk, toggleTokenEventTobk,
-  ambilSemuaLeadsTobk, eksporLeadsCsv, bersihkanDataEventTobk,
+  ambilSemuaLeadsTobk, eksporLeadsCsv, eksporRekapNilaiExcel, bersihkanDataEventTobk,
   SUBTES_RESMI_UTBK_2026, SESI_RESMI_TKA_2026, SOAL_PRESET_UTBK
 } from '../../../services/tobkPublikService';
 
@@ -52,6 +52,9 @@ export default function KelolaTobkPublikPage() {
   // Modal Konfirmasi Bersihkan Data
   const [showModalPurge, setShowModalPurge] = useState(false);
   const [purgeLoading, setPurgeLoading] = useState(false);
+
+  // Modal Cetak / Preview PDF Rekap Nilai
+  const [showModalCetakPdf, setShowModalCetakPdf] = useState(false);
 
   // Muat data awal
   const muatData = async () => {
@@ -220,10 +223,35 @@ export default function KelolaTobkPublikPage() {
     handlePilihEvent(saved.id);
   };
 
-  const handleEksporCsv = () => {
+  const handleEksporExcel = () => {
     if (!currentEvent) return;
-    eksporLeadsCsv(leads, currentEvent.judul || 'TOBK_Gemilang');
+    eksporRekapNilaiExcel(leads, currentEvent);
   };
+
+  const daftarSubtesHeader = useMemo(() => {
+    if (currentEvent?.subtes && Array.isArray(currentEvent.subtes) && currentEvent.subtes.length > 0) {
+      return currentEvent.subtes.map((s) => ({
+        id: s.id || s.kode,
+        kode: s.kode || s.id,
+        nama: s.nama || s.judul || 'Subtes',
+      }));
+    }
+    if ((currentEvent?.formatUjian || '').startsWith('TKA')) {
+      return [
+        { id: 'subtes_tka_1', kode: 'TKA 1', nama: 'Mata Pelajaran Utama' },
+        { id: 'subtes_tka_2', kode: 'TKA 2', nama: 'Literasi / Skolastik' },
+      ];
+    }
+    return [
+      { id: 'subtes_pu', kode: 'PU', nama: 'Penalaran Umum (PU)' },
+      { id: 'subtes_ppu', kode: 'PPU', nama: 'Pengetahuan & Pemahaman Umum (PPU)' },
+      { id: 'subtes_pbm', kode: 'PBM', nama: 'Pemahaman Bacaan & Menulis (PBM)' },
+      { id: 'subtes_pk', kode: 'PK', nama: 'Pengetahuan Kuantitatif (PK)' },
+      { id: 'subtes_lbi', kode: 'LBI', nama: 'Literasi Bahasa Indonesia (LBI)' },
+      { id: 'subtes_lbe', kode: 'LBE', nama: 'Literasi Bahasa Inggris (LBE)' },
+      { id: 'subtes_pm', kode: 'PM', nama: 'Penalaran Matematika (PM)' },
+    ];
+  }, [currentEvent]);
 
   const handleKonfirmasiPurge = async (hapusEventSekaligus = false) => {
     if (!currentEvent) return;
@@ -355,10 +383,19 @@ export default function KelolaTobkPublikPage() {
               </button>
 
               <button
-                onClick={handleEksporCsv}
-                style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#059669', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: '8px', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}
+                onClick={handleEksporExcel}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#059669', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: '8px', fontSize: '12px', fontWeight: 600, cursor: 'pointer', boxShadow: '0 1px 2px rgba(5,150,105,0.2)' }}
+                title="Download file Excel (.csv) berisi nama, target prodi, skor per kolom subtes, dan total nilai"
               >
-                <Download size={14} /> Ekspor Leads Marketing (CSV)
+                <FileSpreadsheet size={15} /> Download Excel Nilai (.csv)
+              </button>
+
+              <button
+                onClick={() => setShowModalCetakPdf(true)}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#4f46e5', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: '8px', fontSize: '12px', fontWeight: 600, cursor: 'pointer', boxShadow: '0 1px 2px rgba(79,70,229,0.2)' }}
+                title="Cetak atau Simpan PDF Lembar Rekap Nilai Resmi TOBK"
+              >
+                <Printer size={15} /> Cetak / PDF Nilai
               </button>
 
               <button
@@ -881,6 +918,297 @@ export default function KelolaTobkPublikPage() {
               >
                 {purgeLoading ? 'Membersihkan...' : 'Ya, Bersihkan Data Peserta'}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── MODAL CETAK / SIMPAN PDF REKAP NILAI RESMI ── */}
+      {showModalCetakPdf && (
+        <div
+          id="modal-cetak-rekap-tobk"
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(15, 23, 42, 0.75)',
+            backdropFilter: 'blur(4px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 9999,
+            padding: '20px',
+          }}
+        >
+          <div
+            style={{
+              background: '#ffffff',
+              borderRadius: '16px',
+              maxWidth: '1150px',
+              width: '100%',
+              maxHeight: '94vh',
+              display: 'flex',
+              flexDirection: 'column',
+              boxShadow: '0 25px 50px -12px rgba(0,0,0,0.3)',
+              overflow: 'hidden',
+            }}
+          >
+            {/* Header Modal (Tidak Ikut Tercetak) */}
+            <div
+              className="no-print"
+              style={{
+                padding: '16px 24px',
+                borderBottom: '1px solid #e2e8f0',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                background: '#f8fafc',
+              }}
+            >
+              <div>
+                <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: '#0f172a' }}>
+                  🖨️ Lembar Rekapitulasi Nilai Resmi TOBK
+                </h3>
+                <p style={{ margin: '2px 0 0', fontSize: '12px', color: '#64748b' }}>
+                  Format cetak / unduh PDF resmi memuat data lengkap, kolom subtes, target prodi, dan tanda tangan panitia.
+                </p>
+              </div>
+
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button
+                  onClick={() => window.print()}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    background: '#2563eb',
+                    color: '#fff',
+                    border: 'none',
+                    padding: '8px 18px',
+                    borderRadius: '8px',
+                    fontSize: '13px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                  }}
+                >
+                  <Printer size={16} /> Cetak / Simpan sebagai PDF
+                </button>
+                <button
+                  onClick={() => setShowModalCetakPdf(false)}
+                  style={{
+                    background: '#e2e8f0',
+                    border: 'none',
+                    padding: '8px 14px',
+                    borderRadius: '8px',
+                    fontSize: '13px',
+                    fontWeight: 600,
+                    color: '#334155',
+                    cursor: 'pointer',
+                  }}
+                >
+                  ✕ Tutup
+                </button>
+              </div>
+            </div>
+
+            {/* Konten Lembar Cetak A4 */}
+            <div
+              id="area-cetak-rekap-tobk"
+              style={{
+                flex: 1,
+                overflowY: 'auto',
+                padding: '32px',
+                background: '#ffffff',
+                fontFamily: 'serif',
+                color: '#1e293b',
+              }}
+            >
+              <style>{`
+                @media print {
+                  body * { visibility: hidden !important; }
+                  #area-cetak-rekap-tobk, #area-cetak-rekap-tobk * { visibility: visible !important; }
+                  #area-cetak-rekap-tobk {
+                    position: absolute !important;
+                    left: 0 !important;
+                    top: 0 !important;
+                    width: 100% !important;
+                    padding: 0 !important;
+                    margin: 0 !important;
+                  }
+                  .no-print { display: none !important; }
+                }
+              `}</style>
+
+              {/* KOP RESMI */}
+              <div
+                style={{
+                  borderBottom: '3px double #0f172a',
+                  paddingBottom: '16px',
+                  marginBottom: '20px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                }}
+              >
+                <div>
+                  <div style={{ fontSize: '22px', fontWeight: 900, letterSpacing: '1px', textTransform: 'uppercase', color: '#1e3a8a', fontFamily: 'system-ui, sans-serif' }}>
+                    BIMBEL GEMILANG · PUSAT ASESMEN & SIMULASI CBT
+                  </div>
+                  <div style={{ fontSize: '13px', color: '#475569', marginTop: '3px', fontFamily: 'system-ui, sans-serif' }}>
+                    Portal Ujian Akbar Publik & Uji Kemampuan Standar UTBK-SNBT / TKA Nasional
+                  </div>
+                </div>
+                <div style={{ textAlign: 'right', fontFamily: 'system-ui, sans-serif' }}>
+                  <span style={{ display: 'inline-block', background: '#dbeafe', color: '#1e40af', padding: '4px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: 800 }}>
+                    KODE TOKEN: {currentEvent?.token || '-'}
+                  </span>
+                </div>
+              </div>
+
+              {/* JUDUL REKAP & METADATA */}
+              <div style={{ textAlign: 'center', marginBottom: '24px', fontFamily: 'system-ui, sans-serif' }}>
+                <h2 style={{ margin: 0, fontSize: '20px', fontWeight: 800, textTransform: 'uppercase', color: '#0f172a' }}>
+                  LEMBAR REKAPITULASI NILAI PESERTA
+                </h2>
+                <div style={{ fontSize: '15px', fontWeight: 700, color: '#2563eb', marginTop: '4px' }}>
+                  {currentEvent?.judul || 'TOBK AKBAR PUBLIK'}
+                </div>
+                <div style={{ fontSize: '12px', color: '#64748b', marginTop: '4px' }}>
+                  Kategori: <strong>{currentEvent?.kategori || 'UTBK-SNBT 2026'}</strong> | Total Peserta: <strong>{leads.length} Siswa</strong> | Tanggal Cetak: {new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
+                </div>
+              </div>
+
+              {/* TABEL REKAP NILAI LENGKAP */}
+              <table
+                style={{
+                  width: '100%',
+                  borderCollapse: 'collapse',
+                  fontSize: '11px',
+                  fontFamily: 'system-ui, sans-serif',
+                  marginBottom: '32px',
+                }}
+              >
+                <thead>
+                  <tr style={{ background: '#f1f5f9', color: '#0f172a', borderTop: '1px solid #cbd5e1', borderBottom: '2px solid #94a3b8' }}>
+                    <th style={{ padding: '8px 6px', textAlign: 'center', border: '1px solid #cbd5e1', width: '30px' }}>No</th>
+                    <th style={{ padding: '8px 8px', textAlign: 'left', border: '1px solid #cbd5e1' }}>Nama Peserta</th>
+                    <th style={{ padding: '8px 8px', textAlign: 'left', border: '1px solid #cbd5e1' }}>Asal Sekolah & Kota</th>
+                    <th style={{ padding: '8px 8px', textAlign: 'left', border: '1px solid #cbd5e1' }}>
+                      {((currentEvent?.formatUjian || '').startsWith('TKA')) ? 'Target Peminatan' : 'Target PTN & Prodi'}
+                    </th>
+                    {daftarSubtesHeader.map((s) => (
+                      <th key={s.id} style={{ padding: '8px 6px', textAlign: 'center', border: '1px solid #cbd5e1', background: '#eff6ff' }}>
+                        {s.kode || s.nama}
+                      </th>
+                    ))}
+                    <th style={{ padding: '8px 8px', textAlign: 'center', border: '1px solid #cbd5e1', background: '#fef3c7', fontWeight: 800 }}>
+                      TOTAL SKOR
+                    </th>
+                    <th style={{ padding: '8px 6px', textAlign: 'center', border: '1px solid #cbd5e1' }}>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {leads.length === 0 ? (
+                    <tr>
+                      <td colSpan={6 + daftarSubtesHeader.length} style={{ padding: '24px', textAlign: 'center', color: '#94a3b8' }}>
+                        Belum ada peserta yang mengikuti event ini.
+                      </td>
+                    </tr>
+                  ) : (
+                    leads.map((l, idx) => {
+                      const leadSubtesMap = {};
+                      if (Array.isArray(l.skorSubtes)) {
+                        l.skorSubtes.forEach((item) => {
+                          const k = (item.id || item.kode || item.nama || '').toLowerCase();
+                          leadSubtesMap[k] = item.skor;
+                        });
+                      } else if (l.skorSubtes && typeof l.skorSubtes === 'object') {
+                        Object.assign(leadSubtesMap, l.skorSubtes);
+                      }
+
+                      return (
+                        <tr key={l.pesertaId || idx} style={{ borderBottom: '1px solid #e2e8f0', background: idx % 2 === 0 ? '#ffffff' : '#fafafa' }}>
+                          <td style={{ padding: '6px', textAlign: 'center', border: '1px solid #e2e8f0' }}>{idx + 1}</td>
+                          <td style={{ padding: '6px 8px', fontWeight: 700, border: '1px solid #e2e8f0' }}>{l.nama || '-'}</td>
+                          <td style={{ padding: '6px 8px', border: '1px solid #e2e8f0' }}>
+                            <div>{l.asalSekolah || '-'}</div>
+                            <div style={{ fontSize: '10px', color: '#64748b' }}>{l.kota || '-'}</div>
+                          </td>
+                          <td style={{ padding: '6px 8px', border: '1px solid #e2e8f0' }}>
+                            <div style={{ fontWeight: 600 }}>{l.targetPtn || l.targetPeminatan || '-'}</div>
+                            <div style={{ fontSize: '10px', color: '#64748b' }}>{l.targetJurusan || l.targetProdi || '-'}</div>
+                          </td>
+                          {daftarSubtesHeader.map((s) => {
+                            if (l.statusUjian !== 'selesai' && l.statusUjian !== 'diskualifikasi') {
+                              return <td key={s.id} style={{ padding: '6px', textAlign: 'center', border: '1px solid #e2e8f0', color: '#94a3b8' }}>-</td>;
+                            }
+                            if (l.statusUjian === 'diskualifikasi') {
+                              return <td key={s.id} style={{ padding: '6px', textAlign: 'center', border: '1px solid #e2e8f0', color: '#dc2626' }}>0</td>;
+                            }
+                            const matchKey = (s.id || s.kode || s.nama).toLowerCase();
+                            let val = null;
+                            for (const [k, v] of Object.entries(leadSubtesMap)) {
+                              if (k.includes(matchKey) || matchKey.includes(k)) {
+                                val = v;
+                                break;
+                              }
+                            }
+                            if (val === null && l.skor !== null && l.skor !== undefined) {
+                              val = Math.round(Number(l.skor));
+                            }
+                            return (
+                              <td key={s.id} style={{ padding: '6px', textAlign: 'center', border: '1px solid #e2e8f0', fontWeight: 600 }}>
+                                {val !== null ? val : '-'}
+                              </td>
+                            );
+                          })}
+                          <td style={{ padding: '6px 8px', textAlign: 'center', border: '1px solid #e2e8f0', fontWeight: 800, background: '#fffbeb', color: '#92400e' }}>
+                            {l.statusUjian === 'diskualifikasi' ? '0 (DSQ)' : l.skor !== null && l.skor !== undefined ? Math.round(Number(l.skor)) : '-'}
+                          </td>
+                          <td style={{ padding: '6px', textAlign: 'center', border: '1px solid #e2e8f0', fontSize: '10px' }}>
+                            {l.statusUjian === 'selesai' && <span style={{ color: '#16a34a', fontWeight: 700 }}>SELESAI</span>}
+                            {l.statusUjian === 'mengerjakan' && <span style={{ color: '#2563eb', fontWeight: 700 }}>AKTIF</span>}
+                            {l.statusUjian === 'menunggu_token' && <span style={{ color: '#d97706' }}>MENUNGGU</span>}
+                            {l.statusUjian === 'diskualifikasi' && <span style={{ color: '#dc2626', fontWeight: 800 }}>DSQ</span>}
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+
+              {/* TANDA TANGAN RESMI */}
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  padding: '0 40px',
+                  marginTop: '40px',
+                  fontFamily: 'system-ui, sans-serif',
+                }}
+              >
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '12px', color: '#64748b' }}>Mengetahui,</div>
+                  <div style={{ fontSize: '13px', fontWeight: 700, color: '#0f172a', marginTop: '2px' }}>
+                    Koordinator Asesmen CBT
+                  </div>
+                  <div style={{ height: '60px' }} />
+                  <div style={{ fontSize: '13px', fontWeight: 700, borderTop: '1px solid #334155', paddingTop: '4px' }}>
+                    ( Tim Penjamin Mutu )
+                  </div>
+                </div>
+
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '12px', color: '#64748b' }}>Disahkan di Jakarta,</div>
+                  <div style={{ fontSize: '13px', fontWeight: 700, color: '#0f172a', marginTop: '2px' }}>
+                    Direktur Pendidikan Bimbel Gemilang
+                  </div>
+                  <div style={{ height: '60px' }} />
+                  <div style={{ fontSize: '13px', fontWeight: 700, borderTop: '1px solid #334155', paddingTop: '4px' }}>
+                    ( Panitia Ujian Gemilang )
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>

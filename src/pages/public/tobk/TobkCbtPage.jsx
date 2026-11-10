@@ -348,12 +348,56 @@ export default function TobkCbtPage() {
     const rasioBobot = totalMaksBobot > 0 ? totalBobotTerkumpul / totalMaksBobot : 0;
     const skorSkalaUtbk = Math.round(200 + rasioBobot * 600);
 
+    // Hitung per Subtes untuk Rekap Nilai Admin (PU, PPU, PBM, PK, LBI, LBE, PM / Mapel TKA)
+    const skorSubtes = subtesList.map((s) => {
+      const soalSub = s.soal || [];
+      let sBenar = 0;
+      let sSalah = 0;
+      let sKosong = 0;
+      let sBobotTerkumpul = 0;
+      let sMaksBobot = 0;
+
+      soalSub.forEach((soal) => {
+        const mapelLow = (soal.mapel || s.nama || '').toLowerCase();
+        let bobotSoal = 1.0;
+        if (mapelLow.includes('matematika') || mapelLow.includes('kuantitatif')) bobotSoal = 1.25;
+        else if (mapelLow.includes('penalaran')) bobotSoal = 1.15;
+        else if (mapelLow.includes('inggris')) bobotSoal = 1.1;
+        sMaksBobot += bobotSoal;
+
+        const ans = jawaban[soal.id];
+        if (!ans) {
+          sKosong++;
+        } else if (ans === soal.kunciJawaban) {
+          sBenar++;
+          sBobotTerkumpul += bobotSoal;
+        } else {
+          sSalah++;
+        }
+      });
+
+      const rasioSub = sMaksBobot > 0 ? sBobotTerkumpul / sMaksBobot : 0;
+      const skorSub = isDiskualifikasi ? 0 : Math.round(200 + rasioSub * 600);
+
+      return {
+        id: s.id,
+        kode: s.kode || s.id,
+        nama: s.nama,
+        skor: skorSub,
+        benar: sBenar,
+        salah: sSalah,
+        kosong: sKosong,
+        total: soalSub.length,
+      };
+    });
+
     const totalPel = (customPelanggaran || pelanggaran).length;
 
     const hasilPayload = {
       statusUjian: isDiskualifikasi ? 'diskualifikasi' : 'selesai',
       skor: isDiskualifikasi ? 0 : skorSkalaUtbk, // Skala UTBK 200–800
       skorPersen: isDiskualifikasi ? 0 : skorPersen,
+      skorSubtes, // Nilai per subtes / mapel
       totalBenar: isDiskualifikasi ? 0 : benar,
       totalSalah: isDiskualifikasi ? totalSoal : salah,
       totalKosong: kosong,

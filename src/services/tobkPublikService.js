@@ -24,200 +24,10 @@ const LOCAL_STORAGE_KEY_LEADS = 'gemilang_tobk_leads_backup';
 const LOCAL_STORAGE_KEY_SESI = 'gemilang_tobk_peserta_session';
 
 // ============================================================
-// 1. PRESET STANDAR RESMI UTBK-SNBT 2026 (7 SUBTES - 195 MENIT)
+// 1. PRESET STANDAR RESMI UTBK-SNBT 2026 (7 SUBTES - 160 SOAL - 195 MENIT)
+// Diimpor dari Bank Soal Modul Katkiel Project (Lengkap dengan Gambar Presisi & Tabel HTML)
 // ============================================================
-export const SUBTES_RESMI_UTBK_2026 = [
-  {
-    id: 'subtes_pu',
-    kode: 'PU',
-    nama: 'Penalaran Umum (PU)',
-    targetSoal: 30,
-    durasiMenit: 30, // 30 menit
-    estimasiDetik: 60,
-    soal: [
-      {
-        id: 'pu_01',
-        nomor: 1,
-        mapel: 'Penalaran Umum (PU)',
-        teksSoal: 'Semua mahasiswa yang lulus dengan predikat cumlaude memiliki indeks prestasi di atas 3.50. Sebagian mahasiswa teknik elektro memiliki indeks prestasi di atas 3.50.\n\nKesimpulan yang paling tepat adalah ...',
-        opsiJawaban: [
-          { key: 'A', teks: 'Semua mahasiswa teknik elektro lulus dengan predikat cumlaude.' },
-          { key: 'B', teks: 'Sebagian mahasiswa teknik elektro lulus dengan predikat cumlaude.' },
-          { key: 'C', teks: 'Semua mahasiswa yang memiliki IPK > 3.50 berasal dari teknik elektro.' },
-          { key: 'D', teks: 'Mahasiswa yang tidak lulus cumlaude bukan mahasiswa teknik elektro.' },
-          { key: 'E', teks: 'Tidak ada mahasiswa teknik elektro dengan IPK di bawah 3.50.' },
-        ],
-        kunciJawaban: 'B',
-        pembahasan: 'Premis 1: Cumlaude -> IPK > 3.50. Premis 2: Sebagian mhs elektro -> IPK > 3.50. Maka sebagian mahasiswa teknik elektro dapat lulus dengan predikat cumlaude (B).'
-      },
-      {
-        id: 'pu_02',
-        nomor: 2,
-        mapel: 'Penalaran Umum (PU)',
-        teksSoal: 'Jika pasokan pupuk lancar, maka hasil panen padi melimpah. Hasil panen padi tidak melimpah atau harga beras turun. Ternyata harga beras tidak turun.\n\nKesimpulan yang sah adalah ...',
-        opsiJawaban: [
-          { key: 'A', teks: 'Pasokan pupuk tidak lancar.' },
-          { key: 'B', teks: 'Pasokan pupuk tetap lancar.' },
-          { key: 'C', teks: 'Hasil panen padi tetap melimpah.' },
-          { key: 'D', teks: 'Harga beras melonjak tinggi.' },
-          { key: 'E', teks: 'Petani mengalami gagal panen.' },
-        ],
-        kunciJawaban: 'A',
-        pembahasan: 'Disjungsi: "Hasil panen tidak melimpah v harga beras turun". Karena harga beras tidak turun, maka hasil panen tidak melimpah. Implikasi kontraposisi: Karena hasil panen tidak melimpah, maka pasokan pupuk tidak lancar (A).'
-      }
-    ]
-  },
-  {
-    id: 'subtes_ppu',
-    kode: 'PPU',
-    nama: 'Pengetahuan & Pemahaman Umum (PPU)',
-    targetSoal: 20,
-    durasiMenit: 15, // 15 menit (~45 detik/soal)
-    estimasiDetik: 45,
-    soal: [
-      {
-        id: 'ppu_01',
-        nomor: 1,
-        mapel: 'Pengetahuan & Pemahaman Umum (PPU)',
-        teksSoal: 'Penggunaan kata "imparsial" dalam kalimat "Lembaga pengawas harus bertindak secara imparsial dalam menangani sengketa" bermakna ...',
-        opsiJawaban: [
-          { key: 'A', teks: 'Tegas dan berani' },
-          { key: 'B', teks: 'Tidak memihak / netral' },
-          { key: 'C', teks: 'Cepat dan tanggap' },
-          { key: 'D', teks: 'Rahasia dan tertutup' },
-          { key: 'E', teks: 'Mengikuti aturan pimpinan' },
-        ],
-        kunciJawaban: 'B',
-        pembahasan: 'Imparsial menurut KBBI berarti tidak memihak, netral, atau adil terhadap semua pihak (B).'
-      }
-    ]
-  },
-  {
-    id: 'subtes_pbm',
-    kode: 'PBM',
-    nama: 'Pemahaman Bacaan & Menulis (PBM)',
-    targetSoal: 20,
-    durasiMenit: 25, // 25 menit (~75 detik/soal)
-    estimasiDetik: 75,
-    soal: [
-      {
-        id: 'pbm_01',
-        nomor: 1,
-        mapel: 'Pemahaman Bacaan & Menulis (PBM)',
-        teksSoal: 'Kalimat berikut yang merupakan kalimat efektif dan memenuhi kaidah PUEBI adalah ...',
-        opsiJawaban: [
-          { key: 'A', teks: 'Bagi para peserta yang membawa kendaraan roda empat dipersilakan parkir di sisi barat.' },
-          { key: 'B', teks: 'Untuk mempercepat proses administrasi, peserta diminta menyiapkan berkas fotokopi KTP.' },
-          { key: 'C', teks: 'Meskipun sudah berulang kali diingatkan namun dia tetap melanggar aturan lalu lintas.' },
-          { key: 'D', teks: 'Dalam seminar itu membahas mengenai dampak perubahan iklim terhadap ketahanan pangan.' },
-          { key: 'E', teks: 'Kenaikan daripada harga bahan bakar minyak mempengaruhi daya beli masyarakat miskin.' },
-        ],
-        kunciJawaban: 'B',
-        pembahasan: 'Kalimat B memiliki struktur subjek dan predikat yang utuh tanpa pleonasme atau kerancuan preposisi (B).'
-      }
-    ]
-  },
-  {
-    id: 'subtes_pk',
-    kode: 'PK',
-    nama: 'Pengetahuan Kuantitatif (PK)',
-    targetSoal: 20,
-    durasiMenit: 20, // 20 menit (~60 detik/soal)
-    estimasiDetik: 60,
-    soal: [
-      {
-        id: 'pk_01',
-        nomor: 1,
-        mapel: 'Pengetahuan Kuantitatif (PK)',
-        teksSoal: 'Jika fungsi kuadrat $f(x) = 2x^2 - 4x + 5$ memiliki koordinat titik minimum $(p, q)$, berapakah nilai dari $2p + q$?',
-        opsiJawaban: [
-          { key: 'A', teks: '3' },
-          { key: 'B', teks: '4' },
-          { key: 'C', teks: '5' },
-          { key: 'D', teks: '6' },
-          { key: 'E', teks: '7' },
-        ],
-        kunciJawaban: 'C',
-        pembahasan: 'Titik puncak kurva parabola: $x_p = -b/(2a) = 4/4 = 1$. Nilai $y_p = f(1) = 2(1)^2 - 4(1) + 5 = 3$. Jadi $p = 1, q = 3$. Maka $2p + q = 2(1) + 3 = 5$ (C).'
-      }
-    ]
-  },
-  {
-    id: 'subtes_lbi',
-    kode: 'LBI',
-    nama: 'Literasi Bahasa Indonesia (LBI)',
-    targetSoal: 30,
-    durasiMenit: 42.5, // 42,5 menit (~85 detik/soal)
-    estimasiDetik: 85,
-    soal: [
-      {
-        id: 'lbi_01',
-        nomor: 1,
-        mapel: 'Literasi Bahasa Indonesia (LBI)',
-        teksSoal: 'Bacalah teks berikut secara cermat:\n\n"Transisi energi baru dan terbarukan (EBT) di Indonesia menghadapi tantangan pendanaan dan infrastruktur transmisi. Meskipun potensi energi surya dan hidro melimpah, interkoneksi antarpulau masih terbatas sehingga distribusi listrik hijau belum merata."\n\nGagasan pokok paragraf tersebut adalah ...',
-        opsiJawaban: [
-          { key: 'A', teks: 'Kekayaan potensi energi hidro di seluruh pulau Indonesia.' },
-          { key: 'B', teks: 'Tantangan dan kendala pemerataan transisi EBT di Indonesia.' },
-          { key: 'C', teks: 'Pembangunan kabel listrik bawah laut antarpulau nusantara.' },
-          { key: 'D', teks: 'Ketergantungan industri terhadap pembangkit batu bara.' },
-          { key: 'E', teks: 'Rendahnya minat investasi sektor swasta pada panel surya.' },
-        ],
-        kunciJawaban: 'B',
-        pembahasan: 'Kalimat utama di awal paragraf membahas tantangan pendanaan dan transmisi transisi EBT. Gagasan pokoknya adalah tantangan pemerataan transisi EBT (B).'
-      }
-    ]
-  },
-  {
-    id: 'subtes_lbe',
-    kode: 'LBE',
-    nama: 'Literasi Bahasa Inggris (LBE)',
-    targetSoal: 20,
-    durasiMenit: 20, // 20 menit (~60 detik/soal)
-    estimasiDetik: 60,
-    soal: [
-      {
-        id: 'lbe_01',
-        nomor: 1,
-        mapel: 'Literasi Bahasa Inggris (LBE)',
-        teksSoal: 'Artificial Intelligence has rapidly integrated into modern education. While automated algorithms allow personalized learning pathways, educators emphasize that critical reflection and emotional empathy remain distinctly human faculties.\n\nWhat is the primary conclusion of the author?',
-        opsiJawaban: [
-          { key: 'A', teks: 'AI tutors will render traditional schools obsolete by 2030.' },
-          { key: 'B', teks: 'Adaptive learning systems are detrimental to cognitive growth.' },
-          { key: 'C', teks: 'AI enhances education, but vital human faculties remain irreplaceable.' },
-          { key: 'D', teks: 'Emotional empathy is irrelevant to academic achievement.' },
-          { key: 'E', teks: 'Educational institutions should prohibit digital platforms.' },
-        ],
-        kunciJawaban: 'C',
-        pembahasan: 'The author emphasizes that while AI aids personalized learning, human faculties like critical thinking and empathy cannot be replaced (C).'
-      }
-    ]
-  },
-  {
-    id: 'subtes_pm',
-    kode: 'PM',
-    nama: 'Penalaran Matematika (PM)',
-    targetSoal: 20,
-    durasiMenit: 42.5, // 42,5 menit (~127,5 detik/soal)
-    estimasiDetik: 127.5,
-    soal: [
-      {
-        id: 'pm_01',
-        nomor: 1,
-        mapel: 'Penalaran Matematika (PM)',
-        teksSoal: 'Sebuah tangki air berbentuk silinder memiliki diameter alas 14 dm dan tinggi 20 dm. Jika tangki tersebut terisi air sebanyak $\\frac{3}{4}$ bagian, berapakah volume air dalam tangki tersebut? (Gunakan $\\pi = \\frac{22}{7}$)',
-        opsiJawaban: [
-          { key: 'A', teks: '2.310 liter' },
-          { key: 'B', teks: '2.450 liter' },
-          { key: 'C', teks: '3.080 liter' },
-          { key: 'D', teks: '3.200 liter' },
-          { key: 'E', teks: '3.650 liter' },
-        ],
-        kunciJawaban: 'A',
-        pembahasan: 'Jari-jari $r = 7$ dm. Volume tabung penuh = $\\pi r^2 t = (22/7) \\times 7^2 \\times 20 = 3.080 \\text{ liter}$. Volume air = $(3/4) \\times 3.080 = 2.310$ liter (A).'
-      }
-    ]
-  }
-];
+export { SUBTES_RESMI_UTBK_2026, SOAL_PRESET_UTBK } from '../data/utbk2026KatkielData';
 
 // ============================================================
 // 2. PRESET STANDAR RESMI TKA 2026 (SESI 75 MENIT - KEMENDIKDASMEN)
@@ -601,44 +411,142 @@ export async function ambilSemuaLeadsTobk(eventId = null) {
 }
 
 export function eksporLeadsCsv(leadsList, namaEvent = 'TOBK_Gemilang') {
+  return eksporRekapNilaiExcel(leadsList, { judul: namaEvent });
+}
+
+// ============================================================
+// EKSPOR REKAP NILAI LENGKAP KE EXCEL (.CSV) DENGAN KOLOM SUBTES
+// Memuat: Nama, Asal Sekolah, Kota, Target PTN & Prodi, Kolom Subtes, Total Skor
+// Kompatibel untuk UTBK (7 Subtes) dan TKA (Mapel)
+// ============================================================
+export function eksporRekapNilaiExcel(leadsList, event = {}) {
   if (!leadsList || leadsList.length === 0) {
-    alert('Tidak ada data leads peserta untuk diekspor!');
+    alert('Tidak ada data peserta/nilai untuk diekspor!');
     return;
   }
 
+  const namaEvent = event?.judul || 'TOBK_Gemilang';
+  const formatUjian = event?.formatUjian || 'UTBK_2026';
+
+  // Tentukan daftar kolom subtes berdasarkan event atau default resmi UTBK
+  let subtesKolom = [];
+  if (event?.subtes && Array.isArray(event.subtes) && event.subtes.length > 0) {
+    subtesKolom = event.subtes.map((s) => ({
+      id: s.id || s.kode,
+      kode: s.kode || s.id,
+      nama: s.nama || s.judul || 'Subtes',
+    }));
+  } else if (formatUjian.startsWith('TKA')) {
+    subtesKolom = [
+      { id: 'subtes_tka_1', kode: 'TKA 1', nama: 'Mata Pelajaran Utama' },
+      { id: 'subtes_tka_2', kode: 'TKA 2', nama: 'Literasi / Skolastik' },
+    ];
+  } else {
+    // Default 7 Subtes Resmi UTBK-SNBT 2026
+    subtesKolom = [
+      { id: 'subtes_pu', kode: 'PU', nama: 'Penalaran Umum (PU)' },
+      { id: 'subtes_ppu', kode: 'PPU', nama: 'Pengetahuan & Pemahaman Umum (PPU)' },
+      { id: 'subtes_pbm', kode: 'PBM', nama: 'Pemahaman Bacaan & Menulis (PBM)' },
+      { id: 'subtes_pk', kode: 'PK', nama: 'Pengetahuan Kuantitatif (PK)' },
+      { id: 'subtes_lbi', kode: 'LBI', nama: 'Literasi Bahasa Indonesia (LBI)' },
+      { id: 'subtes_lbe', kode: 'LBE', nama: 'Literasi Bahasa Inggris (LBE)' },
+      { id: 'subtes_pm', kode: 'PM', nama: 'Penalaran Matematika (PM)' },
+    ];
+  }
+
+  // Header CSV
   const headers = [
     'No',
     'Nama Lengkap',
     'No WhatsApp',
     'Asal Sekolah',
     'Kota / Kabupaten',
-    'Target PTN / Univ',
-    'Target Jurusan',
-    'Status Ujian',
-    'Skor',
-    'Benar',
-    'Salah',
+    formatUjian.startsWith('TKA') ? 'Target Peminatan / SMA' : 'Target PTN / Universitas',
+    formatUjian.startsWith('TKA') ? 'Target Jurusan / Minat' : 'Target Program Studi',
+    ...subtesKolom.map((s) => `Nilai ${s.kode || s.nama}`),
+    'TOTAL SKOR AKHIR',
+    'Persentase Skor (%)',
+    'Total Benar',
+    'Total Salah',
+    'Total Kosong',
     'Pelanggaran (Strike)',
+    'Status Ujian',
     'Waktu Daftar',
     'Waktu Selesai',
   ];
 
-  const rows = leadsList.map((lead, idx) => [
-    idx + 1,
-    `"${(lead.nama || '').replace(/"/g, '""')}"`,
-    `"${lead.whatsapp || ''}"`,
-    `"${(lead.asalSekolah || '').replace(/"/g, '""')}"`,
-    `"${(lead.kota || '').replace(/"/g, '""')}"`,
-    `"${(lead.targetPtn || '').replace(/"/g, '""')}"`,
-    `"${(lead.targetJurusan || '').replace(/"/g, '""')}"`,
-    lead.statusUjian || 'menunggu',
-    lead.skor !== null && lead.skor !== undefined ? lead.skor : '-',
-    lead.totalBenar || 0,
-    lead.totalSalah || 0,
-    lead.totalPelanggaran || 0,
-    lead.waktuDaftar ? new Date(lead.waktuDaftar).toLocaleString('id-ID') : '-',
-    lead.waktuSelesai ? new Date(lead.waktuSelesai).toLocaleString('id-ID') : '-',
-  ]);
+  const rows = leadsList.map((lead, idx) => {
+    // Ambil skor subtes dari data lead jika ada
+    const leadSubtesMap = {};
+    if (Array.isArray(lead.skorSubtes)) {
+      lead.skorSubtes.forEach((item) => {
+        const key = (item.id || item.kode || item.nama || '').toLowerCase();
+        leadSubtesMap[key] = item.skor;
+      });
+    } else if (lead.skorSubtes && typeof lead.skorSubtes === 'object') {
+      Object.assign(leadSubtesMap, lead.skorSubtes);
+    }
+
+    // Nilai per kolom subtes
+    const nilaiSubtes = subtesKolom.map((s) => {
+      if (lead.statusUjian !== 'selesai' && lead.statusUjian !== 'diskualifikasi') {
+        return '-';
+      }
+      if (lead.statusUjian === 'diskualifikasi') {
+        return '0';
+      }
+
+      const matchKey = (s.id || s.kode || s.nama).toLowerCase();
+      // Cari nilai spesifik
+      for (const [k, v] of Object.entries(leadSubtesMap)) {
+        if (k.includes(matchKey) || matchKey.includes(k)) {
+          return v;
+        }
+      }
+
+      // Jika tidak ada data spesifik subtes, gunakan estimasi berbasis total skor
+      if (lead.skor !== null && lead.skor !== undefined) {
+        return Math.round(Number(lead.skor));
+      }
+      return '-';
+    });
+
+    const totalSkor =
+      lead.statusUjian === 'diskualifikasi'
+        ? 0
+        : lead.skor !== null && lead.skor !== undefined
+        ? Math.round(Number(lead.skor))
+        : '-';
+
+    const persen =
+      lead.statusUjian === 'diskualifikasi'
+        ? '0%'
+        : lead.skorPersen !== undefined && lead.skorPersen !== null
+        ? `${lead.skorPersen}%`
+        : lead.skor && lead.totalSoal
+        ? `${Math.round(((lead.totalBenar || 0) / (lead.totalSoal || 1)) * 100)}%`
+        : '-';
+
+    return [
+      idx + 1,
+      `"${(lead.nama || '').replace(/"/g, '""')}"`,
+      `"${lead.whatsapp || ''}"`,
+      `"${(lead.asalSekolah || '').replace(/"/g, '""')}"`,
+      `"${(lead.kota || '').replace(/"/g, '""')}"`,
+      `"${(lead.targetPtn || lead.targetPeminatan || '').replace(/"/g, '""')}"`,
+      `"${(lead.targetJurusan || lead.targetProdi || '').replace(/"/g, '""')}"`,
+      ...nilaiSubtes,
+      totalSkor,
+      `"${persen}"`,
+      lead.totalBenar || 0,
+      lead.totalSalah || 0,
+      lead.totalKosong || 0,
+      lead.totalPelanggaran || 0,
+      lead.statusUjian || 'menunggu',
+      lead.waktuDaftar ? new Date(lead.waktuDaftar).toLocaleString('id-ID') : '-',
+      lead.waktuSelesai ? new Date(lead.waktuSelesai).toLocaleString('id-ID') : '-',
+    ];
+  });
 
   const csvContent = '\uFEFF' + [headers.join(','), ...rows.map((r) => r.join(','))].join('\r\n');
   const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -646,7 +554,7 @@ export function eksporLeadsCsv(leadsList, namaEvent = 'TOBK_Gemilang') {
   const link = document.createElement('a');
   const timestamp = new Date().toISOString().slice(0, 10);
   link.setAttribute('href', url);
-  link.setAttribute('download', `Leads_${namaEvent.replace(/[^a-zA-Z0-9_]/g, '_')}_${timestamp}.csv`);
+  link.setAttribute('download', `Rekap_Nilai_${namaEvent.replace(/[^a-zA-Z0-9_]/g, '_')}_${timestamp}.csv`);
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);

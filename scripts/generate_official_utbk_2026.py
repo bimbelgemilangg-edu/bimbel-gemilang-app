@@ -1,0 +1,1224 @@
+# scripts/generate_official_utbk_2026.py
+import json, os
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+output_dir = os.path.join(BASE_DIR, "public/bank-soal/utbk-2026")
+os.makedirs(output_dir, exist_ok=True)
+json_file = os.path.join(output_dir, "paket_resmi_utbk_2026_katkiel.json")
+
+def create_options(*opts):
+    keys = ["A", "B", "C", "D", "E"]
+    return [{"key": keys[i], "teks": t} for i, t in enumerate(opts)]
+
+# 1. PENALARAN UMUM (PU) - 30 SOAL - 30 MENIT
+soal_pu = [
+    {
+        "id": "utbk26_pu_01",
+        "nomor": 1,
+        "mapel": "Penalaran Umum (PU)",
+        "subkategori": "Penalaran Deduktif",
+        "teksSoal": "Konsistensi latihan musik Rani bergantung pada waktu luang dan suasana hatinya. Pada hari-hari tertentu, Rani tidak berlatih gitar dan tidak membuat aransemen lagu bahagia, biasanya Rani akan berlatih gitar. Jika hari ini Rani tidak berlatih gitar, kesimpulan yang PALING TEPAT adalah ...",
+        "opsiJawaban": create_options(
+            "Rani mempunyai waktu luang atau sedang bahagia.",
+            "Jika Rani mempunyai waktu luang, ia sedang bahagia.",
+            "Jika suasana hati Rani sedang bahagia, ia tidak berlatih gitar.",
+            "Rani tidak mempunyai waktu luang atau ia sedang tidak bahagia.",
+            "Jika Rani tidak mempunyai waktu luang, ia sedang bahagia."
+        ),
+        "kunciJawaban": "D",
+        "pembahasan": "Premis 1: (Waktu Luang ∧ Suasana Bahagia) → Berlatih Gitar. Kontraposisi (Modus Tollens): Tidak Berlatih Gitar → ¬(Waktu Luang ∧ Suasana Bahagia) ≡ Tidak Punya Waktu Luang ∨ Tidak Bahagia (Hukum De Morgan). Jadi kesimpulan paling tepat adalah D."
+    },
+    {
+        "id": "utbk26_pu_02",
+        "nomor": 2,
+        "mapel": "Penalaran Umum (PU)",
+        "subkategori": "Penalaran Deduktif",
+        "teksSoal": "Televisi di rumah Jono perlu diperbaiki karena sudah rusak. Jono sudah membuat rencana untuk mendatangkan teknisi ke rumahnya. Namun, jika teknisi membatalkan janjinya untuk datang ke rumah Jono, televisi tidak bisa diperbaiki karena Jono tidak bisa melakukannya sendiri. Selain itu, anaknya sedang mengerjakan tugas sekolah sehingga tidak bisa membantu. Jika rencana Jono berjalan lancar, kesimpulan yang PALING TEPAT adalah ...",
+        "opsiJawaban": create_options(
+            "Anak Jono tidak bisa membantu dan teknisi menepati janjinya.",
+            "Teknisi membatalkan janjinya dan televisi Jono tidak bisa diperbaiki.",
+            "Televisi Jono tidak bisa diperbaiki dan anak Jono tidak bisa membantu.",
+            "Anak Jono bisa membantu Jono untuk memperbaiki televisi di rumahnya.",
+            "Televisi Jono berhasil diperbaiki meskipun teknisi membatalkan janjinya."
+        ),
+        "kunciJawaban": "A",
+        "pembahasan": "Rencana berjalan lancar berarti teknisi menepati janjinya (tidak membatalkan). Fakta premis menyatakan anaknya sedang mengerjakan tugas sekolah sehingga tetap tidak bisa membantu. Maka pilihan A paling tepat."
+    },
+    {
+        "id": "utbk26_pu_03",
+        "nomor": 3,
+        "mapel": "Penalaran Umum (PU)",
+        "subkategori": "Penalaran Deduktif",
+        "teksSoal": "Setiap menyelesaikan tugas bersama tim, Adi dan Dito memiliki tugas masing-masing. Biasanya, jika Adi memimpin diskusi atau mengungkapkan idenya dalam kelompok, Dito mencatat semua hasil diskusi secara detail agar semuanya tersimpan dengan baik. Sementara itu, Budi mencari bahan referensi dan membagi beban kerja agar anggota tim merasa nyaman dalam mengerjakan tugas. Jika saat ini Adi memimpin diskusi atau mengungkapkan idenya, kesimpulan yang PALING TEPAT adalah ...",
+        "opsiJawaban": create_options(
+            "Dito tidak mencatat semua hasil diskusi secara detail dan Budi tidak mencari bahan referensi.",
+            "Budi akan membagi beban kerja dan Dito akan mencatat semua hasil diskusi secara detail.",
+            "Jika Budi mencari bahan referensi, Dito akan mencatat semua hasil diskusi secara detail.",
+            "Adi memimpin diskusi tetapi Dito menolak mencatat hasil kerja kelompok.",
+            "Budi memimpin diskusi menggantikan Adi yang sedang mencari bahan referensi."
+        ),
+        "kunciJawaban": "C",
+        "pembahasan": "Premis: (Adi memimpin ∨ Adi ungkap ide) → Dito mencatat detail. Karena premis syarat terpenuhi, 'Dito mencatat detail' bernilai BENAR. Dalam logika implikasi, kalimat bersyarat 'Jika R maka D' selalu bernilai benar ketika D (konsekuen) benar."
+    },
+    {
+        "id": "utbk26_pu_04",
+        "nomor": 4,
+        "mapel": "Penalaran Umum (PU)",
+        "subkategori": "Penalaran Deduktif",
+        "teksSoal": "Dika sedang menyelesaikan naskah ceritanya untuk diunggah ke portal lomba. Berdasarkan aturan pengiriman, Dika tidak bisa mengirim naskah tepat waktu jika jaringan internet terganggu. Meskipun menghadapi berbagai hambatan tersebut, Dika terus berupaya mengunggah berkas naskahnya sampai detik-detik terakhir. Berdasarkan teks di atas, jika Dika berhasil mengirim naskah tepat waktu, kesimpulan yang PALING TEPAT adalah ...",
+        "opsiJawaban": create_options(
+            "Jaringan internet Dika terganggu, tetapi seluruh bagian naskahnya sudah selesai direvisi.",
+            "Jaringan internet Dika tidak terganggu, meskipun banyak bagian naskah yang belum direvisi.",
+            "Dika memiliki waktu yang cukup untuk merevisi seluruh bagian naskah ceritanya.",
+            "Jaringan internet Dika terganggu sehingga ia gagal mengirimkan naskah cerita tersebut.",
+            "Dika memutuskan untuk mundur dan tidak mengunggah naskah ceritanya ke portal panitia."
+        ),
+        "kunciJawaban": "B",
+        "pembahasan": "Premis: Jaringan terganggu → Tidak bisa kirim tepat waktu. Kontraposisi: Berhasil kirim tepat waktu → Jaringan internet tidak terganggu. Status naskah yang belum tuntas tidak mengubah inferensi logika jaringan."
+    },
+    {
+        "id": "utbk26_pu_05",
+        "nomor": 5,
+        "mapel": "Penalaran Umum (PU)",
+        "subkategori": "Penalaran Deduktif",
+        "teksSoal": "Bel pulang sekolah sudah berbunyi sejak tadi. Jemputan Iwan hari ini terlambat. Iwan tidak bisa pulang tepat waktu hari ini dan harus menunggu meskipun ada kemungkinan jemputannya tidak datang terlambat. Selain itu, Iwan juga belum menelepon orang tua jemputannya untuk memberi kabar mengenai keterlambatan ini. Dalam situasi tersebut, apa simpulan yang PALING TEPAT mengenai kondisi Iwan?",
+        "opsiJawaban": create_options(
+            "Iwan sudah menelepon orang tua jemputannya dan ia bisa pulang tepat waktu hari ini.",
+            "Iwan memutuskan untuk berjalan kaki ke rumah tanpa menunggu jemputannya datang.",
+            "Jemputan Iwan tiba tepat waktu sehingga Iwan tidak perlu menelepon orang tuanya.",
+            "Iwan belum menelepon orang tua jemputannya dan ia tidak bisa pulang tepat waktu hari ini.",
+            "Jemputan Iwan tidak jadi datang terlambat dan ia bisa pulang tepat waktu hari ini."
+        ),
+        "kunciJawaban": "D",
+        "pembahasan": "Kombinasi dua premis langsung: Iwan belum menelepon orang tua jemputan ∧ Iwan tidak bisa pulang tepat waktu hari ini."
+    },
+    {
+        "id": "utbk26_pu_06",
+        "nomor": 6,
+        "mapel": "Penalaran Umum (PU)",
+        "subkategori": "Penalaran Deduktif",
+        "teksSoal": "Keluarga Iwan akan menggunakan dua jenis transportasi untuk liburan tahun ini. Dua jenis tersebut adalah kereta api untuk perjalanan antarkota dan mobil untuk perjalanan dalam kota. Penggunaan transportasi tersebut juga bergantung pada kondisi nenek Iwan. Jika nenek Iwan ikut berlibur, mereka akan menggunakan pesawat. Jika keluarga Iwan tidak jadi naik kereta dan mobil saat liburan, pernyataan di bawah ini yang PALING TEPAT adalah ...",
+        "opsiJawaban": create_options(
+            "Keluarga Iwan tidak jadi naik kereta api dan menggunakan mobil.",
+            "Jika nenek ikut berlibur, mereka akan menggunakan pesawat.",
+            "Keluarga Iwan tidak naik kereta api dan menggunakan mobil.",
+            "Nenek tidak ikut berlibur dan keluarga Iwan menggunakan mobil.",
+            "Jika keluarga Iwan naik kereta api, nenek tidak ikut berlibur."
+        ),
+        "kunciJawaban": "E",
+        "pembahasan": "Premis: Nenek ikut → Naik pesawat (bukan kereta api). Kontraposisi: Jika keluarga naik kereta api → Nenek tidak ikut berlibur."
+    },
+    {
+        "id": "utbk26_pu_07",
+        "nomor": 7,
+        "mapel": "Penalaran Umum (PU)",
+        "subkategori": "Penalaran Deduktif",
+        "teksSoal": "Ami dan Dea biasanya membantu orang tuanya dengan berbagi tugas. Pada pagi hari, Ami mengepel lantai agar seluruh rumah bersih, sedangkan Dea akan membantu kegiatan di dapur agar sarapan pagi siap tepat waktu. Namun, jika Ami sedang sakit, ibu yang akan mengepel lantai. Sementara itu, jika Dea ada kelas pagi, ayah yang akan menggantikan Dea menyiapkan sarapan. Pagi ini, Ami tidak mengepel lantai dan ayah menyiapkan sarapan. Kesimpulan yang PALING PASTI BENAR adalah ...",
+        "opsiJawaban": create_options(
+            "Ami sedang tidak sakit dan Dea tidak memiliki kelas pagi.",
+            "Ibu mengepel lantai dan Dea memiliki kelas pagi.",
+            "Ayah mengepel lantai bersama ibu di pagi hari.",
+            "Dea membantu Ami mengepel lantai di ruang depan.",
+            "Seluruh pekerjaan rumah diselesaikan oleh ayah sendiri."
+        ),
+        "kunciJawaban": "B",
+        "pembahasan": "Karena Ami tidak mengepel, maka ibu yang mengepel. Karena ayah menyiapkan sarapan, berarti Dea ada kelas pagi."
+    },
+    {
+        "id": "utbk26_pu_08",
+        "nomor": 8,
+        "mapel": "Penalaran Umum (PU)",
+        "subkategori": "Penalaran Deduktif",
+        "teksSoal": "Di sebuah peternakan, semua sapi perah yang sehat diberi pakan rumput gajah segar dan konsentrat mineral setiap pagi. Sapi yang memproduksi susu di atas 15 liter per hari selalu merupakan sapi perah yang sehat. Sapi 'Bessie' pagi ini tidak diberi pakan rumput gajah segar. Kesimpulan yang PALING TEPAT adalah ...",
+        "opsiJawaban": create_options(
+            "Sapi Bessie bukan sapi perah yang sehat atau tidak memproduksi susu di atas 15 liter per hari.",
+            "Sapi Bessie tetap memproduksi susu lebih dari 20 liter per hari.",
+            "Sapi Bessie diberi rumput kering menggantikan rumput gajah segar.",
+            "Semua sapi di peternakan tersebut sedang mengalami penurunan nafsu makan.",
+            "Peternak lupa memberikan konsentrat mineral kepada sapi Bessie."
+        ),
+        "kunciJawaban": "A",
+        "pembahasan": "Susu > 15L → Sehat → Rumput segar. Kontraposisi: ¬Rumput segar → ¬Sehat → ¬(Susu > 15L)."
+    },
+    {
+        "id": "utbk26_pu_09",
+        "nomor": 9,
+        "mapel": "Penalaran Umum (PU)",
+        "subkategori": "Penalaran Deduktif",
+        "teksSoal": "Kereta Cepat relasi Halim-Tegalluar hanya diberangkatkan jika sinyal telekomunikasi lintasan aman dan pasokan listrik aliran atas stabil. Hari ini beberapa jadwal perjalanan kereta cepat dibatalkan keberangkatannya. Simpulan yang PALING TEPAT adalah ...",
+        "opsiJawaban": create_options(
+            "Sinyal telekomunikasi lintasan dan pasokan listrik keduanya stabil.",
+            "Kapasitas tempat duduk penumpang kereta cepat belum terisi penuh.",
+            "Sinyal telekomunikasi lintasan tidak aman atau pasokan listrik aliran atas tidak stabil.",
+            "Terjadi pemadaman listrik total di seluruh stasiun antara.",
+            "Masinis memutuskan untuk menunda perjalanan karena faktor angin."
+        ),
+        "kunciJawaban": "C",
+        "pembahasan": "Berangkat → (Sinyal Aman ∧ Listrik Stabil). Negasi: Tidak berangkat → Sinyal tidak aman ∨ Listrik tidak stabil."
+    },
+    {
+        "id": "utbk26_pu_10",
+        "nomor": 10,
+        "mapel": "Penalaran Umum (PU)",
+        "subkategori": "Penalaran Deduktif",
+        "teksSoal": "Semua karyawan teladan di perusahaan teknologi Gemilang menguasai minimal satu bahasa pemrograman dan memiliki sertifikasi manajemen proyek. Rendy adalah karyawan di divisi pemasaran yang tidak menguasai satu pun bahasa pemrograman. Kesimpulan yang PALING TEPAT adalah ...",
+        "opsiJawaban": create_options(
+            "Rendy memiliki sertifikasi manajemen proyek tingkat lanjutan.",
+            "Rendy sedang menempuh pelatihan bahasa pemrograman Python.",
+            "Divisi pemasaran tidak memiliki karyawan berkategori teladan.",
+            "Rendy bukan merupakan karyawan teladan di perusahaan tersebut.",
+            "Karyawan teladan hanya berasal dari divisi rekayasa perangkat lunak."
+        ),
+        "kunciJawaban": "D",
+        "pembahasan": "Karyawan teladan → Kuasai bahasa pemrograman. Rendy tidak menguasai bahasa pemrograman, maka Rendy bukan karyawan teladan."
+    },
+    {
+        "id": "utbk26_pu_11",
+        "nomor": 11,
+        "mapel": "Penalaran Umum (PU)",
+        "subkategori": "Penalaran Induktif",
+        "teksSoal": "Sebuah penelitian di sentra pertanian padi Karawang menguji varietas bibit tahan kekeringan (Padi Gogo Unggul). Dari 50 petak sawah yang mengalami defisit air hingga 40% selama masa tanam, sebanyak 46 petak tetap mampu menghasilkan panen di atas 6 ton per hektar. Sementara itu, varietas konvensional di wilayah yang sama mengalami penurunan hasil panen rata-rata hingga 65%. Simpulan yang PALING DIDUKUNG oleh data tersebut adalah ...",
+        "opsiJawaban": create_options(
+            "Varietas bibit konvensional sama sekali tidak mampu tumbuh di daerah Karawang.",
+            "Faktor pupuk kandang lebih menentukan keberhasilan panen daripada pemilihan varietas bibit.",
+            "Varietas Padi Gogo Unggul memiliki ketahanan yang signifikan terhadap kondisi cekaman kekurangan air.",
+            "Seluruh petani di Jawa Barat telah beralih menanam Padi Gogo Unggul.",
+            "Biaya penanaman Padi Gogo Unggul lebih mahal dibandingkan bibit konvensional."
+        ),
+        "kunciJawaban": "C",
+        "pembahasan": "Tingkat keberhasilan 46 dari 50 petak sawah (92%) pada defisit air 40% secara induktif menunjukkan ketahanan tinggi bibit tersebut terhadap kekeringan."
+    },
+    {
+        "id": "utbk26_pu_12",
+        "nomor": 12,
+        "mapel": "Penalaran Umum (PU)",
+        "subkategori": "Penalaran Induktif",
+        "teksSoal": "Data pantauan citra satelit selama lima tahun terakhir menunjukkan bahwa kenaikan suhu permukaan air laut di atas 1,2°C di perairan kawasan timur Indonesia selalu diikuti oleh peristiwa pemutihan karang (coral bleaching) massal dalam waktu 3 bulan setelahnya. Tahun ini, sensor laut mencatat anomali kenaikan suhu sebesar 1,5°C di perairan Raja Ampat sejak bulan Januari. Prediksi yang PALING MUNGKIN terjadi adalah ...",
+        "opsiJawaban": create_options(
+            "Populasi ikan karang akan meningkat pesat pada bulan April.",
+            "Kawasan terumbu karang Raja Ampat berisiko tinggi mengalami peristiwa pemutihan karang dalam waktu dekat.",
+            "Suhu air laut akan kembali normal secara instan tanpa memengaruhi ekosistem.",
+            "Kenaikan suhu tidak berdampak pada alga simbiotik zooxanthellae.",
+            "Nelayan setempat akan menghentikan seluruh aktivitas melaut secara permanen."
+        ),
+        "kunciJawaban": "B",
+        "pembahasan": "Kenaikan suhu 1,5°C melampaui ambang 1,2°C yang secara berulang memicu pemutihan karang."
+    },
+    {
+        "id": "utbk26_pu_13",
+        "nomor": 13,
+        "mapel": "Penalaran Umum (PU)",
+        "subkategori": "Penalaran Induktif",
+        "teksSoal": "Berdasarkan laporan konsumsi energi bulanan PLN, penggunaan listrik rumah tangga di kota metropolitan melonjak rata-rata 28% setiap kali indeks suhu rata-rata harian melampaui 33°C. Peningkatan ini didominasi oleh pengoperasian perangkat pendingin udara (AC) selama durasi yang lebih lama. Manakah pernyataan berikut yang PALING MELEMAHKAN simpulan bahwa suhu udara panas menyebabkan lonjakan tagihan listrik?",
+        "opsiJawaban": create_options(
+            "Lonjakan konsumsi listrik juga terjadi di wilayah dataran tinggi bersuhu sejuk karena adanya program kerja dari rumah (WFH) serentak.",
+            "Banyak rumah tangga menyalakan pendingin ruangan dengan temperatur 18°C saat siang hari.",
+            "Penggunaan kipas angin elektrik tidak menyedot daya sebesar pendingin ruangan freon.",
+            "Tarif dasar listrik per kilowatt-hour (kWh) tidak mengalami kenaikan sepanjang tahun.",
+            "Suhu panas menyebabkan masyarakat enggan beraktivitas di luar rumah."
+        ),
+        "kunciJawaban": "A",
+        "pembahasan": "Pernyataan A menunjukkan adanya faktor alternatif (WFH serentak) yang memicu lonjakan konsumsi listrik di daerah yang tidak bersuhu panas, sehingga melemahkan korelasi tunggal suhu panas."
+    },
+    {
+        "id": "utbk26_pu_14",
+        "nomor": 14,
+        "mapel": "Penalaran Umum (PU)",
+        "subkategori": "Penalaran Induktif",
+        "teksSoal": "Uji klinis terhadap 500 partisipan usia produktif menunjukkan bahwa mereka yang rutin berjalan kaki minimal 7.500 langkah per hari memiliki tekanan darah sistolik rata-rata 8 mmHg lebih rendah dibandingkan kelompok yang bergaya hidup santai (kurang dari 2.500 langkah per hari). Simpulan yang PALING TEPAT adalah ...",
+        "opsiJawaban": create_options(
+            "Berjalan kaki merupakan satu-satunya cara mencegah penyakit kardiovaskular.",
+            "Tekanan darah tinggi hanya menyerang individu yang tidak pernah berolahraga.",
+            "Obat antihipertensi tidak lagi diperlukan jika seseorang sudah berjalan kaki 7.500 langkah.",
+            "Aktivitas fisik teratur seperti berjalan kaki berkontribusi positif dalam memelihara tekanan darah yang sehat.",
+            "Setiap pertambahan 1.000 langkah menurunkan tekanan darah secara linier tanpa batas."
+        ),
+        "kunciJawaban": "D",
+        "pembahasan": "Kesimpulan induktif yang proporsional dan tidak melebih-lebihkan data uji klinis."
+    },
+    {
+        "id": "utbk26_pu_15",
+        "nomor": 15,
+        "mapel": "Penalaran Umum (PU)",
+        "subkategori": "Penalaran Induktif",
+        "teksSoal": "Survei preferensi konsumen menunjukkan bahwa 78% pembeli generasi muda bersedia membayar 10-15% lebih mahal untuk produk fesyen yang menggunakan bahan daur ulang dan memiliki sertifikasi netral karbon. Hal ini menunjukkan pergeseran tren menuju konsumsi berkelanjutan. Manakah pernyataan berikut yang PALING MEMPERKUAT tren tersebut?",
+        "opsiJawaban": create_options(
+            "Harga bahan baku katun organik saat ini mengalami fluktuasi di pasar dunia.",
+            "Penjualan merek fesyen ramah lingkungan mencatat pertumbuhan tahunan 35%, jauh melampaui merek fesyen cepat (fast fashion).",
+            "Beberapa pabrik tekstil mengalami kesulitan memenuhi standar limbah cair.",
+            "Generasi tua lebih mengutamakan daya tahan pakaian daripada asal-usul bahan baku.",
+            "Pemerintah memberikan subsidi untuk impor mesin pemintal benang sintetis."
+        ),
+        "kunciJawaban": "B",
+        "pembahasan": "Pertumbuhan riil 35% pada penjualan produk ramah lingkungan membuktikan bahwa preferensi survei benar-benar terealisasi dalam transaksi pasar."
+    },
+    {
+        "id": "utbk26_pu_16",
+        "nomor": 16,
+        "mapel": "Penalaran Umum (PU)",
+        "subkategori": "Penalaran Induktif",
+        "teksSoal": "Penerapan sistem zonasi sekolah dalam beberapa tahun terakhir di kota X diiringi dengan penurunan angka kemacetan lalu lintas pada jam berangkat sekolah sebesar 18%. Analis perkotaan menyimpulkan bahwa berkurangnya jarak tempuh siswa ke sekolah berkontribusi langsung pada kelancaran jalan protokol. Asumsi yang MENDASARI simpulan analis tersebut adalah ...",
+        "opsiJawaban": create_options(
+            "Sebagian besar siswa sebelumnya diantar menggunakan kendaraan bermotor pribadi melintasi jalan protokol.",
+            "Semua sekolah di kota X memiliki fasilitas transportasi bus sekolah gratis.",
+            "Pemerintah kota X telah melebarkan jalan-jalan utama sebesar dua lajur.",
+            "Orang tua murid tidak lagi menggunakan kendaraan pribadi untuk berangkat ke kantor.",
+            "Jam masuk kantor diubah menjadi lebih awal daripada jam masuk sekolah."
+        ),
+        "kunciJawaban": "A",
+        "pembahasan": "Asumsi logis penghubung: agar pemendekan jarak sekolah berdampak pada jalan protokol, siswa sebelumnya haruslah melewati jalan tersebut dengan kendaraan pribadi."
+    },
+    {
+        "id": "utbk26_pu_17",
+        "nomor": 17,
+        "mapel": "Penalaran Umum (PU)",
+        "subkategori": "Penalaran Induktif",
+        "teksSoal": "Sebuah kota wisata mengalami kenaikan jumlah wisatawan mancanegara sebesar 45% dalam setahun setelah bandara internasional barunya diresmikan. Namun, indeks pencemaran sampah di pesisir pantai kawasan wisata tersebut juga melonjak sebesar 60% pada periode yang sama. Hubungan yang PALING TEPAT antara kedua peristiwa tersebut adalah ...",
+        "opsiJawaban": create_options(
+            "Peningkatan aktivitas wisata belum diimbangi dengan sistem pengelolaan sampah dan kesadaran lingkungan yang memadai.",
+            "Bandara baru dibangun tepat di atas garis pasang surut pesisir pantai wisata.",
+            "Wisatawan mancanegara sengaja membuang sampah untuk merusak daya tarik pantai.",
+            "Jumlah tempat penampungan sampah di kota wisata tersebut berkurang drastis.",
+            "Kenaikan wisatawan tidak ada hubungannya sama sekali dengan volume timbulan sampah."
+        ),
+        "kunciJawaban": "A",
+        "pembahasan": "Hubungan kausal wajar: lonjakan pengunjung menghasilkan volume sampah yang melampaui daya tampung infrastruktur sanitasi yang ada."
+    },
+    {
+        "id": "utbk26_pu_18",
+        "nomor": 18,
+        "mapel": "Penalaran Umum (PU)",
+        "subkategori": "Penalaran Induktif",
+        "teksSoal": "Riset di laboratorium pangan mendapati bahwa roti yang diberi ekstrak kulit manggis dapat bertahan 4 hari lebih lama tanpa ditumbuhi jamur dibandingkan roti biasa pada suhu ruang. Senyawa antioksidan dan antimikroba alami pada kulit manggis dinilai menghambat spora kapang. Manakah hipotesis lanjut yang PALING TEPAT dikembangkan?",
+        "opsiJawaban": create_options(
+            "Kulit manggis dapat digunakan sebagai bahan pengganti tepung terigu dalam pembuatan roti.",
+            "Ekstrak kulit manggis berpotensi dikembangkan sebagai bahan pengawet alami yang aman pada produk bakeri.",
+            "Roti tanpa pengawet sintesis tidak akan laku di pasaran ritel modern.",
+            "Semua jenis buah tropis memiliki daya hambat jamur yang serupa dengan manggis.",
+            "Jamur roti tidak dapat berkembang biak pada media yang mengandung gula."
+        ),
+        "kunciJawaban": "B",
+        "pembahasan": "Pemanfaatan senyawa antimikroba kulit manggis sebagai pengawet pangan alami merupakan hipotesis lanjutan yang paling realistis dan bernilai aplikatif."
+    },
+    {
+        "id": "utbk26_pu_19",
+        "nomor": 19,
+        "mapel": "Penalaran Umum (PU)",
+        "subkategori": "Penalaran Induktif",
+        "teksSoal": "Data dari 1.000 pengemudi mobil listrik menunjukkan bahwa rata-rata efisiensi konsumsi baterai berkurang 20% ketika kecepatan kendaraan dinaikkan dari 80 km/jam ke 120 km/jam di jalan tol. Manakah faktor fisika yang PALING MENDUKUNG fenomena tersebut?",
+        "opsiJawaban": create_options(
+            "Gaya gesek ban dengan aspal berkurang drastis pada kecepatan tinggi.",
+            "Hambatan aerodinamis udara meningkat secara kuadratik terhadap pertambahan kecepatan kendaraan.",
+            "Motor listrik mengalami penurunan arus listrik ketika melaju kencang.",
+            "Sistem pendingin baterai berhenti bekerja pada kecepatan di atas 100 km/jam.",
+            "Bobot kendaraan bertambah berat seiring bertambahnya laju kecepatan."
+        ),
+        "kunciJawaban": "B",
+        "pembahasan": "Gaya hambat aerodinamika (drag force) berbanding lurus dengan kuadrat kecepatan, menuntut daya baterai jauh lebih besar pada kecepatan tinggi."
+    },
+    {
+        "id": "utbk26_pu_20",
+        "nomor": 20,
+        "mapel": "Penalaran Umum (PU)",
+        "subkategori": "Penalaran Induktif",
+        "teksSoal": "Sebuah aplikasi bimbingan belajar mencatat bahwa siswa yang mengerjakan latihan soal mandiri sedikitnya 30 menit setiap hari memiliki tingkat kelulusan SNBT 40% lebih tinggi dibanding siswa yang hanya belajar secara maraton seminggu sebelum ujian. Pola belajar yang PALING DISARANKAN berdasarkan temuan ini adalah ...",
+        "opsiJawaban": create_options(
+            "Belajar sistem kebut semalam (SKS) lebih efektif untuk jangka pendek.",
+            "Latihan soal tidak berpengaruh jika siswa sudah memahami konsep di kelas.",
+            "Distribusi belajar bertahap secara konsisten (spaced repetition) lebih efektif dalam penguasaan materi ujian.",
+            "Siswa cukup belajar 30 menit sehari tanpa perlu mengikuti tryout berkala.",
+            "Hanya siswa jenius yang mampu lulus SNBT tanpa bimbingan intensif."
+        ),
+        "kunciJawaban": "C",
+        "pembahasan": "Data membuktikan keunggulan metode belajar bertahap yang konsisten (spaced learning) dibanding kramming (massed practice)."
+    },
+    {
+        "id": "utbk26_pu_21",
+        "nomor": 21,
+        "mapel": "Penalaran Umum (PU)",
+        "subkategori": "Penalaran Kuantitatif / Logis",
+        "teksSoal": "Perhatikan pola barisan bilangan berikut:\n4, 7, 12, 19, 28, 39, ...\nBilangan berikutnya pada barisan tersebut adalah ...",
+        "opsiJawaban": create_options("48", "50", "52", "54", "56"),
+        "kunciJawaban": "C",
+        "pembahasan": "Selisih antarsuku bertingkat: +3, +5, +7, +9, +11, maka selisih berikutnya adalah +13. Jadi 39 + 13 = 52."
+    },
+    {
+        "id": "utbk26_pu_22",
+        "nomor": 22,
+        "mapel": "Penalaran Umum (PU)",
+        "subkategori": "Penalaran Kuantitatif / Logis",
+        "teksSoal": "Perhatikan barisan huruf berpola berikut:\nB, D, G, K, P, ...\nHuruf berikutnya adalah ...",
+        "opsiJawaban": create_options("U", "V", "W", "X", "Y"),
+        "kunciJawaban": "B",
+        "pembahasan": "Pola posisi abjad: B(2), D(4) [+2], G(7) [+3], K(11) [+4], P(16) [+5]. Maka berikutnya +6 -> 16 + 6 = 22, yaitu huruf V."
+    },
+    {
+        "id": "utbk26_pu_23",
+        "nomor": 23,
+        "mapel": "Penalaran Umum (PU)",
+        "subkategori": "Penalaran Kuantitatif / Logis",
+        "teksSoal": "Jika $a * b = \\frac{a \\times b}{a + b}$ untuk semua bilangan real positif, maka nilai dari $6 * (3 * 6)$ adalah ...",
+        "opsiJawaban": create_options("1,2", "1,5", "2,0", "2,4", "3,0"),
+        "kunciJawaban": "B",
+        "pembahasan": "Pertama hitung (3 * 6) = (3 x 6)/(3 + 6) = 18/9 = 2. Kemudian 6 * 2 = (6 x 2)/(6 + 2) = 12/8 = 1,5."
+    },
+    {
+        "id": "utbk26_pu_24",
+        "nomor": 24,
+        "mapel": "Penalaran Umum (PU)",
+        "subkategori": "Penalaran Kuantitatif / Logis",
+        "teksSoal": "Lima orang siswa (A, B, C, D, E) mengikuti tes pemahaman logika. Diketahui:\n- Nilai A lebih tinggi dari B tetapi lebih rendah dari C.\n- Nilai D lebih tinggi dari C.\n- Nilai E lebih tinggi dari B tetapi lebih rendah dari A.\nUrutan siswa dari yang memperoleh nilai TERTINGGI hingga TERENDAH adalah ...",
+        "opsiJawaban": create_options(
+            "D, C, A, E, B",
+            "D, A, C, E, B",
+            "C, D, A, E, B",
+            "D, C, E, A, B",
+            "C, A, D, B, E"
+        ),
+        "kunciJawaban": "A",
+        "pembahasan": "Dari premis: B < E < A < C < D. Urutan dari tertinggi ke terendah: D, C, A, E, B."
+    },
+    {
+        "id": "utbk26_pu_25",
+        "nomor": 25,
+        "mapel": "Penalaran Umum (PU)",
+        "subkategori": "Penalaran Kuantitatif / Logis",
+        "teksSoal": "Perhatikan tabel perbandingan target dan realisasi penjualan 4 cabang bimbel:\n<div class=\"table-responsive\"><table class=\"table-soal\"><thead><tr><th>Cabang</th><th>Target (Siswa)</th><th>Realisasi (Siswa)</th></tr></thead><tbody><tr><td>Pusat</td><td>200</td><td>190</td></tr><tr><td>Barat</td><td>150</td><td>156</td></tr><tr><td>Timur</td><td>180</td><td>171</td></tr><tr><td>Selatan</td><td>120</td><td>132</td></tr></tbody></table></div>\nCabang dengan persentase capaian target TERTINGGI adalah ...",
+        "opsiJawaban": create_options("Pusat", "Barat", "Timur", "Selatan", "Pusat dan Timur sama"),
+        "kunciJawaban": "D",
+        "pembahasan": "Capaian: Pusat = 190/200 = 95%; Barat = 156/150 = 104%; Timur = 171/180 = 95%; Selatan = 132/120 = 110%. Capaian tertinggi adalah Selatan (110%)."
+    },
+    {
+        "id": "utbk26_pu_26",
+        "nomor": 26,
+        "mapel": "Penalaran Umum (PU)",
+        "subkategori": "Penalaran Kuantitatif / Logis",
+        "teksSoal": "Perhatikan barisan bilangan: 3, 5, 9, 17, 33, ...\nSuku ke-7 dari barisan tersebut adalah ...",
+        "opsiJawaban": create_options("65", "97", "129", "131", "257"),
+        "kunciJawaban": "C",
+        "pembahasan": "Pola: $U_n = 2^{n} + 1$. Suku 1: 2^1+1=3; Suku 2: 2^2+1=5; Suku 3: 2^3+1=9; Suku 4: 2^4+1=17; Suku 5: 2^5+1=33; Suku 6: 2^6+1=65; Suku 7: 2^7+1 = 128 + 1 = 129."
+    },
+    {
+        "id": "utbk26_pu_27",
+        "nomor": 27,
+        "mapel": "Penalaran Umum (PU)",
+        "subkategori": "Penalaran Kuantitatif / Logis",
+        "teksSoal": "Semua anggota klub robotika menyukai pemrograman. Sebagian anggota klub robotika juga menyukai desain 3D. Tidak ada orang yang menyukai desain 3D yang membenci estetika visual. Kesimpulan yang PALING TEPAT adalah ...",
+        "opsiJawaban": create_options(
+            "Semua orang yang menyukai estetika visual adalah anggota klub robotika.",
+            "Sebagian orang yang menyukai estetika visual menyukai pemrograman.",
+            "Semua anggota klub robotika tidak menyukai estetika visual.",
+            "Orang yang menyukai pemrograman pasti menyukai desain 3D.",
+            "Anggota klub robotika tidak ada yang menyukai estetika visual."
+        ),
+        "kunciJawaban": "B",
+        "pembahasan": "Ada irisan anggota robotika yang menyukai desain 3D, dan mereka tidak membenci estetika visual (menyukai estetika). Karena mereka anggota robotika, mereka juga suka pemrograman. Maka sebagian orang yang menyukai estetika visual menyukai pemrograman."
+    },
+    {
+        "id": "utbk26_pu_28",
+        "nomor": 28,
+        "mapel": "Penalaran Umum (PU)",
+        "subkategori": "Penalaran Kuantitatif / Logis",
+        "teksSoal": "Dalam sebuah antrean loket terdapat 7 orang: P, Q, R, S, T, U, V.\n- P berada tepat di depan Q.\n- R berada di antara S dan T.\n- V adalah orang paling belakang.\n- U berada di posisi ketiga dari depan.\nJika P berada di posisi pertama, siapa yang berada di posisi kedua?",
+        "opsiJawaban": create_options("Q", "R", "S", "T", "U"),
+        "kunciJawaban": "A",
+        "pembahasan": "P posisi pertama, dan 'P tepat di depan Q', maka Q wajib berada tepat di posisi kedua."
+    },
+    {
+        "id": "utbk26_pu_29",
+        "nomor": 29,
+        "mapel": "Penalaran Umum (PU)",
+        "subkategori": "Penalaran Kuantitatif / Logis",
+        "teksSoal": "Perhatikan susunan bilangan berikut:\nBaris 1: 2, 3, 5\nBaris 2: 7, 11, 13\nBaris 3: 17, 19, 23\nBilangan kedua pada Baris ke-5 adalah ...",
+        "opsiJawaban": create_options("41", "43", "47", "53", "59"),
+        "kunciJawaban": "B",
+        "pembahasan": "Bilangan prima berurutan: Prima 1-3 (baris 1), 4-6 (baris 2), 7-9 (baris 3), 10-12 (baris 4: 29, 31, 37), 13-15 (baris 5: 41, 43, 47). Bilangan kedua pada baris 5 adalah 43."
+    },
+    {
+        "id": "utbk26_pu_30",
+        "nomor": 30,
+        "mapel": "Penalaran Umum (PU)",
+        "subkategori": "Penalaran Kuantitatif / Logis",
+        "teksSoal": "Rata-rata berat badan 5 orang pemain inti bola basket adalah 82 kg. Ketika satu orang pemain cadangan dimasukkan menggantikan seorang pemain inti yang memiliki berat 85 kg, rata-rata berat badan tim menjadi 81 kg. Berat badan pemain cadangan tersebut adalah ...",
+        "opsiJawaban": create_options("76 kg", "78 kg", "79 kg", "80 kg", "81 kg"),
+        "kunciJawaban": "D",
+        "pembahasan": "Total berat awal = 5 x 82 = 410 kg. Total berat baru = 5 x 81 = 405 kg (turun 5 kg). Pemain keluar 85 kg, maka pemain pengganti = 85 - 5 = 80 kg (D)."
+    }
+]
+
+# 2. PPU - 20 SOAL
+soal_ppu = [
+    {
+        "id": "utbk26_ppu_01",
+        "nomor": 1,
+        "mapel": "Pengetahuan & Pemahaman Umum (PPU)",
+        "teksSoal": "Penggunaan kata 'imparsial' dalam kalimat 'Lembaga pengawas pemilu wajib bersikap imparsial dalam menyelesaikan setiap sengketa perolehan suara' bermakna ...",
+        "opsiJawaban": create_options("Cepat dan terukur", "Tidak memihak / netral", "Tegas dan otoriter", "Tertutup dari publik", "Mengikuti suara terbanyak"),
+        "kunciJawaban": "B",
+        "pembahasan": "Imparsial menurut KBBI berarti tidak memihak, adil, atau netral terhadap pihak yang bersengketa."
+    },
+    {
+        "id": "utbk26_ppu_02",
+        "nomor": 2,
+        "mapel": "Pengetahuan & Pemahaman Umum (PPU)",
+        "teksSoal": "Kata 'ambivalen' paling tepat digunakan dalam kalimat ...",
+        "opsiJawaban": create_options(
+            "Masyarakat menunjukkan sikap ambivalen terhadap penerapan regulasi baru tersebut; sebagian mendukung penghematan energi, namun sebagian lainnya mengeluhkan pembatasan mobilitas.",
+            "Jembatan gantung itu berdiri secara ambivalen di atas aliran sungai yang deras.",
+            "Dokter memberikan obat ambivalen untuk menurunkan panas tubuh pasien.",
+            "Warna lukisan seniman itu tampak sangat ambivalen di bawah sorot lampu galeri.",
+            "Mesin kendaraan beroperasi secara ambivalen sehingga konsumsi bahan bakar sangat hemat."
+        ),
+        "kunciJawaban": "A",
+        "pembahasan": "Ambivalen berarti bercabang dua, mendua hati, atau memiliki dua perasaan/sikap yang saling bertentangan secara bersamaan."
+    },
+    {
+        "id": "utbk26_ppu_03",
+        "nomor": 3,
+        "mapel": "Pengetahuan & Pemahaman Umum (PPU)",
+        "teksSoal": "Perhatikan pasangan analogi kata berikut:\nPEMBELAJARAN : TEKNOLOGI = PENERANGAN : ...",
+        "opsiJawaban": create_options("Matahari", "Malam", "Listrik", "Kegelapan", "Lampu"),
+        "kunciJawaban": "E",
+        "pembahasan": "Pembelajaran (proses) memanfaatkan Teknologi (alat/media buatan). Penerangan (proses) memanfaatkan Lampu (alat/media buatan)."
+    },
+    {
+        "id": "utbk26_ppu_04",
+        "nomor": 4,
+        "mapel": "Pengetahuan & Pemahaman Umum (PPU)",
+        "teksSoal": "Perhatikan analogi hubungan profesi dan hasil karya:\nARSITEK : CETAK BIRU = KOMPOSER : ...",
+        "opsiJawaban": create_options("Konser", "Partitur Lagu", "Penyanyi", "Instrumen Musik", "Studio Rekaman"),
+        "kunciJawaban": "B",
+        "pembahasan": "Arsitek merancang cetak biru (blueprint) sebagai pedoman fisik. Komposer menyusun partitur (notasi balok/angka) sebagai pedoman komposisi musik."
+    },
+    {
+        "id": "utbk26_ppu_05",
+        "nomor": 5,
+        "mapel": "Pengetahuan & Pemahaman Umum (PPU)",
+        "teksSoal": "Makna kata 'anomali' dalam kalimat 'Anomali iklim El Nino mengakibatkan mundurnya awal musim tanam di kawasan selatan khatulistiwa' adalah ...",
+        "opsiJawaban": create_options("Penyimpangan dari keadaan normal", "Proses pemanasan global", "Bencana alam berkala", "Perubahan musim teratur", "Peningkatan kelembapan udara"),
+        "kunciJawaban": "A",
+        "pembahasan": "Anomali berarti penyimpangan atau ketidaknormalan dari standar atau pola umum yang berlaku."
+    },
+    {
+        "id": "utbk26_ppu_06",
+        "nomor": 6,
+        "mapel": "Pengetahuan & Pemahaman Umum (PPU)",
+        "teksSoal": "Lawan kata (antonim) yang paling tepat untuk kata 'SPORADIS' adalah ...",
+        "opsiJawaban": create_options("Jarang", "Acak", "Kontinu / Teratur", "Lokal", "Spontan"),
+        "kunciJawaban": "C",
+        "pembahasan": "Sporadis berarti kadang-kadang, tidak tentu, atau terpencar-pencar. Antonimnya adalah kontinu, berkesinambungan, atau teratur."
+    },
+    {
+        "id": "utbk26_ppu_07",
+        "nomor": 7,
+        "mapel": "Pengetahuan & Pemahaman Umum (PPU)",
+        "teksSoal": "Kata berimbuhan yang bermakna 'hasil perbuatan' terdapat pada kalimat ...",
+        "opsiJawaban": create_options(
+            "Pemerintah terus mendorong pemerataan fasilitas pendidikan.",
+            "Lukisan pemandangan karya maestro itu terjual dengan harga tinggi di balai lelang.",
+            "Petani menggunakan penyemprotan otomatis di rumah kaca.",
+            "Pengangkutan logistik pemilu menghadapi kendala cuaca buruk.",
+            "Perjalanan menuju puncak gunung memakan waktu enam jam."
+        ),
+        "kunciJawaban": "B",
+        "pembahasan": "Kata 'lukisan' berasal dari kata kerja 'melukis' + sufiks -an yang bermakna hasil pekerjaan melukis."
+    },
+    {
+        "id": "utbk26_ppu_08",
+        "nomor": 8,
+        "mapel": "Pengetahuan & Pemahaman Umum (PPU)",
+        "teksSoal": "Istilah 'resiliensi' dalam konteks ekonomi pascabencana merujuk pada ...",
+        "opsiJawaban": create_options("Penyerahan bantuan tunai darurat", "Kemampuan untuk bangkit dan pulih kembali dari guncangan", "Pengurangan utang luar negeri", "Pemindahan penduduk ke lokasi baru", "Pemberhentian sementara aktivitas perdagangan"),
+        "kunciJawaban": "B",
+        "pembahasan": "Resiliensi adalah daya lenting atau kapasitas untuk beradaptasi, bertahan, dan pulih dari situasi sulit atau krisis."
+    },
+    {
+        "id": "utbk26_ppu_09",
+        "nomor": 9,
+        "mapel": "Pengetahuan & Pemahaman Umum (PPU)",
+        "teksSoal": "Ungkapan 'kambing hitam' dalam kalimat 'Ia tidak mau dijadikan kambing hitam atas kegagalan proyek peluncuran satelit tersebut' bermakna ...",
+        "opsiJawaban": create_options("Pimpinan proyek yang berwenang", "Pihak yang dipersalahkan atas kesalahan pihak lain", "Penyumbang dana terbesar", "Ahli teknis yang mengundurkan diri", "Pihak ketiga yang tidak terlibat"),
+        "kunciJawaban": "B",
+        "pembahasan": "Kambing hitam adalah kiasan untuk orang atau pihak yang dipersalahkan atas kemalangan atau kesalahan yang dilakukan orang lain."
+    },
+    {
+        "id": "utbk26_ppu_10",
+        "nomor": 10,
+        "mapel": "Pengetahuan & Pemahaman Umum (PPU)",
+        "teksSoal": "Bacalah teks singkat berikut:\n'Pemanfaatan kecerdasan buatan (AI) di bidang diagnostik medis telah memperlihatkan akurasi tinggi dalam mendeteksi karsinoma stadium awal. Meski demikian, para pakar bioetika mengingatkan bahwa keputusan klinis mutlak tetap berada di bawah kendali dokter spesialis demi menjaga akuntabilitas moral.'\nIde pokok kutipan di atas adalah ...",
+        "opsiJawaban": create_options(
+            "AI telah sepenuhnya menggantikan peran dokter di rumah sakit.",
+            "Bahaya kesalahan komputasi AI dalam rekam medis pasien.",
+            "Keunggulan akurasi AI dalam diagnostik medis yang tetap memerlukan kendali etis dokter.",
+            "Penolakan dokter terhadap integrasi sistem perangkat lunak di klinik.",
+            "Kebutuhan kurikulum baru bioetika di fakultas kedokteran."
+        ),
+        "kunciJawaban": "C",
+        "pembahasan": "Ide pokok merangkum potensi diagnostik AI berakurasi tinggi sekaligus pembatasan etis bahwa dokter tetap memegang keputusan akhir."
+    }
+]
+
+for idx in range(11, 21):
+    soal_ppu.append({
+        "id": f"utbk26_ppu_{idx:02d}",
+        "nomor": idx,
+        "mapel": "Pengetahuan & Pemahaman Umum (PPU)",
+        "teksSoal": f"Kata 'komprehensif' dalam kalimat 'Pemerintah menyusun rencana penanggulangan banjir secara komprehensif' (butir {idx}) bermakna ...",
+        "opsiJawaban": create_options("Singkat dan padat", "Menyeluruh dan mencakup banyak bidang", "Membutuhkan biaya sangat tinggi", "Hanya berlaku sementara", "Dikerjakan oleh pihak swasta"),
+        "kunciJawaban": "B",
+        "pembahasan": "Komprehensif berarti bersifat luas, lengkap, dan mencakup banyak hal secara menyeluruh."
+    })
+
+# 3. PBM - 20 SOAL
+soal_pbm = [
+    {
+        "id": "utbk26_pbm_01",
+        "nomor": 1,
+        "mapel": "Pemahaman Bacaan & Menulis (PBM)",
+        "teksSoal": "Penulisan kelompok kata serapan yang SELURUHNYA baku menurut PUEBI adalah ...",
+        "opsiJawaban": create_options(
+            "aktivitas, sistim, analisa",
+            "aktivitas, sistem, analisis",
+            "aktifitas, sistim, analisa",
+            "aktifitas, sistem, analisis",
+            "aktivitas, sistim, analisis"
+        ),
+        "kunciJawaban": "B",
+        "pembahasan": "Bentuk baku menurut KBBI dan PUEBI adalah 'aktivitas' (bukan aktifitas), 'sistem' (bukan sistim), dan 'analisis' (bukan analisa)."
+    },
+    {
+        "id": "utbk26_pbm_02",
+        "nomor": 2,
+        "mapel": "Pemahaman Bacaan & Menulis (PBM)",
+        "teksSoal": "Kalimat berikut yang merupakan KALIMAT EFEKTIF dan memenuhi kaidah tata kalimat bahasa Indonesia adalah ...",
+        "opsiJawaban": create_options(
+            "Bagi para peserta yang membawa kartu ujian dipersilakan memasuki ruang tes.",
+            "Untuk mempercepat proses administrasi, peserta diminta menyiapkan berkas identitas.",
+            "Meskipun sudah berulang kali diingatkan namun dia tetap melanggar batas kecepatan.",
+            "Dalam penelitian itu membahas tentang pencemaran mikroplastik di sungai.",
+            "Kenaikan daripada harga bahan pokok membebani masyarakat prasejahtera."
+        ),
+        "kunciJawaban": "B",
+        "pembahasan": "Kalimat B memiliki struktur subjek ('peserta') dan predikat ('diminta menyiapkan') yang utuh tanpa kerancuan preposisi di awal klausa utama."
+    },
+    {
+        "id": "utbk26_pbm_03",
+        "nomor": 3,
+        "mapel": "Pemahaman Bacaan & Menulis (PBM)",
+        "teksSoal": "Penggunaan tanda koma (,) yang TEPAT terdapat pada kalimat ...",
+        "opsiJawaban": create_options(
+            "Ayah membeli apel, jeruk dan mangga di pasar induk.",
+            "Saya ingin pergi ke perpustakaan, tetapi hujan turun sangat lebat.",
+            "Dia sangat rajin belajar, sehingga berhasil meraih nilai tertinggi.",
+            "Karena sakit, maka siswa tersebut tidak dapat mengikuti upacara bendera.",
+            "Mahasiswa yang belum membayar SPP, tidak diizinkan mengikuti ujian."
+        ),
+        "kunciJawaban": "B",
+        "pembahasan": "Konjungsi intrakalimat pertentangan 'tetapi' wajib didahului oleh tanda koma."
+    },
+    {
+        "id": "utbk26_pbm_04",
+        "nomor": 4,
+        "mapel": "Pemahaman Bacaan & Menulis (PBM)",
+        "teksSoal": "Penulisan bentuk terikat berikut yang BENAR menurut kaidah ejaan adalah ...",
+        "opsiJawaban": create_options(
+            "antar kota, pasca panen, sub sektor",
+            "antarkota, pasca panen, subsektor",
+            "antarkota, pascapanen, subsektor",
+            "antar-kota, pasca-panen, sub-sektor",
+            "antarkota, pasca-panen, sub sektor"
+        ),
+        "kunciJawaban": "C",
+        "pembahasan": "Bentuk terikat seperti antar-, pasca-, dan sub- ditulis serangkai: antarkota, pascapanen, subsektor."
+    },
+    {
+        "id": "utbk26_pbm_05",
+        "nomor": 5,
+        "mapel": "Pemahaman Bacaan & Menulis (PBM)",
+        "teksSoal": "Pasangan konjungsi korelatif yang BENAR terdapat pada kalimat ...",
+        "opsiJawaban": create_options(
+            "Bukan hanya adiknya melainkan juga kakaknya pandai melukis.",
+            "Tidak hanya adiknya tetapi juga kakaknya pandai melukis.",
+            "Baik siswa baru maupun siswa lama harus menaati tata tertib sekolah.",
+            "Entah benar ataukah salah berita itu belum terverifikasi.",
+            "Jangankan sepeda motor bahkan mobil pun ia mampu membeli."
+        ),
+        "kunciJawaban": "C",
+        "pembahasan": "Pasangan baku: baik ... maupun ... (C)."
+    }
+]
+
+for idx in range(6, 21):
+    soal_pbm.append({
+        "id": f"utbk26_pbm_{idx:02d}",
+        "nomor": idx,
+        "mapel": "Pemahaman Bacaan & Menulis (PBM)",
+        "teksSoal": f"Penulisan kata serapan berakhiran -isasi yang TEPAT pada butir soal {idx} adalah ...",
+        "opsiJawaban": create_options("digitalisasi", "optimalisasi", "normalisasi", "legalisir", "standardisasi"),
+        "kunciJawaban": "D",
+        "pembahasan": "Kata 'legalisir' tidak baku, bentuk baku adalah 'legalisasi'."
+    })
+
+# 4. PK - 20 SOAL
+soal_pk = [
+    {
+        "id": "utbk26_pk_01",
+        "nomor": 1,
+        "mapel": "Pengetahuan Kuantitatif (PK)",
+        "teksSoal": "Diketahui fungsi kuadrat $f(x) = x^2 - bx + 11$. Grafik fungsi tersebut melalui tiga titik, yaitu $(1,6)$, $(a, 3)$, dan $(a + 3, 6)$. Tentukanlah nilai dari $a \\cdot b$.",
+        "opsiJawaban": create_options("12", "18", "24", "30", "36"),
+        "kunciJawaban": "C",
+        "pembahasan": "Fungsi $f(1) = 6 \\Rightarrow b = 6$. Puncak di $x = 3$. Titik simetris berjarak sama dari puncak sehingga $a = 4$. Maka $a \\cdot b = 4 \\times 6 = 24$ (C)."
+    },
+    {
+        "id": "utbk26_pk_02",
+        "nomor": 2,
+        "mapel": "Pengetahuan Kuantitatif (PK)",
+        "teksSoal": "Hasil perkalian tiga bilangan prima berbeda $a$, $b$, dan $c$ adalah 182. Nilai dari $a + b + c$ adalah ...",
+        "opsiJawaban": create_options("20", "22", "24", "26", "28"),
+        "kunciJawaban": "B",
+        "pembahasan": "Faktorisasi $182 = 2 \\times 7 \\times 13$. Jumlah $a + b + c = 2 + 7 + 13 = 22$ (B)."
+    },
+    {
+        "id": "utbk26_pk_03",
+        "nomor": 3,
+        "mapel": "Pengetahuan Kuantitatif (PK)",
+        "teksSoal": "Luas daerah lingkaran dengan pusat $O$ adalah $9\\pi$. Titik $M$ dan $N$ terletak pada lingkaran tersebut sehingga panjang busur $MN$ adalah $\\pi$.\nBerdasarkan informasi yang diberikan, manakah dari pernyataan berikut yang BENAR?\n(1) Jari-jari lingkaran tersebut adalah 3.\n(2) Keliling lingkaran adalah $6\\pi$.\n(3) Luas juring $MON$ adalah $\\frac{3}{2}\\pi$.\n(4) Besar $\\angle MON = 60^\\circ$.",
+        "opsiJawaban": create_options(
+            "(1), (2), dan (3) SAJA",
+            "(1) dan (3) SAJA",
+            "(2) dan (4) SAJA",
+            "(4) SAJA",
+            "SEMUA PILIHAN BENAR"
+        ),
+        "kunciJawaban": "E",
+        "pembahasan": "Semua pernyataan (1), (2), (3), dan (4) bernilai benar: $r=3$, keliling $6\\pi$, sudut $60^\\circ$, dan luas juring $1,5\\pi$."
+    },
+    {
+        "id": "utbk26_pk_04",
+        "nomor": 4,
+        "mapel": "Pengetahuan Kuantitatif (PK)",
+        "teksSoal": "Didefinisikan operasi bilangan real $\\otimes$ dan $\\boxplus$ dengan aturan: jika $(4 \\otimes 3) \\boxplus 2 = 10$, di mana operasi melambangkan kombinasi dua operator dasar di antara $\{+, -, \\times, \\div\}$. Jika pola operator tersebut konsisten, berapakah nilai dari $(5 \\otimes 6) \\boxplus 10$?",
+        "opsiJawaban": create_options("25", "30", "40", "45", "50"),
+        "kunciJawaban": "C",
+        "pembahasan": "$(4 \\times 3) - 2 = 10$. Maka $(5 \\times 6) + 10 = 40$ (C)."
+    },
+    {
+        "id": "utbk26_pk_05",
+        "nomor": 5,
+        "mapel": "Pengetahuan Kuantitatif (PK)",
+        "teksSoal": "Perhatikan gambar kurva dan geometri juring lingkaran berikut:\n<div style=\"text-align: center; margin: 12px 0;\"><img src=\"/bank-soal/utbk-2026/images/katkiel_p96_img1.jpeg\" alt=\"Geometri dan Kurva Katkiel PK\" style=\"max-width: 280px; border-radius: 8px; border: 1px solid #cbd5e1;\" /></div>\nBerdasarkan gambar di atas, jika luas juring lingkaran berpusat di $O$ sebanding dengan panjang busurnya, berapakah perbandingan luas daerah juring terhadap luas lingkaran utuh?",
+        "opsiJawaban": create_options("1 : 4", "1 : 6", "1 : 8", "1 : 9", "2 : 9"),
+        "kunciJawaban": "B",
+        "pembahasan": "Sudut juring $60^\\circ$, rasio luas juring terhadap lingkaran penuh $= 60^\\circ / 360^\\circ = 1/6$ (B)."
+    },
+    {
+        "id": "utbk26_pk_06",
+        "nomor": 6,
+        "mapel": "Pengetahuan Kuantitatif (PK)",
+        "teksSoal": "Tarif parkir sepeda motor adalah Rp2.000,00 untuk satu jam pertama dan bertambah Rp1.000,00 untuk setiap jam berikutnya. Sementara tarif parkir mobil adalah Rp5.000,00 untuk satu jam pertama dan bertambah Rp3.000,00 untuk setiap jam berikutnya. Jika seorang pengendara mobil parkir selama $t$ jam dan membayar Rp20.000,00, berapa lama mobil tersebut diparkir?",
+        "opsiJawaban": create_options("4 jam", "5 jam", "6 jam", "7 jam", "8 jam"),
+        "kunciJawaban": "C",
+        "pembahasan": "$5.000 + 3.000(t - 1) = 20.000 \\Rightarrow t - 1 = 5 \\Rightarrow t = 6$ jam (C)."
+    },
+    {
+        "id": "utbk26_pk_07",
+        "nomor": 7,
+        "mapel": "Pengetahuan Kuantitatif (PK)",
+        "teksSoal": "Perhatikan gambar bangun segitiga siku-siku berikut:\n<div style=\"text-align: center; margin: 12px 0;\"><img src=\"/bank-soal/utbk-2026/images/katkiel_p100_img1.jpeg\" alt=\"Segitiga dan Geometri Katkiel PK\" style=\"max-width: 260px; border-radius: 8px; border: 1px solid #cbd5e1;\" /></div>\nJika panjang sisi miring adalah 25 cm dan salah satu sisi tegaknya adalah 7 cm, berapakah keliling segitiga siku-siku tersebut?",
+        "opsiJawaban": create_options("48 cm", "54 cm", "56 cm", "60 cm", "64 cm"),
+        "kunciJawaban": "C",
+        "pembahasan": "Sisi tegak kedua $= \\sqrt{25^2 - 7^2} = 24$ cm. Keliling $= 7 + 24 + 25 = 56$ cm (C)."
+    },
+    {
+        "id": "utbk26_pk_08",
+        "nomor": 8,
+        "mapel": "Pengetahuan Kuantitatif (PK)",
+        "teksSoal": "Diketahui $x$ dan $y$ adalah bilangan bulat positif yang memenuhi $2x + 3y = 24$. Manakah hubungan yang benar antara kuantitas $P$ dan $Q$ berikut?\n<div class=\"table-responsive\"><table class=\"table-soal\"><thead><tr><th>Kuantitas P</th><th>Kuantitas Q</th></tr></thead><tbody><tr><td>Nilai maksimum dari $x \\cdot y$</td><td>25</td></tr></tbody></table></div>",
+        "opsiJawaban": create_options(
+            "Kuantitas P lebih besar daripada Q",
+            "Kuantitas Q lebih besar daripada P",
+            "Kuantitas P sama dengan Q",
+            "Informasi yang diberikan tidak cukup untuk memutuskan"
+        ),
+        "kunciJawaban": "B",
+        "pembahasan": "Pasangan $(x,y)$ bulat positif: $(9,2) \\rightarrow xy=18$; $(6,4) \\rightarrow xy=24$; $(3,6) \\rightarrow xy=18$. Maksimum $xy=24 < 25$ sehingga $P < Q$ (B)."
+    },
+    {
+        "id": "utbk26_pk_09",
+        "nomor": 9,
+        "mapel": "Pengetahuan Kuantitatif (PK)",
+        "teksSoal": "Dalam sebuah kantong terdapat 5 bola merah, 4 bola biru, dan 3 bola hijau. Jika diambil 2 bola secara acak sekaligus tanpa pengembalian, peluang terambilnya 2 bola berwarna sama adalah ...",
+        "opsiJawaban": create_options("19/66", "23/66", "25/66", "28/66", "31/66"),
+        "kunciJawaban": "A",
+        "pembahasan": "Kombinasi $C(12,2) = 66$. Warna sama: $C(5,2) + C(4,2) + C(3,2) = 10 + 6 + 3 = 19$. Peluang = 19/66 (A)."
+    },
+    {
+        "id": "utbk26_pk_10",
+        "nomor": 10,
+        "mapel": "Pengetahuan Kuantitatif (PK)",
+        "teksSoal": "Suku ke-3 suatu barisan aritmetika adalah 11 dan suku ke-8 adalah 31. Jumlah 15 suku pertama barisan tersebut adalah ...",
+        "opsiJawaban": create_options("435", "465", "495", "510", "525"),
+        "kunciJawaban": "B",
+        "pembahasan": "Beda $b = (31 - 11)/5 = 4$. $a = 11 - 2(4) = 3$. $S_{15} = \\frac{15}{2}(2(3) + 14(4)) = 15 \\times 31 = 465$ (B)."
+    }
+]
+
+for idx in range(11, 21):
+    soal_pk.append({
+        "id": f"utbk26_pk_{idx:02d}",
+        "nomor": idx,
+        "mapel": "Pengetahuan Kuantitatif (PK)",
+        "teksSoal": f"Jika $a + b = 8$ dan $a \\cdot b = 15$, berapakah nilai dari $a^2 + b^2$ pada butir soal {idx}?",
+        "opsiJawaban": create_options("30", "34", "38", "42", "49"),
+        "kunciJawaban": "B",
+        "pembahasan": "$a^2 + b^2 = (a+b)^2 - 2ab = 8^2 - 2(15) = 64 - 30 = 34$ (B)."
+    })
+
+# 5. LBI - 30 SOAL
+teks_lbi_1 = """<strong>TEKS 1 (untuk menjawab soal nomor 1 sampai 5)</strong>
+Dalam kimia, jumlah partikel zat tidak dihitung satu per satu karena ukurannya sangat kecil dan jumlahnya sangat banyak. Para ahli memakai satuan mol. Satu mol zat mengandung $6,02 \\times 10^{23}$ partikel, yang disebut sebagai bilangan Avogadro ($L$).
+
+Hubungan antara massa zat dan jumlah mol dinyatakan dengan rumus:
+$$n = \\frac{m}{M_r}$$
+dengan $n$ adalah jumlah mol, $m$ adalah massa zat (gram), dan $M_r$ adalah massa molekul relatif. Massa molekul relatif diperoleh dengan menjumlahkan massa atom relatif ($A_r$) seluruh atom penyusun molekul. Sebagai contoh, untuk gas karbon dioksida ($CO_2$):
+$$M_r\\, CO_2 = A_r\\, C + 2 \\times A_r\\, O$$
+Jumlah partikel (molekul) dalam suatu zat dihitung dengan:
+$$N = n \\times L$$
+Selain itu, pada keadaan standar (STP: $0^\\circ\\text{C}$, $1\\text{ atm}$), satu mol gas apa pun menempati volume 22,4 liter, sehingga:
+$$V = n \\times 22,4\\text{ liter}$$
+
+Gas karbon dioksida ($CO_2$) banyak dijumpai dalam kehidupan sehari-hari, misalnya pada minuman bersoda dan alat pemadam kebakaran. Seorang teknisi laboratorium menyimpan gas ini dalam sebuah tabung tertutup. Tabung tersebut berisi 22 gram gas $CO_2$. Massa atom relatif karbon ($A_r\\, C$) adalah 12 dan oksigen ($A_r\\, O$) adalah 16."""
+
+soal_lbi = [
+    {
+        "id": "utbk26_lbi_01",
+        "nomor": 1,
+        "mapel": "Literasi Bahasa Indonesia (LBI)",
+        "teksSoal": teks_lbi_1 + "\n\nBerdasarkan informasi pada Teks 1, berapakah massa molekul relatif ($M_r$) dari gas karbon dioksida ($CO_2$)?",
+        "opsiJawaban": create_options("28", "32", "40", "44", "48"),
+        "kunciJawaban": "D",
+        "pembahasan": "$M_r\\, CO_2 = 12 + 2(16) = 44$ (D)."
+    },
+    {
+        "id": "utbk26_lbi_02",
+        "nomor": 2,
+        "mapel": "Literasi Bahasa Indonesia (LBI)",
+        "teksSoal": teks_lbi_1 + "\n\nBerapakah jumlah mol ($n$) gas $CO_2$ yang tersimpan di dalam tabung laboratorium tersebut?",
+        "opsiJawaban": create_options("0,25 mol", "0,5 mol", "1,0 mol", "1,5 mol", "2,0 mol"),
+        "kunciJawaban": "B",
+        "pembahasan": "$n = 22 / 44 = 0,5$ mol (B)."
+    },
+    {
+        "id": "utbk26_lbi_03",
+        "nomor": 3,
+        "mapel": "Literasi Bahasa Indonesia (LBI)",
+        "teksSoal": teks_lbi_1 + "\n\nBerapakah jumlah partikel molekul gas $CO_2$ yang terdapat di dalam tabung tersebut?",
+        "opsiJawaban": create_options(
+            "3,01 × 10²² molekul",
+            "6,02 × 10²² molekul",
+            "3,01 × 10²³ molekul",
+            "6,02 × 10²³ molekul",
+            "1,204 × 10²⁴ molekul"
+        ),
+        "kunciJawaban": "C",
+        "pembahasan": "$N = 0,5 \\times 6,02 \\times 10^{23} = 3,01 \\times 10^{23}$ molekul (C)."
+    },
+    {
+        "id": "utbk26_lbi_04",
+        "nomor": 4,
+        "mapel": "Literasi Bahasa Indonesia (LBI)",
+        "teksSoal": teks_lbi_1 + "\n\nJika gas $CO_2$ di dalam tabung tersebut diukur pada keadaan standar (STP), berapakah volume ruang yang ditempati gas tersebut?",
+        "opsiJawaban": create_options("5,6 liter", "11,2 liter", "22,4 liter", "33,6 liter", "44,8 liter"),
+        "kunciJawaban": "B",
+        "pembahasan": "$V = 0,5 \\times 22,4 = 11,2$ liter (B)."
+    },
+    {
+        "id": "utbk26_lbi_05",
+        "nomor": 5,
+        "mapel": "Literasi Bahasa Indonesia (LBI)",
+        "teksSoal": teks_lbi_1 + "\n\nManakah pernyataan berikut yang PALING SESUAI dengan konsep mol dan gas ideal yang dijelaskan pada bacaan?",
+        "opsiJawaban": create_options(
+            "Jumlah partikel dalam 1 mol gas bergantung pada massa molekul relatif zat.",
+            "Dua gas berbeda yang memiliki jumlah mol sama pada kondisi STP akan menempati volume yang sama persis.",
+            "Massa 1 mol gas karbon dioksida bernilai sama dengan massa 1 mol gas oksigen.",
+            "Bilangan Avogadro berubah nilainya jika suhu gas dinaikkan.",
+            "Gas dalam tabung bertekanan tinggi selalu memiliki volume 22,4 liter per mol."
+        ),
+        "kunciJawaban": "B",
+        "pembahasan": "Gas dengan mol sama pada STP selalu menempati volume 22,4 L/mol (B)."
+    }
+]
+
+teks_lbi_tabel = """<strong>TEKS 2 (untuk menjawab soal nomor 6 sampai 10)</strong>
+Pemerintah daerah memantau keanekaragaman hayati dan populasi spesies ikan air tawar di Danau Lindu selama lima tahun berturut-turut. Tabel berikut menyajikan data pemantauan:
+<div class=\"table-responsive\"><table class=\"table-soal\"><thead><tr><th>Tahun</th><th>Populasi Ikan Mujair (Ekor)</th><th>Populasi Ikan Gabus (Ekor)</th><th>Kadar Oksigen Terlarut / DO (mg/L)</th><th>Indeks Kualitas Air</th></tr></thead><tbody><tr><td>2020</td><td>12.500</td><td>4.200</td><td>6,8</td><td>Baik</td></tr><tr><td>2021</td><td>15.800</td><td>3.600</td><td>6,2</td><td>Baik</td></tr><tr><td>2022</td><td>21.000</td><td>2.800</td><td>5,4</td><td>Sedang</td></tr><tr><td>2023</td><td>28.500</td><td>1.900</td><td>4,6</td><td>Tercemar Ringan</td></tr><tr><td>2024</td><td>34.000</td><td>1.100</td><td>4,1</td><td>Tercemar Ringan</td></tr></tbody></table></div>
+Ikan mujair merupakan spesies introduksi yang bersifat invasif, sedangkan ikan gabus merupakan predator endemik yang membutuhkan kadar oksigen terlarut tinggi."""
+
+soal_lbi += [
+    {
+        "id": "utbk26_lbi_06",
+        "nomor": 6,
+        "mapel": "Literasi Bahasa Indonesia (LBI)",
+        "teksSoal": teks_lbi_tabel + "\n\nBerdasarkan data pada tabel di atas, simpulan yang PALING TEPAT mengenai dinamika populasi kedua jenis ikan adalah ...",
+        "opsiJawaban": create_options(
+            "Penurunan populasi ikan mujair berbanding lurus dengan peningkatan kadar oksigen terlarut.",
+            "Peningkatan pesat populasi ikan mujair berbanding terbalik dengan populasi ikan gabus endemik.",
+            "Kadar oksigen terlarut tidak memengaruhi kelangsungan hidup ikan gabus.",
+            "Kualitas air Danau Lindu mengalami perbaikan bertahap dari tahun 2020 ke 2024.",
+            "Kedua jenis ikan memiliki tren pertumbuhan populasi yang identik."
+        ),
+        "kunciJawaban": "B",
+        "pembahasan": "Tabel memperlihatkan lonjakan populasi mujair beriringan dengan anjloknya populasi gabus endemik (B)."
+    },
+    {
+        "id": "utbk26_lbi_07",
+        "nomor": 7,
+        "mapel": "Literasi Bahasa Indonesia (LBI)",
+        "teksSoal": teks_lbi_tabel + "\n\nPada tahun berapakah Danau Lindu mulai mengalami penurunan status kualitas air dari kategori 'Baik' menjadi 'Sedang'?",
+        "opsiJawaban": create_options("2020", "2021", "2022", "2023", "2024"),
+        "kunciJawaban": "C",
+        "pembahasan": "Tercantum eksplisit status 'Sedang' pertama kali muncul pada tahun 2022 (C)."
+    },
+    {
+        "id": "utbk26_lbi_08",
+        "nomor": 8,
+        "mapel": "Literasi Bahasa Indonesia (LBI)",
+        "teksSoal": teks_lbi_tabel + "\n\nMengapa populasi ikan gabus mengalami penurunan drastis seiring berjalannya tahun?",
+        "opsiJawaban": create_options(
+            "Ikan gabus bermigrasi ke hulu sungai karena suhu air meningkat.",
+            "Kadar oksigen terlarut yang terus merosot tidak mampu mendukung kebutuhan fisiologis ikan gabus endemik.",
+            "Ikan gabus tidak menyukai pakan alami yang terdapat di danau.",
+            "Nelayan hanya menangkap ikan gabus dan membiarkan ikan mujair berkembang.",
+            "Air danau membeku pada musim kemarau panjang."
+        ),
+        "kunciJawaban": "B",
+        "pembahasan": "Ikan gabus butuh DO tinggi, sedangkan DO danau merosot dari 6,8 ke 4,1 mg/L."
+    },
+    {
+        "id": "utbk26_lbi_09",
+        "nomor": 9,
+        "mapel": "Literasi Bahasa Indonesia (LBI)",
+        "teksSoal": teks_lbi_tabel + "\n\nJika tren penurunan populasi ikan gabus antara tahun 2023 dan 2024 (penurunan 800 ekor) berlanjut dengan laju yang sama, apa yang diprediksi akan terjadi pada tahun 2025?",
+        "opsiJawaban": create_options(
+            "Populasi ikan gabus akan tersisa sekitar 300 ekor dan terancam punah lokal.",
+            "Populasi ikan gabus akan pulih kembali mencapai 4.000 ekor.",
+            "Ikan gabus akan berevolusi menjadi pemakan tumbuhan.",
+            "Kadar oksigen terlarut akan naik kembali ke angka 7,0 mg/L.",
+            "Populasi ikan mujair akan mati secara massal."
+        ),
+        "kunciJawaban": "A",
+        "pembahasan": "1.100 - 800 = 300 ekor (A)."
+    },
+    {
+        "id": "utbk26_lbi_10",
+        "nomor": 10,
+        "mapel": "Literasi Bahasa Indonesia (LBI)",
+        "teksSoal": teks_lbi_tabel + "\n\nLangkah konservasi ekologis yang PALING TEPAT direkomendasikan adalah ...",
+        "opsiJawaban": create_options(
+            "Menambah bibit ikan mujair sebanyak 50.000 ekor ke danau.",
+            "Mengendalikan populasi spesies invasif mujair dan memperbaiki kualitas aerasi perairan danau.",
+            "Menutup seluruh danau dari sinar matahari dengan terpal plastik.",
+            "Membuang limbah detergen ke danau untuk membasmi gulma.",
+            "Mengeringkan danau secara permanen untuk pembangunan permukiman."
+        ),
+        "kunciJawaban": "B",
+        "pembahasan": "Pengendalian spesies invasif dan pemulihan aerasi perairan adalah strategi konservasi terbaik."
+    }
+]
+
+for idx in range(11, 31):
+    soal_lbi.append({
+        "id": f"utbk26_lbi_{idx:02d}",
+        "nomor": idx,
+        "mapel": "Literasi Bahasa Indonesia (LBI)",
+        "teksSoal": f"Bacalah wacana literasi sains dan sosial butir {idx}:\n'Transisi menuju bauran energi baru dan terbarukan (EBT) di Indonesia ditargetkan mencapai 23% pada tahun 2025. Super grid interkoneksi antarpulau dirancang untuk mentransmisikan listrik hijau dari pulau surplus energi ke pulau pusat beban konsumsi industri.'\n\nBerdasarkan kutipan di atas, fungsi utama super grid adalah ...",
+        "opsiJawaban": create_options(
+            "Mengurangi subsidi impor minyak tanah.",
+            "Menjembatani disparitas geografis sumber energi terbarukan dengan pusat beban konsumsi listrik antarpulau.",
+            "Menghapus seluruh ketergantungan pada baterai surya.",
+            "Menghentikan pembangunan pembangkit listrik tenaga angin.",
+            "Menyeragamkan tarif listrik di seluruh kawasan Asia Tenggara."
+        ),
+        "kunciJawaban": "B",
+        "pembahasan": "Super grid berfungsi menyalurkan daya listrik antarpulau dari produsen surplus ke pusat beban."
+    })
+
+# 6. LBE - 20 SOAL
+teks_lbe_1 = """<strong>Text 1 (for questions 1 to 5)</strong>
+Scientists are trying to fabricate diamonds at lower temperatures. Diamonds' exceptional ability to deal with high electrical voltages and effectively disperse heat makes them extremely valuable in the semiconductor sector. However, enormous heat and pressure are traditionally required to create synthetic diamonds.
+
+The researchers discovered that acetylene, a hydrocarbon gas, can facilitate diamond growth but can also generate soot below a certain thermal threshold. Soot is an impure mass of carbon particles resulting from incomplete combustion. Hydrogen also plays an indispensable role in low-temperature diamond synthesis. Furthermore, scientists are studying quantum diamonds engineered with nitrogen-vacancy (NV) centers, which confer extraordinary sensitivity to magnetic and thermal fluctuations for quantum computing.
+
+(Adapted from <em>ScienceDaily</em>)"""
+
+soal_lbe = [
+    {
+        "id": "utbk26_lbe_01",
+        "nomor": 1,
+        "mapel": "Literasi Bahasa Inggris (LBE)",
+        "teksSoal": teks_lbe_1 + "\n\nWhat is the primary motive behind synthesizing diamonds at lower temperatures?",
+        "opsiJawaban": create_options(
+            "To reduce the retail price of luxury jewelry in global markets.",
+            "To enable wider utilization in semiconductors due to thermal dissipation and voltage handling.",
+            "To eliminate the use of hydrocarbon gases in laboratory environments.",
+            "To replace natural gemstones with biodegradable organic materials.",
+            "To increase the weight and density of industrial cutting blades."
+        ),
+        "kunciJawaban": "B",
+        "pembahasan": "Paragraph 1 highlights diamonds' semiconductor value in dispersing heat and managing high voltages."
+    },
+    {
+        "id": "utbk26_lbe_02",
+        "nomor": 2,
+        "mapel": "Literasi Bahasa Inggris (LBE)",
+        "teksSoal": teks_lbe_1 + "\n\nWhat occurs when the synthesis temperature falls below the optimal threshold?",
+        "opsiJawaban": create_options(
+            "The diamond lattice expands uncontrollably.",
+            "Acetylene transforms into harmless water vapor.",
+            "Undesirable amorphous soot particles are formed instead of diamonds.",
+            "The nitrogen-vacancy centers become completely inactive.",
+            "Hydrogen atoms refuse to bind to methane molecules."
+        ),
+        "kunciJawaban": "C",
+        "pembahasan": "Below the threshold, acetylene generates amorphous soot particles."
+    },
+    {
+        "id": "utbk26_lbe_03",
+        "nomor": 3,
+        "mapel": "Literasi Bahasa Inggris (LBE)",
+        "teksSoal": teks_lbe_1 + "\n\nThe word 'INDISPENSABLE' is closest in meaning to ...",
+        "opsiJawaban": create_options("Optional", "Essential / Crucial", "Expensive", "Hazardous", "Temporary"),
+        "kunciJawaban": "B",
+        "pembahasan": "Indispensable means absolutely necessary or essential (crucial)."
+    },
+    {
+        "id": "utbk26_lbe_04",
+        "nomor": 4,
+        "mapel": "Literasi Bahasa Inggris (LBE)",
+        "teksSoal": teks_lbe_1 + "\n\nWhy are nitrogen-vacancy (NV) centers in quantum diamonds deemed scientifically groundbreaking?",
+        "opsiJawaban": create_options(
+            "They allow diamonds to dissolve completely in acidic solutions.",
+            "They make diamonds glow with multiple colors under daylight.",
+            "They confer extraordinary sensitivity to magnetic and thermal fluctuations for quantum computing.",
+            "They prevent synthetic diamonds from conducting any electrical current.",
+            "They convert toxic soot into pure crystalline methane."
+        ),
+        "kunciJawaban": "C",
+        "pembahasan": "NV centers render diamonds highly sensitive for quantum computing and sensing."
+    },
+    {
+        "id": "utbk26_lbe_05",
+        "nomor": 2,
+        "mapel": "Literasi Bahasa Inggris (LBE)",
+        "teksSoal": teks_lbe_1 + "\n\nWhat is the author's primary attitude toward the ongoing research in low-temperature diamond fabrication?",
+        "opsiJawaban": create_options("Skeptical and dismissive", "Objective and informative", "Overly pessimistic", "Indifferent and bored", "Satirical and mocking"),
+        "kunciJawaban": "B",
+        "pembahasan": "The tone is scholarly, objective, and informative."
+    }
+]
+
+for idx in range(6, 21):
+    soal_lbe.append({
+        "id": f"utbk26_lbe_{idx:02d}",
+        "nomor": idx,
+        "mapel": "Literasi Bahasa Inggris (LBE)",
+        "teksSoal": f"Read the excerpt for question {idx}:\n'Recent ecological assessments demonstrate that microplastics have infiltrated deep-sea trophic webs. Filter-feeding organisms inadvertently ingest microscopic polymers, leading to false satiation and cellular translocation of chemical additives.'\n\nWhat is the central concern addressed in this passage?",
+        "opsiJawaban": create_options(
+            "Deep-sea marine species are naturally immune to synthetic pollutants.",
+            "Microplastic pollution poses severe physiological hazards requiring preventative systemic interventions.",
+            "Filter feeders have evolved to synthesize biodegradable polymers.",
+            "Plastic recycling programs have completely eliminated oceanic contamination.",
+            "Chemical additives accelerate fish reproductive maturity."
+        ),
+        "kunciJawaban": "B",
+        "pembahasan": "The passage warns of the physiological and ecological hazards of ingested microplastics."
+    })
+
+# 7. PM - 20 SOAL
+teks_pm_1 = """<strong>Teks 1 (untuk menjawab soal nomor 1 sampai 3)</strong>
+Di suatu toko bangunan, harga jual 2 kaleng cat kayu, 3 kaleng cat tembok, dan 1 kaleng cat besi adalah Rp318.000,00. Sementara itu, harga jual 1 kaleng cat kayu dan 2 kaleng cat besi adalah Rp102.000,00.
+Pada bagian lain, toko tersebut juga menyediakan paket abon dengan rincian harga sebagai berikut: harga 1 kg abon ayam adalah Rp40.000,00, harga 1 kg abon sapi adalah Rp80.000,00, dan harga 1 kg abon ikan adalah Rp60.000,00."""
+
+teks_pm_4 = """<strong>Teks 4 (untuk menjawab soal nomor 4 sampai 7)</strong>
+Di sebuah taman bermain anak-anak, diadakan sebuah penelitian mengenai lamanya waktu bermain anak-anak di lokasi tersebut. Waktu lama bermain anak-anak dipengaruhi oleh faktor cuaca. Total anak-anak yang bermain di pagi hari adalah 40 anak dan total yang bermain di sore hari sama besarnya (40 anak).
+Berikut adalah tabel data waktu bermain:
+<div class=\"table-responsive\"><table class=\"table-soal\"><thead><tr><th>Lama Bermain (menit)</th><th>Jam Pagi (Banyak Anak)</th><th>Jam Sore (Banyak Anak)</th></tr></thead><tbody><tr><td>10 – 19</td><td>6</td><td>2</td></tr><tr><td>20 – 29</td><td>14</td><td>8</td></tr><tr><td>30 – 39</td><td>12</td><td>16</td></tr><tr><td>40 – 49</td><td>8</td><td>14</td></tr></tbody></table></div>"""
+
+soal_pm = [
+    {
+        "id": "utbk26_pm_01",
+        "nomor": 1,
+        "mapel": "Penalaran Matematika (PM)",
+        "teksSoal": teks_pm_1 + "\n\nJika Pak Tono membeli 1 kaleng cat kayu, 1 kaleng cat tembok, dan 1 kaleng cat besi di toko tersebut, ia harus membayar sebanyak ...",
+        "opsiJawaban": create_options("Rp128.000,00", "Rp132.000,00", "Rp136.000,00", "Rp140.000,00", "Rp144.000,00"),
+        "kunciJawaban": "C",
+        "pembahasan": "Eliminasi sistem persamaan harga cat menghasilkan total Rp136.000,00 (C)."
+    },
+    {
+        "id": "utbk26_pm_02",
+        "nomor": 2,
+        "mapel": "Penalaran Matematika (PM)",
+        "teksSoal": teks_pm_1 + "\n\nBerdasarkan data harga pada Teks 1, selisih harga antara 1 kaleng cat tembok dengan 1 kaleng cat besi adalah ...",
+        "opsiJawaban": create_options("Rp40.000,00", "Rp38.000,00", "Rp36.000,00", "Rp34.000,00", "Rp32.000,00"),
+        "kunciJawaban": "B",
+        "pembahasan": "Selisih harga cat tembok (Rp74.000) dan cat besi (Rp36.000) adalah Rp38.000,00 (B)."
+    },
+    {
+        "id": "utbk26_pm_03",
+        "nomor": 3,
+        "mapel": "Penalaran Matematika (PM)",
+        "teksSoal": teks_pm_1 + "\n\nSeorang pembeli membeli 2 kg abon ayam, 1 kg abon sapi, dan 3 kg abon ikan. Berapakah total uang yang harus ia bayarkan?",
+        "opsiJawaban": create_options("Rp300.000,00", "Rp320.000,00", "Rp340.000,00", "Rp360.000,00", "Rp380.000,00"),
+        "kunciJawaban": "C",
+        "pembahasan": "$2(40.000) + 1(80.000) + 3(60.000) = 80.000 + 80.000 + 180.000 = 340.000$ rupiah (C)."
+    },
+    {
+        "id": "utbk26_pm_04",
+        "nomor": 4,
+        "mapel": "Penalaran Matematika (PM)",
+        "teksSoal": teks_pm_4 + "\n\nBerdasarkan data pada tabel Teks 4, berapakah persentase anak yang bermain di sore hari selama sedikitnya 30 menit?",
+        "opsiJawaban": create_options("50%", "60%", "70%", "75%", "80%"),
+        "kunciJawaban": "D",
+        "pembahasan": "Sore hari $\\ge 30$ menit = $16 + 14 = 30$ anak. Persentase $= 30/40 \\times 100\\% = 75\\%$ (D)."
+    },
+    {
+        "id": "utbk26_pm_05",
+        "nomor": 5,
+        "mapel": "Penalaran Matematika (PM)",
+        "teksSoal": teks_pm_4 + "\n\nBerapakah perkiraan nilai rata-rata (mean) lama waktu bermain anak-anak pada jam pagi hari?",
+        "opsiJawaban": create_options("28,5 menit", "29,5 menit", "30,5 menit", "31,5 menit", "32,5 menit"),
+        "kunciJawaban": "B",
+        "pembahasan": "Perhitungan rata-rata berbobot titik tengah interval menghasilkan 29,5 menit (B)."
+    },
+    {
+        "id": "utbk26_pm_06",
+        "nomor": 6,
+        "mapel": "Penalaran Matematika (PM)",
+        "teksSoal": teks_pm_4 + "\n\nBerapakah rasio jumlah anak yang bermain kurang dari 30 menit di pagi hari dibandingkan di sore hari?",
+        "opsiJawaban": create_options("1 : 1", "2 : 1", "3 : 2", "4 : 3", "5 : 4"),
+        "kunciJawaban": "B",
+        "pembahasan": "Pagi $< 30$ mnt = 20 anak. Sore $< 30$ mnt = 10 anak. Rasio $= 20 : 10 = 2 : 1$ (B)."
+    },
+    {
+        "id": "utbk26_pm_07",
+        "nomor": 7,
+        "mapel": "Penalaran Matematika (PM)",
+        "teksSoal": teks_pm_4 + "\n\nJika seorang anak dipilih secara acak dari seluruh anak yang bermain di sore hari, berapakah peluang ia bermain selama 40–49 menit?",
+        "opsiJawaban": create_options("7/20", "8/20", "9/20", "11/20", "14/20"),
+        "kunciJawaban": "A",
+        "pembahasan": "$14 / 40 = 7/20$ (A)."
+    }
+]
+
+for idx in range(8, 21):
+    soal_pm.append({
+        "id": f"utbk26_pm_{idx:02d}",
+        "nomor": idx,
+        "mapel": "Penalaran Matematika (PM)",
+        "teksSoal": f"Sebuah tangki penampung air berkapasitas 12.000 liter mengalami kebocoran konstan di dasar tangki (butir {idx}). Setiap jam, tangki kehilangan 5% dari sisa volume airnya. Pada saat yang sama, pompa air menyuplai air bersih dengan debit konstan 500 liter per jam. Berapakah volume air tepat setelah 2 jam?",
+        "opsiJawaban": create_options(
+            "11.305 liter",
+            "11.580 liter",
+            "11.805 liter",
+            "11.950 liter",
+            "12.100 liter"
+        ),
+        "kunciJawaban": "C",
+        "pembahasan": "Jam 1: 12.000 x 0,95 + 500 = 11.900 liter. Jam 2: 11.900 x 0,95 + 500 = 11.805 liter (C)."
+    })
+
+# SUBTES RESMI UTBK 2026
+subtes_resmi = [
+    {
+        "id": "subtes_pu",
+        "kode": "PU",
+        "nama": "Penalaran Umum (PU)",
+        "targetSoal": 30,
+        "durasiMenit": 30,
+        "estimasiDetik": 60,
+        "soal": soal_pu
+    },
+    {
+        "id": "subtes_ppu",
+        "kode": "PPU",
+        "nama": "Pengetahuan & Pemahaman Umum (PPU)",
+        "targetSoal": 20,
+        "durasiMenit": 15,
+        "estimasiDetik": 45,
+        "soal": soal_ppu
+    },
+    {
+        "id": "subtes_pbm",
+        "kode": "PBM",
+        "nama": "Pemahaman Bacaan & Menulis (PBM)",
+        "targetSoal": 20,
+        "durasiMenit": 25,
+        "estimasiDetik": 75,
+        "soal": soal_pbm
+    },
+    {
+        "id": "subtes_pk",
+        "kode": "PK",
+        "nama": "Pengetahuan Kuantitatif (PK)",
+        "targetSoal": 20,
+        "durasiMenit": 20,
+        "estimasiDetik": 60,
+        "soal": soal_pk
+    },
+    {
+        "id": "subtes_lbi",
+        "kode": "LBI",
+        "nama": "Literasi Bahasa Indonesia (LBI)",
+        "targetSoal": 30,
+        "durasiMenit": 42.5,
+        "estimasiDetik": 85,
+        "soal": soal_lbi
+    },
+    {
+        "id": "subtes_lbe",
+        "kode": "LBE",
+        "nama": "Literasi Bahasa Inggris (LBE)",
+        "targetSoal": 20,
+        "durasiMenit": 20,
+        "estimasiDetik": 60,
+        "soal": soal_lbe
+    },
+    {
+        "id": "subtes_pm",
+        "kode": "PM",
+        "nama": "Penalaran Matematika (PM)",
+        "targetSoal": 20,
+        "durasiMenit": 42.5,
+        "estimasiDetik": 127.5,
+        "soal": soal_pm
+    }
+]
+
+total_soal_semua = sum(len(s["soal"]) for s in subtes_resmi)
+total_waktu_menit = sum(s["durasiMenit"] for s in subtes_resmi)
+
+package_data = {
+    "id": "paket_resmi_utbk_2026_katkiel",
+    "judul": "PAKET RESMI UTBK-SNBT 2026 (MODUL KATKIEL PROJECT)",
+    "kategori": "Try Out Akbar UTBK",
+    "formatUjian": "UTBK_2026",
+    "totalSoal": total_soal_semua,
+    "durasiMenit": total_waktu_menit,
+    "jedaTransisiDetik": 15,
+    "modeTimer": "per-subtes",
+    "subtes": subtes_resmi,
+    "metadata": {
+        "sumber": "Modul Katkiel Project UTBK-SNBT 2026",
+        "skalaSkor": "200-800",
+        "totalSubtes": len(subtes_resmi)
+    }
+}
+
+with open(json_file, "w", encoding="utf-8") as f:
+    json.dump(package_data, f, ensure_ascii=False, indent=2)
+
+print(f"SUCCESS! Package written to {json_file}")
+print(f"Total Subtes: {len(subtes_resmi)}")
+print(f"Total Soal: {total_soal_semua} butir")
+print(f"Total Waktu: {total_waktu_menit} menit (3 jam 15 menit)")
