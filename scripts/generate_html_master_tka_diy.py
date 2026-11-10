@@ -48,7 +48,7 @@ def generate_html_document(title, subtitle, questions):
         # Gambar Butir Soal jika ada
         gambar_urls = q.get("gambarUrls", [])
         if gambar_urls:
-            art_lines.append('  <div data-field="gambar_urls">')
+            art_lines.append('  <div data-field="gambar">')
             for g in gambar_urls:
                 art_lines.append(f'    <img src="{g}" alt="Gambar Soal {nomor}" style="max-width:100%; max-height:300px; display:block; margin:8px auto; border-radius:8px;" />')
             art_lines.append('  </div>')

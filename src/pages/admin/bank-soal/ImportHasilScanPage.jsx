@@ -2093,7 +2093,7 @@ function parseHTMLMaster(raw) {
     const tipe = normalizeTipe(node.getAttribute('data-tipe') || node.getAttribute('data-type') || 'pg_sederhana');
     const teksSoalGabungan = perbaikiKurungHimpunanLatex(getAllFieldsText(node, 'teks_soal', 'soal', 'question'));
     const bersihTeksSoal = bersihkanOcrTeks(teksSoalGabungan);
-    const imageNode = getField(node, 'gambar', 'images', 'image');
+    const imageNode = getField(node, 'gambar', 'images', 'image', 'gambar_urls', 'gambarUrls');
     const bacaanNode = getField(node, 'bacaan', 'stimulus', 'reading');
     const optionsNode = getField(node, 'opsi_jawaban', 'options', 'choices');
     const explanationNode = getField(node, 'pembahasan', 'penjelasan', 'explanation');
@@ -2244,7 +2244,21 @@ function parseHTMLMaster(raw) {
         return t;
       })(),
       pasangan: parseHTMLPairs(matchingNode),
-      gambar: parseHTMLImages(imageNode),
+      gambar: (() => {
+        let imgs = parseHTMLImages(imageNode);
+        if (!imgs.length) {
+          const allImgs = Array.from(node.querySelectorAll('img')).filter(img => {
+            if (bacaanNode && bacaanNode.contains(img)) return false;
+            if (optionsNode && optionsNode.contains(img)) return false;
+            if (explanationNode && explanationNode.contains(img)) return false;
+            return true;
+          });
+          if (allImgs.length > 0) {
+            imgs = allImgs.map((img, idx) => htmlImageToObject(img, idx)).filter(img => img.dataUrl || img.url);
+          }
+        }
+        return imgs;
+      })(),
       tabel_soal: tableSoal,
       materi: htmlNodeText(materialNode),
       tags_soal: tagsNode ? htmlNodeText(tagsNode).split(',').map(t => t.trim()).filter(Boolean) : [],
