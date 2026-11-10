@@ -438,8 +438,8 @@ export default function TobkCbtPage() {
 
   // Toggle Ragu
   const handleToggleRagu = (soalId) => {
-    const statusSekarang = !ragu[soalId];
-    const baru = { ...ragu, [soalId]: !statusSekarang };
+    if (!soalId) return;
+    const baru = { ...ragu, [soalId]: !ragu[soalId] };
     setRagu(baru);
     simpanJawabanPeserta(peserta?.pesertaId, jawaban, baru, pelanggaran);
   };
@@ -611,7 +611,7 @@ export default function TobkCbtPage() {
   const isRagu = (id) => !!ragu[id];
 
   const jumlahRaguDiSubtes = useMemo(() => {
-    return daftarSoalSubtes.filter((s) => !ragu[s.id]).length;
+    return daftarSoalSubtes.filter((s) => Boolean(ragu[s.id])).length;
   }, [daftarSoalSubtes, ragu]);
 
   // Daftar opsi yang ternormalisasi (mendukung teks, gambar, key 'A'..'E')
