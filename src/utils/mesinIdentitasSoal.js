@@ -17,21 +17,30 @@ export function normalisasiBacaan(raw) {
   if (typeof raw === 'string') {
     const teks = raw.trim();
     if (!teks) return null;
-    return { teks, gambar: [], grup: null, jenis: 'teks' };
+    return { teks, gambar: [], grup: null, jenis: 'teks', judul: null, tabel: null, rentang: null };
   }
   if (typeof raw === 'object') {
     const teks = String(raw.teks || raw.text || raw.content || '').trim();
-    const gambar = Array.isArray(raw.gambar)
-      ? raw.gambar
-      : (Array.isArray(raw.gambarUrls) ? raw.gambarUrls : []);
+    const gbrMentah = raw.gambar || raw.gambarUrls || raw.bacaan_gambar || raw.bacaanGambar || raw.url;
+    let gambar = [];
+    if (typeof gbrMentah === 'string' && gbrMentah.trim()) {
+      gambar = [gbrMentah.trim()];
+    } else if (Array.isArray(gbrMentah)) {
+      gambar = gbrMentah.map((g) => (typeof g === 'string' ? g : g?.url || g?.uploadedUrl || '')).filter(Boolean);
+    } else if (typeof gbrMentah === 'object' && gbrMentah !== null && (gbrMentah.url || gbrMentah.uploadedUrl)) {
+      gambar = [String(gbrMentah.url || gbrMentah.uploadedUrl).trim()];
+    }
     const grup = raw.grup || raw.stimulusId || raw.groupId || null;
-    if (!teks && !gambar.length) return null;
+    const judul = raw.judul || raw.bacaan_judul || raw.bacaanJudul || raw.title || null;
+    const tabel = raw.tabel || raw.tabelSoal || raw.tabel_soal || null;
+    if (!teks && !gambar.length && !tabel) return null;
     return {
       teks,
       gambar,
       grup,
+      judul,
       jenis: raw.jenis || (gambar.length && !teks ? 'gambar' : 'teks'),
-      tabel: raw.tabel || null,
+      tabel,
       rentang: raw.rentang || null,
     };
   }
@@ -107,24 +116,31 @@ export function tautkanStimulusBersama(daftarSoal) {
 
   const masterPerGrup = {};
   list.forEach((s) => {
-    const g = s.bacaan?.grup || s.stimulusGrup;
+    const g = s.bacaan?.grup || s.stimulusGrup || s.grup;
     if (!g) return;
     const len = (s.bacaan?.teks || '').length;
-    if (!masterPerGrup[g] || len > (masterPerGrup[g].teks || '').length) {
+    const gbr = (s.bacaan?.gambar || []).length;
+    if (!masterPerGrup[g] || len > (masterPerGrup[g].teks || '').length || (!masterPerGrup[g].gambar?.length && gbr > 0)) {
       masterPerGrup[g] = {
-        teks: s.bacaan?.teks || '',
-        gambar: s.bacaan?.gambar || [],
-        rentang: s.bacaan?.rentang || s.stimulusRentang || null,
+        teks: s.bacaan?.teks || masterPerGrup[g]?.teks || '',
+        gambar: (s.bacaan?.gambar && s.bacaan.gambar.length) ? s.bacaan.gambar : (masterPerGrup[g]?.gambar || []),
+        judul: s.bacaan?.judul || masterPerGrup[g]?.judul || null,
+        rentang: s.bacaan?.rentang || s.stimulusRentang || masterPerGrup[g]?.rentang || null,
       };
     }
   });
   list.forEach((s) => {
-    const g = s.bacaan?.grup || s.stimulusGrup;
+    const g = s.bacaan?.grup || s.stimulusGrup || s.grup;
     if (!g || !masterPerGrup[g]) return;
     const m = masterPerGrup[g];
-    if (!(s.bacaan?.teks || '').trim() && m.teks) {
-      s.bacaan = { ...(s.bacaan || {}), teks: m.teks, gambar: m.gambar || [], grup: g, rentang: m.rentang };
-    }
+    s.bacaan = {
+      ...(s.bacaan || {}),
+      teks: (s.bacaan?.teks || '').trim() ? s.bacaan.teks : m.teks,
+      gambar: (s.bacaan?.gambar && s.bacaan.gambar.length) ? s.bacaan.gambar : (m.gambar || []),
+      judul: s.bacaan?.judul || m.judul || null,
+      grup: g,
+      rentang: s.bacaan?.rentang || m.rentang,
+    };
     s.stimulusGrup = g;
     if (m.rentang) s.stimulusRentang = m.rentang;
   });

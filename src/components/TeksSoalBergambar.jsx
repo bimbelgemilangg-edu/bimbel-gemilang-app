@@ -17,15 +17,9 @@
 import RenderMath from './RenderMath';
 import RenderTable from './RenderTable';
 import { pisahTeksDanGambar } from '../utils/penempatanGambar';
-// 🔥 2026-11-04 (putusan owner: tampilan sekelas CBT profesional, wajib
-// sama dari sisi guru sampai siswa): tipografi naskah diambil dari SATU
-// token sumber -- serif ala kertas ujian, lebih besar, rata kiri-kanan.
 import { GAYA_TEKS_NASKAH } from '../styles/naskahSoal';
-// 🔥 BARU (2026-10-07): jaring pengaman tampilan -- dokumen bank_soal yang
-// telanjur tersimpan dengan src bungkus markdown "[url](url)" (keluhan
-// owner "gambar dari Gemini gak muncul") tetap bisa ditampilkan karena
-// bungkusnya dilepas tepat sebelum <img> dirender.
 import { lepasBungkusanSrcGambar } from '../utils/normalisasiSrcGambar';
+import { ekstrakUrlGambar, gambarButirDari } from '../utils/fieldButirSoal';
 
 export default function TeksSoalBergambar({
   teks,
@@ -38,9 +32,23 @@ export default function TeksSoalBergambar({
   onKlikGambar = null,
   gayaTeks = {},
   gayaGambar = {},
+  soal = null,
 }) {
-  const tabelData = tabelSoal || tabel_soal || tabel;
-  const segmen = pisahTeksDanGambar(teks, gambarUrls, { meta: gambarMeta, region });
+  const tabelData = tabelSoal || tabel_soal || tabel || (soal ? (soal.tabelSoal || soal.tabel_soal || soal.tabel) : null);
+
+  // Ambil daftar URL secara tangguh dari array string, array object, single object, atau objek soal
+  let listUrls = ekstrakUrlGambar(gambarUrls);
+  if (!listUrls.length && soal) {
+    listUrls = gambarButirDari(soal);
+  }
+
+  const teksAkhir = teks !== undefined && teks !== null ? String(teks) : (soal ? (soal.teksSoal || soal.soal || soal.teks_soal || '') : '');
+
+  const segmen = pisahTeksDanGambar(teksAkhir, listUrls, {
+    meta: gambarMeta,
+    region,
+    posisiSisa: region === 'bacaan' ? 'awal' : undefined,
+  });
   const gayaGambarFinal = {
     display: 'block',
     maxWidth: '100%',

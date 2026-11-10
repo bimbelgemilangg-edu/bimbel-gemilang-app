@@ -27,6 +27,7 @@ import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import TeksSoalBergambar from '../../../components/TeksSoalBergambar';
 import { useNavigate } from 'react-router-dom';
 import { sumberPaket } from '../../../utils/sumberPaket';
+import { bacaanDari, gambarButirDari, teksSoalDari } from '../../../utils/fieldButirSoal';
 import { db } from '../../../firebase';
 import { collection, getDocs, addDoc, deleteDoc, doc, updateDoc, query, where, serverTimestamp } from 'firebase/firestore';
 import { notifyStudents } from '../../../utils/notifications';
@@ -1906,36 +1907,51 @@ export default function TerbitkanTryOutPage() {
               Ini persis tampilan yang bakal dilihat siswa. Kunci jawaban yang benar ditandai hijau -- cek dulu apa sudah sesuai sebelum diterbitkan.
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-              {Array.from(keranjang.values()).map((s, i) => (
-                <div key={s.id} style={{ border: '1px solid #e2e8f0', borderRadius: 12, padding: 16 }}>
-                  <div style={{ fontSize: 11, color: '#94a3b8', marginBottom: 6 }}>
-                    Soal {i + 1} · {s.mataPelajaran} · {s.tipe || 'pg_sederhana'} · {s.materi || '-'}
-                    {s.kunciTerverifikasi === false && (
-                      <span style={{ color: '#b45309', fontWeight: 700 }}> · ⚠️ Kunci hasil AI, belum diverifikasi manual</span>
+              {Array.from(keranjang.values()).map((s, i) => {
+                const bcn = bacaanDari(s);
+                const gbrList = gambarButirDari(s);
+                return (
+                  <div key={s.id} style={{ border: '1px solid #e2e8f0', borderRadius: 12, padding: 16 }}>
+                    <div style={{ fontSize: 11, color: '#94a3b8', marginBottom: 6 }}>
+                      Soal {i + 1} · {s.mataPelajaran || s.mapel || '-'} · {s.tipe || 'pg_sederhana'} · {s.materi || '-'}
+                      {s.kunciTerverifikasi === false && (
+                        <span style={{ color: '#b45309', fontWeight: 700 }}> · ⚠️ Kunci hasil AI, belum diverifikasi manual</span>
+                      )}
+                    </div>
+                    {bcn && (
+                      <div style={{ background: '#f8fafc', borderRadius: 8, padding: 10, marginBottom: 10, ...GAYA_TEKS_BACAAN, whiteSpace: 'pre-wrap' }}>
+                        {bcn.judul && <div style={{ fontWeight: 800, fontSize: 12.5, color: '#0f172a', marginBottom: 4 }}>{bcn.judul}</div>}
+                        {bcn.gambar && bcn.gambar.length > 0 && (
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 8 }}>
+                            {bcn.gambar.map((g, gi) => {
+                              const url = typeof g === 'string' ? g : g?.url || g?.uploadedUrl;
+                              if (!url) return null;
+                              return <img key={gi} src={url} alt="" style={{ maxWidth: 220, maxHeight: 180, borderRadius: 8, border: '1px solid #e2e8f0' }} />;
+                            })}
+                          </div>
+                        )}
+                        {bcn.teks && <RenderMath text={bcn.teks} />}
+                        {bcn.tabel && <RenderTable table={bcn.tabel} />}
+                      </div>
+                    )}
+                    <TeksSoalBergambar
+                      teks={teksSoalDari(s)}
+                      soal={s}
+                      gambarUrls={gbrList}
+                      gambarMeta={s.gambarMeta || null}
+                      gayaTeks={{ marginBottom: 12 }}
+                      gayaGambar={{ maxWidth: 260, maxHeight: 200, marginBottom: 12 }}
+                    />
+                    {(s.tabelSoal || s.tabel_soal || s.tabel) && <RenderTable table={s.tabelSoal || s.tabel_soal || s.tabel} />}
+                    <RendererSoalPreview soal={s} />
+                    {s.pembahasan && (
+                      <div style={{ marginTop: 10, background: '#f5f3ff', borderRadius: 8, padding: 10, fontSize: 12, color: '#4c1d95' }}>
+                        <b>💡 Pembahasan:</b> <TeksSoalBergambar teks={s.pembahasan} gambarUrls={gbrList} gambarMeta={s.gambarMeta || null} region="pembahasan" />
+                      </div>
                     )}
                   </div>
-                  {s.bacaan?.teks && (
-                    <div style={{ background: '#f8fafc', borderRadius: 8, padding: 10, marginBottom: 10, ...GAYA_TEKS_BACAAN, whiteSpace: 'pre-wrap' }}>
-                      <RenderMath text={s.bacaan.teks} />
-                    </div>
-                  )}
-                  <div style={{ ...GAYA_TEKS_NASKAH, whiteSpace: 'pre-wrap', marginBottom: 12 }}><RenderMath text={s.soal || s.teks_soal} /></div>
-                  {(s.gambarUrls || []).length > 0 && (
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 12 }}>
-                      {s.gambarUrls.map((url, gi) => (
-                        <img key={gi} src={url} alt={`Gambar soal ${gi + 1}`} style={{ maxWidth: 200, maxHeight: 160, borderRadius: 8, border: '1px solid #e2e8f0' }} />
-                      ))}
-                    </div>
-                  )}
-                  {s.tabelSoal && <RenderTable table={s.tabelSoal} />}
-                  <RendererSoalPreview soal={s} />
-                  {s.pembahasan && (
-                    <div style={{ marginTop: 10, background: '#f5f3ff', borderRadius: 8, padding: 10, fontSize: 12, color: '#4c1d95' }}>
-                      <b>💡 Pembahasan:</b> <TeksSoalBergambar teks={s.pembahasan} gambarUrls={s.gambarUrls || []} gambarMeta={s.gambarMeta || null} region="pembahasan" />
-                    </div>
-                  )}
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </div>

@@ -130,8 +130,9 @@ export function pisahTeksDanGambar(teks, gambarUrls = [], opts = {}) {
   buffer += sumber.slice(terakhir);
   flush();
 
-  // gambar sisa tanpa placeholder -> di akhir (perilaku lama dipertahankan),
-  // KECUALI bila meta region tersedia: sisa hanya milik region teks ini.
+  // gambar sisa tanpa placeholder -> di akhir (perilaku default),
+  // atau di awal bila opts.posisiSisa === 'awal' (untuk wacana/stimulus bacaan)
+  const sisaGambar = [];
   for (let i = 0; i < gambar.length; i += 1) {
     if (terpakai.has(i)) continue;
     if (lewati.has(gambar[i])) continue;
@@ -139,9 +140,13 @@ export function pisahTeksDanGambar(teks, gambarUrls = [], opts = {}) {
       const regionGambar = String(meta[i]?.region || 'badan');
       if (regionGambar !== region) continue;
     }
-    segmen.push({ jenis: 'gambar', url: gambar[i], indeks: i });
+    sisaGambar.push({ jenis: 'gambar', url: gambar[i], indeks: i });
   }
-  return segmen;
+
+  if (opts?.posisiSisa === 'awal') {
+    return [...sisaGambar, ...segmen];
+  }
+  return [...segmen, ...sisaGambar];
 }
 
 /** True bila teks masih memuat placeholder yang TIDAK terpenuhi gambar. */

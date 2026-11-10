@@ -468,12 +468,15 @@ export function tabelNaskahHtml(tabel) {
 export function bacaanNaskahHtml(soal, nomor, lebarKolom, rasioGambar = {}) {
   const bacaan = bacaanDari(soal);
   if (!bacaan) return '';
-  const segmen = pisahTeksDanGambar(bacaan.teks, bacaan.gambar);
+  const judulHtml = bacaan.judul
+    ? `<div class="nsk-bacaan-judul" style="font-weight: 800; font-size: 13px; margin-bottom: 6px; color: #0f172a;">${teksKeHtml(bacaan.judul)}</div>`
+    : '';
+  const segmen = pisahTeksDanGambar(bacaan.teks, bacaan.gambar, { posisiSisa: 'awal' });
   const isi = segmen
     .map((sg) => {
       if (sg.jenis === 'teks') return `<div>${teksKeHtml(sg.isi)}</div>`;
       const r = rasioGambar[sg.url] ?? RASIO_BAWAAN_GAMBAR;
-      const ukuran = ukuranGambarNaskah(r, 1, lebarKolom) || { mode: 'blok', lebarMm: 40, tinggiMm: 30 };
+      const ukuran = ukuranGambarNaskah(r, 1, lebarKolom) || { mode: 'blok', lebarMm: 45, tinggiMm: 35 };
       return imgNaskahHtml(sg.url, `Gambar bacaan nomor ${nomor}`, ukuran);
     })
     .join('');
@@ -486,7 +489,7 @@ export function bacaanNaskahHtml(soal, nomor, lebarKolom, rasioGambar = {}) {
     ? `<div class="nsk-bacaan-rentang">untuk soal ${bacaan.rentang.dari}–${bacaan.rentang.sampai}</div>`
     : '';
   const tabelBacaan = tabelNaskahHtml(bacaan?.tabel || bacaan?.tabelSoal || bacaan?.tabel_soal);
-  return `<div class="nsk-bacaan">${rentang}${isi}${tabelBacaan}</div>`;
+  return `<div class="nsk-bacaan">${judulHtml}${rentang}${isi}${tabelBacaan}</div>`;
 }
 
 export function barisBenarSalah(soal) {
@@ -582,7 +585,8 @@ export function butirNaskahHtml(soal, nomor, lebarKolom, rasioGambar = {}, opsiB
   const gambarAngkat = Array.isArray(opsiButir.gambarAngkat) && opsiButir.gambarAngkat.length
     ? opsiButir.gambarAngkat
     : null;
-  const segmen = pisahTeksDanGambar(kodeSrc.teks, soal?.gambarUrls, gambarAngkat ? { lewati: gambarAngkat } : undefined);
+  const listGambar = gambarButirDari(soal);
+  const segmen = pisahTeksDanGambar(kodeSrc.teks, listGambar, gambarAngkat ? { lewati: gambarAngkat } : undefined);
   const badan = segmen
     .map((sg) => {
       if (sg.jenis === 'teks') return `<div>${teksKeHtml(sg.isi)}</div>`;
@@ -906,9 +910,9 @@ export function blokBacaanNaskah(unit, lebarKolom, rasioGambar = {}, kapasitasMm
   const rentang = unit.dari && unit.sampai && unit.sampai > unit.dari
     ? ` untuk soal ${unit.dari}–${unit.sampai}`
     : (unit.dari ? ` untuk soal ${unit.dari}` : '');
-  const segmen = pisahTeksDanGambar(bacaan.teks, bacaan.gambar);
+  const segmen = pisahTeksDanGambar(bacaan.teks, bacaan.gambar, { posisiSisa: 'awal' });
   const classBlok = lebarPenuh ? 'nsk-bacaan nsk-bacaan-panjang' : 'nsk-bacaan';
-  const judul = (lanjutanKe) => `<div class="nsk-bacaan-judul">Bacalah teks berikut${rentang}${lanjutanKe ? ` (lanjutan ${lanjutanKe})` : ''}</div>`;
+  const judul = (lanjutanKe) => `<div class="nsk-bacaan-judul">${teksKeHtml(bacaan.judul || 'Bacalah teks berikut')}${rentang}${lanjutanKe ? ` (lanjutan ${lanjutanKe})` : ''}</div>`;
 
   const baris = (teks, lebar) => Math.ceil(Math.max(1, teks.length) / Math.max(20, (lebar - 8) / MM_PER_HURUF)) * 4.4;
   const chunks = [];
@@ -1058,7 +1062,7 @@ export function estimasiTinggiBlokMm(mode, soal, lebarKolom, rasioGambar = {}, o
   }
   const teks = teksSoalDari(soal);
   const angkatSet = new Set(Array.isArray(opsiEstimasi.gambarAngkat) ? opsiEstimasi.gambarAngkat : []);
-  const gambar = (Array.isArray(soal?.gambarUrls) ? soal.gambarUrls.filter(Boolean) : [])
+  const gambar = gambarButirDari(soal)
     .filter((url) => !angkatSet.has(url));
   // Bacaan panjang menambah tinggi blok secara nyata. Bila tidak dihitung,
   // mesin akan menumpuk terlalu banyak butir per kolom dan naskah meluber

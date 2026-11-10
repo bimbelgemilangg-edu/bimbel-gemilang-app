@@ -8,7 +8,7 @@
 //   - Kunci Jawaban: normalisasi ke huruf 'A', 'B', 'C', dst.
 // ============================================================
 
-import { teksSoalDari } from './fieldButirSoal.js';
+import { teksSoalDari, bacaanDari, gambarButirDari } from './fieldButirSoal.js';
 import { bersihkanTeksOpsi } from './bersihkanGlifKunci.js';
 import { lepasBungkusanSrcGambar } from './normalisasiSrcGambar.js';
 
@@ -169,6 +169,7 @@ export function normalisasiButirSoal(rawSoal, idx = 0) {
       : (Array.isArray(rawSoal.tabel_benar_salah) ? rawSoal.tabel_benar_salah : []));
 
   const tabelSoal = rawSoal.tabelSoal || rawSoal.tabel_soal || rawSoal.tabel || rawSoal.bacaan?.tabelSoal || null;
+  const bacaan = bacaanDari(rawSoal);
 
   return {
     id: rawSoal.id || `soal-${idx + 1}`,
@@ -182,6 +183,10 @@ export function normalisasiButirSoal(rawSoal, idx = 0) {
     kunciJawaban: kunci,
     pembahasan: String(rawSoal.pembahasan || rawSoal.explanation || '').trim(),
     gambarUrls,
+    bacaan,
+    bacaan_judul: rawSoal.bacaan_judul || rawSoal.bacaanJudul || bacaan?.judul || null,
+    bacaan_gambar: rawSoal.bacaan_gambar || rawSoal.bacaanGambar || bacaan?.gambar || null,
+    grup: rawSoal.grup || rawSoal.stimulusGrup || bacaan?.grup || null,
     materi: String(rawSoal.materi || rawSoal.bab || rawSoal.topik || rawSoal.subject || rawSoal.paket || '').trim(),
     mapel: String(rawSoal.mataPelajaran || rawSoal.mapel || rawSoal.kodeMapel || '').trim(),
     tingkatKelas: String(rawSoal.tingkatKelas || rawSoal.kelas || '').trim(),

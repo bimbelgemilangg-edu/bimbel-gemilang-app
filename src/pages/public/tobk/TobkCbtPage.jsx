@@ -20,6 +20,9 @@ import {
   SUBTES_RESMI_UTBK_2026, SOAL_PRESET_UTBK
 } from '../../../services/tobkPublikService';
 import RenderMath from '../../../components/RenderMath';
+import RenderTable from '../../../components/RenderTable';
+import TeksSoalBergambar from '../../../components/TeksSoalBergambar';
+import { bacaanDari, gambarButirDari } from '../../../utils/fieldButirSoal';
 
 export default function TobkCbtPage() {
   const navigate = useNavigate();
@@ -101,6 +104,16 @@ export default function TobkCbtPage() {
       if (!isTka && (totalSoalAda < 50 || !ev || ev.formatUjian === 'UTBK_2026' || ev.sumberSoal === 'preset_utbk_2026')) {
         sList = SUBTES_RESMI_UTBK_2026;
       }
+
+      // Pastikan setiap butir soal memiliki id unik
+      sList = sList.map((sub, sIdx) => ({
+        ...sub,
+        soal: (sub.soal || []).map((q, qIdx) => ({
+          ...q,
+          id: q.id || `q_${sub.id || sIdx + 1}_${q.nomor || qIdx + 1}`,
+        })),
+      }));
+
       setSubtesList(sList);
 
       // Timer Subtes Pertama
@@ -498,6 +511,27 @@ export default function TobkCbtPage() {
   const jumlahRaguDiSubtes = useMemo(() => {
     return daftarSoalSubtes.filter((s) => !ragu[s.id]).length;
   }, [daftarSoalSubtes, ragu]);
+
+  // Daftar opsi yang ternormalisasi (mendukung teks, gambar, key 'A'..'E')
+  const daftarOpsi = useMemo(() => {
+    if (!soalSekarang) return [];
+    const raw = soalSekarang.opsiJawaban || soalSekarang.opsi || soalSekarang.pilihan || [];
+    if (!Array.isArray(raw)) return [];
+    const HURUF = ['A', 'B', 'C', 'D', 'E', 'F'];
+    return raw.map((item, idx) => {
+      if (typeof item === 'string') {
+        return { key: HURUF[idx] || String(idx + 1), teks: item, gambar: null };
+      }
+      if (typeof item === 'object' && item !== null) {
+        return {
+          key: String(item.key || item.label || HURUF[idx] || '').toUpperCase(),
+          teks: item.teks || item.text || item.isi || '',
+          gambar: item.gambar || item.gambarUrl || item.url || null,
+        };
+      }
+      return { key: HURUF[idx] || String(idx + 1), teks: String(item || ''), gambar: null };
+    });
+  }, [soalSekarang]);
 
   if (loading) {
     return (
@@ -907,24 +941,106 @@ export default function TobkCbtPage() {
 
               {/* Teks Soal & Wacana */}
               <div style={{ padding: '20px 24px 10px', flex: 1 }}>
+                {/* Wacana / Teks Stimulus jika ada */}
+                {(() => {
+                  const bcn = bacaanDari(soalSekarang);
+                  if (!bcn) return null;
+                  return (
+                    <div
+                      style={{
+                        background: '#f8fafc',
+                        border: '1px solid #e2e8f0',
+                        borderRadius: '8px',
+                        padding: '14px 16px',
+                        marginBottom: '18px',
+                      }}
+                    >
+                      <div
+                        style={{
+                          fontSize: '12.5px',
+                          fontWeight: 800,
+                          color: '#1e3a8a',
+                          marginBottom: '8px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                        }}
+                      >
+                        <span>📖</span>
+                        <span>{bcn.judul || 'Wacana / Teks Stimulus'}</span>
+                        {bcn.rentang && (
+                          <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 600 }}>
+                            (untuk soal no {bcn.rentang.dari}–{bcn.rentang.sampai})
+                          </span>
+                        )}
+                      </div>
+                      {bcn.gambar && bcn.gambar.length > 0 && (
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginBottom: '12px', justifyContent: 'center' }}>
+                          {bcn.gambar.map((g, gi) => {
+                            const url = typeof g === 'string' ? g : g?.url || g?.uploadedUrl;
+                            if (!url) return null;
+                            return (
+                              <img
+                                key={gi}
+                                src={url}
+                                alt={`Gambar Wacana ${gi + 1}`}
+                                style={{
+                                  maxWidth: '100%',
+                                  maxHeight: '280px',
+                                  borderRadius: '8px',
+                                  border: '1px solid #cbd5e1',
+                                  display: 'block',
+                                  objectFit: 'contain',
+                                }}
+                              />
+                            );
+                          })}
+                        </div>
+                      )}
+                      {bcn.teks && (
+                        <div style={{ fontSize: '13.5px', lineHeight: 1.7, color: '#334155', whiteSpace: 'pre-line' }}>
+                          <RenderMath text={bcn.teks} />
+                        </div>
+                      )}
+                      {bcn.tabel && <RenderTable table={bcn.tabel} />}
+                    </div>
+                  );
+                })()}
+
+                {/* Badan Soal & Gambar Menggunakan TeksSoalBergambar */}
                 <div
                   style={{
-                    fontSize: '14px',
-                    lineHeight: 1.7,
-                    color: '#334155',
                     paddingBottom: '16px',
                     borderBottom: '1px solid #f1f5f9',
                     marginBottom: '20px',
-                    whiteSpace: 'pre-line',
                   }}
                 >
-                  <RenderMath text={soalSekarang.teksSoal || soalSekarang.soal || ''} />
+                  <TeksSoalBergambar
+                    teks={soalSekarang.teksSoal || soalSekarang.soal || soalSekarang.teks_soal || ''}
+                    soal={soalSekarang}
+                    gambarUrls={gambarButirDari(soalSekarang)}
+                    gayaTeks={{
+                      fontSize: '14px',
+                      lineHeight: 1.7,
+                      color: '#334155',
+                      whiteSpace: 'pre-line',
+                    }}
+                    gayaGambar={{
+                      maxWidth: '100%',
+                      maxHeight: '320px',
+                      borderRadius: '8px',
+                      margin: '12px auto',
+                    }}
+                  />
+                  {(soalSekarang.tabelSoal || soalSekarang.tabel_soal || soalSekarang.tabel) && (
+                    <RenderTable table={soalSekarang.tabelSoal || soalSekarang.tabel_soal || soalSekarang.tabel} />
+                  )}
                 </div>
 
                 {/* Pilihan Radio Opsi */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                  {soalSekarang.opsiJawaban && soalSekarang.opsiJawaban.map((opsi) => {
-                    const terpilih = jawaban[soalSekarang.id] === opsi.key;
+                  {daftarOpsi.map((opsi) => {
+                    const terpilih = String(jawaban[soalSekarang.id] || '').toUpperCase() === String(opsi.key).toUpperCase();
 
                     return (
                       <label
@@ -932,7 +1048,7 @@ export default function TobkCbtPage() {
                         onClick={() => handlePilihOpsi(soalSekarang.id, opsi.key)}
                         style={{
                           display: 'flex',
-                          alignItems: 'center',
+                          alignItems: 'flex-start',
                           gap: '12px',
                           cursor: 'pointer',
                           fontSize: '14px',
@@ -943,14 +1059,15 @@ export default function TobkCbtPage() {
                         {/* Radio Circle */}
                         <span
                           style={{
-                            width: '16px',
-                            height: '16px',
+                            width: '18px',
+                            height: '18px',
                             borderRadius: '50%',
                             border: `2px solid ${terpilih ? '#2563eb' : '#94a3b8'}`,
                             display: 'inline-flex',
                             alignItems: 'center',
                             justifyContent: 'center',
                             flexShrink: 0,
+                            marginTop: '2px',
                             background: '#ffffff',
                           }}
                         >
@@ -966,9 +1083,23 @@ export default function TobkCbtPage() {
                           )}
                         </span>
 
-                        <span>
-                          <RenderMath text={opsi.teks || ''} />
-                        </span>
+                        <div style={{ flex: 1 }}>
+                          {opsi.teks && <RenderMath text={opsi.teks} />}
+                          {opsi.gambar && (
+                            <img
+                              src={opsi.gambar}
+                              alt={`Opsi ${opsi.key}`}
+                              style={{
+                                maxWidth: '100%',
+                                maxHeight: '160px',
+                                borderRadius: '6px',
+                                marginTop: '6px',
+                                display: 'block',
+                                border: '1px solid #e2e8f0',
+                              }}
+                            />
+                          )}
+                        </div>
                       </label>
                     );
                   })}

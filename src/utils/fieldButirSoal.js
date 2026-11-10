@@ -73,16 +73,67 @@ export function teksSoalDari(soal) {
 }
 
 /**
+ * Ekstraktor universal URL gambar dari string, objek ({url, uploadedUrl, src}), maupun array.
+ * @returns {string[]}
+ */
+export function ekstrakUrlGambar(val) {
+  if (!val) return [];
+  if (typeof val === 'string') {
+    const s = val.trim();
+    return s ? [s] : [];
+  }
+  if (Array.isArray(val)) {
+    return val.flatMap((v) => ekstrakUrlGambar(v));
+  }
+  if (typeof val === 'object' && val !== null) {
+    const u = val.url || val.uploadedUrl || val.src || val.link || val.fileUrl;
+    if (u && typeof u === 'string') return [u.trim()];
+  }
+  return [];
+}
+
+/**
  * Bacaan/wacana/stimulus bersama (untuk soal literasi dan nomor 11-15).
  * Menumpang `normalisasiBacaan` dari mesinIdentitasSoal supaya bentuk
- * {teks, gambar, grup, jenis, tabel, rentang} seragam di seluruh aplikasi.
- * @returns {{teks:string, gambar:Array, grup:*, jenis:string}|null}
+ * {teks, gambar, grup, jenis, tabel, rentang, judul} seragam di seluruh aplikasi.
+ * @returns {{teks:string, gambar:Array, grup:*, jenis:string, judul:string|null}|null}
  */
 export function bacaanDari(soal) {
   const mentah = soal?.bacaan ?? soal?.stimulus ?? soal?.wacana;
-  const hasil = normalisasiBacaan(mentah);
+  let hasil = normalisasiBacaan(mentah);
+
+  if (!hasil && (soal?.bacaan_gambar || soal?.bacaanGambar)) {
+    hasil = { teks: '', gambar: [], grup: null, jenis: 'gambar' };
+  }
+
   if (!hasil) return null;
-  if (!String(hasil.teks || '').trim() && !(hasil.gambar || []).length) return null;
+
+  // Tangkap gambar dari bacaan_gambar / bacaanGambar / bacaan.gambar
+  const gbrBacaan = [
+    ...ekstrakUrlGambar(hasil.gambar),
+    ...ekstrakUrlGambar(soal?.bacaan_gambar),
+    ...ekstrakUrlGambar(soal?.bacaanGambar),
+  ];
+  hasil.gambar = [...new Set(gbrBacaan.filter(Boolean))];
+
+  // Tangkap judul wacana bila ada
+  if (!hasil.judul && (soal?.bacaan_judul || soal?.bacaanJudul || soal?.judulBacaan || soal?.judul_bacaan)) {
+    hasil.judul = String(soal.bacaan_judul || soal.bacaanJudul || soal.judulBacaan || soal.judul_bacaan).trim();
+  }
+
+  // Tangkap grup jika ada
+  if (!hasil.grup && (soal?.grup || soal?.stimulusGrup || soal?.bacaan_grup)) {
+    hasil.grup = soal.grup || soal.stimulusGrup || soal.bacaan_grup;
+  }
+
+  // Tangkap tabel
+  if (!hasil.tabel && (soal?.tabelSoal || soal?.tabel_soal || soal?.tabel)) {
+    hasil.tabel = soal.tabelSoal || soal.tabel_soal || soal.tabel;
+  }
+
+  if (!String(hasil.teks || '').trim() && !(hasil.gambar || []).length && !hasil.tabel) {
+    return null;
+  }
   return hasil;
 }
 
@@ -101,55 +152,9 @@ export function bacaanDari(soal) {
  *      stimulus berbentuk gambar/bagan/foto murni tetap satu kelompok.
  * @returns {string} kunci; '' bila butir tidak punya bacaan maupun gambar.
  */
-/**
- * Gambar milik BUTIR (ilustrasi soal / gambar stimulus yang menempel di badan
- * soal), sadar-alias: `gambarUrls` (jalur impor utama) atau `gambar` berbentuk
- * array (string atau objek {url,uploadedUrl}). Dipusatkan di sini supaya kunci
- * grup, mesin cetak, dan penaksir tinggi memakai pengertian YANG SAMA tentang
- * "butir ini membawa gambar" — audit owner 2026-10-29 menunjukkan gambar
- * stimulus (foto gunung untuk soal 1–5, foto perpustakaan untuk 6–10) tersimpan
- * di TIAP butir lalu tercetak berulang sekali per butir.
- * @returns {string[]} daftar URL; [] bila butir tak bergambar
- */
-export function gambarButirDari(soal) {
-  const sumber = (Array.isArray(soal?.gambarUrls) && soal.gambarUrls.length)
-    ? soal.gambarUrls
-    : (Array.isArray(soal?.gambar) ? soal.gambar : []);
-  const list = sumber
-    .map((g) => (typeof g === 'string' ? g : String(g?.url || g?.uploadedUrl || '')))
-    .filter(Boolean);
-  
-  const kunciTunggal = [soal?.qImage, soal?.gambarUrl, soal?.soalGambar, soal?.imageUrl, soal?.image, soal?.mediaUrl];
-  for (const item of kunciTunggal) {
-    if (item && typeof item === 'string' && !list.includes(item.trim())) {
-      list.push(item.trim());
-    }
-  }
-
-  // Wacana / stimulus gambar
-  const st = soal?.bacaan || soal?.stimulus || soal?.wacana;
-  if (st && typeof st === 'object') {
-    if (Array.isArray(st.gambar)) {
-      st.gambar.forEach((g) => {
-        const u = typeof g === 'string' ? g : String(g?.url || g?.uploadedUrl || '');
-        if (u && !list.includes(u.trim())) list.push(u.trim());
-      });
-    }
-    if (typeof st.gambarUrl === 'string' && st.gambarUrl.trim() && !list.includes(st.gambarUrl.trim())) {
-      list.push(st.gambarUrl.trim());
-    }
-  }
-
-  return list;
-}
-
 export function kunciStimulus(soal) {
   const b = bacaanDari(soal);
   if (!b) {
-    // 🔥 2026-10-29: butir TANPA teks bacaan tetapi membawa gambar yang sama
-    // dengan tetangganya = stimulus gambar bersama (infografis, foto, bagan).
-    // Sidik jari daftar URL-nya jadi kunci grup supaya mesin cetak bisa
-    // mengangkat gambar ke satu blok dan pengacak tidak memecah grupnya.
     const gbr = gambarButirDari(soal);
     return gbr.length ? `gbr:${gbr.join(',')}` : '';
   }
@@ -160,6 +165,40 @@ export function kunciStimulus(soal) {
     .filter(Boolean)
     .join(',');
   return `teks:${String(b.teks || '').replace(/\s+/g, ' ').trim().slice(0, 160)}|${gambar}`;
+}
+
+/**
+ * Gambar milik BUTIR (ilustrasi soal / gambar stimulus yang menempel di badan
+ * soal), sadar-alias: `gambarUrls`, `gambar`, `bacaan_gambar`, `qImage`, `imageUrl`, dll.
+ * Mendukung string, objek {url}, maupun array objek/string.
+ * @returns {string[]} daftar URL; [] bila butir tak bergambar
+ */
+export function gambarButirDari(soal) {
+  if (!soal || typeof soal !== 'object') return [];
+  const list = [
+    ...ekstrakUrlGambar(soal.gambarUrls),
+    ...ekstrakUrlGambar(soal.gambar),
+    ...ekstrakUrlGambar(soal.bacaan_gambar),
+    ...ekstrakUrlGambar(soal.bacaanGambar),
+    ...ekstrakUrlGambar(soal.qImage),
+    ...ekstrakUrlGambar(soal.gambarUrl),
+    ...ekstrakUrlGambar(soal.soalGambar),
+    ...ekstrakUrlGambar(soal.imageUrl),
+    ...ekstrakUrlGambar(soal.image),
+    ...ekstrakUrlGambar(soal.mediaUrl),
+    ...ekstrakUrlGambar(soal.foto),
+  ];
+
+  const st = soal.bacaan || soal.stimulus || soal.wacana;
+  if (st && typeof st === 'object') {
+    list.push(...ekstrakUrlGambar(st.gambar));
+    list.push(...ekstrakUrlGambar(st.gambarUrls));
+    list.push(...ekstrakUrlGambar(st.gambarUrl));
+    list.push(...ekstrakUrlGambar(st.bacaan_gambar));
+    list.push(...ekstrakUrlGambar(st.bacaanGambar));
+  }
+
+  return [...new Set(list.filter(Boolean))];
 }
 
 /** Identitas butir, sadar-alias. */

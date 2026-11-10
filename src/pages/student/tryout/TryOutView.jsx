@@ -67,7 +67,7 @@ import { skorSatuSoal, hitungTotalSkor, soalBelumDijawab } from '../../../utils/
 import { hitungSkalaSesi } from '../../../utils/hitungSkalaSesi';
 import { pisahKodeSumber } from '../../../utils/strukturPembahasan';
 import RenderPembahasan from '../../../components/RenderPembahasan';
-import { teksSoalDari, kunciStimulus } from '../../../utils/fieldButirSoal';
+import { teksSoalDari, kunciStimulus, bacaanDari, gambarButirDari } from '../../../utils/fieldButirSoal';
 import { isPaketOtomatisAi } from '../../../utils/jalurUjianAiConfig';
 import { terapkanPotonganXP } from '../../../utils/potonganXPTryOut';
 import { acakSoalPerSiswa } from '../../../utils/acakSoalTryOut';
@@ -1165,11 +1165,26 @@ export default function TryOutView() {
               <div style={{ fontSize: 11.5, color: skor >= 0.99 ? '#16a34a' : skor > 0 ? '#d97706' : '#dc2626', fontWeight: 700, marginBottom: 6 }}>
                 Soal {i + 1} -- akurasi {Math.round(skor * 100)}%{belumDijawab ? ' (Tidak dijawab)' : ''}
               </div>
-              {s.bacaan?.teks && (
-                <div style={{ background: '#f8fafc', borderRadius: 8, padding: 10, marginBottom: 10, ...GAYA_TEKS_BACAAN, whiteSpace: 'pre-wrap' }}>
-                  <RenderMath text={s.bacaan.teks} />
-                </div>
-              )}
+              {(() => {
+                const bcn = bacaanDari(s);
+                if (!bcn) return null;
+                return (
+                  <div style={{ background: '#f8fafc', borderRadius: 8, padding: 10, marginBottom: 10, ...GAYA_TEKS_BACAAN, whiteSpace: 'pre-wrap' }}>
+                    {bcn.judul && <div style={{ fontWeight: 800, fontSize: 12.5, color: '#0f172a', marginBottom: 4 }}>{bcn.judul}</div>}
+                    {bcn.gambar && bcn.gambar.length > 0 && (
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 8 }}>
+                        {bcn.gambar.map((g, gi) => {
+                          const url = typeof g === 'string' ? g : g?.url || g?.uploadedUrl;
+                          if (!url) return null;
+                          return <img key={gi} src={url} alt="" style={{ maxWidth: '100%', maxHeight: 200, borderRadius: 8, border: '1px solid #e2e8f0' }} />;
+                        })}
+                      </div>
+                    )}
+                    {bcn.teks && <RenderMath text={bcn.teks} />}
+                    {bcn.tabel && <RenderTable table={bcn.tabel} />}
+                  </div>
+                );
+              })()}
               <div style={{ ...st.kodeChip, color: '#9a3412', background: '#ffedd5', border: '1px solid #fdba74' }}>
                 🔖 {kodeSoalSiswa({ mapel: paket.mapel || paket.targetKategori || '', paket, nomor: i + 1 })}
               </div>
@@ -1178,7 +1193,9 @@ export default function TryOutView() {
               )}
               <TeksSoalBergambar
                 teks={pisahKodeSumber(teksSoalDari(s)).teks}
-                gambarUrls={s.gambarUrls} gambarMeta={s.gambarMeta || null}
+                soal={s}
+                gambarUrls={gambarButirDari(s)}
+                gambarMeta={s.gambarMeta || null}
                 gayaTeks={{ marginBottom: 10 }}
                 gayaGambar={{ maxHeight: 280, marginBottom: 10 }}
               />
@@ -1456,68 +1473,69 @@ export default function TryOutView() {
             {soalAktif.materi || (paket.modeTimer === 'per-subtes' ? paket.subtes[subtesAktifIndex]?.nama : '')}
           </span>
         </div>
-        {(soalAktif.bacaan?.teks || (soalAktif.bacaan?.gambar || []).length > 0) && (
-          <div style={{
-            background: 'linear-gradient(180deg, #f8fafc 0%, #fff 100%)',
-            border: '1px solid #e2e8f0',
-            borderRadius: 12,
-            padding: 14,
-            marginBottom: 14,
-            textAlign: 'left',
-            maxHeight: 280,
-            overflowY: 'auto',
-            position: 'sticky',
-            top: 8,
-            zIndex: 2,
-            boxShadow: '0 2px 10px rgba(15,23,42,0.04)',
-          }}
-          >
-            <div style={{ fontSize: 11, fontWeight: 800, color: '#64748b', marginBottom: 8, letterSpacing: 0.3, textTransform: 'uppercase' }}>
-              {(() => {
-                const r = soalAktif.stimulusRentang || soalAktif.bacaan?.rentang;
-                if (r) return `Bacaan bersama (no ${r.dari}–${r.sampai})`;
-                // 🔥 2026-10-29: data impor lama sering tidak membawa rentang.
-                // Hitung dari tampilan: run soal BERSEBELAHAN dengan kunci
-                // stimulus sama (pengacakan kini sadar grup, jadi grup tetap
-                // bersebelahan di layar). Siswa tahu teks ini dipakai bersama
-                // dan tidak bingung "bacaannya untuk soal yang mana".
-                const k = kunciStimulus(soalAktif);
-                if (k) {
-                  let a = indexSoalAktif;
-                  let b = indexSoalAktif;
-                  while (a > 0 && kunciStimulus(daftarSoalAktif[a - 1]) === k) a -= 1;
-                  while (b < daftarSoalAktif.length - 1 && kunciStimulus(daftarSoalAktif[b + 1]) === k) b += 1;
-                  if (b > a) return `Bacaan bersama · dipakai ${b - a + 1} soal (no ${a + 1}–${b + 1})`;
-                }
-                return 'Bacaan / stimulus';
-              })()}
+        {/* Wacana / Stimulus bersama */}
+        {(() => {
+          const bcn = bacaanDari(soalAktif);
+          if (!bcn) return null;
+          return (
+            <div style={{
+              background: 'linear-gradient(180deg, #f8fafc 0%, #fff 100%)',
+              border: '1px solid #e2e8f0',
+              borderRadius: 12,
+              padding: 14,
+              marginBottom: 14,
+              textAlign: 'left',
+              maxHeight: 280,
+              overflowY: 'auto',
+              position: 'sticky',
+              top: 8,
+              zIndex: 2,
+              boxShadow: '0 2px 10px rgba(15,23,42,0.04)',
+            }}
+            >
+              <div style={{ fontSize: 11, fontWeight: 800, color: '#1e3a8a', marginBottom: 8, letterSpacing: 0.3, textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span>📖</span>
+                <span>{bcn.judul || 'Bacaan / stimulus'}</span>
+                {(() => {
+                  const r = soalAktif.stimulusRentang || bcn?.rentang;
+                  if (r) return <span style={{ color: '#64748b', fontWeight: 600 }}>· (no {r.dari}–{r.sampai})</span>;
+                  const k = kunciStimulus(soalAktif);
+                  if (k) {
+                    let a = indexSoalAktif;
+                    let b = indexSoalAktif;
+                    while (a > 0 && kunciStimulus(daftarSoalAktif[a - 1]) === k) a -= 1;
+                    while (b < daftarSoalAktif.length - 1 && kunciStimulus(daftarSoalAktif[b + 1]) === k) b += 1;
+                    if (b > a) return <span style={{ color: '#64748b', fontWeight: 600 }}>· dipakai {b - a + 1} soal (no {a + 1}–{b + 1})</span>;
+                  }
+                  return null;
+                })()}
+              </div>
+              {bcn.gambar && bcn.gambar.length > 0 && (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 8, justifyContent: 'center' }}>
+                  {bcn.gambar.map((g, gi) => {
+                    const url = typeof g === 'string' ? g : g?.url || g?.uploadedUrl;
+                    if (!url) return null;
+                    return <img key={gi} src={url} alt="" style={{ maxWidth: '100%', maxHeight: 220, borderRadius: 8, border: '1px solid #e2e8f0', display: 'block' }} />;
+                  })}
+                </div>
+              )}
+              {bcn.teks && (
+                <div style={{ ...GAYA_TEKS_BACAAN, whiteSpace: 'pre-wrap' }}>
+                  <RenderMath text={bcn.teks} />
+                </div>
+              )}
+              {bcn.tabel && <RenderTable table={bcn.tabel} />}
             </div>
-            {soalAktif.bacaan?.teks && (
-              <div style={{ ...GAYA_TEKS_BACAAN, whiteSpace: 'pre-wrap' }}>
-                <RenderMath text={soalAktif.bacaan.teks} />
-              </div>
-            )}
-            {(soalAktif.bacaan?.gambar || []).length > 0 && (
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 8 }}>
-                {soalAktif.bacaan.gambar.map((g, gi) => {
-                  const url = typeof g === 'string' ? g : g?.url;
-                  if (!url) return null;
-                  return <img key={gi} src={url} alt="" style={{ maxWidth: '100%', maxHeight: 200, borderRadius: 8, border: '1px solid #e2e8f0' }} />;
-                })}
-              </div>
-            )}
-          </div>
-        )}
+          );
+        })()}
         <TeksSoalBergambar
           teks={pisahKodeSumber(teksSoalDari(soalAktif)).teks}
-          gambarUrls={soalAktif.gambarUrls} gambarMeta={soalAktif.gambarMeta || null}
+          soal={soalAktif}
+          gambarUrls={gambarButirDari(soalAktif)}
+          gambarMeta={soalAktif.gambarMeta || null}
           gayaTeks={{ marginBottom: 16 }}
           gayaGambar={{ maxHeight: 320, marginBottom: 16 }}
         />
-        {/* 🔥 BARU (celah serius lain ditemukan): tabel yang nempel di
-            soal (mis. kunci determinasi biologi) -- SAMA SEKALI GAK
-            PERNAH DIRENDER, padahal komponennya udah lama ada, cuma
-            kepakai di preview admin doang. */}
         {(soalAktif.tabelSoal || soalAktif.tabel_soal || soalAktif.tabel || soalAktif.bacaan?.tabelSoal || soalAktif.stimulus?.tabel) && (
           <RenderTable table={soalAktif.tabelSoal || soalAktif.tabel_soal || soalAktif.tabel || soalAktif.bacaan?.tabelSoal || soalAktif.stimulus?.tabel} />
         )}
