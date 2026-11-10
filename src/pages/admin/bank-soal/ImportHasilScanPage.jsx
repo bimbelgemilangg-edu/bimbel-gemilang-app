@@ -3407,7 +3407,7 @@ function buildDoc(q, meta) {
     catatanAdmin: q.catatan_admin || '',
     catatanOcr: Array.isArray(q.catatan_ocr) ? q.catatan_ocr : [],
     gambarUrls,
-    tabelSoal: amankanTabelDariNestedArray(q.tabel_soal) || null,
+    tabelSoal: ['benar_salah', 'pg_kategori'].includes(q.tipe) ? null : (amankanTabelDariNestedArray(q.tabel_soal) || null),
     referensiSumber: q.referensi_sumber || null,
     materi: q.materi || '',
     capaianPembelajaran: q.capaian_pembelajaran || '',
@@ -6112,7 +6112,9 @@ function QuestionPreview({ question, mathReady, onCropImage, imageStatus = {}, d
       {/* QUESTION */}
       <RichText text={kepalaKode.kode ? kepalaKode.teks : q.teks_soal} gambar={q.gambar} mathReady={mathReady} />
 
-      {q.tabel_soal && <QuestionTable table={q.tabel_soal} mathReady={mathReady} />}
+      {q.tabel_soal && !['benar_salah', 'pg_kategori'].includes(q.tipe) && (
+        <QuestionTable table={q.tabel_soal} mathReady={mathReady} />
+      )}
 
       {(q.satuan_jawaban || q.toleransi_jawaban !== null || safeArray(q.jawaban_ekuivalen).length > 0) && (
         <div style={{ marginTop: '12px', borderRadius: '10px', padding: '10px 12px', background: '#f8fafc', border: '1px solid #e2e8f0', fontSize: '12px', color: '#475569' }}>

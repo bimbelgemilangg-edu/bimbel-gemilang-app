@@ -1280,7 +1280,7 @@ export default function TryOutView() {
                       gayaTeks={{ marginBottom: 10 }}
                       gayaGambar={{ maxHeight: 280, marginBottom: 10 }}
                     />
-                    {(s.tabelSoal || s.tabel_soal || s.tabel || s.bacaan?.tabelSoal || s.stimulus?.tabel) && (
+                    {(!['benar_salah', 'pg_kategori'].includes(s.tipe) || (!s.pernyataan?.length && !s.tabelBenarSalah?.length)) && (s.tabelSoal || s.tabel_soal || s.tabel || s.bacaan?.tabelSoal || s.stimulus?.tabel) && (
                       <RenderTable table={s.tabelSoal || s.tabel_soal || s.tabel || s.bacaan?.tabelSoal || s.stimulus?.tabel} />
                     )}
                     <PenahanErrorSoal soalId={s.id}>
@@ -1632,7 +1632,7 @@ export default function TryOutView() {
           gayaTeks={{ marginBottom: 16 }}
           gayaGambar={{ maxHeight: 320, marginBottom: 16 }}
         />
-        {(soalAktif.tabelSoal || soalAktif.tabel_soal || soalAktif.tabel || soalAktif.bacaan?.tabelSoal || soalAktif.stimulus?.tabel) && (
+        {(!['benar_salah', 'pg_kategori'].includes(soalAktif.tipe) || (!soalAktif.pernyataan?.length && !soalAktif.tabelBenarSalah?.length)) && (soalAktif.tabelSoal || soalAktif.tabel_soal || soalAktif.tabel || soalAktif.bacaan?.tabelSoal || soalAktif.stimulus?.tabel) && (
           <RenderTable table={soalAktif.tabelSoal || soalAktif.tabel_soal || soalAktif.tabel || soalAktif.bacaan?.tabelSoal || soalAktif.stimulus?.tabel} />
         )}
         <PenahanErrorSoal soalId={soalAktif.id}>
