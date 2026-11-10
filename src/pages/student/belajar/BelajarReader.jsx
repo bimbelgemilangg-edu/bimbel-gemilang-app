@@ -651,7 +651,16 @@ export default function BelajarReader({ audience = 'student' }) {
           <button type="button" style={S.ikonBulat} aria-label="Notifikasi">
             <Bell size={16} />
           </button>
-          <span style={S.avatar} title={namaSiswa}>{inisial}</span>
+          <span style={{ ...S.avatar, overflow: 'hidden' }} title={namaSiswa}>
+            {(typeof localStorage !== 'undefined' && localStorage.getItem('studentFotoUrl')) ? (
+              <img
+                src={localStorage.getItem('studentFotoUrl')}
+                alt={namaSiswa}
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                onError={(e) => { e.currentTarget.style.display = 'none'; }}
+              />
+            ) : inisial}
+          </span>
         </div>
       </header>
 

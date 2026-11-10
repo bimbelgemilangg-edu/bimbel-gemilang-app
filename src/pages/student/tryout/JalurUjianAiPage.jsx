@@ -238,9 +238,6 @@ export default function JalurUjianAiPage() {
             <Brain size={16} color="#0d9488" />
             <span>Analisis Kemampuan</span>
           </button>
-          <div style={st.avatarBulat} title={profil.nama}>
-            {profil.nama ? profil.nama.charAt(0).toUpperCase() : 'S'}
-          </div>
         </div>
       </header>
 
