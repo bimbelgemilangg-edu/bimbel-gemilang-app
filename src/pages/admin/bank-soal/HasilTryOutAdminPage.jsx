@@ -17,7 +17,9 @@ import { cocokkanTargetPaket } from '../../../utils/cocokkanTargetPaket';
 import { hitungSkalaSesi } from '../../../utils/hitungSkalaSesi';
 import {
   ArrowLeft, Trophy, Loader2, CheckCircle2, Clock, XCircle, ShieldAlert, RotateCcw, Ticket,
+  Download, FileText, FileSpreadsheet,
 } from 'lucide-react';
+import { unduhRekapHasilTryOutPdf, unduhRaporIndividuTryOutPdf, unduhRekapHasilTryOutCsv } from '../../../utils/laporanTryOutPdf';
 import { hitungTotalSkor, skorSatuSoal, soalBelumDijawab, pilihSoalDinilai } from '../../../utils/skorSoalTryOut';
 import { terapkanPotonganXP, LABEL_PELANGGARAN } from '../../../utils/potonganXPTryOut';
 import { validasiNilaiSusulan, bangunSesiSusulan, SUMBER_NILAI_SUSULAN } from '../../../utils/catatNilaiSusulan';
@@ -483,10 +485,67 @@ export default function HasilTryOutAdminPage() {
               <Loader2 size={18} className="spin" />
             ) : (
               <>
-                <div style={{ display: 'flex', gap: 12, marginBottom: 12, fontSize: 12, color: '#6b7280' }}>
-                  <span>✅ {jumlahSelesai} selesai</span>
-                  <span>⏳ {jumlahBerjalan} sedang mengerjakan</span>
-                  <span>⬜ {baris.length - jumlahSelesai - jumlahBerjalan} belum mulai</span>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10, marginBottom: 14 }}>
+                  <div style={{ display: 'flex', gap: 12, fontSize: 12, color: '#6b7280' }}>
+                    <span>✅ <b>{jumlahSelesai}</b> selesai</span>
+                    <span>⏳ <b>{jumlahBerjalan}</b> mengerjakan</span>
+                    <span>⬜ <b>{baris.length - jumlahSelesai - jumlahBerjalan}</b> belum mulai</span>
+                  </div>
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <button
+                      type="button"
+                      onClick={() => unduhRekapHasilTryOutPdf({
+                        paket: paketTerpilih,
+                        baris,
+                        identitas: {
+                          namaBimbel: 'BIMBINGAN BELAJAR GEMILANG',
+                          cabang: 'Pusat Keunggulan Akademik SNBT & TKA',
+                          penandatangan: 'Tim Akademik Bimbel Gemilang',
+                        },
+                      })}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 6,
+                        background: 'linear-gradient(135deg, #4f46e5 0%, #4338ca 100%)',
+                        color: '#ffffff',
+                        border: 'none',
+                        borderRadius: 8,
+                        padding: '8px 14px',
+                        fontSize: 12,
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        boxShadow: '0 2px 4px rgba(79, 70, 229, 0.25)',
+                      }}
+                      title="Unduh Laporan Resmi Rangking & Nilai Siswa (PDF Berdasarkan Skor)"
+                    >
+                      <FileText size={15} />
+                      Download Laporan PDF
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => unduhRekapHasilTryOutCsv({ paket: paketTerpilih, baris })}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 6,
+                        background: '#ffffff',
+                        color: '#334155',
+                        border: '1px solid #cbd5e1',
+                        borderRadius: 8,
+                        padding: '8px 12px',
+                        fontSize: 12,
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                      }}
+                      title="Unduh Rekap Nilai ke Spreadsheet (Excel / CSV)"
+                    >
+                      <FileSpreadsheet size={15} color="#16a34a" />
+                      Excel / CSV
+                    </button>
+                  </div>
                 </div>
 
                 {/* 🔥 BARU (2026-10-08): panel jawaban TERTAHAN -- data anak
@@ -592,6 +651,13 @@ export default function HasilTryOutAdminPage() {
                             <td style={{ padding: '8px 10px', textAlign: 'center' }}>
                               {selesai && (
                                 <div style={{ display: 'flex', gap: 4, justifyContent: 'center' }}>
+                                  <button
+                                    onClick={() => unduhRaporIndividuTryOutPdf({ paket: paketTerpilih, student: b.student, sesi: b.sesi })}
+                                    title="Unduh Rapor Hasil Try Out individual untuk siswa ini (PDF)"
+                                    style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 10.5, padding: '4px 8px', borderRadius: 6, border: '1px solid #bfdbfe', background: '#eff6ff', cursor: 'pointer', color: '#1d4ed8', fontWeight: 600 }}
+                                  >
+                                    <FileText size={11} /> PDF
+                                  </button>
                                   <button
                                     onClick={() => setSiswaDetailDibuka(b)}
                                     title="Lihat semua jawaban siswa ini, persis kayak yang dia lihat"
@@ -702,9 +768,40 @@ export default function HasilTryOutAdminPage() {
       {siswaDetailDibuka && paketTerpilih && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 100, display: 'flex', justifyContent: 'center', alignItems: 'flex-start', padding: '24px 16px', overflowY: 'auto' }}>
           <div style={{ background: 'white', borderRadius: 16, maxWidth: 720, width: '100%', padding: 20 }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4, flexWrap: 'wrap', gap: 8 }}>
               <div style={{ fontWeight: 800, fontSize: 16, color: '#1e293b' }}>👁️ Jawaban {siswaDetailDibuka.student.nama}</div>
-              <button onClick={() => setSiswaDetailDibuka(null)} style={{ border: 'none', background: '#f1f5f9', borderRadius: 8, padding: '6px 12px', cursor: 'pointer', fontSize: 12, fontWeight: 700 }}>Tutup</button>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <button
+                  type="button"
+                  onClick={() => unduhRaporIndividuTryOutPdf({
+                    paket: paketTerpilih,
+                    student: siswaDetailDibuka.student,
+                    sesi: siswaDetailDibuka.sesi,
+                  })}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 6,
+                    background: '#4f46e5',
+                    color: '#ffffff',
+                    border: 'none',
+                    borderRadius: 8,
+                    padding: '6px 12px',
+                    cursor: 'pointer',
+                    fontSize: 12,
+                    fontWeight: 700,
+                  }}
+                  title="Unduh Rapor PDF Lengkap Hasil Try Out Siswa Ini"
+                >
+                  <FileText size={14} /> Unduh Rapor PDF
+                </button>
+                <button
+                  onClick={() => setSiswaDetailDibuka(null)}
+                  style={{ border: 'none', background: '#f1f5f9', borderRadius: 8, padding: '6px 12px', cursor: 'pointer', fontSize: 12, fontWeight: 700, color: '#475569' }}
+                >
+                  Tutup
+                </button>
+              </div>
             </div>
             <p style={{ fontSize: 11.5, color: '#9ca3af', marginBottom: 16 }}>
               Skor {siswaDetailDibuka.sesi.totalSkorPersen}% · {siswaDetailDibuka.sesi.xpFinal} XP -- ini persis tampilan yang dilihat siswa di layar hasilnya sendiri.
