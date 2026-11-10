@@ -1,21 +1,22 @@
 // src/pages/admin/tobk/KelolaTobkPublikPage.jsx
 // ============================================================
 // MANAJEMEN TOBK GEMILANG & EVENT PUBLIK (Admin Control Center)
-// Try Out Akbar, Lomba, Marketing Leads, & Tes Minat Bakat
+// STANDAR RESMI UTBK-SNBT 2026 (195m, 7 Subtes) & TKA 2026 (75m, Jeda 1m)
 // ============================================================
 
 import React, { useState, useEffect, useMemo } from 'react';
 import {
   Trophy, Users, Key, Clock, ShieldCheck, Download, Trash2,
   PlusCircle, RefreshCw, ExternalLink, CheckCircle, AlertTriangle,
-  Search, Filter, PlayCircle, StopCircle, ArrowRight, Share2, Sparkles
+  Search, Filter, PlayCircle, StopCircle, ArrowRight, Share2, Sparkles,
+  Layers, Check, HelpCircle
 } from 'lucide-react';
 import { db } from '../../../firebase';
 import { collection, getDocs } from 'firebase/firestore';
 import {
   ambilSemuaEventTobk, simpanEventTobk, toggleTokenEventTobk,
   ambilSemuaLeadsTobk, eksporLeadsCsv, bersihkanDataEventTobk,
-  SOAL_PRESET_UTBK
+  SUBTES_RESMI_UTBK_2026, SESI_RESMI_TKA_2026, SOAL_PRESET_UTBK
 } from '../../../services/tobkPublikService';
 
 export default function KelolaTobkPublikPage() {
@@ -30,17 +31,22 @@ export default function KelolaTobkPublikPage() {
 
   // Modal Buat Event Baru
   const [showModalBuat, setShowModalBuat] = useState(false);
+  const [formatPilihan, setFormatPilihan] = useState('UTBK_2026'); // 'UTBK_2026' | 'TKA_2026_MTK' | 'TKA_2026_INDO' | 'KUSTOM'
+
   const [formEvent, setFormEvent] = useState({
-    judul: '',
-    kategori: 'UTBK',
-    durasiMenit: 90,
+    judul: 'TOBK FUNDAMENTAL SNBT 2026',
+    kategori: 'Try Out Akbar UTBK',
+    formatUjian: 'UTBK_2026',
+    modeTimer: 'per-subtes',
+    durasiMenit: 195,
+    jedaTransisiDetik: 15,
     token: 'GEMILANG2026',
     tokenAktif: true,
     maksimalPelanggaran: 3,
     wajibKamera: true,
-    sumberSoal: 'preset_utbk', // 'preset_utbk' | 'paket_bimbel'
+    sumberSoal: 'preset_utbk_2026',
     paketBimbelId: '',
-    keterangan: 'Try Out Akbar Nasional Bimbel Gemilang',
+    keterangan: 'Simulasi Resmi UTBK-SNBT 2026 (7 Subtes Block Time, 195 Menit)',
   });
 
   // Modal Konfirmasi Bersihkan Data
@@ -64,7 +70,6 @@ export default function KelolaTobkPublikPage() {
       const pList = snapPaket.docs?.map((d) => ({ id: d.id, ...d.data() })) || [];
       setPaketBimbelList(pList);
 
-      // Muat leads untuk event aktif
       const activeId = selectedEventId || listEvents[0]?.id;
       if (activeId) {
         const leadData = await ambilSemuaLeadsTobk(activeId);
@@ -81,7 +86,6 @@ export default function KelolaTobkPublikPage() {
     muatData();
   }, []);
 
-  // Ganti event terpilih
   const handlePilihEvent = async (eId) => {
     setSelectedEventId(eId);
     setRefreshing(true);
@@ -97,7 +101,6 @@ export default function KelolaTobkPublikPage() {
     return events.find((e) => e.id === selectedEventId) || events[0] || null;
   }, [events, selectedEventId]);
 
-  // Toggle status token
   const handleToggleToken = async () => {
     if (!currentEvent) return;
     const statusBaru = !currentEvent.tokenAktif;
@@ -107,7 +110,6 @@ export default function KelolaTobkPublikPage() {
     );
   };
 
-  // Acak Token
   const generateRandomToken = () => {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
     let res = 'TOBK-';
@@ -115,6 +117,58 @@ export default function KelolaTobkPublikPage() {
       res += chars.charAt(Math.floor(Math.random() * chars.length));
     }
     setFormEvent((prev) => ({ ...prev, token: res }));
+  };
+
+  // Ubah Format Ujian (UTBK 2026 / TKA 2026 / Kustom)
+  const handlePilihFormat = (fmt) => {
+    setFormatPilihan(fmt);
+
+    if (fmt === 'UTBK_2026') {
+      setFormEvent((prev) => ({
+        ...prev,
+        judul: prev.judul || 'TOBK FUNDAMENTAL UTBK-SNBT 2026',
+        kategori: 'Try Out Akbar UTBK',
+        formatUjian: 'UTBK_2026',
+        modeTimer: 'per-subtes',
+        durasiMenit: 195,
+        jedaTransisiDetik: 15,
+        sumberSoal: 'preset_utbk_2026',
+        keterangan: 'Simulasi Resmi UTBK-SNBT 2026 (7 Subtes Block Time, 195 Menit)',
+      }));
+    } else if (fmt === 'TKA_2026_MTK') {
+      setFormEvent((prev) => ({
+        ...prev,
+        judul: 'TKA 2026: MATEMATIKA WAJIB & NUMERASI',
+        kategori: 'TKA SMP / SMA',
+        formatUjian: 'TKA_2026_MTK',
+        modeTimer: 'per-subtes',
+        durasiMenit: 75,
+        jedaTransisiDetik: 60,
+        sumberSoal: 'preset_tka_mtk',
+        keterangan: 'TKA 2026 Matematika Wajib (25 Soal, 75 Menit, Rata-rata 3 mnt/soal)',
+      }));
+    } else if (fmt === 'TKA_2026_INDO') {
+      setFormEvent((prev) => ({
+        ...prev,
+        judul: 'TKA 2026: B. INDONESIA & LITERASI',
+        kategori: 'TKA SMP / SMA',
+        formatUjian: 'TKA_2026_INDO',
+        modeTimer: 'per-subtes',
+        durasiMenit: 75,
+        jedaTransisiDetik: 60,
+        sumberSoal: 'preset_tka_indo',
+        keterangan: 'TKA 2026 B. Indonesia & Literasi (30 Soal, 75 Menit)',
+      }));
+    } else {
+      setFormEvent((prev) => ({
+        ...prev,
+        formatUjian: 'KUSTOM',
+        modeTimer: 'total',
+        durasiMenit: 90,
+        jedaTransisiDetik: 10,
+        sumberSoal: 'preset_utbk_2026',
+      }));
+    }
   };
 
   // Simpan Event Baru
@@ -125,18 +179,36 @@ export default function KelolaTobkPublikPage() {
       return;
     }
 
-    let soalList = SOAL_PRESET_UTBK;
-    if (formEvent.sumberSoal === 'paket_bimbel' && formEvent.paketBimbelId) {
-      const paketDipilih = paketBimbelList.find((p) => p.id === formEvent.paketBimbelId);
-      if (paketDipilih && Array.isArray(paketDipilih.daftarSoal) && paketDipilih.daftarSoal.length > 0) {
-        soalList = paketDipilih.daftarSoal;
+    let subtesList = [];
+    let daftarSoalFlat = [];
+
+    if (formEvent.sumberSoal === 'preset_utbk_2026') {
+      subtesList = SUBTES_RESMI_UTBK_2026;
+      daftarSoalFlat = SUBTES_RESMI_UTBK_2026.flatMap((s) => s.soal);
+    } else if (formEvent.sumberSoal === 'preset_tka_mtk') {
+      const dataMtk = SESI_RESMI_TKA_2026.matematika;
+      subtesList = [{ id: dataMtk.id, nama: dataMtk.nama, durasiMenit: dataMtk.durasiMenit, soal: dataMtk.soal }];
+      daftarSoalFlat = dataMtk.soal;
+    } else if (formEvent.sumberSoal === 'preset_tka_indo') {
+      const dataIndo = SESI_RESMI_TKA_2026.literasi_indo;
+      subtesList = [{ id: dataIndo.id, nama: dataIndo.nama, durasiMenit: dataIndo.durasiMenit, soal: dataIndo.soal }];
+      daftarSoalFlat = dataIndo.soal;
+    } else if (formEvent.sumberSoal === 'paket_bimbel' && formEvent.paketBimbelId) {
+      const p = paketBimbelList.find((item) => item.id === formEvent.paketBimbelId);
+      if (p) {
+        daftarSoalFlat = p.daftarSoal || [];
+        subtesList = p.subtes || [{ id: 'subtes_1', nama: p.judul, durasiMenit: p.durasiTotalMenit || formEvent.durasiMenit, soal: daftarSoalFlat }];
       }
+    } else {
+      subtesList = SUBTES_RESMI_UTBK_2026;
+      daftarSoalFlat = SOAL_PRESET_UTBK;
     }
 
     const payload = {
       ...formEvent,
-      daftarSoal: soalList,
-      totalSoal: soalList.length,
+      subtes: subtesList,
+      daftarSoal: daftarSoalFlat,
+      totalSoal: daftarSoalFlat.length,
       createdAt: new Date().toISOString(),
     };
 
@@ -148,13 +220,11 @@ export default function KelolaTobkPublikPage() {
     handlePilihEvent(saved.id);
   };
 
-  // Ekspor CSV Leads
   const handleEksporCsv = () => {
     if (!currentEvent) return;
     eksporLeadsCsv(leads, currentEvent.judul || 'TOBK_Gemilang');
   };
 
-  // Purge / Bersihkan Data Event
   const handleKonfirmasiPurge = async (hapusEventSekaligus = false) => {
     if (!currentEvent) return;
     setPurgeLoading(true);
@@ -170,7 +240,6 @@ export default function KelolaTobkPublikPage() {
     }
   };
 
-  // Filter Leads
   const leadsTersaring = useMemo(() => {
     return leads.filter((l) => {
       const q = cari.toLowerCase();
@@ -187,7 +256,6 @@ export default function KelolaTobkPublikPage() {
     });
   }, [leads, cari, filterStatus]);
 
-  // Statistik Ringkas
   const stats = useMemo(() => {
     const total = leads.length;
     const menunggu = leads.filter((l) => l.statusUjian === 'menunggu_token').length;
@@ -211,7 +279,7 @@ export default function KelolaTobkPublikPage() {
             </h1>
           </div>
           <p style={{ margin: '4px 0 0 40px', color: '#64748b', fontSize: '14px' }}>
-            Kendali Ujian Skala Besar (Lomba, Marketing Leads, Tryout UTBK/TKA, Tes Minat Bakat) · <strong>Zero Storage Bloat</strong>
+            Standar Resmi <strong>UTBK-SNBT 2026 (7 Subtes Block Time)</strong> & <strong>TKA 2026 (75 Menit, Jeda 1m)</strong> · Zero Storage Bloat
           </p>
         </div>
 
@@ -250,7 +318,7 @@ export default function KelolaTobkPublikPage() {
           <Sparkles size={40} style={{ color: '#3b82f6', marginBottom: '12px' }} />
           <h3 style={{ fontSize: '18px', fontWeight: 600, color: '#1e3a8a', margin: '0 0 8px' }}>Belum Ada Event TOBK yang Dibuat</h3>
           <p style={{ color: '#475569', fontSize: '14px', maxWidth: '500px', margin: '0 auto 16px' }}>
-            Buat event try out akbar atau lomba pertama Anda. Anda dapat menentukan token, timer, aturan anti-cheat, serta mengunduh data marketing leads.
+            Buat event try out akbar UTBK atau TKA pertama Anda. Atur token, durasi per subtes, jeda transisi, dan ekspor data marketing leads.
           </p>
           <button
             onClick={() => setShowModalBuat(true)}
@@ -350,12 +418,12 @@ export default function KelolaTobkPublikPage() {
               {/* Info Aturan Ujian */}
               <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '16px' }}>
                 <div style={{ fontSize: '12px', color: '#64748b', fontWeight: 600, textTransform: 'uppercase', marginBottom: '6px' }}>
-                  Parameter Ujian
+                  Parameter Sistem Ujian
                 </div>
                 <div style={{ fontSize: '13px', color: '#334155', display: 'flex', flexDirection: 'column', gap: '3px' }}>
-                  <span>⏱️ Durasi: <strong>{currentEvent.durasiMenit || 90} Menit</strong></span>
+                  <span>⏱️ Mode Timer: <strong>{currentEvent.modeTimer === 'per-subtes' ? 'Block Time per Subtes' : 'Timer Tunggal'} ({currentEvent.durasiMenit || 195} Menit)</strong></span>
+                  <span>🔄 Jeda Transisi: <strong>{currentEvent.jedaTransisiDetik || 15} Detik (Tombol Biru)</strong></span>
                   <span>🛡️ Toleransi Curang: <strong>Maks {currentEvent.maksimalPelanggaran || 3} Teguran</strong></span>
-                  <span>📷 Pengawasan: <strong>{currentEvent.wajibKamera ? 'Wajib Kamera AI' : 'Tanpa Kamera'}</strong></span>
                 </div>
               </div>
             </div>
@@ -393,7 +461,6 @@ export default function KelolaTobkPublikPage() {
 
       {/* Tabel Data Peserta & Leads Marketing */}
       <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '14px', overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-        {/* Toolbar Pencarian & Filter */}
         <div style={{ padding: '16px', borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
           <div style={{ position: 'relative', width: '320px' }}>
             <Search size={16} style={{ position: 'absolute', left: '12px', top: '10px', color: '#94a3b8' }} />
@@ -422,7 +489,6 @@ export default function KelolaTobkPublikPage() {
           </div>
         </div>
 
-        {/* Tabel */}
         <div style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '13px' }}>
             <thead>
@@ -521,13 +587,125 @@ export default function KelolaTobkPublikPage() {
         </div>
       </div>
 
-      {/* MODAL: Buat Event Baru */}
+      {/* ── MODAL BUAT EVENT BARU (STANDAR UTBK 2026 & TKA 2026) ── */}
       {showModalBuat && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '16px' }}>
-          <div style={{ background: '#ffffff', borderRadius: '16px', maxWidth: '580px', width: '100%', padding: '24px', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.2)', maxHeight: '90vh', overflowY: 'auto' }}>
-            <h3 style={{ margin: '0 0 16px', fontSize: '18px', fontWeight: 700, color: '#0f172a' }}>
-              ✨ Buat Event TOBK Akbar / Lomba Publik
-            </h3>
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '16px' }}>
+          <div style={{ background: '#ffffff', borderRadius: '16px', maxWidth: '640px', width: '100%', padding: '24px', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.2)', maxHeight: '92vh', overflowY: 'auto' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: '#0f172a' }}>
+                ✨ Buat Event TOBK Akbar / Lomba Publik
+              </h3>
+              <button onClick={() => setShowModalBuat(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748b' }}>✕</button>
+            </div>
+
+            {/* Pilihan Format Cepat (UTBK 2026 vs TKA 2026) */}
+            <div style={{ marginBottom: '18px' }}>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#334155', marginBottom: '8px' }}>
+                Pilih Format Regulasi Resmi:
+              </label>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '8px' }}>
+                <button
+                  type="button"
+                  onClick={() => handlePilihFormat('UTBK_2026')}
+                  style={{
+                    background: formatPilihan === 'UTBK_2026' ? '#eff6ff' : '#f8fafc',
+                    border: `2px solid ${formatPilihan === 'UTBK_2026' ? '#2563eb' : '#e2e8f0'}`,
+                    borderRadius: '10px', padding: '10px 8px', textAlign: 'center', cursor: 'pointer'
+                  }}
+                >
+                  <div style={{ fontSize: '12px', fontWeight: 800, color: formatPilihan === 'UTBK_2026' ? '#1d4ed8' : '#0f172a' }}>
+                    UTBK-SNBT 2026
+                  </div>
+                  <div style={{ fontSize: '10px', color: '#64748b', marginTop: '2px' }}>
+                    7 Subtes · 195 Menit
+                  </div>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handlePilihFormat('TKA_2026_MTK')}
+                  style={{
+                    background: formatPilihan === 'TKA_2026_MTK' ? '#eff6ff' : '#f8fafc',
+                    border: `2px solid ${formatPilihan === 'TKA_2026_MTK' ? '#2563eb' : '#e2e8f0'}`,
+                    borderRadius: '10px', padding: '10px 8px', textAlign: 'center', cursor: 'pointer'
+                  }}
+                >
+                  <div style={{ fontSize: '12px', fontWeight: 800, color: formatPilihan === 'TKA_2026_MTK' ? '#1d4ed8' : '#0f172a' }}>
+                    TKA Matematika
+                  </div>
+                  <div style={{ fontSize: '10px', color: '#64748b', marginTop: '2px' }}>
+                    25 Soal · 75 Menit
+                  </div>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handlePilihFormat('TKA_2026_INDO')}
+                  style={{
+                    background: formatPilihan === 'TKA_2026_INDO' ? '#eff6ff' : '#f8fafc',
+                    border: `2px solid ${formatPilihan === 'TKA_2026_INDO' ? '#2563eb' : '#e2e8f0'}`,
+                    borderRadius: '10px', padding: '10px 8px', textAlign: 'center', cursor: 'pointer'
+                  }}
+                >
+                  <div style={{ fontSize: '12px', fontWeight: 800, color: formatPilihan === 'TKA_2026_INDO' ? '#1d4ed8' : '#0f172a' }}>
+                    TKA Literasi B.Indo
+                  </div>
+                  <div style={{ fontSize: '10px', color: '#64748b', marginTop: '2px' }}>
+                    30 Soal · 75 Menit
+                  </div>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handlePilihFormat('KUSTOM')}
+                  style={{
+                    background: formatPilihan === 'KUSTOM' ? '#eff6ff' : '#f8fafc',
+                    border: `2px solid ${formatPilihan === 'KUSTOM' ? '#2563eb' : '#e2e8f0'}`,
+                    borderRadius: '10px', padding: '10px 8px', textAlign: 'center', cursor: 'pointer'
+                  }}
+                >
+                  <div style={{ fontSize: '12px', fontWeight: 800, color: formatPilihan === 'KUSTOM' ? '#1d4ed8' : '#0f172a' }}>
+                    Lomba / Bebas
+                  </div>
+                  <div style={{ fontSize: '10px', color: '#64748b', marginTop: '2px' }}>
+                    Timer Tunggal
+                  </div>
+                </button>
+              </div>
+            </div>
+
+            {/* Box Regulasi UTBK 2026 */}
+            {formatPilihan === 'UTBK_2026' && (
+              <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '10px', padding: '12px 14px', marginBottom: '16px', fontSize: '12px', color: '#166534' }}>
+                <div style={{ fontWeight: 700, marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Clock size={14} /> Aturan Block Time UTBK-SNBT 2026 (Total 195 Menit):
+                </div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', margin: '6px 0' }}>
+                  <span style={{ background: '#dcfce7', padding: '2px 6px', borderRadius: '4px', fontWeight: 600 }}>PU: 30m</span>
+                  <span style={{ background: '#dcfce7', padding: '2px 6px', borderRadius: '4px', fontWeight: 600 }}>PPU: 15m (~45s/soal)</span>
+                  <span style={{ background: '#dcfce7', padding: '2px 6px', borderRadius: '4px', fontWeight: 600 }}>PBM: 25m</span>
+                  <span style={{ background: '#dcfce7', padding: '2px 6px', borderRadius: '4px', fontWeight: 600 }}>PK: 20m</span>
+                  <span style={{ background: '#dcfce7', padding: '2px 6px', borderRadius: '4px', fontWeight: 600 }}>LBI: 42.5m</span>
+                  <span style={{ background: '#dcfce7', padding: '2px 6px', borderRadius: '4px', fontWeight: 600 }}>LBE: 20m</span>
+                  <span style={{ background: '#dcfce7', padding: '2px 6px', borderRadius: '4px', fontWeight: 600 }}>PM: 42.5m</span>
+                </div>
+                <div style={{ fontSize: '11px', color: '#15803d' }}>
+                  🔒 <em>Setelah waktu subtes habis/lanjut, siswa <strong>tidak dapat kembali</strong> ke subtes sebelumnya. Ada jeda transisi dengan tombol warna biru.</em>
+                </div>
+              </div>
+            )}
+
+            {/* Box Regulasi TKA 2026 */}
+            {(formatPilihan === 'TKA_2026_MTK' || formatPilihan === 'TKA_2026_INDO') && (
+              <div style={{ background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: '10px', padding: '12px 14px', marginBottom: '16px', fontSize: '12px', color: '#1e40af' }}>
+                <div style={{ fontWeight: 700, marginBottom: '4px' }}>
+                  ⏱️ Regulasi Resmi TKA 2026 (Kemendikdasmen):
+                </div>
+                <div>
+                  Durasi sesi <strong>75 menit</strong>. Jeda antar subtes <strong>1 menit (60 detik)</strong> dengan tombol MULAI yang berubah menjadi warna <strong>biru</strong> setelah hitung mundur selesai.
+                </div>
+              </div>
+            )}
 
             <form onSubmit={handleSimpanEventBaru} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
               <div>
@@ -537,14 +715,14 @@ export default function KelolaTobkPublikPage() {
                 <input
                   type="text"
                   required
-                  placeholder="Contoh: TRY OUT AKBAR UTBK-SNBT NASIONAL 2026"
+                  placeholder="Contoh: TOBK FUNDAMENTAL SNBT 2026"
                   value={formEvent.judul}
                   onChange={(e) => setFormEvent({ ...formEvent, judul: e.target.value })}
                   style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px', boxSizing: 'border-box' }}
                 />
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '12px' }}>
                 <div>
                   <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: '#475569', marginBottom: '4px' }}>
                     Kategori Event
@@ -554,11 +732,11 @@ export default function KelolaTobkPublikPage() {
                     onChange={(e) => setFormEvent({ ...formEvent, kategori: e.target.value })}
                     style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px', background: '#f8fafc' }}
                   >
-                    <option value="UTBK">Try Out Akbar UTBK</option>
-                    <option value="TKA">Try Out TKA SMP / SMA</option>
-                    <option value="Lomba">Lomba Prestasi Akademik</option>
-                    <option value="Marketing">Event Lead Marketing</option>
-                    <option value="MinatBakat">Tes Minat & Bakat</option>
+                    <option value="Try Out Akbar UTBK">Try Out Akbar UTBK</option>
+                    <option value="TKA SMP / SMA">TKA SMP / SMA</option>
+                    <option value="Lomba Prestasi">Lomba Prestasi Akademik</option>
+                    <option value="Marketing Leads">Event Lead Marketing</option>
+                    <option value="Minat & Bakat">Tes Minat & Bakat</option>
                   </select>
                 </div>
 
@@ -577,49 +755,34 @@ export default function KelolaTobkPublikPage() {
                 </div>
               </div>
 
+              {/* Sumber Paket Soal (Preset Lengkap + Bank Soal Bimbel) */}
               <div>
                 <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: '#475569', marginBottom: '4px' }}>
                   Sumber Paket Soal
                 </label>
-                <div style={{ display: 'flex', gap: '16px', marginBottom: '8px', fontSize: '13px' }}>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}>
-                    <input
-                      type="radio"
-                      name="sumberSoal"
-                      value="preset_utbk"
-                      checked={formEvent.sumberSoal === 'preset_utbk'}
-                      onChange={() => setFormEvent({ ...formEvent, sumberSoal: 'preset_utbk' })}
-                    />
-                    Preset Standar UTBK Gemilang (5 Soal Penalaran)
-                  </label>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}>
-                    <input
-                      type="radio"
-                      name="sumberSoal"
-                      value="paket_bimbel"
-                      checked={formEvent.sumberSoal === 'paket_bimbel'}
-                      onChange={() => setFormEvent({ ...formEvent, sumberSoal: 'paket_bimbel' })}
-                    />
-                    Pilih Paket dari Bank Soal Bimbel
-                  </label>
-                </div>
-
-                {formEvent.sumberSoal === 'paket_bimbel' && (
-                  <select
-                    value={formEvent.paketBimbelId}
-                    onChange={(e) => setFormEvent({ ...formEvent, paketBimbelId: e.target.value })}
-                    style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px', background: '#f8fafc' }}
-                  >
-                    <option value="">-- Pilih Paket Bank Soal --</option>
-                    {paketBimbelList.map((p) => (
-                      <option key={p.id} value={p.id}>
-                        {p.judul} ({p.daftarSoal?.length || p.totalSoal || 0} soal)
-                      </option>
-                    ))}
-                  </select>
-                )}
+                <select
+                  value={formEvent.sumberSoal}
+                  onChange={(e) => setFormEvent({ ...formEvent, sumberSoal: e.target.value })}
+                  style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px', background: '#f8fafc', fontWeight: 600 }}
+                >
+                  <option value="preset_utbk_2026">⭐ [PRESET RESMI] UTBK-SNBT 2026 (7 Subtes Block Time - 195 Menit)</option>
+                  <option value="preset_tka_mtk">📐 [PRESET RESMI] TKA 2026: Matematika Wajib & Numerasi (25 Soal, 75m)</option>
+                  <option value="preset_tka_indo">📖 [PRESET RESMI] TKA 2026: B. Indonesia & Literasi (30 Soal, 75m)</option>
+                  
+                  {/* Paket dari Bank Soal Bimbel jika ada */}
+                  {paketBimbelList.length > 0 && (
+                    <optgroup label="Paket dari Bank Soal Bimbel Gemilang">
+                      {paketBimbelList.map((p) => (
+                        <option key={p.id} value={`bimbel_${p.id}`}>
+                          📁 {p.judul} ({p.daftarSoal?.length || p.totalSoal || 0} soal)
+                        </option>
+                      ))}
+                    </optgroup>
+                  )}
+                </select>
               </div>
 
+              {/* Kode Token & Acak */}
               <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: '12px', alignItems: 'flex-end' }}>
                 <div>
                   <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: '#475569', marginBottom: '4px' }}>
@@ -643,6 +806,7 @@ export default function KelolaTobkPublikPage() {
                 </button>
               </div>
 
+              {/* Aturan Anti-Curang & Pengawasan */}
               <div style={{ background: '#f8fafc', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
                 <div style={{ fontSize: '12px', fontWeight: 600, color: '#334155', marginBottom: '6px' }}>Aturan Anti-Curang & Pengawasan</div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '13px' }}>
@@ -652,7 +816,7 @@ export default function KelolaTobkPublikPage() {
                       checked={formEvent.wajibKamera}
                       onChange={(e) => setFormEvent({ ...formEvent, wajibKamera: e.target.checked })}
                     />
-                    Wajib Kamera Pengawas Aktif (Webcam Proctor)
+                    Wajib Kamera Pengawas Aktif (Webcam AI Proctor)
                   </label>
                   <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
                     <input
@@ -675,7 +839,7 @@ export default function KelolaTobkPublikPage() {
                 </button>
                 <button
                   type="submit"
-                  style={{ background: '#2563eb', border: 'none', padding: '9px 20px', borderRadius: '8px', fontSize: '13px', fontWeight: 600, color: '#fff', cursor: 'pointer' }}
+                  style={{ background: '#2563eb', border: 'none', padding: '9px 20px', borderRadius: '8px', fontSize: '13px', fontWeight: 700, color: '#fff', cursor: 'pointer' }}
                 >
                   Terbitkan Event TOBK
                 </button>
@@ -685,7 +849,7 @@ export default function KelolaTobkPublikPage() {
         </div>
       )}
 
-      {/* MODAL: Konfirmasi Purge / Bersihkan Data */}
+      {/* Modal Purge */}
       {showModalPurge && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '16px' }}>
           <div style={{ background: '#ffffff', borderRadius: '16px', maxWidth: '480px', width: '100%', padding: '24px', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.2)' }}>
@@ -697,9 +861,7 @@ export default function KelolaTobkPublikPage() {
             </div>
 
             <p style={{ fontSize: '13px', color: '#475569', lineHeight: 1.5, margin: '0 0 16px' }}>
-              Apakah Anda yakin ingin menghapus data leads dan riwayat pengerjaan peserta event <strong>"{currentEvent?.judul}"</strong>?
-              <br /><br />
-              <span style={{ color: '#059669', fontWeight: 600 }}>Tips:</span> Pastikan Anda sudah mengunduh data leads via tombol <strong>Ekspor Leads (CSV)</strong> sebelum membersihkan. Tindakan ini akan mengosongkan database event agar kuota bimbel tetap 100% bebas biaya tambahan.
+              Hapus data peserta sementara untuk event <strong>"{currentEvent?.judul}"</strong>? Database bimbel akan kembali bersih 100%. Pastikan sudah mengunduh CSV terlebih dahulu.
             </p>
 
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>

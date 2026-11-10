@@ -1,19 +1,16 @@
 // src/services/tobkPublikService.js
 // ============================================================
-// SERVIS TOBK GEMILANG & EVENT PUBLIK (Try Out Akbar / Lomba / Marketing)
-// 
-// 🔒 PRINSIP UTAMA: ZERO-BLOAT GUARANTEE
-// - Data peserta luar bimbel dan log jawaban disimpan dalam koleksi
-//   terpisah:
-//     • tobk_events        -> Pengaturan event, token, jadwal, timer
-//     • tobk_event_leads   -> Data kontak peserta (marketing)
-//     • tobk_event_jawaban -> Sesi pengerjaan & log kecurangan
-// - Koleksi inti bimbel (`students`, `ujian_submissions`, `raport_siswa`)
-//   TIDAK TERSENTUH sama sekali.
-// - Admin memiliki kontrol 1-klik ekspor CSV dan 1-klik bersihkan
-//   (purge) data setelah event selesai agar kuota penyimpanan tetap 0MB tambahan.
-// - Dilengkapi fallback offline/local storage otomatis agar pengerjaan
-//   peserta tidak pernah terhambat masalah jaringan.
+// SERVIS TOBK GEMILANG & EVENT PUBLIK
+// STANDAR RESMI UTBK-SNBT 2026 & TKA 2026 (Kemendikdasmen / SNPMB)
+//
+// 🔒 PRINSIP UTAMA:
+// 1. BLOCK TIME SYSTEM:
+//    - Timer berjalan total per subtes, bukan per soal.
+//    - Titik Tanpa Balik: Subtes yang selesai tidak bisa dibuka kembali.
+//    - Masa Transisi: Jeda hitung mundur dengan tombol biru aktif setelah jeda selesai.
+// 2. ZERO-BLOAT GUARANTEE:
+//    - Data peserta terisolasi di `tobk_events`, `tobk_event_leads`, `tobk_event_jawaban`.
+//    - Koleksi inti bimbel tetap bersih 100%. 1-klik ekspor CSV & 1-klik Purge data.
 // ============================================================
 
 import { db } from '../firebase';
@@ -26,89 +23,273 @@ const LOCAL_STORAGE_KEY_EVENTS = 'gemilang_tobk_events_backup';
 const LOCAL_STORAGE_KEY_LEADS = 'gemilang_tobk_leads_backup';
 const LOCAL_STORAGE_KEY_SESI = 'gemilang_tobk_peserta_session';
 
-// Preset Soal Default UTBK / TKA Skala Nasional jika belum ada paket di bank soal
-export const SOAL_PRESET_UTBK = [
+// ============================================================
+// 1. PRESET STANDAR RESMI UTBK-SNBT 2026 (7 SUBTES - 195 MENIT)
+// ============================================================
+export const SUBTES_RESMI_UTBK_2026 = [
   {
-    id: 'utbk_tps_01',
-    nomor: 1,
-    mapel: 'Penalaran Umum (TPS)',
-    tipe: 'pg',
-    teksSoal: 'Semua mahasiswa yang lulus dengan predikat cumlaude memiliki indeks prestasi di atas 3.50. Sebagian mahasiswa teknik elektro memiliki indeks prestasi di atas 3.50. Kesimpulan yang paling tepat adalah ...',
-    opsiJawaban: [
-      { key: 'A', teks: 'Semua mahasiswa teknik elektro lulus dengan predikat cumlaude.' },
-      { key: 'B', teks: 'Sebagian mahasiswa teknik elektro lulus dengan predikat cumlaude.' },
-      { key: 'C', teks: 'Semua mahasiswa yang memiliki indeks prestasi di atas 3.50 adalah mahasiswa teknik elektro.' },
-      { key: 'D', teks: 'Mahasiswa yang tidak lulus cumlaude bukan berasal dari teknik elektro.' },
-      { key: 'E', teks: 'Tidak ada mahasiswa teknik elektro yang memiliki indeks prestasi di bawah 3.50.' },
-    ],
-    kunciJawaban: 'B',
-    pembahasan: 'Berdasarkan premis 1 (Semua cumlaude -> IPK > 3.50) dan premis 2 (Sebagian mhs elektro -> IPK > 3.50), simpulan yang valid adalah sebagian mahasiswa teknik elektro dapat lulus dengan predikat cumlaude (B).'
+    id: 'subtes_pu',
+    kode: 'PU',
+    nama: 'Penalaran Umum (PU)',
+    targetSoal: 30,
+    durasiMenit: 30, // 30 menit
+    estimasiDetik: 60,
+    soal: [
+      {
+        id: 'pu_01',
+        nomor: 1,
+        mapel: 'Penalaran Umum (PU)',
+        teksSoal: 'Semua mahasiswa yang lulus dengan predikat cumlaude memiliki indeks prestasi di atas 3.50. Sebagian mahasiswa teknik elektro memiliki indeks prestasi di atas 3.50.\n\nKesimpulan yang paling tepat adalah ...',
+        opsiJawaban: [
+          { key: 'A', teks: 'Semua mahasiswa teknik elektro lulus dengan predikat cumlaude.' },
+          { key: 'B', teks: 'Sebagian mahasiswa teknik elektro lulus dengan predikat cumlaude.' },
+          { key: 'C', teks: 'Semua mahasiswa yang memiliki IPK > 3.50 berasal dari teknik elektro.' },
+          { key: 'D', teks: 'Mahasiswa yang tidak lulus cumlaude bukan mahasiswa teknik elektro.' },
+          { key: 'E', teks: 'Tidak ada mahasiswa teknik elektro dengan IPK di bawah 3.50.' },
+        ],
+        kunciJawaban: 'B',
+        pembahasan: 'Premis 1: Cumlaude -> IPK > 3.50. Premis 2: Sebagian mhs elektro -> IPK > 3.50. Maka sebagian mahasiswa teknik elektro dapat lulus dengan predikat cumlaude (B).'
+      },
+      {
+        id: 'pu_02',
+        nomor: 2,
+        mapel: 'Penalaran Umum (PU)',
+        teksSoal: 'Jika pasokan pupuk lancar, maka hasil panen padi melimpah. Hasil panen padi tidak melimpah atau harga beras turun. Ternyata harga beras tidak turun.\n\nKesimpulan yang sah adalah ...',
+        opsiJawaban: [
+          { key: 'A', teks: 'Pasokan pupuk tidak lancar.' },
+          { key: 'B', teks: 'Pasokan pupuk tetap lancar.' },
+          { key: 'C', teks: 'Hasil panen padi tetap melimpah.' },
+          { key: 'D', teks: 'Harga beras melonjak tinggi.' },
+          { key: 'E', teks: 'Petani mengalami gagal panen.' },
+        ],
+        kunciJawaban: 'A',
+        pembahasan: 'Disjungsi: "Hasil panen tidak melimpah v harga beras turun". Karena harga beras tidak turun, maka hasil panen tidak melimpah. Implikasi kontraposisi: Karena hasil panen tidak melimpah, maka pasokan pupuk tidak lancar (A).'
+      }
+    ]
   },
   {
-    id: 'utbk_tps_02',
-    nomor: 2,
-    mapel: 'Pengetahuan Kuantitatif',
-    tipe: 'pg',
-    teksSoal: 'Jika fungsi $f(x) = 2x^2 - 4x + 5$ memiliki titik balik minimum $(p, q)$, berapakah nilai dari $2p + q$?',
-    opsiJawaban: [
-      { key: 'A', teks: '3' },
-      { key: 'B', teks: '4' },
-      { key: 'C', teks: '5' },
-      { key: 'D', teks: '6' },
-      { key: 'E', teks: '7' },
-    ],
-    kunciJawaban: 'C',
-    pembahasan: 'Titik puncak kurva parabola: $x_p = -b/(2a) = -(-4)/(2 \\cdot 2) = 1$. Nilai $y_p = f(1) = 2(1)^2 - 4(1) + 5 = 3$. Jadi $p = 1, q = 3$. Maka $2p + q = 2(1) + 3 = 5$ (C).'
+    id: 'subtes_ppu',
+    kode: 'PPU',
+    nama: 'Pengetahuan & Pemahaman Umum (PPU)',
+    targetSoal: 20,
+    durasiMenit: 15, // 15 menit (~45 detik/soal)
+    estimasiDetik: 45,
+    soal: [
+      {
+        id: 'ppu_01',
+        nomor: 1,
+        mapel: 'Pengetahuan & Pemahaman Umum (PPU)',
+        teksSoal: 'Penggunaan kata "imparsial" dalam kalimat "Lembaga pengawas harus bertindak secara imparsial dalam menangani sengketa" bermakna ...',
+        opsiJawaban: [
+          { key: 'A', teks: 'Tegas dan berani' },
+          { key: 'B', teks: 'Tidak memihak / netral' },
+          { key: 'C', teks: 'Cepat dan tanggap' },
+          { key: 'D', teks: 'Rahasia dan tertutup' },
+          { key: 'E', teks: 'Mengikuti aturan pimpinan' },
+        ],
+        kunciJawaban: 'B',
+        pembahasan: 'Imparsial menurut KBBI berarti tidak memihak, netral, atau adil terhadap semua pihak (B).'
+      }
+    ]
   },
   {
-    id: 'utbk_tps_03',
-    nomor: 3,
-    mapel: 'Literasi Bahasa Indonesia',
-    tipe: 'pg',
-    teksSoal: 'Perhatikan teks berikut:\n\n"Transisi energi baru dan terbarukan (EBT) di Indonesia menghadapi tantangan pendanaan dan infrastruktur transmisi. Meskipun potensi energi surya dan hidro melimpah, interkoneksi antarpulau masih terbatas."\n\nGagasan pokok paragraf tersebut adalah ...',
-    opsiJawaban: [
-      { key: 'A', teks: 'Potensi melimpah energi surya di Indonesia.' },
-      { key: 'B', teks: 'Tantangan dan kendala transisi EBT di Indonesia.' },
-      { key: 'C', teks: 'Pembangunan infrastruktur listrik antarpulau.' },
-      { key: 'D', teks: 'Rendahnya investasi swasta dalam energi terbarukan.' },
-      { key: 'E', teks: 'Keberhasilan pemanfaatan energi hidro nusantara.' },
-    ],
-    kunciJawaban: 'B',
-    pembahasan: 'Kalimat utama berada di awal kalimat ("Transisi energi baru dan terbarukan... menghadapi tantangan pendanaan dan infrastruktur"). Kalimat selanjutnya merupakan kalimat penjelas. Jadi gagasan pokoknya adalah tantangan transisi EBT (B).'
+    id: 'subtes_pbm',
+    kode: 'PBM',
+    nama: 'Pemahaman Bacaan & Menulis (PBM)',
+    targetSoal: 20,
+    durasiMenit: 25, // 25 menit (~75 detik/soal)
+    estimasiDetik: 75,
+    soal: [
+      {
+        id: 'pbm_01',
+        nomor: 1,
+        mapel: 'Pemahaman Bacaan & Menulis (PBM)',
+        teksSoal: 'Kalimat berikut yang merupakan kalimat efektif dan memenuhi kaidah PUEBI adalah ...',
+        opsiJawaban: [
+          { key: 'A', teks: 'Bagi para peserta yang membawa kendaraan roda empat dipersilakan parkir di sisi barat.' },
+          { key: 'B', teks: 'Untuk mempercepat proses administrasi, peserta diminta menyiapkan berkas fotokopi KTP.' },
+          { key: 'C', teks: 'Meskipun sudah berulang kali diingatkan namun dia tetap melanggar aturan lalu lintas.' },
+          { key: 'D', teks: 'Dalam seminar itu membahas mengenai dampak perubahan iklim terhadap ketahanan pangan.' },
+          { key: 'E', teks: 'Kenaikan daripada harga bahan bakar minyak mempengaruhi daya beli masyarakat miskin.' },
+        ],
+        kunciJawaban: 'B',
+        pembahasan: 'Kalimat B memiliki struktur subjek dan predikat yang utuh tanpa pleonasme atau kerancuan preposisi (B).'
+      }
+    ]
   },
   {
-    id: 'utbk_tps_04',
-    nomor: 4,
-    mapel: 'Literasi Bahasa Inggris',
-    tipe: 'pg',
-    teksSoal: 'Artificial Intelligence has rapidly integrated into education. While adaptive learning systems allow personalized study paths, educators emphasize that critical thinking and emotional intelligence remain distinctly human attributes that technology cannot replace.\n\nWhat is the author\'s main point?',
-    opsiJawaban: [
-      { key: 'A', teks: 'AI will completely replace traditional teachers in the near future.' },
-      { key: 'B', teks: 'Adaptive learning systems are not effective for students.' },
-      { key: 'C', teks: 'AI assists education, but unique human attributes remain irreplaceable.' },
-      { key: 'D', teks: 'Emotional intelligence is unnecessary in modern classrooms.' },
-      { key: 'E', teks: 'Schools should ban technological integration.' },
-    ],
-    kunciJawaban: 'C',
-    pembahasan: 'The text highlights that while AI offers benefits like personalized study paths, human elements like critical thinking and emotional intelligence cannot be replaced (C).'
+    id: 'subtes_pk',
+    kode: 'PK',
+    nama: 'Pengetahuan Kuantitatif (PK)',
+    targetSoal: 20,
+    durasiMenit: 20, // 20 menit (~60 detik/soal)
+    estimasiDetik: 60,
+    soal: [
+      {
+        id: 'pk_01',
+        nomor: 1,
+        mapel: 'Pengetahuan Kuantitatif (PK)',
+        teksSoal: 'Jika fungsi kuadrat $f(x) = 2x^2 - 4x + 5$ memiliki koordinat titik minimum $(p, q)$, berapakah nilai dari $2p + q$?',
+        opsiJawaban: [
+          { key: 'A', teks: '3' },
+          { key: 'B', teks: '4' },
+          { key: 'C', teks: '5' },
+          { key: 'D', teks: '6' },
+          { key: 'E', teks: '7' },
+        ],
+        kunciJawaban: 'C',
+        pembahasan: 'Titik puncak kurva parabola: $x_p = -b/(2a) = 4/4 = 1$. Nilai $y_p = f(1) = 2(1)^2 - 4(1) + 5 = 3$. Jadi $p = 1, q = 3$. Maka $2p + q = 2(1) + 3 = 5$ (C).'
+      }
+    ]
   },
   {
-    id: 'utbk_tps_05',
-    nomor: 5,
-    mapel: 'Penalaran Matematika',
-    tipe: 'pg',
-    teksSoal: 'Sebuah tangki air berbentuk silinder memiliki diameter alas 14 dm dan tinggi 20 dm. Jika tangki tersebut terisi air sebanyak $\\frac{3}{4}$ bagian, berapakah volume air dalam tangki tersebut? (Gunakan $\\pi = \\frac{22}{7}$)',
-    opsiJawaban: [
-      { key: 'A', teks: '2.310 liter' },
-      { key: 'B', teks: '2.450 liter' },
-      { key: 'C', teks: '3.080 liter' },
-      { key: 'D', teks: '3.200 liter' },
-      { key: 'E', teks: '3.650 liter' },
-    ],
-    kunciJawaban: 'A',
-    pembahasan: 'Jari-jari $r = 7$ dm. Volume silinder penuh = $\\pi r^2 t = (22/7) \\times 7^2 \\times 20 = 22 \\times 7 \\times 20 = 3.080 \\text{ dm}^3$ (liter). Air terisi $3/4$, maka volume = $(3/4) \\times 3.080 = 2.310$ liter (A).'
+    id: 'subtes_lbi',
+    kode: 'LBI',
+    nama: 'Literasi Bahasa Indonesia (LBI)',
+    targetSoal: 30,
+    durasiMenit: 42.5, // 42,5 menit (~85 detik/soal)
+    estimasiDetik: 85,
+    soal: [
+      {
+        id: 'lbi_01',
+        nomor: 1,
+        mapel: 'Literasi Bahasa Indonesia (LBI)',
+        teksSoal: 'Bacalah teks berikut secara cermat:\n\n"Transisi energi baru dan terbarukan (EBT) di Indonesia menghadapi tantangan pendanaan dan infrastruktur transmisi. Meskipun potensi energi surya dan hidro melimpah, interkoneksi antarpulau masih terbatas sehingga distribusi listrik hijau belum merata."\n\nGagasan pokok paragraf tersebut adalah ...',
+        opsiJawaban: [
+          { key: 'A', teks: 'Kekayaan potensi energi hidro di seluruh pulau Indonesia.' },
+          { key: 'B', teks: 'Tantangan dan kendala pemerataan transisi EBT di Indonesia.' },
+          { key: 'C', teks: 'Pembangunan kabel listrik bawah laut antarpulau nusantara.' },
+          { key: 'D', teks: 'Ketergantungan industri terhadap pembangkit batu bara.' },
+          { key: 'E', teks: 'Rendahnya minat investasi sektor swasta pada panel surya.' },
+        ],
+        kunciJawaban: 'B',
+        pembahasan: 'Kalimat utama di awal paragraf membahas tantangan pendanaan dan transmisi transisi EBT. Gagasan pokoknya adalah tantangan pemerataan transisi EBT (B).'
+      }
+    ]
+  },
+  {
+    id: 'subtes_lbe',
+    kode: 'LBE',
+    nama: 'Literasi Bahasa Inggris (LBE)',
+    targetSoal: 20,
+    durasiMenit: 20, // 20 menit (~60 detik/soal)
+    estimasiDetik: 60,
+    soal: [
+      {
+        id: 'lbe_01',
+        nomor: 1,
+        mapel: 'Literasi Bahasa Inggris (LBE)',
+        teksSoal: 'Artificial Intelligence has rapidly integrated into modern education. While automated algorithms allow personalized learning pathways, educators emphasize that critical reflection and emotional empathy remain distinctly human faculties.\n\nWhat is the primary conclusion of the author?',
+        opsiJawaban: [
+          { key: 'A', teks: 'AI tutors will render traditional schools obsolete by 2030.' },
+          { key: 'B', teks: 'Adaptive learning systems are detrimental to cognitive growth.' },
+          { key: 'C', teks: 'AI enhances education, but vital human faculties remain irreplaceable.' },
+          { key: 'D', teks: 'Emotional empathy is irrelevant to academic achievement.' },
+          { key: 'E', teks: 'Educational institutions should prohibit digital platforms.' },
+        ],
+        kunciJawaban: 'C',
+        pembahasan: 'The author emphasizes that while AI aids personalized learning, human faculties like critical thinking and empathy cannot be replaced (C).'
+      }
+    ]
+  },
+  {
+    id: 'subtes_pm',
+    kode: 'PM',
+    nama: 'Penalaran Matematika (PM)',
+    targetSoal: 20,
+    durasiMenit: 42.5, // 42,5 menit (~127,5 detik/soal)
+    estimasiDetik: 127.5,
+    soal: [
+      {
+        id: 'pm_01',
+        nomor: 1,
+        mapel: 'Penalaran Matematika (PM)',
+        teksSoal: 'Sebuah tangki air berbentuk silinder memiliki diameter alas 14 dm dan tinggi 20 dm. Jika tangki tersebut terisi air sebanyak $\\frac{3}{4}$ bagian, berapakah volume air dalam tangki tersebut? (Gunakan $\\pi = \\frac{22}{7}$)',
+        opsiJawaban: [
+          { key: 'A', teks: '2.310 liter' },
+          { key: 'B', teks: '2.450 liter' },
+          { key: 'C', teks: '3.080 liter' },
+          { key: 'D', teks: '3.200 liter' },
+          { key: 'E', teks: '3.650 liter' },
+        ],
+        kunciJawaban: 'A',
+        pembahasan: 'Jari-jari $r = 7$ dm. Volume tabung penuh = $\\pi r^2 t = (22/7) \\times 7^2 \\times 20 = 3.080 \\text{ liter}$. Volume air = $(3/4) \\times 3.080 = 2.310$ liter (A).'
+      }
+    ]
   }
 ];
+
+// ============================================================
+// 2. PRESET STANDAR RESMI TKA 2026 (SESI 75 MENIT - KEMENDIKDASMEN)
+// ============================================================
+export const SESI_RESMI_TKA_2026 = {
+  matematika: {
+    id: 'tka_mtk_2026',
+    nama: 'TKA 2026: Matematika Wajib & Numerasi',
+    durasiMenit: 75, // 75 menit untuk 25 soal (~3 menit/soal)
+    targetSoal: 25,
+    jedaTransisiDetik: 60, // 1 menit jeda transisi
+    soal: [
+      {
+        id: 'tka_m_01',
+        nomor: 1,
+        mapel: 'Matematika Wajib (TKA)',
+        teksSoal: 'Diketahui barisan aritmetika dengan suku ke-3 adalah 14 dan suku ke-7 adalah 26. Jumlah 20 suku pertama deret tersebut adalah ...',
+        opsiJawaban: [
+          { key: 'A', teks: '680' },
+          { key: 'B', teks: '710' },
+          { key: 'C', teks: '730' },
+          { key: 'D', teks: '770' },
+          { key: 'E', teks: '820' },
+        ],
+        kunciJawaban: 'C',
+        pembahasan: '$U_7 - U_3 = 4b = 12 \\Rightarrow b = 3$. $U_3 = a + 2(3) = 14 \\Rightarrow a = 8$. $S_{20} = \\frac{20}{2} [2(8) + 19(3)] = 10 [16 + 57] = 730$ (C).'
+      },
+      {
+        id: 'tka_m_02',
+        nomor: 2,
+        mapel: 'Matematika Wajib (TKA)',
+        teksSoal: 'Nilai dari $\\lim_{x \\to 3} \\frac{x^2 - 9}{2x - 6}$ adalah ...',
+        opsiJawaban: [
+          { key: 'A', teks: '1.5' },
+          { key: 'B', teks: '2' },
+          { key: 'C', teks: '3' },
+          { key: 'D', teks: '4.5' },
+          { key: 'E', teks: '6' },
+        ],
+        kunciJawaban: 'C',
+        pembahasan: 'Faktorkan: $\\frac{(x-3)(x+3)}{2(x-3)} = \\frac{x+3}{2}$. Substitusi $x = 3$: $\\frac{3+3}{2} = 3$ (C).'
+      }
+    ]
+  },
+  literasi_indo: {
+    id: 'tka_indo_2026',
+    nama: 'TKA 2026: B. Indonesia & Literasi',
+    durasiMenit: 75,
+    targetSoal: 30,
+    jedaTransisiDetik: 60,
+    soal: [
+      {
+        id: 'tka_i_01',
+        nomor: 1,
+        mapel: 'B. Indonesia (TKA)',
+        teksSoal: 'Bacalah kutipan tajuk rencana berikut:\n\n"Ketahanan pangan nasional tidak semata bertumpu pada beras. Diversifikasi konsumsi umbi-umbian dan sagu mutlak digencarkan agar gejolak harga pangan global tidak mengguncang ekonomi keluarga rentan."\n\nOpini penulis dalam kutipan tajuk rencana tersebut adalah ...',
+        opsiJawaban: [
+          { key: 'A', teks: 'Harga beras dunia terus melambung tinggi.' },
+          { key: 'B', teks: 'Diversifikasi konsumsi pangan lokal harus digencarkan demi ketahanan pangan.' },
+          { key: 'C', teks: 'Masyarakat miskin enggan beralih mengonsumsi sagu.' },
+          { key: 'D', teks: 'Pemerintah gagal menstabilkan harga beras impor.' },
+          { key: 'E', teks: 'Keluarga rentan lebih menyukai umbi-umbian.' },
+        ],
+        kunciJawaban: 'B',
+        pembahasan: 'Opini penulis diungkapkan lewat anjuran "mutlak digencarkan agar gejolak harga pangan global tidak mengguncang ekonomi" (B).'
+      }
+    ]
+  }
+};
+
+// Preset Flat Lama (Sebagai Fallback Kompatibilitas)
+export const SOAL_PRESET_UTBK = SUBTES_RESMI_UTBK_2026.flatMap((s) => s.soal);
 
 // Helper: Ambil data backup lokal
 function getLocalEvents() {
@@ -156,7 +337,6 @@ export async function ambilSemuaEventTobk() {
   try {
     const snap = await getDocs(collection(db, 'tobk_events'));
     const items = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-    // Urutkan terbaru
     items.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
     saveLocalEvents(items);
     return items;
@@ -184,13 +364,12 @@ export async function ambilEventTobkById(eventId) {
 }
 
 /**
- * Mengambil event TOBK publik yang sedang aktif (untuk landing page siswa luar).
+ * Mengambil event TOBK publik yang sedang aktif.
  */
 export async function ambilEventTobkAktifPublik() {
   try {
     const snap = await getDocs(collection(db, 'tobk_events'));
     const items = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-    // Cari yang berstatus aktif atau yang paling baru
     const aktif = items.find((ev) => ev.status === 'aktif');
     if (aktif) return aktif;
     if (items.length > 0) return items[0];
@@ -211,7 +390,9 @@ export async function simpanEventTobk(eventData) {
     id,
     token: (eventData.token || '').trim().toUpperCase(),
     tokenAktif: eventData.tokenAktif !== undefined ? eventData.tokenAktif : true,
-    durasiMenit: Number(eventData.durasiMenit) || 90,
+    durasiMenit: Number(eventData.durasiMenit) || 195,
+    modeTimer: eventData.modeTimer || 'per-subtes', // 'per-subtes' | 'total'
+    jedaTransisiDetik: Number(eventData.jedaTransisiDetik) || 15,
     maksimalPelanggaran: Number(eventData.maksimalPelanggaran) || 3,
     wajibKamera: eventData.wajibKamera !== undefined ? eventData.wajibKamera : true,
     status: eventData.status || 'aktif',
@@ -225,7 +406,6 @@ export async function simpanEventTobk(eventData) {
     console.warn('[TOBK] Gagal simpan ke Firestore, simpan lokal:', err);
   }
 
-  // Update backup lokal
   const locals = getLocalEvents();
   const idx = locals.findIndex((e) => e.id === id);
   if (idx >= 0) locals[idx] = payload;
@@ -261,9 +441,6 @@ export async function toggleTokenEventTobk(eventId, aktif) {
 // 2. PENDAFTARAN PESERTA & LEADS MARKETING
 // ------------------------------------------------------------
 
-/**
- * Mendaftarkan peserta luar ke event TOBK (Marketing Lead Capture).
- */
 export async function daftarPesertaTobk(eventId, dataDiri) {
   const pesertaId = `lead_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
   const payload = {
@@ -276,7 +453,7 @@ export async function daftarPesertaTobk(eventId, dataDiri) {
     targetPtn: (dataDiri.targetPtn || '').trim(),
     targetJurusan: (dataDiri.targetJurusan || '').trim(),
     kategori: dataDiri.kategori || 'UTBK',
-    statusUjian: 'menunggu_token', // 'menunggu_token' | 'mengerjakan' | 'selesai' | 'diskualifikasi'
+    statusUjian: 'menunggu_token',
     skor: null,
     totalPelanggaran: 0,
     waktuDaftar: new Date().toISOString(),
@@ -290,12 +467,10 @@ export async function daftarPesertaTobk(eventId, dataDiri) {
     console.warn('[TOBK] Gagal simpan lead Firestore, simpan lokal:', err);
   }
 
-  // Simpan lead lokal
   const leads = getLocalLeads();
   leads.unshift(payload);
   saveLocalLeads(leads);
 
-  // Simpan sesi peserta di browser saat ini agar bisa reload
   try {
     localStorage.setItem(LOCAL_STORAGE_KEY_SESI, JSON.stringify(payload));
   } catch (e) {
@@ -305,9 +480,6 @@ export async function daftarPesertaTobk(eventId, dataDiri) {
   return payload;
 }
 
-/**
- * Mengambil sesi peserta aktif dari localStorage.
- */
 export function ambilSesiPesertaAktif() {
   try {
     const raw = localStorage.getItem(LOCAL_STORAGE_KEY_SESI);
@@ -317,9 +489,6 @@ export function ambilSesiPesertaAktif() {
   }
 }
 
-/**
- * Validasi Token yang dimasukkan peserta.
- */
 export async function validasiTokenPeserta(eventId, inputToken) {
   if (!inputToken || !inputToken.trim()) {
     return { valid: false, message: 'Harap masukkan kode token ujian!' };
@@ -351,9 +520,6 @@ export async function validasiTokenPeserta(eventId, inputToken) {
 // 3. SESI PENGERJAAN & SUBMIT CBT
 // ------------------------------------------------------------
 
-/**
- * Menyimpan progres jawaban peserta secara berkala ke database.
- */
 export async function simpanJawabanPeserta(pesertaId, jawabanMap, raguMap = {}, pelanggaranList = []) {
   if (!pesertaId) return;
 
@@ -371,15 +537,11 @@ export async function simpanJawabanPeserta(pesertaId, jawabanMap, raguMap = {}, 
     console.warn('[TOBK] Gagal simpan jawaban realtime ke Firestore:', err);
   }
 
-  // Backup lokal
   try {
     localStorage.setItem(`tobk_jawaban_${pesertaId}`, JSON.stringify(payload));
   } catch (e) {}
 }
 
-/**
- * Menyelesaikan ujian TOBK dan mencatat hasil akhir / diskualifikasi.
- */
 export async function selesaikanUjianTobk(pesertaId, hasilData) {
   if (!pesertaId) return;
 
@@ -399,7 +561,6 @@ export async function selesaikanUjianTobk(pesertaId, hasilData) {
     console.warn('[TOBK] Gagal update hasil ujian di Firestore:', err);
   }
 
-  // Update cache leads lokal
   const leads = getLocalLeads();
   const item = leads.find((l) => l.pesertaId === pesertaId);
   if (item) {
@@ -407,7 +568,6 @@ export async function selesaikanUjianTobk(pesertaId, hasilData) {
     saveLocalLeads(leads);
   }
 
-  // Update sesi di browser peserta
   const sesi = ambilSesiPesertaAktif();
   if (sesi && sesi.pesertaId === pesertaId) {
     Object.assign(sesi, updatePayload);
@@ -421,9 +581,6 @@ export async function selesaikanUjianTobk(pesertaId, hasilData) {
 // 4. PEMANTAUAN ADMIN, EKSPOR LEADS CSV, & 1-KLIK BERSIHKAN DATA
 // ------------------------------------------------------------
 
-/**
- * Mengambil semua leads peserta untuk event tertentu (atau semua event).
- */
 export async function ambilSemuaLeadsTobk(eventId = null) {
   try {
     let qRef = collection(db, 'tobk_event_leads');
@@ -443,9 +600,6 @@ export async function ambilSemuaLeadsTobk(eventId = null) {
   }
 }
 
-/**
- * Ekspor leads ke file CSV (UTF-8 with BOM agar terbaca sempurna di Microsoft Excel).
- */
 export function eksporLeadsCsv(leadsList, namaEvent = 'TOBK_Gemilang') {
   if (!leadsList || leadsList.length === 0) {
     alert('Tidak ada data leads peserta untuk diekspor!');
@@ -499,23 +653,14 @@ export function eksporLeadsCsv(leadsList, namaEvent = 'TOBK_Gemilang') {
   URL.revokeObjectURL(url);
 }
 
-/**
- * 🔒 ZERO-BLOAT GUARANTEE:
- * 1-Klik Bersihkan & Hapus Data Sementara Peserta Event (Purge Data).
- * Menghapus dokumen di `tobk_event_leads` dan `tobk_event_jawaban` agar kuota
- * database Bimbel Gemilang tetap 100% bebas beban storage.
- */
 export async function bersihkanDataEventTobk(eventId, hapusEventSekaligus = false) {
   if (!eventId) return { success: false, message: 'ID Event tidak valid' };
 
   try {
-    // 1. Ambil semua leads yang terkait event ini
     const qLeads = query(collection(db, 'tobk_event_leads'), where('eventId', '==', eventId));
     const snapLeads = await getDocs(qLeads);
-
     const leadIds = snapLeads.docs.map((d) => d.id);
 
-    // 2. Hapus dokumen leads & jawaban secara batch
     const batch = writeBatch(db);
     snapLeads.docs.forEach((docRef) => {
       batch.delete(docRef.ref);
@@ -531,7 +676,6 @@ export async function bersihkanDataEventTobk(eventId, hapusEventSekaligus = fals
 
     await batch.commit();
 
-    // 3. Bersihkan cache lokal
     const localLeads = getLocalLeads().filter((l) => l.eventId !== eventId);
     saveLocalLeads(localLeads);
 
@@ -546,7 +690,6 @@ export async function bersihkanDataEventTobk(eventId, hapusEventSekaligus = fals
     };
   } catch (err) {
     console.error('[TOBK] Gagal bersihkan data event:', err);
-    // Bersihkan lokal sebagai fallback
     const localLeads = getLocalLeads().filter((l) => l.eventId !== eventId);
     saveLocalLeads(localLeads);
     return {

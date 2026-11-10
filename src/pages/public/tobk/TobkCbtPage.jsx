@@ -1,6 +1,7 @@
 // src/pages/public/tobk/TobkCbtPage.jsx
 // ============================================================
-// LEMBAR UJIAN CBT TOBK PUBLIK GEMILANG (100% Profesional & Kiosk Anti-Curang)
+// LEMBAR UJIAN CBT TOBK PUBLIK GEMILANG (100% STANDAR RESMI)
+// SISTEM BLOCK TIME UTBK-SNBT 2026 (7 Subtes) & TKA 2026 (75 Menit, Jeda 1m)
 // ============================================================
 
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
@@ -8,14 +9,14 @@ import { useNavigate } from 'react-router-dom';
 import {
   Clock, ShieldAlert, AlertTriangle, CheckCircle, ChevronLeft,
   ChevronRight, Bookmark, Camera, Menu, X, Type, Send, LogOut,
-  Maximize2, VolumeX, EyeOff
+  Maximize2, ArrowRight, Play, Sparkles, AlertCircle
 } from 'lucide-react';
 import {
   ambilSesiPesertaAktif, ambilEventTobkById, ambilEventTobkAktifPublik,
-  simpanJawabanPeserta, selesaikanUjianTobk, SOAL_PRESET_UTBK
+  simpanJawabanPeserta, selesaikanUjianTobk,
+  SUBTES_RESMI_UTBK_2026, SOAL_PRESET_UTBK
 } from '../../../services/tobkPublikService';
 import RenderMath from '../../../components/RenderMath';
-import RenderTable from '../../../components/RenderTable';
 
 export default function TobkCbtPage() {
   const navigate = useNavigate();
@@ -23,34 +24,44 @@ export default function TobkCbtPage() {
   // Sesi & Event
   const [peserta, setPeserta] = useState(null);
   const [eventData, setEventData] = useState(null);
-  const [soalList, setSoalList] = useState([]);
+  const [subtesList, setSubtesList] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Navigasi & Jawaban
+  // Tahap Ujian: 'mengerjakan' | 'transisi_subtes'
+  const [tahap, setTahap] = useState('mengerjakan');
+
+  // Navigasi Subtes (Block Time)
+  const [subtesAktifIndex, setSubtesAktifIndex] = useState(0);
   const [indexSoal, setIndexSoal] = useState(0);
-  const [jawaban, setJawaban] = useState({}); // { [soalId]: key }
-  const [ragu, setRagu] = useState({}); // { [soalId]: boolean }
 
-  // Timer
-  const [sisaDetik, setSisaDetik] = useState(90 * 60);
+  // Jawaban & Ragu
+  const [jawaban, setJawaban] = useState({});
+  const [ragu, setRagu] = useState({});
 
-  // Ukuran Font Teks Soal
-  const [fontSizeLevel, setFontSizeLevel] = useState('normal'); // 'small' | 'normal' | 'large'
+  // Timer Blok Subtes
+  const [sisaDetikSubtes, setSisaDetikSubtes] = useState(30 * 60);
 
-  // Palet Soal Mobile/Sidebar
+  // Timer Jeda Transisi (Tombol Biru)
+  const [sisaDetikTransisi, setSisaDetikTransisi] = useState(15);
+  const [bisaLanjutTransisi, setBisaLanjutTransisi] = useState(false);
+
+  // Ukuran Font
+  const [fontSizeLevel, setFontSizeLevel] = useState('normal');
+
+  // Palet Soal Drawer
   const [showPalet, setShowPalet] = useState(false);
 
-  // Anti-Cheat & 3-Strike System
-  const [pelanggaran, setPelanggaran] = useState([]); // [{ type, time }]
-  const [modalStrike, setModalStrike] = useState(null); // { strikeNumber, message }
+  // Anti-Cheat 3 Strike
+  const [pelanggaran, setPelanggaran] = useState([]);
+  const [modalStrike, setModalStrike] = useState(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
-  // Webcam Proctoring
+  // Webcam Proctor
   const videoRef = useRef(null);
   const streamRef = useRef(null);
 
-  // Modal Konfirmasi Selesai
-  const [showModalSubmit, setShowModalSubmit] = useState(false);
+  // Modal Konfirmasi Selesai Subtes / Ujian
+  const [showModalKonfirmasi, setShowModalKonfirmasi] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   // 1. Inisialisasi Ujian
@@ -70,21 +81,24 @@ export default function TobkCbtPage() {
       if (!ev) {
         ev = await ambilEventTobkAktifPublik();
       }
-
       setEventData(ev);
 
-      // Siapkan Daftar Soal
-      let list = SOAL_PRESET_UTBK;
-      if (ev && Array.isArray(ev.daftarSoal) && ev.daftarSoal.length > 0) {
-        list = ev.daftarSoal;
+      // Siapkan Daftar Subtes
+      let sList = [];
+      if (ev && Array.isArray(ev.subtes) && ev.subtes.length > 0) {
+        sList = ev.subtes;
+      } else if (ev && Array.isArray(ev.daftarSoal) && ev.daftarSoal.length > 0) {
+        sList = [{ id: 'subtes_utama', nama: ev.judul || 'Subtes Utama', durasiMenit: ev.durasiMenit || 90, soal: ev.daftarSoal }];
+      } else {
+        sList = SUBTES_RESMI_UTBK_2026;
       }
-      setSoalList(list);
+      setSubtesList(sList);
 
-      // Hitung Durasi Timer
-      const durasiMenit = Number(ev?.durasiMenit) || 90;
-      setSisaDetik(durasiMenit * 60);
+      // Timer Subtes Pertama
+      const durasiPertamaMenit = Number(sList[0]?.durasiMenit) || 30;
+      setSisaDetikSubtes(Math.round(durasiPertamaMenit * 60));
 
-      // Ambil backup jawaban jika ada
+      // Ambil Backup Jawaban
       try {
         const rawJawab = localStorage.getItem(`tobk_jawaban_${sesi.pesertaId}`);
         if (rawJawab) {
@@ -96,8 +110,6 @@ export default function TobkCbtPage() {
       } catch (e) {}
 
       setLoading(false);
-
-      // Minta Fullscreen saat mulai
       masukFullscreen();
     }
     init();
@@ -128,7 +140,6 @@ export default function TobkCbtPage() {
     };
   }, [loading]);
 
-  // 3. Masuk Mode Fullscreen
   const masukFullscreen = () => {
     const el = document.documentElement;
     if (el.requestFullscreen) {
@@ -138,7 +149,7 @@ export default function TobkCbtPage() {
     }
   };
 
-  // 4. Deteksi Pelanggaran (Tab Switch / Window Blur / Keluar Fullscreen)
+  // 3. Deteksi Pelanggaran (Kiosk Anti-Curang)
   const catatPelanggaran = useCallback((tipe) => {
     if (submitting) return;
 
@@ -148,14 +159,13 @@ export default function TobkCbtPage() {
       const maks = eventData?.maksimalPelanggaran || 3;
 
       if (totalStrike >= maks) {
-        // Diskualifikasi Otomatis!
         setModalStrike({
           strike: totalStrike,
           judul: '⛔ DISKUALIFIKASI OTOMATIS',
           pesan: `Anda telah melakukan ${totalStrike} kali pelanggaran (meninggalkan layar ujian). Sesuai aturan CBT Gemilang, ujian Anda otomatis dihentikan dan didiskualifikasi!`,
           fatal: true,
         });
-        handleProsesSelesai(true, baru);
+        handleProsesSelesaiAkhir(true, baru);
       } else {
         setModalStrike({
           strike: totalStrike,
@@ -165,52 +175,28 @@ export default function TobkCbtPage() {
         });
       }
 
-      // Simpan log pelanggaran
       simpanJawabanPeserta(peserta?.pesertaId, jawaban, ragu, baru);
       return baru;
     });
   }, [submitting, eventData, peserta, jawaban, ragu]);
 
-  // Listener Proteksi Browser Kiosk
   useEffect(() => {
     if (loading || submitting) return;
 
     const handleVisibilityChange = () => {
-      if (document.hidden) {
-        catatPelanggaran('pindah_tab');
-      }
+      if (document.hidden) catatPelanggaran('pindah_tab');
     };
-
-    const handleWindowBlur = () => {
-      catatPelanggaran('pindah_tab');
-    };
-
+    const handleWindowBlur = () => catatPelanggaran('pindah_tab');
     const handleFullscreenChange = () => {
       const fs = !!(document.fullscreenElement || document.webkitFullscreenElement);
       setIsFullscreen(fs);
-      if (!fs && !submitting) {
-        catatPelanggaran('keluar_fullscreen');
-      }
+      if (!fs && !submitting) catatPelanggaran('keluar_fullscreen');
     };
-
-    const handleContextMenu = (e) => {
-      e.preventDefault();
-      return false;
-    };
-
+    const handleContextMenu = (e) => { e.preventDefault(); return false; };
     const handleKeyDown = (e) => {
-      // Blokir Ctrl+C, Ctrl+V, Ctrl+U, F12, dsb.
-      if (
-        (e.ctrlKey || e.metaKey) &&
-        ['c', 'v', 'u', 'a', 'p', 's'].includes(e.key.toLowerCase())
-      ) {
-        e.preventDefault();
-      }
-      if (e.key === 'F12' || e.key === 'PrintScreen') {
-        e.preventDefault();
-      }
+      if ((e.ctrlKey || e.metaKey) && ['c', 'v', 'u', 'a', 'p', 's'].includes(e.key.toLowerCase())) e.preventDefault();
+      if (e.key === 'F12' || e.key === 'PrintScreen') e.preventDefault();
     };
-
     const handleBeforeUnload = (e) => {
       e.preventDefault();
       e.returnValue = 'Ujian sedang berlangsung! Yakin ingin keluar?';
@@ -234,63 +220,114 @@ export default function TobkCbtPage() {
     };
   }, [loading, submitting, catatPelanggaran]);
 
-  // 5. Timer Mundur Real-time
+  // 4. Timer Blok Waktu Subtes (Block Time)
   useEffect(() => {
-    if (loading || submitting) return;
+    if (loading || submitting || tahap !== 'mengerjakan') return;
 
-    const interval = setInterval(() => {
-      setSisaDetik((prev) => {
+    const timerInterval = setInterval(() => {
+      setSisaDetikSubtes((prev) => {
         if (prev <= 1) {
-          clearInterval(interval);
-          handleProsesSelesai(false);
+          clearInterval(timerInterval);
+          handleWaktuSubtesHabis();
           return 0;
         }
         return prev - 1;
       });
     }, 1000);
 
-    return () => clearInterval(interval);
-  }, [loading, submitting]);
+    return () => clearInterval(timerInterval);
+  }, [loading, submitting, tahap, subtesAktifIndex]);
 
-  // Format Jam:Menit:Detik
+  // 5. Timer Masa Transisi Antar-Subtes (Tombol Biru)
+  useEffect(() => {
+    if (tahap !== 'transisi_subtes') return;
+
+    setBisaLanjutTransisi(false);
+    const intervalTransisi = setInterval(() => {
+      setSisaDetikTransisi((prev) => {
+        if (prev <= 1) {
+          clearInterval(intervalTransisi);
+          setBisaLanjutTransisi(true);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(intervalTransisi);
+  }, [tahap]);
+
+  // Aksi Saat Waktu Subtes Habis
+  const handleWaktuSubtesHabis = () => {
+    if (subtesAktifIndex < subtesList.length - 1) {
+      // Masuk Masa Transisi
+      mulaiMasaTransisi();
+    } else {
+      // Seluruh Subtes Selesai
+      handleProsesSelesaiAkhir(false);
+    }
+  };
+
+  // Mulai Masa Transisi Menuju Subtes Berikutnya
+  const mulaiMasaTransisi = () => {
+    setShowModalKonfirmasi(false);
+    setShowPalet(false);
+
+    const durasiJeda = Number(eventData?.jedaTransisiDetik) || 15;
+    setSisaDetikTransisi(durasiJeda);
+    setTahap('transisi_subtes');
+  };
+
+  // Masuk ke Subtes Berikutnya (Tombol Biru Diklik)
+  const handleLanjutKeSubtesBerikutnya = () => {
+    if (!bisaLanjutTransisi) return;
+
+    const nextIndex = subtesAktifIndex + 1;
+    const durasiNextMenit = Number(subtesList[nextIndex]?.durasiMenit) || 20;
+
+    setSubtesAktifIndex(nextIndex);
+    setIndexSoal(0);
+    setSisaDetikSubtes(Math.round(durasiNextMenit * 60));
+    setTahap('mengerjakan');
+  };
+
+  // Format Timer Jam:Menit:Detik
   const formatTimer = (totalDetik) => {
     const jam = Math.floor(totalDetik / 3600);
     const sisa = totalDetik % 3600;
     const menit = Math.floor(sisa / 60);
     const detik = sisa % 60;
-    return `${jam.toString().padStart(2, '0')}:${menit.toString().padStart(2, '0')}:${detik.toString().padStart(2, '0')}`;
+    if (jam > 0) {
+      return `${jam.toString().padStart(2, '0')}:${menit.toString().padStart(2, '0')}:${detik.toString().padStart(2, '0')}`;
+    }
+    return `${menit.toString().padStart(2, '0')}:${detik.toString().padStart(2, '0')}`;
   };
 
-  // 6. Pemilihan Jawaban
-  const handlePilihOpsi = (opsiKey) => {
-    const soalAktif = soalList[indexSoal];
-    if (!soalAktif) return;
-
-    const baru = { ...jawaban, [soalAktif.id]: opsiKey };
+  // Pilih Jawaban
+  const handlePilihOpsi = (soalId, opsiKey) => {
+    const baru = { ...jawaban, [soalId]: opsiKey };
     setJawaban(baru);
     simpanJawabanPeserta(peserta?.pesertaId, baru, ragu, pelanggaran);
   };
 
-  // Toggle Ragu-ragu
-  const handleToggleRagu = () => {
-    const soalAktif = soalList[indexSoal];
-    if (!soalAktif) return;
-
-    const statusSekarang = !!ragu[soalAktif.id];
-    const baru = { ...ragu, [soalAktif.id]: !statusSekarang };
+  // Toggle Ragu
+  const handleToggleRagu = (soalId) => {
+    const statusSekarang = !!ragu[soalId];
+    const baru = { ...ragu, [soalId]: !statusSekarang };
     setRagu(baru);
     simpanJawabanPeserta(peserta?.pesertaId, jawaban, baru, pelanggaran);
   };
 
-  // 7. Hitung Skor & Submit Ujian
-  const handleProsesSelesai = async (isDiskualifikasi = false, customPelanggaran = null) => {
+  // Hitung Skor & Selesaikan Ujian Keseluruhan
+  const handleProsesSelesaiAkhir = async (isDiskualifikasi = false, customPelanggaran = null) => {
     setSubmitting(true);
 
+    const semuaSoal = subtesList.flatMap((s) => s.soal || []);
     let benar = 0;
     let salah = 0;
     let kosong = 0;
 
-    soalList.forEach((soal) => {
+    semuaSoal.forEach((soal) => {
       const jawab = jawaban[soal.id];
       if (!jawab) {
         kosong++;
@@ -301,7 +338,7 @@ export default function TobkCbtPage() {
       }
     });
 
-    const totalSoal = soalList.length || 1;
+    const totalSoal = semuaSoal.length || 1;
     const skorPersen = Math.round((benar / totalSoal) * 100);
     const totalPel = (customPelanggaran || pelanggaran).length;
 
@@ -322,18 +359,25 @@ export default function TobkCbtPage() {
       console.warn('Gagal selesaikan TOBK:', e);
     }
 
-    // Keluar Fullscreen jika masih aktif
     if (document.fullscreenElement && document.exitFullscreen) {
       document.exitFullscreen().catch(() => {});
     }
 
-    // Lanjut ke Laman Selesai
     navigate('/tobk/selesai', { state: { hasil: hasilPayload, peserta, eventData } });
   };
 
-  const soalSekarang = soalList[indexSoal] || null;
+  // Subtes & Soal Aktif
+  const subtesAktif = subtesList[subtesAktifIndex] || { nama: 'Subtes', soal: [] };
+  const daftarSoalSubtes = subtesAktif.soal || [];
+  const soalSekarang = daftarSoalSubtes[indexSoal] || null;
+
   const sudahDijawab = (id) => jawaban[id] !== undefined && jawaban[id] !== '';
   const isRagu = (id) => !!ragu[id];
+
+  // Hitung Soal Ragu di Subtes Berjalan
+  const jumlahRaguDiSubtes = useMemo(() => {
+    return daftarSoalSubtes.filter((s) => !!ragu[s.id]).length;
+  }, [daftarSoalSubtes, ragu]);
 
   // Ukuran Font Dinamis
   const fontStyles = useMemo(() => {
@@ -350,6 +394,90 @@ export default function TobkCbtPage() {
     );
   }
 
+  // ── LAYAR MASA TRANSISI ANTAR SUBTES (TOMBOL BIRU) ──
+  if (tahap === 'transisi_subtes') {
+    const subtesBerikutnya = subtesList[subtesAktifIndex + 1];
+
+    return (
+      <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px', fontFamily: 'system-ui, -apple-system, sans-serif' }}>
+        <div style={{ background: '#ffffff', color: '#0f172a', borderRadius: '20px', maxWidth: '580px', width: '100%', padding: '36px 28px', textAlign: 'center', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)' }}>
+          <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: '#dbeafe', color: '#2563eb', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+            <Clock size={32} />
+          </div>
+
+          <div style={{ display: 'inline-flex', background: '#eff6ff', color: '#1d4ed8', padding: '4px 12px', borderRadius: '16px', fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', marginBottom: '8px' }}>
+            Regulasi UTBK / TKA · Point of No Return
+          </div>
+
+          <h2 style={{ fontSize: '22px', fontWeight: 800, margin: '0 0 10px', color: '#0f172a' }}>
+            Masa Transisi Menuju Subtes Berikutnya
+          </h2>
+
+          <p style={{ fontSize: '14px', color: '#64748b', lineHeight: 1.6, margin: '0 0 20px' }}>
+            Waktu pengerjaan untuk <strong>{subtesAktif.nama}</strong> telah ditutup. Sesuai regulasi nasional, Anda <strong>tidak dapat kembali</strong> ke subtes sebelumnya.
+          </p>
+
+          {/* Info Subtes Berikutnya */}
+          <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '14px', padding: '16px', marginBottom: '24px', textAlign: 'left' }}>
+            <div style={{ fontSize: '11px', color: '#64748b', textTransform: 'uppercase', fontWeight: 700, marginBottom: '4px' }}>
+              Subtes Berikutnya:
+            </div>
+            <div style={{ fontSize: '16px', fontWeight: 800, color: '#1e3a8a', marginBottom: '4px' }}>
+              {subtesBerikutnya?.nama}
+            </div>
+            <div style={{ fontSize: '12px', color: '#475569', display: 'flex', gap: '16px' }}>
+              <span>⏱️ Durasi: <strong>{subtesBerikutnya?.durasiMenit || 20} Menit</strong></span>
+              <span>📝 Jumlah Soal: <strong>{subtesBerikutnya?.soal?.length || subtesBerikutnya?.targetSoal || 20} Butir</strong></span>
+            </div>
+          </div>
+
+          {/* Hitung Mundur Jeda & Tombol Biru */}
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
+            {!bisaLanjutTransisi ? (
+              <div style={{ fontSize: '13px', color: '#dc2626', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Clock size={16} /> Menunggu waktu transisi: {sisaDetikTransisi} detik
+              </div>
+            ) : (
+              <div style={{ fontSize: '13px', color: '#16a34a', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <CheckCircle size={16} /> Waktu jeda selesai! Anda dapat melanjutkan ujian.
+              </div>
+            )}
+
+            <button
+              onClick={handleLanjutKeSubtesBerikutnya}
+              disabled={!bisaLanjutTransisi}
+              style={{
+                width: '100%',
+                maxWidth: '360px',
+                padding: '14px 24px',
+                borderRadius: '12px',
+                border: 'none',
+                background: bisaLanjutTransisi ? '#2563eb' : '#94a3b8',
+                color: '#ffffff',
+                fontSize: '15px',
+                fontWeight: 800,
+                cursor: bisaLanjutTransisi ? 'pointer' : 'not-allowed',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                boxShadow: bisaLanjutTransisi ? '0 4px 14px rgba(37,99,235,0.4)' : 'none',
+                transition: 'all 0.3s ease',
+              }}
+            >
+              {bisaLanjutTransisi ? (
+                <>MULAI SUBTES BERIKUTNYA <ArrowRight size={18} /></>
+              ) : (
+                <>⏳ Menunggu Jeda Transisi ({sisaDetikTransisi}s)</>
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── LAYAR CBT PENGERJAAN NORMAL (BLOCK TIME) ──
   return (
     <div
       style={{
@@ -373,43 +501,54 @@ export default function TobkCbtPage() {
           alignItems: 'center',
           boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
           zIndex: 50,
+          flexWrap: 'wrap',
+          gap: '10px',
         }}
       >
-        {/* Identitas Ujian & Siswa */}
+        {/* Identitas Subtes Berjalan */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <img src="/pwa-192x192.png" alt="Logo" style={{ width: '32px', height: '32px', borderRadius: '6px' }} />
           <div>
-            <div style={{ fontSize: '13px', fontWeight: 800, color: '#f59e0b' }}>
-              GEMILANG CBT · {eventData?.kategori || 'UTBK'}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ background: '#3b82f6', color: '#fff', fontSize: '10px', fontWeight: 800, padding: '2px 6px', borderRadius: '4px' }}>
+                SUBTES {subtesAktifIndex + 1}/{subtesList.length}
+              </span>
+              <span style={{ fontSize: '13px', fontWeight: 800, color: '#f59e0b' }}>
+                {subtesAktif.nama}
+              </span>
             </div>
             <div style={{ fontSize: '11px', color: '#94a3b8' }}>
-              {peserta?.nama} ({peserta?.asalSekolah || 'Peserta'})
+              {peserta?.nama} · {peserta?.asalSekolah || 'Peserta'}
             </div>
           </div>
         </div>
 
-        {/* Indikator Timer Digital */}
+        {/* Indikator Block Time Countdown */}
         <div
           style={{
             display: 'flex',
             alignItems: 'center',
             gap: '8px',
-            background: sisaDetik < 300 ? '#dc2626' : '#1e293b',
-            border: `1px solid ${sisaDetik < 300 ? '#ef4444' : '#334155'}`,
+            background: sisaDetikSubtes < 300 ? '#dc2626' : '#1e293b',
+            border: `1px solid ${sisaDetikSubtes < 300 ? '#ef4444' : '#334155'}`,
             padding: '6px 14px',
             borderRadius: '8px',
-            animation: sisaDetik < 300 ? 'pulse 1s infinite' : 'none',
+            animation: sisaDetikSubtes < 300 ? 'pulse 1s infinite' : 'none',
           }}
         >
-          <Clock size={16} style={{ color: sisaDetik < 300 ? '#ffffff' : '#38bdf8' }} />
-          <div style={{ fontFamily: 'monospace', fontSize: '16px', fontWeight: 800, letterSpacing: '1px' }}>
-            {formatTimer(sisaDetik)}
+          <Clock size={16} style={{ color: sisaDetikSubtes < 300 ? '#ffffff' : '#38bdf8' }} />
+          <div>
+            <div style={{ fontSize: '9px', color: sisaDetikSubtes < 300 ? '#fecaca' : '#94a3b8', textTransform: 'uppercase' }}>
+              Sisa Waktu Subtes
+            </div>
+            <div style={{ fontFamily: 'monospace', fontSize: '16px', fontWeight: 800, letterSpacing: '1px' }}>
+              {formatTimer(sisaDetikSubtes)}
+            </div>
           </div>
         </div>
 
-        {/* Kontrol CBT (Font Size, Palet Soal, Submit) */}
+        {/* Kontrol CBT (Font Size, Palet Soal, Selesai Subtes) */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          {/* Font Size Adjuster */}
           <div style={{ display: 'flex', background: '#1e293b', borderRadius: '6px', border: '1px solid #334155', overflow: 'hidden' }}>
             <button
               onClick={() => setFontSizeLevel('small')}
@@ -434,7 +573,6 @@ export default function TobkCbtPage() {
             </button>
           </div>
 
-          {/* Tombol Palet Soal */}
           <button
             onClick={() => setShowPalet(!showPalet)}
             style={{
@@ -444,37 +582,49 @@ export default function TobkCbtPage() {
               cursor: 'pointer'
             }}
           >
-            <Menu size={14} /> Daftar Soal ({indexSoal + 1}/{soalList.length})
+            <Menu size={14} /> Daftar Soal ({indexSoal + 1}/{daftarSoalSubtes.length})
           </button>
 
-          {/* Tombol Selesai */}
-          <button
-            onClick={() => setShowModalSubmit(true)}
-            style={{
-              display: 'inline-flex', alignItems: 'center', gap: '6px',
-              background: '#059669', color: '#fff', border: 'none',
-              padding: '6px 14px', borderRadius: '6px', fontSize: '12px', fontWeight: 700,
-              cursor: 'pointer'
-            }}
-          >
-            <Send size={13} /> Selesai
-          </button>
+          {subtesAktifIndex < subtesList.length - 1 ? (
+            <button
+              onClick={() => setShowModalKonfirmasi(true)}
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: '6px',
+                background: '#2563eb', color: '#fff', border: 'none',
+                padding: '6px 14px', borderRadius: '6px', fontSize: '12px', fontWeight: 700,
+                cursor: 'pointer'
+              }}
+            >
+              Selesai Subtes <ChevronRight size={14} />
+            </button>
+          ) : (
+            <button
+              onClick={() => setShowModalKonfirmasi(true)}
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: '6px',
+                background: '#059669', color: '#fff', border: 'none',
+                padding: '6px 14px', borderRadius: '6px', fontSize: '12px', fontWeight: 700,
+                cursor: 'pointer'
+              }}
+            >
+              <Send size={13} /> Selesai Ujian
+            </button>
+          )}
         </div>
       </header>
 
-      {/* ── AREA UTAMA SOAL & PENGASUHAN ── */}
+      {/* ── AREA LEMBAR SOAL ── */}
       <div style={{ flex: 1, display: 'flex', overflow: 'hidden', position: 'relative' }}>
-        {/* Kolom Soal (Kiri / Tengah) */}
         <main style={{ flex: 1, padding: '24px 20px 80px', overflowY: 'auto', maxWidth: '850px', margin: '0 auto', width: '100%', boxSizing: 'border-box' }}>
           {soalSekarang ? (
             <div style={{ background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '14px', padding: '24px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-              {/* Info Subtes / Mapel & Nomor */}
+              {/* Header Butir Soal */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #f1f5f9', paddingBottom: '12px', marginBottom: '18px' }}>
                 <span style={{ fontSize: '12px', background: '#eff6ff', color: '#1d4ed8', padding: '4px 10px', borderRadius: '6px', fontWeight: 700 }}>
-                  {soalSekarang.mapel || 'Subtes Penalaran Umum'}
+                  {subtesAktif.nama}
                 </span>
                 <span style={{ fontSize: '13px', fontWeight: 700, color: '#475569' }}>
-                  Soal Nomor {indexSoal + 1} dari {soalList.length}
+                  Soal Nomor {indexSoal + 1} dari {daftarSoalSubtes.length}
                 </span>
               </div>
 
@@ -483,7 +633,7 @@ export default function TobkCbtPage() {
                 <RenderMath text={soalSekarang.teksSoal || soalSekarang.soal || ''} />
               </div>
 
-              {/* Pilihan Jawaban (A, B, C, D, E) */}
+              {/* Pilihan Jawaban */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 {soalSekarang.opsiJawaban && soalSekarang.opsiJawaban.map((opsi) => {
                   const terpilih = jawaban[soalSekarang.id] === opsi.key;
@@ -491,7 +641,7 @@ export default function TobkCbtPage() {
                   return (
                     <div
                       key={opsi.key}
-                      onClick={() => handlePilihOpsi(opsi.key)}
+                      onClick={() => handlePilihOpsi(soalSekarang.id, opsi.key)}
                       style={{
                         display: 'flex',
                         alignItems: 'flex-start',
@@ -533,7 +683,7 @@ export default function TobkCbtPage() {
             </div>
           ) : (
             <div style={{ textAlign: 'center', padding: '40px', color: '#64748b' }}>
-              Memuat butir soal...
+              Memuat butir soal subtes...
             </div>
           )}
         </main>
@@ -586,7 +736,7 @@ export default function TobkCbtPage() {
           </div>
         </div>
 
-        {/* ── DRAWER PALET SOAL (Daftar Nomor) ── */}
+        {/* ── DRAWER PALET SOAL (Daftar Nomor Subtes Berjalan) ── */}
         {showPalet && (
           <aside
             style={{
@@ -606,13 +756,12 @@ export default function TobkCbtPage() {
             }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', borderBottom: '1px solid #f1f5f9', paddingBottom: '10px' }}>
-              <span style={{ fontWeight: 700, fontSize: '14px', color: '#0f172a' }}>Palet Nomor Soal</span>
+              <span style={{ fontWeight: 700, fontSize: '14px', color: '#0f172a' }}>Palet Nomor ({subtesAktif.nama})</span>
               <button onClick={() => setShowPalet(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748b' }}>
                 <X size={18} />
               </button>
             </div>
 
-            {/* Indikator Warna */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '6px', fontSize: '11px', color: '#475569', marginBottom: '14px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                 <span style={{ width: '12px', height: '12px', background: '#22c55e', borderRadius: '3px' }} />
@@ -628,9 +777,8 @@ export default function TobkCbtPage() {
               </div>
             </div>
 
-            {/* Grid Nomor */}
             <div style={{ flex: 1, overflowY: 'auto', display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '8px', alignContent: 'start' }}>
-              {soalList.map((s, idx) => {
+              {daftarSoalSubtes.map((s, idx) => {
                 const terjawab = sudahDijawab(s.id);
                 const raguAktif = isRagu(s.id);
                 const isCurrent = idx === indexSoal;
@@ -678,7 +826,7 @@ export default function TobkCbtPage() {
         )}
       </div>
 
-      {/* ── BOTTOM NAV BAR (Tombol Prev, Ragu, Next) ── */}
+      {/* ── BOTTOM NAV BAR ── */}
       <footer
         style={{
           position: 'fixed',
@@ -708,9 +856,8 @@ export default function TobkCbtPage() {
           <ChevronLeft size={16} /> Sebelumnya
         </button>
 
-        {/* Checkbox Ragu-ragu */}
         <button
-          onClick={handleToggleRagu}
+          onClick={() => handleToggleRagu(soalSekarang?.id)}
           style={{
             display: 'inline-flex', alignItems: 'center', gap: '6px',
             background: isRagu(soalSekarang?.id) ? '#fef9c3' : '#f8fafc',
@@ -724,9 +871,9 @@ export default function TobkCbtPage() {
           Ragu-ragu
         </button>
 
-        {indexSoal < soalList.length - 1 ? (
+        {indexSoal < daftarSoalSubtes.length - 1 ? (
           <button
-            onClick={() => setIndexSoal((prev) => Math.min(soalList.length - 1, prev + 1))}
+            onClick={() => setIndexSoal((prev) => Math.min(daftarSoalSubtes.length - 1, prev + 1))}
             style={{
               display: 'inline-flex', alignItems: 'center', gap: '6px',
               background: '#2563eb', color: '#ffffff',
@@ -736,9 +883,22 @@ export default function TobkCbtPage() {
           >
             Berikutnya <ChevronRight size={16} />
           </button>
+        ) : subtesAktifIndex < subtesList.length - 1 ? (
+          <button
+            onClick={() => setShowModalKonfirmasi(true)}
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: '6px',
+              background: '#2563eb', color: '#ffffff',
+              border: 'none', padding: '9px 20px', borderRadius: '8px',
+              fontSize: '13px', fontWeight: 700, cursor: 'pointer',
+              boxShadow: '0 2px 8px rgba(37,99,235,0.3)'
+            }}
+          >
+            Selesai Subtes <ArrowRight size={16} />
+          </button>
         ) : (
           <button
-            onClick={() => setShowModalSubmit(true)}
+            onClick={() => setShowModalKonfirmasi(true)}
             style={{
               display: 'inline-flex', alignItems: 'center', gap: '6px',
               background: '#059669', color: '#ffffff',
@@ -752,7 +912,64 @@ export default function TobkCbtPage() {
         )}
       </footer>
 
-      {/* ── MODAL PERINGATAN 3-STRIKE KECURANGAN ── */}
+      {/* ── MODAL KONFIRMASI SELESAI SUBTES / UJIAN (DENGAN CEK RAGU-RAGU) ── */}
+      {showModalKonfirmasi && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '16px' }}>
+          <div style={{ background: '#ffffff', borderRadius: '16px', maxWidth: '460px', width: '100%', padding: '24px', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.2)' }}>
+            <h3 style={{ margin: '0 0 12px', fontSize: '18px', fontWeight: 800, color: '#0f172a' }}>
+              {subtesAktifIndex < subtesList.length - 1
+                ? `Konfirmasi Selesai: ${subtesAktif.nama}`
+                : 'Konfirmasi Selesai Seluruh Ujian'}
+            </h3>
+
+            {/* Peringatan Ragu-ragu (Regulasi TKA & UTBK) */}
+            {jumlahRaguDiSubtes > 0 && (
+              <div style={{ background: '#fef3c7', border: '1px solid #fcd34d', borderRadius: '10px', padding: '12px', marginBottom: '14px', display: 'flex', alignItems: 'flex-start', gap: '8px', color: '#92400e', fontSize: '12px' }}>
+                <AlertCircle size={18} style={{ flexShrink: 0, marginTop: '2px' }} />
+                <div>
+                  <strong>Perhatian Ragu-ragu:</strong> Masih ada <strong>{jumlahRaguDiSubtes} butir soal</strong> yang Anda tandai ragu-ragu di subtes ini. Pastikan jawaban sudah mantap sebelum mengunci.
+                </div>
+              </div>
+            )}
+
+            <p style={{ fontSize: '13px', color: '#64748b', margin: '0 0 20px', lineHeight: 1.5 }}>
+              {subtesAktifIndex < subtesList.length - 1
+                ? `Setelah Anda mengunci subtes ini, Anda TIDAK DAPAT KEMBALI ke butir soal ${subtesAktif.nama}. Apakah Anda yakin ingin melanjutkan ke masa transisi?`
+                : 'Seluruh subtes telah selesai. Apakah Anda yakin ingin mengirim lembar jawaban sekarang?'}
+            </p>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+              <button
+                type="button"
+                onClick={() => setShowModalKonfirmasi(false)}
+                style={{ background: '#f1f5f9', border: 'none', padding: '8px 16px', borderRadius: '8px', fontSize: '13px', fontWeight: 600, color: '#475569', cursor: 'pointer' }}
+              >
+                Periksa Lagi
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  if (subtesAktifIndex < subtesList.length - 1) {
+                    mulaiMasaTransisi();
+                  } else {
+                    handleProsesSelesaiAkhir(false);
+                  }
+                }}
+                style={{
+                  background: subtesAktifIndex < subtesList.length - 1 ? '#2563eb' : '#059669',
+                  color: '#ffffff', border: 'none', padding: '8px 20px', borderRadius: '8px',
+                  fontSize: '13px', fontWeight: 800, cursor: 'pointer'
+                }}
+              >
+                {subtesAktifIndex < subtesList.length - 1 ? 'Kunci & Lanjut Transisi ▶' : 'Kirim Ujian Sekarang'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── MODAL 3-STRIKE KECURANGAN ── */}
       {modalStrike && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '16px' }}>
           <div style={{ background: '#ffffff', borderRadius: '16px', maxWidth: '460px', width: '100%', padding: '24px', textAlign: 'center', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)' }}>
@@ -779,46 +996,6 @@ export default function TobkCbtPage() {
                 Saya Mengerti & Kembali ke Soal
               </button>
             )}
-          </div>
-        </div>
-      )}
-
-      {/* ── MODAL KONFIRMASI SUBMIT SELESAI ── */}
-      {showModalSubmit && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '16px' }}>
-          <div style={{ background: '#ffffff', borderRadius: '16px', maxWidth: '440px', width: '100%', padding: '24px', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.2)' }}>
-            <h3 style={{ margin: '0 0 12px', fontSize: '18px', fontWeight: 700, color: '#0f172a' }}>
-              Konfirmasi Selesai Ujian
-            </h3>
-
-            <div style={{ background: '#f8fafc', padding: '12px', borderRadius: '10px', fontSize: '13px', color: '#334155', marginBottom: '16px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <div>📊 Terjawab: <strong>{Object.keys(jawaban).length} Soal</strong></div>
-              <div>🔖 Ragu-ragu: <strong>{Object.values(ragu).filter(Boolean).length} Soal</strong></div>
-              <div>⚪ Belum Dijawab: <strong>{soalList.length - Object.keys(jawaban).length} Soal</strong></div>
-            </div>
-
-            <p style={{ fontSize: '13px', color: '#64748b', margin: '0 0 20px', lineHeight: 1.5 }}>
-              Apakah Anda yakin ingin menyelesaikan ujian ini? Lembar jawaban yang sudah dikirim tidak dapat diubah kembali.
-            </p>
-
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-              <button
-                type="button"
-                onClick={() => setShowModalSubmit(false)}
-                disabled={submitting}
-                style={{ background: '#f1f5f9', border: 'none', padding: '8px 16px', borderRadius: '8px', fontSize: '13px', fontWeight: 600, color: '#475569', cursor: 'pointer' }}
-              >
-                Lanjut Mengerjakan
-              </button>
-              <button
-                type="button"
-                onClick={() => handleProsesSelesai(false)}
-                disabled={submitting}
-                style={{ background: '#059669', color: '#ffffff', border: 'none', padding: '8px 18px', borderRadius: '8px', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }}
-              >
-                {submitting ? 'Mengirim...' : 'Ya, Selesaikan Ujian'}
-              </button>
-            </div>
           </div>
         </div>
       )}
