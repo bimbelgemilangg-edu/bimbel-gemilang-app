@@ -411,13 +411,35 @@ SOAL_MAT = [
         "kesulitan": "sedang",
         "materi": "C. Data - C1. Mengumpulkan, menyajikan dan membaca data dalam bentuk tabel",
         "capaian": "Menyusun tabel frekuensi yang tepat berdasarkan data acak pilihan ekstrakurikuler",
-        "gambar": "/soal/to1-tka-matematika-sd-2026/soal_25_data_ekskul.png",
-        "teks_soal": "Berikut data ektrakulikuler yang diikuti siswa kelas 6:<br/>{{GAMBAR}}<br/>Penyajian data tersebut ke dalam bentuk tabel yang benar adalah …",
-        "opsi_gambar": [
-            ("A", "/soal/to1-tka-matematika-sd-2026/soal_25_opsi_a.png"),
-            ("B", "/soal/to1-tka-matematika-sd-2026/soal_25_opsi_b.png"),
-            ("C", "/soal/to1-tka-matematika-sd-2026/soal_25_opsi_c.png"),
-            ("D", "/soal/to1-tka-matematika-sd-2026/soal_25_opsi_d.png")
+        "tabel_soal": '<table><thead><tr><th colspan="6">Data Ekstrakulikuler yang Diikuti Siswa Kelas 6</th></tr></thead><tbody>'
+                      '<tr><td>Musik</td><td>Pencak silat</td><td>Musik</td><td>Bola basket</td><td>Futsal</td><td>Musik</td></tr>'
+                      '<tr><td>Musik</td><td>Bola basket</td><td>Bola basket</td><td>Pencak silat</td><td>Bola basket</td><td>Pencak silat</td></tr>'
+                      '<tr><td>Bola basket</td><td>Futsal</td><td>Futsal</td><td>Futsal</td><td>Futsal</td><td>Pencak silat</td></tr>'
+                      '<tr><td>Futsal</td><td>Pencak silat</td><td>Bola basket</td><td>Pencak silat</td><td>Futsal</td><td>Musik</td></tr>'
+                      '<tr><td>Bola basket</td><td>Bola basket</td><td>Musik</td><td>Futsal</td><td>Futsal</td><td>Musik</td></tr>'
+                      '</tbody></table>',
+        "teks_soal": "Berikut data ektrakulikuler yang diikuti siswa kelas 6<br/><br/>Penyajian data tersebut ke dalam bentuk tabel yang benar adalah …",
+        "opsi": [
+            ("A", '<table><thead><tr><th>Ekstrakulikuler</th><th>Banyak Siswa</th></tr></thead><tbody>'
+                   '<tr><td>pencak silat</td><td>7</td></tr>'
+                   '<tr><td>bola basket</td><td>8</td></tr>'
+                   '<tr><td>futsal</td><td>9</td></tr>'
+                   '<tr><td>musik</td><td>6</td></tr></tbody></table>'),
+            ("B", '<table><thead><tr><th>Ekstrakulikuler</th><th>Banyak Siswa</th></tr></thead><tbody>'
+                   '<tr><td>pencak silat</td><td>6</td></tr>'
+                   '<tr><td>bola basket</td><td>9</td></tr>'
+                   '<tr><td>futsal</td><td>7</td></tr>'
+                   '<tr><td>musik</td><td>8</td></tr></tbody></table>'),
+            ("C", '<table><thead><tr><th>Ekstrakulikuler</th><th>Banyak Siswa</th></tr></thead><tbody>'
+                   '<tr><td>pencak silat</td><td>6</td></tr>'
+                   '<tr><td>bola basket</td><td>9</td></tr>'
+                   '<tr><td>futsal</td><td>8</td></tr>'
+                   '<tr><td>musik</td><td>7</td></tr></tbody></table>'),
+            ("D", '<table><thead><tr><th>Ekstrakulikuler</th><th>Banyak Siswa</th></tr></thead><tbody>'
+                   '<tr><td>pencak silat</td><td>6</td></tr>'
+                   '<tr><td>bola basket</td><td>8</td></tr>'
+                   '<tr><td>futsal</td><td>9</td></tr>'
+                   '<tr><td>musik</td><td>7</td></tr></tbody></table>')
         ],
         "kunci": "D",
         "pembahasan": "Menghitung frekuensi kemunculan tiap ekstrakurikuler dari 30 data siswa:<br/>• Pencak silat = 6 siswa<br/>• Bola basket = 8 siswa<br/>• Futsal = 9 siswa<br/>• Musik = 7 siswa<br/>Total $= 6 + 8 + 9 + 7 = 30$ siswa.<br/>Tabel yang sesuai dengan data tersebut adalah Opsi D."
@@ -428,8 +450,16 @@ SOAL_MAT = [
         "kesulitan": "mudah",
         "materi": "C. Data - C1. Mengumpulkan, menyajikan dan membaca data dalam bentuk tabel",
         "capaian": "Menentukan banyak data dengan kriteria lebih dari nilai tertentu pada tabel",
-        "gambar": "/soal/to1-tka-matematika-sd-2026/soal_26_tabel_balita.png",
-        "teks_soal": "Perhatikan tabel yang menyajikan data berat badan balita (0 – 12 bulan) di Posyandu Sehat Sejahtera berikut!<br/>{{GAMBAR}}<br/>Balita yang memiliki berat badan lebih dari 6,5 kg sebanyak …",
+        "tabel_soal": '<table><thead><tr><th>Berat badan (kg)</th><th>Banyak balita (orang)</th></tr></thead><tbody>'
+                      '<tr><td>4</td><td>3</td></tr>'
+                      '<tr><td>5</td><td>9</td></tr>'
+                      '<tr><td>6</td><td>4</td></tr>'
+                      '<tr><td>7</td><td>7</td></tr>'
+                      '<tr><td>8</td><td>2</td></tr>'
+                      '<tr><td>9</td><td>5</td></tr>'
+                      '<tr><td>10</td><td>4</td></tr>'
+                      '</tbody></table>',
+        "teks_soal": "Perhatikan tabel yang menyajikan data berat badan balita (0 – 12 bulan) di Posyandu Sehat Sejahtera berikut!<br/><br/>Balita yang memiliki berat badan lebih dari 6,5 kg sebanyak …",
         "opsi": [
             ("A", "11 orang"),
             ("B", "16 orang"),
@@ -445,8 +475,13 @@ SOAL_MAT = [
         "kesulitan": "sedang",
         "materi": "C. Data - C1. Mengumpulkan, menyajikan dan membaca data dalam bentuk tabel",
         "capaian": "Menilai ketepatan pernyataan berdasarkan data tabel kegemaran olahraga",
-        "gambar": "/soal/to1-tka-matematika-sd-2026/soal_27_tabel_olahraga.png",
-        "teks_soal": "Perhatikan tabel jenis olahraga kegemaran siswa kelas 6 berikut!<br/>{{GAMBAR}}<br/>Berdasarkan tabel tersebut, manakah pernyataan berikut yang tepat dan tidak tepat? Berilah tanda centang (✓) pada kolom tepat atau tidak tepat untuk setiap pernyataan!",
+        "tabel_soal": '<table><thead><tr><th>Jenis olahraga</th><th>Banyak siswa</th></tr></thead><tbody>'
+                      '<tr><td>Renang</td><td>12</td></tr>'
+                      '<tr><td>Bulu tangkis</td><td>8</td></tr>'
+                      '<tr><td>Futsal</td><td>24</td></tr>'
+                      '<tr><td>Bola basket</td><td>6</td></tr>'
+                      '</tbody></table>',
+        "teks_soal": "Perhatikan tabel jenis olahraga kegemaran siswa kelas 6 berikut!<br/><br/>Berdasarkan tabel tersebut, manakah pernyataan berikut yang tepat dan tidak tepat? Berilah tanda centang (✓) pada kolom tepat atau tidak tepat untuk setiap pernyataan!",
         "pernyataan": [
             ("Jenis olahraga yang paling digemari siswa adalah futsal", "Tepat"),
             ("Banyak siswa yang gemar renang dua kali lipat dari bola basket", "Tepat"),
@@ -530,6 +565,13 @@ def render_html():
         if gambar:
             art.append('    <div data-field="gambar">')
             art.append(f'      <img src="{gambar}" data-url="{gambar}" alt="Ilustrasi Soal {num}" style="max-width:100%; max-height:280px; display:block; margin:10px auto; border-radius:8px; border:1px solid #cbd5e1;" />')
+            art.append('    </div>')
+
+        # Tabel data soal (HTML table)
+        tabel_soal = q.get("tabel_soal")
+        if tabel_soal:
+            art.append('    <div data-field="tabel_soal">')
+            art.append(f'      {tabel_soal}')
             art.append('    </div>')
 
         art.append('    <div data-field="teks_soal">')
