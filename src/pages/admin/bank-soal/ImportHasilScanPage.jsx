@@ -5247,39 +5247,63 @@ Ikuti PERSIS format/skema HTML di bawah ini buat cara nulis soalnya (struktur da
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px', flexWrap: 'wrap', gap: 6 }}>
                 <label style={{ fontSize: '12px', color: '#6b7280', fontWeight: 600 }}>Paste {format === 'html' ? 'HTML MASTER' : format.toUpperCase()}</label>
                 <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
+                  <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 600 }}>SD 2026:</span>
                   <button
                     type="button"
                     onClick={async () => {
                       try {
-                        const res = await fetch('/bank-soal/IMPOR-TKA-SMP-BAHASA-INDONESIA-PAKET-A.html');
+                        const res = await fetch('/bank-soal/to1_tka_matematika_sd_2026_lengkap.html');
+                        if (!res.ok) throw new Error('Berkas tidak ditemukan (' + res.status + ')');
                         const text = await res.text();
                         setFormat('html');
+                        setSumberFile('TO 1 TKA Matematika SD 2026.pdf');
                         setRawInput(text);
                         runParse(text, 'html');
                       } catch (e) {
-                        alert('Gagal memuat template TKA B. Indonesia: ' + e.message);
+                        alert('Gagal memuat template TO 1 TKA Matematika SD: ' + e.message);
                       }
                     }}
-                    style={{ fontSize: '11px', background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1d4ed8', padding: '3px 8px', borderRadius: '6px', cursor: 'pointer', fontWeight: 700 }}
+                    style={{ fontSize: '11px', background: '#ecfdf5', border: '1px solid #a7f3d0', color: '#047857', padding: '3px 9px', borderRadius: '6px', cursor: 'pointer', fontWeight: 700 }}
                   >
-                    📖 Muat TKA B. Indonesia (30 Soal)
+                    📐 TO 1 Matematika SD (30 Soal)
                   </button>
                   <button
                     type="button"
                     onClick={async () => {
                       try {
-                        const res = await fetch('/bank-soal/IMPOR-TKA-SMP-MATEMATIKA-PAKET-B.html');
+                        const res = await fetch('/bank-soal/to1_tka_bahasa_indonesia_sd_2026_lengkap.html');
+                        if (!res.ok) throw new Error('Berkas tidak ditemukan (' + res.status + ')');
                         const text = await res.text();
                         setFormat('html');
+                        setSumberFile('TO 1 TKA Bahasa Indonesia SD 2026.pdf');
                         setRawInput(text);
                         runParse(text, 'html');
                       } catch (e) {
-                        alert('Gagal memuat template TKA Matematika: ' + e.message);
+                        alert('Gagal memuat template TO 1 TKA B. Indonesia SD: ' + e.message);
                       }
                     }}
-                    style={{ fontSize: '11px', background: '#f0fdf4', border: '1px solid #bbf7d0', color: '#166534', padding: '3px 8px', borderRadius: '6px', cursor: 'pointer', fontWeight: 700 }}
+                    style={{ fontSize: '11px', background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1d4ed8', padding: '3px 9px', borderRadius: '6px', cursor: 'pointer', fontWeight: 700 }}
                   >
-                    📐 Muat TKA Matematika (30 Soal)
+                    📖 TO 1 B. Indonesia SD (30 Soal)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      try {
+                        const res = await fetch('/bank-soal/to1_tka_gabungan_sd_2026_lengkap.html');
+                        if (!res.ok) throw new Error('Berkas tidak ditemukan (' + res.status + ')');
+                        const text = await res.text();
+                        setFormat('html');
+                        setSumberFile('TO 1 TKA SD 2026 Gabungan.pdf');
+                        setRawInput(text);
+                        runParse(text, 'html');
+                      } catch (e) {
+                        alert('Gagal memuat template TO 1 Gabungan SD: ' + e.message);
+                      }
+                    }}
+                    style={{ fontSize: '11px', background: '#fdf4ff', border: '1px solid #f0abfc', color: '#86198f', padding: '3px 9px', borderRadius: '6px', cursor: 'pointer', fontWeight: 700 }}
+                  >
+                    📦 TO 1 Gabungan (60 Soal)
                   </button>
                 </div>
               </div>
