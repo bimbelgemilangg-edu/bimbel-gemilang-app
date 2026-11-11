@@ -2159,10 +2159,25 @@ function parseHTMLMaster(raw) {
       const images = parseHTMLImages(optionNode);
       const table = parseHTMLTableElement(optionNode.querySelector('table'));
       const teks = perbaikiKurungHimpunanLatex(htmlNodeText(optionNode).replace(/\{\{\s*GAMBAR(?:_\d+)?\s*\}\}/gi, '')).trim();
+
+      let tabelRows = [];
+      let headerTabel = [];
+      if (table && table.baris && table.baris.length > 0) {
+        headerTabel = table.header || [];
+        tabelRows = table.baris.map((row, rIdx) => {
+          const vals = Array.isArray(row) ? row : Object.values(row);
+          if (vals.length >= 2) {
+            return { kolom: String(vals[0] || ''), isi: String(vals.slice(1).join(' | ') || '') };
+          }
+          return { kolom: (table.header && table.header[rIdx]) || `Baris ${rIdx + 1}`, isi: String(vals[0] || '') };
+        });
+      }
+
       return {
         teks,
         gambar: images,
-        tabel: table ? normalizeTabel(table.baris.map((row, i) => ({ kolom: table.header[i] || `Kolom ${i + 1}`, isi: row.join(' | ') }))) : [],
+        tabel: normalizeTabel(tabelRows),
+        headerTabel,
       };
     }).filter(opt => !optionIsEmpty(opt)).map((opt) => {
       // 🔥 FIX 2026-10-23 (insiden 54/391 soal owner tertolak): OPSI tidak
@@ -2989,27 +3004,36 @@ function RichText({ text, gambar = [], mathReady }) {
 // OPTION TABLE (untuk opsi berbentuk tabel, mis. perbandingan 2 kolom)
 // ============================================================
 
-function OptionTable({ rows }) {
+function OptionTable({ rows, header }) {
   if (!safeArray(rows).length) return null;
 
   return (
-    <div style={{ marginTop: '8px', borderRadius: '8px', border: '1px solid #e5e7eb', borderColor: '#e5e7eb', overflow: 'hidden', backgroundColor: '#ffffff' }}>
-      {rows.map((row, i) => (
-        <div
-          key={i}
-          style={{
-            display: 'grid',
-            gridTemplateColumns: '100px 1fr',
-            fontSize: '12px',
-            borderTop: i > 0 ? '1px solid #f3f4f6' : 'none',
-          }}
-        >
-          <div style={{ paddingLeft: '8px', paddingRight: '8px', paddingTop: '6px', paddingBottom: '6px', backgroundColor: '#f9fafb', fontWeight: '600', color: '#4b5563' }}>
-            {row.kolom || `Baris ${i + 1}`}
-          </div>
-          <div style={{ paddingLeft: '8px', paddingRight: '8px', paddingTop: '6px', paddingBottom: '6px', color: '#374151' }}>{row.isi}</div>
-        </div>
-      ))}
+    <div style={{ marginTop: '8px', maxWidth: '340px', borderRadius: '8px', border: '1px solid #cbd5e1', overflow: 'hidden', backgroundColor: '#ffffff', boxShadow: '0 1px 2px rgba(0,0,0,0.03)' }}>
+      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
+        {header && header.length > 0 && (
+          <thead>
+            <tr style={{ backgroundColor: '#f1f5f9', borderBottom: '1px solid #cbd5e1' }}>
+              {header.map((h, hi) => (
+                <th key={hi} style={{ padding: '6px 10px', textAlign: hi === 0 ? 'left' : 'center', fontWeight: '700', color: '#334155' }}>
+                  {h}
+                </th>
+              ))}
+            </tr>
+          </thead>
+        )}
+        <tbody>
+          {rows.map((row, i) => (
+            <tr key={i} style={{ borderTop: i > 0 || (header && header.length > 0) ? '1px solid #f1f5f9' : 'none' }}>
+              <td style={{ padding: '5px 10px', backgroundColor: '#f8fafc', fontWeight: '600', color: '#475569', borderRight: '1px solid #f1f5f9' }}>
+                {row.kolom || `Baris ${i + 1}`}
+              </td>
+              <td style={{ padding: '5px 10px', textAlign: 'center', color: '#1e293b' }}>
+                {row.isi}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }
@@ -3357,6 +3381,7 @@ function opsiToPlainForFirestore(opsi) {
       nomor: image.nomor,
     })),
     tabel: opt.tabel || [],
+    headerTabel: opt.headerTabel || [],
   }));
 }
 
@@ -6230,7 +6255,7 @@ function QuestionPreview({ question, mathReady, onCropImage, imageStatus = {}, d
                     </div>
                   )}
 
-                  {safeArray(option.tabel).length > 0 && <OptionTable rows={option.tabel} />}
+                  {safeArray(option.tabel).length > 0 && <OptionTable rows={option.tabel} header={option.headerTabel} />}
 
                   {/* 🔥 BARU: dulu opsi yang gambarnya GAGAL diekstrak AI
                       (mis. opsi B, C, E di soal 5-opsi-semuanya-diagram)

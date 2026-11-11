@@ -674,6 +674,8 @@ export default function TobkCbtPage() {
           key: String(item.key || item.label || HURUF[idx] || '').toUpperCase(),
           teks: item.teks || item.text || item.isi || '',
           gambar: item.gambar || item.gambarUrl || item.url || null,
+          tabel: item.tabel || item.table || null,
+          headerTabel: item.headerTabel || null,
         };
       }
       return { key: HURUF[idx] || String(idx + 1), teks: String(item || ''), gambar: null };
@@ -1515,6 +1517,29 @@ export default function TobkCbtPage() {
                                   border: '1px solid #e2e8f0',
                                 }}
                               />
+                            )}
+                            {opsi.tabel && Array.isArray(opsi.tabel) && opsi.tabel.length > 0 && (
+                              <div style={{ marginTop: '8px', maxWidth: '300px', border: '1px solid #cbd5e1', borderRadius: '6px', overflow: 'hidden' }}>
+                                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
+                                  {opsi.headerTabel && opsi.headerTabel.length > 0 && (
+                                    <thead>
+                                      <tr style={{ background: '#f1f5f9', borderBottom: '1px solid #cbd5e1' }}>
+                                        {opsi.headerTabel.map((h, hi) => (
+                                          <th key={hi} style={{ padding: '4px 8px', textAlign: hi === 0 ? 'left' : 'center', fontWeight: 700, color: '#334155' }}>{h}</th>
+                                        ))}
+                                      </tr>
+                                    </thead>
+                                  )}
+                                  <tbody>
+                                    {opsi.tabel.map((row, rIdx) => (
+                                      <tr key={rIdx} style={{ borderTop: rIdx > 0 || opsi.headerTabel ? '1px solid #e2e8f0' : 'none' }}>
+                                        <td style={{ padding: '4px 8px', fontWeight: 600, color: '#475569', background: '#f8fafc', borderRight: '1px solid #e2e8f0' }}>{row.kolom}</td>
+                                        <td style={{ padding: '4px 8px', textAlign: 'center', color: '#1e293b' }}>{row.isi}</td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
+                              </div>
                             )}
                           </div>
                         </label>

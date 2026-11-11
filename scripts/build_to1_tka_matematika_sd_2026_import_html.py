@@ -183,7 +183,7 @@ SOAL_MAT = [
         "kesulitan": "sedang",
         "materi": "A. Bilangan - A3. Pecahan",
         "capaian": "Menyelesaikan masalah kontekstual luas tanah dengan operasi pecahan",
-        "teks_soal": "Pak Bayu membeli tiga petak tanah masing-masing seluas $1\\frac{1}{2}$ hektare, $\frac{3}{4}$ hektare, dan $2\\frac{1}{4}$ hektare. Jika $2\\frac{1}{2}$ hektare dari tanah tersebut ditanami jagung, sisa tanah yang belum ditanami adalah …",
+        "teks_soal": "Pak Bayu membeli tiga petak tanah masing-masing seluas $1\\frac{1}{2}$ hektare, $\\frac{3}{4}$ hektare, dan $2\\frac{1}{4}$ hektare. Jika $2\\frac{1}{2}$ hektare dari tanah tersebut ditanami jagung, sisa tanah yang belum ditanami adalah …",
         "opsi": [
             ("A", "$1\\frac{1}{2}$ hektare"),
             ("B", "$1\\frac{3}{4}$ hektare"),
@@ -338,7 +338,7 @@ SOAL_MAT = [
             ("D", "$480\\text{ cm}^2$")
         ],
         "kunci": "A",
-        "pembahasan": "Dari gambar layang-layang:<br/>• Diagonal $1 (d_1) = 16\\text{ cm}$ (atau segmen horizontal total)<br/>• Diagonal $2 (d_2) = 30\\text{ cm}$ (atau segmen vertikal total)<br/>Luas layang-layang:<br/>$L = \\frac{d_1 \\times d_2}{2} = \\frac{16 \\times 30}{2} = 240\\text{ cm}^2$ (Pilihan A)."
+        "pembahasan": "Dari gambar layang-layang:<br/>• Diagonal $1 (d_1) = 16\\text{ cm}$<br/>• Diagonal $2 (d_2) = 30\\text{ cm}$<br/>Luas layang-layang:<br/>$L = \\frac{d_1 \\times d_2}{2} = \\frac{16 \\times 30}{2} = 240\\text{ cm}^2$ (Pilihan A)."
     },
     {
         "nomor": 21,
@@ -411,38 +411,57 @@ SOAL_MAT = [
         "kesulitan": "sedang",
         "materi": "C. Data - C1. Mengumpulkan, menyajikan dan membaca data dalam bentuk tabel",
         "capaian": "Menyusun tabel frekuensi yang tepat berdasarkan data acak pilihan ekstrakurikuler",
-        "tabel_soal": '<table><thead><tr><th colspan="6">Data Ekstrakulikuler yang Diikuti Siswa Kelas 6</th></tr></thead><tbody>'
-                      '<tr><td>Musik</td><td>Pencak silat</td><td>Musik</td><td>Bola basket</td><td>Futsal</td><td>Musik</td></tr>'
-                      '<tr><td>Musik</td><td>Bola basket</td><td>Bola basket</td><td>Pencak silat</td><td>Bola basket</td><td>Pencak silat</td></tr>'
-                      '<tr><td>Bola basket</td><td>Futsal</td><td>Futsal</td><td>Futsal</td><td>Futsal</td><td>Pencak silat</td></tr>'
-                      '<tr><td>Futsal</td><td>Pencak silat</td><td>Bola basket</td><td>Pencak silat</td><td>Futsal</td><td>Musik</td></tr>'
-                      '<tr><td>Bola basket</td><td>Bola basket</td><td>Musik</td><td>Futsal</td><td>Futsal</td><td>Musik</td></tr>'
-                      '</tbody></table>',
-        "teks_soal": "Berikut data ektrakulikuler yang diikuti siswa kelas 6<br/><br/>Penyajian data tersebut ke dalam bentuk tabel yang benar adalah …",
-        "opsi": [
-            ("A", '<table><thead><tr><th>Ekstrakulikuler</th><th>Banyak Siswa</th></tr></thead><tbody>'
-                   '<tr><td>pencak silat</td><td>7</td></tr>'
-                   '<tr><td>bola basket</td><td>8</td></tr>'
-                   '<tr><td>futsal</td><td>9</td></tr>'
-                   '<tr><td>musik</td><td>6</td></tr></tbody></table>'),
-            ("B", '<table><thead><tr><th>Ekstrakulikuler</th><th>Banyak Siswa</th></tr></thead><tbody>'
-                   '<tr><td>pencak silat</td><td>6</td></tr>'
-                   '<tr><td>bola basket</td><td>9</td></tr>'
-                   '<tr><td>futsal</td><td>7</td></tr>'
-                   '<tr><td>musik</td><td>8</td></tr></tbody></table>'),
-            ("C", '<table><thead><tr><th>Ekstrakulikuler</th><th>Banyak Siswa</th></tr></thead><tbody>'
-                   '<tr><td>pencak silat</td><td>6</td></tr>'
-                   '<tr><td>bola basket</td><td>9</td></tr>'
-                   '<tr><td>futsal</td><td>8</td></tr>'
-                   '<tr><td>musik</td><td>7</td></tr></tbody></table>'),
-            ("D", '<table><thead><tr><th>Ekstrakulikuler</th><th>Banyak Siswa</th></tr></thead><tbody>'
-                   '<tr><td>pencak silat</td><td>6</td></tr>'
-                   '<tr><td>bola basket</td><td>8</td></tr>'
-                   '<tr><td>futsal</td><td>9</td></tr>'
-                   '<tr><td>musik</td><td>7</td></tr></tbody></table>')
+        "tabel_soal": {
+            "header": [],
+            "baris": [
+                ["Musik", "Pencak silat", "Musik", "Bola basket", "Futsal", "Musik"],
+                ["Musik", "Bola basket", "Bola basket", "Pencak silat", "Bola basket", "Pencak silat"],
+                ["Bola basket", "Futsal", "Futsal", "Futsal", "Futsal", "Pencak silat"],
+                ["Futsal", "Pencak silat", "Bola basket", "Pencak silat", "Futsal", "Musik"],
+                ["Bola basket", "Bola basket", "Musik", "Futsal", "Futsal", "Musik"]
+            ]
+        },
+        "teks_soal": "Berikut data ektrakulikuler yang diikuti siswa kelas 6:<br/><br/>Penyajian data tersebut ke dalam bentuk tabel yang benar adalah …",
+        "opsi_tabel": [
+            ("A", {
+                "header": ["Ekstrakulikuler", "Banyak Siswa"],
+                "baris": [
+                    ["pencak silat", "7"],
+                    ["bola basket", "8"],
+                    ["futsal", "9"],
+                    ["musik", "6"]
+                ]
+            }),
+            ("B", {
+                "header": ["Ekstrakulikuler", "Banyak Siswa"],
+                "baris": [
+                    ["pencak silat", "6"],
+                    ["bola basket", "9"],
+                    ["futsal", "7"],
+                    ["musik", "8"]
+                ]
+            }),
+            ("C", {
+                "header": ["Ekstrakulikuler", "Banyak Siswa"],
+                "baris": [
+                    ["pencak silat", "6"],
+                    ["bola basket", "9"],
+                    ["futsal", "8"],
+                    ["musik", "7"]
+                ]
+            }),
+            ("D", {
+                "header": ["Ekstrakulikuler", "Banyak Siswa"],
+                "baris": [
+                    ["pencak silat", "6"],
+                    ["bola basket", "8"],
+                    ["futsal", "9"],
+                    ["musik", "7"]
+                ]
+            })
         ],
         "kunci": "D",
-        "pembahasan": "Menghitung frekuensi kemunculan tiap ekstrakurikuler dari 30 data siswa:<br/>• Pencak silat = 6 siswa<br/>• Bola basket = 8 siswa<br/>• Futsal = 9 siswa<br/>• Musik = 7 siswa<br/>Total $= 6 + 8 + 9 + 7 = 30$ siswa.<br/>Tabel yang sesuai dengan data tersebut adalah Opsi D."
+        "pembahasan": "Menghitung frekuensi kemunculan tiap ekstrakurikuler dari 30 data siswa:<br/>• Pencak silat = 6 siswa<br/>• Bola basket = 8 siswa<br/>• Futsal = 9 siswa<br/>• Musik = 7 siswa<br/>Total $= 6 + 8 + 9 + 7 = 30$ siswa.<br/>Tabel yang menyajikan data secara tepat adalah Pilihan D."
     },
     {
         "nomor": 26,
@@ -450,15 +469,18 @@ SOAL_MAT = [
         "kesulitan": "mudah",
         "materi": "C. Data - C1. Mengumpulkan, menyajikan dan membaca data dalam bentuk tabel",
         "capaian": "Menentukan banyak data dengan kriteria lebih dari nilai tertentu pada tabel",
-        "tabel_soal": '<table><thead><tr><th>Berat badan (kg)</th><th>Banyak balita (orang)</th></tr></thead><tbody>'
-                      '<tr><td>4</td><td>3</td></tr>'
-                      '<tr><td>5</td><td>9</td></tr>'
-                      '<tr><td>6</td><td>4</td></tr>'
-                      '<tr><td>7</td><td>7</td></tr>'
-                      '<tr><td>8</td><td>2</td></tr>'
-                      '<tr><td>9</td><td>5</td></tr>'
-                      '<tr><td>10</td><td>4</td></tr>'
-                      '</tbody></table>',
+        "tabel_soal": {
+            "header": ["Berat badan (kg)", "Banyak balita (orang)"],
+            "baris": [
+                ["4", "3"],
+                ["5", "9"],
+                ["6", "4"],
+                ["7", "7"],
+                ["8", "2"],
+                ["9", "5"],
+                ["10", "4"]
+            ]
+        },
         "teks_soal": "Perhatikan tabel yang menyajikan data berat badan balita (0 – 12 bulan) di Posyandu Sehat Sejahtera berikut!<br/><br/>Balita yang memiliki berat badan lebih dari 6,5 kg sebanyak …",
         "opsi": [
             ("A", "11 orang"),
@@ -475,12 +497,15 @@ SOAL_MAT = [
         "kesulitan": "sedang",
         "materi": "C. Data - C1. Mengumpulkan, menyajikan dan membaca data dalam bentuk tabel",
         "capaian": "Menilai ketepatan pernyataan berdasarkan data tabel kegemaran olahraga",
-        "tabel_soal": '<table><thead><tr><th>Jenis olahraga</th><th>Banyak siswa</th></tr></thead><tbody>'
-                      '<tr><td>Renang</td><td>12</td></tr>'
-                      '<tr><td>Bulu tangkis</td><td>8</td></tr>'
-                      '<tr><td>Futsal</td><td>24</td></tr>'
-                      '<tr><td>Bola basket</td><td>6</td></tr>'
-                      '</tbody></table>',
+        "tabel_soal": {
+            "header": ["Jenis olahraga", "Banyak siswa"],
+            "baris": [
+                ["Renang", "12"],
+                ["Bulu tangkis", "8"],
+                ["Futsal", "24"],
+                ["Bola basket", "6"]
+            ]
+        },
         "teks_soal": "Perhatikan tabel jenis olahraga kegemaran siswa kelas 6 berikut!<br/><br/>Berdasarkan tabel tersebut, manakah pernyataan berikut yang tepat dan tidak tepat? Berilah tanda centang (✓) pada kolom tepat atau tidak tepat untuk setiap pernyataan!",
         "pernyataan": [
             ("Jenis olahraga yang paling digemari siswa adalah futsal", "Tepat"),
@@ -552,6 +577,7 @@ def render_html():
         materi = q["materi"]
         cp = q["capaian"]
         gambar = q.get("gambar")
+        tabel_soal = q.get("tabel_soal")
         teks_soal = q["teks_soal"]
         kunci = q["kunci"]
         pembahasan = q["pembahasan"]
@@ -567,18 +593,53 @@ def render_html():
             art.append(f'      <img src="{gambar}" data-url="{gambar}" alt="Ilustrasi Soal {num}" style="max-width:100%; max-height:280px; display:block; margin:10px auto; border-radius:8px; border:1px solid #cbd5e1;" />')
             art.append('    </div>')
 
-        # Tabel data soal (HTML table)
-        tabel_soal = q.get("tabel_soal")
         if tabel_soal:
             art.append('    <div data-field="tabel_soal">')
-            art.append(f'      {tabel_soal}')
+            art.append('      <table style="width:100%; border-collapse:collapse; margin:10px 0; border:1px solid #cbd5e1; font-size:13.5px;">')
+            if tabel_soal.get("header") and len(tabel_soal["header"]) > 0:
+                art.append('        <thead>')
+                art.append('          <tr style="background:#f1f5f9;">')
+                for h in tabel_soal["header"]:
+                    art.append(f'            <th style="border:1px solid #cbd5e1; padding:8px; text-align:left;">{h}</th>')
+                art.append('          </tr>')
+                art.append('        </thead>')
+            art.append('        <tbody>')
+            for row in tabel_soal.get("baris", []):
+                art.append('          <tr>')
+                for cell in row:
+                    align = "center" if not tabel_soal.get("header") else ("left" if not cell.isdigit() else "center")
+                    art.append(f'            <td style="border:1px solid #cbd5e1; padding:8px; text-align:{align};">{cell}</td>')
+                art.append('          </tr>')
+            art.append('        </tbody>')
+            art.append('      </table>')
             art.append('    </div>')
 
         art.append('    <div data-field="teks_soal">')
         art.append(f'      <p>{teks_soal}</p>')
         art.append('    </div>')
 
-        if "opsi_gambar" in q:
+        if "opsi_tabel" in q:
+            art.append('    <ol data-field="opsi_jawaban">')
+            for lbl, tbl in q["opsi_tabel"]:
+                art.append(f'      <li data-label="{lbl}">')
+                art.append('        <table style="border-collapse:collapse; margin:4px 0; border:1px solid #cbd5e1; font-size:12.5px;">')
+                if tbl.get("header"):
+                    art.append('          <thead><tr style="background:#f1f5f9;">')
+                    for h in tbl["header"]:
+                        art.append(f'            <th style="border:1px solid #cbd5e1; padding:5px 12px; text-align:left;">{h}</th>')
+                    art.append('          </tr></thead>')
+                art.append('          <tbody>')
+                for row in tbl["baris"]:
+                    art.append('            <tr>')
+                    for cell in row:
+                        art.append(f'              <td style="border:1px solid #cbd5e1; padding:4px 12px;">{cell}</td>')
+                    art.append('            </tr>')
+                art.append('          </tbody>')
+                art.append('        </table>')
+                art.append('      </li>')
+            art.append('    </ol>')
+
+        elif "opsi_gambar" in q:
             art.append('    <ol data-field="opsi_jawaban">')
             for lbl, g_path in q["opsi_gambar"]:
                 art.append(f'      <li data-label="{lbl}"><img src="{g_path}" data-url="{g_path}" alt="Opsi {lbl} Soal {num}" style="max-width:100%; max-height:160px; border-radius:6px; border:1px solid #e2e8f0;" /></li>')
