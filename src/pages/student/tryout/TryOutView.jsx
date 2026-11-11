@@ -1305,7 +1305,11 @@ export default function TryOutView() {
                     <TeksSoalBergambar
                       teks={pisahKodeSumber(teksSoalDari(s)).teks}
                       soal={s}
-                      gambarUrls={gambarButirDari(s)}
+                      gambarUrls={gambarButirDari(s).filter(url => {
+                        const bcn = bacaanDari(s);
+                        const bcnUrls = (bcn?.gambar || []).map(g => (typeof g === 'string' ? g : g?.url || g?.uploadedUrl));
+                        return !bcnUrls.includes(url);
+                      })}
                       gambarMeta={s.gambarMeta || null}
                       gayaTeks={{ marginBottom: 10 }}
                       gayaGambar={{ maxHeight: 280, marginBottom: 10 }}
@@ -1725,7 +1729,11 @@ export default function TryOutView() {
         <TeksSoalBergambar
           teks={pisahKodeSumber(teksSoalDari(soalAktif)).teks}
           soal={soalAktif}
-          gambarUrls={gambarButirDari(soalAktif)}
+          gambarUrls={gambarButirDari(soalAktif).filter(url => {
+            const bcn = bacaanDari(soalAktif);
+            const bcnUrls = (bcn?.gambar || []).map(g => (typeof g === 'string' ? g : g?.url || g?.uploadedUrl));
+            return !bcnUrls.includes(url);
+          })}
           gambarMeta={soalAktif.gambarMeta || null}
           gayaTeks={{ fontSize: skalaFont.soal, lineHeight: skalaFont.lineHeight, marginBottom: 16 }}
           gayaGambar={{ maxHeight: 320, marginBottom: 16 }}

@@ -1138,10 +1138,17 @@ export function normalizeSoal(qMasuk, idx) {
     const token = safeString(kunciMentah).split(/[-,;/]+/).map(t => t.trim()).filter(Boolean);
     if (token.length !== daftarPernyataan.length) return daftarPernyataan;
 
+    const isSesuaiContext = daftarPernyataan.some(p => {
+      const j = safeString(p.jawaban).toLowerCase();
+      return j.includes('sesuai') || j === 'ts';
+    }) || /(tidak\s*sesuai|tdk\s*sesuai|\bts\b|sesuai)/i.test(kunciMentah) || /(kesesuaian|sesuai\s+atau\s+tidak)/i.test(q.teks_soal || q.soal || '');
+
     const normalisasi = (t) => {
       const low = t.toLowerCase();
-      if (/(tidak\s*sesuai|tdk\s*sesuai)/.test(low)) return 'Tidak Sesuai';
+      if (/(tidak\s*sesuai|tdk\s*sesuai|\bts\b)/.test(low)) return 'Tidak Sesuai';
       if (/sesuai/.test(low)) return 'Sesuai';
+      if (isSesuaiContext && (low === 's' || low === '1')) return 'Sesuai';
+      if (isSesuaiContext && (low === 'ts' || low === '0')) return 'Tidak Sesuai';
       if (/(salah|false|\b0\b|\bs\b)/.test(low)) return 'Salah';
       if (/(benar|true|\b1\b|\bb\b)/.test(low)) return 'Benar';
       return '';
@@ -2256,6 +2263,11 @@ function parseHTMLMaster(raw) {
           if (allImgs.length > 0) {
             imgs = allImgs.map((img, idx) => htmlImageToObject(img, idx)).filter(img => img.dataUrl || img.url);
           }
+        }
+        // Fallback cerdas: Jika tidak ada tag gambar terpisah tapi wacana punya gambar,
+        // wariskan ke q.gambar agar lolos validasi dan terdeteksi sistem secara transparan
+        if (!imgs.length && bacaanNode) {
+          imgs = parseHTMLImages(bacaanNode);
         }
         return imgs;
       })(),
@@ -4067,13 +4079,22 @@ Ikuti PERSIS format/skema HTML di bawah ini buat cara nulis soalnya (struktur da
   // soal yang teksnya SECARA EKSPLISIT menyebut kata "gambar/grafik/
   // diagram". Ternyata banyak soal (mis. soal vektor "F1 dan F2
   // mengapit sudut 120°...") butuh gambar TANPA menyebut kata itu sama
-  // sekali -- soal itu jadi tidak pernah muncul di dropdown pencocokan
-  // ini, padahal butuh gambar. Sekarang: SEMUA soal yang gambarnya
-  // masih kosong ditampilkan di sini, biar admin yang menilai sendiri
-  // per soal (dibandingkan ke dokumen sumber), bukan mengandalkan
-  // tebakan kata kunci yang gampang kelewat.
+  // Cerdas: hanya tampilkan soal yang BENAR-BENAR butuh gambar tapi belum ada
+  // (mengecek q.gambar, q.bacaan.gambar, maupun opsi bergambar, serta mengecek
+  // apakah teks soal memang menunjuk stimulus gambar/grafik/diagram).
   const soalButuhGambar = useMemo(() => {
-    return soalList.filter(q => safeArray(q.gambar).length === 0);
+    return soalList.filter(q => {
+      const adaGambarDiSoal = safeArray(q.gambar).some(g => Boolean(getImageSrc(g)));
+      const adaGambarDiBacaan = Boolean(q.bacaan && safeArray(q.bacaan.gambar).some(g => Boolean(getImageSrc(g))));
+      const adaGambarDiOpsi = safeArray(q.opsi_jawaban).some(opt => safeArray(opt.gambar).length > 0);
+      if (adaGambarDiSoal || adaGambarDiBacaan || adaGambarDiOpsi) return false;
+
+      // Cek apakah soal secara kontekstual membutuhkan visual
+      const teksGabungan = `${q.teks_soal || q.soal || ''} ${q.bacaan?.teks || ''}`;
+      const butuhGambar = /\b(perhatikan|lihat|sesuai|berdasarkan)\s+(gambar|grafik|diagram)\b/i.test(teksGabungan)
+        || /\b(gambar|grafik|diagram|bagan|denah|sketsa)\s+(berikut|di\s+bawah|di\s+atas|tersebut|ini)\b/i.test(teksGabungan);
+      return butuhGambar;
+    });
   }, [soalList]);
 
   // Baca banyak file gambar sekaligus jadi dataUrl, ditambahkan ke daftar
@@ -6013,11 +6034,18 @@ function QuestionPreview({ question, mathReady, onCropImage, imageStatus = {}, d
           </span>
         )}
 
-        {q.gambar?.length > 0 && (
-          <span style={{ paddingLeft: '10px', paddingRight: '10px', paddingTop: '4px', paddingBottom: '4px', backgroundColor: '#f3e8ff', color: '#7e22ce', fontSize: '12px', fontWeight: '700', borderRadius: '9999px' }}>
-            🖼️ {q.gambar.length} gambar
-          </span>
-        )}
+        {(() => {
+          const uniqueImgs = new Set([
+            ...safeArray(q.gambar).map(g => g?.url || g?.dataUrl || g?.uploadedUrl || (typeof g === 'string' ? g : '')).filter(Boolean),
+            ...safeArray(q.bacaan?.gambar).map(g => g?.url || g?.dataUrl || g?.uploadedUrl || (typeof g === 'string' ? g : '')).filter(Boolean),
+          ]);
+          if (uniqueImgs.size === 0) return null;
+          return (
+            <span style={{ paddingLeft: '10px', paddingRight: '10px', paddingTop: '4px', paddingBottom: '4px', backgroundColor: '#f3e8ff', color: '#7e22ce', fontSize: '12px', fontWeight: '700', borderRadius: '9999px' }}>
+              🖼️ {uniqueImgs.size} gambar
+            </span>
+          );
+        })()}
 
         {q.pembahasan && (
           <span style={{ paddingLeft: '10px', paddingRight: '10px', paddingTop: '4px', paddingBottom: '4px', backgroundColor: '#cffafe', color: '#0e7490', fontSize: '12px', fontWeight: '700', borderRadius: '9999px' }}>💡 Pembahasan</span>
@@ -6110,7 +6138,15 @@ function QuestionPreview({ question, mathReady, onCropImage, imageStatus = {}, d
       )}
 
       {/* QUESTION */}
-      <RichText text={kepalaKode.kode ? kepalaKode.teks : q.teks_soal} gambar={q.gambar} mathReady={mathReady} />
+      <RichText
+        text={kepalaKode.kode ? kepalaKode.teks : q.teks_soal}
+        gambar={safeArray(q.gambar).filter(g => {
+          const gUrl = g?.url || g?.dataUrl || g?.uploadedUrl || (typeof g === 'string' ? g : '');
+          const bcnUrls = safeArray(q.bacaan?.gambar).map(bg => bg?.url || bg?.dataUrl || bg?.uploadedUrl || (typeof bg === 'string' ? bg : ''));
+          return !bcnUrls.includes(gUrl);
+        })}
+        mathReady={mathReady}
+      />
 
       {q.tabel_soal && !['benar_salah', 'pg_kategori'].includes(q.tipe) && (
         <QuestionTable table={q.tabel_soal} mathReady={mathReady} />
@@ -6206,7 +6242,7 @@ function QuestionPreview({ question, mathReady, onCropImage, imageStatus = {}, d
       {(q.tabel_benar_salah?.length > 0 || q.pernyataan?.length > 0) && (() => {
         const baris = q.tabel_benar_salah?.length ? q.tabel_benar_salah : q.pernyataan;
         const allJawaban = baris.map(item => (typeof item === 'object' ? safeString(item.jawaban) : '').trim().toLowerCase());
-        const hasSesuai = allJawaban.some(j => j.includes('sesuai') || j === 's');
+        const hasSesuai = allJawaban.some(j => j.includes('sesuai') || j === 's' || j === 'ts');
         const teksSoalLow = (q.teks_soal || '').toLowerCase();
         
         let labelKolom1 = 'Benar';
@@ -6216,9 +6252,10 @@ function QuestionPreview({ question, mathReady, onCropImage, imageStatus = {}, d
           labelKolom2 = 'Tidak Sesuai';
         }
 
+        const isSesuaiMode = labelKolom1 === 'Sesuai';
         const validValues = [
           'benar', 'true', 'ya', 'b', '1', 'sesuai', 'fakta', 'setuju', 'tepat',
-          'salah', 'false', 'tidak', 's', '0', 'tidak sesuai', 'tidak_sesuai', 'bukan fakta', 'opini', 'tidak setuju', 'tidak tepat'
+          'salah', 'false', 'tidak', 's', '0', 'tidak sesuai', 'tidak_sesuai', 'ts', 'tdk sesuai', 'tdk_sesuai', 'bukan fakta', 'opini', 'tidak setuju', 'tidak tepat'
         ];
 
         return (
@@ -6237,8 +6274,12 @@ function QuestionPreview({ question, mathReady, onCropImage, imageStatus = {}, d
                   const teks = typeof item === 'object' ? (item.pernyataan || item.teks || '') : String(item);
                   const jawabanRaw = typeof item === 'object' ? safeString(item.jawaban) : '';
                   const jawabanNorm = jawabanRaw.trim().toLowerCase();
-                  const isKolom1 = ['benar', 'true', 'ya', 'b', '1', 'sesuai', 'fakta', 'setuju', 'tepat'].includes(jawabanNorm);
-                  const isKolom2 = ['salah', 'false', 'tidak', 's', '0', 'tidak sesuai', 'tidak_sesuai', 'bukan fakta', 'opini', 'tidak setuju', 'tidak tepat'].includes(jawabanNorm);
+                  const isKolom1 = isSesuaiMode
+                    ? ['sesuai', 's', 'true', '1', 'ya', 'benar', 'b', 'tepat'].includes(jawabanNorm)
+                    : ['benar', 'true', 'ya', 'b', '1', 'sesuai', 'fakta', 'setuju', 'tepat'].includes(jawabanNorm);
+                  const isKolom2 = isSesuaiMode
+                    ? ['tidak sesuai', 'tidak_sesuai', 'ts', 'tdk sesuai', 'tdk_sesuai', 'false', '0', 'tidak', 'salah', 'tidak tepat'].includes(jawabanNorm)
+                    : ['salah', 'false', 'tidak', 's', '0', 'tidak sesuai', 'tidak_sesuai', 'ts', 'tdk sesuai', 'bukan fakta', 'opini', 'tidak setuju', 'tidak tepat'].includes(jawabanNorm);
 
                   return (
                     <tr key={index} style={{ borderTop: index > 0 ? '1px solid #e2e8f0' : 'none', backgroundColor: index % 2 === 0 ? '#ffffff' : '#f8fafc' }}>

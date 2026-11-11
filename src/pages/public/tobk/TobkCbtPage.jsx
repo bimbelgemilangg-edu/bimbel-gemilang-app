@@ -1420,7 +1420,11 @@ export default function TobkCbtPage() {
                   <TeksSoalBergambar
                     teks={soalSekarang.teksSoal || soalSekarang.soal || soalSekarang.teks_soal || ''}
                     soal={soalSekarang}
-                    gambarUrls={gambarButirDari(soalSekarang)}
+                    gambarUrls={gambarButirDari(soalSekarang).filter(url => {
+                      const bcn = bacaanDari(soalSekarang);
+                      const bcnUrls = (bcn?.gambar || []).map(g => (typeof g === 'string' ? g : g?.url || g?.uploadedUrl));
+                      return !bcnUrls.includes(url);
+                    })}
                     gayaTeks={{
                       fontSize: skalaFont.soal,
                       lineHeight: skalaFont.lineHeight,
