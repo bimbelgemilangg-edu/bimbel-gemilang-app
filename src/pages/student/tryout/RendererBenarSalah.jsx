@@ -143,7 +143,21 @@ export default function RendererBenarSalah({ soal, jawabanTerpilih = [], onChang
                 <td style={{ padding: '10px 8px', textAlign: 'center', color: '#64748b', fontWeight: 600, borderRight: '1px solid #e2e8f0', verticalAlign: 'top' }}>
                   {i + 1}
                 </td>
-                <td style={{ padding: '10px 14px', color: '#1e293b', verticalAlign: 'top' }}><RenderMath text={teks} /></td>
+                <td style={{ padding: '10px 14px', color: '#1e293b', verticalAlign: 'top' }}>
+                  {teks && <RenderMath text={teks} />}
+                  {safeArray(item?.gambar).map((g, gIdx) => {
+                    const src = typeof g === 'string' ? g : (g?.url || g?.dataUrl || g?.uploadedUrl);
+                    if (!src) return null;
+                    return (
+                      <img
+                        key={gIdx}
+                        src={src}
+                        alt={g?.deskripsi || `Gambar Pernyataan ${i + 1}`}
+                        style={{ maxWidth: '100%', maxHeight: 150, display: 'block', margin: teks ? '6px 0 2px 0' : '2px 0', borderRadius: 6, border: '1px solid #e2e8f0', objectFit: 'contain' }}
+                      />
+                    );
+                  })}
+                </td>
                 {kolom.map((k) => renderSel(k))}
               </tr>
             );

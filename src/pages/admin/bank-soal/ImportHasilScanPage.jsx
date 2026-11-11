@@ -1097,28 +1097,37 @@ export function normalizeSoal(qMasuk, idx) {
   // ----------------------------------------------------------
 
   const pernyataan = safeArray(q.pernyataan || q.statements)
-    .map(item => {
+    .map((item, idx) => {
       if (item && typeof item === 'object') {
+        const itemImgs = safeArray(item.gambar || item.images)
+          .map((img, i) => (typeof img === 'string' ? { id: `g-p-${idx+1}-${i+1}`, url: img, dataUrl: '', uploadedUrl: '', deskripsi: '', nomor: i+1 } : htmlImageToObject(img, i)))
+          .filter(img => img.dataUrl || img.url || img.uploadedUrl);
         return {
           teks: safeString(item.teks || item.text || item.pernyataan || ''),
           jawaban: safeString(item.jawaban || item.answer || item.nilai || ''),
+          gambar: itemImgs,
         };
       }
-      return { teks: safeString(item), jawaban: '' };
+      return { teks: safeString(item), jawaban: '', gambar: [] };
     })
-    .filter(item => item.teks);
+    .filter(item => item.teks || (item.gambar && item.gambar.length > 0));
 
   const tabelBenarSalah = safeArray(q.tabel_benar_salah || q.tabelBenarSalah || q.trueFalseTable)
-    .map(item => {
+    .map((item, idx) => {
       if (item && typeof item === 'object') {
+        const itemImgs = safeArray(item.gambar || item.images)
+          .map((img, i) => (typeof img === 'string' ? { id: `g-tb-${idx+1}-${i+1}`, url: img, dataUrl: '', uploadedUrl: '', deskripsi: '', nomor: i+1 } : htmlImageToObject(img, i)))
+          .filter(img => img.dataUrl || img.url || img.uploadedUrl);
         return {
           pernyataan: safeString(item.pernyataan || item.teks || item.text || ''),
+          teks: safeString(item.pernyataan || item.teks || item.text || ''),
           jawaban: safeString(item.jawaban || item.answer || ''),
+          gambar: itemImgs,
         };
       }
-      return safeString(item);
+      return { teks: safeString(item), jawaban: '', gambar: [] };
     })
-    .filter(Boolean);
+    .filter(item => (typeof item === 'object' ? (item.teks || (item.gambar && item.gambar.length > 0)) : Boolean(item)));
 
   // 🔥 BARU (bug nyata ditemukan): kadang tabel Benar/Salah di dokumen
   // sumber itu LEMBAR KERJA KOSONG (kolom checkbox Benar/Salah memang
@@ -1846,9 +1855,12 @@ function parseHTMLStatements(container) {
       }
     }
     if (listItems.length > 0) {
-      return listItems.map((item) => {
-        let t = htmlNodeText(item).trim();
-        if (!t) return null;
+      return listItems.map((item, idx) => {
+        let imgs = parseHTMLImages(item);
+        let t = htmlNodeText(item).replace(/\{\{\s*GAMBAR(?:_\d+)?\s*\}\}/gi, '').trim();
+        if (imgs.length > 0 && imgs.some(img => img.deskripsi && t === img.deskripsi)) {
+          t = '';
+        }
         let ans = safeString(item.getAttribute('data-jawaban') || item.getAttribute('data-kunci') || '').trim();
         const m = t.match(/\s*(?:\(|\[)?(benar|salah|sesuai|tidak sesuai|true|false|b|s)(?:\)|\])?\s*$/i);
         if (m) {
@@ -1860,7 +1872,8 @@ function parseHTMLStatements(container) {
           }
           t = t.slice(0, m.index).trim();
         }
-        return t ? { teks: t, jawaban: ans } : null;
+        if (!t && !imgs.length) return null;
+        return { teks: t, jawaban: ans, gambar: imgs };
       }).filter(Boolean);
     }
     return [];
@@ -1895,11 +1908,13 @@ function parseHTMLStatements(container) {
     if (hasBenarCol && hasSalahCol && sel0.length < 20 && sel1.length < 20) return null;
 
     let text, answer;
+    let targetCell = null;
 
     const rowAttrAns = safeString(row.getAttribute('data-jawaban') || row.getAttribute('data-kunci') || '').trim();
 
     if (cells.length >= 4) {
       // Format "No | Pernyataan | Benar (centang) | Salah (centang)"
+      targetCell = cells[1];
       text = teksSel[1];
       const benarDicentang = selBerisiCentang(cells[2]);
       const salahDicentang = selBerisiCentang(cells[3]);
@@ -1909,6 +1924,7 @@ function parseHTMLStatements(container) {
     } else if (cells.length === 3) {
       // Cek apakah cells[0] adalah nomor urut (format: No | Pernyataan | Jawaban)
       if (/^\d+[.)]?$/.test(teksSel[0])) {
+        targetCell = cells[1];
         text = teksSel[1];
         const val = safeString(rowAttrAns || teksSel[2]).trim();
         if (/^(b|benar|true|1|sesuai)$/i.test(val)) answer = labelPositif;
@@ -1916,6 +1932,7 @@ function parseHTMLStatements(container) {
         else answer = val;
       } else {
         // Format "Pernyataan | Benar (centang) | Salah (centang)" tanpa kolom No
+        targetCell = cells[0];
         text = teksSel[0];
         const benarDicentang = selBerisiCentang(cells[1]);
         const salahDicentang = selBerisiCentang(cells[2]);
@@ -1925,12 +1942,18 @@ function parseHTMLStatements(container) {
       }
     } else {
       // Format 2 kolom: Pernyataan | Jawaban langsung sebagai teks
+      targetCell = cells[0];
       text = teksSel[0];
       answer = safeString(rowAttrAns || teksSel[1]).trim();
     }
 
-    if (!text) return null;
-    return { teks: text, jawaban: answer };
+    const imgs = targetCell ? parseHTMLImages(targetCell) : [];
+    if (imgs.length > 0 && imgs.some(img => img.deskripsi && text === img.deskripsi)) {
+      text = '';
+    }
+
+    if (!text && !imgs.length) return null;
+    return { teks: text, jawaban: answer, gambar: imgs };
   }).filter(Boolean);
 }
 
@@ -4087,7 +4110,9 @@ Ikuti PERSIS format/skema HTML di bawah ini buat cara nulis soalnya (struktur da
       const adaGambarDiSoal = safeArray(q.gambar).some(g => Boolean(getImageSrc(g)));
       const adaGambarDiBacaan = Boolean(q.bacaan && safeArray(q.bacaan.gambar).some(g => Boolean(getImageSrc(g))));
       const adaGambarDiOpsi = safeArray(q.opsi_jawaban).some(opt => safeArray(opt.gambar).length > 0);
-      if (adaGambarDiSoal || adaGambarDiBacaan || adaGambarDiOpsi) return false;
+      const adaGambarDiPernyataan = safeArray(q.pernyataan).some(p => safeArray(p.gambar).length > 0)
+        || safeArray(q.tabel_benar_salah).some(tb => safeArray(tb.gambar).length > 0);
+      if (adaGambarDiSoal || adaGambarDiBacaan || adaGambarDiOpsi || adaGambarDiPernyataan) return false;
 
       // Cek apakah soal secara kontekstual membutuhkan visual
       const teksGabungan = `${q.teks_soal || q.soal || ''} ${q.bacaan?.teks || ''}`;
@@ -6287,7 +6312,19 @@ function QuestionPreview({ question, mathReady, onCropImage, imageStatus = {}, d
                         {index + 1}
                       </td>
                       <td style={{ padding: '10px 14px', color: '#1e293b', verticalAlign: 'top' }}>
-                        <RichText text={teks} gambar={[]} mathReady={mathReady} />
+                        {teks && <RichText text={teks} gambar={[]} mathReady={mathReady} />}
+                        {safeArray(item?.gambar).map((img, imgIdx) => {
+                          const src = getImageSrc(img);
+                          if (!src) return null;
+                          return (
+                            <img
+                              key={imgIdx}
+                              src={src}
+                              alt={img.deskripsi || `Gambar Pernyataan ${index + 1}`}
+                              style={{ maxHeight: '130px', maxWidth: '100%', display: 'block', margin: teks ? '6px 0 2px 0' : '2px 0', borderRadius: '6px', border: '1px solid #e2e8f0', objectFit: 'contain' }}
+                            />
+                          );
+                        })}
                       </td>
                       <td style={{ padding: '10px 6px', textAlign: 'center', borderLeft: '1px solid #e2e8f0', verticalAlign: 'middle' }}>
                         <span style={{

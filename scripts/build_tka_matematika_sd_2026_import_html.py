@@ -21,15 +21,15 @@ questions_data = [
             "teks": "Bangun datar berikut merupakan potongan yang terlihat mewakili bagian dari suatu objek utuh ($\\frac{1}{6}$):",
             "gambar": ["/soal/tka-matematika-sd-2026/soal_01_potongan_seperenam.png"]
         },
-        "teks_soal": "Manakah dari susunan berikut ini yang merupakan gambar objek utuh tersebut? Tentukan Benar atau Salah pada setiap susunan berikut!",
+        "teks_soal": "Manakah dari gambar berikut ini yang merupakan gambar objek utuh tersebut? Tentukan Benar atau Salah pada setiap gambar berikut!",
         "gambar": [],
         "pernyataan": [
-            {"teks": "Susunan A (Grid 2 × 3 terdiri dari 6 persegi panjang identik) <br/><img src=\"/soal/tka-matematika-sd-2026/soal_01_blok_1.png\" alt=\"Susunan A\" style=\"max-height:100px; display:inline-block; margin:4px 0;\" />", "kunci": "Benar"},
-            {"teks": "Susunan B (Grid 3 × 2 dengan proporsi ukuran potongan berbeda) <br/><img src=\"/soal/tka-matematika-sd-2026/soal_01_blok_2.png\" alt=\"Susunan B\" style=\"max-height:100px; display:inline-block; margin:4px 0;\" />", "kunci": "Salah"},
-            {"teks": "Susunan C (Susunan bertingkat terdiri dari 6 persegi panjang identik) <br/><img src=\"/soal/tka-matematika-sd-2026/soal_01_blok_3.png\" alt=\"Susunan C\" style=\"max-height:100px; display:inline-block; margin:4px 0;\" />", "kunci": "Benar"}
+            {"teks": "", "gambar": ["/soal/tka-matematika-sd-2026/soal_01_blok_1.png"], "kunci": "Benar"},
+            {"teks": "", "gambar": ["/soal/tka-matematika-sd-2026/soal_01_blok_2.png"], "kunci": "Salah"},
+            {"teks": "", "gambar": ["/soal/tka-matematika-sd-2026/soal_01_blok_3.png"], "kunci": "Benar"}
         ],
         "kunci": ["Benar", "Salah", "Benar"],
-        "pembahasan": "Potongan awal mewakili $\\frac{1}{6}$ dari objek utuh, sehingga 1 objek utuh harus tersusun dari $6$ potongan berukuran dan berproporsi identik. Pada Susunan A, terdapat $6$ potongan identik (grid $2 \\times 3$), sehingga benar. Pada Susunan B, proporsi potongan berbeda, sehingga salah. Pada Susunan C, terdapat $6$ potongan identik yang disusun bertingkat ($2 + 2 + 2 = 6$), sehingga benar."
+        "pembahasan": "Potongan awal mewakili $\\frac{1}{6}$ dari objek utuh, sehingga 1 objek utuh harus tersusun dari $6$ potongan berukuran dan berproporsi identik. Pada gambar 1, terdapat $6$ potongan identik (grid $2 \\times 3$), sehingga Benar. Pada gambar 2, proporsi potongan berbeda, sehingga Salah. Pada gambar 3, terdapat $6$ potongan identik yang disusun bertingkat ($2 + 2 + 2 = 6$), sehingga Benar."
     },
     {
         "nomor": 2,
@@ -352,16 +352,16 @@ questions_data = [
             "teks": "Sepulang sekolah, Dewi dan temannya bermain air warna-warni yang dimasukkan ke dalam botol dengan ukuran dan bentuk yang sama. Botol A diisi air merah 450 ml, botol B air hijau 530 ml, botol C air kuning 540 ml, dan botol D air biru 470 ml.",
             "gambar": ["/soal/tka-matematika-sd-2026/soal_17_botol_warna_warni.png"]
         },
-        "teks_soal": "Manakah ilustrasi yang tepat menunjukkan tinggi permukaan air berwarna di setiap botol?",
+        "teks_soal": "Manakah gambar yang tepat menunjukkan tinggi permukaan air berwarna di setiap botol?",
         "gambar": [],
         "opsi": [
-            {"label": "A", "teks": "Tinggi permukaan air terurut: Botol A (450 ml) < Botol D (470 ml) < Botol B (530 ml) < Botol C (540 ml).", "gambar": "/soal/tka-matematika-sd-2026/soal_17_opsi_a.png"},
-            {"label": "B", "teks": "Tinggi permukaan air botol tidak sesuai urutan volume.", "gambar": "/soal/tka-matematika-sd-2026/soal_17_opsi_b.png"},
-            {"label": "C", "teks": "Tinggi permukaan air botol tidak sesuai urutan volume.", "gambar": "/soal/tka-matematika-sd-2026/soal_17_opsi_c.png"},
-            {"label": "D", "teks": "Tinggi permukaan air botol tidak sesuai urutan volume.", "gambar": "/soal/tka-matematika-sd-2026/soal_17_opsi_d.png"}
+            {"label": "A", "teks": "", "gambar": "/soal/tka-matematika-sd-2026/soal_17_opsi_a.png"},
+            {"label": "B", "teks": "", "gambar": "/soal/tka-matematika-sd-2026/soal_17_opsi_b.png"},
+            {"label": "C", "teks": "", "gambar": "/soal/tka-matematika-sd-2026/soal_17_opsi_c.png"},
+            {"label": "D", "teks": "", "gambar": "/soal/tka-matematika-sd-2026/soal_17_opsi_d.png"}
         ],
         "kunci": "A",
-        "pembahasan": "Urutan volume dari yang terkecil ke terbesar:\n$\\text{Botol A } (450\\text{ ml}) < \\text{Botol D } (470\\text{ ml}) < \\text{Botol B } (530\\text{ ml}) < \\text{Botol C } (540\\text{ ml})$.\nIlustrasi pada Opsi A menunjukkan botol C memiliki permukaan air tertinggi, disusul B, D, dan botol A paling rendah."
+        "pembahasan": "Urutan volume dari yang terkecil ke terbesar:\n$\\text{Botol A } (450\\text{ ml}) < \\text{Botol D } (470\\text{ ml}) < \\text{Botol B } (530\\text{ ml}) < \\text{Botol C } (540\\text{ ml})$.\nGambar pada Opsi A menunjukkan botol C memiliki permukaan air tertinggi, disusul B, D, dan botol A paling rendah."
     },
     {
         "nomor": 18,
@@ -374,15 +374,15 @@ questions_data = [
             "teks": "Bu Halimah berjualan jajanan cireng isi ayam suwir pedas. Bahan-bahan yang digunakan: Tepung Tapioka (1.250 g), Tepung Terigu (500 g), Daging Ayam (1.500 g), Bawang (250 g), dan Cabai (250 g).",
             "gambar": ["/soal/tka-matematika-sd-2026/soal_18_bahan_cireng.png"]
         },
-        "teks_soal": "Bagaimanakah hubungan berat bahan-bahan tersebut jika ditimbang menggunakan neraca? Tentukan Benar atau Salah pada setiap penimbangan berikut!",
+        "teks_soal": "Bagaimana hubungan berat bahan-bahan tersebut jika ditimbang menggunakan neraca? Tentukan Benar atau Salah pada setiap gambar berikut!",
         "gambar": [],
         "pernyataan": [
-            {"teks": "Neraca 1 (Bawang 250 g seimbang dengan Cabai 250 g) <br/><img src=\"/soal/tka-matematika-sd-2026/soal_18_neraca_1.png\" alt=\"Neraca 1\" style=\"max-height:80px; display:inline-block; margin:4px 0;\" />", "kunci": "Benar"},
-            {"teks": "Neraca 2 (Tepung Terigu 500 g lebih berat dari Daging Ayam 1.500 g) <br/><img src=\"/soal/tka-matematika-sd-2026/soal_18_neraca_2.png\" alt=\"Neraca 2\" style=\"max-height:80px; display:inline-block; margin:4px 0;\" />", "kunci": "Salah"},
-            {"teks": "Neraca 3 (Tepung Tapioka 1.250 g lebih berat dari Tepung Terigu 500 g) <br/><img src=\"/soal/tka-matematika-sd-2026/soal_18_neraca_3.png\" alt=\"Neraca 3\" style=\"max-height:80px; display:inline-block; margin:4px 0;\" />", "kunci": "Benar"}
+            {"teks": "", "gambar": ["/soal/tka-matematika-sd-2026/soal_18_neraca_1.png"], "kunci": "Benar"},
+            {"teks": "", "gambar": ["/soal/tka-matematika-sd-2026/soal_18_neraca_2.png"], "kunci": "Salah"},
+            {"teks": "", "gambar": ["/soal/tka-matematika-sd-2026/soal_18_neraca_3.png"], "kunci": "Benar"}
         ],
         "kunci": ["Benar", "Salah", "Benar"],
-        "pembahasan": "- Neraca 1: Bawang (250 g) dan Cabai (250 g) sama berat, posisi neraca seimbang mendatar (Benar).\n- Neraca 2: Terigu 500 g lebih ringan dari Ayam 1.500 g, seharusnya sisi ayam yang turun ke bawah (Salah).\n- Neraca 3: Tapioka 1.250 g lebih berat dari Terigu 500 g, sisi tapioka turun ke bawah (Benar)."
+        "pembahasan": "- Gambar 1: Bawang (250 g) dan Cabai (250 g) sama berat, posisi neraca seimbang mendatar (Benar).\n- Gambar 2: Terigu 500 g lebih ringan dari Ayam 1.500 g, seharusnya sisi ayam yang turun ke bawah (Salah).\n- Gambar 3: Tapioka 1.250 g lebih berat dari Terigu 500 g, sisi tapioka turun ke bawah (Benar)."
     },
     {
         "nomor": 19,
@@ -550,10 +550,10 @@ questions_data = [
         "teks_soal": "Sumbu $x$ menyatakan bulan produksi, sedangkan sumbu $y$ menyatakan jumlah roti yang diproduksi. Berdasarkan informasi yang diberikan, manakah gabungan produksi roti yang tepat dari dua cabang tersebut?",
         "gambar": [],
         "opsi": [
-            {"label": "A", "teks": "Gabungan produksi roti Opsi A", "gambar": "/soal/tka-matematika-sd-2026/soal_26_opsi_a.png"},
-            {"label": "B", "teks": "Gabungan produksi roti Opsi B", "gambar": "/soal/tka-matematika-sd-2026/soal_26_opsi_b.png"},
-            {"label": "C", "teks": "Gabungan produksi roti Opsi C", "gambar": "/soal/tka-matematika-sd-2026/soal_26_opsi_c.png"},
-            {"label": "D", "teks": "Gabungan produksi roti Opsi D", "gambar": "/soal/tka-matematika-sd-2026/soal_26_opsi_d.png"}
+            {"label": "A", "teks": "", "gambar": "/soal/tka-matematika-sd-2026/soal_26_opsi_a.png"},
+            {"label": "B", "teks": "", "gambar": "/soal/tka-matematika-sd-2026/soal_26_opsi_b.png"},
+            {"label": "C", "teks": "", "gambar": "/soal/tka-matematika-sd-2026/soal_26_opsi_c.png"},
+            {"label": "D", "teks": "", "gambar": "/soal/tka-matematika-sd-2026/soal_26_opsi_d.png"}
         ],
         "kunci": "C",
         "pembahasan": "Jumlahkan produksi Jakarta dan Tangerang setiap bulan:\n- Januari: $500 + 500 = 1.000$\n- Februari: $1.000 + 500 = 1.500$\n- Maret: $750 + 1.500 = 2.250$\n- April: $1.200 + 2.000 = 3.200$\n- Mei: $1.500 + 2.500 = 4.000$\nGrafik pada Opsi C menyajikan total data penjumlahan tersebut secara tepat."
@@ -703,10 +703,12 @@ for q in questions_data:
             t = o.get("teks", "")
             g = o.get("gambar", "")
             isi = []
-            if t:
+            if t and g:
+                isi.append(f'{t}<br/><img src="{g}" data-url="{g}" alt="Opsi {lbl}" style="max-width:100%; max-height:160px; margin-top:6px; border-radius:6px; border:1px solid #e2e8f0;" />')
+            elif g:
+                isi.append(f'<img src="{g}" data-url="{g}" alt="Opsi {lbl}" style="max-width:100%; max-height:160px; border-radius:6px; border:1px solid #e2e8f0;" />')
+            elif t:
                 isi.append(t)
-            if g:
-                isi.append(f'<br/><img src="{g}" data-url="{g}" alt="Opsi {lbl}" style="max-width:100%; max-height:160px; margin-top:6px; border-radius:6px; border:1px solid #e2e8f0;" />')
             art.append(f'    <li data-label="{lbl}">{" ".join(isi)}</li>')
         art.append('  </ol>')
 
@@ -716,7 +718,12 @@ for q in questions_data:
         art.append('  <ul data-field="pernyataan">')
         for p in pernyataan_list:
             k_val = p.get("kunci", "Benar")
-            art.append(f'    <li data-jawaban="{k_val}">{p.get("teks", "")}</li>')
+            isi = []
+            if p.get("teks"):
+                isi.append(p["teks"])
+            for g in p.get("gambar", []):
+                isi.append(f'<img src="{g}" data-url="{g}" alt="Gambar Pernyataan" style="max-height:120px; display:inline-block; margin:4px 0; border-radius:6px; border:1px solid #e2e8f0;" />')
+            art.append(f'    <li data-jawaban="{k_val}">{" ".join(isi)}</li>')
         art.append('  </ul>')
 
     # Kunci Jawaban

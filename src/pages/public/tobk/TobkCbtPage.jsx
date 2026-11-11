@@ -1543,7 +1543,19 @@ export default function TobkCbtPage() {
                             <div key={pIdx} style={{ background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '8px', padding: isMobile ? '10px' : '12px 14px', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
                               <div style={{ flex: '1 1 260px', fontSize: skalaFont.opsi, color: '#1e293b', lineHeight: 1.5 }}>
                                 <span style={{ fontWeight: 700, marginRight: '6px', color: '#2563eb' }}>{pKey}.</span>
-                                <RenderMath text={teksP} />
+                                {teksP && <RenderMath text={teksP} />}
+                                {(p.gambar && Array.isArray(p.gambar) ? p.gambar : []).map((g, gIdx) => {
+                                  const src = typeof g === 'string' ? g : (g?.url || g?.dataUrl || g?.uploadedUrl);
+                                  if (!src) return null;
+                                  return (
+                                    <img
+                                      key={gIdx}
+                                      src={src}
+                                      alt={g?.deskripsi || `Gambar Pernyataan ${pKey}`}
+                                      style={{ maxWidth: '100%', maxHeight: 150, display: 'block', margin: teksP ? '6px 0 2px 0' : '2px 0', borderRadius: 6, border: '1px solid #e2e8f0', objectFit: 'contain' }}
+                                    />
+                                  );
+                                })}
                               </div>
                               <div style={{ display: 'flex', gap: '8px', flexShrink: 0, width: isMobile ? '100%' : 'auto', justifyContent: isMobile ? 'flex-end' : 'initial' }}>
                                 <button
