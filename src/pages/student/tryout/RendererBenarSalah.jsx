@@ -64,6 +64,8 @@ export default function RendererBenarSalah({ soal, jawabanTerpilih = [], onChang
     ? [...kolomDasar].sort((a, b) => (a.toLowerCase() === 'benar' ? -1 : b.toLowerCase() === 'benar' ? 1 : 0))
     : kolomDasar.some((k) => k.toLowerCase() === 'sesuai')
     ? [...kolomDasar].sort((a, b) => (a.toLowerCase() === 'sesuai' ? -1 : b.toLowerCase() === 'sesuai' ? 1 : 0))
+    : kolomDasar.some((k) => k.toLowerCase() === 'tepat')
+    ? [...kolomDasar].sort((a, b) => (a.toLowerCase() === 'tepat' ? -1 : b.toLowerCase() === 'tepat' ? 1 : 0))
     : kolomDasar;
 
   const tidakDijawab = modeTinjau && soalBelumDijawab(soal, jawabanTerpilih);

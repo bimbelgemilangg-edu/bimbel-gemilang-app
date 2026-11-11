@@ -6275,6 +6275,9 @@ function QuestionPreview({ question, mathReady, onCropImage, imageStatus = {}, d
         if (hasSesuai || teksSoalLow.includes('kesesuaian') || teksSoalLow.includes('sesuai atau tidak')) {
           labelKolom1 = 'Sesuai';
           labelKolom2 = 'Tidak Sesuai';
+        } else if (allJawaban.some(j => j.includes('tepat')) || teksSoalLow.includes('tepat')) {
+          labelKolom1 = 'Tepat';
+          labelKolom2 = 'Tidak Tepat';
         }
 
         const isSesuaiMode = labelKolom1 === 'Sesuai';

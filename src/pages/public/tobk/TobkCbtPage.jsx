@@ -1528,9 +1528,12 @@ export default function TobkCbtPage() {
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                       {(() => {
-                        const isSesuai = JSON.stringify(soalSekarang.kunci || soalSekarang.kunciJawaban || '').toLowerCase().includes('sesuai');
-                        const pilihan1 = isSesuai ? 'Sesuai' : 'Benar';
-                        const pilihan2 = isSesuai ? 'Tidak Sesuai' : 'Salah';
+                        const kunciStr = JSON.stringify(soalSekarang.kunci || soalSekarang.kunciJawaban || '').toLowerCase();
+                        const teksSoalStr = String(soalSekarang.teks || soalSekarang.soal || soalSekarang.teks_soal || '').toLowerCase();
+                        const isTepat = kunciStr.includes('tepat') || teksSoalStr.includes('tepat');
+                        const isSesuai = kunciStr.includes('sesuai') || teksSoalStr.includes('sesuai');
+                        const pilihan1 = isTepat ? 'Tepat' : isSesuai ? 'Sesuai' : 'Benar';
+                        const pilihan2 = isTepat ? 'Tidak Tepat' : isSesuai ? 'Tidak Sesuai' : 'Salah';
                         const jawabMap = (typeof jawaban[soalSekarang.id] === 'object' && jawaban[soalSekarang.id] !== null) ? jawaban[soalSekarang.id] : {};
 
                         return soalSekarang.pernyataan.map((p, pIdx) => {
