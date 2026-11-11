@@ -12,7 +12,7 @@ import {
   Menu, Bell, Settings, User, LogOut,
   ChevronRight, CheckSquare, Square, Clock,
   ArrowRight, ShieldAlert, CheckCircle2, Lock,
-  Camera, AlertCircle
+  Camera, AlertCircle, LayoutGrid, X, Type
 } from 'lucide-react';
 import {
   ambilSesiPesertaAktif, ambilEventTobkById, ambilEventTobkAktifPublik,
@@ -51,8 +51,53 @@ export default function TobkCbtPage() {
   const [sisaDetikTransisi, setSisaDetikTransisi] = useState(15);
   const [bisaLanjutTransisi, setBisaLanjutTransisi] = useState(false);
 
-  // Toggle Sidebar
-  const [sidebarBuka, setSidebarBuka] = useState(window.innerWidth > 900);
+  // Toggle Sidebar & Deteksi Mobile
+  const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' ? window.innerWidth < 860 : false);
+  const [sidebarBuka, setSidebarBuka] = useState(() => typeof window !== 'undefined' ? window.innerWidth >= 860 : true);
+  const [panelNomorBuka, setPanelNomorBuka] = useState(false);
+  const [showModalSettings, setShowModalSettings] = useState(false);
+
+  // Pengaturan Ukuran Font: 'kecil' | 'sedang' | 'besar'
+  const [ukuranFont, setUkuranFont] = useState(() => {
+    try {
+      return localStorage.getItem('gemilang_cbt_font') || 'sedang';
+    } catch {
+      return 'sedang';
+    }
+  });
+
+  const handleUbahFont = (ukuran) => {
+    setUkuranFont(ukuran);
+    try {
+      localStorage.setItem('gemilang_cbt_font', ukuran);
+    } catch {
+      /* ignore */
+    }
+  };
+
+  const skalaFont = useMemo(() => {
+    switch (ukuranFont) {
+      case 'kecil':
+        return { bacaan: '13.5px', soal: '14px', opsi: '13.5px', lineHeight: 1.6 };
+      case 'besar':
+        return { bacaan: '17px', soal: '17.5px', opsi: '17px', lineHeight: 1.8 };
+      case 'sedang':
+      default:
+        return { bacaan: '15px', soal: '15.5px', opsi: '15px', lineHeight: 1.7 };
+    }
+  }, [ukuranFont]);
+
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth < 860;
+      setIsMobile(mobile);
+      if (!mobile) {
+        setPanelNomorBuka(false);
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Anti-Cheat & 3 Strike
   const [pelanggaran, setPelanggaran] = useState([]);
@@ -635,6 +680,214 @@ export default function TobkCbtPage() {
     });
   }, [soalSekarang]);
 
+  // ── RENDER HELPER: ISI SIDEBAR KIRI (PROFIL & PROGRES SUBTES) ──
+  const renderSidebarKiri = () => (
+    <>
+      {/* Profil Avatar & Nama */}
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', marginBottom: '18px' }}>
+        <div
+          style={{
+            width: '60px',
+            height: '60px',
+            borderRadius: '50%',
+            background: '#eff6ff',
+            border: '2px solid #93c5fd',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: '#2563eb',
+            marginBottom: '8px',
+          }}
+        >
+          <User size={34} />
+        </div>
+        <div style={{ fontSize: '13.5px', fontWeight: 700, color: '#0f172a' }}>
+          {peserta?.nama || 'Peserta Ujian'}
+        </div>
+        <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>
+          {peserta?.asalSekolah || 'Siswa CBT Gemilang'}
+        </div>
+        {(peserta?.targetPtn || peserta?.targetJurusan) && (
+          <div style={{ marginTop: '6px', fontSize: '10px', fontWeight: 600, color: '#2563eb', background: '#eff6ff', padding: '3px 8px', borderRadius: '4px' }}>
+            🎯 {peserta.targetPtn} · {peserta.targetJurusan}
+          </div>
+        )}
+      </div>
+
+      {/* Status Server CBT */}
+      <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '10px 12px', marginBottom: '16px', fontSize: '11px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#16a34a', fontWeight: 700, marginBottom: '3px' }}>
+          <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#22c55e' }} />
+          Server CBT Terhubung
+        </div>
+        <div style={{ color: '#64748b' }}>
+          💾 Jawaban tersimpan otomatis secara berkala.
+        </div>
+      </div>
+
+      {/* Ringkasan Subtes Ujian */}
+      <div style={{ fontSize: '11px', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px' }}>
+        PROGRES SUBTES ({subtesAktifIndex + 1}/{subtesList.length})
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '18px', flex: 1, overflowY: 'auto' }}>
+        {subtesList.map((s, idx) => {
+          const isCurrent = idx === subtesAktifIndex;
+          const isPassed = idx < subtesAktifIndex;
+
+          let badgeBg = '#f1f5f9';
+          let badgeColor = '#64748b';
+          let statusText = 'Menunggu';
+
+          if (isCurrent) {
+            badgeBg = '#eff6ff';
+            badgeColor = '#2563eb';
+            statusText = 'Aktif';
+          } else if (isPassed) {
+            badgeBg = '#f0fdf4';
+            badgeColor = '#16a34a';
+            statusText = 'Terkunci';
+          }
+
+          return (
+            <div
+              key={s.id || idx}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '8px 10px',
+                borderRadius: '6px',
+                background: isCurrent ? '#f0f7ff' : '#ffffff',
+                border: `1px solid ${isCurrent ? '#bfdbfe' : '#f1f5f9'}`,
+                fontSize: '11px',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', overflow: 'hidden' }}>
+                {isPassed ? (
+                  <CheckCircle2 size={14} color="#16a34a" />
+                ) : isCurrent ? (
+                  <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#2563eb' }} />
+                ) : (
+                  <Lock size={12} color="#94a3b8" />
+                )}
+                <span style={{ fontWeight: isCurrent ? 700 : 500, color: isCurrent ? '#1e3a8a' : '#475569', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>
+                  {s.nama}
+                </span>
+              </div>
+
+              <span style={{ fontSize: '9px', fontWeight: 700, padding: '2px 6px', borderRadius: '4px', background: badgeBg, color: badgeColor }}>
+                {statusText}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Tombol Akhiri Ujian */}
+      <button
+        onClick={() => setShowModalKeluar(true)}
+        style={{
+          marginTop: 'auto',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '8px',
+          padding: '11px 14px',
+          borderRadius: '8px',
+          color: '#dc2626',
+          background: '#fef2f2',
+          border: '1px solid #fecaca',
+          fontWeight: 700,
+          fontSize: '12px',
+          cursor: 'pointer',
+          width: '100%',
+          transition: 'all 0.2s ease',
+        }}
+      >
+        <LogOut size={16} />
+        <span>Akhiri Sesi Ujian</span>
+      </button>
+    </>
+  );
+
+  // ── RENDER HELPER: ISI PANEL NOMOR SOAL ──
+  const renderPanelNomorContent = (onSelectNumber) => (
+    <>
+      <div
+        style={{
+          fontSize: '13px',
+          fontWeight: 800,
+          color: '#334155',
+          paddingBottom: '10px',
+          borderBottom: '2px solid #cbd5e1',
+          marginBottom: '14px',
+          textAlign: 'center',
+          letterSpacing: '0.5px',
+        }}
+      >
+        NOMOR SOAL
+      </div>
+
+      {/* Grid Nomor Soal */}
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: isMobile ? 'repeat(4, 1fr)' : 'repeat(3, 1fr)',
+          gap: '8px',
+        }}
+      >
+        {daftarSoalSubtes.map((s, idx) => {
+          const terjawab = sudahDijawab(s.id);
+          const raguAktif = isRagu(s.id);
+          const isCurrent = idx === indexSoal;
+
+          let bg = '#ffffff';
+          let fg = '#334155';
+          let border = '#cbd5e1';
+
+          if (terjawab) {
+            bg = '#22c55e';
+            fg = '#ffffff';
+            border = '#16a34a';
+          }
+          if (raguAktif) {
+            bg = '#f59e0b';
+            fg = '#ffffff';
+            border = '#d97706';
+          }
+
+          return (
+            <button
+              key={s.id || idx}
+              onClick={() => {
+                setIndexSoal(idx);
+                if (onSelectNumber) onSelectNumber();
+              }}
+              style={{
+                height: isMobile ? '42px' : '38px',
+                borderRadius: '6px',
+                border: `2px solid ${isCurrent ? '#2563eb' : border}`,
+                background: bg,
+                color: fg,
+                fontWeight: 800,
+                fontSize: isMobile ? '13px' : '12px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: isCurrent ? '0 0 0 2px #93c5fd' : 'none',
+                transition: 'all 0.15s ease',
+              }}
+            >
+              {idx + 1}
+            </button>
+          );
+        })}
+      </div>
+    </>
+  );
+
   if (loading) {
     return (
       <div style={{ minHeight: '100vh', background: '#f1f5f9', color: '#334155', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'sans-serif' }}>
@@ -775,13 +1028,13 @@ export default function TobkCbtPage() {
           zIndex: 100,
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <span style={{ fontSize: '18px', fontWeight: 800, letterSpacing: '0.5px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '8px' : '16px' }}>
+          <span style={{ fontSize: isMobile ? '16px' : '18px', fontWeight: 800, letterSpacing: '0.5px' }}>
             E-Ujian
           </span>
           <button
             onClick={() => setSidebarBuka(!sidebarBuka)}
-            title="Sembunyikan/Tampilkan Panel Samping"
+            title="Sembunyikan/Tampilkan Profil & Subtes"
             style={{
               background: 'transparent',
               border: 'none',
@@ -797,8 +1050,99 @@ export default function TobkCbtPage() {
           </button>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <div style={{ position: 'relative' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '8px' : '14px' }}>
+          {/* PENGATUR UKURAN FONT INTERAKTIF (A- | A | A+) */}
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              background: 'rgba(255, 255, 255, 0.16)',
+              borderRadius: '6px',
+              padding: '2px',
+              border: '1px solid rgba(255, 255, 255, 0.25)',
+            }}
+            title="Atur Ukuran Teks Soal"
+          >
+            <button
+              onClick={() => handleUbahFont('kecil')}
+              title="Font Kecil (13.5px)"
+              style={{
+                background: ukuranFont === 'kecil' ? '#ffffff' : 'transparent',
+                color: ukuranFont === 'kecil' ? '#1d4ed8' : '#ffffff',
+                border: 'none',
+                borderRadius: '4px',
+                padding: '3px 7px',
+                fontSize: '11px',
+                fontWeight: 800,
+                cursor: 'pointer',
+                lineHeight: 1,
+              }}
+            >
+              A-
+            </button>
+            <button
+              onClick={() => handleUbahFont('sedang')}
+              title="Font Sedang / Normal (15.5px)"
+              style={{
+                background: ukuranFont === 'sedang' ? '#ffffff' : 'transparent',
+                color: ukuranFont === 'sedang' ? '#1d4ed8' : '#ffffff',
+                border: 'none',
+                borderRadius: '4px',
+                padding: '3px 8px',
+                fontSize: '13px',
+                fontWeight: 800,
+                cursor: 'pointer',
+                lineHeight: 1,
+              }}
+            >
+              A
+            </button>
+            <button
+              onClick={() => handleUbahFont('besar')}
+              title="Font Besar (17.5px)"
+              style={{
+                background: ukuranFont === 'besar' ? '#ffffff' : 'transparent',
+                color: ukuranFont === 'besar' ? '#1d4ed8' : '#ffffff',
+                border: 'none',
+                borderRadius: '4px',
+                padding: '3px 7px',
+                fontSize: '15px',
+                fontWeight: 800,
+                cursor: 'pointer',
+                lineHeight: 1,
+              }}
+            >
+              A+
+            </button>
+          </div>
+
+          {/* TOMBOL DAFTAR SOAL KHUSUS MOBILE (Buka Drawer Nomor Soal) */}
+          {isMobile && (
+            <button
+              onClick={() => setPanelNomorBuka(true)}
+              title="Buka Daftar Nomor Soal"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '5px',
+                background: '#ffffff',
+                color: '#1d4ed8',
+                border: 'none',
+                borderRadius: '6px',
+                padding: '5px 9px',
+                fontSize: '11.5px',
+                fontWeight: 800,
+                cursor: 'pointer',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.15)',
+              }}
+            >
+              <LayoutGrid size={14} />
+              <span>{indexSoal + 1}/{daftarSoalSubtes.length}</span>
+            </button>
+          )}
+
+          {/* Ikon Notifikasi / Bell */}
+          <div style={{ position: 'relative', display: isMobile ? 'none' : 'block' }}>
             <Bell size={18} />
             <span
               style={{
@@ -812,14 +1156,31 @@ export default function TobkCbtPage() {
               }}
             />
           </div>
-          <Settings size={18} />
+
+          {/* Ikon Pengaturan / Settings Modal */}
+          <button
+            onClick={() => setShowModalSettings(true)}
+            title="Buka Pengaturan Tampilan"
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: '#ffffff',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              padding: '6px',
+              borderRadius: '4px',
+            }}
+          >
+            <Settings size={18} />
+          </button>
         </div>
       </header>
 
       {/* ── KONTEN UTAMA: 3 KOLOM PERSIS SCREENSHOT ── */}
       <div style={{ flex: 1, display: 'flex', position: 'relative', overflow: 'hidden' }}>
         {/* 1. SIDEBAR KIRI (IDENTITAS PESERTA & STATUS UJIAN RESMI) */}
-        {sidebarBuka && (
+        {!isMobile && sidebarBuka && (
           <aside
             style={{
               width: '240px',
@@ -834,139 +1195,63 @@ export default function TobkCbtPage() {
             }}
             className="eujian-sidebar"
           >
-            {/* Profil Avatar & Nama */}
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', marginBottom: '20px' }}>
-              <div
-                style={{
-                  width: '64px',
-                  height: '64px',
-                  borderRadius: '50%',
-                  background: '#eff6ff',
-                  border: '2px solid #93c5fd',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: '#2563eb',
-                  marginBottom: '10px',
-                }}
-              >
-                <User size={36} />
-              </div>
-              <div style={{ fontSize: '14px', fontWeight: 700, color: '#0f172a' }}>
-                {peserta?.nama || 'Peserta Ujian'}
-              </div>
-              <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>
-                {peserta?.asalSekolah || 'Siswa CBT Gemilang'}
-              </div>
-              {(peserta?.targetPtn || peserta?.targetJurusan) && (
-                <div style={{ marginTop: '6px', fontSize: '10px', fontWeight: 600, color: '#2563eb', background: '#eff6ff', padding: '3px 8px', borderRadius: '4px' }}>
-                  🎯 {peserta.targetPtn} · {peserta.targetJurusan}
-                </div>
-              )}
-            </div>
-
-            {/* Status Server CBT */}
-            <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '10px 12px', marginBottom: '18px', fontSize: '11px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#16a34a', fontWeight: 700, marginBottom: '4px' }}>
-                <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#22c55e' }} />
-                Server CBT Terhubung
-              </div>
-              <div style={{ color: '#64748b' }}>
-                💾 Jawaban tersimpan otomatis secara berkala.
-              </div>
-            </div>
-
-            {/* Ringkasan Subtes Ujian */}
-            <div style={{ fontSize: '11px', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px' }}>
-              PROGRES SUBTES ({subtesAktifIndex + 1}/{subtesList.length})
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '20px', flex: 1, overflowY: 'auto' }}>
-              {subtesList.map((s, idx) => {
-                const isCurrent = idx === subtesAktifIndex;
-                const isPassed = idx < subtesAktifIndex;
-
-                let badgeBg = '#f1f5f9';
-                let badgeColor = '#64748b';
-                let statusText = 'Menunggu';
-
-                if (isCurrent) {
-                  badgeBg = '#eff6ff';
-                  badgeColor = '#2563eb';
-                  statusText = 'Aktif';
-                } else if (isPassed) {
-                  badgeBg = '#f0fdf4';
-                  badgeColor = '#16a34a';
-                  statusText = 'Terkunci';
-                }
-
-                return (
-                  <div
-                    key={s.id || idx}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      padding: '8px 10px',
-                      borderRadius: '6px',
-                      background: isCurrent ? '#f0f7ff' : '#ffffff',
-                      border: `1px solid ${isCurrent ? '#bfdbfe' : '#f1f5f9'}`,
-                      fontSize: '11px',
-                    }}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', overflow: 'hidden' }}>
-                      {isPassed ? (
-                        <CheckCircle2 size={14} color="#16a34a" />
-                      ) : isCurrent ? (
-                        <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#2563eb' }} />
-                      ) : (
-                        <Lock size={12} color="#94a3b8" />
-                      )}
-                      <span style={{ fontWeight: isCurrent ? 700 : 500, color: isCurrent ? '#1e3a8a' : '#475569', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>
-                        {s.nama}
-                      </span>
-                    </div>
-
-                    <span style={{ fontSize: '9px', fontWeight: 700, padding: '2px 6px', borderRadius: '4px', background: badgeBg, color: badgeColor }}>
-                      {statusText}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* Tombol Akhiri Ujian (Memunculkan Modal Konfirmasi Aman Tanpa Blank Screen) */}
-            <button
-              onClick={() => setShowModalKeluar(true)}
-              style={{
-                marginTop: 'auto',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px',
-                padding: '11px 14px',
-                borderRadius: '8px',
-                color: '#dc2626',
-                background: '#fef2f2',
-                border: '1px solid #fecaca',
-                fontWeight: 700,
-                fontSize: '12px',
-                cursor: 'pointer',
-                width: '100%',
-                transition: 'all 0.2s ease',
-              }}
-            >
-              <LogOut size={16} />
-              <span>Akhiri Sesi Ujian</span>
-            </button>
+            {renderSidebarKiri()}
           </aside>
+        )}
+
+        {/* DRAWER SIDEBAR KIRI DI MOBILE */}
+        {isMobile && sidebarBuka && (
+          <div
+            style={{
+              position: 'fixed',
+              inset: 0,
+              zIndex: 1200,
+              background: 'rgba(15, 23, 42, 0.6)',
+              display: 'flex',
+            }}
+            onClick={() => setSidebarBuka(false)}
+          >
+            <aside
+              style={{
+                width: '280px',
+                maxWidth: '85vw',
+                height: '100%',
+                background: '#ffffff',
+                display: 'flex',
+                flexDirection: 'column',
+                padding: '20px 16px',
+                boxSizing: 'border-box',
+                overflowY: 'auto',
+                boxShadow: '4px 0 24px rgba(0,0,0,0.25)',
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', paddingBottom: '10px', borderBottom: '1px solid #e2e8f0' }}>
+                <span style={{ fontSize: '13px', fontWeight: 800, color: '#1e293b' }}>PROFIL & SUBTES</span>
+                <button
+                  onClick={() => setSidebarBuka(false)}
+                  style={{
+                    background: '#f1f5f9',
+                    border: 'none',
+                    borderRadius: '6px',
+                    padding: '6px',
+                    cursor: 'pointer',
+                    color: '#64748b',
+                  }}
+                >
+                  <X size={18} />
+                </button>
+              </div>
+              {renderSidebarKiri()}
+            </aside>
+          </div>
         )}
 
         {/* 2. KOLOM TENGAH: KOTAK SOAL PERSIS SCREENSHOT */}
         <main
           style={{
             flex: 1,
-            padding: '24px 20px',
+            padding: isMobile ? '12px 10px' : '24px 20px',
             overflowY: 'auto',
             display: 'flex',
             flexDirection: 'column',
@@ -987,11 +1272,12 @@ export default function TobkCbtPage() {
               {/* Header Box: SOAL NO. [ 1 ] dan Two-Tone SISA WAKTU */}
               <div
                 style={{
-                  padding: '16px 20px',
+                  padding: isMobile ? '12px 14px' : '16px 20px',
                   display: 'flex',
                   justifyContent: 'space-between',
                   alignItems: 'center',
                   borderBottom: '1px solid #f1f5f9',
+                  gap: '8px',
                 }}
               >
                 {/* SOAL NO. 1 */}
@@ -1031,10 +1317,11 @@ export default function TobkCbtPage() {
                     style={{
                       background: '#4f46e5',
                       color: '#ffffff',
-                      padding: '6px 12px',
+                      padding: isMobile ? '5px 8px' : '6px 12px',
                       display: 'flex',
                       alignItems: 'center',
                       letterSpacing: '0.5px',
+                      fontSize: isMobile ? '11px' : '12px',
                     }}
                   >
                     SISA WAKTU
@@ -1043,9 +1330,9 @@ export default function TobkCbtPage() {
                     style={{
                       background: sisaDetikSubtes < 300 ? '#dc2626' : '#0284c7',
                       color: '#ffffff',
-                      padding: '6px 12px',
+                      padding: isMobile ? '5px 8px' : '6px 12px',
                       fontFamily: 'monospace',
-                      fontSize: '13px',
+                      fontSize: isMobile ? '12px' : '13px',
                       letterSpacing: '0.5px',
                     }}
                   >
@@ -1055,7 +1342,7 @@ export default function TobkCbtPage() {
               </div>
 
               {/* Teks Soal & Wacana */}
-              <div style={{ padding: '20px 24px 10px', flex: 1 }}>
+              <div style={{ padding: isMobile ? '14px 12px 10px' : '20px 24px 10px', flex: 1 }}>
                 {/* Wacana / Teks Stimulus jika ada */}
                 {(() => {
                   const bcn = bacaanDari(soalSekarang);
@@ -1101,7 +1388,7 @@ export default function TobkCbtPage() {
                                 alt={`Gambar Wacana ${gi + 1}`}
                                 style={{
                                   maxWidth: '100%',
-                                  maxHeight: '280px',
+                                  maxHeight: isMobile ? '200px' : '280px',
                                   borderRadius: '8px',
                                   border: '1px solid #cbd5e1',
                                   display: 'block',
@@ -1113,7 +1400,7 @@ export default function TobkCbtPage() {
                         </div>
                       )}
                       {bcn.teks && (
-                        <div style={{ fontSize: '13.5px', lineHeight: 1.7, color: '#334155', whiteSpace: 'pre-line' }}>
+                        <div style={{ fontSize: skalaFont.bacaan, lineHeight: skalaFont.lineHeight, color: '#1e293b', whiteSpace: 'pre-line' }}>
                           <RenderMath text={bcn.teks} />
                         </div>
                       )}
@@ -1135,14 +1422,14 @@ export default function TobkCbtPage() {
                     soal={soalSekarang}
                     gambarUrls={gambarButirDari(soalSekarang)}
                     gayaTeks={{
-                      fontSize: '14px',
-                      lineHeight: 1.7,
-                      color: '#334155',
+                      fontSize: skalaFont.soal,
+                      lineHeight: skalaFont.lineHeight,
+                      color: '#0f172a',
                       whiteSpace: 'pre-line',
                     }}
                     gayaGambar={{
                       maxWidth: '100%',
-                      maxHeight: '320px',
+                      maxHeight: isMobile ? '220px' : '320px',
                       borderRadius: '8px',
                       margin: '12px auto',
                     }}
@@ -1154,7 +1441,7 @@ export default function TobkCbtPage() {
 
                 {/* Pilihan Opsi Tunggal ATAU Pernyataan Majemuk (TKA / AKM / UTBK) */}
                 {daftarOpsi.length > 0 ? (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? '10px' : '14px' }}>
                     {daftarOpsi.map((opsi) => {
                       const terpilih = String(jawaban[soalSekarang.id] || '').toUpperCase() === String(opsi.key).toUpperCase();
 
@@ -1167,9 +1454,16 @@ export default function TobkCbtPage() {
                             alignItems: 'flex-start',
                             gap: '12px',
                             cursor: 'pointer',
-                            fontSize: '14px',
-                            color: '#334155',
+                            fontSize: skalaFont.opsi,
+                            lineHeight: 1.6,
+                            color: '#1e293b',
                             userSelect: 'none',
+                            padding: isMobile ? '10px 12px' : '10px 14px',
+                            background: terpilih ? '#eff6ff' : '#ffffff',
+                            borderRadius: '8px',
+                            border: `1.5px solid ${terpilih ? '#2563eb' : '#e2e8f0'}`,
+                            boxShadow: terpilih ? '0 1px 3px rgba(37,99,235,0.15)' : 'none',
+                            transition: 'all 0.15s ease',
                           }}
                         >
                           {/* Radio Circle */}
@@ -1183,7 +1477,7 @@ export default function TobkCbtPage() {
                               alignItems: 'center',
                               justifyContent: 'center',
                               flexShrink: 0,
-                              marginTop: '2px',
+                              marginTop: '3px',
                               background: '#ffffff',
                             }}
                           >
@@ -1199,7 +1493,10 @@ export default function TobkCbtPage() {
                             )}
                           </span>
 
-                          <div style={{ flex: 1 }}>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <span style={{ fontWeight: 800, marginRight: '6px', color: terpilih ? '#1d4ed8' : '#334155' }}>
+                              {opsi.key}.
+                            </span>
                             {opsi.teks && <RenderMath text={opsi.teks} />}
                             {opsi.gambar && (
                               <img
@@ -1207,7 +1504,7 @@ export default function TobkCbtPage() {
                                 alt={`Opsi ${opsi.key}`}
                                 style={{
                                   maxWidth: '100%',
-                                  maxHeight: '160px',
+                                  maxHeight: isMobile ? '130px' : '160px',
                                   borderRadius: '6px',
                                   marginTop: '6px',
                                   display: 'block',
@@ -1221,11 +1518,11 @@ export default function TobkCbtPage() {
                     })}
                   </div>
                 ) : (soalSekarang.pernyataan && Array.isArray(soalSekarang.pernyataan) && soalSekarang.pernyataan.length > 0) ? (
-                  <div style={{ marginTop: '16px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '10px', padding: '16px' }}>
+                  <div style={{ marginTop: '16px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '10px', padding: isMobile ? '12px' : '16px' }}>
                     <div style={{ fontSize: '12px', fontWeight: 700, color: '#475569', textTransform: 'uppercase', marginBottom: '12px', letterSpacing: '0.5px' }}>
                       📋 Tentukan Kesesuaian Tiap Pernyataan:
                     </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                       {(() => {
                         const isSesuai = JSON.stringify(soalSekarang.kunci || soalSekarang.kunciJawaban || '').toLowerCase().includes('sesuai');
                         const pilihan1 = isSesuai ? 'Sesuai' : 'Benar';
@@ -1239,12 +1536,12 @@ export default function TobkCbtPage() {
                           const teksP = typeof p === 'string' ? p : (p.teks || p.pernyataan || '');
 
                           return (
-                            <div key={pIdx} style={{ background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '8px', padding: '12px 14px', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
-                              <div style={{ flex: '1 1 300px', fontSize: '13px', color: '#1e293b', lineHeight: 1.5 }}>
+                            <div key={pIdx} style={{ background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '8px', padding: isMobile ? '10px' : '12px 14px', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
+                              <div style={{ flex: '1 1 260px', fontSize: skalaFont.opsi, color: '#1e293b', lineHeight: 1.5 }}>
                                 <span style={{ fontWeight: 700, marginRight: '6px', color: '#2563eb' }}>{pKey}.</span>
                                 <RenderMath text={teksP} />
                               </div>
-                              <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
+                              <div style={{ display: 'flex', gap: '8px', flexShrink: 0, width: isMobile ? '100%' : 'auto', justifyContent: isMobile ? 'flex-end' : 'initial' }}>
                                 <button
                                   type="button"
                                   onClick={() => handlePilihPernyataan(soalSekarang.id, pKey, pilihan1)}
@@ -1292,15 +1589,14 @@ export default function TobkCbtPage() {
               {/* Tombol Aksi Bawah: < Soal Sebelumnya | ☐ Ragu-Ragu | Soal Selanjutnya > */}
               <div
                 style={{
-                  padding: '20px 24px',
+                  padding: isMobile ? '10px 12px' : '16px 20px',
                   display: 'flex',
                   justifyContent: 'space-between',
                   alignItems: 'center',
                   borderTop: '1px solid #f1f5f9',
                   background: '#fafafa',
                   borderRadius: '0 0 8px 8px',
-                  flexWrap: 'wrap',
-                  gap: '10px',
+                  gap: isMobile ? '6px' : '10px',
                 }}
               >
                 {/* Tombol Kiri: Soal Sebelumnya */}
@@ -1311,35 +1607,42 @@ export default function TobkCbtPage() {
                     background: '#2563eb',
                     color: '#ffffff',
                     border: 'none',
-                    padding: '9px 18px',
-                    borderRadius: '5px',
-                    fontSize: '13px',
+                    padding: isMobile ? '9px 10px' : '9px 18px',
+                    borderRadius: '6px',
+                    fontSize: isMobile ? '12px' : '13px',
                     fontWeight: 600,
                     cursor: indexSoal === 0 ? 'not-allowed' : 'pointer',
-                    opacity: indexSoal === 0 ? 0.6 : 1,
+                    opacity: indexSoal === 0 ? 0.5 : 1,
                     display: 'inline-flex',
                     alignItems: 'center',
+                    justifyContent: 'center',
                     gap: '4px',
+                    flex: isMobile ? 1 : 'initial',
+                    whiteSpace: 'nowrap',
                   }}
                 >
-                  &lt; Soal Sebelumnya
+                  &lt; {isMobile ? 'Kembali' : 'Soal Sebelumnya'}
                 </button>
 
                 {/* Tombol Tengah: Ragu-Ragu */}
                 <button
                   onClick={() => handleToggleRagu(soalSekarang?.id)}
                   style={{
-                    background: '#f59e0b',
+                    background: isRagu(soalSekarang?.id) ? '#d97706' : '#f59e0b',
                     color: '#ffffff',
                     border: 'none',
-                    padding: '9px 20px',
-                    borderRadius: '5px',
-                    fontSize: '13px',
+                    padding: isMobile ? '9px 10px' : '9px 20px',
+                    borderRadius: '6px',
+                    fontSize: isMobile ? '12px' : '13px',
                     fontWeight: 700,
                     cursor: 'pointer',
                     display: 'inline-flex',
                     alignItems: 'center',
-                    gap: '6px',
+                    justifyContent: 'center',
+                    gap: '5px',
+                    flex: isMobile ? 1 : 'initial',
+                    boxShadow: isRagu(soalSekarang?.id) ? '0 0 0 2px #fde68a' : 'none',
+                    whiteSpace: 'nowrap',
                   }}
                 >
                   {isRagu(soalSekarang?.id) ? (
@@ -1358,17 +1661,20 @@ export default function TobkCbtPage() {
                       background: '#2563eb',
                       color: '#ffffff',
                       border: 'none',
-                      padding: '9px 18px',
-                      borderRadius: '5px',
-                      fontSize: '13px',
+                      padding: isMobile ? '9px 10px' : '9px 18px',
+                      borderRadius: '6px',
+                      fontSize: isMobile ? '12px' : '13px',
                       fontWeight: 600,
                       cursor: 'pointer',
                       display: 'inline-flex',
                       alignItems: 'center',
+                      justifyContent: 'center',
                       gap: '4px',
+                      flex: isMobile ? 1 : 'initial',
+                      whiteSpace: 'nowrap',
                     }}
                   >
-                    Soal Selanjutnya &gt;
+                    {isMobile ? 'Lanjut' : 'Soal Selanjutnya'} &gt;
                   </button>
                 ) : (
                   <button
@@ -1377,17 +1683,20 @@ export default function TobkCbtPage() {
                       background: subtesAktifIndex < subtesList.length - 1 ? '#2563eb' : '#059669',
                       color: '#ffffff',
                       border: 'none',
-                      padding: '9px 20px',
-                      borderRadius: '5px',
-                      fontSize: '13px',
+                      padding: isMobile ? '9px 12px' : '9px 20px',
+                      borderRadius: '6px',
+                      fontSize: isMobile ? '12px' : '13px',
                       fontWeight: 700,
                       cursor: 'pointer',
                       display: 'inline-flex',
                       alignItems: 'center',
-                      gap: '6px',
+                      justifyContent: 'center',
+                      gap: '5px',
+                      flex: isMobile ? 1 : 'initial',
+                      whiteSpace: 'nowrap',
                     }}
                   >
-                    {subtesAktifIndex < subtesList.length - 1 ? 'Selesai Subtes >' : 'Selesai Ujian >'}
+                    {subtesAktifIndex < subtesList.length - 1 ? (isMobile ? 'Subtes >' : 'Selesai Subtes >') : (isMobile ? 'Selesai' : 'Selesai Ujian >')}
                   </button>
                 )}
               </div>
@@ -1399,96 +1708,96 @@ export default function TobkCbtPage() {
           )}
         </main>
 
-        {/* 3. PANEL KANAN: NOMOR SOAL GRID 3 KOLOM PERSIS SCREENSHOT */}
-        <aside
-          style={{
-            width: '200px',
-            background: '#ffffff',
-            borderLeft: '1px solid #e2e8f0',
-            padding: '20px 16px',
-            boxSizing: 'border-box',
-            flexShrink: 0,
-            overflowY: 'auto',
-          }}
-        >
-          <div
+        {/* 3. PANEL KANAN: NOMOR SOAL GRID (DESKTOP INLINE & MOBILE OVERLAY) */}
+        {!isMobile && (
+          <aside
             style={{
-              fontSize: '13px',
-              fontWeight: 800,
-              color: '#334155',
-              paddingBottom: '10px',
-              borderBottom: '2px solid #cbd5e1',
-              marginBottom: '16px',
-              textAlign: 'center',
-              letterSpacing: '0.5px',
+              width: '200px',
+              background: '#ffffff',
+              borderLeft: '1px solid #e2e8f0',
+              padding: '20px 16px',
+              boxSizing: 'border-box',
+              flexShrink: 0,
+              overflowY: 'auto',
             }}
           >
-            NOMOR SOAL
-          </div>
+            {renderPanelNomorContent()}
+          </aside>
+        )}
 
-          {/* Grid 3 Kolom */}
+        {/* DRAWER NOMOR SOAL DI MOBILE */}
+        {isMobile && panelNomorBuka && (
           <div
             style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(3, 1fr)',
-              gap: '8px',
+              position: 'fixed',
+              inset: 0,
+              zIndex: 1200,
+              background: 'rgba(15, 23, 42, 0.6)',
+              display: 'flex',
+              justifyContent: 'flex-end',
             }}
+            onClick={() => setPanelNomorBuka(false)}
           >
-            {daftarSoalSubtes.map((s, idx) => {
-              const terjawab = sudahDijawab(s.id);
-              const raguAktif = isRagu(s.id);
-              const isCurrent = idx === indexSoal;
-
-              let bg = '#ffffff';
-              let fg = '#334155';
-              let border = '#cbd5e1';
-
-              if (terjawab) {
-                bg = '#22c55e';
-                fg = '#ffffff';
-                border = '#16a34a';
-              }
-              if (raguAktif) {
-                bg = '#f59e0b';
-                fg = '#ffffff';
-                border = '#d97706';
-              }
-
-              return (
+            <aside
+              style={{
+                width: '300px',
+                maxWidth: '88vw',
+                height: '100%',
+                background: '#ffffff',
+                display: 'flex',
+                flexDirection: 'column',
+                padding: '20px 16px',
+                boxSizing: 'border-box',
+                overflowY: 'auto',
+                boxShadow: '-4px 0 24px rgba(0,0,0,0.25)',
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '12px', borderBottom: '2px solid #cbd5e1', marginBottom: '14px' }}>
+                <div style={{ fontSize: '13px', fontWeight: 800, color: '#1e293b' }}>
+                  NOMOR SOAL ({subtesAktif.nama})
+                </div>
                 <button
-                  key={s.id || idx}
-                  onClick={() => setIndexSoal(idx)}
+                  onClick={() => setPanelNomorBuka(false)}
                   style={{
-                    height: '38px',
-                    borderRadius: '5px',
-                    border: `1px solid ${isCurrent ? '#2563eb' : border}`,
-                    background: bg,
-                    color: fg,
-                    fontWeight: 700,
-                    fontSize: '12px',
+                    background: '#f1f5f9',
+                    border: 'none',
+                    borderRadius: '6px',
+                    padding: '6px',
                     cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    boxShadow: isCurrent ? '0 0 0 2px #93c5fd' : 'none',
-                    transition: 'all 0.15s ease',
+                    color: '#64748b',
                   }}
                 >
-                  {idx + 1}
+                  <X size={18} />
                 </button>
-              );
-            })}
+              </div>
+
+              {/* Legend Singkat */}
+              <div style={{ display: 'flex', gap: '10px', marginBottom: '14px', fontSize: '11px', color: '#64748b' }}>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                  <span style={{ width: 10, height: 10, borderRadius: 2, background: '#22c55e' }} /> Selesai
+                </span>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                  <span style={{ width: 10, height: 10, borderRadius: 2, background: '#f59e0b' }} /> Ragu
+                </span>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                  <span style={{ width: 10, height: 10, borderRadius: 2, background: '#ffffff', border: '1px solid #cbd5e1' }} /> Belum
+                </span>
+              </div>
+
+              {renderPanelNomorContent(() => setPanelNomorBuka(false))}
+            </aside>
           </div>
-        </aside>
+        )}
 
         {/* ── WEBCAM AI PROCTOR DISKRIT (Floating PIP Cross-Device) ── */}
         <div
           style={{
             position: 'fixed',
-            bottom: '16px',
-            right: '216px',
-            width: '136px',
-            height: '102px',
+            bottom: isMobile ? '68px' : '16px',
+            right: isMobile ? '12px' : '216px',
+            width: isMobile ? '88px' : '136px',
+            height: isMobile ? '66px' : '102px',
             background: '#020617',
             borderRadius: '8px',
             border: `2px solid ${kameraStatus === 'aktif' ? '#22c55e' : '#f59e0b'}`,
@@ -1840,6 +2149,146 @@ export default function TobkCbtPage() {
               }} />
               Standby • Menunggu instruksi pengawas untuk melanjutkan...
             </div>
+          </div>
+        </div>
+      )}
+      {/* ── MODAL PENGATURAN TAMPILAN & UKURAN FONT ── */}
+      {showModalSettings && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 1300,
+            background: 'rgba(15, 23, 42, 0.65)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '16px',
+          }}
+          onClick={() => setShowModalSettings(false)}
+        >
+          <div
+            style={{
+              background: '#ffffff',
+              borderRadius: '16px',
+              maxWidth: '460px',
+              width: '100%',
+              padding: '24px',
+              boxShadow: '0 25px 50px -12px rgba(0,0,0,0.3)',
+              position: 'relative',
+              boxSizing: 'border-box',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header Modal */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px', paddingBottom: '12px', borderBottom: '1px solid #e2e8f0' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '16px', fontWeight: 800, color: '#0f172a' }}>
+                <Settings size={20} color="#2563eb" />
+                <span>Pengaturan Tampilan Ujian</span>
+              </div>
+              <button
+                onClick={() => setShowModalSettings(false)}
+                style={{
+                  background: '#f1f5f9',
+                  border: 'none',
+                  borderRadius: '6px',
+                  padding: '6px',
+                  cursor: 'pointer',
+                  color: '#64748b',
+                }}
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Pilihan Ukuran Font */}
+            <div style={{ marginBottom: '18px' }}>
+              <div style={{ fontSize: '13px', fontWeight: 700, color: '#334155', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Type size={16} color="#2563eb" />
+                <span>Ukuran Huruf / Font Naskah Soal:</span>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
+                {[
+                  { key: 'kecil', label: 'A- (Kecil)', desc: '13.5px' },
+                  { key: 'sedang', label: 'A (Normal)', desc: '15.5px' },
+                  { key: 'besar', label: 'A+ (Besar)', desc: '17.5px' },
+                ].map((item) => {
+                  const aktif = ukuranFont === item.key;
+                  return (
+                    <button
+                      key={item.key}
+                      type="button"
+                      onClick={() => handleUbahFont(item.key)}
+                      style={{
+                        padding: '10px 6px',
+                        borderRadius: '8px',
+                        border: `2px solid ${aktif ? '#2563eb' : '#cbd5e1'}`,
+                        background: aktif ? '#eff6ff' : '#ffffff',
+                        color: aktif ? '#1d4ed8' : '#334155',
+                        cursor: 'pointer',
+                        textAlign: 'center',
+                        fontWeight: 700,
+                        fontSize: '13px',
+                        transition: 'all 0.15s ease',
+                      }}
+                    >
+                      <div>{item.label}</div>
+                      <div style={{ fontSize: '11px', color: aktif ? '#2563eb' : '#64748b', marginTop: '3px', fontWeight: 500 }}>
+                        {item.desc}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Live Preview Naskah */}
+            <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '10px', padding: '12px 14px', marginBottom: '18px' }}>
+              <div style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', marginBottom: '6px', letterSpacing: '0.3px' }}>
+                Contoh Pratinjau Teks:
+              </div>
+              <p style={{ margin: 0, fontSize: skalaFont.soal, lineHeight: skalaFont.lineHeight, color: '#0f172a' }}>
+                Ini adalah contoh keterbacaan teks soal dan pilihan jawaban dengan ukuran font yang dipilih.
+              </p>
+            </div>
+
+            {/* Panduan Warna CBT */}
+            <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '10px', padding: '12px 14px', marginBottom: '20px', fontSize: '12px' }}>
+              <div style={{ fontWeight: 700, color: '#334155', marginBottom: '6px' }}>Status Warna Nomor Soal:</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', color: '#475569' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ width: 12, height: 12, borderRadius: 3, background: '#22c55e', display: 'inline-block' }} />
+                  <span><strong>Hijau:</strong> Soal sudah dijawab</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ width: 12, height: 12, borderRadius: 3, background: '#f59e0b', display: 'inline-block' }} />
+                  <span><strong>Kuning:</strong> Soal ditandai ragu-ragu</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ width: 12, height: 12, borderRadius: 3, background: '#ffffff', border: '1px solid #cbd5e1', display: 'inline-block' }} />
+                  <span><strong>Putih:</strong> Soal belum dijawab</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Tombol Simpan / Tutup */}
+            <button
+              type="button"
+              onClick={() => setShowModalSettings(false)}
+              style={{
+                width: '100%',
+                background: '#2563eb',
+                color: '#ffffff',
+                border: 'none',
+                borderRadius: '8px',
+                padding: '11px',
+                fontSize: '13.5px',
+                fontWeight: 700,
+                cursor: 'pointer',
+              }}
+            >
+              Simpan & Lanjutkan Mengerjakan
+            </button>
           </div>
         </div>
       )}

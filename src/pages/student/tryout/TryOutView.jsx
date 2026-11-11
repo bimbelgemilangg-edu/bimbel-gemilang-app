@@ -225,6 +225,36 @@ export default function TryOutView() {
   // tombol di header -- format menjawab mengikuti mockup owner: linear.
   const [lihatPalet, setLihatPalet] = useState(false);
 
+  // Pengaturan Ukuran Font
+  const [ukuranFont, setUkuranFont] = useState(() => {
+    try {
+      return localStorage.getItem('gemilang_cbt_font') || 'sedang';
+    } catch {
+      return 'sedang';
+    }
+  });
+
+  const handleUbahFont = (ukuran) => {
+    setUkuranFont(ukuran);
+    try {
+      localStorage.setItem('gemilang_cbt_font', ukuran);
+    } catch {
+      /* ignore */
+    }
+  };
+
+  const skalaFont = useMemo(() => {
+    switch (ukuranFont) {
+      case 'kecil':
+        return { bacaan: 14, soal: 14.5, opsi: 14, lineHeight: 1.6 };
+      case 'besar':
+        return { bacaan: 18, soal: 18.5, opsi: 18, lineHeight: 1.8 };
+      case 'sedang':
+      default:
+        return { bacaan: 16, soal: 16.5, opsi: 16, lineHeight: 1.7 };
+    }
+  }, [ukuranFont]);
+
   useEffect(() => {
     if (tahap !== 'cek-kamera') return;
     let batal = false;
@@ -1467,7 +1497,75 @@ export default function TryOutView() {
             {kodePaketTampil(paket)}
           </div>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          {/* PENGATUR UKURAN FONT INTERAKTIF (A- | A | A+) */}
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              background: 'rgba(255, 255, 255, 0.18)',
+              borderRadius: 6,
+              padding: 2,
+              border: '1px solid rgba(255, 255, 255, 0.25)',
+            }}
+            title="Atur Ukuran Teks Soal"
+          >
+            <button
+              type="button"
+              onClick={() => handleUbahFont('kecil')}
+              title="Font Kecil (14px)"
+              style={{
+                background: ukuranFont === 'kecil' ? '#ffffff' : 'transparent',
+                color: ukuranFont === 'kecil' ? '#5B2ECC' : '#ffffff',
+                border: 'none',
+                borderRadius: 4,
+                padding: '2px 6px',
+                fontSize: 10.5,
+                fontWeight: 800,
+                cursor: 'pointer',
+                lineHeight: 1,
+              }}
+            >
+              A-
+            </button>
+            <button
+              type="button"
+              onClick={() => handleUbahFont('sedang')}
+              title="Font Normal (16.5px)"
+              style={{
+                background: ukuranFont === 'sedang' ? '#ffffff' : 'transparent',
+                color: ukuranFont === 'sedang' ? '#5B2ECC' : '#ffffff',
+                border: 'none',
+                borderRadius: 4,
+                padding: '2px 7px',
+                fontSize: 12,
+                fontWeight: 800,
+                cursor: 'pointer',
+                lineHeight: 1,
+              }}
+            >
+              A
+            </button>
+            <button
+              type="button"
+              onClick={() => handleUbahFont('besar')}
+              title="Font Besar (18.5px)"
+              style={{
+                background: ukuranFont === 'besar' ? '#ffffff' : 'transparent',
+                color: ukuranFont === 'besar' ? '#5B2ECC' : '#ffffff',
+                border: 'none',
+                borderRadius: 4,
+                padding: '2px 6px',
+                fontSize: 13.5,
+                fontWeight: 800,
+                cursor: 'pointer',
+                lineHeight: 1,
+              }}
+            >
+              A+
+            </button>
+          </div>
+
           {paket.wajibKamera && (
             <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10.5, color: statusKamera === 'aktif' ? '#4ade80' : '#f87171', fontWeight: 700 }}>
               <Camera size={12} /> {statusKamera === 'aktif' ? 'AKTIF' : statusKamera === 'memuat' ? '...' : 'OFF'}
@@ -1616,7 +1714,7 @@ export default function TryOutView() {
                 </div>
               )}
               {bcn.teks && (
-                <div style={{ ...GAYA_TEKS_BACAAN, whiteSpace: 'pre-wrap' }}>
+                <div style={{ ...GAYA_TEKS_BACAAN, fontSize: skalaFont.bacaan, lineHeight: skalaFont.lineHeight, whiteSpace: 'pre-wrap' }}>
                   <RenderMath text={bcn.teks} />
                 </div>
               )}
@@ -1629,7 +1727,7 @@ export default function TryOutView() {
           soal={soalAktif}
           gambarUrls={gambarButirDari(soalAktif)}
           gambarMeta={soalAktif.gambarMeta || null}
-          gayaTeks={{ marginBottom: 16 }}
+          gayaTeks={{ fontSize: skalaFont.soal, lineHeight: skalaFont.lineHeight, marginBottom: 16 }}
           gayaGambar={{ maxHeight: 320, marginBottom: 16 }}
         />
         {(!['benar_salah', 'pg_kategori'].includes(soalAktif.tipe) || (!soalAktif.pernyataan?.length && !soalAktif.tabelBenarSalah?.length)) && (soalAktif.tabelSoal || soalAktif.tabel_soal || soalAktif.tabel || soalAktif.bacaan?.tabelSoal || soalAktif.stimulus?.tabel) && (
