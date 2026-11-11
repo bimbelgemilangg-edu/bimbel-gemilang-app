@@ -661,28 +661,30 @@ for q in questions_data:
     art.append(f'  <div data-field="materi">{materi}</div>')
     art.append(f'  <div data-field="capaian_pembelajaran">{capaian}</div>')
 
-    # Stimulus / Bacaan jika ada
+    # Stimulus / Bacaan jika ada (HANYA teks wacana, gambar ditaruh di <div data-field="gambar"> agar masuk q.gambar dan tidak dobel)
     bcn = q.get("bacaan")
-    if bcn:
+    if bcn and bcn.get("teks"):
         judul_attr = f' data-judul="{bcn.get("judul", "")}"' if bcn.get("judul") else ''
         art.append(f'  <div data-field="bacaan" data-grup="wacana_{nomor}"{judul_attr}>')
         if bcn.get("judul"):
             art.append(f'    <h3>{bcn["judul"]}</h3>')
-        if bcn.get("gambar"):
-            for g in bcn["gambar"]:
-                art.append(f'    <div class="stimulus-image"><img src="{g}" data-url="{g}" alt="Gambar Stimulus {nomor}" style="max-width:100%; max-height:300px; display:block; margin:8px auto; border-radius:8px;" /></div>')
-        if bcn.get("teks"):
-            for p in bcn["teks"].split("\n"):
-                if p.strip():
-                    art.append(f'    <p>{p.strip()}</p>')
+        for p in bcn["teks"].split("\n"):
+            if p.strip():
+                art.append(f'    <p>{p.strip()}</p>')
         art.append('  </div>')
 
-    # Gambar butir soal jika ada
-    gambar_urls = q.get("gambar", [])
+    # Gambar butir soal (WAJIB di <div data-field="gambar"> agar masuk q.gambar, lolos Gerbang Gemilang, dan bebas warning Upload Gambar Massal)
+    gambar_urls = list(q.get("gambar", []))
+    if bcn and bcn.get("gambar"):
+        for g in bcn["gambar"]:
+            if g not in gambar_urls:
+                gambar_urls.append(g)
+
     if gambar_urls:
         art.append('  <div data-field="gambar">')
         for g in gambar_urls:
-            art.append(f'    <img src="{g}" data-url="{g}" alt="Gambar Soal {nomor}" style="max-width:100%; max-height:320px; display:block; margin:8px auto; border-radius:8px;" />')
+            max_h = "160px" if "seperenam" in g else "280px"
+            art.append(f'    <img src="{g}" data-url="{g}" alt="Ilustrasi Soal {nomor}" style="max-width:100%; max-height:{max_h}; display:block; margin:8px auto; border-radius:8px;" />')
         art.append('  </div>')
 
     # Teks Soal
