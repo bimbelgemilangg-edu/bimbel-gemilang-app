@@ -29,8 +29,8 @@ const RE_JUDUL_KOLOM_RUSAK = /^\s*a{1,2}al-?soal\s*$/i;
 const RE_SLOGAN_BUKU = /^\s*(belajar|has[ij]l|hbsil|mbksimal|winimal)\s*(minimal|maksimal|minima[,.]?|maksima[,.]?|mbksimal|hbsil)?[,.]?\s*$/i;
 
 const PUNCAKUS_AKHIR = /[.!?:;…)}\]"']$/;
-// Penanda baris daftar: bullet, huruf/angka bernomor, atau opsi berhuruf.
-const RE_BARIS_DAFTAR = /^([•\-*▪◦]\s*|\([a-eA-E0-9]{1,2}\)|[a-eA-E][.)]|\d{1,2}[.)])\s*\S/;
+// Penanda baris daftar: bullet, dash, simbol cek/panah, huruf/angka bernomor, romawi (i)/(ii), atau opsi berhuruf.
+const RE_BARIS_DAFTAR = /^([•\-*▪◦□■◆◇▶▷►▻✓✔⮚\u25a0-\u25ff\uf000-\uf0ff]\s*|\([a-zA-Z0-9]{1,4}\)|[a-zA-Z][.)]|\d{1,2}[.)])\s*\S/;
 
 // Simbol yang hanya muncul di baris MATEMATIKA, tidak pernah di rácak OCR.
 const RE_SIMBOL_MATIKA = /[{∈≤≥≠√∩∪]/;

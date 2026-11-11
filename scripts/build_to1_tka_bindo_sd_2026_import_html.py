@@ -9,7 +9,7 @@ SOAL_BINDO = [
         "nomor": 1,
         "tipe": "pg_sederhana",
         "kesulitan": "mudah",
-        "materi": "Unsur Intrinsik Cerita (Tema)",
+        "materi": "Teks Cerita Narasi - Tema Cerita",
         "capaian": "Mengidentifikasi tema cerita narasi berdasarkan tindakan tokoh",
         "bacaan": {
             "grup": "wacana_andi",
@@ -30,7 +30,7 @@ SOAL_BINDO = [
         "nomor": 2,
         "tipe": "pg_sederhana",
         "kesulitan": "mudah",
-        "materi": "Informasi Tersurat Teks Lingkungan",
+        "materi": "Teks Eksplanasi Lingkungan - Informasi Tersurat",
         "capaian": "Menemukan informasi tersurat mengenai dampak masalah lingkungan",
         "bacaan": {
             "grup": "wacana_maritim",
@@ -51,7 +51,7 @@ SOAL_BINDO = [
         "nomor": 3,
         "tipe": "pg_sederhana",
         "kesulitan": "sedang",
-        "materi": "Ide Pokok Paragraf",
+        "materi": "Teks Eksplanasi Lingkungan - Ide Pokok Paragraf",
         "capaian": "Menentukan ide pokok paragraf dalam teks eksplanasi lingkungan",
         "bacaan": {
             "grup": "wacana_maritim",
@@ -72,7 +72,7 @@ SOAL_BINDO = [
         "nomor": 4,
         "tipe": "pg_sederhana",
         "kesulitan": "mudah",
-        "materi": "Makna Ungkapan (Idiom)",
+        "materi": "Teks Eksplanasi Lingkungan - Makna Ungkapan",
         "capaian": "Mengartikan makna kiasan ungkapan dalam teks narasi/deskripsi",
         "bacaan": {
             "grup": "wacana_maritim",
@@ -93,7 +93,7 @@ SOAL_BINDO = [
         "nomor": 5,
         "tipe": "benar_salah",
         "kesulitan": "sedang",
-        "materi": "Struktur Teks Prosedur",
+        "materi": "Teks Prosedur - Struktur Teks",
         "capaian": "Menganalisis ketepatan bagian dan struktur teks prosedur",
         "bacaan": {
             "grup": "wacana_telur_dadar",
@@ -114,7 +114,7 @@ SOAL_BINDO = [
         "nomor": 6,
         "tipe": "pg_sederhana",
         "kesulitan": "mudah",
-        "materi": "Kalimat Fakta dan Opini",
+        "materi": "Teks Prosedur - Kalimat Opini",
         "capaian": "Membedakan kalimat fakta dan opini dalam teks prosedur",
         "bacaan": {
             "grup": "wacana_telur_dadar",
@@ -135,7 +135,7 @@ SOAL_BINDO = [
         "nomor": 7,
         "tipe": "pg_sederhana",
         "kesulitan": "sedang",
-        "materi": "Melengkapi Paragraf Deskripsi Rumpang",
+        "materi": "Teks Deskripsi - Melengkapi Paragraf Rumpang",
         "capaian": "Melengkapi paragraf rumpang dengan kalimat deskripsi yang koheren",
         "bacaan": {
             "grup": "wacana_taman_heulang",
@@ -156,7 +156,7 @@ SOAL_BINDO = [
         "nomor": 8,
         "tipe": "pg_sederhana",
         "kesulitan": "mudah",
-        "materi": "Alur Emosi dan Perasaan Tokoh",
+        "materi": "Teks Narasi - Perubahan Perasaan Tokoh",
         "capaian": "Menganalisis perubahan perasaan tokoh narasi akibat peristiwa tertentu",
         "bacaan": {
             "grup": "wacana_budiman",
@@ -177,7 +177,7 @@ SOAL_BINDO = [
         "nomor": 9,
         "tipe": "pg_sederhana",
         "kesulitan": "sedang",
-        "materi": "Ringkasan Cerita Narasi",
+        "materi": "Teks Narasi - Ringkasan Cerita",
         "capaian": "Menyusun ringkasan cerita narasi berdasarkan peristiwa utama",
         "bacaan": {
             "grup": "wacana_budiman",
@@ -198,7 +198,7 @@ SOAL_BINDO = [
         "nomor": 10,
         "tipe": "pg_sederhana",
         "kesulitan": "mudah",
-        "materi": "Menilai Kesesuaian Informasi",
+        "materi": "Teks Eksplanasi Lingkungan - Kesesuaian Informasi",
         "capaian": "Menemukan pernyataan yang bertentangan dengan isi teks eksposisi",
         "bacaan": {
             "grup": "wacana_sampah_plastik",
@@ -219,7 +219,7 @@ SOAL_BINDO = [
         "nomor": 11,
         "tipe": "pg_sederhana",
         "kesulitan": "sedang",
-        "materi": "Penyajian Informasi Teks ke Bagan",
+        "materi": "Teks Eksplanasi Lingkungan - Urutan Logis Bagan",
         "capaian": "Menyusun skema logis alur teks eksplanasi lingkungan ke dalam bagan",
         "bacaan": {
             "grup": "wacana_sampah_plastik",
@@ -240,7 +240,7 @@ SOAL_BINDO = [
         "nomor": 12,
         "tipe": "pg_sederhana",
         "kesulitan": "mudah",
-        "materi": "Makna Rujukan Istilah",
+        "materi": "Teks Eksplanasi Lingkungan - Makna Rujukan Istilah",
         "capaian": "Menentukan makna rujukan istilah teknis kesehatan dalam kalimat",
         "bacaan": {
             "grup": "wacana_sampah_plastik",
@@ -261,7 +261,7 @@ SOAL_BINDO = [
         "nomor": 13,
         "tipe": "pg_sederhana",
         "kesulitan": "sedang",
-        "materi": "Konflik dalam Teks Drama/Dialog",
+        "materi": "Teks Dialog / Percakapan - Konflik Utama",
         "capaian": "Mengidentifikasi akar konflik yang dialami tokoh dalam teks percakapan",
         "bacaan": {
             "grup": "wacana_berani_jujur",
@@ -282,7 +282,7 @@ SOAL_BINDO = [
         "nomor": 14,
         "tipe": "pg_sederhana",
         "kesulitan": "mudah",
-        "materi": "Watak Tokoh Pendukung",
+        "materi": "Teks Dialog / Percakapan - Karakter Tokoh",
         "capaian": "Menganalisis respons emosional dan sikap tokoh terhadap teman",
         "bacaan": {
             "grup": "wacana_berani_jujur",
@@ -303,7 +303,7 @@ SOAL_BINDO = [
         "nomor": 15,
         "tipe": "pg_kompleks",
         "kesulitan": "sedang",
-        "materi": "Nilai Moral dan Sikap Positif",
+        "materi": "Teks Cerita Narasi - Nilai Moral dan Sikap Positif",
         "capaian": "Menentukan relevansi tindakan tokoh dengan nilai positif (pilihan lebih dari satu)",
         "bacaan": {
             "grup": "wacana_edo_kucing",
@@ -323,7 +323,7 @@ SOAL_BINDO = [
         "nomor": 16,
         "tipe": "benar_salah",
         "kesulitan": "sedang",
-        "materi": "Kalimat Majemuk Setara dan Bertingkat",
+        "materi": "Teks Cerita Narasi - Kalimat Majemuk Setara dan Bertingkat",
         "capaian": "Mengklasifikasikan kalimat majemuk setara dan majemuk bertingkat",
         "bacaan": {
             "grup": "wacana_edo_kucing",
@@ -344,7 +344,7 @@ SOAL_BINDO = [
         "nomor": 17,
         "tipe": "pg_sederhana",
         "kesulitan": "sedang",
-        "materi": "Ciri Teks Argumentasi",
+        "materi": "Teks Argumentasi - Karakteristik Teks",
         "capaian": "Menganalisis karakteristik teks argumentasi",
         "bacaan": {
             "grup": "wacana_pencemaran_lingkungan",
@@ -365,7 +365,7 @@ SOAL_BINDO = [
         "nomor": 18,
         "tipe": "pg_sederhana",
         "kesulitan": "mudah",
-        "materi": "Informasi Tersurat Paragraf",
+        "materi": "Teks Argumentasi - Informasi Tersurat Sebab Akibat",
         "capaian": "Menilai kebenaran pernyataan berdasarkan informasi teks lingkungan",
         "bacaan": {
             "grup": "wacana_pencemaran_lingkungan",
@@ -386,7 +386,7 @@ SOAL_BINDO = [
         "nomor": 19,
         "tipe": "pg_sederhana",
         "kesulitan": "mudah",
-        "materi": "Kosakata Khusus / Istilah Teknis",
+        "materi": "Teks Argumentasi - Kosakata Khusus / Istilah Teknis",
         "capaian": "Mengidentifikasi kosakata khusus bidang lingkungan hidup",
         "bacaan": {
             "grup": "wacana_pencemaran_lingkungan",
@@ -407,9 +407,9 @@ SOAL_BINDO = [
         "nomor": 20,
         "tipe": "pg_kompleks",
         "kesulitan": "sedang",
-        "materi": "Membaca Infografis Data",
+        "materi": "Infografis - Data Tenaga Kesehatan Kota Batam",
         "capaian": "Menganalisis perbandingan kuantitatif pada infografis tenaga kesehatan",
-        "gambar": "/soal/to1-tka-bindo-sd-2026/soal_20_tenaga_kesehatan_batam.jpg",
+        "gambar": "/soal/to1-tka-bindo-sd-2026/soal_20_tenaga_kesehatan_batam.png",
         "teks_soal": "Perhatikan infografis data tenaga kesehatan Kota Batam di atas!<br/><br/>Berdasarkan informasi tersebut, manakah pernyataan yang benar?<br/><br/><em>Pilihlah jawaban yang benar! Jawaban benar lebih dari satu.</em>",
         "opsi": [
             ("A", "Jumlah perawat di Kota Batam lebih dari dua ribu orang."),
@@ -423,7 +423,7 @@ SOAL_BINDO = [
         "nomor": 21,
         "tipe": "pg_sederhana",
         "kesulitan": "mudah",
-        "materi": "Informasi Teks Wawancara",
+        "materi": "Teks Wawancara - Informasi Teks Wawancara",
         "capaian": "Menemukan informasi penting dari hasil wawancara ahli gizi",
         "bacaan": {
             "grup": "wacana_sarapan_sehat",
@@ -444,7 +444,7 @@ SOAL_BINDO = [
         "nomor": 22,
         "tipe": "pg_sederhana",
         "kesulitan": "sedang",
-        "materi": "Kosakata dan Citraan Puisi",
+        "materi": "Puisi - Citraan Puisi 'Hijau Alamku'",
         "capaian": "Mengidentifikasi objek alam yang digambarkan secara langsung dalam bait puisi",
         "bacaan": {
             "grup": "wacana_puisi_hijau_alamku",
@@ -465,7 +465,7 @@ SOAL_BINDO = [
         "nomor": 23,
         "tipe": "pg_kompleks",
         "kesulitan": "sedang",
-        "materi": "Maksud dan Amanat Puisi",
+        "materi": "Puisi - Maksud dan Amanat Puisi",
         "capaian": "Menganalisis pesan dan makna dalam puisi alam (pilihan lebih dari satu)",
         "bacaan": {
             "grup": "wacana_puisi_hijau_alamku",
@@ -485,7 +485,7 @@ SOAL_BINDO = [
         "nomor": 24,
         "tipe": "benar_salah",
         "kesulitan": "sulit",
-        "materi": "Majas Puisi (Gaya Bahasa)",
+        "materi": "Puisi - Majas Hiperbola, Personifikasi, Simile",
         "capaian": "Mengklasifikasikan larik puisi ke dalam majas Hiperbola, Simile, atau Personifikasi",
         "bacaan": {
             "grup": "wacana_puisi_hijau_alamku",
@@ -506,7 +506,7 @@ SOAL_BINDO = [
         "nomor": 25,
         "tipe": "pg_sederhana",
         "kesulitan": "sedang",
-        "materi": "Penyebab Fenomena Alam Teks Eksplanasi",
+        "materi": "Teks Eksplanasi Sains - Fenomena Langit Berwarna Biru",
         "capaian": "Menemukan alasan ilmiah mengapa langit berwarna biru berdasarkan teks",
         "bacaan": {
             "grup": "wacana_langit_biru",
@@ -527,7 +527,7 @@ SOAL_BINDO = [
         "nomor": 26,
         "tipe": "benar_salah",
         "kesulitan": "sedang",
-        "materi": "Penggambaran Tokoh dan Penokohan",
+        "materi": "Teks Narasi - Penggambaran Watak Tokoh",
         "capaian": "Menilai kesesuaian watak tokoh cerita berdasarkan dialog dan tindakan",
         "bacaan": {
             "grup": "wacana_belajar_sepeda",
@@ -548,7 +548,7 @@ SOAL_BINDO = [
         "nomor": 27,
         "tipe": "pg_sederhana",
         "kesulitan": "mudah",
-        "materi": "Keteladanan dan Pembelajaran Pengalaman Tokoh",
+        "materi": "Teks Narasi - Pelajaran Hidup dari Tokoh",
         "capaian": "Menyimpulkan pelajaran moral dari pengalaman tokoh cerita",
         "bacaan": {
             "grup": "wacana_belajar_sepeda",
@@ -569,7 +569,7 @@ SOAL_BINDO = [
         "nomor": 28,
         "tipe": "pg_sederhana",
         "kesulitan": "sedang",
-        "materi": "Ringkasan Teks Eksposisi",
+        "materi": "Teks Artikel Edukasi - Ringkasan Bacaan",
         "capaian": "Menentukan rangkuman isi teks artikel kesehatan dan tumbuh kembang anak",
         "bacaan": {
             "grup": "wacana_memiara_hewan",
@@ -590,7 +590,7 @@ SOAL_BINDO = [
         "nomor": 29,
         "tipe": "pg_sederhana",
         "kesulitan": "mudah",
-        "materi": "Konflik Cerita Fabel",
+        "materi": "Teks Fabel - Konflik Cerita Fabel",
         "capaian": "Mengidentifikasi sebab timbulnya pertikaian dalam cerita fabel",
         "bacaan": {
             "grup": "wacana_fabel_ogi_oyi",
@@ -611,7 +611,7 @@ SOAL_BINDO = [
         "nomor": 30,
         "tipe": "pg_sederhana",
         "kesulitan": "sedang",
-        "materi": "Informasi Teks Sejarah / Peristiwa Kebangsaan",
+        "materi": "Teks Sejarah Kebangsaan - Kongres Pemuda I dan Persatuan Bangsa",
         "capaian": "Menganalisis pelaksanaan Kongres Pemuda I berdasarkan fakta teks",
         "bacaan": {
             "grup": "wacana_kongres_pemuda",
