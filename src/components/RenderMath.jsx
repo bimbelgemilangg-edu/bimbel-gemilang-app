@@ -47,6 +47,25 @@ function ubahMarkdownTableDanGambar(teks) {
   // 2. Ekstraksi markdown image: ![alt](url)
   hasil = hasil.replace(/!\[(.*?)\]\((https?:\/\/[^\s)]+)\)/g, '<img src="$2" alt="$1" style="max-width:100%;height:auto;border-radius:8px;margin:8px auto;display:block;" />');
 
+  // 3. Ekstraksi format markdown teks: tebal (**teks**) dan miring (*teks*) di luar rumus LaTeX
+  // Simpan rumus matematika sementara agar tidak merusak karakter * pada rumus perkalian
+  const rumusSimpanan = [];
+  hasil = hasil.replace(/(\$\$[\s\S]*?\$\$|\$[^$\n]+\$|\\\[[\s\S]*?\\\]|\\\([\s\S]*?\\\))/g, (m) => {
+    const placeholder = `___GB_MATH_FORMULA_${rumusSimpanan.length}___`;
+    rumusSimpanan.push(m);
+    return placeholder;
+  });
+
+  // Tebal: **teks**
+  hasil = hasil.replace(/\*\*([^*\n]+?)\*\*/g, '<strong>$1</strong>');
+  // Miring: *teks* (hanya jika ada teks di antara bintang dan bukan spasi kosong)
+  hasil = hasil.replace(/(^|[^\*])\*([^\*\s\n](?:[^*\n]*?[^\*\s\n])?)\*(?!\*)/g, '$1<em>$2</em>');
+
+  // Kembalikan rumus matematika utuh
+  for (let idx = 0; idx < rumusSimpanan.length; idx++) {
+    hasil = hasil.split(`___GB_MATH_FORMULA_${idx}___`).join(rumusSimpanan[idx]);
+  }
+
   return hasil;
 }
 

@@ -4,13 +4,14 @@
 // STANDAR RESMI UTBK-SNBT 2026 (195m, 7 Subtes) & TKA 2026 (75m, Jeda 1m)
 // ============================================================
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { QRCodeSVG } from 'qrcode.react';
 import {
   Trophy, Users, Key, Clock, ShieldCheck, Download, Trash2,
   PlusCircle, RefreshCw, ExternalLink, CheckCircle, AlertTriangle,
   Search, Filter, PlayCircle, StopCircle, ArrowRight, Share2, Sparkles,
   Layers, Check, HelpCircle, Printer, FileSpreadsheet, FileText, X,
-  Pause, Play
+  Pause, Play, QrCode, Copy
 } from 'lucide-react';
 import { db } from '../../../firebase';
 import { collection, getDocs } from 'firebase/firestore';
@@ -63,6 +64,14 @@ export default function KelolaTobkPublikPage() {
   const [opsiAlasanJeda, setOpsiAlasanJeda] = useState('Waktu Sholat Dzuhur & Istirahat');
   const [alasanKustom, setAlasanKustom] = useState('');
   const [jedaLoading, setJedaLoading] = useState(false);
+
+  // Modal QR Code Ujian (Scan HP / Proyektor)
+  const [showModalQr, setShowModalQr] = useState(false);
+
+  // Modal Ganti Sesi & Token Baru (Multi-Sesi Room)
+  const [showModalGantiSesi, setShowModalGantiSesi] = useState(false);
+  const [tokenBaruInput, setTokenBaruInput] = useState('');
+  const [namaSesiBaru, setNamaSesiBaru] = useState('');
 
   // Muat data awal
   const muatData = async () => {
@@ -128,6 +137,62 @@ export default function KelolaTobkPublikPage() {
     setEvents((prev) =>
       prev.map((e) => (e.id === currentEvent.id ? { ...e, tokenAktif: statusBaru } : e))
     );
+  };
+
+  const handleBukaModalGantiSesi = () => {
+    const sesiBerikutnya = (currentEvent?.sesiKe || 1) + 1;
+    setNamaSesiBaru(`Sesi ${sesiBerikutnya}`);
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let rand = 'GEM-';
+    for (let i = 0; i < 4; i++) {
+      rand += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    setTokenBaruInput(rand);
+    setShowModalGantiSesi(true);
+  };
+
+  const handleSimpanSesiBaru = async () => {
+    if (!currentEvent) return;
+    const tBaru = (tokenBaruInput || '').trim().toUpperCase();
+    if (!tBaru) {
+      alert('Masukkan kode token baru!');
+      return;
+    }
+    const sesiKe = (currentEvent.sesiKe || 1) + 1;
+    const namaSesi = namaSesiBaru.trim() || `Sesi ${sesiKe}`;
+    const updated = {
+      ...currentEvent,
+      token: tBaru,
+      tokenAktif: true,
+      sesiKe,
+      namaSesi,
+    };
+    try {
+      await simpanEventTobk(updated);
+      setEvents((prev) => prev.map((e) => (e.id === currentEvent.id ? updated : e)));
+      setShowModalGantiSesi(false);
+      alert(`✅ Berhasil memulai ${namaSesi}! Token baru: ${tBaru}. Siswa sesi sebelumnya tidak dapat masuk dengan token lama.`);
+    } catch (err) {
+      alert('Gagal mengganti sesi: ' + err.message);
+    }
+  };
+
+  const handleHapusToken = async () => {
+    if (!currentEvent) return;
+    if (!window.confirm(`Yakin ingin MENGHAPUS / MENUTUP token "${currentEvent.token}" untuk event ini?\nSiswa tidak akan dapat masuk menggunakan token lama ini lagi.`)) return;
+
+    const updated = {
+      ...currentEvent,
+      token: '',
+      tokenAktif: false,
+    };
+    try {
+      await simpanEventTobk(updated);
+      setEvents((prev) => prev.map((e) => (e.id === currentEvent.id ? { ...e, token: '', tokenAktif: false } : e)));
+      alert('Token berhasil dikosongkan dan akses ujian ditutup.');
+    } catch (err) {
+      alert('Gagal menghapus token: ' + err.message);
+    }
   };
 
   const handleBukaModalJeda = () => {
@@ -484,6 +549,14 @@ export default function KelolaTobkPublikPage() {
               </button>
 
               <button
+                onClick={() => setShowModalQr(true)}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#0284c7', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: '8px', fontSize: '12px', fontWeight: 600, cursor: 'pointer', boxShadow: '0 1px 2px rgba(2,132,199,0.2)' }}
+                title="Tampilkan QR Code Ujian untuk di-scan HP peserta / proyektor"
+              >
+                <QrCode size={15} /> 📱 QR Code & Link Ujian
+              </button>
+
+              <button
                 onClick={() => setShowModalPurge(true)}
                 style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#fee2e2', color: '#b91c1c', border: '1px solid #fca5a5', padding: '8px 14px', borderRadius: '8px', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}
               >
@@ -493,25 +566,56 @@ export default function KelolaTobkPublikPage() {
           </div>
 
           {currentEvent && (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px', alignItems: 'center' }}>
-              {/* Box Token Ujian */}
-              <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '16px' }}>
-                <div style={{ fontSize: '12px', color: '#64748b', fontWeight: 600, textTransform: 'uppercase', marginBottom: '4px' }}>
-                  Token Ujian Peserta
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '16px', alignItems: 'stretch' }}>
+              {/* Box Token Ujian & Multi-Sesi */}
+              <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '16px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+                    <div style={{ fontSize: '12px', color: '#64748b', fontWeight: 600, textTransform: 'uppercase' }}>
+                      Token Ujian {currentEvent.namaSesi ? `(${currentEvent.namaSesi})` : ''}
+                    </div>
+                    {currentEvent.sesiKe && (
+                      <span style={{ fontSize: '10px', background: '#e0f2fe', color: '#0369a1', padding: '2px 6px', borderRadius: '4px', fontWeight: 700 }}>
+                        Sesi {currentEvent.sesiKe}
+                      </span>
+                    )}
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                    <span style={{ fontSize: '24px', fontWeight: 800, letterSpacing: '2px', color: currentEvent.token ? '#1e293b' : '#94a3b8', fontFamily: 'monospace' }}>
+                      {currentEvent.token || '(KOSONG)'}
+                    </span>
+                    {currentEvent.token && (
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText(currentEvent.token);
+                          alert(`Token "${currentEvent.token}" berhasil disalin ke clipboard!`);
+                        }}
+                        style={{ background: '#e2e8f0', border: 'none', padding: '6px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: 600, cursor: 'pointer' }}
+                      >
+                        Salin
+                      </button>
+                    )}
+                  </div>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <span style={{ fontSize: '24px', fontWeight: 800, letterSpacing: '2px', color: '#1e293b', fontFamily: 'monospace' }}>
-                    {currentEvent.token || '-'}
-                  </span>
+
+                {/* Tombol Manajemen Multi-Sesi & Hapus Token */}
+                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', borderTop: '1px solid #e2e8f0', paddingTop: '10px', marginTop: '6px' }}>
                   <button
-                    onClick={() => {
-                      navigator.clipboard.writeText(currentEvent.token);
-                      alert(`Token "${currentEvent.token}" berhasil disalin ke clipboard!`);
-                    }}
-                    style={{ background: '#e2e8f0', border: 'none', padding: '6px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: 600, cursor: 'pointer' }}
+                    onClick={handleBukaModalGantiSesi}
+                    style={{ flex: 1, minWidth: '120px', background: '#eff6ff', color: '#1d4ed8', border: '1px solid #bfdbfe', padding: '6px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }}
+                    title="Ganti token untuk sesi ujian berikutnya (misal Sesi 2)"
                   >
-                    Salin
+                    🔄 Ganti Token Sesi Baru
                   </button>
+                  {currentEvent.token && (
+                    <button
+                      onClick={handleHapusToken}
+                      style={{ background: '#fef2f2', color: '#dc2626', border: '1px solid #fecaca', padding: '6px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: 600, cursor: 'pointer' }}
+                      title="Hapus token agar peserta tidak bisa login lagi"
+                    >
+                      Hapus Token
+                    </button>
+                  )}
                 </div>
               </div>
 
@@ -1332,6 +1436,176 @@ export default function KelolaTobkPublikPage() {
                 style={{ background: '#dc2626', border: 'none', padding: '8px 18px', borderRadius: '8px', fontSize: '13px', fontWeight: 600, color: '#fff', cursor: 'pointer' }}
               >
                 {purgeLoading ? 'Membersihkan...' : 'Ya, Bersihkan Data Peserta'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── MODAL QR CODE PORTAL UJIAN (Scan HP / Proyektor) ── */}
+      {showModalQr && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.75)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1100, padding: '16px' }}>
+          <div style={{ background: '#ffffff', borderRadius: '20px', maxWidth: '520px', width: '100%', padding: '28px', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)', textAlign: 'center' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+              <div style={{ textAlign: 'left' }}>
+                <span style={{ fontSize: '11px', fontWeight: 700, background: '#e0f2fe', color: '#0369a1', padding: '3px 8px', borderRadius: '4px', textTransform: 'uppercase' }}>
+                  QR Code Masuk Ujian CBT
+                </span>
+                <h3 style={{ margin: '6px 0 2px', fontSize: '18px', fontWeight: 800, color: '#0f172a' }}>
+                  {currentEvent?.judul || 'Try Out Gemilang'}
+                </h3>
+                <div style={{ fontSize: '12px', color: '#64748b' }}>
+                  Siswa cukup scan kamera HP untuk langsung login otomatis!
+                </div>
+              </div>
+              <button
+                onClick={() => setShowModalQr(false)}
+                style={{ background: '#f1f5f9', border: 'none', borderRadius: '50%', width: '32px', height: '32px', cursor: 'pointer', color: '#64748b', fontSize: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Kotak QR Code Besar */}
+            <div style={{ background: '#f8fafc', border: '2px dashed #cbd5e1', borderRadius: '16px', padding: '20px', display: 'inline-block', margin: '8px auto 16px' }}>
+              <QRCodeSVG
+                value={`${typeof window !== 'undefined' ? window.location.origin : 'https://bimbel-gemilang-app.vercel.app'}/tobk?event=${encodeURIComponent(currentEvent?.id || '')}${currentEvent?.token ? `&token=${encodeURIComponent(currentEvent.token)}` : ''}`}
+                size={230}
+                level="H"
+                includeMargin
+              />
+            </div>
+
+            {/* Token Highlight */}
+            {currentEvent?.token && (
+              <div style={{ background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: '12px', padding: '10px 16px', marginBottom: '14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div style={{ textAlign: 'left' }}>
+                  <div style={{ fontSize: '10px', color: '#3b82f6', fontWeight: 700, textTransform: 'uppercase' }}>Kode Token Ujian</div>
+                  <div style={{ fontSize: '20px', fontWeight: 800, letterSpacing: '2px', color: '#1e3a8a', fontFamily: 'monospace' }}>
+                    {currentEvent.token}
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigator.clipboard.writeText(currentEvent.token);
+                    alert(`Token "${currentEvent.token}" berhasil disalin!`);
+                  }}
+                  style={{ background: '#3b82f6', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '6px', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }}
+                >
+                  Salin Token
+                </button>
+              </div>
+            )}
+
+            {/* Link Text */}
+            <div style={{ background: '#f1f5f9', borderRadius: '8px', padding: '8px 12px', fontSize: '11px', color: '#475569', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '18px' }}>
+              <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontFamily: 'monospace' }}>
+                {`${typeof window !== 'undefined' ? window.location.origin : ''}/tobk?event=${currentEvent?.id || ''}`}
+              </span>
+              <button
+                type="button"
+                onClick={() => {
+                  const url = `${window.location.origin}/tobk?event=${currentEvent?.id || ''}${currentEvent?.token ? `&token=${encodeURIComponent(currentEvent.token)}` : ''}`;
+                  navigator.clipboard.writeText(url);
+                  alert('Link ujian berhasil disalin ke clipboard!');
+                }}
+                style={{ background: '#ffffff', border: '1px solid #cbd5e1', padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}
+              >
+                Salin Link
+              </button>
+            </div>
+
+            {/* Tombol Aksi */}
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
+              <button
+                type="button"
+                onClick={() => window.print()}
+                style={{ background: '#0284c7', color: '#fff', border: 'none', padding: '9px 18px', borderRadius: '8px', fontSize: '13px', fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+              >
+                <Printer size={15} /> Cetak Lembar QR Code
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowModalQr(false)}
+                style={{ background: '#f1f5f9', color: '#475569', border: 'none', padding: '9px 18px', borderRadius: '8px', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }}
+              >
+                Tutup
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── MODAL GANTI SESI & TOKEN BARU ── */}
+      {showModalGantiSesi && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.6)', backdropFilter: 'blur(3px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1100, padding: '16px' }}>
+          <div style={{ background: '#ffffff', borderRadius: '16px', maxWidth: '440px', width: '100%', padding: '24px', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.2)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#1d4ed8', marginBottom: '14px' }}>
+              <Key size={22} />
+              <h3 style={{ margin: 0, fontSize: '17px', fontWeight: 800 }}>
+                Ganti Token Ujian untuk Sesi Baru
+              </h3>
+            </div>
+
+            <p style={{ fontSize: '12px', color: '#64748b', lineHeight: 1.5, margin: '0 0 16px' }}>
+              Gunakan fitur ini jika 1 ruang ujian dipakai untuk beberapa sesi (misal Sesi 1 dan Sesi 2). Mengubah token akan langsung mengunci peserta lama dan membuka akses untuk peserta sesi baru.
+            </p>
+
+            <div style={{ marginBottom: '14px' }}>
+              <label style={{ fontSize: '12px', fontWeight: 700, color: '#334155', display: 'block', marginBottom: '4px' }}>
+                Nama Sesi
+              </label>
+              <input
+                type="text"
+                value={namaSesiBaru}
+                onChange={(e) => setNamaSesiBaru(e.target.value)}
+                placeholder="Contoh: Sesi 2 (Pukul 10.30)"
+                style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px' }}
+              />
+            </div>
+
+            <div style={{ marginBottom: '20px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                <label style={{ fontSize: '12px', fontWeight: 700, color: '#334155' }}>
+                  Kode Token Baru
+                </label>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+                    let rand = 'GEM-';
+                    for (let i = 0; i < 4; i++) rand += chars.charAt(Math.floor(Math.random() * chars.length));
+                    setTokenBaruInput(rand);
+                  }}
+                  style={{ background: 'none', border: 'none', color: '#2563eb', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }}
+                >
+                  🎲 Acak Token
+                </button>
+              </div>
+              <input
+                type="text"
+                value={tokenBaruInput}
+                onChange={(e) => setTokenBaruInput(e.target.value.toUpperCase())}
+                placeholder="Contoh: GEM-S2"
+                style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid #93c5fd', fontSize: '16px', fontWeight: 800, letterSpacing: '2px', fontFamily: 'monospace', textTransform: 'uppercase' }}
+              />
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+              <button
+                type="button"
+                onClick={() => setShowModalGantiSesi(false)}
+                style={{ background: '#f1f5f9', border: 'none', padding: '8px 16px', borderRadius: '8px', fontSize: '13px', fontWeight: 600, color: '#475569', cursor: 'pointer' }}
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                onClick={handleSimpanSesiBaru}
+                style={{ background: '#2563eb', border: 'none', padding: '8px 18px', borderRadius: '8px', fontSize: '13px', fontWeight: 700, color: '#fff', cursor: 'pointer' }}
+              >
+                Terapkan Token Sesi Baru
               </button>
             </div>
           </div>

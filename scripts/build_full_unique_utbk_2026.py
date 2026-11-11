@@ -338,10 +338,10 @@ soal_pbm_baru = [
         "mapel": "Pemahaman Bacaan & Menulis (PBM)",
         "teksSoal": "Kalimat manakah yang menggunakan huruf miring secara TEPAT sesuai dengan kaidah ejaan?",
         "opsiJawaban": opt(
-            "Padi memiliki nama botani *Oryza sativa* yang banyak dibudidayakan di Asia.",
-            "Ia membaca novel *Laskar Pelangi* karya Andrea Hirata di teras rumah.",
-            "Kita harus mengunduh *aplikasi* tersebut melalui toko resmi.",
-            "Istilah *stakeholder* dapat diterjemahkan menjadi pemangku kepentingan.",
+            "Padi memiliki nama botani <i>Oryza sativa</i> yang banyak dibudidayakan di Asia.",
+            "Ia membaca novel <i>Laskar Pelangi</i> karya Andrea Hirata di teras rumah.",
+            "Kita harus mengunduh <i>aplikasi</i> tersebut melalui toko resmi.",
+            "Istilah <i>stakeholder</i> dapat diterjemahkan menjadi pemangku kepentingan.",
             "Semua jawaban A, B, dan D benar."
         ),
         "kunciJawaban": "E",

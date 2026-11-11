@@ -37,7 +37,20 @@ export default function TobkPortalPage() {
     async function init() {
       setLoading(true);
       try {
-        let ev = await ambilEventTobkAktifPublik();
+        const params = new URLSearchParams(window.location.search);
+        const eventIdParam = params.get('event');
+        const tokenParam = params.get('token');
+        if (tokenParam) {
+          sessionStorage.setItem('tobk_prefill_token', tokenParam.trim());
+        }
+
+        let ev = null;
+        if (eventIdParam) {
+          ev = await ambilEventTobkById(eventIdParam);
+        }
+        if (!ev) {
+          ev = await ambilEventTobkAktifPublik();
+        }
         if (!ev) {
           // Buat default event jika belum ada
           const defaultEvent = {

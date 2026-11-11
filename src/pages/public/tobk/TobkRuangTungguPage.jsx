@@ -28,6 +28,20 @@ export default function TobkRuangTungguPage() {
   const [statusKamera, setStatusKamera] = useState('meminta'); // 'meminta' | 'aktif' | 'ditolak'
   const videoRef = useRef(null);
   const streamRef = useRef(null);
+  const [fotoProfil, setFotoProfil] = useState(() => {
+    const sesi = ambilSesiPesertaAktif();
+    return sesi?.fotoProfil || (sesi?.pesertaId ? localStorage.getItem(`tobk_foto_profil_${sesi.pesertaId}`) : null) || null;
+  });
+
+  // Cek token dari URL / session jika siswa masuk lewat Scan QR Code
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const tokenUrl = params.get('token');
+    const prefill = tokenUrl || sessionStorage.getItem('tobk_prefill_token');
+    if (prefill) {
+      setTokenInput(prefill.toUpperCase());
+    }
+  }, []);
 
   // Muat Sesi Peserta
   useEffect(() => {
@@ -39,6 +53,9 @@ export default function TobkRuangTungguPage() {
         return;
       }
       setPeserta(sesi);
+      if (sesi.fotoProfil) {
+        setFotoProfil(sesi.fotoProfil);
+      }
 
       let ev = null;
       if (sesi.eventId) {
@@ -52,6 +69,35 @@ export default function TobkRuangTungguPage() {
     }
     muat();
   }, [navigate]);
+
+  // Fungsi Jepret Foto Profil dari Webcam
+  const ambilFotoWajah = () => {
+    if (!videoRef.current) return;
+    try {
+      const video = videoRef.current;
+      const canvas = document.createElement('canvas');
+      canvas.width = video.videoWidth || 640;
+      canvas.height = video.videoHeight || 480;
+      const ctx = canvas.getContext('2d');
+      // Mirror horizontal
+      ctx.translate(canvas.width, 0);
+      ctx.scale(-1, 1);
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+      setFotoProfil(dataUrl);
+
+      if (peserta?.pesertaId) {
+        localStorage.setItem(`tobk_foto_profil_${peserta.pesertaId}`, dataUrl);
+        const sesi = ambilSesiPesertaAktif();
+        if (sesi) {
+          sesi.fotoProfil = dataUrl;
+          localStorage.setItem('tobk_peserta_sesi', JSON.stringify(sesi));
+        }
+      }
+    } catch (e) {
+      console.warn('Gagal menjepret foto profil:', e);
+    }
+  };
 
   // Inisialisasi Kamera Pengawas
   const aktifkanKamera = async () => {
@@ -150,8 +196,12 @@ export default function TobkRuangTungguPage() {
         {/* Identitas Peserta */}
         <div style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '14px', padding: '16px 20px', marginBottom: '24px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', alignItems: 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{ width: '42px', height: '42px', borderRadius: '50%', background: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '16px' }}>
-              {peserta?.nama ? peserta.nama.charAt(0).toUpperCase() : 'P'}
+            <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: '#3b82f6', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '16px', border: fotoProfil ? '2px solid #22c55e' : 'none' }}>
+              {fotoProfil ? (
+                <img src={fotoProfil} alt="Foto Profil" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              ) : (
+                peserta?.nama ? peserta.nama.charAt(0).toUpperCase() : 'P'
+              )}
             </div>
             <div>
               <div style={{ fontSize: '11px', color: '#94a3b8' }}>Nama Peserta</div>
@@ -221,6 +271,53 @@ export default function TobkRuangTungguPage() {
                 </div>
               )}
             </div>
+
+            {/* Tombol Ambil Foto Profil Wajah */}
+            {statusKamera === 'aktif' && (
+              <div style={{ marginTop: '12px' }}>
+                {fotoProfil ? (
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(34,197,94,0.15)', border: '1px solid rgba(34,197,94,0.3)', borderRadius: '10px', padding: '8px 12px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <img src={fotoProfil} alt="Foto Siswa" style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', border: '2px solid #22c55e' }} />
+                      <div>
+                        <div style={{ fontSize: '12px', fontWeight: 700, color: '#4ade80' }}>✓ Foto Profil Terpasang</div>
+                        <div style={{ fontSize: '10px', color: '#94a3b8' }}>Akan tampil di akun CBT Anda</div>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={ambilFotoWajah}
+                      style={{ background: '#334155', color: '#e2e8f0', border: 'none', padding: '6px 12px', borderRadius: '6px', fontSize: '11px', fontWeight: 600, cursor: 'pointer' }}
+                    >
+                      Foto Ulang
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={ambilFotoWajah}
+                    style={{
+                      width: '100%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '8px',
+                      background: '#2563eb',
+                      color: '#ffffff',
+                      border: 'none',
+                      padding: '10px 16px',
+                      borderRadius: '8px',
+                      fontSize: '13px',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      boxShadow: '0 2px 8px rgba(37,99,235,0.3)',
+                    }}
+                  >
+                    <Camera size={16} /> Jepret Foto Wajah (Foto Profil CBT)
+                  </button>
+                )}
+              </div>
+            )}
 
             <p style={{ fontSize: '11px', color: '#94a3b8', margin: '12px 0 0', lineHeight: 1.5 }}>
               💡 Pastikan wajah Anda terlihat jelas dengan pencahayaan yang cukup di dalam kotak kamera.

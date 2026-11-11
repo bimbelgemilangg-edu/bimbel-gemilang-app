@@ -2031,19 +2031,19 @@ export const PAKET_RESMI_UTBK_2026_KATKIEL = {
           "opsiJawaban": [
             {
               "key": "A",
-              "teks": "Padi memiliki nama botani *Oryza sativa* yang banyak dibudidayakan di Asia."
+              "teks": "Padi memiliki nama botani <i>Oryza sativa</i> yang banyak dibudidayakan di Asia."
             },
             {
               "key": "B",
-              "teks": "Ia membaca novel *Laskar Pelangi* karya Andrea Hirata di teras rumah."
+              "teks": "Ia membaca novel <i>Laskar Pelangi</i> karya Andrea Hirata di teras rumah."
             },
             {
               "key": "C",
-              "teks": "Kita harus mengunduh *aplikasi* tersebut melalui toko resmi."
+              "teks": "Kita harus mengunduh <i>aplikasi</i> tersebut melalui toko resmi."
             },
             {
               "key": "D",
-              "teks": "Istilah *stakeholder* dapat diterjemahkan menjadi pemangku kepentingan."
+              "teks": "Istilah <i>stakeholder</i> dapat diterjemahkan menjadi pemangku kepentingan."
             },
             {
               "key": "E",

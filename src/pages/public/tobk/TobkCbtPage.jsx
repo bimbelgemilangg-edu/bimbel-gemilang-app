@@ -108,6 +108,11 @@ export default function TobkCbtPage() {
   const videoRef = useRef(null);
   const streamRef = useRef(null);
   const [kameraStatus, setKameraStatus] = useState('memuat'); // 'memuat' | 'aktif' | 'gagal'
+  const [kameraMinimized, setKameraMinimized] = useState(false);
+  const [fotoProfil, setFotoProfil] = useState(() => {
+    const sesi = ambilSesiPesertaAktif();
+    return sesi?.fotoProfil || (sesi?.pesertaId ? localStorage.getItem(`tobk_foto_profil_${sesi.pesertaId}`) : null) || null;
+  });
 
   // Modal Dialogs
   const [showModalKonfirmasi, setShowModalKonfirmasi] = useState(false);
@@ -122,6 +127,9 @@ export default function TobkCbtPage() {
         return;
       }
       setPeserta(sesi);
+      if (sesi.fotoProfil) {
+        setFotoProfil(sesi.fotoProfil);
+      }
 
       let ev = null;
       if (sesi.eventId) {
@@ -689,8 +697,8 @@ export default function TobkCbtPage() {
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', marginBottom: '18px' }}>
         <div
           style={{
-            width: '60px',
-            height: '60px',
+            width: '64px',
+            height: '64px',
             borderRadius: '50%',
             background: '#eff6ff',
             border: '2px solid #93c5fd',
@@ -699,9 +707,15 @@ export default function TobkCbtPage() {
             justifyContent: 'center',
             color: '#2563eb',
             marginBottom: '8px',
+            overflow: 'hidden',
+            boxShadow: '0 2px 8px rgba(37,99,235,0.15)',
           }}
         >
-          <User size={34} />
+          {fotoProfil ? (
+            <img src={fotoProfil} alt="Foto Profil" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          ) : (
+            <User size={34} />
+          )}
         </div>
         <div style={{ fontSize: '13.5px', fontWeight: 700, color: '#0f172a' }}>
           {peserta?.nama || 'Peserta Ujian'}
@@ -774,7 +788,15 @@ export default function TobkCbtPage() {
                   <Lock size={12} color="#94a3b8" />
                 )}
                 <span style={{ fontWeight: isCurrent ? 700 : 500, color: isCurrent ? '#1e3a8a' : '#475569', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>
-                  {s.nama}
+                  {(() => {
+                    const m = (s.nama || '').match(/\(([^)]+)\)/);
+                    if (m) {
+                      const acronym = m[1].toUpperCase();
+                      const clean = s.nama.replace(/\([^)]+\)/, '').replace(/Literasi Bahasa/i, 'B.').trim();
+                      return `${acronym} · ${clean}`;
+                    }
+                    return s.nama;
+                  })()}
                 </span>
               </div>
 
@@ -1834,16 +1856,16 @@ export default function TobkCbtPage() {
           </div>
         )}
 
-        {/* ── WEBCAM AI PROCTOR DISKRIT (Floating PIP Cross-Device) ── */}
+        {/* ── WEBCAM AI PROCTOR DISKRIT (Non-Intrusive, Bebas Halangi Tombol) ── */}
         <div
           style={{
             position: 'fixed',
-            bottom: isMobile ? '68px' : '16px',
-            right: isMobile ? '12px' : '216px',
-            width: isMobile ? '88px' : '136px',
-            height: isMobile ? '66px' : '102px',
+            top: isMobile ? '56px' : '62px',
+            right: isMobile ? '12px' : '226px',
+            width: kameraMinimized ? 'auto' : (isMobile ? '92px' : '128px'),
+            height: kameraMinimized ? 'auto' : (isMobile ? '68px' : '96px'),
             background: '#020617',
-            borderRadius: '8px',
+            borderRadius: kameraMinimized ? '20px' : '8px',
             border: `2px solid ${kameraStatus === 'aktif' ? '#22c55e' : '#f59e0b'}`,
             overflow: 'hidden',
             boxShadow: '0 4px 14px rgba(0,0,0,0.25)',
@@ -1852,8 +1874,14 @@ export default function TobkCbtPage() {
             flexDirection: 'column',
             justifyContent: 'center',
             alignItems: 'center',
+            padding: kameraMinimized ? '4px 10px' : '0',
+            cursor: kameraMinimized ? 'pointer' : 'default',
+            transition: 'all 0.2s ease',
           }}
+          onClick={kameraMinimized ? () => setKameraMinimized(false) : undefined}
+          title={kameraMinimized ? 'Klik untuk memperbesar kamera proctor' : undefined}
         >
+          {/* Video selalu mounted agar stream getUserMedia tidak terputus */}
           <video
             ref={videoRef}
             autoPlay
@@ -1864,50 +1892,85 @@ export default function TobkCbtPage() {
               height: '100%',
               objectFit: 'cover',
               transform: 'scaleX(-1)',
-              display: kameraStatus === 'aktif' ? 'block' : 'none',
+              display: (!kameraMinimized && kameraStatus === 'aktif') ? 'block' : 'none',
             }}
           />
 
-          {kameraStatus === 'memuat' && (
-            <div style={{ color: '#94a3b8', fontSize: '9px', textAlign: 'center', padding: '6px' }}>
-              Menghubungkan kamera...
+          {kameraMinimized ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span style={{ width: 8, height: 8, borderRadius: '50%', background: kameraStatus === 'aktif' ? '#22c55e' : '#f59e0b' }} />
+              <span style={{ fontSize: '10px', fontWeight: 700, color: '#4ade80' }}>Proctor Aktif ▾</span>
             </div>
-          )}
+          ) : (
+            <>
+              {/* Tombol Minimize */}
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setKameraMinimized(true);
+                }}
+                style={{
+                  position: 'absolute',
+                  top: '2px',
+                  right: '3px',
+                  zIndex: 2,
+                  background: 'rgba(0,0,0,0.6)',
+                  border: 'none',
+                  color: '#ffffff',
+                  fontSize: '11px',
+                  lineHeight: '1',
+                  padding: '2px 5px',
+                  borderRadius: '3px',
+                  cursor: 'pointer',
+                }}
+                title="Sembunyikan / Perkecil kamera"
+              >
+                −
+              </button>
 
-          {kameraStatus === 'gagal' && (
-            <button
-              onClick={hubungkanKamera}
-              style={{
-                background: '#dc2626',
-                color: '#ffffff',
-                border: 'none',
-                padding: '4px 8px',
-                borderRadius: '4px',
-                fontSize: '9px',
-                fontWeight: 700,
-                cursor: 'pointer',
-              }}
-            >
-              📷 Sambungkan
-            </button>
-          )}
+              {kameraStatus === 'memuat' && (
+                <div style={{ color: '#94a3b8', fontSize: '9px', textAlign: 'center', padding: '6px' }}>
+                  Menghubungkan kamera...
+                </div>
+              )}
 
-          <div
-            style={{
-              position: 'absolute',
-              bottom: 0,
-              left: 0,
-              right: 0,
-              background: 'rgba(0,0,0,0.7)',
-              color: kameraStatus === 'aktif' ? '#4ade80' : '#fbbf24',
-              fontSize: '8px',
-              fontWeight: 700,
-              padding: '2px 4px',
-              textAlign: 'center',
-            }}
-          >
-            {kameraStatus === 'aktif' ? '● Proctor Aktif' : '● Kamera Nonaktif'}
-          </div>
+              {kameraStatus === 'gagal' && (
+                <button
+                  onClick={hubungkanKamera}
+                  style={{
+                    background: '#dc2626',
+                    color: '#ffffff',
+                    border: 'none',
+                    padding: '4px 8px',
+                    borderRadius: '4px',
+                    fontSize: '9px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                  }}
+                >
+                  📷 Sambungkan
+                </button>
+              )}
+
+              <div
+                style={{
+                  position: 'absolute',
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  background: 'rgba(0,0,0,0.7)',
+                  color: kameraStatus === 'aktif' ? '#4ade80' : '#fbbf24',
+                  fontSize: '8px',
+                  fontWeight: 700,
+                  padding: '2px 4px',
+                  textAlign: 'center',
+                }}
+              >
+                {kameraStatus === 'aktif' ? '● Proctor Aktif' : '● Kamera Nonaktif'}
+              </div>
+            </>
+          )}
         </div>
       </div>
       </div>
