@@ -23,6 +23,8 @@ import RenderMath from '../../../components/RenderMath';
 import RenderTable from '../../../components/RenderTable';
 import TeksSoalBergambar from '../../../components/TeksSoalBergambar';
 import { bacaanDari, gambarButirDari } from '../../../utils/fieldButirSoal';
+import { db } from '../../../firebase';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
 
 export default function TobkCbtPage() {
   const navigate = useNavigate();
@@ -173,12 +175,16 @@ export default function TobkCbtPage() {
       const durasiPertamaMenit = Number(sList[0]?.durasiMenit) || 30;
       let detikAwal = Math.round(durasiPertamaMenit * 60);
 
-      // Ambil Backup Jawaban & Sisa Waktu
+      // Ambil Backup Jawaban & Sisa Waktu (Local + Cloud Firestore Recovery)
       try {
+        let loadedJawabanLocal = false;
         const rawJawab = localStorage.getItem(`tobk_jawaban_${sesi.pesertaId}`);
         if (rawJawab) {
           const parsed = JSON.parse(rawJawab);
-          if (parsed.jawaban) setJawaban(parsed.jawaban);
+          if (parsed.jawaban && Object.keys(parsed.jawaban).length > 0) {
+            setJawaban(parsed.jawaban);
+            loadedJawabanLocal = true;
+          }
           if (parsed.ragu) setRagu(parsed.ragu);
           if (parsed.pelanggaran) setPelanggaran(parsed.pelanggaran);
           if (parsed.subtesAktifIndex !== undefined && Number(parsed.subtesAktifIndex) < sList.length) {
@@ -189,10 +195,39 @@ export default function TobkCbtPage() {
           }
         }
 
+        // Jika localStorage kosong (misal siswa pindah laptop/komputer lain), pulihkan jawaban dari Cloud Firestore
+        if (!loadedJawabanLocal && sesi.pesertaId) {
+          try {
+            const snapCloud = await getDoc(doc(db, 'tobk_event_jawaban', sesi.pesertaId));
+            if (snapCloud.exists()) {
+              const dataCloud = snapCloud.data();
+              if (dataCloud.jawaban) setJawaban(dataCloud.jawaban);
+              if (dataCloud.ragu) setRagu(dataCloud.ragu);
+              if (dataCloud.pelanggaran) setPelanggaran(dataCloud.pelanggaran);
+              if (dataCloud.subtesAktifIndex !== undefined && Number(dataCloud.subtesAktifIndex) < sList.length) {
+                setSubtesAktifIndex(Number(dataCloud.subtesAktifIndex));
+              }
+              if (dataCloud.indexSoal !== undefined) {
+                setIndexSoal(Number(dataCloud.indexSoal));
+              }
+            }
+          } catch (errCloud) {
+            console.warn('[TOBK] Gagal sync jawaban dari cloud:', errCloud);
+          }
+        }
+
         const savedDetik = localStorage.getItem(`tobk_sisa_detik_${sesi.pesertaId}`);
         if (savedDetik && Number(savedDetik) > 5) {
           detikAwal = Number(savedDetik);
         }
+
+        // Tandai status aktif "mengerjakan" di database Firestore
+        try {
+          await updateDoc(doc(db, 'tobk_event_leads', sesi.pesertaId), {
+            statusUjian: 'mengerjakan',
+            waktuMulai: new Date().toISOString(),
+          });
+        } catch (errStatus) {}
       } catch (e) {}
 
       setSisaDetikSubtes(detikAwal);
