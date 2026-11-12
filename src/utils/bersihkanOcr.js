@@ -33,7 +33,7 @@ const PUNCAKUS_AKHIR = /[.!?:;…)}\]"']$/;
 const RE_BARIS_DAFTAR = /^([•\-*▪◦□■◆◇▶▷►▻✓✔⮚\u25a0-\u25ff\uf000-\uf0ff]\s*|\([a-zA-Z0-9]{1,4}\)|[a-zA-Z][.)]|\d{1,2}[.)])\s*\S/;
 
 // Simbol yang hanya muncul di baris MATEMATIKA, tidak pernah di rácak OCR.
-const RE_SIMBOL_MATIKA = /[{∈≤≥≠√∩∪]/;
+const RE_SIMBOL_MATIKA = /[{∈≤≥≠√∩∪+\-–—:×÷=<>]/;
 
 function barisGarbar(baris) {
   const t = String(baris ?? '').trim();
@@ -238,6 +238,7 @@ export function buangDuplikatOpsiDariTeks(teksSoal, daftarOpsi = []) {
     return sisa.split(/\s+/).filter(Boolean).length <= 6;
   };
   const jumlahBarisAwal = teks.split('\n').filter((b) => b.trim() !== '').length;
+  let totalDibuang = 0;
   for (const opsi of daftarOpsi) {
     const o = normLong(opsi);
     if (o.length < 20) continue; // opsi terlalu pendek: risiko menghapus kalimat sah
@@ -264,21 +265,25 @@ export function buangDuplikatOpsiDariTeks(teksSoal, daftarOpsi = []) {
         );
         continue;
       }
+      totalDibuang += buang;
       teks = sisaBaris.join('\n');
       catatan.push(`salinan opsi jawaban dibuang dari teks soal (${buang} baris): "${String(opsi).slice(0, 60)}..."`);
     }
   }
-  // Sisa token punctual yatim hasil penghapusan (mis. ". _") dibersihkan.
-  // Yang dibuang HANYA token puntual-sisa seperti ". _" hasil penghapusan
-    // duplikat. Simbol bermakna (+ = < > / × %) DIPERTAHANKAN -- teks soal
-    // matematika penuh simbol dan filter buta akan melukainya.
-  teks = teks
-    .split('\n')
-    .map((b) => b.split(/\s+/).filter((w) => !(/^[._\-–—~•·'`",;:]{1,2}$/.test(w) && w !== '…')).join(' '))
-    .filter((b, i, arr) => b.trim() !== '' || (i > 0 && arr[i - 1].trim() !== ''))
-    .join('\n')
-    .replace(/\n{3,}/g, '\n\n')
-    .trim();
+  // Sisa token punctual yatim hasil penghapusan (mis. ". _") dibersihkan
+  // HANYA bila memang ada baris opsi duplikat yang dibuang (totalDibuang > 0).
+  // 🔥 PENTING (insiden 2026-11-12): simbol matematika (- – — : ÷ + * = < > %)
+  // dan tanda baca sah (, ; " ') WAJIB DIPERTAHANKAN -- tidak boleh dihapus!
+  // Yang dibuang HANYA token sisa titik/garis-bawah lepas ([._]) bila ada opsi yang terbuang.
+  if (totalDibuang > 0) {
+    teks = teks
+      .split('\n')
+      .map((b) => b.split(/\s+/).filter((w) => !(/^[._]{1,2}$/.test(w) && w !== '…')).join(' '))
+      .filter((b, i, arr) => b.trim() !== '' || (i > 0 && arr[i - 1].trim() !== ''))
+      .join('\n')
+      .replace(/\n{3,}/g, '\n\n')
+      .trim();
+  }
   return { teks, catatan };
 }
 
