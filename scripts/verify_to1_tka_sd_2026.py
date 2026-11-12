@@ -99,16 +99,22 @@ def verify_file(html_path, expected_count):
 
         # 4. Pernyataan (untuk benar_salah / pg_kategori)
         if tipe in ["benar_salah", "pg_kategori"]:
-            pernyataan_match = re.search(r'<ul\s+data-field="pernyataan">(.*?)</ul>', art_body, re.DOTALL)
-            if not pernyataan_match:
-                soal_errors.append("Pernyataan (<ul data-field='pernyataan'>) belum ditemukan.")
-            else:
+            pernyataan_match = re.search(r'<ul[^>]*data-field="pernyataan"[^>]*>(.*?)</ul>', art_body, re.DOTALL)
+            table_match = re.search(r'<table[^>]*data-field="pernyataan"[^>]*>(.*?)</table>', art_body, re.DOTALL)
+            if not pernyataan_match and not table_match:
+                soal_errors.append("Pernyataan (<ul data-field='pernyataan'> atau <table data-field='pernyataan'>) belum ditemukan.")
+            elif pernyataan_match:
                 lis = re.findall(r'<li\s+data-jawaban="([^"]*)"[^>]*>(.*?)</li>', pernyataan_match.group(1), re.DOTALL)
                 if len(lis) == 0:
                     soal_errors.append("Pernyataan kosong.")
                 for kj, t in lis:
                     if not kj:
                         soal_errors.append("Pernyataan memiliki data-jawaban kosong.")
+            elif table_match:
+                # Cek apakah tabel memiliki baris di tbody
+                trs = re.findall(r'<tr[^>]*>(.*?)</tr>', table_match.group(1), re.DOTALL)
+                if len(trs) <= 1:
+                    soal_errors.append("Pernyataan tabel kosong.")
 
         # 5. Kunci Jawaban
         kunci_match = re.search(r'<meta\s+data-field="kunci_jawaban"\s+data-value="([^"]+)"', art_body)

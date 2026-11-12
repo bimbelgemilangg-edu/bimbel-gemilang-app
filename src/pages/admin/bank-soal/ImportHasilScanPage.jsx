@@ -4485,7 +4485,7 @@ Ikuti PERSIS format/skema HTML di bawah ini buat cara nulis soalnya (struktur da
 
       const warningList = normalized
         .filter(q => !q.valid)
-        .map(q => `Soal ${q.nomor}${q.paket ? ` (Paket ${q.paket})` : ''}: ${q.errors.join(' ')}`);
+        .map(q => `Soal ${q.nomor}${q.paket ? ` (Paket ${q.paket})` : ''}: ${safeArray(q.errors).join(' ')}`);
 
       setWarnings(warningList);
       setSoalList(normalized);
@@ -6022,8 +6022,26 @@ const tabPasifStyle = { fontSize: '12px', padding: '6px 14px', borderRadius: '6p
 const btnBiruKecil = { fontSize: '13px', padding: '8px 16px', borderRadius: '8px', border: 'none', backgroundColor: '#06b6d4', color: 'white', fontWeight: '700', cursor: 'pointer' };
 
 // ============================================================
-// QUESTION PREVIEW
+// QUESTION PREVIEW & TAXONOMY MATCHER
 // ============================================================
+
+function cocokTaksonomiMateri(materi, daftarBabValid) {
+  if (!materi || !Array.isArray(daftarBabValid) || daftarBabValid.length === 0) return true;
+  const mRaw = String(materi).trim().toLowerCase();
+  // Buang awalan seksi seperti "A. Bilangan - A1. ", "B1. ", "C2. ", dll.
+  const mClean = mRaw.replace(/^[a-z0-9]+[.\-–—\s]+/i, '').replace(/^[a-z0-9]+\.\s*/i, '').trim();
+  const subBab = mRaw.includes(' - ') ? mRaw.split(' - ').map(s => s.trim().toLowerCase()) : [mRaw];
+
+  return daftarBabValid.some(b => {
+    const bRaw = String(b || '').trim().toLowerCase();
+    if (!bRaw) return false;
+    if (bRaw === mRaw || bRaw === mClean) return true;
+    if (subBab.some(s => s === bRaw || s.includes(bRaw) || bRaw.includes(s))) return true;
+    if (mRaw.includes(bRaw) || bRaw.includes(mRaw)) return true;
+    if (mClean.length > 3 && (mClean.includes(bRaw) || bRaw.includes(mClean))) return true;
+    return false;
+  });
+}
 
 function QuestionPreview({ question, mathReady, onCropImage, imageStatus = {}, daftarBabValid = [] }) {
   const q = question;
@@ -6127,7 +6145,7 @@ function QuestionPreview({ question, mathReady, onCropImage, imageStatus = {}, d
 
         {(q.catatan_ocr || []).length > 0 && (
           <span
-            title={q.catatan_ocr.join(' | ')}
+            title={safeArray(q.catatan_ocr).join(' | ')}
             style={{ paddingLeft: '10px', paddingRight: '10px', paddingTop: '4px', paddingBottom: '4px', backgroundColor: '#ffedd5', color: '#9a3412', fontSize: '12px', fontWeight: '700', borderRadius: '9999px', cursor: 'help' }}
           >
             ⚠ {q.catatan_ocr.length} catatan OCR
@@ -6139,8 +6157,8 @@ function QuestionPreview({ question, mathReady, onCropImage, imageStatus = {}, d
           </span>
         )}
 
-        {q.materi && daftarBabValid.length > 0 && !daftarBabValid.includes(q.materi) && (
-          <span title={`Belum ada di Taksonomi Materi. Bab yang terdaftar: ${daftarBabValid.join(', ')}`} style={{ paddingLeft: '10px', paddingRight: '10px', paddingTop: '4px', paddingBottom: '4px', backgroundColor: '#fef2f2', color: '#b91c1c', fontSize: '12px', fontWeight: '700', borderRadius: '9999px', cursor: 'help' }}>
+        {q.materi && safeArray(daftarBabValid).length > 0 && !cocokTaksonomiMateri(q.materi, daftarBabValid) && (
+          <span title={`Belum ada di Taksonomi Materi. Bab yang terdaftar: ${safeArray(daftarBabValid).join(', ')}`} style={{ paddingLeft: '10px', paddingRight: '10px', paddingTop: '4px', paddingBottom: '4px', backgroundColor: '#fef2f2', color: '#b91c1c', fontSize: '12px', fontWeight: '700', borderRadius: '9999px', cursor: 'help' }}>
             ⚠️ materi baru, belum ada di Taksonomi
           </span>
         )}
