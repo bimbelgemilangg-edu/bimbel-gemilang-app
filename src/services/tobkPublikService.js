@@ -394,7 +394,7 @@ export async function selesaikanUjianTobk(pesertaId, hasilData) {
 export async function ambilSemuaLeadsTobk(eventId = null) {
   try {
     let qRef = collection(db, 'tobk_event_leads');
-    if (eventId) {
+    if (eventId && eventId !== 'semua' && eventId !== 'global') {
       qRef = query(qRef, where('eventId', '==', eventId));
     }
     const snap = await getDocs(qRef);
@@ -405,7 +405,7 @@ export async function ambilSemuaLeadsTobk(eventId = null) {
   } catch (err) {
     console.warn('[TOBK] Gagal ambil leads Firestore, ambil lokal:', err);
     const locals = getLocalLeads();
-    if (eventId) return locals.filter((l) => l.eventId === eventId);
+    if (eventId && eventId !== 'semua' && eventId !== 'global') return locals.filter((l) => l.eventId === eventId);
     return locals;
   }
 }

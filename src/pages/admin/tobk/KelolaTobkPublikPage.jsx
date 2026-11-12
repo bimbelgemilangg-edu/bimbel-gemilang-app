@@ -25,7 +25,7 @@ import {
 
 export default function KelolaTobkPublikPage() {
   const [events, setEvents] = useState([]);
-  const [selectedEventId, setSelectedEventId] = useState('');
+  const [selectedEventId, setSelectedEventId] = useState('semua');
   const [leads, setLeads] = useState([]);
   const [paketBimbelList, setPaketBimbelList] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -84,18 +84,12 @@ export default function KelolaTobkPublikPage() {
       ]);
 
       setEvents(listEvents);
-      if (listEvents.length > 0 && !selectedEventId) {
-        setSelectedEventId(listEvents[0].id);
-      }
+      const activeId = selectedEventId || 'semua';
+      const leadData = await ambilSemuaLeadsTobk(activeId);
+      setLeads(leadData);
 
       const pList = snapPaket.docs?.map((d) => ({ id: d.id, ...d.data() })) || [];
       setPaketBimbelList(pList);
-
-      const activeId = selectedEventId || listEvents[0]?.id;
-      if (activeId) {
-        const leadData = await ambilSemuaLeadsTobk(activeId);
-        setLeads(leadData);
-      }
     } catch (err) {
       console.error('Gagal muat data TOBK Admin:', err);
     } finally {
@@ -488,11 +482,14 @@ export default function KelolaTobkPublikPage() {
     return leads.filter((l) => {
       const q = cari.toLowerCase();
       const matchQuery =
+        !q ||
         (l.nama || '').toLowerCase().includes(q) ||
         (l.whatsapp || '').includes(q) ||
         (l.asalSekolah || '').toLowerCase().includes(q) ||
         (l.kota || '').toLowerCase().includes(q) ||
-        (l.targetPtn || '').toLowerCase().includes(q);
+        (l.targetPtn || '').toLowerCase().includes(q) ||
+        (l.pesertaId || '').toLowerCase().includes(q) ||
+        (l.id || '').toLowerCase().includes(q);
 
       if (!matchQuery) return false;
       if (filterStatus === 'semua') return true;
