@@ -171,6 +171,7 @@ export const normalisasiLog = (d) => {
     refTransfer: data.refTransfer || '',
     buktiUrl: data.buktiUrl || '',
     statusRekonsiliasi: data.statusRekonsiliasi || '',
+    statusAudit: data.statusAudit || (data.statusRekonsiliasi === 'cocok' ? 'cocok' : ''),
     setoranId: data.setoranId || '',
     durasiTambah: data.durasiTambah || 0,
     teacherId: data.teacherId || '',
