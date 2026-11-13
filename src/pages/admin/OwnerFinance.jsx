@@ -41,15 +41,17 @@ import PanelInputHonor from './owner/PanelInputHonor';
 import PanelAudit from './owner/PanelAudit';
 import PanelManajemenEksekutif from './owner/PanelManajemenEksekutif';
 import PanelSimulasiKelas from './owner/PanelSimulasiKelas';
+import PanelAuditMutasiOwner from './owner/PanelAuditMutasiOwner';
 
 const TABS = [
-  { id: 'manajemen', label: '🏛️ Manajemen & Audit Riil' },
+  { id: 'mutasi', label: '💳 Mutasi Bank (m-Banking)' },
+  { id: 'manajemen', label: '🏛️ Ringkasan Eksekutif' },
   { id: 'simulasi', label: '⚖️ Simulasi Pecah Kelas' },
-  { id: 'posisi', label: '📡 Posisi Real-time' },
+  { id: 'posisi', label: '📡 Posisi Kas & Bank' },
   { id: 'transaksi', label: '🧾 Semua Transaksi' },
-  { id: 'honor', label: '👩‍🏫 Honor & Input Owner' },
+  { id: 'honor', label: '👩‍🏫 Rekap Honor Guru' },
   { id: 'rekonsiliasi', label: '✅ Rekonsiliasi' },
-  { id: 'analisis', label: '📈 Analisis' },
+  { id: 'analisis', label: '📈 Analisis Laba Rugi' },
   { id: 'neraca', label: '🏦 Neraca & Laporan' },
   { id: 'audit', label: '🔍 Audit & Unduh' },
 ];
@@ -58,11 +60,11 @@ const OwnerFinance = () => {
   const navigate = useNavigate();
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [privacyMode, setPrivacyMode] = useState(false);
-  // Dukung deep-link ?tab=manajemen dll. Tab yang tidak dikenal jatuh ke 'manajemen'
+  // Dukung deep-link ?tab=mutasi dll. Tab yang tidak dikenal jatuh ke 'mutasi'
   const [tab, setTab] = useState(() => {
     const diminta = new URLSearchParams(window.location.search).get('tab');
-    const sah = ['manajemen', 'simulasi', 'posisi', 'transaksi', 'rekonsiliasi', 'honor', 'analisis', 'neraca', 'audit'];
-    return sah.includes(diminta) ? diminta : 'manajemen';
+    const sah = ['mutasi', 'manajemen', 'simulasi', 'posisi', 'transaksi', 'rekonsiliasi', 'honor', 'analisis', 'neraca', 'audit'];
+    return sah.includes(diminta) ? diminta : 'mutasi';
   });
   const [terakhirUpdate, setTerakhirUpdate] = useState(null);
 
@@ -200,6 +202,9 @@ const OwnerFinance = () => {
         </div>
 
         {/* PANEL AKTIF */}
+        {tab === 'mutasi' && (
+          <PanelAuditMutasiOwner {...panelProps} />
+        )}
         {tab === 'manajemen' && (
           <PanelManajemenEksekutif {...panelProps} onBukaTabSimulasi={() => setTab('simulasi')} />
         )}

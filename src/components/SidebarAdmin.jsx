@@ -233,9 +233,9 @@ const SidebarAdmin = () => {
     ...(owner ? [{
       label: '🏛️ MANAJEMEN (OWNER)',
       items: [
-        { name: 'Pusat Komando Owner', path: '/owner/finance?tab=manajemen', icon: <Crown size={18} /> },
+        { name: 'Mutasi Bank (m-Banking)', path: '/owner/finance?tab=mutasi', icon: <CreditCard size={18} /> },
         { name: 'Simulasi Pecah Kelas', path: '/owner/finance?tab=simulasi', icon: <Scale size={18} /> },
-        { name: 'Bayar Honor Tentor', path: '/owner/finance?tab=honor', icon: <Wallet size={18} /> },
+        { name: 'Ringkasan Eksekutif', path: '/owner/finance?tab=manajemen', icon: <Crown size={18} /> },
         { name: 'Posisi Kas & Bank', path: '/owner/finance?tab=posisi', icon: <DollarSign size={18} /> },
         { name: 'Pengaturan Global', path: '/owner/settings', icon: <Settings size={18} /> },
       ],

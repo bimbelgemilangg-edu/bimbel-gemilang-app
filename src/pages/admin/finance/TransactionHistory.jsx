@@ -46,6 +46,11 @@ const TransactionHistory = () => {
   // atur PIN dulu) sampai konfirmasi dari Firestore datang.
   const [pinBelumDiatur, setPinBelumDiatur] = useState(true);
 
+  const [selectedMonth, setSelectedMonth] = useState(() => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+  });
+
   useEffect(() => {
     getDoc(doc(db, "settings", "global_config")).then(snap => {
       // 🔥 FIX KEAMANAN: sebelumnya kalau admin belum pernah mengatur PIN,
@@ -96,13 +101,16 @@ const TransactionHistory = () => {
     // setelah Admin & Owner login pakai Firebase Auth beneran, bukan PIN/
     // password yang dicocokkan manual seperti sekarang. Itu langkah
     // berikutnya yang sudah disepakati.)
-    const now = new Date();
-    const bulanIniAwal = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
-    const bulanDepan = new Date(now.getFullYear(), now.getMonth() + 1, 1);
-    const bulanDepanAwal = `${bulanDepan.getFullYear()}-${String(bulanDepan.getMonth() + 1).padStart(2, '0')}-01`;
+    setLoading(true);
+    const parts = selectedMonth.split('-');
+    const yr = parseInt(parts[0], 10) || new Date().getFullYear();
+    const mo = parseInt(parts[1], 10) || (new Date().getMonth() + 1);
+    const bulanAwal = `${selectedMonth}-01`;
+    const nextMo = new Date(yr, mo, 1);
+    const bulanDepanAwal = `${nextMo.getFullYear()}-${String(nextMo.getMonth() + 1).padStart(2, '0')}-01`;
     const q = query(
       collection(db, "finance_logs"),
-      where('date', '>=', bulanIniAwal),
+      where('date', '>=', bulanAwal),
       where('date', '<', bulanDepanAwal),
     );
     const unsub = onSnapshot(q, (snap) => {
@@ -119,7 +127,7 @@ const TransactionHistory = () => {
       setLoading(false);
     });
     return () => unsub();
-  }, []);
+  }, [selectedMonth]);
 
   // === FILTER LOGIC ===
   // 🔥 FIX (ditangkap CI 2026-10-01): dulu ini useState + useEffect yang
@@ -202,9 +210,12 @@ const TransactionHistory = () => {
   // kehitung di kas Portal Owner). Sebelumnya itu bisa terjadi tanpa
   // peringatan apa pun.
   const sekarang = new Date();
-  const batasAwalBulan = `${sekarang.getFullYear()}-${String(sekarang.getMonth() + 1).padStart(2, '0')}-01`;
-  const hariTerakhirBulan = new Date(sekarang.getFullYear(), sekarang.getMonth() + 1, 0).getDate();
-  const batasAkhirBulan = `${sekarang.getFullYear()}-${String(sekarang.getMonth() + 1).padStart(2, '0')}-${String(hariTerakhirBulan).padStart(2, '0')}`;
+  const partsSel = selectedMonth.split('-');
+  const yrSel = parseInt(partsSel[0], 10) || sekarang.getFullYear();
+  const moSel = parseInt(partsSel[1], 10) || (sekarang.getMonth() + 1);
+  const batasAwalBulan = `${selectedMonth}-01`;
+  const hariTerakhirBulan = new Date(yrSel, moSel, 0).getDate();
+  const batasAkhirBulan = `${selectedMonth}-${String(hariTerakhirBulan).padStart(2, '0')}`;
 
   // 🔥 BARU (KUNCI AKSES ADMIN): "Saldo Tunai/Bank (keseluruhan)" DIHAPUS
   // dari halaman admin ini -- itu sama persis dengan "Total Aset" yang
@@ -623,10 +634,20 @@ const TransactionHistory = () => {
           dikunci cuma bulan berjalan sejak dari query-nya (lihat useEffect
           di atas), jadi tidak ada lagi yang perlu "dipilih". Tombol Export
           PDF/Excel juga dihapus total. */}
-      <div style={{ background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1e40af', padding: '10px 14px', borderRadius: 10, marginBottom: 12, fontSize: 12, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 8 }}>
-        <Lock size={14} /> Menampilkan riwayat bulan berjalan saja. Untuk riwayat lengkap & unduh laporan, hubungi Owner.
-      </div>
       <div style={styles.filterBar}>
+        <div style={styles.filterGroup}>
+          <select
+            value={selectedMonth}
+            onChange={e => setSelectedMonth(e.target.value)}
+            style={{ ...styles.filterSelect, fontWeight: 'bold', color: '#1d4ed8', background: '#eff6ff', borderColor: '#3b82f6' }}
+          >
+            <option value="2026-11">📅 November 2026</option>
+            <option value="2026-10">📅 Oktober 2026</option>
+            <option value="2026-09">📅 September 2026</option>
+            <option value="2026-08">📅 Agustus 2026</option>
+            <option value="2026-07">📅 Juli 2026</option>
+          </select>
+        </div>
         <div style={styles.filterGroup}>
           <select value={filterType} onChange={e => setFilterType(e.target.value)} style={styles.filterSelect}>
             <option value="Semua">Semua Tipe</option>
