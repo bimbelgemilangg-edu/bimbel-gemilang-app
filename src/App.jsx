@@ -38,6 +38,7 @@ import Login from './pages/Login';
 // masih diterima sebagai jalur warisan sampai Owner mematikannya.
 import LoginAdmin from './pages/LoginAdmin';
 import LoginOwner from './pages/LoginOwner';
+import OwnerAppInstallPage from './pages/owner/OwnerAppInstallPage';
 import LoginGuru from './pages/LoginGuru';
 import LoginSiswa from './pages/LoginSiswa';
 import PublicBlog from './pages/PublicBlog';
@@ -627,6 +628,9 @@ function App() {
             "Login Admin" di sana sekarang mengarah ke sini. */}
         <Route path="/login-admin" element={<LoginAdmin />} />
         <Route path="/login-owner" element={<LoginOwner />} />
+        {/* 🔥 RAHASIA KHUSUS OWNER: pasang aplikasi Owner di layar HP */}
+        <Route path="/owner-app" element={<OwnerAppInstallPage />} />
+        <Route path="/app-owner" element={<Navigate to="/owner-app" replace />} />
         <Route path="/aktivitas" element={<PublicBlog />} />
         <Route path="/pendaftaran" element={<PendaftaranOnline />} />
         <Route path="/pendaftaran-tentor" element={<PendaftaranTentor />} />

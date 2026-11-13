@@ -3,11 +3,11 @@
 // DALAM portal Admin (buka Settings, masukin PIN). Sekarang Owner punya
 // jalur login sendiri, terpisah total dari akun Admin -- persis kayak
 // Guru dan Siswa yang sudah punya portalnya masing-masing.
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../firebase';
 import { doc, getDoc } from "firebase/firestore";
-import { Crown, ArrowLeft, Eye, EyeOff } from 'lucide-react';
+import { Crown, ArrowLeft, Eye, EyeOff, Smartphone } from 'lucide-react';
 // 🔥 BARU (insiden Firestore terbuka): verifikasi PIN dicoba lewat SERVER
 // lebih dulu, supaya browser tidak perlu lagi membaca `ownerPin`.
 import { verifikasiLewatServer } from '../utils/adminAuth';
@@ -19,6 +19,17 @@ const LoginOwner = () => {
   const [inputPin, setInputPin] = useState('');
   const [showPin, setShowPin] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    // Pasang manifest khusus owner agar saat ditambahkan ke layar HP menjadi aplikasi Gemilang Owner
+    let link = document.querySelector('link[rel="manifest"]');
+    if (!link) {
+      link = document.createElement('link');
+      link.rel = 'manifest';
+      document.head.appendChild(link);
+    }
+    link.href = '/manifest-owner.json';
+  }, []);
 
   // Simpan sesi owner. Dipisah jadi fungsi karena dipakai oleh dua jalur
   // (server dan fallback klien) supaya perilakunya tidak bisa berbeda.
@@ -150,6 +161,19 @@ const LoginOwner = () => {
 
           <button type="submit" disabled={loading} style={{ ...styles.btnSubmit, opacity: loading ? 0.7 : 1 }}>
             {loading ? '⏳ Memproses...' : '👑 Masuk Portal Owner'}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => navigate('/owner-app')}
+            style={{
+              background: 'transparent', border: '1px dashed rgba(251,191,36,0.3)',
+              borderRadius: 12, padding: '10px 14px', color: '#fbbf24', fontSize: 12,
+              fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center',
+              justifyContent: 'center', gap: 6, marginTop: 4,
+            }}
+          >
+            <Smartphone size={14} /> Pasang Aplikasi Owner di Layar HP
           </button>
         </form>
 
