@@ -8,7 +8,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
-  Menu, X, LayoutDashboard, Users, GraduationCap, Calendar, CreditCard, FileText, Settings, LogOut, BookOpen, ClipboardList, Globe, TrendingUp, UserPlus, DollarSign, FileUp, Briefcase, Brain, Rocket, ClipboardCheck, Sparkles, BarChart3, Trophy, UploadCloud, Trash2, FolderTree, BookMarked, GitMerge, Archive, Crown, Lock, Receipt, KeyRound, History, Wallet, Toolbox, Library, Landmark, Target, LineChart, BookUp,
+  Menu, X, LayoutDashboard, Users, GraduationCap, Calendar, CreditCard, FileText, Settings, LogOut, BookOpen, ClipboardList, Globe, TrendingUp, UserPlus, DollarSign, FileUp, Briefcase, Brain, Rocket, ClipboardCheck, Sparkles, BarChart3, Trophy, UploadCloud, Trash2, FolderTree, BookMarked, GitMerge, Archive, Crown, Lock, Receipt, KeyRound, History, Wallet, Toolbox, Library, Landmark, Target, LineChart, BookUp, Scale, FileSpreadsheet,
 } from 'lucide-react';
 import { db } from '../firebase';
 import {
@@ -227,25 +227,19 @@ const SidebarAdmin = () => {
         { name: 'Gaji Guru', path: '/admin/teachers/salaries', icon: <FileText size={18} /> },
       ]
     },
-    // 🔥 BARU: grup khusus owner -- jalan pintas ke portal keuangan owner
-    // (posisi uang real-time, rekonsiliasi, honor tentor, neraca).
-    ...(owner ? [{
-      label: '👑 OWNER',
+    // 🏛️ MANAJEMEN EKSEKUTIF (Audit Finansial Riil, Simulasi Pecah Kelas Crowded, Laporan Besar Excel & AI, Eksekusi Gaji Tentor)
+    // Tampil permanen untuk Admin & Owner (tidak lagi tersembunyi & tidak terkunci tanggal jendela bayar)
+    {
+      label: '🏛️ MANAJEMEN',
       items: [
-        { name: 'Portal Keuangan Owner', path: '/owner/finance', icon: <Crown size={18} /> },
-        // 🔥 BARU (pembagian kewenangan): pintu bayar honor. Muncul di
-        // SIDEBAR hanya pada 7 hari terakhir bulan ("minggu terakhir") --
-        // alur yang diminta owner: admin memvalidasi sesi sepanjang bulan,
-        // lalu owner membayar di akhir bulan. Halaman tujuannya sendiri
-        // tetap bisa dibuka kapan pun lewat Portal Keuangan (tab Honor),
-        // supaya uang tidak pernah terjebak cuma karena kalender.
-        ...(isJendelaBayar(tanggalLokalHariIni()) ? [{
-          name: 'Bayar Tentor', path: '/owner/finance?tab=honor', icon: <Wallet size={18} />,
-          badge: 'akhir bulan', badgeColor: '#f59e0b',
-        }] : []),
-        { name: 'Pengaturan Global', path: '/owner/settings', icon: <Settings size={18} /> },
-      ]
-    }] : []),
+        { name: 'Pusat Manajemen', path: '/admin/manajemen', icon: <Landmark size={18} /> },
+        { name: 'Simulasi Pecah Kelas', path: '/admin/manajemen?tab=kapasitas', icon: <Scale size={18} /> },
+        { name: 'Laporan Besar & AI', path: '/admin/manajemen?tab=laporan', icon: <FileSpreadsheet size={18} /> },
+        { name: 'Bayar Honor Tentor', path: '/admin/manajemen?tab=honor', icon: <Wallet size={18} /> },
+        { name: 'Posisi Keuangan', path: '/admin/manajemen?tab=keuangan', icon: <DollarSign size={18} /> },
+        { name: 'Pengaturan Global', path: '/admin/settings', icon: <Settings size={18} /> },
+      ],
+    },
     // 🔥 BARU (pemisahan akun Admin): grup KEAMANAN -- hanya Owner dan
     // admin berperan Manajer. Kasir tidak melihat grup ini sama sekali.
     ...((owner || manajer) ? [{
@@ -291,9 +285,7 @@ const SidebarAdmin = () => {
       label: 'LAINNYA',
       items: [
         { name: 'Blog & Galeri', path: '/admin/blog',     icon: <BookOpen size={18} /> },
-        // Pengaturan global (harga paket, PIN owner, password admin) =
-        // ranah owner. Kasir tidak perlu (routenya juga sudah dikunci).
-        ...(owner ? [{ name: 'Pengaturan', path: '/admin/settings', icon: <Settings size={18} /> }] : []),
+        { name: 'Pengaturan', path: '/admin/settings', icon: <Settings size={18} /> },
       ]
     }
   ];

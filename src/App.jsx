@@ -70,6 +70,7 @@ import ManageTentorRegistration from './pages/admin/pendaftaran/ManageTentorRegi
 import Dashboard from './pages/admin/Dashboard';
 import Settings from './pages/admin/Settings';
 import OwnerFinance from './pages/admin/OwnerFinance';
+import ManajemenEksekutifPage from './pages/admin/manajemen/ManajemenEksekutifPage';
 // 🔥 BARU (pemisahan akun Admin): kelola akun staf admin + jejak audit.
 // Keduanya dikunci ManajerRoute di bawah -- hanya Owner & Manajer.
 import AdminUsers from './pages/admin/AdminUsers';
@@ -906,10 +907,15 @@ function App() {
         {/* Alias lama yang mungkin sudah terlanjur dibagikan/dibookmark. */}
         <Route path="/admin/login" element={<Navigate to="/login-admin" replace />} />
 
-        {/* OWNER / SETTINGS */}
-        <Route path="/admin/settings" element={<OwnerRoute><Settings /></OwnerRoute>} />
-        <Route path="/owner/settings" element={<OwnerRoute><Settings /></OwnerRoute>} />
-        <Route path="/owner/finance" element={<OwnerRoute><OwnerFinance /></OwnerRoute>} />
+        {/* ====================================================
+            MANAJEMEN EKSEKUTIF (AUDIT FINANSIAL, PECAH KELAS, LAPORAN BESAR)
+            Terbuka langsung untuk Admin & Owner (tidak lagi terblokir LayarTerkunciOwner)
+            ==================================================== */}
+        <Route path="/admin/manajemen" element={<AdminRoute><ManajemenEksekutifPage /></AdminRoute>} />
+        <Route path="/owner/finance" element={<AdminRoute><ManajemenEksekutifPage /></AdminRoute>} />
+        <Route path="/owner" element={<Navigate to="/admin/manajemen" replace />} />
+        <Route path="/admin/settings" element={<AdminRoute><Settings /></AdminRoute>} />
+        <Route path="/owner/settings" element={<AdminRoute><Settings /></AdminRoute>} />
 
         {/* ====================================================
             GURU
