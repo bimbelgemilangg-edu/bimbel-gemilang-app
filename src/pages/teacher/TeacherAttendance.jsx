@@ -39,7 +39,6 @@ const TeacherAttendance = () => {
   const [schedules, setSchedules] = useState([]);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [attendanceLogs, setAttendanceLogs] = useState({});
-  const [todayCode, setTodayCode] = useState("");
   
   // Modal
   const [showModal, setShowModal] = useState(false);
@@ -54,20 +53,6 @@ const TeacherAttendance = () => {
   const [selectedSubBab, setSelectedSubBab] = useState("");
   const [statusKetuntasan, setStatusKetuntasan] = useState("berjalan"); // 'berjalan' (lanjut sesi depan) | 'tuntas'
   const [isManualInput, setIsManualInput] = useState(false);
-
-  const fetchDailyCode = async (dateStr) => {
-    try {
-      const docRef = doc(db, "settings", `daily_code_${dateStr}`);
-      const docSnap = await getDoc(docRef);
-      if (docSnap.exists()) {
-        setTodayCode(docSnap.data().code || "");
-      } else {
-        setTodayCode("");
-      }
-    } catch (e) {
-      console.error("Error fetching daily code:", e);
-    }
-  };
 
   // 🔥 FIX BUG BESAR: sebelumnya fungsi ini baca dari field `attendance_list`
   // DI DALAM dokumen jadwal_bimbel -- tempat yang TIDAK PERNAH dibaca oleh
@@ -141,10 +126,6 @@ const TeacherAttendance = () => {
       console.error("Error fetching schedules:", error);
       setLoading(false);
     });
-
-    // 19 Okt: microtask agar tidak setState sinkron di badan effect
-    // (aturan react-hooks/set-state-in-effect); perilaku tetap sama.
-    queueMicrotask(() => fetchDailyCode(dateStr));
 
     return unsubscribe;
   }, [guru, selectedDate]);
@@ -373,12 +354,6 @@ const TeacherAttendance = () => {
             Kelola kehadiran siswa untuk jadwal mengajar Anda
           </p>
         </div>
-        {todayCode && (
-          <div style={styles.codeBox}>
-            <span style={styles.codeLabel}>📋 Kode Absensi:</span>
-            <span style={styles.codeValue}>{todayCode}</span>
-          </div>
-        )}
       </div>
 
       {/* Date Navigator */}

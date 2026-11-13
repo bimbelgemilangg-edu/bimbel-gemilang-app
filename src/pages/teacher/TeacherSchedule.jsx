@@ -77,7 +77,6 @@ const TeacherSchedule = () => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [viewMode, setViewMode] = useState('monthly');
   const [selectedSchedule, setSelectedSchedule] = useState(null);
-  const [dailyCode, setDailyCode] = useState("");
   const [teacherStats, setTeacherStats] = useState({
     totalStudents: 0,
     totalClasses: 0,
@@ -128,22 +127,7 @@ const TeacherSchedule = () => {
     };
     fetchCustomEvents();
 
-    // 2. Ambil daily code
-    const fetchDailyCode = async () => {
-      try {
-        const today = getDateStr(new Date());
-        const docRef = doc(db, "settings", `daily_code_${today}`);
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-          setDailyCode(docSnap.data().code || "");
-        }
-      } catch (e) {
-        console.error("Error fetching daily code:", e);
-      }
-    };
-    fetchDailyCode();
-
-    // 3. Ambil jadwal (jika ada data guru)
+    // 2. Ambil jadwal (jika ada data guru)
     if (!teacherData?.nama) {
       return;
     }
@@ -427,14 +411,6 @@ const TeacherSchedule = () => {
             </div>
           )}
         </div>
-
-        {/* Kode Absensi */}
-        {dailyCode && (
-          <div style={styles.dailyCodeBox}>
-            <span style={styles.dailyCodeLabel}>📋 Kode Absensi:</span>
-            <span style={styles.dailyCodeValue}>{dailyCode}</span>
-          </div>
-        )}
 
         {/* Daftar Jadwal */}
         {daySchedules.length === 0 ? (
