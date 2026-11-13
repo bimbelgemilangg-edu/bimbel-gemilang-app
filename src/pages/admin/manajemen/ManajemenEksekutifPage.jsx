@@ -33,6 +33,7 @@ import {
 import {
   normalisasiLog, normalisasiStudent, normalisasiTeacherLog,
 } from '../owner/keuanganOwnerUtils';
+import { isOwnerSession } from '../../../utils/roleAkses';
 
 // Import panel keuangan komprehensif
 import PanelPosisi from '../owner/PanelPosisi';
@@ -52,8 +53,15 @@ export default function ManajemenEksekutifPage() {
   });
 
   const [loading, setLoading] = useState(true);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
   const [submittingHonor, setSubmittingHonor] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 1024);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Raw Database States
   const [financeLogsRaw, setFinanceLogsRaw] = useState([]);
@@ -228,11 +236,43 @@ export default function ManajemenEksekutifPage() {
     setTimeout(() => setCopySuccess(false), 3000);
   };
 
+  // PENGAMAN DATA SENSITIF: Jika yang mengakses adalah admin kasir/operasional,
+  // sembunyikan seluruh angka rahasia dan tampilkan gerbang verifikasi PIN Owner.
+  if (!isOwnerSession()) {
+    return (
+      <div style={{ display: 'flex', minHeight: '100vh', background: '#0f172a', alignItems: 'center', justifyContent: 'center', padding: 20, fontFamily: 'system-ui, -apple-system, sans-serif' }}>
+        <div style={{ maxWidth: 440, width: '100%', background: '#1e293b', padding: '36px 30px', borderRadius: 20, textAlign: 'center', border: '1px solid #334155', boxShadow: '0 25px 60px rgba(0,0,0,0.5)' }}>
+          <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'rgba(251,191,36,0.1)', border: '1px solid #fbbf24', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', color: '#fbbf24', fontSize: 26 }}>
+            👑
+          </div>
+          <h2 style={{ color: '#ffffff', fontSize: 20, fontWeight: 800, margin: '0 0 8px' }}>Area Terbatas Owner</h2>
+          <p style={{ color: '#94a3b8', fontSize: 13, lineHeight: 1.6, margin: '0 0 24px' }}>
+            Data keuangan strategis, laba rugi bimbel, dan simulasi biaya hanya dapat diakses melalui Portal Owner demi kerahasiaan data internal.
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <button
+              onClick={() => navigate('/login-owner')}
+              style={{ width: '100%', padding: '13px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg, #fbbf24, #f59e0b)', color: '#0f172a', fontWeight: 800, fontSize: 13.5, cursor: 'pointer' }}
+            >
+              👑 Masuk dengan PIN Owner
+            </button>
+            <button
+              onClick={() => navigate('/admin')}
+              style={{ width: '100%', padding: '12px', borderRadius: 10, border: '1px solid #475569', background: 'transparent', color: '#cbd5e1', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}
+            >
+              ← Kembali ke Dashboard Admin
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: '#f8fafc', fontFamily: 'system-ui, -apple-system, sans-serif' }}>
       <SidebarAdmin />
 
-      <main style={{ flex: 1, padding: '24px', maxWidth: '1360px', margin: '0 auto', width: '100%' }}>
+      <main style={{ flex: 1, marginLeft: isMobile ? 0 : '216px', width: isMobile ? '100%' : 'calc(100% - 216px)', padding: isMobile ? '16px' : '28px', maxWidth: '1360px', boxSizing: 'border-box' }}>
         {/* Top Header Manajemen */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 16, marginBottom: 24 }}>
           <div>

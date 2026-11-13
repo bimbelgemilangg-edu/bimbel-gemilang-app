@@ -358,6 +358,16 @@ const LayarTerkunciOwner = () => {
         </p>
         <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
           <button
+            onClick={() => navigate('/login-owner')}
+            style={{
+              background: 'linear-gradient(135deg, #fbbf24, #f59e0b)', color: '#1a1030',
+              border: 'none', borderRadius: 10, padding: '11px 20px',
+              fontSize: 13, fontWeight: 800, cursor: 'pointer',
+            }}
+          >
+            👑 Masuk dengan PIN Owner
+          </button>
+          <button
             onClick={() => navigate('/admin')}
             style={{
               background: 'linear-gradient(135deg, #60a5fa, #2563eb)', color: '#06121f',
@@ -908,14 +918,14 @@ function App() {
         <Route path="/admin/login" element={<Navigate to="/login-admin" replace />} />
 
         {/* ====================================================
-            MANAJEMEN EKSEKUTIF (AUDIT FINANSIAL, PECAH KELAS, LAPORAN BESAR)
-            Terbuka langsung untuk Admin & Owner (tidak lagi terblokir LayarTerkunciOwner)
+            PORTAL KHUSUS OWNER (DATA KEUANGAN SENSITIF & STRATEGIS)
+            Hanya dapat dibuka dengan PIN Owner lewat OwnerRoute
             ==================================================== */}
-        <Route path="/admin/manajemen" element={<AdminRoute><ManajemenEksekutifPage /></AdminRoute>} />
-        <Route path="/owner/finance" element={<AdminRoute><ManajemenEksekutifPage /></AdminRoute>} />
-        <Route path="/owner" element={<Navigate to="/admin/manajemen" replace />} />
-        <Route path="/admin/settings" element={<AdminRoute><Settings /></AdminRoute>} />
-        <Route path="/owner/settings" element={<AdminRoute><Settings /></AdminRoute>} />
+        <Route path="/admin/manajemen" element={<Navigate to="/owner/finance?tab=manajemen" replace />} />
+        <Route path="/owner/finance" element={<OwnerRoute><OwnerFinance /></OwnerRoute>} />
+        <Route path="/owner" element={<Navigate to="/owner/finance" replace />} />
+        <Route path="/admin/settings" element={<OwnerRoute><Settings /></OwnerRoute>} />
+        <Route path="/owner/settings" element={<OwnerRoute><Settings /></OwnerRoute>} />
 
         {/* ====================================================
             GURU

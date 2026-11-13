@@ -227,19 +227,26 @@ const SidebarAdmin = () => {
         { name: 'Gaji Guru', path: '/admin/teachers/salaries', icon: <FileText size={18} /> },
       ]
     },
-    // 🏛️ MANAJEMEN EKSEKUTIF (Audit Finansial Riil, Simulasi Pecah Kelas Crowded, Laporan Besar Excel & AI, Eksekusi Gaji Tentor)
-    // Tampil permanen untuk Admin & Owner (tidak lagi tersembunyi & tidak terkunci tanggal jendela bayar)
-    {
-      label: '🏛️ MANAJEMEN',
+    // 🏛️ KHUSUS OWNER (Data Keuangan Strategis, Profit Riil, Simulasi Pecah Kelas, & Honor Tentor)
+    // Untuk admin/kasir: hanya tampil tombol tautan ke Portal Owner (PIN) agar data rahasia tidak bocor.
+    // Untuk owner: langsung tampil navigasi lengkap ke tab-tab Pusat Komando Owner.
+    ...(owner ? [{
+      label: '🏛️ MANAJEMEN (OWNER)',
       items: [
-        { name: 'Pusat Manajemen', path: '/admin/manajemen', icon: <Landmark size={18} /> },
-        { name: 'Simulasi Pecah Kelas', path: '/admin/manajemen?tab=kapasitas', icon: <Scale size={18} /> },
-        { name: 'Laporan Besar & AI', path: '/admin/manajemen?tab=laporan', icon: <FileSpreadsheet size={18} /> },
-        { name: 'Bayar Honor Tentor', path: '/admin/manajemen?tab=honor', icon: <Wallet size={18} /> },
-        { name: 'Posisi Keuangan', path: '/admin/manajemen?tab=keuangan', icon: <DollarSign size={18} /> },
-        { name: 'Pengaturan Global', path: '/admin/settings', icon: <Settings size={18} /> },
+        { name: 'Pusat Komando Owner', path: '/owner/finance?tab=manajemen', icon: <Crown size={18} /> },
+        { name: 'Simulasi Pecah Kelas', path: '/owner/finance?tab=simulasi', icon: <Scale size={18} /> },
+        { name: 'Bayar Honor Tentor', path: '/owner/finance?tab=honor', icon: <Wallet size={18} /> },
+        { name: 'Posisi Kas & Bank', path: '/owner/finance?tab=posisi', icon: <DollarSign size={18} /> },
+        { name: 'Pengaturan Global', path: '/owner/settings', icon: <Settings size={18} /> },
       ],
-    },
+    }] : [
+      {
+        label: '👑 KHUSUS OWNER',
+        items: [
+          { name: 'Portal Owner (PIN)', path: '/login-owner', icon: <Crown size={18} /> },
+        ],
+      }
+    ]),
     // 🔥 BARU (pemisahan akun Admin): grup KEAMANAN -- hanya Owner dan
     // admin berperan Manajer. Kasir tidak melihat grup ini sama sekali.
     ...((owner || manajer) ? [{

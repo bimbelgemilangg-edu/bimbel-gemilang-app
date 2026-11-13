@@ -39,12 +39,16 @@ import PanelNeraca from './owner/PanelNeraca';
 import PanelRekonsiliasi from './owner/PanelRekonsiliasi';
 import PanelInputHonor from './owner/PanelInputHonor';
 import PanelAudit from './owner/PanelAudit';
+import PanelManajemenEksekutif from './owner/PanelManajemenEksekutif';
+import PanelSimulasiKelas from './owner/PanelSimulasiKelas';
 
 const TABS = [
+  { id: 'manajemen', label: '🏛️ Manajemen & Audit Riil' },
+  { id: 'simulasi', label: '⚖️ Simulasi Pecah Kelas' },
   { id: 'posisi', label: '📡 Posisi Real-time' },
   { id: 'transaksi', label: '🧾 Semua Transaksi' },
-  { id: 'rekonsiliasi', label: '✅ Rekonsiliasi' },
   { id: 'honor', label: '👩‍🏫 Honor & Input Owner' },
+  { id: 'rekonsiliasi', label: '✅ Rekonsiliasi' },
   { id: 'analisis', label: '📈 Analisis' },
   { id: 'neraca', label: '🏦 Neraca & Laporan' },
   { id: 'audit', label: '🔍 Audit & Unduh' },
@@ -54,13 +58,11 @@ const OwnerFinance = () => {
   const navigate = useNavigate();
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [privacyMode, setPrivacyMode] = useState(false);
-  // 🔥 BARU: dukung deep-link ?tab=honor dll, dipakai menu sidebar owner
-  // "Bayar Tentor" yang muncul di minggu terakhir bulan. Tab yang tidak
-  // dikenal jatuh ke 'posisi' supaya URL salah tidak menampilkan kosong.
+  // Dukung deep-link ?tab=manajemen dll. Tab yang tidak dikenal jatuh ke 'manajemen'
   const [tab, setTab] = useState(() => {
     const diminta = new URLSearchParams(window.location.search).get('tab');
-    const sah = ['posisi', 'transaksi', 'rekonsiliasi', 'honor', 'analisis', 'neraca'];
-    return sah.includes(diminta) ? diminta : 'posisi';
+    const sah = ['manajemen', 'simulasi', 'posisi', 'transaksi', 'rekonsiliasi', 'honor', 'analisis', 'neraca', 'audit'];
+    return sah.includes(diminta) ? diminta : 'manajemen';
   });
   const [terakhirUpdate, setTerakhirUpdate] = useState(null);
 
@@ -198,6 +200,12 @@ const OwnerFinance = () => {
         </div>
 
         {/* PANEL AKTIF */}
+        {tab === 'manajemen' && (
+          <PanelManajemenEksekutif {...panelProps} onBukaTabSimulasi={() => setTab('simulasi')} />
+        )}
+        {tab === 'simulasi' && (
+          <PanelSimulasiKelas {...panelProps} />
+        )}
         {tab === 'posisi' && (
           <PanelPosisi {...panelProps} terakhirUpdate={terakhirUpdate} />
         )}
