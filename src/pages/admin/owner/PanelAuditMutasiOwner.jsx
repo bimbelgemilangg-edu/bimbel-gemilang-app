@@ -19,7 +19,8 @@ import {
   Wallet, ShieldCheck, CheckCircle2, AlertTriangle, RefreshCw,
   PlusCircle, Trash2, Calendar, DollarSign, ArrowRight, ArrowDownRight,
   ArrowUpRight, Sparkles, Building2, UserCheck, HelpCircle, Lock,
-  ChevronLeft, ChevronRight, Check, Search, Filter, Layers, CreditCard
+  ChevronLeft, ChevronRight, Check, Search, Filter, Layers, CreditCard,
+  Download, FileText, Copy, Bot, FileSpreadsheet
 } from 'lucide-react';
 import { KANAL } from '../../../utils/kanalUang';
 import { rp as defaultRp } from '../manajemen/manajemenUtils';
@@ -426,6 +427,121 @@ export default function PanelAuditMutasiOwner({
     }
   };
 
+  // STATE & AKSI 7: Unduh Data untuk NotebookLM / AI & Excel
+  const [copiedPrompt, setCopiedPrompt] = useState(false);
+
+  const handleUnduhFile = (namaFile, konten, mimeType = 'text/plain;charset=utf-8') => {
+    const blob = new Blob([konten], { type: mimeType });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = namaFile;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const handleUnduhUntukAI = () => {
+    let teks = `# DOKUMEN RESMI TRANSAKSI KEUANGAN BIMBEL GEMILANG\n`;
+    teks += `## Periode Audit: ${bulanPilihan}\n`;
+    teks += `Diekspor pada: ${new Date().toLocaleString('id-ID')}\n`;
+    teks += `Sistem: Aplikasi Manajemen & Komando Owner Bimbel Gemilang\n\n`;
+
+    teks += `================================================================================\n`;
+    teks += `INSTRUKSI PROMPT UNTUK NOTEBOOK LM / CHATGPT / CLAUDE / AI:\n`;
+    teks += `--------------------------------------------------------------------------------\n`;
+    teks += `Halo AI, saya mengunggah dua dokumen sumber:\n`;
+    teks += `1. DOKUMEN INI (Data resmi transaksi terbuku di sistem Bimbel Gemilang periode ${bulanPilihan})\n`;
+    teks += `2. PDF REKENING KORAN BANK (Rekening BCA / m-Banking saya untuk periode ${bulanPilihan})\n\n`;
+    teks += `KONDISI REKENING:\n`;
+    teks += `Rekening bank saya saat ini masih BERCAMPUR antara keuangan pribadi dan operasional bimbel.\n\n`;
+    teks += `TUGAS ANDA:\n`;
+    teks += `1. PISAHKAN PENGELUARAN PRIBADI VS BIMBEL:\n`;
+    teks += `   - Pengeluaran Pribadi Owner: belanja Shopee/mall, tiket kereta api (KAI Access), hotel/RedDoorz, makanan/cafe/kuliner pribadi, transfer ke rekening pribadi.\n`;
+    teks += `   - Pengeluaran Bimbel: honor tentor/guru, gaji admin, sewa, listrik, WiFi, ATK, biaya operasional bimbel.\n`;
+    teks += `2. COCOKKAN TRANSAKSI BIMBEL:\n`;
+    teks += `   - Mana saja transaksi pemasukan SPP di rekening bank yang SUDAH TERCATAT di dokumen sistem ini?\n`;
+    teks += `   - Mana transaksi pemasukan SPP di rekening bank yang BELUM TERCATAT di dokumen sistem ini?\n`;
+    teks += `   - Mana pengeluaran operasional / honor tentor di rekening bank yang BELUM TERCATAT di sistem ini?\n`;
+    teks += `3. BUATKAN REKAPITULASI AKHIR:\n`;
+    teks += `   - Total Pemasukan Riil Bimbel\n`;
+    teks += `   - Total Pengeluaran Riil Bimbel (Honor Guru + Operasional)\n`;
+    teks += `   - Laba Bersih Riil Bimbel (yang merupakan hak prive owner)\n`;
+    teks += `   - Total Prive / Belanja Pribadi Owner yang terpakai dari rekening ini.\n`;
+    teks += `================================================================================\n\n`;
+
+    teks += `### 1. RINGKASAN DATA SISTEM GEMILANG (${bulanPilihan})\n`;
+    teks += `- Total Transaksi Terbuku di Sistem: ${semuaLogsBulanIni.length} transaksi\n`;
+    teks += `- Total Pemasukan Terbuku Bank: ${formatRp(rekapBulanBank.totalMasuk)}\n`;
+    teks += `- Total Pengeluaran Terbuku Bank: ${formatRp(rekapBulanBank.totalKeluar)}\n`;
+    teks += `- Laba Bersih Rekening Bank Terbuku: ${formatRp(rekapBulanBank.netProfitBulan)}\n`;
+    teks += `- Status Gaji Tentor: ${rekapBulanBank.sudahAdaGajiTentor ? 'Sudah Tercatat (' + formatRp(rekapBulanBank.gajiTentorTerbuku) + ')' : 'Belum Tercatat di Sistem'}\n`;
+    teks += `- Status Gaji Admin: ${rekapBulanBank.sudahAdaGajiAdmin ? 'Sudah Tercatat (' + formatRp(rekapBulanBank.gajiAdminTerbuku) + ')' : 'Belum Tercatat di Sistem'}\n\n`;
+
+    teks += `### 2. DATA ESTIMASI SESI MENGAJAR TENTOR (${bulanPilihan})\n`;
+    teks += `- Total Sesi Mengajar: ${rekapTentorBulanIni.totalSesi} sesi\n`;
+    teks += `- Estimasi Total Honor Mengajar: ${formatRp(rekapTentorBulanIni.totalNominalEstimasi)}\n`;
+    const sesiBulanIni = teacherLogs.filter(t => String(t.tanggal || '').startsWith(bulanPilihan));
+    if (sesiBulanIni.length > 0) {
+      teks += `Daftar Sesi Mengajar:\n`;
+      sesiBulanIni.forEach((t, i) => {
+        teks += `  ${i + 1}. Tanggal: ${t.tanggal} | Guru: ${t.teacherName || t.namaGuru || '-'} | Mapel: ${t.mapel || '-'} | Honor: Rp ${parseInt(t.nominal || 0, 10).toLocaleString('id-ID')} | Status: ${t.statusDibayar || 'Belum Lunas'}\n`;
+      });
+    } else {
+      teks += `(Belum ada rekap sesi mengajar tentor yang tercatat untuk bulan ini)\n`;
+    }
+    teks += `\n`;
+
+    teks += `### 3. DAFTAR DETAIL TRANSAKSI TERBUKU SISTEM (${bulanPilihan})\n`;
+    teks += `Total: ${semuaLogsBulanIni.length} data transaksi\n\n`;
+    teks += `| No | Tanggal | Jenis | Metode | Kanal | Kategori | Nominal | Keterangan / Siswa | Status Audit |\n`;
+    teks += `|---|---|---|---|---|---|---|---|---|\n`;
+
+    if (semuaLogsBulanIni.length === 0) {
+      teks += `| - | - | - | - | - | - | - | (Belum ada transaksi tercatat untuk bulan ${bulanPilihan}) | - |\n`;
+    } else {
+      semuaLogsBulanIni.forEach((l, idx) => {
+        const isMasuk = l.type === 'Pemasukan' || (l.type === 'Transfer' && l.kanalKe === KANAL.BANK);
+        const jenis = isMasuk ? 'Pemasukan (+)' : 'Pengeluaran (-)';
+        const status = (l.statusAudit === 'cocok' || l.statusRekonsiliasi === 'cocok') ? 'Sudah Cocok' : 'Belum Dicocokkan';
+        const ket = (l.note || '-').replace(/\|/g, '/');
+        const siswa = l.namaSiswa ? ` (Siswa: ${l.namaSiswa})` : '';
+        teks += `| ${idx + 1} | ${l.date} | ${jenis} | ${l.method || '-'} | ${l.kanal || '-'} | ${l.category || '-'} | Rp ${parseInt(l.amount || 0, 10).toLocaleString('id-ID')} | ${ket}${siswa} | ${status} |\n`;
+      });
+    }
+
+    handleUnduhFile(`Laporan_Audit_Gemilang_${bulanPilihan}_Untuk_NotebookLM.txt`, teks);
+  };
+
+  const handleUnduhCSV = () => {
+    let csv = `No,Tanggal,Jenis,Metode,Kanal,Kategori,Nominal,Keterangan,Siswa,StatusAudit\n`;
+    semuaLogsBulanIni.forEach((l, idx) => {
+      const isMasuk = l.type === 'Pemasukan' || (l.type === 'Transfer' && l.kanalKe === KANAL.BANK);
+      const jenis = isMasuk ? 'Pemasukan' : 'Pengeluaran';
+      const status = (l.statusAudit === 'cocok' || l.statusRekonsiliasi === 'cocok') ? 'Cocok' : 'Belum';
+      const cleanNote = `"${String(l.note || '').replace(/"/g, '""')}"`;
+      const cleanSiswa = `"${String(l.namaSiswa || '').replace(/"/g, '""')}"`;
+      const cleanKat = `"${String(l.category || '').replace(/"/g, '""')}"`;
+      csv += `${idx + 1},${l.date},${jenis},${l.method || ''},${l.kanal || ''},${cleanKat},${l.amount || 0},${cleanNote},${cleanSiswa},${status}\n`;
+    });
+    handleUnduhFile(`Mutasi_Gemilang_${bulanPilihan}.csv`, csv, 'text/csv;charset=utf-8');
+  };
+
+  const handleSalinPrompt = () => {
+    let teks = `Data Transaksi Terbuku Bimbel Gemilang Periode ${bulanPilihan}:\n`;
+    teks += `- Total Pemasukan: ${formatRp(rekapBulanBank.totalMasuk)}\n`;
+    teks += `- Total Pengeluaran: ${formatRp(rekapBulanBank.totalKeluar)}\n`;
+    teks += `- Transaksi Terbuku (${semuaLogsBulanIni.length} data):\n`;
+    semuaLogsBulanIni.forEach((l, idx) => {
+      teks += `${idx + 1}. [${l.date}] ${l.type} Rp ${parseInt(l.amount || 0, 10).toLocaleString('id-ID')} - ${l.category} (${l.note || ''})\n`;
+    });
+    teks += `\nMohon bantu cocokkan dengan rekening koran saya, pisahkan pengeluaran pribadi vs bimbel.`;
+    navigator.clipboard.writeText(teks);
+    setCopiedPrompt(true);
+    setTimeout(() => setCopiedPrompt(false), 3000);
+  };
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
       {/* 1. BAR PEMILIH BULAN AUDIT & NAVIGASI CEPAT (JANUARI S/D SEKARANG) */}
@@ -811,6 +927,82 @@ export default function PanelAuditMutasiOwner({
             </div>
           </div>
         </form>
+      </div>
+
+      {/* 4B. BAR UNDUH LAPORAN UNTUK NOTEBOOK LM & AI */}
+      <div style={{
+        background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 100%)',
+        borderRadius: 16, padding: '18px 22px', color: 'white',
+        boxShadow: '0 4px 15px rgba(49, 46, 129, 0.25)',
+        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+        flexWrap: 'wrap', gap: 14,
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div style={{
+            width: 42, height: 42, borderRadius: 12, background: 'rgba(255,255,255,0.15)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#c7d2fe',
+          }}>
+            <Bot size={24} />
+          </div>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <h4 style={{ margin: 0, fontSize: 15, fontWeight: 800, color: '#ffffff' }}>
+                Unduh Data Mutasi Gemilang untuk AI (NotebookLM / Excel)
+              </h4>
+              <span style={{ fontSize: 10, fontWeight: 800, background: '#4f46e5', color: '#e0e7ff', padding: '2px 8px', borderRadius: 12 }}>
+                Cross-Check Rekening
+              </span>
+            </div>
+            <p style={{ margin: '3px 0 0', fontSize: 12, color: '#c7d2fe' }}>
+              Ekspor seluruh data resmi sistem bulan <b>{bulanPilihan}</b> agar bisa dicocokkan otomatis oleh NotebookLM / AI dengan mutasi rekening BCA Anda.
+            </p>
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+          <button
+            type="button"
+            onClick={handleUnduhUntukAI}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              background: '#38bdf8', color: '#0f172a', border: 'none',
+              padding: '9px 15px', borderRadius: 10, fontSize: 12.5, fontWeight: 800,
+              cursor: 'pointer', boxShadow: '0 2px 6px rgba(0,0,0,0.2)',
+            }}
+            title="Unduh file teks terstruktur lengkap dengan instruksi prompt AI"
+          >
+            <FileText size={16} /> Unduh Format NotebookLM (.txt)
+          </button>
+
+          <button
+            type="button"
+            onClick={handleUnduhCSV}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              background: '#10b981', color: 'white', border: 'none',
+              padding: '9px 15px', borderRadius: 10, fontSize: 12.5, fontWeight: 800,
+              cursor: 'pointer', boxShadow: '0 2px 6px rgba(0,0,0,0.2)',
+            }}
+            title="Unduh spreadsheet CSV untuk Excel atau Google Sheets"
+          >
+            <FileSpreadsheet size={16} /> Unduh CSV (Excel)
+          </button>
+
+          <button
+            type="button"
+            onClick={handleSalinPrompt}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              background: 'rgba(255,255,255,0.15)', color: 'white', border: '1px solid rgba(255,255,255,0.3)',
+              padding: '9px 14px', borderRadius: 10, fontSize: 12, fontWeight: 700,
+              cursor: 'pointer',
+            }}
+            title="Salin rekap data ke clipboard untuk paste langsung di chat AI"
+          >
+            {copiedPrompt ? <Check size={15} color="#34d399" /> : <Copy size={15} />}
+            {copiedPrompt ? 'Tersalin!' : 'Salin Teks AI'}
+          </button>
+        </div>
       </div>
 
       {/* 5. TABEL DAFTAR TRANSAKSI DENGAN CHECKLIST REKONSILIASI */}
