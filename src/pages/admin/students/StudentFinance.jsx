@@ -2439,6 +2439,8 @@ const StudentFinance = () => {
               </div>
             </div>
           </div>
+        )}
+
         {/* ===== MODAL RINCIAN SESI ENGLISH COURSE (8x/bulan) ===== */}
         {showModalRincianSesi && modalRincianData && (
           <div style={styles.modalOverlay} onClick={() => setShowModalRincianSesi(false)}>
