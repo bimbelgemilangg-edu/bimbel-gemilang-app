@@ -516,9 +516,10 @@ const StudentFinance = () => {
         category: 'Perpanjangan Paket',
         amount: totalPerpanjangan,
         method: perpanjangData.metodeBayar,
-        note: rencana.bulanBonus > 0
+        note: (rencana.bulanBonus > 0
           ? `Perpanjangan ${rencana.bulanBayar} bulan + ${rencana.bulanBonus} bulan PROMO (gratis): ${student?.nama} (s.d ${newSelesaiStr})`
-          : `Perpanjangan ${rencana.bulanBayar} bulan: ${student?.nama} (s.d ${newSelesaiStr})`,
+          : `Perpanjangan ${rencana.bulanBayar} bulan: ${student?.nama} (s.d ${newSelesaiStr})`)
+          + (perpanjangRef.trim() ? ` [Rek. Pengirim: ${perpanjangRef.trim()}]` : ''),
         // 🔥 BARU (modul kanal uang & rekonsiliasi & kwitansi): kanal
         // eksplisit + jejak transfer + nomor kwitansi (lunas saja) +
         // status rekonsiliasi pending buat transfer.
@@ -818,7 +819,8 @@ const StudentFinance = () => {
         category: 'SPP / Cicilan',
         amount: nominal,
         method: payMethod,
-        note: payingIndex !== null ? `Cicilan ke-${payingIndex + 1}: ${student?.nama}` : `Pelunasan: ${student?.nama}`,
+        note: (payingIndex !== null ? `Cicilan ke-${payingIndex + 1}: ${student?.nama}` : `Pelunasan: ${student?.nama}`)
+          + (payRef.trim() ? ` [Rek. Pengirim: ${payRef.trim()}]` : ''),
         // 🔥 BARU (modul kanal uang & rekonsiliasi & kwitansi): kanal
         // eksplisit (Tunai = brankas admin, Transfer = rekening bimbel),
         // jejak transfer, nomor kwitansi resmi, dan status rekonsiliasi
@@ -1195,8 +1197,19 @@ const StudentFinance = () => {
                   {payMethod === 'Transfer' && (
                     <div style={{ background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 10, padding: '12px 12px 2px', marginBottom: 12 }}>
                       <div style={styles.inputGroup}>
-                        <label style={styles.label}>No. Referensi / Struk Transfer <span style={{ color: '#ef4444' }}>*wajib (bila tanpa foto)</span></label>
-                        <input type="text" style={styles.input} value={payRef} onChange={e => setPayRef(e.target.value)} placeholder="Contoh: TRF-20260926-889912" />
+                        <label style={styles.label}>
+                          🏦 Atas Nama Rekening Pengirim (di Mutasi Bank) <span style={{ color: '#ef4444' }}>*sangat penting</span>
+                        </label>
+                        <input
+                          type="text"
+                          style={styles.input}
+                          value={payRef}
+                          onChange={e => setPayRef(e.target.value)}
+                          placeholder="Contoh: BCA a.n. Ibu Astatik / Utji Istanti / Bobby Lazuardi"
+                        />
+                        <div style={{ fontSize: 10, color: '#1e40af', marginTop: 4 }}>
+                          💡 Tuliskan nama pemilik rekening bank pengirim persis seperti di bukti transfer, agar Owner langsung cocok saat audit mutasi BCA.
+                        </div>
                       </div>
                       <div style={styles.inputGroup}>
                         <label style={styles.label}>Foto Bukti Transfer</label>
@@ -1307,8 +1320,19 @@ const StudentFinance = () => {
                   {perpanjangData.metodeBayar === 'Transfer' && (
                     <div style={{ background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 10, padding: '12px 12px 2px', marginBottom: 12 }}>
                       <div style={styles.inputGroup}>
-                        <label style={styles.label}>No. Referensi / Struk Transfer <span style={{ color: '#ef4444' }}>*wajib (bila tanpa foto)</span></label>
-                        <input type="text" style={styles.input} value={perpanjangRef} onChange={e => setPerpanjangRef(e.target.value)} placeholder="Contoh: TRF-20260926-889912" />
+                        <label style={styles.label}>
+                          🏦 Atas Nama Rekening Pengirim (di Mutasi Bank) <span style={{ color: '#ef4444' }}>*sangat penting</span>
+                        </label>
+                        <input
+                          type="text"
+                          style={styles.input}
+                          value={perpanjangRef}
+                          onChange={e => setPerpanjangRef(e.target.value)}
+                          placeholder="Contoh: BCA a.n. Ibu Astatik / Utji Istanti / Bobby Lazuardi"
+                        />
+                        <div style={{ fontSize: 10, color: '#1e40af', marginTop: 4 }}>
+                          💡 Tuliskan nama pemilik rekening bank pengirim persis seperti di bukti transfer, agar Owner langsung cocok saat audit mutasi BCA.
+                        </div>
                       </div>
                       <div style={styles.inputGroup}>
                         <label style={styles.label}>Foto Bukti Transfer</label>

@@ -117,7 +117,7 @@ const TransactionForm = () => {
         // Semua penghitung saldo (dashboard admin & portal owner) kini
         // tahu persis pintu masuk/keluar uangnya.
         kanal: form.method === 'Transfer' ? KANAL.BANK : KANAL.KAS_ADMIN,
-        note: form.note,
+        note: form.note + (refTransfer.trim() ? ` [Rek: ${refTransfer.trim()}]` : ''),
         // 18 Okt: penanda pencatat agar admin tak bingung pada entri owner
         dicatatOleh: 'admin',
         refTransfer: refTransfer.trim(),
@@ -273,15 +273,18 @@ const TransactionForm = () => {
             <div style={{ background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 10, padding: '12px 12px 2px', marginBottom: 14 }}>
               <div style={styles.inputGroup}>
                 <label style={styles.label}>
-                  No. Referensi / Struk Transfer {isPemasukan && <span style={{ color: '#ef4444' }}>*wajib (bila tanpa foto)</span>}
+                  {isPemasukan ? '🏦 Atas Nama Rekening Pengirim (di Mutasi Bank)' : '💳 Rekening Tujuan / Penerima Transfer'} <span style={{ color: '#ef4444' }}>*sangat penting</span>
                 </label>
                 <input
                   type="text"
-                  placeholder="Contoh: TRF-20260926-889912"
+                  placeholder={isPemasukan ? 'Contoh: BCA a.n. Ibu Astatik / Utji Istanti' : 'Contoh: BCA a.n. Rani Erlitasari (Honor Tentor)'}
                   value={refTransfer}
                   onChange={e => setRefTransfer(e.target.value)}
                   style={styles.input}
                 />
+                <div style={{ fontSize: 10, color: '#1e40af', marginTop: 4 }}>
+                  💡 Tuliskan nama pemilik rekening bank persis seperti di bukti transfer, agar Owner langsung cocok saat audit mutasi BCA.
+                </div>
               </div>
               <div style={styles.inputGroup}>
                 <label style={styles.label}>Foto Struk / Bukti Transfer</label>

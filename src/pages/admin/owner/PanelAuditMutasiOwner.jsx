@@ -81,6 +81,7 @@ export default function PanelAuditMutasiOwner({
   const [formKategori, setFormKategori] = useState('Gaji Guru/Staf');
   const [formNominal, setFormNominal] = useState('');
   const [formKeterangan, setFormKeterangan] = useState('');
+  const [formRekening, setFormRekening] = useState('');
   const [savingLog, setSavingLog] = useState(false);
 
   // State 1-Klik Pembukuan Gaji
@@ -271,6 +272,7 @@ export default function PanelAuditMutasiOwner({
     setSavingLog(true);
     try {
       const kanalDipilih = formMetode === 'Transfer' ? KANAL.BANK : KANAL.KAS_ADMIN;
+      const namaRek = formRekening.trim();
       await addDoc(collection(db, 'finance_logs'), {
         type: formTipe,
         date: formTanggal,
@@ -278,7 +280,8 @@ export default function PanelAuditMutasiOwner({
         amount: nominal,
         method: formMetode,
         kanal: kanalDipilih,
-        note: formKeterangan.trim() || `${formKategori} (${formMetode === 'Transfer' ? 'm-Banking Owner' : 'Kasir Tunai'})`,
+        refTransfer: namaRek,
+        note: (formKeterangan.trim() || `${formKategori} (${formMetode === 'Transfer' ? 'm-Banking Owner' : 'Kasir Tunai'})`) + (namaRek ? ` [Rek: ${namaRek}]` : ''),
         statusAudit: 'cocok', // Otomatis cocok karena langsung disalin dari mutasi bank riil
         statusRekonsiliasi: 'cocok',
         dicatatOleh: 'Owner (Audit Mandiri)',
@@ -287,6 +290,7 @@ export default function PanelAuditMutasiOwner({
 
       setFormNominal('');
       setFormKeterangan('');
+      setFormRekening('');
       alert(`✅ Berhasil! Transaksi ${formKategori} sebesar ${formatRp(nominal)} berhasil dicatat & ditandai Cocok.`);
     } catch (err) {
       console.error('Gagal mencatat mutasi:', err);
@@ -926,6 +930,25 @@ export default function PanelAuditMutasiOwner({
               </button>
             </div>
           </div>
+
+          {/* Baris Tambahan Khusus Transfer: Nama Pemilik Rekening Bank */}
+          {formMetode === 'Transfer' && (
+            <div style={{ background: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: 8, padding: '8px 12px', display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+              <span style={{ fontSize: 11, fontWeight: 800, color: '#1e40af', whiteSpace: 'nowrap' }}>
+                🏦 Atas Nama Rekening di Bank:
+              </span>
+              <input
+                type="text"
+                placeholder={formTipe === 'Pemasukan' ? "Contoh: BCA a.n. Ibu Astatik / Utji Istanti / Bobby Lazuardi" : "Contoh: BCA a.n. Rani Erlitasari / Jeremy Sugiarto"}
+                value={formRekening}
+                onChange={(e) => setFormRekening(e.target.value)}
+                style={{ flex: 1, minWidth: 240, padding: '6px 10px', borderRadius: 6, border: '1px solid #93c5fd', background: '#eff6ff', fontSize: 12, fontWeight: 700 }}
+              />
+              <span style={{ fontSize: 10.5, color: '#64748b' }}>
+                (Nama persis di mutasi bank agar langsung cocok saat audit)
+              </span>
+            </div>
+          )}
         </form>
       </div>
 
@@ -1201,6 +1224,24 @@ export default function PanelAuditMutasiOwner({
                             Siswa: {l.namaSiswa}
                           </div>
                         )}
+                        {(() => {
+                          const rekLabel = l.refTransfer
+                            ? `Rek: ${l.refTransfer}`
+                            : (l.note && l.note.includes('[Rek')
+                                ? l.note.substring(l.note.indexOf('[Rek') + 1, l.note.indexOf(']', l.note.indexOf('[Rek')))
+                                : null);
+                          return rekLabel ? (
+                            <div style={{ marginTop: 4 }}>
+                              <span style={{
+                                display: 'inline-flex', alignItems: 'center', gap: 4,
+                                background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 6,
+                                padding: '2px 7px', fontSize: 10.5, fontWeight: 700, color: '#1e40af',
+                              }}>
+                                💳 {rekLabel}
+                              </span>
+                            </div>
+                          ) : null;
+                        })()}
                       </td>
 
                       <td style={{ padding: '10px 12px', textAlign: 'right', fontWeight: 800, color: '#16a34a', whiteSpace: 'nowrap' }}>

@@ -496,7 +496,8 @@ const AddStudent = () => {
           category: 'Pendaftaran',
           amount: totalTagihan,
           method: formData.metodeBayar,
-          note: `Pendaftaran Baru: ${formData.nama} (${detailProgram}) - LUNAS (${formData.durasiBulan} bulan)`,
+          note: `Pendaftaran Baru: ${formData.nama} (${detailProgram}) - LUNAS (${formData.durasiBulan} bulan)`
+            + (daftarRef.trim() ? ` [Rek. Pengirim: ${daftarRef.trim()}]` : ''),
           // 🔥 BARU (modul kanal uang & rekonsiliasi & kwitansi): kanal
           // eksplisit (Tunai = brankas admin, Transfer = rekening bimbel),
           // jejak bukti transfer, nomor kwitansi resmi, dan status 'pending'
@@ -912,8 +913,19 @@ const AddStudent = () => {
         {formData.metodeBayar === 'Transfer' && (
           <div style={{ background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 10, padding: '12px 12px 2px', marginBottom: 14 }}>
             <div style={styles.inputGroup}>
-              <label style={styles.label}>No. Referensi / Struk Transfer <span style={{ color: '#ef4444' }}>*wajib (bila tanpa foto)</span></label>
-              <input type="text" style={styles.input} value={daftarRef} onChange={e => setDaftarRef(e.target.value)} placeholder="Contoh: TRF-20260926-889912" />
+              <label style={styles.label}>
+                🏦 Atas Nama Rekening Pengirim (di Mutasi Bank) <span style={{ color: '#ef4444' }}>*sangat penting</span>
+              </label>
+              <input
+                type="text"
+                style={styles.input}
+                value={daftarRef}
+                onChange={e => setDaftarRef(e.target.value)}
+                placeholder="Contoh: BCA a.n. Erine Yovi / Ayah Arya / Utji Istanti"
+              />
+              <div style={{ fontSize: 10, color: '#1e40af', marginTop: 4 }}>
+                💡 Tuliskan nama pemilik rekening bank pengirim persis seperti di bukti transfer, agar Owner langsung cocok saat audit mutasi BCA.
+              </div>
             </div>
             <div style={styles.inputGroup}>
               <label style={styles.label}>Foto Bukti Transfer</label>
