@@ -750,29 +750,31 @@ const StudentFinance = () => {
       const newSelesaiStr = rencana.tanggalSelesaiBaru || today;
 
       // 2. Hitung nilai baru buat students
-      const newTotalTagihan = (parseInt(student.totalTagihan || 0)) + totalPerpanjangan;
+      // 🔥 FIX SIKLUS PAKET BERJALAN (2026-11-16):
+      // Kartu tagihan siswa mencerminkan PAKET BERJALAN, bukan akumulasi investasi seumur hidup.
+      // Sisa tagihan lama yang belum lunas (bila ada) tetap dibawa sebagai kewajiban.
+      const sisaTagihanLama = Math.max(0, (parseInt(student.totalTagihan || 0)) - (parseInt(student.totalBayar || 0)));
+      const newTotalTagihan = totalPerpanjangan + sisaTagihanLama;
       const newTotalBayar = (perpanjangData.metodeBayar === 'Tunai' || perpanjangData.metodeBayar === 'Transfer')
-        ? (parseInt(student.totalBayar || 0)) + totalPerpanjangan
-        : parseInt(student.totalBayar || 0);
+        ? totalPerpanjangan
+        : 0;
 
-      // 🔥 FIX BUG NYATA (sama persis kelasnya dengan handleBayar di atas):
-      // sebelumnya update ke `students`, catatan `finance_logs`, dan
-      // `finance_tagihan` adalah TIGA-EMPAT penulisan terpisah satu-satu.
-      // Kalau salah satu di tengah gagal (mis. koneksi putus PAS lagi
-      // proses), sebagian data udah kesimpen (mis. tanggalSelesai siswa
-      // udah keupdate) tapi catatan keuangannya belum -- data jadi gak
-      // sinkron tanpa admin sadar. Sekarang SEMUA digabung jadi SATU
-      // `writeBatch`: sukses bareng semua, atau gagal bareng semua (gak
-      // ada yang "setengah tersimpan").
+      // Tanggal mulai siklus paket baru
+      const newMulaiStr = (student.tanggalSelesai && student.tanggalSelesai >= today)
+        ? student.tanggalSelesai
+        : today;
+
       const batch = writeBatch(db);
 
       batch.update(doc(db, "students", id), {
         totalTagihan: newTotalTagihan,
         totalBayar: newTotalBayar,
+        tanggalMulai: newMulaiStr,
         tanggalSelesai: newSelesaiStr,
-        // 🔥 21 Okt (promo): durasi paket bertambah bulan BAYAR + BONUS —
-        // bulan gratis tetap bagian dari masa aktif paket siswa.
-        durasiBulan: (parseInt(student.durasiBulan || 0)) + bulanTotal
+        durasiBulan: bulanTotal,
+        metodeBayar: perpanjangData.metodeBayar,
+        status: 'Aktif',
+        isBlocked: false
       });
 
       const logRef = doc(collection(db, "finance_logs"));
@@ -797,21 +799,6 @@ const StudentFinance = () => {
         buktiUrl: buktiUrlPerpanjang,
         noKwitansi: noKwitansiPerpanjang,
         statusRekonsiliasi: perpanjangData.metodeBayar === 'Transfer' ? 'pending' : '',
-        // 🔥 BARU: field TERSTRUKTUR (bukan cuma nempel di teks catatan)
-        // -- dipakai TransactionHistory.jsx buat bisa MEMBALIKIN transaksi
-        // ini secara AKURAT & OTOMATIS kalau nanti admin salah input dan
-        // perlu dihapus. Tanpa ini, sistem gak punya cara pasti buat tau
-        // "berapa bulan yang harus dibalikin" kalau transaksi ini dihapus
-        // -- sebelumnya cuma nominal (totalBayar) yang kebalikin, tanggal
-        // selesai & durasi bulan TETAP NYANGKUT ke versi yang salah (ini
-        // laporan nyata yang masuk: admin salah pilih 3 bulan, sudah
-        // dikoreksi nominalnya di Riwayat, tapi tanggal selesai & durasi
-        // paket TETAP kebawa 3 bulan).
-        // 🔥 21 Okt (promo): kontrak reversal (reversePerpanjangan di
-        // TransactionHistory) membaca `durasiTambah` sebagai TOTAL bulan
-        // yang dulu ditambahkan ke tanggal selesai & durasi paket — maka
-        // field ini wajib berisi bulan bayar + bonus. Rinciannya disimpan
-        // terpisah (bulanBayar/bulanBonus) buat transparansi laporan owner.
         durasiTambah: bulanTotal,
         bulanBayar: rencana.bulanBayar,
         bulanBonus: rencana.bulanBonus,
@@ -821,12 +808,13 @@ const StudentFinance = () => {
       // 4. Jika cicilan, buat/update finance_tagihan
       if (perpanjangData.metodeBayar === 'Cicilan') {
         const cicilanNominal = hitungCicilanPerpanjang();
-        // 🔥 Pengaman sama seperti handleBayar: pastikan detailCicilan lama
-        // beneran array sebelum digabung, jangan sampai nilai gak terduga
-        // (bukan array) bikin batch ini gagal ditulis.
         const existingCicilanAman = Array.isArray(tagihan?.detailCicilan) ? tagihan.detailCicilan : [];
+        const pastInstallments = [
+          ...(Array.isArray(tagihan?.riwayatCicilanLalu) ? tagihan.riwayatCicilanLalu : []),
+          ...existingCicilanAman
+        ];
         const installments = perpanjangData.customDueDates.map((dateStr, index) => ({
-          bulanKe: existingCicilanAman.length + index + 1,
+          bulanKe: index + 1,
           nominal: cicilanNominal,
           status: 'Belum Lunas',
           jatuhTempo: dateStr,
@@ -834,11 +822,11 @@ const StudentFinance = () => {
         }));
 
         if (tagihan) {
-          const newSisa = (tagihan.sisaTagihan || 0) + totalPerpanjangan;
           batch.update(doc(db, "finance_tagihan", tagihan.id), {
-            totalTagihan: (tagihan.totalTagihan || 0) + totalPerpanjangan,
-            sisaTagihan: newSisa,
-            detailCicilan: [...existingCicilanAman, ...installments]
+            totalTagihan: newTotalTagihan,
+            sisaTagihan: newTotalTagihan,
+            detailCicilan: installments,
+            riwayatCicilanLalu: pastInstallments
           });
         } else {
           const newTagihanRef = doc(collection(db, "finance_tagihan"));
@@ -846,10 +834,25 @@ const StudentFinance = () => {
             studentId: kodeUnik,
             namaSiswa: student?.nama || '',
             noHp: student?.ortu?.hp || '',
-            totalTagihan: totalPerpanjangan,
-            sisaTagihan: totalPerpanjangan,
+            totalTagihan: newTotalTagihan,
+            sisaTagihan: newTotalTagihan,
             detailCicilan: installments,
+            riwayatCicilanLalu: [],
             createdAt: serverTimestamp()
+          });
+        }
+      } else {
+        // Jika lunas via tunai/transfer, bersihkan tagihan cicilan aktif & arsipkan ke riwayatCicilanLalu
+        if (tagihan && Array.isArray(tagihan.detailCicilan) && tagihan.detailCicilan.length > 0) {
+          const pastInstallments = [
+            ...(Array.isArray(tagihan?.riwayatCicilanLalu) ? tagihan.riwayatCicilanLalu : []),
+            ...tagihan.detailCicilan
+          ];
+          batch.update(doc(db, "finance_tagihan", tagihan.id), {
+            totalTagihan: 0,
+            sisaTagihan: 0,
+            detailCicilan: [],
+            riwayatCicilanLalu: pastInstallments
           });
         }
       }
@@ -1173,9 +1176,11 @@ const StudentFinance = () => {
   const isLunas = isAlreadyLunas();
   const masa = getMasaStatus();
   // 🔥 BARU: detektor "dua buku tidak cocok" -- ringkasan (field siswa) vs
-  // buku besar (finance_logs). Kalau tidak nol, hampir pasti ada diskon /
-  // salah input / koreksi lama yang belum tuntas di sisi buku besar.
-  const selisihBuku = selisihRingkasanVsLedger({ logs: financeLogs, totalBayar: student.totalBayar });
+  // buku besar (finance_logs). Mendukung filter siklus paket berjalan via student.tanggalMulai.
+  const selisihBuku = selisihRingkasanVsLedger({ logs: financeLogs, totalBayar: student.totalBayar, tanggalMulai: student.tanggalMulai });
+  const totalSemuaUangMasuk = financeLogs
+    .filter((l) => l && l.type === 'Pemasukan' && l.method !== 'Cicilan')
+    .reduce((s, l) => s + (Math.round(Number(l.amount) || 0)), 0);
 
   return (
     <div style={styles.wrapper}>
@@ -1241,14 +1246,14 @@ const StudentFinance = () => {
           {/* KIRI - Ringkasan & Paket Tambahan */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 15 }}>
             <div style={styles.card}>
-              <h3 style={styles.cardTitle}><Wallet size={18} /> Ringkasan Tagihan (Paket Utama)</h3>
+              <h3 style={styles.cardTitle}><Wallet size={18} /> Ringkasan Tagihan (Paket Berjalan)</h3>
             
             <div style={styles.progressSection}>
               <div style={styles.progressBar}>
                 <div style={styles.progressFill(getProgressPercent())}></div>
               </div>
               <div style={styles.progressLabel}>
-                <span>{getProgressPercent()}% Terbayar</span>
+                <span>{getProgressPercent()}% Terbayar (Paket Berjalan)</span>
                 <span>Rp {(student.totalBayar || 0).toLocaleString()} / Rp {(student.totalTagihan || 0).toLocaleString()}</span>
               </div>
             </div>
@@ -1257,7 +1262,7 @@ const StudentFinance = () => {
               <div style={styles.financeItem}>
                 <TrendingUp size={16} color="#3b82f6" />
                 <div>
-                  <span style={styles.financeLabel}>Total</span>
+                  <span style={styles.financeLabel}>Total Tagihan Paket</span>
                   <strong style={styles.financeValue}>Rp {(student.totalTagihan || 0).toLocaleString()}</strong>
                 </div>
               </div>
@@ -1271,23 +1276,19 @@ const StudentFinance = () => {
               <div style={styles.financeItem}>
                 <Receipt size={16} color={sisa > 0 ? '#ef4444' : '#10b981'} />
                 <div>
-                  <span style={styles.financeLabel}>Sisa</span>
+                  <span style={styles.financeLabel}>Sisa Tagihan</span>
                   <strong style={{...styles.financeValue, color: sisa > 0 ? '#ef4444' : '#10b981'}}>Rp {sisa.toLocaleString()}</strong>
                 </div>
               </div>
               <div style={styles.financeItem}>
                 <Calendar size={16} color="#8b5cf6" />
                 <div>
-                  <span style={styles.financeLabel}>Masa Paket</span>
+                  <span style={styles.financeLabel}>Masa Paket Aktif</span>
                   <strong style={{...styles.financeValue, fontSize: 11}}>
-                    {student.tanggalMulai || '-'} → {student.tanggalSelesai || '-'}
+                    {student.tanggalMulai || '-'} → {student.tanggalSelesai || '-'} ({student.durasiBulan || 1} Bulan)
                   </strong>
                 </div>
               </div>
-              {/* 🔥 BARU: metode bayar pendaftaran ikut ditampilkan di
-                  ringkasan, biar admin gampang lihat & sadar kalau ini
-                  yang perlu dikoreksi (sebelumnya gak ada indikator
-                  metode bayar sama sekali di halaman ini). */}
               <div style={styles.financeItem}>
                 <CreditCard size={16} color="#f59e0b" />
                 <div>
@@ -1297,6 +1298,25 @@ const StudentFinance = () => {
                   </strong>
                 </div>
               </div>
+            </div>
+
+            {/* Total Akumulasi Riwayat Uang Diterima Sepanjang Waktu */}
+            <div style={{
+              marginTop: 12,
+              padding: '9px 12px',
+              background: '#f8fafc',
+              border: '1px dashed #cbd5e1',
+              borderRadius: 8,
+              fontSize: 11,
+              color: '#64748b',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center'
+            }}>
+              <span>📊 Akumulasi Penerimaan Sejak Masuk:</span>
+              <strong style={{ color: '#0f766e', fontSize: 12 }}>
+                Rp {totalSemuaUangMasuk.toLocaleString()} ({financeLogs.filter(l => l.type === 'Pemasukan' && l.method !== 'Cicilan').length} transaksi)
+              </strong>
             </div>
 
             {!isLunas && !isPendaftaranLunas() && (
@@ -1477,18 +1497,18 @@ const StudentFinance = () => {
           <div style={{display: 'flex', flexDirection: 'column', gap: 15}}>
             {tagihan && tagihan.detailCicilan && tagihan.detailCicilan.length > 0 && (
               <div style={styles.card}>
-                <h3 style={styles.cardTitle}><CreditCard size={18} /> Cicilan</h3>
+                <h3 style={styles.cardTitle}><CreditCard size={18} /> Cicilan Paket Berjalan</h3>
                 <div style={styles.cicilanList}>
                   {tagihan.detailCicilan.map((item, idx) => (
                     <div key={idx} style={styles.cicilanItem(item.status)}>
                       <div style={styles.cicilanLeft}>
-                        <span style={styles.cicilanNum}>#{idx + 1}</span>
+                        <span style={styles.cicilanNum}>#{item.bulanKe || (idx + 1)}</span>
                         <span style={styles.cicilanDate}>📅 {item.jatuhTempo}</span>
                       </div>
                       <div style={styles.cicilanRight}>
                         <strong style={styles.cicilanAmount}>Rp {item.nominal?.toLocaleString()}</strong>
                         {item.status === 'Lunas' ? (
-                          <span style={styles.badgeLunas}>✅</span>
+                          <span style={styles.badgeLunas}>✅ Lunas</span>
                         ) : (
                           <button onClick={() => openBayarModal(idx)} style={styles.btnBayarCicilan}>Bayar</button>
                         )}
@@ -1496,6 +1516,22 @@ const StudentFinance = () => {
                     </div>
                   ))}
                 </div>
+
+                {Array.isArray(tagihan.riwayatCicilanLalu) && tagihan.riwayatCicilanLalu.length > 0 && (
+                  <details style={{ marginTop: 14, padding: '8px 12px', background: '#f8fafc', borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 11 }}>
+                    <summary style={{ cursor: 'pointer', fontWeight: 'bold', color: '#64748b' }}>
+                      📁 Riwayat Cicilan Periode Lalu ({tagihan.riwayatCicilanLalu.length} cicilan)
+                    </summary>
+                    <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                      {tagihan.riwayatCicilanLalu.map((p, pIdx) => (
+                        <div key={pIdx} style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', borderBottom: '1px dashed #e2e8f0', color: '#64748b' }}>
+                          <span>#{p.bulanKe || pIdx + 1} ({p.jatuhTempo})</span>
+                          <strong>Rp {Number(p.nominal || 0).toLocaleString()} {p.status === 'Lunas' ? '✅ Lunas' : p.status}</strong>
+                        </div>
+                      ))}
+                    </div>
+                  </details>
+                )}
               </div>
             )}
 

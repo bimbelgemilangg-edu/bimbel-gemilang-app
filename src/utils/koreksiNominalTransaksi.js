@@ -87,9 +87,38 @@ export function hitungKaskadeKoreksiNominal({ log, siswa, nominalBaru, metodeBar
 // Deteksi "dua buku tidak cocok": selisih antara buku besar (finance_logs
 // tipe Pemasukan yang uangnya benar-benar diterima) dan field totalBayar siswa.
 // Nol = sinkron. Dipakai halaman keuangan siswa buat memasang banner peringatan.
-export function selisihRingkasanVsLedger({ logs = [], totalBayar = 0 }) {
-  const uangLedger = logs
+// 🔥 DUKUNG SIKLUS PAKET BERJALAN: jika tanggalMulai disertakan, uang buku besar
+// dihitung berdasarkan transaksi paket berjalan (>= tanggalMulai). Jika cocok,
+// selisih = 0 (sinkron). Fallback: jika cocok dengan akumulasi seumur hidup (data
+// lama belum migrasi siklus), tetap dianggap sinkron (0) agar tidak ada banner palsu.
+export function selisihRingkasanVsLedger({ logs = [], totalBayar = 0, tanggalMulai = '' }) {
+  const bayarNum = Math.round(Number(totalBayar) || 0);
+
+  // 1. Cek terhadap transaksi siklus/paket aktif (bila tanggalMulai ada)
+  if (tanggalMulai) {
+    const tanggalAcuan = String(tanggalMulai).slice(0, 10);
+    const uangLedgerSiklus = logs
+      .filter((l) => l && l.type !== 'Transfer' && l.method !== 'Cicilan' && (l.date || '') >= tanggalAcuan)
+      .reduce((s, l) => s + (Math.round(Number(l.amount) || 0)), 0);
+
+    if (uangLedgerSiklus === bayarNum) return 0;
+  }
+
+  // 2. Fallback: cek terhadap seluruh riwayat buku besar sejak awal (data warisan)
+  const uangLedgerSemua = logs
     .filter((l) => l && l.type !== 'Transfer' && l.method !== 'Cicilan')
     .reduce((s, l) => s + (Math.round(Number(l.amount) || 0)), 0);
-  return uangLedger - (Math.round(Number(totalBayar) || 0));
+
+  if (uangLedgerSemua === bayarNum) return 0;
+
+  // Jika tanggalMulai ada dan tidak cocok, hitung selisih dari siklus aktif
+  if (tanggalMulai) {
+    const tanggalAcuan = String(tanggalMulai).slice(0, 10);
+    const uangLedgerSiklus = logs
+      .filter((l) => l && l.type !== 'Transfer' && l.method !== 'Cicilan' && (l.date || '') >= tanggalAcuan)
+      .reduce((s, l) => s + (Math.round(Number(l.amount) || 0)), 0);
+    return uangLedgerSiklus - bayarNum;
+  }
+
+  return uangLedgerSemua - bayarNum;
 }

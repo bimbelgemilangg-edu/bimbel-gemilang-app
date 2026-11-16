@@ -80,13 +80,20 @@ uji('alasan koreksi wajib & tidak boleh terlalu pendek', () => {
 
 uji('deteksi dua buku tidak cocok (banner sinkronisasi)', () => {
   const logs = [
-    { type: 'Pemasukan', method: 'Transfer', amount: 900000 },
-    { type: 'Pemasukan', method: 'Tunai', amount: 1050000 },
-    { type: 'Pemasukan', method: 'Cicilan', amount: 999999 }, // komitmen: tidak dihitung
+    { type: 'Pemasukan', method: 'Transfer', amount: 900000, date: '2026-07-14' },
+    { type: 'Pemasukan', method: 'Tunai', amount: 1050000, date: '2026-08-14' },
+    { type: 'Pemasukan', method: 'Cicilan', amount: 999999, date: '2026-10-14' }, // komitmen: tidak dihitung
+    { type: 'Pemasukan', method: 'Transfer', amount: 400000, date: '2026-10-14' },
   ];
-  assert.equal(selisihRingkasanVsLedger({ logs, totalBayar: 900000 }), 1050000);
-  assert.equal(selisihRingkasanVsLedger({ logs, totalBayar: 1950000 }), 0);
+  // Tanpa tanggalMulai: bandingkan dengan seluruh transaksi riil (900k + 1050k + 400k = 2350k)
+  assert.equal(selisihRingkasanVsLedger({ logs, totalBayar: 900000 }), 1450000);
+  assert.equal(selisihRingkasanVsLedger({ logs, totalBayar: 2350000 }), 0);
   assert.equal(selisihRingkasanVsLedger({ logs: [], totalBayar: 0 }), 0);
+
+  // Dengan tanggalMulai (siklus berjalan mis. perpanjangan 2026-10-13): hanya hitung log >= 2026-10-13 (400k)
+  assert.equal(selisihRingkasanVsLedger({ logs, totalBayar: 400000, tanggalMulai: '2026-10-13' }), 0);
+  // Bila totalBayar untuk siklus belum cocok (mis. tercatat 500k tapi uang masuk baru 400k)
+  assert.equal(selisihRingkasanVsLedger({ logs, totalBayar: 500000, tanggalMulai: '2026-10-13' }), -100000);
 });
 
 console.log(`\nkoreksiNominalTransaksi: ${lulus} lulus, ${gagal} gagal`);
