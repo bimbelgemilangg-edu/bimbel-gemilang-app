@@ -174,64 +174,39 @@ const SidebarAdmin = () => {
     {
       label: 'UTAMA',
       items: [
-        { name: 'Perpustakaan', path: '/admin/perpustakaan', icon: <Library size={20} /> },
-    { name: 'Impor HTML Gemini', path: '/admin/bank-soal/impor-html-gemini', icon: <FileUp size={20} /> },
-    // 🔥 BARU (2026-10-11, kebingungan owner "emang ada di mana aja sih
-    // import ini?"): pintu impor yang PALING dipakai sehari-hari (scan
-    // PDF/buku -> HTML/JSON) dulu hanya reachable lewat kartu di halaman
-    // Bank Soal & Perkakas, TIDAK ada di sidebar -- sedangkan saudaranya
-    // yang ber-dialek beda justru terpajang. Kini keduanya berdampingan
-    // supaya salah pintu jadi kelihatan, bukan jadi misteri.
-    { name: 'Import Buku & Soal (AI)', path: '/admin/bank-soal/import', icon: <Brain size={20} /> },
-        // 📚 14 Okt 2026: buku scan/HTML -> draf materi + bank soal per bab.
-        { name: 'Impor Buku HTML', path: '/admin/buku/impor-html', icon: <BookUp size={20} /> },
-    { name: 'Buku PDF Gemilang', path: '/admin/buku-pdf', icon: <BookOpen size={18} /> },
-    { name: 'Kesiapan Stok', path: '/admin/bank-soal/stok', icon: <Archive size={18} /> },
-    { name: 'Riwayat Paket', path: '/admin/bank-soal/riwayat-paket', icon: <History size={18} /> },
-    { name: 'Dashboard',    path: '/admin',            icon: <LayoutDashboard size={18} /> },
-        { name: 'Dashboard Analisis', path: '/admin/analisis', icon: <BarChart3 size={18} /> },
-        { name: 'Jadwal Harian',path: '/admin/schedule',   icon: <Calendar size={18} /> },
-        { name: 'Log Harian',   path: '/admin/daily-log',  icon: <ClipboardList size={18} /> },
+        { name: 'Dashboard', path: '/admin', icon: <LayoutDashboard size={18} /> },
+        { name: 'Jadwal Harian', path: '/admin/schedule', icon: <Calendar size={18} /> },
+        { name: 'Presensi & Log', path: '/admin/daily-log', icon: <ClipboardList size={18} /> },
       ]
     },
     {
       label: 'AKADEMIK',
       items: [
-        { name: 'Kelola Siswa', path: '/admin/students',         icon: <Users size={18} />,        badge: badgeSiswaBaru > 0 ? badgeSiswaBaru : null, badgeColor: '#3b82f6' },
+        { name: 'Kelola Siswa', path: '/admin/students', icon: <Users size={18} />, badge: badgeSiswaBaru > 0 ? badgeSiswaBaru : null, badgeColor: '#3b82f6' },
         { name: 'Manajemen Absensi', path: '/admin/attendance', icon: <ClipboardCheck size={18} /> },
-        { name: 'Kelola Guru',  path: '/admin/teachers',         icon: <GraduationCap size={18} /> },
-        // 🔥 BARU (pembagian kewenangan): kerja operasional admin untuk
-        // absensi tentor -- validasi sesi & unduh riwayat, tanpa uang.
-        { name: 'Sesi & Validasi Guru', path: '/admin/teachers/sesi', icon: <ClipboardCheck size={18} /> },
-        { name: 'Rapor & Nilai',path: '/admin/grades',           icon: <TrendingUp size={18} /> },
-        // Raport Otomatis: agregasi log aktivitas → raport bulanan + laporan
-        // besar 3 bulan (Fase 1, keputusan owner 21 Okt 2026).
-        { name: 'Raport Otomatis', path: '/admin/raport', icon: <BarChart3 size={18} /> },
-        // 📊 14 Okt 2026 (owner): analitik belajar TKA/UTBK per siswa.
-        { name: 'Analitik Belajar', path: '/admin/analitik-belajar', icon: <LineChart size={18} /> },
-        { name: 'Laporan Orang Tua', path: '/admin/laporan-orang-tua', icon: <Receipt size={18} /> },
-        { name: 'Portal Siswa', path: '/admin/portal',           icon: <Globe size={18} /> },
-        // 🔥 Materi v2 & Bank Materi DIPINDAH ke halaman Perkakas
-        // (/admin/perkakas) -- sidebar terlalu penuh; routenya tetap hidup.
+        { name: 'Kelola Guru', path: '/admin/teachers', icon: <GraduationCap size={18} /> },
+        { name: 'Sesi & Validasi Guru', path: '/admin/teachers/sesi', icon: <CheckCircle size={18} /> },
+        { name: 'Rapor & Prestasi', path: '/admin/raport', icon: <BarChart3 size={18} /> },
       ]
     },
     {
-      label: 'KEUANGAN',
+      label: 'PENDAFTARAN & KASIR',
       items: [
-        { name: 'Keuangan',  path: '/admin/finance',            icon: <CreditCard size={18} />, badge: badgePiutang > 0 ? badgePiutang : null, badgeColor: '#ef4444' },
-        // 🔥 BARU (kasir): kwitansi bernomor + logo, bisa dicetak ulang.
-        { name: 'Kwitansi', path: '/admin/finance?tab=kwitansi', icon: <Receipt size={18} /> },
-        // 🔥 DIUBAH (keputusan owner 2026-10-01): rekap gaji guru sekarang
-        // wilayah ADMIN OPERASIONAL -- admin yang memegang kendali validasi
-        // sesi, nominal, dan tarif. Owner tinggal mengeksekusi pembayaran.
-        { name: 'Gaji Guru', path: '/admin/teachers/salaries', icon: <FileText size={18} /> },
+        { name: 'Keuangan Siswa', path: '/admin/finance', icon: <CreditCard size={18} />, badge: badgePiutang > 0 ? badgePiutang : null, badgeColor: '#ef4444' },
+        { name: 'Kwitansi Kasir', path: '/admin/finance?tab=kwitansi', icon: <Receipt size={18} /> },
+        { name: 'Pendaftaran Online', path: '/admin/pendaftaran', icon: <UserPlus size={18} />, badge: badgePendaftaran > 0 ? badgePendaftaran : null, badgeColor: '#f59e0b' },
       ]
     },
-    // 🏛️ KHUSUS OWNER (Data Keuangan Strategis, Profit Riil, Simulasi Pecah Kelas, & Honor Tentor)
-    // Untuk admin/kasir: hanya tampil tombol tautan ke Portal Owner (PIN) agar data rahasia tidak bocor.
-    // Untuk owner: langsung tampil navigasi lengkap ke tab-tab Pusat Komando Owner.
+    {
+      label: 'PERPUSTAKAAN & PERKAKAS',
+      items: [
+        { name: 'Perpustakaan Digital', path: '/admin/perpustakaan', icon: <Library size={18} /> },
+        { name: 'Bank Soal & TryOut', path: '/admin/tobk-publik', icon: <Trophy size={18} /> },
+        { name: 'Perkakas & Modul AI', path: '/admin/perkakas', icon: <Toolbox size={18} /> },
+      ]
+    },
     ...(owner ? [{
-      label: '🏛️ MANAJEMEN (OWNER)',
+      label: '🏛️ PUSAT KOMANDO OWNER',
       items: [
         { name: 'Mutasi Bank (m-Banking)', path: '/owner/finance?tab=mutasi', icon: <CreditCard size={18} /> },
         { name: 'Simulasi Pecah Kelas', path: '/owner/finance?tab=simulasi', icon: <Scale size={18} /> },
@@ -247,52 +222,17 @@ const SidebarAdmin = () => {
         ],
       }
     ]),
-    // 🔥 BARU (pemisahan akun Admin): grup KEAMANAN -- hanya Owner dan
-    // admin berperan Manajer. Kasir tidak melihat grup ini sama sekali.
     ...((owner || manajer) ? [{
       label: '🔐 KEAMANAN',
       items: [
         { name: 'Pengguna Admin', path: '/admin/pengguna', icon: <KeyRound size={18} /> },
-        { name: 'Jejak Aktivitas', path: '/admin/audit',  icon: <History size={18} /> },
+        { name: 'Jejak Aktivitas', path: '/admin/audit', icon: <History size={18} /> },
       ]
     }] : []),
-    // 🔥 BARU (2026-10-10): database kampus & pendaftaran target siswa.
-    // Terbuka untuk seluruh akun area admin + Owner: keputusan owner,
-    // "admin kan yang memegang data siswa" -- ini kelanjutan kerja data
-    // siswa (blueprint Tahap 1), bukan kewenangan khusus manajer. Rutenya
-    // tetap dikunci AdminRoute di App.jsx; menyembunyikan menu saja tidak
-    // cukup, mengikuti prinsip repo sendiri.
     {
-      label: '🎯 TARGET KAMPUS',
+      label: 'PENGATURAN',
       items: [
-        { name: 'Impor Database PTN', path: '/admin/ptn/impor', icon: <Landmark size={18} /> },
-        { name: 'Target Kampus Siswa', path: '/admin/ptn/target', icon: <Target size={18} /> },
-      ]
-    },
-    {
-      label: '📋 PENDAFTARAN & EVENT',
-      items: [
-        { name: 'TOBK Akbar & Lomba',  path: '/admin/tobk-publik',         icon: <Trophy size={18} />, badge: 'EVENT', badgeColor: '#3b82f6' },
-        { name: 'Pendaftaran Online',  path: '/admin/pendaftaran',         icon: <UserPlus size={18} />,  badge: badgePendaftaran > 0 ? badgePendaftaran : null, badgeColor: '#f59e0b' },
-        { name: 'Manajemen Harga',     path: '/admin/pendaftaran/harga',   icon: <DollarSign size={18} /> },
-        { name: 'Lamaran Tentor/Staff',path: '/admin/pendaftaran/tentor',  icon: <Briefcase size={18} />, badge: badgeLamaranTentor > 0 ? badgeLamaranTentor : null, badgeColor: '#8b5cf6' },
-      ]
-    },
-    // 🔥 BARU (beres-beres sidebar): 21 perkakas yang dulu memenuhi
-    // grup MATERI (5 item) dan BANK SOAL (16 item) kini berada di satu
-    // pintu: halaman Perkakas dengan kartu berdeskripsi + angka klik.
-    // Tidak ada rute yang dihapus -- bookmark lama tetap jalan.
-    {
-      label: '🧰 KONTEN & PERKAKAS',
-      items: [
-        { name: 'Bank Soal & Perkakas', path: '/admin/perkakas', icon: <Toolbox size={18} /> },
-      ]
-    },
-    {
-      label: 'LAINNYA',
-      items: [
-        { name: 'Blog & Galeri', path: '/admin/blog',     icon: <BookOpen size={18} /> },
-        { name: 'Pengaturan', path: '/admin/settings', icon: <Settings size={18} /> },
+        { name: 'Pengaturan Admin', path: '/admin/settings', icon: <Settings size={18} /> },
       ]
     }
   ];
@@ -311,10 +251,13 @@ const SidebarAdmin = () => {
 
       <aside style={styles.sidebar(isOpen, isMobile)}>
         <div style={styles.logoSection}>
-          <img src="/pwa-192x192.png" alt="Logo" style={styles.logoImg} />
-          <div>
+          <div style={styles.logoRing}>
+            <img src="/pwa-192x192.png" alt="Logo Bimbel Gemilang" style={styles.logoImg} />
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
             <h3 style={styles.logoTitle}>BIMBEL GEMILANG</h3>
-            <p style={styles.logoSub}>Admin Panel v2.0 · build {typeof __BUILD_STAMP__ !== 'undefined' ? __BUILD_STAMP__ : 'dev'}</p>
+            <p style={styles.logoSub}>Pusat Komando Operasional</p>
+            <span style={styles.buildBadge}>v2.0 · {typeof __BUILD_STAMP__ !== 'undefined' ? __BUILD_STAMP__ : 'dev'}</span>
           </div>
         </div>
 
@@ -381,25 +324,84 @@ const styles = {
     background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(2px)', zIndex: 999
   },
   sidebar: (open, mobile) => ({
-    width: 216, backgroundColor: '#0f172a', height: '100vh',
+    width: 236,
+    background: 'linear-gradient(180deg, #1e1145 0%, #151030 50%, #0f172a 100%)',
+    height: '100vh',
     position: 'fixed', left: 0, top: 0, zIndex: 1000,
     display: 'flex', flexDirection: 'column',
     transform: mobile ? (open ? 'translateX(0)' : 'translateX(-100%)') : 'translateX(0)',
-    transition: 'transform 0.3s ease',
-    boxShadow: '4px 0 20px rgba(0,0,0,0.3)', overflow: 'hidden'
+    transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+    boxShadow: '4px 0 24px rgba(0,0,0,0.45)', overflow: 'hidden'
   }),
-  logoSection: { padding: '18px 20px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: '1px solid rgba(255,255,255,0.08)' },
-  logoImg: { width: 40, height: 40, borderRadius: '50%', border: '2px solid rgba(251,191,36,0.3)', objectFit: 'cover' },
-  logoTitle: { margin: 0, color: '#fbbf24', fontSize: 14, fontWeight: 'bold', letterSpacing: 1 },
-  logoSub: { margin: 0, color: '#64748b', fontSize: 10 },
+  logoSection: {
+    padding: '20px 16px 16px',
+    display: 'flex',
+    alignItems: 'center',
+    gap: 12,
+    borderBottom: '1px solid rgba(255,255,255,0.08)',
+    background: 'rgba(255,255,255,0.02)'
+  },
+  logoRing: {
+    padding: 2.5,
+    borderRadius: 14,
+    background: 'linear-gradient(135deg, #fbbf24, #f59e0b, #7c3aed)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    boxShadow: '0 4px 14px rgba(251,191,36,0.3)',
+    flexShrink: 0
+  },
+  logoImg: {
+    width: 48,
+    height: 48,
+    borderRadius: 12,
+    objectFit: 'cover',
+    display: 'block'
+  },
+  logoTitle: {
+    margin: 0,
+    color: '#fbbf24',
+    fontSize: 14,
+    fontWeight: 900,
+    letterSpacing: 1.1,
+    lineHeight: 1.2
+  },
+  logoSub: {
+    margin: '2px 0 0',
+    color: '#94a3b8',
+    fontSize: 10,
+    fontWeight: 500
+  },
+  buildBadge: {
+    display: 'inline-block',
+    marginTop: 3,
+    fontSize: 8.5,
+    fontWeight: 700,
+    color: '#cbd5e1',
+    background: 'rgba(255,255,255,0.08)',
+    padding: '1px 6px',
+    borderRadius: 999
+  },
   nav: { flex: 1, overflowY: 'auto', padding: '8px 0' },
   menuGroup: { marginBottom: 2 },
-  groupLabel: { display: 'block', padding: '16px 20px 6px', fontSize: 10, fontWeight: 'bold', color: '#475569', textTransform: 'uppercase', letterSpacing: 1.5 },
-  navLink: (active) => ({ display: 'flex', alignItems: 'center', padding: '10px 20px', margin: '1px 8px', borderRadius: 8, textDecoration: 'none', background: active ? 'rgba(251,191,36,0.08)' : 'transparent', transition: '0.2s', position: 'relative', cursor: 'pointer' }),
-  navIcon: (active) => ({ marginRight: 12, color: active ? '#fbbf24' : '#94a3b8', transition: '0.2s' }),
-  navText: (active) => ({ fontSize: 13, fontWeight: active ? '600' : '400', color: active ? '#fbbf24' : '#cbd5e1', flex: 1 }),
-  activeDot: { width: 6, height: 6, borderRadius: '50%', background: '#fbbf24', position: 'absolute', right: 14 },
-  badge: (color) => ({ background: color, color: 'white', padding: '2px 8px', borderRadius: 10, fontSize: 10, fontWeight: 'bold', minWidth: 20, textAlign: 'center' }),
+  groupLabel: { display: 'block', padding: '14px 18px 5px', fontSize: 9.5, fontWeight: 'bold', color: '#64748b', textTransform: 'uppercase', letterSpacing: 1.5 },
+  navLink: (active) => ({
+    display: 'flex',
+    alignItems: 'center',
+    padding: '9px 14px',
+    margin: '2px 8px',
+    borderRadius: 10,
+    textDecoration: 'none',
+    background: active ? 'linear-gradient(90deg, rgba(124,58,237,0.35) 0%, rgba(251,191,36,0.12) 100%)' : 'transparent',
+    border: active ? '1px solid rgba(251,191,36,0.3)' : '1px solid transparent',
+    transition: 'all 0.2s ease',
+    position: 'relative',
+    cursor: 'pointer'
+  }),
+  navIcon: (active) => ({ marginRight: 10, color: active ? '#fbbf24' : '#94a3b8', transition: '0.2s', display: 'flex' }),
+  navText: (active) => ({ fontSize: 12.5, fontWeight: active ? '700' : '500', color: active ? '#fbbf24' : '#cbd5e1', flex: 1 }),
+  activeDot: { width: 6, height: 6, borderRadius: '50%', background: '#fbbf24', position: 'absolute', right: 12, boxShadow: '0 0 8px #fbbf24' },
+  badge: (color) => ({ background: color, color: 'white', padding: '2px 7px', borderRadius: 10, fontSize: 9.5, fontWeight: 'bold', minWidth: 18, textAlign: 'center' }),
   footer: { padding: '16px', borderTop: '1px solid rgba(255,255,255,0.08)', display: 'flex', flexDirection: 'column', gap: 12 },
   userInfo: { display: 'flex', alignItems: 'center', gap: 10 },
   // 🔥 BARU: warna avatar membedakan Owner (emas) dari staf admin (biru),

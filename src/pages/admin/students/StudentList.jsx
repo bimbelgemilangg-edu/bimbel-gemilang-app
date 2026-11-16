@@ -1,5 +1,5 @@
 // src/pages/admin/students/StudentList.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SidebarAdmin from '../../../components/SidebarAdmin';
 import { db } from '../../../firebase';
@@ -10,8 +10,9 @@ import {
   Home, ChevronRight, BookOpen, RefreshCw, AlertCircle, CheckCircle,
   CreditCard, Calendar, Clock, Hash, Download, PieChart, BarChart3,
   FileSpreadsheet, Printer, Bell, Zap, Send, Mail, User, GraduationCap,
-  Layers, TrendingUp, Award, Filter, X, Eye
+  Layers, TrendingUp, Award, Filter, X, Eye, Camera
 } from 'lucide-react';
+import { uploadElearningFile } from '../../../services/uploadService';
 // 🔥 BARU (2026-11-16): English Course masa aktif berbasis kuota pertemuan (8x/bulan)
 // dicocokkan otomatis dari absensi guru & siswa (bukan habis kalender).
 import { hitungKuotaEnglishCourse, isProgramEnglish } from '../../../utils/kuotaEnglishCourse';
@@ -47,6 +48,37 @@ const StudentList = () => {
   const [teacherLogsList, setTeacherLogsList] = useState([]);
   const [modalRincianData, setModalRincianData] = useState(null);
   const [showModalRincianSesi, setShowModalRincianSesi] = useState(false);
+
+  // 🔥 BARU: Quick photo upload langsung dari tabel siswa
+  const fotoInputRef = useRef(null);
+  const [targetStudentForFoto, setTargetStudentForFoto] = useState(null);
+  const [uploadingFoto, setUploadingFoto] = useState(false);
+
+  const handleQuickFotoChange = async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file || !targetStudentForFoto) return;
+    if (!file.type.startsWith('image/')) {
+      alert('File harus berupa gambar.');
+      return;
+    }
+    setUploadingFoto(true);
+    try {
+      const res = await uploadElearningFile(file, 'foto-siswa');
+      if (res?.success && res.downloadURL) {
+        await updateDoc(doc(db, 'students', targetStudentForFoto), { fotoUrl: res.downloadURL });
+        setStudents(prev => prev.map(s => s.id === targetStudentForFoto ? { ...s, fotoUrl: res.downloadURL } : s));
+        showAlert('✅ Foto siswa berhasil diperbarui!');
+      } else {
+        throw new Error(res?.error || 'Gagal mengunggah foto');
+      }
+    } catch (err) {
+      alert('❌ Gagal upload foto: ' + err.message);
+    } finally {
+      setUploadingFoto(false);
+      setTargetStudentForFoto(null);
+    }
+  };
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -648,7 +680,13 @@ const StudentList = () => {
               </div>
               <div style={styles.modalBody}>
                 <div style={styles.modalStudent}>
-                  <div style={styles.modalAvatar}>{getInitials(selectedStudent.nama)}</div>
+                  <div style={{ ...styles.modalAvatar, overflow: 'hidden' }}>
+                    {selectedStudent.fotoUrl ? (
+                      <img src={selectedStudent.fotoUrl} alt={selectedStudent.nama} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    ) : (
+                      getInitials(selectedStudent.nama)
+                    )}
+                  </div>
                   <div>
                     <div style={styles.modalName}>{selectedStudent.nama}</div>
                     <div style={styles.modalId}>{selectedStudent.studentId}</div>
@@ -889,8 +927,25 @@ const StudentList = () => {
                         <td style={styles.td}>{idx + 1}</td>
                         <td style={styles.td}>
                           <div style={styles.studentCell}>
-                            <div style={styles.avatar}>
-                              {getInitials(s.nama)}
+                            <div
+                              style={{
+                                ...styles.avatar,
+                                overflow: 'hidden',
+                                cursor: 'pointer',
+                                border: s.fotoUrl ? '2px solid #8b5cf6' : '1px solid rgba(0,0,0,0.08)',
+                                position: 'relative'
+                              }}
+                              title="Klik untuk pasang / ubah foto siswa langsung"
+                              onClick={() => {
+                                setTargetStudentForFoto(s.id);
+                                fotoInputRef.current?.click();
+                              }}
+                            >
+                              {s.fotoUrl ? (
+                                <img src={s.fotoUrl} alt={s.nama} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                              ) : (
+                                getInitials(s.nama)
+                              )}
                             </div>
                             <div>
                               <div style={styles.studentName}>
@@ -1249,6 +1304,14 @@ const StudentList = () => {
             to { opacity: 1; transform: translateY(0); }
           }
         `}</style>
+
+        <input
+          type="file"
+          ref={fotoInputRef}
+          accept="image/*"
+          style={{ display: 'none' }}
+          onChange={handleQuickFotoChange}
+        />
 
       </div>
     </div>

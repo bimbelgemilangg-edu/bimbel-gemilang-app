@@ -7,7 +7,7 @@ import { collection, getDocs, query, doc, getDoc, serverTimestamp, where, writeB
 import { 
   ArrowLeft, Save, User, BookOpen, Calendar, CreditCard, 
   CheckCircle, ChevronRight, ChevronLeft, IdCard, Phone,
-  Sparkles, Key, Info, Printer, Receipt
+  Sparkles, Key, Info, Printer, Receipt, Camera
 } from 'lucide-react';
 // 🔥 BARU (modul kanal uang, rekonsiliasi & kwitansi + amortisasi paket):
 import { uploadElearningFile } from '../../../services/uploadService';
@@ -82,6 +82,10 @@ const AddStudent = () => {
   });
 
   const [tglLahir, setTglLahir] = useState({ hari: '', bulan: '', tahun: '' });
+
+  // Foto Siswa
+  const [fotoFile, setFotoFile] = useState(null);
+  const [fotoPreview, setFotoPreview] = useState(null);
 
   // 🔥 BARU (modul rekonsiliasi): jejak pembayaran transfer pendaftaran
   // -- nomor referensi struk / foto bukti (wajib salah satu kalau metode
@@ -426,6 +430,19 @@ const AddStudent = () => {
       const tanggalLahirStr = getTanggalLahirStr();
       const today = tanggalLokalHariIni();
 
+      // Upload foto siswa jika ada
+      let studentFotoUrl = '';
+      if (fotoFile) {
+        try {
+          const resFoto = await uploadElearningFile(fotoFile, 'foto-siswa');
+          if (resFoto?.success && resFoto.downloadURL) {
+            studentFotoUrl = resFoto.downloadURL;
+          }
+        } catch (errFoto) {
+          console.warn('Upload foto siswa gagal:', errFoto);
+        }
+      }
+
       // 🔥 Upload bukti transfer dulu (kalau ada) -- gagal upload = batal
       // semua (batch di bawah belum dijalankan, tidak ada data setengah).
       let buktiUrl = '';
@@ -461,6 +478,7 @@ const AddStudent = () => {
         paket: formData.programType === 'English' ? formData.englishLevelId : formData.paketId,
         paketNama: paketName,
         paketHargaBulanan: pkg.price,
+        fotoUrl: studentFotoUrl,
         kelasSekolah: formData.programType === 'English' ? 'Umum' : formData.kelasSekolah,
         tempatLahir: formData.tempatLahir,
         tanggalLahir: tanggalLahirStr,
@@ -582,6 +600,34 @@ const AddStudent = () => {
       <div style={styles.sectionHeader}>
         <User size={20} color="#3b82f6" />
         <h3 style={styles.sectionTitle}>Data Diri Siswa</h3>
+      </div>
+
+      {/* Upload Foto Siswa */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 16, padding: '12px 14px', background: '#f8fafc', borderRadius: 12, border: '1px solid #e2e8f0' }}>
+        <div style={{ width: 60, height: 60, borderRadius: '50%', background: '#ede9fe', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #8b5cf6', flexShrink: 0 }}>
+          {fotoPreview ? (
+            <img src={fotoPreview} alt="Preview Foto Siswa" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          ) : (
+            <Camera size={24} color="#8b5cf6" />
+          )}
+        </div>
+        <div style={{ flex: 1 }}>
+          <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#1e293b', marginBottom: 4 }}>
+            Foto Siswa (Opsional)
+          </label>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) {
+                setFotoFile(file);
+                setFotoPreview(URL.createObjectURL(file));
+              }
+            }}
+            style={{ fontSize: 11 }}
+          />
+        </div>
       </div>
 
       <div style={styles.inputGroup}>

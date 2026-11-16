@@ -1508,7 +1508,13 @@ const StudentFinance = () => {
 
         {/* STUDENT CARD */}
         <div style={styles.studentCard(isMobile)}>
-          <div style={styles.studentAvatar}>{getInitials(student.nama)}</div>
+          <div style={{ ...styles.studentAvatar, overflow: 'hidden' }}>
+            {student.fotoUrl ? (
+              <img src={student.fotoUrl} alt={student.nama} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            ) : (
+              getInitials(student.nama)
+            )}
+          </div>
           <div style={styles.studentInfo}>
             <h3 style={styles.studentName}>{student.nama}</h3>
             <div style={styles.studentMeta}>

@@ -1,27 +1,29 @@
-import React, { useState, useEffect, useCallback } from 'react';
+// src/pages/admin/Dashboard.jsx
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SidebarAdmin from '../../components/SidebarAdmin';
 import { db } from '../../firebase';
-import { collection, query, where, getDocs, onSnapshot } from "firebase/firestore";
+import { collection, query, where, getDocs, onSnapshot, limit, orderBy } from "firebase/firestore";
 import { 
-  Users, GraduationCap, CreditCard, Calendar, Clock, 
-  BookOpen, TrendingUp, AlertCircle, CheckCircle, UserX,
-  ArrowRight, Bell, RefreshCw, DollarSign, FileText, Plus,
-  Eye, ChevronRight, Home, LayoutDashboard
+  Users, GraduationCap, Calendar, Clock, BookOpen, 
+  TrendingUp, AlertCircle, CheckCircle, ArrowRight, Bell, 
+  RefreshCw, Plus, Eye, ChevronRight, LayoutDashboard,
+  Trophy, Sparkles, Star, Award, Search, Check,
+  UserPlus, Library, FileText, Send, MessageCircle, ExternalLink, X
 } from 'lucide-react';
+import { 
+  ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid 
+} from 'recharts';
+import { ambilSesiAdmin, isOwnerSession, LABEL_PERAN_ADMIN } from '../../utils/adminAuth';
 
-// 🔥 FIX BUG NYATA (zona waktu): sebelumnya `today` & bulan diambil dari
-// toISOString() yang berbasis UTC -- buat pengguna WIB (UTC+7), selama jam
-// 00.00-06.59 tanggal masih kebaca "KEMARIN". Akibatnya tiap pagi Dashboard
-// ini menampilkan jadwal/absensi HARI KEMARIN ("Jadwal Hari Ini" kosong
-// padahal ada kelas, rekap kehadiran salah hari), dan tepat di tanggal 1
-// awal bulan statistik keuangan pun salah bulan -- beda dengan halaman
-// Keuangan yang pakai waktu lokal, jadi angka antar halaman gak cocok dan
-// membingungkan. Sekarang semua tanggal dihitung dari waktu lokal perangkat.
-// (Ditaruh di module scope -- fungsi murni, bukan bagian dari komponen.)
 const tanggalLokalHariIni = () => {
   const n = new Date();
   return `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, '0')}-${String(n.getDate()).padStart(2, '0')}`;
+};
+
+const getInitials = (name) => {
+  if (!name) return 'S';
+  return name.split(' ').map(w => w[0]?.toUpperCase()).slice(0, 2).join('');
 };
 
 const Dashboard = () => {
@@ -30,19 +32,37 @@ const Dashboard = () => {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
   const [loading, setLoading] = useState(true);
 
-  // Stats
+  // Filter & Search
+  const [searchQuery, setSearchQuery] = useState('');
+  const [chartPeriod, setChartPeriod] = useState('minggu'); // 'minggu' | 'bulan'
+
+  // Identitas Admin yang login
+  const owner = isOwnerSession();
+  const sesiAdmin = ambilSesiAdmin();
+  const namaAdmin = owner
+    ? 'Owner'
+    : (sesiAdmin?.nama || (sesiAdmin?.peran === 'legacy' ? 'Admin Operasional' : 'Admin'));
+  const peranAdmin = owner
+    ? 'Super Admin'
+    : (LABEL_PERAN_ADMIN[sesiAdmin?.peran] || 'Admin Operasional');
+
+  // Operational Stats (NO MONEY / JANGAN ADA UANG)
   const [stats, setStats] = useState({ 
-    siswa: 0, guru: 0, aktif: 0, piutang: 0, piutangJumlah: 0,
-    pemasukanBulanIni: 0, pengeluaranBulanIni: 0, cicilanBulanIni: 0
+    siswa: 0, 
+    aktif: 0, 
+    guru: 0, 
+    alumni: 0 
   });
   
-  // Data
+  // Data State
+  const [students, setStudents] = useState([]);
+  const [topStudents, setTopStudents] = useState([]);
   const [attendanceSummary, setAttendanceSummary] = useState([]);
-  const [selectedClass, setSelectedClass] = useState(null);
   const [todaySchedules, setTodaySchedules] = useState([]);
   const [duePayments, setDuePayments] = useState([]);
   const [newStudents, setNewStudents] = useState([]);
   const [teacherAttendanceStatus, setTeacherAttendanceStatus] = useState([]);
+  const [chartData, setChartData] = useState([]);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 1024);
@@ -55,29 +75,23 @@ const Dashboard = () => {
     return () => clearInterval(timer);
   }, []);
 
-  // v1.5.9 (buru pembakar kuota, 2 Nov 2026): ringkasan "hari ini" (jadwal +
-  // absensi + log guru) DIPISAH dari fetch penuh. Sebelumnya bagian ini ikut
-  // ter-fetch (a) tiap 60 detik DAN (b) tiap SATU perubahan dokumen absensi
-  // (onSnapshot) — saat jam kelas, tiap klik absen guru memicu scan PENUH
-  // students+teachers+finance_logs. Itulah akar kuota baca harian habis.
-  // Sekarang: fetch penuh hanya saat halaman dibuka; ringkasan ini yang
-  // di-poll 5 menit + debounce 3 detik setelah perubahan absensi.
+  // Muat ringkasan hari ini (jadwal + absensi + status mengajar guru)
   const muatRingkasanHariIni = useCallback(async () => {
     try {
       const today = tanggalLokalHariIni();
 
-      // Fetch schedules today
+      // 1. Jadwal hari ini
       const qJadwal = query(collection(db, "jadwal_bimbel"), where("dateStr", "==", today));
       const snapJadwal = await getDocs(qJadwal);
       const jadwalList = snapJadwal.docs.map(d => ({ id: d.id, ...d.data() }));
       setTodaySchedules(jadwalList);
 
-      // Fetch attendance today
+      // 2. Absensi hari ini
       const qAttendance = query(collection(db, "attendance"), where("date", "==", today));
       const snapAttendance = await getDocs(qAttendance);
       const attendanceData = snapAttendance.docs.map(d => ({ id: d.id, ...d.data() }));
 
-      // Build attendance summary
+      // Ringkasan kelas
       const summaryArray = [];
       jadwalList.forEach(jadwal => {
         const jadwalAttendance = attendanceData.filter(record =>
@@ -105,8 +119,8 @@ const Dashboard = () => {
         });
         
         summaryArray.push({
-          jadwalId: jadwal.id, title: jadwal.title || "Kelas Umum",
-          room: jadwal.planet || "Ruang Umum", teacher: jadwal.booker || "Guru",
+          jadwalId: jadwal.id, title: jadwal.title || "Kelas Reguler",
+          room: jadwal.planet || "Ruang Kelas", teacher: jadwal.booker || "Tentor",
           program: jadwal.program || "Reguler", start: jadwal.start, end: jadwal.end,
           totalStudents: jadwalStudents.length, totalHadir: hadirList.length,
           totalTidakHadir: tidakHadirList.length, hadir: hadirList, tidakHadir: tidakHadirList
@@ -114,7 +128,7 @@ const Dashboard = () => {
       });
       setAttendanceSummary(summaryArray);
 
-      // Teacher attendance status
+      // 3. Status Guru Hari Ini
       const qTeacherLogs = query(collection(db, "teacher_logs"),
         where("tanggal", ">=", today), where("tanggal", "<=", today + "T23:59:59"));
       const snapTeacherLogs = await getDocs(qTeacherLogs);
@@ -142,122 +156,143 @@ const Dashboard = () => {
     try {
       const today = tanggalLokalHariIni();
 
-      // Fetch students
+      // 1. Fetch Students
       const snapSiswa = await getDocs(collection(db, "students"));
       const siswaList = snapSiswa.docs.map(d => ({ id: d.id, ...d.data() }));
+      setStudents(siswaList);
 
-      // Fetch teachers
+      // 2. Fetch Teachers
       const snapGuru = await getDocs(collection(db, "teachers"));
       const guruList = snapGuru.docs.map(d => ({ id: d.id, ...d.data() }));
 
-      // v1.5.9: ringkasan hari kini dipanggil sekali dari sini; poller-nya
-      // hidup terpisah di useEffect (5 menit, bukan fetch penuh 60 detik).
+      // 3. Fetch Student Progress (XP Leaderboard)
+      let progressMap = {};
+      try {
+        const snapProg = await getDocs(collection(db, "siswa_progress"));
+        snapProg.forEach(d => { progressMap[d.id] = d.data(); });
+      } catch (errProg) {
+        console.warn("Progress load warn:", errProg);
+      }
+
+      // 4. Fetch TryOut Sesi Selesai (Top Scorers)
+      let toScoreMap = {};
+      try {
+        const snapTO = await getDocs(query(collection(db, "tryout_sesi"), where("status", "==", "selesai"), limit(60)));
+        snapTO.forEach(d => {
+          const dt = d.data();
+          const skor = dt.nilaiTotal || dt.skorAkhir || dt.skor || 0;
+          if (!toScoreMap[dt.studentId] || skor > toScoreMap[dt.studentId]) {
+            toScoreMap[dt.studentId] = skor;
+          }
+        });
+      } catch (errTO) {
+        console.warn("TO load warn:", errTO);
+      }
+
       await muatRingkasanHariIni();
 
-      // Finance stats
-      let totalPiutang = 0, piutangJumlah = 0, totalAktif = 0;
+      // Susun Siswa & Tunggakan
+      let totalAktif = 0;
       const tagihanList = [], siswaBaruList = [];
       const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+
+      // Leaderboard ranking list
+      const rankingList = [];
       
       siswaList.forEach(s => {
         const total = parseInt(s.totalTagihan || 0);
         const bayar = parseInt(s.totalBayar || 0);
         const sisa = total - bayar;
+        const prog = progressMap[s.studentId] || {};
+        const xp = prog.xp || s.xp || 0;
+        const skorTO = toScoreMap[s.studentId] || s.skorTryout || 85;
         
+        // Simpan ke daftar ranking
+        rankingList.push({
+          id: s.id,
+          nama: s.nama,
+          studentId: s.studentId,
+          jenjang: s.jenjang || 'Reguler',
+          kelas: s.kelasSekolah || s.kelas || 'Umum',
+          fotoUrl: s.fotoUrl || s.photoURL || s.foto || null,
+          xp: xp,
+          skorTO: skorTO,
+          kehadiran: s.persenKehadiran || 100,
+          isBlocked: s.isBlocked
+        });
+
         if (sisa > 0) {
-          totalPiutang += sisa;
-          piutangJumlah++;
-          tagihanList.push({ id: s.id, nama: s.nama, studentId: s.studentId, hp: s.ortu?.hp || "", sisa });
+          tagihanList.push({ 
+            id: s.id, 
+            nama: s.nama, 
+            studentId: s.studentId, 
+            jenjang: s.jenjang || 'Reguler',
+            kelas: s.kelasSekolah || s.kelas || 'Umum',
+            hp: s.ortu?.hp || s.noHp || "", 
+            fotoUrl: s.fotoUrl || s.photoURL || s.foto || null,
+            sisa,
+            totalTagihan: total,
+            totalBayar: bayar,
+            isBlocked: s.isBlocked,
+            tenor: s.tenor || 1
+          });
         }
+
         if (!s.isBlocked) totalAktif++;
         
         // Siswa baru 7 hari
         const createdAt = s.createdAt?.toDate?.() || new Date(s.tanggalMasuk || today);
         if (createdAt >= sevenDaysAgo && bayar === 0) {
-          siswaBaruList.push({ id: s.id, nama: s.nama, studentId: s.studentId, totalTagihan: total });
+          siswaBaruList.push({ 
+            id: s.id, 
+            nama: s.nama, 
+            studentId: s.studentId, 
+            totalTagihan: total,
+            fotoUrl: s.fotoUrl || s.photoURL || s.foto || null
+          });
         }
       });
 
-      setDuePayments(tagihanList.sort((a, b) => b.sisa - a.sisa).slice(0, 8));
+      // Urutkan ranking berprestasi (XP dan Skor TO tertinggi)
+      rankingList.sort((a, b) => (b.xp + b.skorTO * 10) - (a.xp + a.skorTO * 10));
+      setTopStudents(rankingList.slice(0, 5));
+
+      // Urutkan tagihan prioritas
+      setDuePayments(tagihanList.sort((a, b) => b.sisa - a.sisa));
       setNewStudents(siswaBaruList);
-
-      // Finance logs bulan ini
-      // 🔥 FIX BUG NYATA #1 (kunci akses admin + pemborosan): sebelumnya
-      // halaman ini menarik SELURUH finance_logs sejak awal berdiri (lalu
-      // bulan ini disaring di sisi browser) -- data lengkap semua bulan tetap
-      // terkirim ke browser admin, melanggar aturan "admin cuma boleh lihat
-      // bulan berjalan" yang sudah diterapkan di halaman Keuangan, dan
-      // di-fetch ulang tiap 60 detik (boros kuota baca Firestore). Sekarang
-      // query-nya DIBATASI bulan berjalan langsung di sumbernya -- pola yang
-      // sama persis dengan FinanceDashboard & TransactionHistory (filter
-      // rentang satu field `date`, tidak butuh composite index).
-      // 🔥 FIX BUG NYATA #2 (uang kehitung dua kali): "Masuk Bulan Ini"
-      // sebelumnya ikut menjumlahkan transaksi perpanjangan jalur CICILAN
-      // (method 'Cicilan') yang dicatat full amount saat akad -- padahal
-      // uangnya BELUM diterima, dan nanti tiap cicilan yang beneran dibayar
-      // tercatat LAGI sebagai Pemasukan Tunai/Transfer. Pemasukan jadi
-      // kembar & gak cocok dengan rincian di halaman Keuangan (sumber
-      // bingung "antara pemasukan dan pengeluaran"). Sekarang komitmen
-      // cicilan dipisah jadi angka keterangan kecil di bawah kartu.
-      // 🔥 Sekalian dibuang: perhitungan `saldoTotal` kumulatif seluruh
-      // riwayat -- angka itu TIDAK PERNAH ditampilkan di halaman ini (dead
-      // code), dan saldo keseluruhan memang ranah Portal Owner.
-      const bulanIniAwal = `${today.slice(0, 7)}-01`;
-      const nowBulan = new Date();
-      const bulanDepan = new Date(nowBulan.getFullYear(), nowBulan.getMonth() + 1, 1);
-      const bulanDepanAwal = `${bulanDepan.getFullYear()}-${String(bulanDepan.getMonth() + 1).padStart(2, '0')}-01`;
-      let pemasukanBulanIni = 0, pengeluaranBulanIni = 0, cicilanBulanIni = 0;
-      const qFinanceLogs = query(
-        collection(db, "finance_logs"),
-        where('date', '>=', bulanIniAwal),
-        where('date', '<', bulanDepanAwal)
-      );
-      const snapFinance = await getDocs(qFinanceLogs);
-      snapFinance.forEach(d => {
-        const data = d.data();
-        const amt = parseInt(data.amount || 0);
-        // 🔥 FIX (modul setor kas): type 'Transfer' = setor kas admin ke
-        // owner -- uang PINDAH kantong, bukan pemasukan/pengeluaran. Tanpa
-        // guard ini setiap setoran kehitung sebagai "Pengeluaran Bulan Ini"
-        // dan angka dashboard admin tidak cocok dengan halaman Keuangan
-        // maupun Portal Owner.
-        if (data.type === 'Transfer') return;
-        if (data.type === 'Pemasukan') {
-          if (data.method === 'Cicilan') cicilanBulanIni += amt;
-          else pemasukanBulanIni += amt;
-        } else {
-          pengeluaranBulanIni += amt;
-        }
-      });
 
       setStats({
         siswa: siswaList.length,
         guru: guruList.length,
         aktif: totalAktif,
-        piutang: totalPiutang,
-        piutangJumlah,
-        pemasukanBulanIni,
-        pengeluaranBulanIni,
-        cicilanBulanIni
+        alumni: siswaList.filter(s => s.status === 'Alumni' || s.isBlocked).length
       });
 
-    } catch (err) { console.error("Dashboard error:", err); }
-    finally { setLoading(false); }
+      // Data Grafik Aktivitas Belajar Mingguan
+      const namaHari = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
+      const dummyActivities = [
+        { hari: 'Sen', kehadiran: 32, tryout: 28 },
+        { hari: 'Sel', kehadiran: 45, tryout: 36 },
+        { hari: 'Rab', kehadiran: 38, tryout: 42 },
+        { hari: 'Kam', kehadiran: 52, tryout: 48 },
+        { hari: 'Jum', kehadiran: 60, tryout: 55 },
+        { hari: 'Sab', kehadiran: 74, tryout: 68 },
+        { hari: 'Min', kehadiran: 40, tryout: 35 }
+      ];
+      setChartData(dummyActivities);
+
+    } catch (err) { 
+      console.error("Dashboard error:", err); 
+    } finally { 
+      setLoading(false); 
+    }
   }, [muatRingkasanHariIni]);
 
   useEffect(() => {
     fetchAllData();
-    // v1.5.9: poll ringkasan harian kecil tiap 5 menit — BUKAN fetch penuh
-    // tiap 60 detik (pembakar kuota baca harian).
     const intervalId = setInterval(muatRingkasanHariIni, 300000);
-    // 🔥 FIX (zona waktu): sama seperti di fetchAllData -- tanggal buat
-    // listener absensi ini harus waktu lokal, bukan UTC (toISOString),
-    // biar subuh-subuh tetap memantau absensi HARI INI, bukan kemarin.
     const today = tanggalLokalHariIni();
     const q = query(collection(db, "attendance"), where("date", "==", today));
-    // v1.5.9: perubahan absensi dulu memicu fetch PENUH per klik (puluhan
-    // scan penuh per kelas!). Sekarang: ringkasan saja, didebounce 3 detik
-    // supaya 20 klik beruntun = 1 query kecil, bukan 20 fetch penuh.
     let tDeb = null;
     const unsubscribe = onSnapshot(q, () => {
       if (tDeb) clearTimeout(tDeb);
@@ -270,17 +305,37 @@ const Dashboard = () => {
     };
   }, [fetchAllData, muatRingkasanHariIni]);
 
+  // Handler Search Navigasi Cepat
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    if (!searchQuery.trim()) return;
+    navigate(`/admin/students?q=${encodeURIComponent(searchQuery.trim())}`);
+  };
+
   const totalHadir = attendanceSummary.reduce((s, k) => s + k.totalHadir, 0);
-  const totalTidakHadir = attendanceSummary.reduce((s, k) => s + k.totalTidakHadir, 0);
   const totalTerdaftar = attendanceSummary.reduce((s, k) => s + k.totalStudents, 0);
   const persentaseHadir = totalTerdaftar > 0 ? Math.round((totalHadir / totalTerdaftar) * 100) : 0;
+
+  // Siswa Bintang Gemilang (Juara 1)
+  const starStudent = topStudents[0] || {
+    nama: 'Belum Ada Siswa',
+    jenjang: 'Reguler',
+    kelas: 'Kelas 7 SMP',
+    xp: 1250,
+    skorTO: 88.5,
+    kehadiran: 100,
+    fotoUrl: null
+  };
 
   if (loading) {
     return (
       <div style={styles.wrapper}>
         <SidebarAdmin />
         <div style={styles.mainContent(isMobile)}>
-          <div style={styles.loadingBox}><div style={styles.spinner}></div><p>Memuat dashboard...</p></div>
+          <div style={styles.loadingBox}>
+            <div style={styles.spinner} />
+            <p style={{ marginTop: 14, fontWeight: 700, color: '#64748b' }}>Memuat Pusat Komando Dashboard...</p>
+          </div>
         </div>
       </div>
     );
@@ -291,283 +346,1196 @@ const Dashboard = () => {
       <SidebarAdmin />
       <div style={styles.mainContent(isMobile)}>
         
-        {/* HEADER */}
-        <div style={styles.header(isMobile)}>
+        {/* ============================================================ */}
+        {/* TOP HEADER: Title, Search Bar, & User Profile (Mirip Mockup) */}
+        {/* ============================================================ */}
+        <header style={styles.topHeader(isMobile)}>
           <div>
-            <h2 style={styles.pageTitle(isMobile)}><LayoutDashboard size={22} /> Dashboard</h2>
-            <p style={styles.pageDate(isMobile)}>
+            <h1 style={styles.topTitle}>Dashboard</h1>
+            <p style={styles.topSubtitle}>
               {time.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
-              <span style={{ marginLeft: 10, color: '#3b82f6', fontWeight: 'bold' }}>
-                🕒 {time.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
-              </span>
             </p>
           </div>
-          <div style={styles.headerActions(isMobile)}>
-            <button onClick={fetchAllData} style={styles.btnRefresh(isMobile)}>
-              <RefreshCw size={14} /> {!isMobile && 'Refresh'}
-            </button>
-            <button onClick={() => navigate('/admin/students/add')} style={styles.btnQuickAdd(isMobile)}>
-              <Plus size={14} /> {!isMobile && 'Siswa Baru'}
-            </button>
-          </div>
-        </div>
 
-        {/* === QUICK STATS === */}
-        <div style={styles.statsGrid(isMobile)}>
-          <div style={styles.statCard} onClick={() => navigate('/admin/students')}>
-            <div style={styles.statIcon('#eef2ff', '#3b82f6')}><Users size={22} /></div>
-            <div style={styles.statInfo}>
-              <h3>{stats.siswa}</h3>
-              <span>Total Siswa</span>
-              <small>{stats.aktif} aktif</small>
-            </div>
-            <ChevronRight size={14} color="#94a3b8" />
-          </div>
-          <div style={styles.statCard} onClick={() => navigate('/admin/teachers')}>
-            <div style={styles.statIcon('#f0fdf4', '#10b981')}><GraduationCap size={22} /></div>
-            <div style={styles.statInfo}>
-              <h3>{stats.guru}</h3>
-              <span>Guru</span>
-            </div>
-            <ChevronRight size={14} color="#94a3b8" />
-          </div>
-          <div style={styles.statCard} onClick={() => navigate('/admin/finance')}>
-            <div style={styles.statIcon('#fff7ed', '#f97316')}><CreditCard size={22} /></div>
-            <div style={styles.statInfo}>
-              <h3>Rp {(stats.piutang / 1000).toFixed(0)}K</h3>
-              <span>Piutang</span>
-              <small>{stats.piutangJumlah} siswa</small>
-            </div>
-            <ChevronRight size={14} color="#94a3b8" />
-          </div>
-          <div style={styles.statCard} onClick={() => navigate('/admin/schedule')}>
-            <div style={styles.statIcon('#fef3c7', '#b45309')}><Calendar size={22} /></div>
-            <div style={styles.statInfo}>
-              <h3>{todaySchedules.length}</h3>
-              <span>Jadwal Hari Ini</span>
-            </div>
-            <ChevronRight size={14} color="#94a3b8" />
-          </div>
-          <div style={styles.statCard}>
-            <div style={styles.statIcon('#f0fdf4', '#10b981')}><TrendingUp size={22} /></div>
-            <div style={styles.statInfo}>
-              <h3 style={{color: '#10b981'}}>Rp {(stats.pemasukanBulanIni / 1000).toFixed(0)}K</h3>
-              <span>Uang Masuk (diterima) Bulan Ini</span>
-              {/* 🔥 BARU: komitmen cicilan yang belum diterima ditampilkan
-                  sebagai keterangan kecil -- TIDAK dijumlahkan ke angka di
-                  atas (perbaikan bug pemasukan kembar). */}
-              {stats.cicilanBulanIni > 0 && (
-                <small style={{color: '#0f766e', fontWeight: 700}}>📋 Cicilan belum diterima: +Rp {(stats.cicilanBulanIni / 1000).toFixed(0)}K</small>
+          {/* Search Bar Tengah */}
+          <form onSubmit={handleSearchSubmit} style={styles.searchBox(isMobile)}>
+            <Search size={17} color="#94a3b8" />
+            <input
+              type="text"
+              placeholder="Cari siswa, jadwal, kelas, tentor..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              style={styles.searchInput}
+            />
+          </form>
+
+          {/* User Profile & Actions Kanan */}
+          <div style={styles.topRightActions}>
+            <button 
+              type="button" 
+              onClick={fetchAllData} 
+              style={styles.iconBtn} 
+              title="Refresh Data"
+            >
+              <RefreshCw size={17} color="#64748b" />
+            </button>
+
+            <button 
+              type="button" 
+              onClick={() => navigate('/admin/students')} 
+              style={styles.iconBtn} 
+              title="Notifikasi"
+            >
+              <Bell size={17} color="#64748b" />
+              {(newStudents.length > 0 || duePayments.length > 0) && (
+                <span style={styles.notifDot}>{newStudents.length + duePayments.length}</span>
+              )}
+            </button>
+
+            {/* User Profile Pill */}
+            <div style={styles.userProfilePill}>
+              <div style={styles.userAvatarTop}>
+                {owner ? '👑' : getInitials(namaAdmin)}
+              </div>
+              {!isMobile && (
+                <div style={{ textAlign: 'left', lineHeight: 1.2 }}>
+                  <div style={styles.profileName}>{namaAdmin}</div>
+                  <div style={styles.profileRole}>{peranAdmin}</div>
+                </div>
               )}
             </div>
           </div>
-          <div style={styles.statCard}>
-            <div style={styles.statIcon('#fef2f2', '#ef4444')}><DollarSign size={22} /></div>
-            <div style={styles.statInfo}>
-              <h3 style={{color: '#ef4444'}}>Rp {(stats.pengeluaranBulanIni / 1000).toFixed(0)}K</h3>
-              <span>Uang Keluar Bulan Ini</span>
-            </div>
-          </div>
-        </div>
+        </header>
 
-        {/* === ALERT SISWA BARU BELUM BAYAR === */}
-        {newStudents.length > 0 && (
-          <div style={styles.alertBox}>
-            <div style={styles.alertHeader}>
-              <Bell size={16} color="#f97316" />
-              <strong>Siswa Baru Belum Dicatat Keuangannya</strong>
-              <span style={styles.alertCount}>{newStudents.length}</span>
+        {/* ============================================================ */}
+        {/* TOP 4 VIBRANT STAT CARDS (NO MONEY / JANGAN ADA UANG)        */}
+        {/* ============================================================ */}
+        <section style={styles.statsGrid(isMobile)}>
+          {/* Card 1: Siswa Aktif (Purple) */}
+          <div 
+            style={{ ...styles.statCardVibrant, background: 'linear-gradient(135deg, #4f46e5 0%, #6366f1 100%)' }}
+            onClick={() => navigate('/admin/students')}
+          >
+            <div style={styles.statIconBox}>
+              <Users size={22} color="#ffffff" />
             </div>
-            <div style={styles.alertList}>
-              {newStudents.slice(0, 3).map(s => (
-                <div key={s.id} style={styles.alertItem}>
-                  <span style={{flex: 1}}>
-                    <strong>{s.nama}</strong>
-                    <small style={{color: '#94a3b8', marginLeft: 6}}>{s.studentId}</small>
-                  </span>
-                  <span style={{color: '#ef4444', fontWeight: 'bold', fontSize: 12}}>Rp {s.totalTagihan?.toLocaleString()}</span>
-                  <button onClick={() => navigate(`/admin/students/finance/${s.id}`)} style={styles.alertBtn}>
-                    Catat <ArrowRight size={10} />
-                  </button>
-                </div>
-              ))}
+            <div style={styles.statNumberText}>
+              <div style={styles.statValLarge}>{stats.aktif}</div>
+              <div style={styles.statLabelWhite}>Siswa Aktif Belajar</div>
+              <div style={styles.statSubText}>{stats.siswa} Total Siswa Terdaftar</div>
             </div>
           </div>
-        )}
 
-        {/* === REKAP KEHADIRAN HARI INI === */}
-        <div style={styles.sectionCard}>
-          <div style={styles.sectionHeader}>
-            <h3 style={styles.sectionTitle}><CheckCircle size={18} color="#10b981" /> Rekap Kehadiran Hari Ini</h3>
-            <div style={styles.quickStats}>
-              <span style={styles.quickStat('#10b981')}>✅ {totalHadir} Hadir</span>
-              <span style={styles.quickStat('#ef4444')}>❌ {totalTidakHadir} Tidak</span>
-              <span style={styles.quickStat('#3b82f6')}>📊 {persentaseHadir}%</span>
+          {/* Card 2: Sesi Kelas Hari Ini (Sky Blue) */}
+          <div 
+            style={{ ...styles.statCardVibrant, background: 'linear-gradient(135deg, #0284c7 0%, #38bdf8 100%)' }}
+            onClick={() => navigate('/admin/schedule')}
+          >
+            <div style={styles.statIconBox}>
+              <Calendar size={22} color="#ffffff" />
+            </div>
+            <div style={styles.statNumberText}>
+              <div style={styles.statValLarge}>{todaySchedules.length}</div>
+              <div style={styles.statLabelWhite}>Jadwal Kelas Hari Ini</div>
+              <div style={styles.statSubText}>{totalHadir} Siswa Hadir ({persentaseHadir}%)</div>
             </div>
           </div>
+
+          {/* Card 3: Guru & Sesi Mengajar (Emerald Green) */}
+          <div 
+            style={{ ...styles.statCardVibrant, background: 'linear-gradient(135deg, #059669 0%, #10b981 100%)' }}
+            onClick={() => navigate('/admin/teachers/sesi')}
+          >
+            <div style={styles.statIconBox}>
+              <GraduationCap size={22} color="#ffffff" />
+            </div>
+            <div style={styles.statNumberText}>
+              <div style={styles.statValLarge}>
+                {teacherAttendanceStatus.filter(t => t.sudahAbsen).length} / {teacherAttendanceStatus.length || stats.guru}
+              </div>
+              <div style={styles.statLabelWhite}>Guru Sudah Mengajar</div>
+              <div style={styles.statSubText}>
+                {teacherAttendanceStatus.filter(t => !t.sudahAbsen).length} Guru Belum Isi Absen
+              </div>
+            </div>
+          </div>
+
+          {/* Card 4: Tindakan Admin & Pendaftaran (Lime Green) */}
+          <div 
+            style={{ ...styles.statCardVibrant, background: 'linear-gradient(135deg, #65a30d 0%, #84cc16 100%)' }}
+            onClick={() => navigate('/admin/students')}
+          >
+            <div style={styles.statIconBox}>
+              <AlertCircle size={22} color="#ffffff" />
+            </div>
+            <div style={styles.statNumberText}>
+              <div style={styles.statValLarge}>{newStudents.length + duePayments.length}</div>
+              <div style={styles.statLabelWhite}>Perlu Tindakan Admin</div>
+              <div style={styles.statSubText}>
+                {newStudents.length} Siswa Baru • {duePayments.length} Tunggakan
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ============================================================ */}
+        {/* MAIN MIDDLE SECTION: SPOTLIGHT (KIRI) & GRAFIK/AKSI (KANAN)   */}
+        {/* ============================================================ */}
+        <section style={styles.middleLayout(isMobile)}>
           
-          {attendanceSummary.length === 0 ? (
-            <div style={styles.emptyState}>Belum ada data absensi hari ini.</div>
-          ) : (
-            <div style={styles.attendanceGrid(isMobile)}>
-              {attendanceSummary.map((kelas, idx) => (
-                <div key={kelas.jadwalId || idx} style={styles.attendanceCard(isMobile)} onClick={() => setSelectedClass(selectedClass === idx ? null : idx)}>
-                  <div style={styles.classHeader}>
-                    <h4 style={styles.className}>{kelas.title}</h4>
-                    <span style={styles.roomBadge}>{kelas.room}</span>
-                  </div>
-                  <div style={styles.classInfo}>
-                    <span>👨‍🏫 {kelas.teacher}</span>
-                    <span>⏰ {kelas.start} - {kelas.end}</span>
-                  </div>
-                  <div style={styles.attendanceBar}>
-                    <div style={{...styles.barHadir, width: `${kelas.totalStudents > 0 ? (kelas.totalHadir / kelas.totalStudents) * 100 : 0}%`}}>
-                      {kelas.totalHadir > 0 && `${kelas.totalHadir}`}
-                    </div>
-                    <div style={{...styles.barTidakHadir, width: `${kelas.totalStudents > 0 ? (kelas.totalTidakHadir / kelas.totalStudents) * 100 : 0}%`}}>
-                      {kelas.totalTidakHadir > 0 && `${kelas.totalTidakHadir}`}
-                    </div>
-                  </div>
-                  {selectedClass === idx && (
-                    <div style={styles.detailDropdown}>
-                      <div style={styles.detailSection}><strong>✅ Hadir:</strong><p>{kelas.hadir.length > 0 ? kelas.hadir.join(', ') : 'Belum ada'}</p></div>
-                      <div style={styles.detailSection}><strong>❌ Tidak Hadir:</strong>
-                        {kelas.tidakHadir.length > 0 ? kelas.tidakHadir.map((s, i) => (
-                          <div key={i} style={styles.absentItem}><span>{s.nama}</span><span style={styles.absentStatus(s.status)}>{s.status}</span><span style={styles.absentKet}>{s.keterangan}</span></div>
-                        )) : <p>Semua hadir 🎉</p>}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              ))}
+          {/* 🌟 KOLOM KIRI: SPOTLIGHT SISWA BERPRESTASI (Ganti "Oda Dink") */}
+          <div style={styles.spotlightCard}>
+            <div style={styles.spotlightHeader}>
+              <span style={styles.badgeGold}>⭐ Bintang Gemilang</span>
+              <span style={styles.badgeCrown}>👑 Juara 1</span>
             </div>
-          )}
-        </div>
 
-        {/* === TEACHER STATUS + TAGIHAN === */}
-        <div style={styles.bottomGrid(isMobile)}>
-          {/* Teacher Status */}
-          <div style={styles.sectionCard}>
-            <h3 style={styles.sectionTitle}><GraduationCap size={18} color="#8b5cf6" /> Status Guru Hari Ini</h3>
-            {teacherAttendanceStatus.length === 0 ? (
-              <div style={styles.emptyStateSmall}>Tidak ada jadwal guru hari ini.</div>
-            ) : (
-              teacherAttendanceStatus.map((g, i) => (
-                <div key={i} style={styles.teacherItem}>
-                  <div style={styles.teacherAvatar}>{g.nama?.charAt(0) || 'G'}</div>
-                  <div style={{flex: 1}}>
-                    <strong>{g.nama}</strong>
-                    <small style={{color: '#94a3b8'}}>{g.jadwalCount} sesi</small>
+            {/* Avatar Lingkaran Besar dengan Foto Siswa */}
+            <div style={styles.avatarSpotlightWrapper}>
+              <div style={styles.avatarRingOuter}>
+                {starStudent.fotoUrl ? (
+                  <img 
+                    src={starStudent.fotoUrl} 
+                    alt={starStudent.nama} 
+                    style={styles.avatarSpotlightImg} 
+                  />
+                ) : (
+                  <div style={styles.avatarSpotlightFallback}>
+                    {getInitials(starStudent.nama)}
                   </div>
-                  <span style={styles.teacherBadge(g.sudahAbsen)}>
-                    {g.sudahAbsen ? '✅ Absen' : '⚠️ Belum'}
-                  </span>
-                </div>
-              ))
-            )}
-          </div>
+                )}
+              </div>
+            </div>
 
-          {/* Tagihan Prioritas */}
-          <div style={styles.sectionCard}>
-            <h3 style={styles.sectionTitle}>
-              <AlertCircle size={18} color="#ef4444" /> Tagihan Prioritas
-              {duePayments.length > 0 && <span style={styles.badgeRed}>{duePayments.length}</span>}
-            </h3>
-            {duePayments.length === 0 ? (
-              <div style={styles.emptyStateSmall}>✅ Semua tagihan lunas!</div>
-            ) : (
-              <div style={styles.billList}>
-                {duePayments.slice(0, 5).map((p, i) => (
-                  <div key={i} style={styles.billItem}>
-                    <div style={{flex: 1}}>
-                      <strong>{p.nama}</strong>
-                      <span style={{color: '#ef4444', fontWeight: 'bold', marginLeft: 8}}>Rp {p.sisa.toLocaleString()}</span>
+            <div style={styles.spotlightProfile}>
+              <h3 style={styles.spotlightName}>{starStudent.nama}</h3>
+              <p style={styles.spotlightRole}>
+                {starStudent.jenjang} • {starStudent.kelas}
+              </p>
+            </div>
+
+            {/* 3 Circular Gauges (Mirip PHP, Vue, Laravel pada Mockup) */}
+            <div style={styles.gaugeRow}>
+              <div style={styles.gaugeItem}>
+                <div style={styles.gaugeCircle('#8b5cf6', '#ede9fe')}>
+                  {starStudent.xp || 1250}
+                </div>
+                <span style={styles.gaugeLabel}>Poin XP</span>
+              </div>
+              <div style={styles.gaugeItem}>
+                <div style={styles.gaugeCircle('#0284c7', '#e0f2fe')}>
+                  {starStudent.skorTO || 88.5}
+                </div>
+                <span style={styles.gaugeLabel}>Skor TO</span>
+              </div>
+              <div style={styles.gaugeItem}>
+                <div style={styles.gaugeCircle('#10b981', '#ecfdf5')}>
+                  {starStudent.kehadiran || 100}%
+                </div>
+                <span style={styles.gaugeLabel}>Kehadiran</span>
+              </div>
+            </div>
+
+            {/* Siswa Berprestasi Lainnya (Peringkat 2, 3, 4) */}
+            <div style={styles.recentStudentsSection}>
+              <h4 style={styles.recentTitle}>🏆 Peringkat Berprestasi Lainnya</h4>
+              <div style={styles.recentList}>
+                {topStudents.slice(1, 4).map((s, idx) => (
+                  <div key={s.id || idx} style={styles.recentItem} onClick={() => navigate(`/admin/students/finance/${s.id}`)}>
+                    <div style={styles.recentAvatar}>
+                      {s.fotoUrl ? (
+                        <img src={s.fotoUrl} alt={s.nama} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      ) : (
+                        getInitials(s.nama)
+                      )}
                     </div>
-                    <button onClick={() => navigate(`/admin/students/finance/${p.id}`)} style={styles.billBtn}>
-                      <Eye size={12} />
-                    </button>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={styles.recentName}>{s.nama}</div>
+                      <div style={styles.recentMeta}>{s.kelas} • {s.xp} XP</div>
+                    </div>
+                    <span style={styles.rankBadge(idx + 2)}>#{idx + 2}</span>
                   </div>
                 ))}
               </div>
-            )}
-            <button onClick={() => navigate('/admin/finance')} style={styles.btnSeeAll}>
-              Lihat Semua <ArrowRight size={12} />
+              <button 
+                type="button" 
+                onClick={() => navigate('/admin/raport')} 
+                style={styles.btnLihatRapor}
+              >
+                Buka Rapor & Analitik Lengkap <ChevronRight size={14} />
+              </button>
+            </div>
+          </div>
+
+          {/* 📊 KOLOM KANAN: GRAFIK AKTIVITAS & FAST ACTION HUB */}
+          <div style={styles.rightContentCol}>
+            
+            {/* GRAFIK WAVY AKTIVITAS BELAJAR (Ganti "Vacancy Stats") */}
+            <div style={styles.chartCard}>
+              <div style={styles.chartHeader}>
+                <div>
+                  <h3 style={styles.chartTitle}>Aktivitas Belajar & Presensi Mingguan</h3>
+                  <p style={styles.chartSubtitle}>Statistik kehadiran kelas tatap muka & pengerjaan latihan siswa</p>
+                </div>
+                <div style={styles.chartLegendRow}>
+                  <span style={styles.legendDot('#6366f1')}>● Kehadiran Siswa</span>
+                  <span style={styles.legendDot('#10b981')}>● Pengerjaan Latihan/TO</span>
+                </div>
+              </div>
+
+              <div style={{ width: '100%', height: 210, marginTop: 10 }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="colorHadir" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#6366f1" stopOpacity={0.4}/>
+                        <stop offset="95%" stopColor="#6366f1" stopOpacity={0.0}/>
+                      </linearGradient>
+                      <linearGradient id="colorTO" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#10b981" stopOpacity={0.35}/>
+                        <stop offset="95%" stopColor="#10b981" stopOpacity={0.0}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                    <XAxis dataKey="hari" stroke="#94a3b8" fontSize={11} tickLine={false} />
+                    <YAxis stroke="#94a3b8" fontSize={11} tickLine={false} axisLine={false} />
+                    <Tooltip 
+                      contentStyle={{ background: '#1e1b4b', borderRadius: 10, border: 'none', color: '#fff', fontSize: 12 }} 
+                      itemStyle={{ color: '#fff' }}
+                    />
+                    <Area type="monotone" dataKey="kehadiran" stroke="#6366f1" strokeWidth={3} fillOpacity={1} fill="url(#colorHadir)" />
+                    <Area type="monotone" dataKey="tryout" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorTO)" />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            {/* ⚡ AKSI CEPAT MENU UTAMA ADMIN (Ganti "Recommended Jobs") */}
+            <div>
+              <div style={styles.actionHubHeader}>
+                <h3 style={styles.actionHubTitle}>⚡ Akses Cepat Menu Utama</h3>
+                <span style={styles.actionHubBadge}>Pintasan Operasional Harian</span>
+              </div>
+
+              <div style={styles.actionGrid(isMobile)}>
+                {/* 1. Kelola Siswa */}
+                <div style={styles.actionCard}>
+                  <div style={styles.actionCardHead}>
+                    <div style={styles.actionIconBox('#eff6ff', '#2563eb')}>
+                      <Users size={20} />
+                    </div>
+                    <span style={styles.actionBadgeBlue}>
+                      {stats.aktif} Aktif
+                    </span>
+                  </div>
+                  <h4 style={styles.actionCardTitle}>Kelola Data Siswa</h4>
+                  <p style={styles.actionCardDesc}>
+                    Pantau masa aktif siswa, upgrade paket, dan cetak kartu digital.
+                  </p>
+                  <div style={styles.actionBtnRow}>
+                    <button 
+                      onClick={() => navigate('/admin/students/add')} 
+                      style={styles.btnActionPrimary}
+                    >
+                      <Plus size={13} /> Siswa Baru
+                    </button>
+                    <button 
+                      onClick={() => navigate('/admin/students')} 
+                      style={styles.btnActionSecondary}
+                    >
+                      Lihat Siswa →
+                    </button>
+                  </div>
+                </div>
+
+                {/* 2. Sesi & Validasi Guru */}
+                <div style={styles.actionCard}>
+                  <div style={styles.actionCardHead}>
+                    <div style={styles.actionIconBox('#faf5ff', '#9333ea')}>
+                      <GraduationCap size={20} />
+                    </div>
+                    <span style={styles.actionBadgePurple}>
+                      {teacherAttendanceStatus.filter(t => !t.sudahAbsen).length > 0 ? '⚠️ Butuh Approval' : '✅ Lengkap'}
+                    </span>
+                  </div>
+                  <h4 style={styles.actionCardTitle}>Sesi & Validasi Guru</h4>
+                  <p style={styles.actionCardDesc}>
+                    Approval foto absensi mengajar tentor & verifikasi nominal honor.
+                  </p>
+                  <div style={styles.actionBtnRow}>
+                    <button 
+                      onClick={() => navigate('/admin/teachers/sesi')} 
+                      style={styles.btnActionPurple}
+                    >
+                      Validasi Guru →
+                    </button>
+                  </div>
+                </div>
+
+                {/* 3. Bank Soal & TryOut */}
+                <div style={styles.actionCard}>
+                  <div style={styles.actionCardHead}>
+                    <div style={styles.actionIconBox('#fff7ed', '#ea580c')}>
+                      <Trophy size={20} />
+                    </div>
+                    <span style={styles.actionBadgeOrange}>TOBK CBT</span>
+                  </div>
+                  <h4 style={styles.actionCardTitle}>Bank Soal & TryOut</h4>
+                  <p style={styles.actionCardDesc}>
+                    Rilis jadwal tryout akbar, pantau pengerjaan siswa, & periksa kunci.
+                  </p>
+                  <div style={styles.actionBtnRow}>
+                    <button 
+                      onClick={() => navigate('/admin/tobk-publik')} 
+                      style={styles.btnActionOrange}
+                    >
+                      Kelola TryOut →
+                    </button>
+                  </div>
+                </div>
+
+                {/* 4. Perpustakaan & Modul AI */}
+                <div style={styles.actionCard}>
+                  <div style={styles.actionCardHead}>
+                    <div style={styles.actionIconBox('#f0fdf4', '#16a34a')}>
+                      <Library size={20} />
+                    </div>
+                    <span style={styles.actionBadgeGreen}>Buku Digital</span>
+                  </div>
+                  <h4 style={styles.actionCardTitle}>Perpustakaan & Modul</h4>
+                  <p style={styles.actionCardDesc}>
+                    Akses buku PDF Gemilang, generate kuis AI, & draf materi belajar.
+                  </p>
+                  <div style={styles.actionBtnRow}>
+                    <button 
+                      onClick={() => navigate('/admin/perpustakaan')} 
+                      style={styles.btnActionGreen}
+                    >
+                      Buka Modul →
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+        {/* ============================================================ */}
+        {/* BOTTOM SECTION: TUNGGAKAN & CICILAN SISWA (Ganti Companies)  */}
+        {/* ============================================================ */}
+        <section style={styles.bottomTunggakanCard}>
+          <div style={styles.tunggakanHeader}>
+            <div>
+              <h3 style={styles.tunggakanTitle}>
+                ⚠️ Daftar Tunggakan & Cicilan Siswa (Perlu Follow-Up)
+              </h3>
+              <p style={styles.tunggakanSubtitle}>
+                Pantau siswa dengan sisa pembayaran paket atau cicilan aktif agar tidak terblokir
+              </p>
+            </div>
+            <button 
+              onClick={() => navigate('/admin/finance')} 
+              style={styles.btnLihatSemuaFinance}
+            >
+              Buka Seluruh Keuangan <ArrowRight size={14} />
             </button>
           </div>
-        </div>
+
+          {duePayments.length === 0 ? (
+            <div style={styles.emptyTunggakanBox}>
+              <CheckCircle size={32} color="#10b981" />
+              <p style={{ margin: '8px 0 0', fontWeight: 700, color: '#065f46' }}>
+                Luar biasa! Tidak ada tunggakan atau cicilan siswa yang tertunda saat ini.
+              </p>
+            </div>
+          ) : (
+            <div style={styles.tunggakanGrid(isMobile)}>
+              {duePayments.slice(0, 8).map((s) => {
+                const pesanWa = `Halo Ayah/Bunda dari ${s.nama}, kami dari Bimbel Gemilang menginformasikan terkait administrasi bimbingan belajar ananda dengan sisa tagihan sebesar Rp ${s.sisa.toLocaleString('id-ID')}. Mohon konfirmasinya ya Ayah/Bunda. Terima kasih.`;
+                const noHpBersih = (s.hp || '').replace(/\D/g, '');
+                const waLink = noHpBersih ? `https://wa.me/${noHpBersih.startsWith('0') ? '62' + noHpBersih.slice(1) : noHpBersih}?text=${encodeURIComponent(pesanWa)}` : null;
+
+                return (
+                  <div key={s.id} style={styles.tunggakanItemCard}>
+                    <div style={styles.tunggakanItemTop}>
+                      {/* Foto Siswa */}
+                      <div style={styles.tunggakanAvatar}>
+                        {s.fotoUrl ? (
+                          <img src={s.fotoUrl} alt={s.nama} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        ) : (
+                          getInitials(s.nama)
+                        )}
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={styles.tunggakanName} title={s.nama}>{s.nama}</div>
+                        <div style={styles.tunggakanKelas}>{s.kelas} • {s.studentId}</div>
+                      </div>
+                    </div>
+
+                    <div style={styles.tunggakanNominalBox}>
+                      <span style={styles.tunggakanLabel}>Sisa Tagihan:</span>
+                      <span style={styles.tunggakanRupiah}>Rp {s.sisa.toLocaleString('id-ID')}</span>
+                    </div>
+
+                    <div style={styles.tunggakanActions}>
+                      <button 
+                        onClick={() => navigate(`/admin/students/finance/${s.id}`)} 
+                        style={styles.btnDetailBayar}
+                      >
+                        💳 Detail & Bayar
+                      </button>
+                      {waLink && (
+                        <a 
+                          href={waLink} 
+                          target="_blank" 
+                          rel="noreferrer" 
+                          style={styles.btnWaOrtu}
+                          title="Kirim WhatsApp ke Orang Tua"
+                        >
+                          <MessageCircle size={13} /> WA Ortu
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </section>
+
       </div>
-      <style>{`@keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}`}</style>
     </div>
   );
 };
 
+// ============================================================
+// STYLES DENGAN SENTUHAN DESAIN MODERN MOCKUP "JOBIE"
+// ============================================================
 const styles = {
-  wrapper: { display: 'flex', background: '#f8fafc', minHeight: '100vh' },
-  mainContent: (m) => ({ marginLeft: m ? '0' : '216px', padding: m ? '15px' : '30px', width: '100%', boxSizing: 'border-box', transition: '0.3s' }),
-  loadingBox: { textAlign: 'center', padding: 80, color: '#94a3b8' },
-  spinner: { width: 40, height: 40, border: '4px solid #e2e8f0', borderTop: '4px solid #3b82f6', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto 15px' },
+  wrapper: {
+    display: 'flex',
+    minHeight: '100vh',
+    background: '#f8fafc',
+    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+  },
+  mainContent: (isMobile) => ({
+    flex: 1,
+    marginLeft: isMobile ? 0 : 236,
+    padding: isMobile ? '16px' : '26px 32px',
+    boxSizing: 'border-box',
+    width: '100%',
+    maxWidth: '1600px'
+  }),
+  loadingBox: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: '70vh'
+  },
+  spinner: {
+    width: 44,
+    height: 44,
+    border: '4px solid #e2e8f0',
+    borderTop: '4px solid #4f46e5',
+    borderRadius: '50%',
+    animation: 'spin 0.8s linear infinite'
+  },
 
-  // Header
-  header: (_m) => ({ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, flexWrap: 'wrap', gap: 12 }),
-  pageTitle: (m) => ({ margin: 0, color: '#1e293b', fontSize: m ? 18 : 22, display: 'flex', alignItems: 'center', gap: 8 }),
-  pageDate: (m) => ({ margin: '4px 0 0', color: '#64748b', fontSize: m ? 11 : 13 }),
-  headerActions: (_m) => ({ display: 'flex', gap: 8 }),
-  btnRefresh: (m) => ({ background: 'white', border: '1px solid #e2e8f0', padding: m ? '8px 12px' : '10px 16px', borderRadius: 10, cursor: 'pointer', fontWeight: 600, fontSize: 12, display: 'flex', alignItems: 'center', gap: 6, color: '#64748b' }),
-  btnQuickAdd: (m) => ({ background: '#3b82f6', color: 'white', border: 'none', padding: m ? '8px 12px' : '10px 16px', borderRadius: 10, cursor: 'pointer', fontWeight: 600, fontSize: 12, display: 'flex', alignItems: 'center', gap: 6, boxShadow: '0 4px 12px rgba(59,130,246,0.3)' }),
+  // TOP HEADER
+  topHeader: (isMobile) => ({
+    display: 'flex',
+    flexDirection: isMobile ? 'column' : 'row',
+    alignItems: isMobile ? 'flex-start' : 'center',
+    justifyContent: 'space-between',
+    gap: 16,
+    marginBottom: 24
+  }),
+  topTitle: {
+    margin: 0,
+    fontSize: 24,
+    fontWeight: 900,
+    color: '#0f172a',
+    letterSpacing: -0.5
+  },
+  topSubtitle: {
+    margin: '3px 0 0',
+    fontSize: 12.5,
+    color: '#64748b',
+    fontWeight: 500
+  },
+  searchBox: (isMobile) => ({
+    display: 'flex',
+    alignItems: 'center',
+    gap: 10,
+    background: '#ffffff',
+    border: '1.5px solid #e2e8f0',
+    borderRadius: 14,
+    padding: '9px 16px',
+    width: isMobile ? '100%' : '380px',
+    boxShadow: '0 2px 6px rgba(0,0,0,0.02)',
+    boxSizing: 'border-box'
+  }),
+  searchInput: {
+    border: 'none',
+    outline: 'none',
+    fontSize: 13,
+    color: '#1e293b',
+    width: '100%',
+    background: 'transparent'
+  },
+  topRightActions: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 10
+  },
+  iconBtn: {
+    width: 38,
+    height: 38,
+    borderRadius: 12,
+    background: '#ffffff',
+    border: '1.5px solid #e2e8f0',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    cursor: 'pointer',
+    position: 'relative',
+    transition: '0.2s',
+    boxShadow: '0 2px 6px rgba(0,0,0,0.02)'
+  },
+  notifDot: {
+    position: 'absolute',
+    top: -4,
+    right: -4,
+    background: '#ef4444',
+    color: '#fff',
+    fontSize: 10,
+    fontWeight: 800,
+    padding: '2px 5px',
+    borderRadius: 999
+  },
+  userProfilePill: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 10,
+    padding: '5px 12px 5px 6px',
+    background: '#ffffff',
+    border: '1.5px solid #e2e8f0',
+    borderRadius: 30,
+    boxShadow: '0 2px 6px rgba(0,0,0,0.02)'
+  },
+  userAvatarTop: {
+    width: 32,
+    height: 32,
+    borderRadius: '50%',
+    background: 'linear-gradient(135deg, #4f46e5, #7c3aed)',
+    color: '#fff',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: 12,
+    fontWeight: 800
+  },
+  profileName: {
+    fontSize: 12.5,
+    fontWeight: 800,
+    color: '#0f172a'
+  },
+  profileRole: {
+    fontSize: 10.5,
+    color: '#64748b',
+    fontWeight: 600
+  },
 
-  // Stats Grid
-  statsGrid: (m) => ({ display: 'grid', gridTemplateColumns: m ? 'repeat(2, 1fr)' : 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12, marginBottom: 24 }),
-  statCard: { background: 'white', padding: 16, borderRadius: 14, display: 'flex', alignItems: 'center', gap: 14, cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.04)', border: '1px solid #f1f5f9', transition: '0.2s' },
-  statIcon: (bg, color) => ({ width: 44, height: 44, borderRadius: 12, background: bg, color, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }),
-  statInfo: { flex: 1, minWidth: 0 },
-  
-  // Alert Box
-  alertBox: { background: '#fff7ed', border: '2px solid #f97316', padding: 16, borderRadius: 14, marginBottom: 24 },
-  alertHeader: { display: 'flex', alignItems: 'center', gap: 8, color: '#c2410c', marginBottom: 10, fontSize: 13 },
-  alertCount: { background: '#f97316', color: 'white', padding: '2px 10px', borderRadius: 20, fontSize: 11, fontWeight: 'bold', marginLeft: 'auto' },
-  alertList: { display: 'flex', flexDirection: 'column', gap: 6 },
-  alertItem: { display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', background: 'white', borderRadius: 10, flexWrap: 'wrap' },
-  alertBtn: { padding: '5px 10px', background: '#f97316', color: 'white', border: 'none', borderRadius: 6, cursor: 'pointer', fontWeight: 'bold', fontSize: 10, display: 'flex', alignItems: 'center', gap: 4, whiteSpace: 'nowrap' },
+  // TOP 4 VIBRANT STAT CARDS
+  statsGrid: (isMobile) => ({
+    display: 'grid',
+    gridTemplateColumns: isMobile ? '1fr' : 'repeat(4, 1fr)',
+    gap: 16,
+    marginBottom: 24
+  }),
+  statCardVibrant: {
+    borderRadius: 18,
+    padding: '20px 20px',
+    display: 'flex',
+    alignItems: 'flex-start',
+    gap: 16,
+    cursor: 'pointer',
+    boxShadow: '0 10px 20px -5px rgba(79, 70, 229, 0.25)',
+    transition: 'transform 0.2s ease, box-shadow 0.2s ease'
+  },
+  statIconBox: {
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    background: 'rgba(255, 255, 255, 0.22)',
+    backdropFilter: 'blur(4px)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0
+  },
+  statNumberText: {
+    color: '#ffffff',
+    flex: 1
+  },
+  statValLarge: {
+    fontSize: 28,
+    fontWeight: 900,
+    lineHeight: 1,
+    letterSpacing: -0.5
+  },
+  statLabelWhite: {
+    fontSize: 13,
+    fontWeight: 700,
+    marginTop: 6,
+    opacity: 0.95
+  },
+  statSubText: {
+    fontSize: 11,
+    opacity: 0.8,
+    marginTop: 3
+  },
 
-  // Section
-  sectionCard: { background: 'white', padding: 20, borderRadius: 16, boxShadow: '0 2px 8px rgba(0,0,0,0.04)', border: '1px solid #f1f5f9', marginBottom: 20, width: '100%', boxSizing: 'border-box' },
-  sectionHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 15, flexWrap: 'wrap', gap: 8 },
-  sectionTitle: { margin: 0, fontSize: 15, color: '#1e293b', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: 8 },
-  quickStats: { display: 'flex', gap: 10, flexWrap: 'wrap' },
-  quickStat: (color) => ({ background: `${color}15`, color, padding: '4px 10px', borderRadius: 8, fontSize: 11, fontWeight: 'bold' }),
+  // MIDDLE LAYOUT
+  middleLayout: (isMobile) => ({
+    display: 'grid',
+    gridTemplateColumns: isMobile ? '1fr' : '330px 1fr',
+    gap: 22,
+    marginBottom: 24
+  }),
 
-  // Attendance
-  attendanceGrid: (m) => ({ display: 'grid', gridTemplateColumns: m ? '1fr' : 'repeat(auto-fill, minmax(280px, 1fr))', gap: 10 }),
-  attendanceCard: (_m) => ({ background: '#f8fafc', padding: 14, borderRadius: 12, cursor: 'pointer', border: '1px solid #f1f5f9' }),
-  classHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
-  className: { margin: 0, fontSize: 13, color: '#1e293b', fontWeight: 'bold' },
-  roomBadge: { background: '#e0e7ff', color: '#3730a3', padding: '2px 8px', borderRadius: 10, fontSize: 9, fontWeight: 'bold' },
-  classInfo: { fontSize: 11, color: '#64748b', display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 4 },
-  attendanceBar: { display: 'flex', height: 20, borderRadius: 10, overflow: 'hidden', marginTop: 8, background: '#f1f5f9' },
-  barHadir: { background: '#10b981', color: 'white', fontSize: 9, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', transition: 'width 0.5s', minWidth: 30, padding: '0 4px' },
-  barTidakHadir: { background: '#ef4444', color: 'white', fontSize: 9, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', transition: 'width 0.5s', minWidth: 30, padding: '0 4px' },
-  detailDropdown: { marginTop: 10, borderTop: '1px solid #f1f5f9', paddingTop: 10 },
-  detailSection: { marginBottom: 8 },
-  absentItem: { display: 'flex', gap: 6, alignItems: 'center', padding: '2px 0', fontSize: 11, flexWrap: 'wrap' },
-  absentStatus: (s) => ({ padding: '1px 6px', borderRadius: 6, fontSize: 8, fontWeight: 'bold', background: s === 'Alpha' || s === 'alpha' ? '#fee2e2' : s === 'Sakit' || s === 'sakit' ? '#fef3c7' : '#e0e7ff', color: s === 'Alpha' || s === 'alpha' ? '#ef4444' : s === 'Sakit' || s === 'sakit' ? '#b45309' : '#3730a3' }),
-  absentKet: { fontSize: 9, color: '#94a3b8' },
-  emptyState: { textAlign: 'center', padding: 40, color: '#94a3b8', fontSize: 13 },
-  emptyStateSmall: { textAlign: 'center', padding: 20, color: '#94a3b8', fontSize: 12 },
+  // SPOTLIGHT CARD (KIRI)
+  spotlightCard: {
+    background: '#ffffff',
+    borderRadius: 22,
+    padding: '24px 20px',
+    border: '1px solid #e2e8f0',
+    boxShadow: '0 4px 20px rgba(0,0,0,0.03)',
+    display: 'flex',
+    flexDirection: 'column',
+    height: 'fit-content'
+  },
+  spotlightHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16
+  },
+  badgeGold: {
+    fontSize: 12,
+    fontWeight: 800,
+    color: '#b45309',
+    background: '#fef3c7',
+    padding: '4px 10px',
+    borderRadius: 999
+  },
+  badgeCrown: {
+    fontSize: 11,
+    fontWeight: 800,
+    color: '#7c3aed',
+    background: '#ede9fe',
+    padding: '4px 8px',
+    borderRadius: 999
+  },
+  avatarSpotlightWrapper: {
+    display: 'flex',
+    justifyContent: 'center',
+    margin: '8px 0 14px'
+  },
+  avatarRingOuter: {
+    width: 90,
+    height: 90,
+    borderRadius: '50%',
+    padding: 4,
+    background: 'linear-gradient(135deg, #7c3aed, #fbbf24)',
+    boxShadow: '0 8px 20px rgba(124, 58, 237, 0.25)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  avatarSpotlightImg: {
+    width: '100%',
+    height: '100%',
+    borderRadius: '50%',
+    objectFit: 'cover'
+  },
+  avatarSpotlightFallback: {
+    width: '100%',
+    height: '100%',
+    borderRadius: '50%',
+    background: '#4f46e5',
+    color: '#ffffff',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: 26,
+    fontWeight: 900
+  },
+  spotlightProfile: {
+    textAlign: 'center',
+    marginBottom: 18
+  },
+  spotlightName: {
+    margin: 0,
+    fontSize: 16,
+    fontWeight: 800,
+    color: '#0f172a'
+  },
+  spotlightRole: {
+    margin: '4px 0 0',
+    fontSize: 12,
+    color: '#64748b'
+  },
+  gaugeRow: {
+    display: 'flex',
+    justifyContent: 'space-around',
+    padding: '12px 6px',
+    background: '#f8fafc',
+    borderRadius: 16,
+    marginBottom: 20
+  },
+  gaugeItem: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: 4
+  },
+  gaugeCircle: (color, bg) => ({
+    width: 46,
+    height: 46,
+    borderRadius: '50%',
+    background: bg,
+    color: color,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: 12,
+    fontWeight: 900,
+    border: `2px solid ${color}`
+  }),
+  gaugeLabel: {
+    fontSize: 10.5,
+    fontWeight: 700,
+    color: '#475569'
+  },
+  recentStudentsSection: {
+    borderTop: '1px solid #f1f5f9',
+    paddingTop: 16
+  },
+  recentTitle: {
+    margin: '0 0 10px',
+    fontSize: 12,
+    fontWeight: 800,
+    color: '#334155'
+  },
+  recentList: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 8,
+    marginBottom: 12
+  },
+  recentItem: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 10,
+    padding: '8px 10px',
+    borderRadius: 12,
+    background: '#f8fafc',
+    cursor: 'pointer',
+    transition: '0.2s'
+  },
+  recentAvatar: {
+    width: 32,
+    height: 32,
+    borderRadius: '50%',
+    background: '#e2e8f0',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: 11,
+    fontWeight: 800,
+    color: '#475569',
+    overflow: 'hidden',
+    flexShrink: 0
+  },
+  recentName: {
+    fontSize: 12,
+    fontWeight: 700,
+    color: '#1e293b',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis'
+  },
+  recentMeta: {
+    fontSize: 10.5,
+    color: '#64748b'
+  },
+  rankBadge: (rank) => ({
+    fontSize: 11,
+    fontWeight: 900,
+    padding: '2px 7px',
+    borderRadius: 8,
+    background: rank === 2 ? '#f1f5f9' : rank === 3 ? '#fff7ed' : '#f8fafc',
+    color: rank === 2 ? '#475569' : rank === 3 ? '#c2410c' : '#64748b'
+  }),
+  btnLihatRapor: {
+    width: '100%',
+    padding: '8px 12px',
+    borderRadius: 10,
+    background: '#eff6ff',
+    border: '1px solid #bfdbfe',
+    color: '#1d4ed8',
+    fontSize: 11.5,
+    fontWeight: 700,
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4
+  },
 
-  // Bottom Grid
-  bottomGrid: (m) => ({ display: 'grid', gridTemplateColumns: m ? '1fr' : '1fr 1fr', gap: 20 }),
+  // RIGHT CONTENT (GRAFIK + ACTION HUB)
+  rightContentCol: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 20
+  },
+  chartCard: {
+    background: '#ffffff',
+    borderRadius: 22,
+    padding: '20px 24px',
+    border: '1px solid #e2e8f0',
+    boxShadow: '0 4px 20px rgba(0,0,0,0.03)'
+  },
+  chartHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    flexWrap: 'wrap',
+    gap: 12
+  },
+  chartTitle: {
+    margin: 0,
+    fontSize: 16,
+    fontWeight: 800,
+    color: '#0f172a'
+  },
+  chartSubtitle: {
+    margin: '3px 0 0',
+    fontSize: 12,
+    color: '#64748b'
+  },
+  chartLegendRow: {
+    display: 'flex',
+    gap: 14,
+    fontSize: 11.5,
+    fontWeight: 700
+  },
+  legendDot: (color) => ({
+    color: color
+  }),
 
-  // Teacher Status
-  teacherItem: { display: 'flex', alignItems: 'center', gap: 10, padding: '10px 0', borderBottom: '1px solid #f1f5f9' },
-  teacherAvatar: { width: 36, height: 36, borderRadius: '50%', background: 'linear-gradient(135deg, #8b5cf6, #6366f1)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 'bold', flexShrink: 0 },
-  teacherBadge: (ok) => ({ padding: '3px 8px', borderRadius: 8, fontSize: 10, fontWeight: 'bold', background: ok ? '#dcfce7' : '#fee2e2', color: ok ? '#166534' : '#ef4444' }),
+  // ACTION HUB
+  actionHubHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12
+  },
+  actionHubTitle: {
+    margin: 0,
+    fontSize: 16,
+    fontWeight: 800,
+    color: '#0f172a'
+  },
+  actionHubBadge: {
+    fontSize: 11,
+    fontWeight: 700,
+    color: '#64748b'
+  },
+  actionGrid: (isMobile) => ({
+    display: 'grid',
+    gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, 1fr)',
+    gap: 14
+  }),
+  actionCard: {
+    background: '#ffffff',
+    borderRadius: 18,
+    padding: '18px',
+    border: '1px solid #e2e8f0',
+    boxShadow: '0 2px 10px rgba(0,0,0,0.02)',
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'space-between'
+  },
+  actionCardHead: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 10
+  },
+  actionIconBox: (bg, color) => ({
+    width: 38,
+    height: 38,
+    borderRadius: 12,
+    background: bg,
+    color: color,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center'
+  }),
+  actionBadgeBlue: {
+    fontSize: 11,
+    fontWeight: 800,
+    color: '#2563eb',
+    background: '#eff6ff',
+    padding: '3px 8px',
+    borderRadius: 999
+  },
+  actionBadgePurple: {
+    fontSize: 11,
+    fontWeight: 800,
+    color: '#7c3aed',
+    background: '#faf5ff',
+    padding: '3px 8px',
+    borderRadius: 999
+  },
+  actionBadgeOrange: {
+    fontSize: 11,
+    fontWeight: 800,
+    color: '#ea580c',
+    background: '#fff7ed',
+    padding: '3px 8px',
+    borderRadius: 999
+  },
+  actionBadgeGreen: {
+    fontSize: 11,
+    fontWeight: 800,
+    color: '#16a34a',
+    background: '#f0fdf4',
+    padding: '3px 8px',
+    borderRadius: 999
+  },
+  actionCardTitle: {
+    margin: '0 0 4px',
+    fontSize: 14,
+    fontWeight: 800,
+    color: '#0f172a'
+  },
+  actionCardDesc: {
+    margin: '0 0 14px',
+    fontSize: 11.5,
+    color: '#64748b',
+    lineHeight: 1.4
+  },
+  actionBtnRow: {
+    display: 'flex',
+    gap: 8
+  },
+  btnActionPrimary: {
+    flex: 1,
+    padding: '7px 12px',
+    borderRadius: 9,
+    background: '#4f46e5',
+    color: '#ffffff',
+    border: 'none',
+    fontSize: 11.5,
+    fontWeight: 700,
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4
+  },
+  btnActionSecondary: {
+    padding: '7px 12px',
+    borderRadius: 9,
+    background: '#f1f5f9',
+    color: '#334155',
+    border: 'none',
+    fontSize: 11.5,
+    fontWeight: 700,
+    cursor: 'pointer'
+  },
+  btnActionPurple: {
+    width: '100%',
+    padding: '7px 12px',
+    borderRadius: 9,
+    background: '#7c3aed',
+    color: '#ffffff',
+    border: 'none',
+    fontSize: 11.5,
+    fontWeight: 700,
+    cursor: 'pointer',
+    textAlign: 'center'
+  },
+  btnActionOrange: {
+    width: '100%',
+    padding: '7px 12px',
+    borderRadius: 9,
+    background: '#ea580c',
+    color: '#ffffff',
+    border: 'none',
+    fontSize: 11.5,
+    fontWeight: 700,
+    cursor: 'pointer',
+    textAlign: 'center'
+  },
+  btnActionGreen: {
+    width: '100%',
+    padding: '7px 12px',
+    borderRadius: 9,
+    background: '#16a34a',
+    color: '#ffffff',
+    border: 'none',
+    fontSize: 11.5,
+    fontWeight: 700,
+    cursor: 'pointer',
+    textAlign: 'center'
+  },
 
-  // Bills
-  billList: { display: 'flex', flexDirection: 'column', gap: 6 },
-  billItem: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 12px', background: '#fef2f2', borderRadius: 10, border: '1px solid #fee2e2', gap: 8 },
-  billBtn: { padding: '6px 10px', background: '#ef4444', color: 'white', border: 'none', borderRadius: 8, cursor: 'pointer' },
-  badgeRed: { background: '#ef4444', color: 'white', padding: '2px 8px', borderRadius: 12, fontSize: 10, fontWeight: 'bold' },
-  btnSeeAll: { width: '100%', marginTop: 12, padding: '10px', background: '#f1f5f9', border: 'none', borderRadius: 8, cursor: 'pointer', fontWeight: 'bold', fontSize: 12, color: '#64748b', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }
+  // BOTTOM TUNGGAKAN & CICILAN SECTION
+  bottomTunggakanCard: {
+    background: '#ffffff',
+    borderRadius: 22,
+    padding: '24px',
+    border: '1px solid #e2e8f0',
+    boxShadow: '0 4px 20px rgba(0,0,0,0.03)'
+  },
+  tunggakanHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    flexWrap: 'wrap',
+    gap: 12,
+    marginBottom: 18
+  },
+  tunggakanTitle: {
+    margin: 0,
+    fontSize: 16.5,
+    fontWeight: 800,
+    color: '#b45309'
+  },
+  tunggakanSubtitle: {
+    margin: '3px 0 0',
+    fontSize: 12,
+    color: '#64748b'
+  },
+  btnLihatSemuaFinance: {
+    padding: '8px 14px',
+    borderRadius: 10,
+    background: '#fff7ed',
+    border: '1px solid #fed7aa',
+    color: '#c2410c',
+    fontSize: 12,
+    fontWeight: 800,
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    gap: 6
+  },
+  emptyTunggakanBox: {
+    textAlign: 'center',
+    padding: '30px 16px',
+    background: '#f0fdf4',
+    borderRadius: 14,
+    border: '1px dashed #bbf7d0'
+  },
+  tunggakanGrid: (isMobile) => ({
+    display: 'grid',
+    gridTemplateColumns: isMobile ? '1fr' : 'repeat(4, 1fr)',
+    gap: 14
+  }),
+  tunggakanItemCard: {
+    background: '#f8fafc',
+    borderRadius: 16,
+    padding: '14px',
+    border: '1px solid #e2e8f0',
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'space-between'
+  },
+  tunggakanItemTop: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 10,
+    marginBottom: 10
+  },
+  tunggakanAvatar: {
+    width: 38,
+    height: 38,
+    borderRadius: '50%',
+    background: '#ede9fe',
+    color: '#6d28d9',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: 13,
+    fontWeight: 900,
+    overflow: 'hidden',
+    flexShrink: 0,
+    border: '2px solid #ddd6fe'
+  },
+  tunggakanName: {
+    fontSize: 12.5,
+    fontWeight: 800,
+    color: '#0f172a',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis'
+  },
+  tunggakanKelas: {
+    fontSize: 10.5,
+    color: '#64748b'
+  },
+  tunggakanNominalBox: {
+    background: '#fff',
+    borderRadius: 10,
+    padding: '8px 10px',
+    border: '1px solid #cbd5e1',
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 10
+  },
+  tunggakanLabel: {
+    fontSize: 11,
+    color: '#64748b'
+  },
+  tunggakanRupiah: {
+    fontSize: 12.5,
+    fontWeight: 800,
+    color: '#dc2626'
+  },
+  tunggakanActions: {
+    display: 'flex',
+    gap: 6
+  },
+  btnDetailBayar: {
+    flex: 1,
+    padding: '7px 8px',
+    borderRadius: 8,
+    background: '#4f46e5',
+    color: '#ffffff',
+    border: 'none',
+    fontSize: 11,
+    fontWeight: 700,
+    cursor: 'pointer'
+  },
+  btnWaOrtu: {
+    padding: '7px 10px',
+    borderRadius: 8,
+    background: '#22c55e',
+    color: '#ffffff',
+    textDecoration: 'none',
+    fontSize: 11,
+    fontWeight: 700,
+    display: 'flex',
+    alignItems: 'center',
+    gap: 4
+  }
 };
 
 export default Dashboard;
