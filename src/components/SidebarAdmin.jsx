@@ -8,7 +8,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
-  Menu, X, LayoutDashboard, Users, GraduationCap, Calendar, CreditCard, FileText, Settings, LogOut, BookOpen, ClipboardList, Globe, TrendingUp, UserPlus, DollarSign, FileUp, Briefcase, Brain, Rocket, ClipboardCheck, Sparkles, BarChart3, Trophy, UploadCloud, Trash2, FolderTree, BookMarked, GitMerge, Archive, Crown, Lock, Receipt, KeyRound, History, Wallet, Toolbox, Library, Landmark, Target, LineChart, BookUp, Scale, FileSpreadsheet,
+  Menu, X, LayoutDashboard, Users, GraduationCap, Calendar, CreditCard, FileText, Settings, LogOut, BookOpen, ClipboardList, Globe, TrendingUp, UserPlus, DollarSign, FileUp, Briefcase, Brain, Rocket, ClipboardCheck, Sparkles, BarChart3, Trophy, UploadCloud, Trash2, FolderTree, BookMarked, GitMerge, Archive, Crown, Lock, Receipt, KeyRound, History, Wallet, Toolbox, Library, Landmark, Target, LineChart, BookUp, Scale, FileSpreadsheet, CheckCircle,
 } from 'lucide-react';
 import { db } from '../firebase';
 import {

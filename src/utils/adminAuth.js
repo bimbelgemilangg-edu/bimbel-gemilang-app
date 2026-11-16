@@ -102,6 +102,8 @@ export const normalisasiPeranAdmin = (peran) =>
 // lama (yang meng-impor dari adminAuth) tetap jalan tanpa diubah.
 // ------------------------------------------------------------
 
+export { isOwnerSession } from './roleAkses';
+
 export {
   PBKDF2_ITERATIONS,
   SALT_BYTES,

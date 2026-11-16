@@ -14,7 +14,8 @@ import {
 import { 
   ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid 
 } from 'recharts';
-import { ambilSesiAdmin, isOwnerSession, LABEL_PERAN_ADMIN } from '../../utils/adminAuth';
+import { ambilSesiAdmin, LABEL_PERAN_ADMIN } from '../../utils/adminAuth';
+import { isOwnerSession } from '../../utils/roleAkses';
 
 const tanggalLokalHariIni = () => {
   const n = new Date();
