@@ -431,8 +431,90 @@ export default function PanelAuditMutasiOwner({
     }
   };
 
-  // STATE & AKSI 7: Unduh Data untuk NotebookLM / AI & Excel
+  // STATE & AKSI 7: Unduh Data untuk NotebookLM / AI & Excel (Dukungan Rentang Multi-Bulan)
+  const [exportMode, setExportMode] = useState('rentang'); // 'rentang' | 'bulan'
+  const [rangeDari, setRangeDari] = useState(() => '2026-06');
+  const [rangeSampai, setRangeSampai] = useState(() => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+  });
   const [copiedPrompt, setCopiedPrompt] = useState(false);
+
+  const setPresetRange = (bulanMundur) => {
+    const dSampai = new Date();
+    const sampaiStr = `${dSampai.getFullYear()}-${String(dSampai.getMonth() + 1).padStart(2, '0')}`;
+    const dDari = new Date();
+    dDari.setMonth(dDari.getMonth() - (bulanMundur - 1));
+    const dariStr = `${dDari.getFullYear()}-${String(dDari.getMonth() + 1).padStart(2, '0')}`;
+    setRangeDari(dariStr);
+    setRangeSampai(sampaiStr);
+  };
+
+  // Filter logs dalam rentang waktu yang dipilih
+  const logsDalamRentang = useMemo(() => {
+    if (exportMode === 'bulan') return semuaLogsBulanIni;
+    return logs.filter((l) => {
+      const bln = String(l.date || '').slice(0, 7);
+      if (!bln) return false;
+      return bln >= rangeDari && bln <= rangeSampai;
+    }).sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+  }, [logs, exportMode, rangeDari, rangeSampai, semuaLogsBulanIni]);
+
+  // Sesi guru dalam rentang waktu
+  const teacherLogsDalamRentang = useMemo(() => {
+    if (exportMode === 'bulan') {
+      return teacherLogs.filter(t => String(t.tanggal || '').startsWith(bulanPilihan));
+    }
+    return teacherLogs.filter((t) => {
+      const bln = String(t.tanggal || '').slice(0, 7);
+      if (!bln) return false;
+      return bln >= rangeDari && bln <= rangeSampai;
+    }).sort((a, b) => (a.tanggal || '').localeCompare(b.tanggal || ''));
+  }, [teacherLogs, exportMode, rangeDari, rangeSampai, bulanPilihan]);
+
+  // Agregasi statistik rentang waktu
+  const statsRentang = useMemo(() => {
+    let masuk = 0;
+    let keluar = 0;
+    logsDalamRentang.forEach((l) => {
+      const amt = parseInt(l.amount || 0, 10) || 0;
+      const isMasuk = l.type === 'Pemasukan' || (l.type === 'Transfer' && l.kanalKe === KANAL.BANK);
+      if (isMasuk) masuk += amt;
+      else keluar += amt;
+    });
+    const honorGuru = teacherLogsDalamRentang.reduce((acc, t) => acc + (parseInt(t.nominal || 0, 10) || 0), 0);
+    return {
+      masuk,
+      keluar,
+      net: masuk - keluar,
+      totalTrx: logsDalamRentang.length,
+      totalSesi: teacherLogsDalamRentang.length,
+      honorGuru,
+    };
+  }, [logsDalamRentang, teacherLogsDalamRentang]);
+
+  // Ringkasan per bulan dalam rentang
+  const rekapBulanPerBulanRentang = useMemo(() => {
+    const map = new Map();
+    logsDalamRentang.forEach((l) => {
+      const bln = String(l.date || '').slice(0, 7) || 'Lainnya';
+      if (!map.has(bln)) {
+        map.set(bln, { bulan: bln, masuk: 0, keluar: 0, trx: 0, honorTerbuku: 0 });
+      }
+      const item = map.get(bln);
+      item.trx += 1;
+      const amt = parseInt(l.amount || 0, 10) || 0;
+      const isMasuk = l.type === 'Pemasukan' || (l.type === 'Transfer' && l.kanalKe === KANAL.BANK);
+      if (isMasuk) item.masuk += amt;
+      else {
+        item.keluar += amt;
+        if (String(l.category || '').toLowerCase().includes('gaji')) {
+          item.honorTerbuku += amt;
+        }
+      }
+    });
+    return Array.from(map.values()).sort((a, b) => a.bulan.localeCompare(b.bulan));
+  }, [logsDalamRentang]);
 
   const handleUnduhFile = (namaFile, konten, mimeType = 'text/plain;charset=utf-8') => {
     const blob = new Blob([konten], { type: mimeType });
@@ -447,105 +529,167 @@ export default function PanelAuditMutasiOwner({
   };
 
   const handleUnduhUntukAI = () => {
+    const isRange = exportMode === 'rentang';
+    const judulPeriode = isRange ? `${rangeDari} s/d ${rangeSampai}` : bulanPilihan;
+    const targetLogs = isRange ? logsDalamRentang : semuaLogsBulanIni;
+    const targetTeachers = isRange ? teacherLogsDalamRentang : teacherLogs.filter(t => String(t.tanggal || '').startsWith(bulanPilihan));
+
     let teks = `# DOKUMEN RESMI TRANSAKSI KEUANGAN BIMBEL GEMILANG\n`;
-    teks += `## Periode Audit: ${bulanPilihan}\n`;
+    teks += `## Periode Audit: ${judulPeriode}\n`;
     teks += `Diekspor pada: ${new Date().toLocaleString('id-ID')}\n`;
+    teks += `Founder / Owner: Wildan Bima Prakusya\n`;
     teks += `Sistem: Aplikasi Manajemen & Komando Owner Bimbel Gemilang\n\n`;
 
     teks += `================================================================================\n`;
-    teks += `INSTRUKSI PROMPT UNTUK NOTEBOOK LM / CHATGPT / CLAUDE / AI:\n`;
+    teks += `PANDUAN & PROMPT INSTRUKSI KHUSUS UNTUK NOTEBOOK LM / CHATGPT / CLAUDE / AI:\n`;
     teks += `--------------------------------------------------------------------------------\n`;
-    teks += `Halo AI, saya mengunggah dua dokumen sumber:\n`;
-    teks += `1. DOKUMEN INI (Data resmi transaksi terbuku di sistem Bimbel Gemilang periode ${bulanPilihan})\n`;
-    teks += `2. PDF REKENING KORAN BANK (Rekening BCA / m-Banking saya untuk periode ${bulanPilihan})\n\n`;
-    teks += `KONDISI REKENING:\n`;
-    teks += `Rekening bank saya saat ini masih BERCAMPUR antara keuangan pribadi dan operasional bimbel.\n\n`;
-    teks += `TUGAS ANDA:\n`;
-    teks += `1. PISAHKAN PENGELUARAN PRIBADI VS BIMBEL:\n`;
-    teks += `   - Pengeluaran Pribadi Owner: belanja Shopee/mall, tiket kereta api (KAI Access), hotel/RedDoorz, makanan/cafe/kuliner pribadi, transfer ke rekening pribadi.\n`;
-    teks += `   - Pengeluaran Bimbel: honor tentor/guru, gaji admin, sewa, listrik, WiFi, ATK, biaya operasional bimbel.\n`;
-    teks += `2. COCOKKAN TRANSAKSI BIMBEL:\n`;
-    teks += `   - Mana saja transaksi pemasukan SPP di rekening bank yang SUDAH TERCATAT di dokumen sistem ini?\n`;
-    teks += `   - Mana transaksi pemasukan SPP di rekening bank yang BELUM TERCATAT di dokumen sistem ini?\n`;
-    teks += `   - Mana pengeluaran operasional / honor tentor di rekening bank yang BELUM TERCATAT di sistem ini?\n`;
-    teks += `3. BUATKAN REKAPITULASI AKHIR:\n`;
-    teks += `   - Total Pemasukan Riil Bimbel\n`;
-    teks += `   - Total Pengeluaran Riil Bimbel (Honor Guru + Operasional)\n`;
-    teks += `   - Laba Bersih Riil Bimbel (yang merupakan hak prive owner)\n`;
-    teks += `   - Total Prive / Belanja Pribadi Owner yang terpakai dari rekening ini.\n`;
+    teks += `Halo AI, Anda bertindak sebagai Konsultan Keuangan Senior & Auditor Bisnis Independen.\n`;
+    teks += `Saya mengunggah dua kelompok sumber data:\n`;
+    teks += `1. DOKUMEN INI (Data resmi transaksi terbuku di sistem keuangan Bimbel Gemilang periode ${judulPeriode}).\n`;
+    teks += `2. REKENING KORAN BANK (PDF Mutasi Rekening BCA No. Rek 8620553205 a.n. Wildan Bima Prakusya untuk periode yang sama).\n\n`;
+
+    teks += `LATAR BELAKANG KONDISI NYATA BISNIS:\n`;
+    teks += `- Rekening BCA tersebut selama ini digunakan secara CAMPURAN antara keuangan pribadi founder dan operasional bimbel.\n`;
+    teks += `- Pemasukan SPP di rekening bank mencantumkan NAMA ORANG TUA siswa (misal: Ibu Astatik, Bobby Lazuardi, Utji Istanti, Erine Yovi, dll), sedangkan di dokumen Gemilang ini tercatat NAMA SISWA.\n`;
+    teks += `- Ada kemungkinan kesalahan administrasi kasir: pembayaran yang seharusnya Transfer tercatat Tunai di kasir, atau sebaliknya.\n`;
+    teks += `- Ada kemungkinan pembayaran honor tentor atau biaya operasional yang ditransfer owner dari m-Banking namun belum sempat diinput ke sistem kasir Gemilang.\n\n`;
+
+    teks += `TUGAS AUDIT & ANALISIS ANDA (MOHON JAWAB SECARA STRUKTUR DAN RINCI):\n\n`;
+
+    teks += `1. REKONSILIASI PEMASUKAN (INCOME CROSS-CHECK):\n`;
+    teks += `   - Cocokkan setiap transaksi transfer masuk di rekening BCA dengan daftar pemasukan di sistem Gemilang ini.\n`;
+    teks += `   - Identifikasi: Mana transfer SPP di rekening BCA yang SUDAH TERCATAT di dokumen Gemilang ini?\n`;
+    teks += `   - Identifikasi: Mana transfer SPP di rekening BCA yang BELUM TERCATAT sama sekali di sistem kasir Gemilang? Tuliskan tanggal, nominal, dan nama pengirimnya agar bisa segera saya masukkan ke sistem.\n`;
+    teks += `   - Identifikasi: Apakah ada transaksi yang di sistem Gemilang tercatat Tunai tapi ternyata masuk via Transfer bank (atau sebaliknya)?\n\n`;
+
+    teks += `2. AUDIT PENGELUARAN (SEPARASI PRIVE VS OPERASIONAL):\n`;
+    teks += `   - Pisahkan secara tegas transaksi keluar (DB) di rekening BCA menjadi 2 kelompok:\n`;
+    teks += `     A. PENGELUARAN PRIBADI FOUNDER (PRIVE): Belanja Shopee/e-commerce, tiket KAI Access, hotel/RedDoorz, fashion/lifestyle (Charles & Keith, dll), makan/cafe/kuliner pribadi, tarik tunai, transfer ke rekening/dompet pribadi.\n`;
+    teks += `     B. PENGELUARAN OPERASIONAL BIMBEL: Honor/gaji tentor (Rani, Jeremy, Alifah, Agvionita, dll), gaji admin, sewa tempat, listrik/air, WiFi/Indihome, modul/ATK, konsumsi bimbel, biaya admin bank.\n`;
+    teks += `   - Identifikasi: Mana pembayaran honor tentor atau biaya operasional di rekening BCA yang BELUM DIBUKUKAN di sistem Gemilang ini?\n\n`;
+
+    teks += `3. NERACA LABA / RUGI BERSIH RIIL BULANAN (MONTH-BY-MONTH REAL NET PROFIT):\n`;
+    teks += `   - Untuk setiap bulan dalam rentang ${judulPeriode}:\n`;
+    teks += `     * Total Pemasukan Riil Bimbel (Kasir Tunai + Bank)\n`;
+    teks += `     * Total Pengeluaran Riil Bimbel (Honor Guru + Beban Operasional)\n`;
+    teks += `     * Net Profit Bersih Riil Bimbel (Laba/Surplus atau Defisit/Minus). Tunjukkan dengan jelas apakah bulan tersebut minus atau surplus!\n`;
+    teks += `     * Total Prive (Uang yang dipakai untuk keperluan pribadi founder) di bulan tersebut.\n`;
+    teks += `   - Hitung total kumulatif selama rentang ${judulPeriode}.\n\n`;
+
+    teks += `4. REKOMENDASI STRATEGIS & SOLUSI MANAJEMEN:\n`;
+    teks += `   - Berikan rekomendasi langkah konkret untuk saya sebagai Owner:\n`;
+    teks += `     a) Berapa nominal gaji tetap founder (Prive) yang realistis diambil setiap bulan agar arus kas bimbel tetap aman?\n`;
+    teks += `     b) Bagaimana skema pemisahan rekening yang paling praktis dan disiplin per bulan ini ke depan?\n`;
+    teks += `     c) Apakah struktur biaya honor guru terhadap pendapatan siswa sudah proporsional?\n`;
+    teks += `     d) Rekomendasi perbaikan tata kelola kasir dan pelaporan agar tidak ada lagi kebocoran data.\n`;
     teks += `================================================================================\n\n`;
 
-    teks += `### 1. RINGKASAN DATA SISTEM GEMILANG (${bulanPilihan})\n`;
-    teks += `- Total Transaksi Terbuku di Sistem: ${semuaLogsBulanIni.length} transaksi\n`;
-    teks += `- Total Pemasukan Terbuku Bank: ${formatRp(rekapBulanBank.totalMasuk)}\n`;
-    teks += `- Total Pengeluaran Terbuku Bank: ${formatRp(rekapBulanBank.totalKeluar)}\n`;
-    teks += `- Laba Bersih Rekening Bank Terbuku: ${formatRp(rekapBulanBank.netProfitBulan)}\n`;
-    teks += `- Status Gaji Tentor: ${rekapBulanBank.sudahAdaGajiTentor ? 'Sudah Tercatat (' + formatRp(rekapBulanBank.gajiTentorTerbuku) + ')' : 'Belum Tercatat di Sistem'}\n`;
-    teks += `- Status Gaji Admin: ${rekapBulanBank.sudahAdaGajiAdmin ? 'Sudah Tercatat (' + formatRp(rekapBulanBank.gajiAdminTerbuku) + ')' : 'Belum Tercatat di Sistem'}\n\n`;
+    if (isRange) {
+      teks += `### 1. REKAPITULASI KEUANGAN PER BULAN (${judulPeriode})\n\n`;
+      teks += `| Bulan | Total Trx | Total Pemasukan | Total Pengeluaran | Selisih (Kas Bersih) | Honor Guru Terbuku |\n`;
+      teks += `|---|---|---|---|---|---|\n`;
+      rekapBulanPerBulanRentang.forEach((r) => {
+        const net = r.masuk - r.keluar;
+        teks += `| ${r.bulan} | ${r.trx} | Rp ${r.masuk.toLocaleString('id-ID')} | Rp ${r.keluar.toLocaleString('id-ID')} | Rp ${net.toLocaleString('id-ID')} | Rp ${r.honorTerbuku.toLocaleString('id-ID')} |\n`;
+      });
+      teks += `\n`;
+    } else {
+      teks += `### 1. RINGKASAN DATA SISTEM GEMILANG (${bulanPilihan})\n`;
+      teks += `- Total Transaksi Terbuku di Sistem: ${semuaLogsBulanIni.length} transaksi\n`;
+      teks += `- Total Pemasukan Terbuku Bank: ${formatRp(rekapBulanBank.totalMasuk)}\n`;
+      teks += `- Total Pengeluaran Terbuku Bank: ${formatRp(rekapBulanBank.totalKeluar)}\n`;
+      teks += `- Laba Bersih Rekening Bank Terbuku: ${formatRp(rekapBulanBank.netProfitBulan)}\n`;
+      teks += `- Status Gaji Tentor: ${rekapBulanBank.sudahAdaGajiTentor ? 'Sudah Tercatat (' + formatRp(rekapBulanBank.gajiTentorTerbuku) + ')' : 'Belum Tercatat di Sistem'}\n`;
+      teks += `- Status Gaji Admin: ${rekapBulanBank.sudahAdaGajiAdmin ? 'Sudah Tercatat (' + formatRp(rekapBulanBank.gajiAdminTerbuku) + ')' : 'Belum Tercatat di Sistem'}\n\n`;
+    }
 
-    teks += `### 2. DATA ESTIMASI SESI MENGAJAR TENTOR (${bulanPilihan})\n`;
-    teks += `- Total Sesi Mengajar: ${rekapTentorBulanIni.totalSesi} sesi\n`;
-    teks += `- Estimasi Total Honor Mengajar: ${formatRp(rekapTentorBulanIni.totalNominalEstimasi)}\n`;
-    const sesiBulanIni = teacherLogs.filter(t => String(t.tanggal || '').startsWith(bulanPilihan));
-    if (sesiBulanIni.length > 0) {
+    teks += `### 2. DATA ESTIMASI SESI MENGAJAR TENTOR (${judulPeriode})\n`;
+    teks += `- Total Sesi Mengajar: ${targetTeachers.length} sesi\n`;
+    const totalNominalGuru = targetTeachers.reduce((acc, t) => acc + (parseInt(t.nominal || 0, 10) || 0), 0);
+    teks += `- Estimasi Total Honor Mengajar: Rp ${totalNominalGuru.toLocaleString('id-ID')}\n\n`;
+    if (targetTeachers.length > 0) {
       teks += `Daftar Sesi Mengajar:\n`;
-      sesiBulanIni.forEach((t, i) => {
+      targetTeachers.forEach((t, i) => {
         teks += `  ${i + 1}. Tanggal: ${t.tanggal} | Guru: ${t.teacherName || t.namaGuru || '-'} | Mapel: ${t.mapel || '-'} | Honor: Rp ${parseInt(t.nominal || 0, 10).toLocaleString('id-ID')} | Status: ${t.statusDibayar || 'Belum Lunas'}\n`;
       });
     } else {
-      teks += `(Belum ada rekap sesi mengajar tentor yang tercatat untuk bulan ini)\n`;
+      teks += `(Belum ada rekap sesi mengajar tentor yang tercatat untuk periode ini)\n`;
     }
     teks += `\n`;
 
-    teks += `### 3. DAFTAR DETAIL TRANSAKSI TERBUKU SISTEM (${bulanPilihan})\n`;
-    teks += `Total: ${semuaLogsBulanIni.length} data transaksi\n\n`;
-    teks += `| No | Tanggal | Jenis | Metode | Kanal | Kategori | Nominal | Keterangan / Siswa | Status Audit |\n`;
-    teks += `|---|---|---|---|---|---|---|---|---|\n`;
+    teks += `### 3. DAFTAR DETAIL TRANSAKSI TERBUKU SISTEM (${judulPeriode})\n`;
+    teks += `Total: ${targetLogs.length} data transaksi\n\n`;
+    teks += `| No | Tanggal | Jenis | Metode | Kanal | Kategori | Nominal | Keterangan / Siswa | Rekening Bank | Status Audit |\n`;
+    teks += `|---|---|---|---|---|---|---|---|---|---|\n`;
 
-    if (semuaLogsBulanIni.length === 0) {
-      teks += `| - | - | - | - | - | - | - | (Belum ada transaksi tercatat untuk bulan ${bulanPilihan}) | - |\n`;
+    if (targetLogs.length === 0) {
+      teks += `| - | - | - | - | - | - | - | (Belum ada transaksi tercatat untuk periode ${judulPeriode}) | - | - |\n`;
     } else {
-      semuaLogsBulanIni.forEach((l, idx) => {
+      targetLogs.forEach((l, idx) => {
         const isMasuk = l.type === 'Pemasukan' || (l.type === 'Transfer' && l.kanalKe === KANAL.BANK);
         const jenis = isMasuk ? 'Pemasukan (+)' : 'Pengeluaran (-)';
         const status = (l.statusAudit === 'cocok' || l.statusRekonsiliasi === 'cocok') ? 'Sudah Cocok' : 'Belum Dicocokkan';
         const ket = (l.note || '-').replace(/\|/g, '/');
         const siswa = l.namaSiswa ? ` (Siswa: ${l.namaSiswa})` : '';
-        teks += `| ${idx + 1} | ${l.date} | ${jenis} | ${l.method || '-'} | ${l.kanal || '-'} | ${l.category || '-'} | Rp ${parseInt(l.amount || 0, 10).toLocaleString('id-ID')} | ${ket}${siswa} | ${status} |\n`;
+        const rek = l.refTransfer ? l.refTransfer.replace(/\|/g, '/') : '-';
+        teks += `| ${idx + 1} | ${l.date} | ${jenis} | ${l.method || '-'} | ${l.kanal || '-'} | ${l.category || '-'} | Rp ${parseInt(l.amount || 0, 10).toLocaleString('id-ID')} | ${ket}${siswa} | ${rek} | ${status} |\n`;
       });
     }
 
-    handleUnduhFile(`Laporan_Audit_Gemilang_${bulanPilihan}_Untuk_NotebookLM.txt`, teks);
+    const namaFile = isRange
+      ? `Laporan_Audit_Besar_Gemilang_${rangeDari}_sd_${rangeSampai}_Untuk_AI.txt`
+      : `Laporan_Audit_Gemilang_${bulanPilihan}_Untuk_NotebookLM.txt`;
+
+    handleUnduhFile(namaFile, teks);
   };
 
   const handleUnduhCSV = () => {
-    let csv = `No,Tanggal,Jenis,Metode,Kanal,Kategori,Nominal,Keterangan,Siswa,StatusAudit\n`;
-    semuaLogsBulanIni.forEach((l, idx) => {
+    const isRange = exportMode === 'rentang';
+    const targetLogs = isRange ? logsDalamRentang : semuaLogsBulanIni;
+    let csv = `No,Tanggal,Bulan,Jenis,Metode,Kanal,Kategori,Nominal,Keterangan,Siswa,Rekening,StatusAudit\n`;
+    targetLogs.forEach((l, idx) => {
       const isMasuk = l.type === 'Pemasukan' || (l.type === 'Transfer' && l.kanalKe === KANAL.BANK);
       const jenis = isMasuk ? 'Pemasukan' : 'Pengeluaran';
       const status = (l.statusAudit === 'cocok' || l.statusRekonsiliasi === 'cocok') ? 'Cocok' : 'Belum';
+      const bln = String(l.date || '').slice(0, 7);
       const cleanNote = `"${String(l.note || '').replace(/"/g, '""')}"`;
       const cleanSiswa = `"${String(l.namaSiswa || '').replace(/"/g, '""')}"`;
       const cleanKat = `"${String(l.category || '').replace(/"/g, '""')}"`;
-      csv += `${idx + 1},${l.date},${jenis},${l.method || ''},${l.kanal || ''},${cleanKat},${l.amount || 0},${cleanNote},${cleanSiswa},${status}\n`;
+      const cleanRek = `"${String(l.refTransfer || '').replace(/"/g, '""')}"`;
+      csv += `${idx + 1},${l.date},${bln},${jenis},${l.method || ''},${l.kanal || ''},${cleanKat},${l.amount || 0},${cleanNote},${cleanSiswa},${cleanRek},${status}\n`;
     });
-    handleUnduhFile(`Mutasi_Gemilang_${bulanPilihan}.csv`, csv, 'text/csv;charset=utf-8');
+
+    const namaFile = isRange
+      ? `Laporan_Keuangan_Besar_Gemilang_${rangeDari}_sd_${rangeSampai}.csv`
+      : `Mutasi_Gemilang_${bulanPilihan}.csv`;
+
+    handleUnduhFile(namaFile, csv, 'text/csv;charset=utf-8');
   };
 
   const handleSalinPrompt = () => {
-    let teks = `Data Transaksi Terbuku Bimbel Gemilang Periode ${bulanPilihan}:\n`;
-    teks += `- Total Pemasukan: ${formatRp(rekapBulanBank.totalMasuk)}\n`;
-    teks += `- Total Pengeluaran: ${formatRp(rekapBulanBank.totalKeluar)}\n`;
-    teks += `- Transaksi Terbuku (${semuaLogsBulanIni.length} data):\n`;
-    semuaLogsBulanIni.forEach((l, idx) => {
-      teks += `${idx + 1}. [${l.date}] ${l.type} Rp ${parseInt(l.amount || 0, 10).toLocaleString('id-ID')} - ${l.category} (${l.note || ''})\n`;
+    const isRange = exportMode === 'rentang';
+    const targetLogs = isRange ? logsDalamRentang : semuaLogsBulanIni;
+    const periodeLabel = isRange ? `${rangeDari} s/d ${rangeSampai}` : bulanPilihan;
+    const totalMasuk = isRange ? statsRentang.masuk : rekapBulanBank.totalMasuk;
+    const totalKeluar = isRange ? statsRentang.keluar : rekapBulanBank.totalKeluar;
+
+    let teks = `Data Transaksi Terbuku Bimbel Gemilang Periode ${periodeLabel}:\n`;
+    teks += `- Total Pemasukan: ${formatRp(totalMasuk)}\n`;
+    teks += `- Total Pengeluaran: ${formatRp(totalKeluar)}\n`;
+    teks += `- Jumlah Transaksi Terbuku: ${targetLogs.length} data\n\n`;
+    teks += `Daftar Transaksi Terbuku:\n`;
+    targetLogs.slice(0, 50).forEach((l, idx) => {
+      teks += `${idx + 1}. [${l.date}] ${l.type} Rp ${parseInt(l.amount || 0, 10).toLocaleString('id-ID')} - ${l.category} (${l.note || ''})${l.refTransfer ? ' [Rek: ' + l.refTransfer + ']' : ''}\n`;
     });
-    teks += `\nMohon bantu cocokkan dengan rekening koran saya, pisahkan pengeluaran pribadi vs bimbel.`;
+    if (targetLogs.length > 50) {
+      teks += `... (dan ${targetLogs.length - 50} transaksi lainnya. Silakan gunakan tombol unduh .txt untuk data lengkapnya)\n`;
+    }
+    teks += `\nMohon bantu cocokkan dengan rekening koran BCA saya untuk periode yang sama, pisahkan pengeluaran pribadi vs bimbel, temukan transaksi yang salah catat/belum tercatat, dan hitung profit bersih riil per bulan.`;
+
     navigator.clipboard.writeText(teks);
     setCopiedPrompt(true);
     setTimeout(() => setCopiedPrompt(false), 3000);
   };
-
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
       {/* 1. BAR PEMILIH BULAN AUDIT & NAVIGASI CEPAT (JANUARI S/D SEKARANG) */}
@@ -955,46 +1099,153 @@ export default function PanelAuditMutasiOwner({
       {/* 4B. BAR UNDUH LAPORAN UNTUK NOTEBOOK LM & AI */}
       <div style={{
         background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 100%)',
-        borderRadius: 16, padding: '18px 22px', color: 'white',
-        boxShadow: '0 4px 15px rgba(49, 46, 129, 0.25)',
-        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-        flexWrap: 'wrap', gap: 14,
+        borderRadius: 16, padding: '20px 24px',
+        color: '#ffffff', display: 'flex', flexDirection: 'column', gap: 16,
+        boxShadow: '0 4px 18px rgba(30, 27, 75, 0.28)',
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <div style={{
-            width: 42, height: 42, borderRadius: 12, background: 'rgba(255,255,255,0.15)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#c7d2fe',
-          }}>
-            <Bot size={24} />
-          </div>
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <h4 style={{ margin: 0, fontSize: 15, fontWeight: 800, color: '#ffffff' }}>
-                Unduh Data Mutasi Gemilang untuk AI (NotebookLM / Excel)
-              </h4>
-              <span style={{ fontSize: 10, fontWeight: 800, background: '#4f46e5', color: '#e0e7ff', padding: '2px 8px', borderRadius: 12 }}>
-                Cross-Check Rekening
-              </span>
+        {/* Header & Tab Mode */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div style={{ width: 44, height: 44, borderRadius: 12, background: 'rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Sparkles size={24} color="#facc15" />
             </div>
-            <p style={{ margin: '3px 0 0', fontSize: 12, color: '#c7d2fe' }}>
-              Ekspor seluruh data resmi sistem bulan <b>{bulanPilihan}</b> agar bisa dicocokkan otomatis oleh NotebookLM / AI dengan mutasi rekening BCA Anda.
-            </p>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                <h4 style={{ margin: 0, fontSize: 16, fontWeight: 800, color: '#ffffff' }}>
+                  Unduh Laporan Audit Besar untuk AI (NotebookLM / Claude / Excel)
+                </h4>
+                <span style={{ fontSize: 10, fontWeight: 800, background: '#4f46e5', color: '#e0e7ff', padding: '2px 8px', borderRadius: 12 }}>
+                  Cross-Check Mutasi Bank
+                </span>
+              </div>
+              <p style={{ margin: '3px 0 0', fontSize: 12, color: '#c7d2fe' }}>
+                Ekspor data resmi Gemilang untuk dianalisis oleh AI pihak ketiga bersama file mutasi rekening koran BCA Anda.
+              </p>
+            </div>
+          </div>
+
+          {/* Toggle Mode: Multi-Bulan (Range) vs 1-Bulan */}
+          <div style={{ display: 'flex', background: 'rgba(255,255,255,0.1)', padding: 3, borderRadius: 10, border: '1px solid rgba(255,255,255,0.15)' }}>
+            <button
+              type="button"
+              onClick={() => setExportMode('rentang')}
+              style={{
+                border: 'none', borderRadius: 8, padding: '6px 12px', fontSize: 11.5, fontWeight: 800,
+                cursor: 'pointer',
+                background: exportMode === 'rentang' ? '#38bdf8' : 'transparent',
+                color: exportMode === 'rentang' ? '#0f172a' : '#cbd5e1',
+                boxShadow: exportMode === 'rentang' ? '0 2px 4px rgba(0,0,0,0.2)' : 'none',
+              }}
+            >
+              📦 Rentang Multi-Bulan (Disarankan)
+            </button>
+            <button
+              type="button"
+              onClick={() => setExportMode('bulan')}
+              style={{
+                border: 'none', borderRadius: 8, padding: '6px 12px', fontSize: 11.5, fontWeight: 800,
+                cursor: 'pointer',
+                background: exportMode === 'bulan' ? '#38bdf8' : 'transparent',
+                color: exportMode === 'bulan' ? '#0f172a' : '#cbd5e1',
+                boxShadow: exportMode === 'bulan' ? '0 2px 4px rgba(0,0,0,0.2)' : 'none',
+              }}
+            >
+              📅 1 Bulan ({bulanPilihan})
+            </button>
           </div>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+        {/* Panel Kontrol Rentang Tanggal jika Mode rentang */}
+        {exportMode === 'rentang' ? (
+          <div style={{ background: 'rgba(255,255,255,0.07)', borderRadius: 12, padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 10, border: '1px solid rgba(255,255,255,0.12)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
+              {/* Presets Cepat */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                <span style={{ fontSize: 11, fontWeight: 700, color: '#e0e7ff' }}>Pilihan Cepat:</span>
+                <button
+                  type="button"
+                  onClick={() => setPresetRange(3)}
+                  style={{ background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.25)', color: '#ffffff', borderRadius: 6, padding: '4px 10px', fontSize: 11, fontWeight: 700, cursor: 'pointer' }}
+                >
+                  ⚡ 3 Bulan Terakhir
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPresetRange(6)}
+                  style={{ background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.25)', color: '#ffffff', borderRadius: 6, padding: '4px 10px', fontSize: 11, fontWeight: 700, cursor: 'pointer' }}
+                >
+                  ⚡ 6 Bulan Terakhir
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setRangeDari('2026-01');
+                    const d = new Date();
+                    setRangeSampai(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`);
+                  }}
+                  style={{ background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.25)', color: '#ffffff', borderRadius: 6, padding: '4px 10px', fontSize: 11, fontWeight: 700, cursor: 'pointer' }}
+                >
+                  ⚡ Sepanjang 2026 (Jan - Sekarang)
+                </button>
+              </div>
+
+              {/* Selector Dari & Sampai */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                <span style={{ fontSize: 11, fontWeight: 700, color: '#e0e7ff' }}>Dari:</span>
+                <select
+                  value={rangeDari}
+                  onChange={(e) => setRangeDari(e.target.value)}
+                  style={{ background: '#0f172a', color: '#ffffff', border: '1px solid #64748b', borderRadius: 6, padding: '4px 8px', fontSize: 11.5, fontWeight: 700 }}
+                >
+                  {opsiBulan.map(b => (
+                    <option key={`dari-${b.id}`} value={b.id}>{b.label}</option>
+                  ))}
+                </select>
+
+                <span style={{ fontSize: 11, fontWeight: 700, color: '#e0e7ff' }}>s/d:</span>
+                <select
+                  value={rangeSampai}
+                  onChange={(e) => setRangeSampai(e.target.value)}
+                  style={{ background: '#0f172a', color: '#ffffff', border: '1px solid #64748b', borderRadius: 6, padding: '4px 8px', fontSize: 11.5, fontWeight: 700 }}
+                >
+                  {opsiBulan.map(b => (
+                    <option key={`sampai-${b.id}`} value={b.id}>{b.label}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {/* Statistik Ringkas Rentang Terpilih */}
+            <div style={{ fontSize: 11.5, color: '#bae6fd', display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: 8 }}>
+              <span>📊 <b>{logsDalamRentang.length}</b> Transaksi Terbuku</span>
+              <span>•</span>
+              <span style={{ color: '#86efac' }}>Masuk: <b>{formatRp(statsRentang.masuk)}</b></span>
+              <span>•</span>
+              <span style={{ color: '#fca5a5' }}>Keluar: <b>{formatRp(statsRentang.keluar)}</b></span>
+              <span>•</span>
+              <span>Sesi Guru: <b>{teacherLogsDalamRentang.length} sesi</b> ({formatRp(statsRentang.honorGuru)})</span>
+            </div>
+          </div>
+        ) : (
+          <div style={{ fontSize: 12, color: '#bae6fd' }}>
+            Mode aktif: mengekspor khusus data resmi bulan <b>{bulanPilihan}</b> ({semuaLogsBulanIni.length} transaksi terbuku).
+          </div>
+        )}
+
+        {/* Tombol Aksi Unduh */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
           <button
             type="button"
             onClick={handleUnduhUntukAI}
             style={{
               display: 'flex', alignItems: 'center', gap: 6,
               background: '#38bdf8', color: '#0f172a', border: 'none',
-              padding: '9px 15px', borderRadius: 10, fontSize: 12.5, fontWeight: 800,
-              cursor: 'pointer', boxShadow: '0 2px 6px rgba(0,0,0,0.2)',
+              padding: '10px 18px', borderRadius: 10, fontSize: 13, fontWeight: 800,
+              cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.25)',
             }}
-            title="Unduh file teks terstruktur lengkap dengan instruksi prompt AI"
+            title="Unduh file teks komprehensif lengkap dengan prompt instruksi untuk NotebookLM, Claude, atau ChatGPT"
           >
-            <FileText size={16} /> Unduh Format NotebookLM (.txt)
+            <FileText size={16} /> Unduh Laporan untuk AI (NotebookLM) (.txt)
           </button>
 
           <button
@@ -1003,10 +1254,10 @@ export default function PanelAuditMutasiOwner({
             style={{
               display: 'flex', alignItems: 'center', gap: 6,
               background: '#10b981', color: 'white', border: 'none',
-              padding: '9px 15px', borderRadius: 10, fontSize: 12.5, fontWeight: 800,
-              cursor: 'pointer', boxShadow: '0 2px 6px rgba(0,0,0,0.2)',
+              padding: '10px 18px', borderRadius: 10, fontSize: 13, fontWeight: 800,
+              cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.25)',
             }}
-            title="Unduh spreadsheet CSV untuk Excel atau Google Sheets"
+            title="Unduh spreadsheet CSV untuk dibuka di Excel atau Google Sheets"
           >
             <FileSpreadsheet size={16} /> Unduh CSV (Excel)
           </button>
@@ -1017,13 +1268,13 @@ export default function PanelAuditMutasiOwner({
             style={{
               display: 'flex', alignItems: 'center', gap: 6,
               background: 'rgba(255,255,255,0.15)', color: 'white', border: '1px solid rgba(255,255,255,0.3)',
-              padding: '9px 14px', borderRadius: 10, fontSize: 12, fontWeight: 700,
+              padding: '10px 16px', borderRadius: 10, fontSize: 12.5, fontWeight: 700,
               cursor: 'pointer',
             }}
             title="Salin rekap data ke clipboard untuk paste langsung di chat AI"
           >
             {copiedPrompt ? <Check size={15} color="#34d399" /> : <Copy size={15} />}
-            {copiedPrompt ? 'Tersalin!' : 'Salin Teks AI'}
+            {copiedPrompt ? 'Prompt AI Tersalin!' : 'Salin Prompt AI'}
           </button>
         </div>
       </div>
