@@ -132,7 +132,7 @@ const SchedulePage = () => {
   // Calendar & Views
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [viewMode, setViewMode] = useState('excel'); // 'excel' | 'daily' | 'timetable' | 'weekly'
+  const [viewMode, setViewMode] = useState('calmendar'); // 'calmendar' | 'excel' | 'weekly'
   
   // Daily Code
   const [dailyCode, setDailyCode] = useState("");
@@ -1388,25 +1388,19 @@ const SchedulePage = () => {
           </div>
         )}
 
-        {/* VIEW MODE TOGGLE (EXCEL GEMILANG, MATRIKS RUANGAN, KALENDER WAKTU, RINGKASAN) */}
+        {/* VIEW MODE TOGGLE (MATRIKS RUANGAN CALMENDAR, EXCEL GEMILANG, RINGKASAN AGENDA) */}
         <div style={styles.viewToggle}>
+          <button 
+            onClick={() => setViewMode('calmendar')} 
+            style={styles.viewBtn(viewMode === 'calmendar', isDarkMode)}
+          >
+            🪐 Matriks Ruangan (Calmendar)
+          </button>
           <button 
             onClick={() => setViewMode('excel')} 
             style={styles.viewBtn(viewMode === 'excel', isDarkMode)}
           >
-            📊 Matriks Resmi Excel (Per Kelas & Jenjang)
-          </button>
-          <button 
-            onClick={() => setViewMode('daily')} 
-            style={styles.viewBtn(viewMode === 'daily', isDarkMode)}
-          >
-            🪐 Matriks Ruangan (5 Planet)
-          </button>
-          <button 
-            onClick={() => setViewMode('timetable')} 
-            style={styles.viewBtn(viewMode === 'timetable', isDarkMode)}
-          >
-            🗓️ Kalender Waktu
+            📊 Format Excel Gemilang (Per Kelas)
           </button>
           <button 
             onClick={() => setViewMode('weekly')} 
@@ -1554,21 +1548,8 @@ const SchedulePage = () => {
 
           {/* MAIN CONTENT AREA */}
           <div style={styles.mainCol}>
-            {viewMode === 'excel' && (
-              <GemilangExcelTimetableView
-                schedules={currentActiveSchedules}
-                availableTeachers={availableTeachers}
-                weekDates={getWeekDates(selectedDate)}
-                isDarkMode={isDarkMode}
-                onOpenModal={handleOpenModal}
-                onOpenDetailModal={item => setDetailSchedule(item)}
-                onOpenPindahRuang={item => setSessionToPindah(item)}
-              />
-            )}
-
-            {viewMode === 'timetable' && (
+            {viewMode === 'calmendar' && (
               <CalmendarTimetableView
-                weekDates={getWeekDates(selectedDate)}
                 selectedDate={selectedDate}
                 onSelectDate={d => setSelectedDate(d)}
                 schedules={currentActiveSchedules}
@@ -1582,7 +1563,18 @@ const SchedulePage = () => {
               />
             )}
 
-            {viewMode === 'daily' && renderDailyView()}
+            {viewMode === 'excel' && (
+              <GemilangExcelTimetableView
+                schedules={currentActiveSchedules}
+                availableTeachers={availableTeachers}
+                weekDates={getWeekDates(selectedDate)}
+                isDarkMode={isDarkMode}
+                onOpenModal={handleOpenModal}
+                onOpenDetailModal={item => setDetailSchedule(item)}
+                onOpenPindahRuang={item => setSessionToPindah(item)}
+              />
+            )}
+
             {viewMode === 'weekly' && renderWeeklyView()}
           </div>
         </div>
