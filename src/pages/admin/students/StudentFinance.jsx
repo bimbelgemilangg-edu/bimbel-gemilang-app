@@ -129,6 +129,34 @@ const StudentFinance = () => {
   // 🔥 Harga paket (di-cache)
   const [hargaPaket, setHargaPaket] = useState(0);
   const [namaPaketAktif, setNamaPaketAktif] = useState('');
+  const [allPrices, setAllPrices] = useState(null);
+
+  // 🔥 BARU: Modal Tambah Program Baru (Multi-Program, e.g. English Course, Matematika Khusus)
+  const [showTambahProgramModal, setShowTambahProgramModal] = useState(false);
+  const [tambahProgramData, setTambahProgramData] = useState({
+    programType: 'English Course',
+    level: 'Junior',
+    durasiBulan: 1,
+    nominalBulanan: 200000,
+    tanggalMulai: tanggalLokalHariIni(),
+    metodeBayar: 'Tunai',
+    refTransfer: '',
+    catatan: '',
+  });
+  const [tambahProgramBukti, setTambahProgramBukti] = useState(null);
+  const [isTambahProgramProcessing, setIsTambahProgramProcessing] = useState(false);
+
+  // 🔥 BARU: Modal Perpanjang Program Tambahan (Extra Program)
+  const [showPerpanjangExtraModal, setShowPerpanjangExtraModal] = useState(false);
+  const [selectedExtraProg, setSelectedExtraProg] = useState(null);
+  const [extraPerpanjangData, setExtraPerpanjangData] = useState({
+    durasiTambah: 1,
+    nominal: 0,
+    metodeBayar: 'Tunai',
+    refTransfer: '',
+  });
+  const [extraPerpanjangBukti, setExtraPerpanjangBukti] = useState(null);
+  const [isPerpanjangExtraProcessing, setIsPerpanjangExtraProcessing] = useState(false);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -154,6 +182,7 @@ const StudentFinance = () => {
       const settingsSnap = await getDoc(doc(db, "settings", "global_config"));
       if (settingsSnap.exists() && settingsSnap.data().prices) {
         const prices = settingsSnap.data().prices;
+        setAllPrices(prices);
 
         if (student?.kategori === 'English') {
           const levelId = student?.paket || '';
@@ -279,6 +308,16 @@ const StudentFinance = () => {
     return { label: 'Aktif', color: '#10b981', bg: '#dcfce7' };
   };
 
+  const getMasaStatusExtra = (tanggalSelesai) => {
+    if (!tanggalSelesai) return { label: 'Unknown', color: '#94a3b8', bg: '#f1f5f9' };
+    const today = new Date(); today.setHours(0,0,0,0);
+    const selesai = new Date(tanggalSelesai); selesai.setHours(0,0,0,0);
+    const diffDays = Math.ceil((selesai - today) / (1000 * 60 * 60 * 24));
+    if (diffDays < 0) return { label: 'HABIS', color: '#ef4444', bg: '#fee2e2' };
+    if (diffDays <= 30) return { label: `${diffDays} hari lagi`, color: '#f59e0b', bg: '#fef3c7' };
+    return { label: 'Aktif', color: '#10b981', bg: '#dcfce7' };
+  };
+
   // 🔥 HITUNG PERPANJANGAN (SYNCHRONOUS - pakai harga dari state)
   // 21 Okt (promo bonus bulan): rencana dihitung lewat util murni
   // rencanaPaketPromo — UANG hanya dari bulan bayar; bulan bonus gratis
@@ -343,9 +382,13 @@ const StudentFinance = () => {
   // admin tidak perlu berburu tombol di dalam halaman keuangan.
   useEffect(() => {
     if (!student) return;
-    if (new URLSearchParams(window.location.search).get('koreksi') !== '1') return;
-    if (koreksiData) return;
-    openKoreksiModal();
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('koreksi') === '1' && !koreksiData) {
+      openKoreksiModal();
+    }
+    if (params.get('english') === '1' || params.get('tambah_program') === '1') {
+      setShowTambahProgramModal(true);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [student]);
 
@@ -413,6 +456,228 @@ const StudentFinance = () => {
       showAlert('❌ Gagal menyimpan koreksi: ' + error.message);
     }
     setIsKoreksiProcessing(false);
+  };
+
+  // ===== FITUR MULTI-PROGRAM / PAKET TAMBAHAN (ENGLISH COURSE, DLL) =====
+  const handleSimpanProgramBaru = async (e) => {
+    e.preventDefault();
+    const durasi = parseInt(tambahProgramData.durasiBulan) || 0;
+    const nominalBln = parseInt(tambahProgramData.nominalBulanan) || 0;
+    const totalNominal = durasi * nominalBln;
+
+    if (durasi <= 0) return showAlert('❌ Durasi program minimal 1 bulan!');
+    if (totalNominal <= 0) return showAlert('❌ Nominal biaya program harus lebih dari 0!');
+    if (tambahProgramData.metodeBayar === 'Transfer' && !tambahProgramData.refTransfer.trim()) {
+      return showAlert('⛔ Pembayaran via Transfer WAJIB mengisi Nama Pemilik Rekening Pengirim (sesuai mutasi m-banking)!');
+    }
+
+    setIsTambahProgramProcessing(true);
+    try {
+      const today = tanggalLokalHariIni();
+      const tglMulai = tambahProgramData.tanggalMulai || today;
+      const tglSelesai = tambahBulanKeTanggal(tglMulai, durasi);
+      const kodeUnik = student?.studentId || id;
+
+      let buktiUrl = '';
+      if (tambahProgramBukti) {
+        const up = await uploadElearningFile(tambahProgramBukti, `bukti_transfer/${today.replace(/-/g, '')}`);
+        if (up?.success && up.downloadURL) buktiUrl = up.downloadURL;
+      }
+
+      const noKwitansi = await ambilNomorKwitansiBerikutnya(new Date(`${today}T00:00:00`));
+      const progId = `prog_${Date.now()}`;
+      const namaProgramFinal = tambahProgramData.programType === 'English Course'
+        ? `English Course (${tambahProgramData.level})`
+        : tambahProgramData.programType;
+
+      const programBaru = {
+        id: progId,
+        namaProgram: namaProgramFinal,
+        programType: tambahProgramData.programType,
+        level: tambahProgramData.level || '-',
+        durasiBulan: durasi,
+        tanggalMulai: tglMulai,
+        tanggalSelesai: tglSelesai,
+        nominalBulanan: nominalBln,
+        totalBiaya: totalNominal,
+        metodeBayar: tambahProgramData.metodeBayar,
+        refTransfer: tambahProgramData.refTransfer.trim(),
+        status: 'Aktif',
+        createdAt: new Date().toISOString()
+      };
+
+      const existingExtra = Array.isArray(student.extraPrograms) ? student.extraPrograms : [];
+      let existingSubjects = Array.isArray(student.enrolledSubjects) ? [...student.enrolledSubjects] : [];
+      if (tambahProgramData.programType === 'English Course') {
+        if (!existingSubjects.includes('bing')) existingSubjects.push('bing');
+        if (!existingSubjects.includes('prog_engc')) existingSubjects.push('prog_engc');
+      } else if (tambahProgramData.programType.toLowerCase().includes('matematika')) {
+        if (!existingSubjects.includes('mat')) existingSubjects.push('mat');
+      }
+
+      const newTagihan = (parseInt(student.totalTagihan) || 0) + totalNominal;
+      const newBayar = (parseInt(student.totalBayar) || 0) + totalNominal;
+
+      const batch = writeBatch(db);
+
+      const logRef = doc(collection(db, "finance_logs"));
+      batch.set(logRef, {
+        studentId: kodeUnik,
+        namaSiswa: student?.nama || '',
+        date: today,
+        type: 'Pemasukan',
+        category: 'Perpanjangan Paket',
+        amount: totalNominal,
+        method: tambahProgramData.metodeBayar,
+        note: `Pendaftaran Paket Tambahan: ${namaProgramFinal} (${durasi} Bulan s.d ${tglSelesai})` + (tambahProgramData.refTransfer.trim() ? ` [Rek. Pengirim: ${tambahProgramData.refTransfer.trim()}]` : ''),
+        kanal: tambahProgramData.metodeBayar === 'Tunai' ? KANAL.KAS_ADMIN : KANAL.BANK,
+        refTransfer: tambahProgramData.refTransfer.trim(),
+        buktiUrl,
+        noKwitansi,
+        statusRekonsiliasi: tambahProgramData.metodeBayar === 'Transfer' ? 'pending' : '',
+        extraProgramId: progId,
+        createdAt: serverTimestamp()
+      });
+
+      batch.update(doc(db, "students", id), {
+        extraPrograms: [...existingExtra, programBaru],
+        enrolledSubjects: existingSubjects,
+        totalTagihan: newTagihan,
+        totalBayar: newBayar,
+        updatedAt: serverTimestamp()
+      });
+
+      await batch.commit();
+
+      showAlert(`✅ Program ${namaProgramFinal} berhasil diaktifkan! Kwitansi ${noKwitansi} dibuat.`);
+      setShowTambahProgramModal(false);
+      setTambahProgramBukti(null);
+      fetchData();
+    } catch (err) {
+      console.error(err);
+      showAlert('❌ Gagal mendaftarkan program: ' + err.message);
+    }
+    setIsTambahProgramProcessing(false);
+  };
+
+  const openPerpanjangExtraModal = (prog) => {
+    setSelectedExtraProg(prog);
+    setExtraPerpanjangData({
+      durasiTambah: 1,
+      nominal: prog.nominalBulanan || 200000,
+      metodeBayar: 'Tunai',
+      refTransfer: '',
+    });
+    setExtraPerpanjangBukti(null);
+    setShowPerpanjangExtraModal(true);
+  };
+
+  const handleSimpanPerpanjangExtra = async (e) => {
+    e.preventDefault();
+    if (!selectedExtraProg) return;
+
+    const durasi = parseInt(extraPerpanjangData.durasiTambah) || 0;
+    const nominal = parseInt(extraPerpanjangData.nominal) || 0;
+    if (durasi <= 0) return showAlert('❌ Durasi perpanjangan minimal 1 bulan!');
+    if (nominal <= 0) return showAlert('❌ Nominal harus lebih dari 0!');
+    if (extraPerpanjangData.metodeBayar === 'Transfer' && !extraPerpanjangData.refTransfer.trim()) {
+      return showAlert('⛔ Perpanjangan via Transfer WAJIB mengisi Nama Pemilik Rekening Pengirim!');
+    }
+
+    setIsPerpanjangExtraProcessing(true);
+    try {
+      const today = tanggalLokalHariIni();
+      const tglAcuan = (selectedExtraProg.tanggalSelesai && selectedExtraProg.tanggalSelesai > today)
+        ? selectedExtraProg.tanggalSelesai
+        : today;
+      const newTglSelesai = tambahBulanKeTanggal(tglAcuan, durasi);
+      const kodeUnik = student?.studentId || id;
+
+      let buktiUrl = '';
+      if (extraPerpanjangBukti) {
+        const up = await uploadElearningFile(extraPerpanjangBukti, `bukti_transfer/${today.replace(/-/g, '')}`);
+        if (up?.success && up.downloadURL) buktiUrl = up.downloadURL;
+      }
+
+      const noKwitansi = await ambilNomorKwitansiBerikutnya(new Date(`${today}T00:00:00`));
+
+      const updatedExtra = (student.extraPrograms || []).map(p => {
+        if (p.id === selectedExtraProg.id) {
+          return {
+            ...p,
+            durasiBulan: (p.durasiBulan || 0) + durasi,
+            tanggalSelesai: newTglSelesai,
+            totalBiaya: (p.totalBiaya || 0) + nominal,
+            metodeBayar: extraPerpanjangData.metodeBayar,
+            refTransfer: extraPerpanjangData.refTransfer.trim(),
+            status: 'Aktif',
+            updatedAt: new Date().toISOString()
+          };
+        }
+        return p;
+      });
+
+      const newTagihan = (parseInt(student.totalTagihan) || 0) + nominal;
+      const newBayar = (parseInt(student.totalBayar) || 0) + nominal;
+
+      const batch = writeBatch(db);
+
+      const logRef = doc(collection(db, "finance_logs"));
+      batch.set(logRef, {
+        studentId: kodeUnik,
+        namaSiswa: student?.nama || '',
+        date: today,
+        type: 'Pemasukan',
+        category: 'Perpanjangan Paket',
+        amount: nominal,
+        method: extraPerpanjangData.metodeBayar,
+        note: `Perpanjangan Paket Tambahan: ${selectedExtraProg.namaProgram} (+${durasi} Bulan s.d ${newTglSelesai})` + (extraPerpanjangData.refTransfer.trim() ? ` [Rek. Pengirim: ${extraPerpanjangData.refTransfer.trim()}]` : ''),
+        kanal: extraPerpanjangData.metodeBayar === 'Tunai' ? KANAL.KAS_ADMIN : KANAL.BANK,
+        refTransfer: extraPerpanjangData.refTransfer.trim(),
+        buktiUrl,
+        noKwitansi,
+        statusRekonsiliasi: extraPerpanjangData.metodeBayar === 'Transfer' ? 'pending' : '',
+        extraProgramId: selectedExtraProg.id,
+        createdAt: serverTimestamp()
+      });
+
+      batch.update(doc(db, "students", id), {
+        extraPrograms: updatedExtra,
+        totalTagihan: newTagihan,
+        totalBayar: newBayar,
+        updatedAt: serverTimestamp()
+      });
+
+      await batch.commit();
+
+      showAlert(`✅ Paket ${selectedExtraProg.namaProgram} diperpanjang s.d ${newTglSelesai}! Kwitansi ${noKwitansi} dibuat.`);
+      setShowPerpanjangExtraModal(false);
+      setSelectedExtraProg(null);
+      setExtraPerpanjangBukti(null);
+      fetchData();
+    } catch (err) {
+      console.error(err);
+      showAlert('❌ Gagal memperpanjang program: ' + err.message);
+    }
+    setIsPerpanjangExtraProcessing(false);
+  };
+
+  const handleHapusExtraProgram = async (progId, namaProg) => {
+    if (!window.confirm(`Yakin ingin menonaktifkan program ${namaProg}? Riwayat pembayaran tidak akan dihapus.`)) return;
+    try {
+      const updatedExtra = (student.extraPrograms || []).map(p => {
+        if (p.id === progId) return { ...p, status: 'Nonaktif' };
+        return p;
+      });
+      await updateDoc(doc(db, "students", id), {
+        extraPrograms: updatedExtra,
+        updatedAt: serverTimestamp()
+      });
+      showAlert(`✅ Program ${namaProg} dinonaktifkan.`);
+      fetchData();
+    } catch (e) {
+      showAlert('❌ Gagal: ' + e.message);
+    }
   };
 
   const handlePerpanjang = async (e) => {
@@ -943,6 +1208,11 @@ const StudentFinance = () => {
               <span style={styles.programBadge}>
                 {student.kategori === 'English' ? '🇬🇧 English' : '📚 Reguler'}
               </span>
+              {Array.isArray(student.extraPrograms) && student.extraPrograms.filter(p => p.status === 'Aktif').map(ep => (
+                <span key={ep.id} style={{ ...styles.programBadge, background: '#ede9fe', color: '#6d28d9', border: '1px solid #ddd6fe' }}>
+                  🇬🇧 {ep.namaProgram}
+                </span>
+              ))}
               <span style={{...styles.masaBadge, background: masa.bg, color: masa.color}}>
                 <Clock size={10} /> {masa.label}
               </span>
@@ -968,9 +1238,10 @@ const StudentFinance = () => {
         )}
 
         <div style={styles.gridContainer(isMobile)}>
-          {/* KIRI - Ringkasan */}
-          <div style={styles.card}>
-            <h3 style={styles.cardTitle}><Wallet size={18} /> Ringkasan Tagihan</h3>
+          {/* KIRI - Ringkasan & Paket Tambahan */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 15 }}>
+            <div style={styles.card}>
+              <h3 style={styles.cardTitle}><Wallet size={18} /> Ringkasan Tagihan (Paket Utama)</h3>
             
             <div style={styles.progressSection}>
               <div style={styles.progressBar}>
@@ -1076,7 +1347,131 @@ const StudentFinance = () => {
             >
               <Edit3 size={14} /> Penyesuaian Harga / Penawaran
             </button>
+
+            {/* 🔥 BARU: Tombol Tambah Program English Course / Program Lain */}
+            <button
+              type="button"
+              onClick={() => {
+                const defaultNominal = (allPrices?.english?.levels?.find(l => l.id === 'junior')?.price) || 200000;
+                setTambahProgramData({
+                  programType: 'English Course',
+                  level: 'Junior',
+                  durasiBulan: 1,
+                  nominalBulanan: defaultNominal,
+                  tanggalMulai: tanggalLokalHariIni(),
+                  metodeBayar: 'Tunai',
+                  refTransfer: '',
+                  catatan: '',
+                });
+                setTambahProgramBukti(null);
+                setShowTambahProgramModal(true);
+              }}
+              style={{
+                width: '100%',
+                marginTop: 10,
+                padding: '12px',
+                background: 'linear-gradient(135deg, #059669, #10b981)',
+                color: 'white',
+                border: 'none',
+                borderRadius: 10,
+                fontWeight: 'bold',
+                fontSize: 13,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 8,
+                boxShadow: '0 4px 12px rgba(16,185,129,0.25)'
+              }}
+            >
+              <PlusCircle size={16} /> 🇬🇧 Tambah Paket English Course / Lainnya
+            </button>
           </div>
+
+          {/* CARD PROGRAM & PAKET TAMBAHAN (MULTI-PROGRAM) */}
+          <div style={styles.card}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, paddingBottom: 8, borderBottom: '2px solid #f1f5f9' }}>
+              <h3 style={{ margin: 0, fontSize: 14, color: '#1e293b', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: 8 }}>
+                📦 Paket &amp; Program Tambahan ({(student.extraPrograms || []).filter(p => p.status === 'Aktif').length})
+              </h3>
+              <button
+                type="button"
+                onClick={() => {
+                  const defaultNominal = (allPrices?.english?.levels?.find(l => l.id === 'junior')?.price) || 200000;
+                  setTambahProgramData({
+                    programType: 'English Course',
+                    level: 'Junior',
+                    durasiBulan: 1,
+                    nominalBulanan: defaultNominal,
+                    tanggalMulai: tanggalLokalHariIni(),
+                    metodeBayar: 'Tunai',
+                    refTransfer: '',
+                    catatan: '',
+                  });
+                  setTambahProgramBukti(null);
+                  setShowTambahProgramModal(true);
+                }}
+                style={{ background: '#ecfdf5', color: '#059669', border: '1px solid #a7f3d0', padding: '4px 10px', borderRadius: 8, fontSize: 11, fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}
+              >
+                <PlusCircle size={12} /> Tambah
+              </button>
+            </div>
+
+            {(!student.extraPrograms || student.extraPrograms.length === 0) ? (
+              <div style={{ textAlign: 'center', padding: '16px 8px', color: '#94a3b8', fontSize: 12, lineHeight: 1.5 }}>
+                Belum ada paket tambahan (seperti English Course atau Kelas Khusus). Klik tombol <strong>Tambah Paket English Course</strong> di atas untuk mendaftarkan.
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {student.extraPrograms.map((prog) => {
+                  const masaProg = getMasaStatusExtra(prog.tanggalSelesai);
+                  const isAktif = prog.status !== 'Nonaktif';
+                  return (
+                    <div key={prog.id} style={{ background: isAktif ? '#f8fafc' : '#f1f5f9', border: `1px solid ${isAktif ? '#e2e8f0' : '#cbd5e1'}`, borderRadius: 10, padding: 12, opacity: isAktif ? 1 : 0.65 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
+                        <div>
+                          <strong style={{ fontSize: 13, color: '#1e293b', display: 'block' }}>
+                            {prog.namaProgram}
+                          </strong>
+                          <span style={{ fontSize: 10, color: '#64748b' }}>
+                            📅 {prog.tanggalMulai} s.d {prog.tanggalSelesai} ({prog.durasiBulan} Bulan)
+                          </span>
+                        </div>
+                        <span style={{ ...styles.masaBadge, background: isAktif ? masaProg.bg : '#e2e8f0', color: isAktif ? masaProg.color : '#64748b', fontSize: 10 }}>
+                          {isAktif ? masaProg.label : 'Nonaktif'}
+                        </span>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 11, color: '#475569', marginTop: 6, flexWrap: 'wrap', gap: 6 }}>
+                        <span>
+                          Total: <strong>Rp {prog.totalBiaya?.toLocaleString()}</strong> • {prog.metodeBayar} {prog.refTransfer ? `(${prog.refTransfer})` : ''}
+                        </span>
+                        {isAktif && (
+                          <div style={{ display: 'flex', gap: 6 }}>
+                            <button
+                              type="button"
+                              onClick={() => openPerpanjangExtraModal(prog)}
+                              style={{ background: '#7c3aed', color: 'white', border: 'none', padding: '4px 10px', borderRadius: 6, fontSize: 11, fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}
+                            >
+                              <RefreshCw size={11} /> Perpanjang
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleHapusExtraProgram(prog.id, prog.namaProgram)}
+                              style={{ background: '#fee2e2', color: '#b91c1c', border: '1px solid #fecaca', padding: '4px 8px', borderRadius: 6, fontSize: 10, fontWeight: 'bold', cursor: 'pointer' }}
+                              title="Nonaktifkan paket ini"
+                            >
+                              Nonaktifkan
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </div>
 
           {/* KANAN - Cicilan & Riwayat */}
           <div style={{display: 'flex', flexDirection: 'column', gap: 15}}>
@@ -1548,6 +1943,299 @@ const StudentFinance = () => {
               fetchData();
             }}
           />
+        )}
+
+        {/* ===== MODAL TAMBAH PROGRAM / ENGLISH COURSE ===== */}
+        {showTambahProgramModal && (
+          <div style={styles.modalOverlay} onClick={() => setShowTambahProgramModal(false)}>
+            <div style={{ ...styles.modalContent(isMobile), maxWidth: '520px' }} onClick={e => e.stopPropagation()}>
+              <div style={styles.modalHeader}>
+                <h3 style={styles.modalTitle}>
+                  <PlusCircle size={20} color="#059669" /> Tambah Paket English Course / Lainnya
+                </h3>
+                <button onClick={() => setShowTambahProgramModal(false)} style={styles.modalClose}><X size={18} /></button>
+              </div>
+              <div style={styles.modalBody}>
+                <div style={{ background: '#ecfdf5', border: '1px solid #a7f3d0', borderRadius: 10, padding: '10px 14px', marginBottom: 14 }}>
+                  <span style={{ fontSize: 12, color: '#065f46', lineHeight: 1.5 }}>
+                    💡 Siswa <strong>{student.nama}</strong> akan didaftarkan ke program tambahan baru tanpa mengubah paket regulernya. Masa aktif dan pembayarannya dilacak mandiri!
+                  </span>
+                </div>
+
+                <form onSubmit={handleSimpanProgramBaru}>
+                  {/* Pilihan Program */}
+                  <div style={styles.inputGroup}>
+                    <label style={styles.label}>Pilihan Program</label>
+                    <select
+                      style={styles.input}
+                      value={tambahProgramData.programType}
+                      onChange={e => {
+                        const val = e.target.value;
+                        let defaultNominal = 200000;
+                        if (val === 'English Course') {
+                          defaultNominal = (allPrices?.english?.levels?.find(l => l.id === tambahProgramData.level.toLowerCase())?.price) || 200000;
+                        } else if (val === 'Kelas Khusus Matematika') {
+                          defaultNominal = 150000;
+                        }
+                        setTambahProgramData(p => ({
+                          ...p,
+                          programType: val,
+                          nominalBulanan: defaultNominal
+                        }));
+                      }}
+                    >
+                      <option value="English Course">🇬🇧 English Course (Bimbel Bahasa Inggris)</option>
+                      <option value="Kelas Khusus Matematika">📐 Kelas Khusus Matematika</option>
+                      <option value="Program Tambahan Lainnya">✨ Program Tambahan Lainnya</option>
+                    </select>
+                  </div>
+
+                  {/* Level English Course jika English */}
+                  {tambahProgramData.programType === 'English Course' && (
+                    <div style={styles.inputGroup}>
+                      <label style={styles.label}>Tingkat / Level English Course</label>
+                      <select
+                        style={styles.input}
+                        value={tambahProgramData.level}
+                        onChange={e => {
+                          const lvl = e.target.value;
+                          const prc = (allPrices?.english?.levels?.find(l => l.id === lvl.toLowerCase())?.price) || (lvl === 'Kids' ? 150000 : lvl === 'Junior' ? 200000 : 300000);
+                          setTambahProgramData(p => ({ ...p, level: lvl, nominalBulanan: prc }));
+                        }}
+                      >
+                        <option value="Kids">Kids (Rp 150.000 / bln)</option>
+                        <option value="Junior">Junior (Rp 200.000 / bln)</option>
+                        <option value="Professional">Professional (Rp 300.000 / bln)</option>
+                      </select>
+                    </div>
+                  )}
+
+                  {/* Nama Program Custom jika lainnya */}
+                  {tambahProgramData.programType === 'Program Tambahan Lainnya' && (
+                    <div style={styles.inputGroup}>
+                      <label style={styles.label}>Nama Program</label>
+                      <input
+                        type="text"
+                        style={styles.input}
+                        placeholder="Contoh: Kelas Calistung, Persiapan Olimpiade"
+                        value={tambahProgramData.namaProgramCustom}
+                        onChange={e => setTambahProgramData(p => ({ ...p, namaProgramCustom: e.target.value }))}
+                        required
+                      />
+                    </div>
+                  )}
+
+                  <div style={{ display: 'flex', gap: 10 }}>
+                    {/* Durasi */}
+                    <div style={{ ...styles.inputGroup, flex: 1 }}>
+                      <label style={styles.label}>Durasi Paket (Bulan)</label>
+                      <select
+                        style={styles.input}
+                        value={tambahProgramData.durasiBulan}
+                        onChange={e => setTambahProgramData(p => ({ ...p, durasiBulan: parseInt(e.target.value) || 1 }))}
+                      >
+                        <option value="1">1 Bulan</option>
+                        <option value="2">2 Bulan</option>
+                        <option value="3">3 Bulan</option>
+                        <option value="6">6 Bulan</option>
+                        <option value="12">12 Bulan (1 Tahun)</option>
+                      </select>
+                    </div>
+
+                    {/* Tanggal Mulai */}
+                    <div style={{ ...styles.inputGroup, flex: 1 }}>
+                      <label style={styles.label}>Tanggal Mulai</label>
+                      <input
+                        type="date"
+                        style={styles.input}
+                        value={tambahProgramData.tanggalMulai}
+                        onChange={e => setTambahProgramData(p => ({ ...p, tanggalMulai: e.target.value }))}
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  {/* Tanggal Selesai Preview */}
+                  <div style={{ background: '#f8fafc', padding: '10px 12px', borderRadius: 8, marginBottom: 14, fontSize: 12, color: '#475569', display: 'flex', justifyContent: 'space-between' }}>
+                    <span>Masa Aktif Paket:</span>
+                    <strong>
+                      {tambahProgramData.tanggalMulai} s.d {tambahBulanKeTanggal(tambahProgramData.tanggalMulai, parseInt(tambahProgramData.durasiBulan || 1))}
+                    </strong>
+                  </div>
+
+                  {/* Biaya */}
+                  <div style={{ display: 'flex', gap: 10 }}>
+                    <div style={{ ...styles.inputGroup, flex: 1 }}>
+                      <label style={styles.label}>Biaya per Bulan (Rp)</label>
+                      <input
+                        type="number"
+                        style={styles.input}
+                        value={tambahProgramData.nominalBulanan}
+                        onChange={e => setTambahProgramData(p => ({ ...p, nominalBulanan: parseInt(e.target.value) || 0 }))}
+                        required
+                      />
+                    </div>
+                    <div style={{ ...styles.inputGroup, flex: 1 }}>
+                      <label style={styles.label}>Total Biaya (Rp)</label>
+                      <div style={{ ...styles.input, background: '#f1f5f9', fontWeight: 'bold', color: '#059669', display: 'flex', alignItems: 'center' }}>
+                        Rp {((parseInt(tambahProgramData.durasiBulan) || 1) * (parseInt(tambahProgramData.nominalBulanan) || 0)).toLocaleString()}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Metode Bayar */}
+                  <div style={styles.inputGroup}>
+                    <label style={styles.label}>Metode Pembayaran</label>
+                    <select
+                      style={styles.input}
+                      value={tambahProgramData.metodeBayar}
+                      onChange={e => setTambahProgramData(p => ({ ...p, metodeBayar: e.target.value }))}
+                    >
+                      <option value="Tunai">💵 Tunai — uang masuk kas brankas kasir admin</option>
+                      <option value="Transfer">💳 Transfer — masuk rekening bimbel</option>
+                    </select>
+                  </div>
+
+                  {/* Field Rekening Pengirim bila Transfer */}
+                  {tambahProgramData.metodeBayar === 'Transfer' && (
+                    <div style={{ background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 10, padding: '12px 12px 4px', marginBottom: 14 }}>
+                      <div style={styles.inputGroup}>
+                        <label style={styles.label}>
+                          🏦 Atas Nama Rekening Pengirim <span style={{ color: '#ef4444' }}>*wajib</span>
+                        </label>
+                        <input
+                          type="text"
+                          style={styles.input}
+                          value={tambahProgramData.refTransfer}
+                          onChange={e => setTambahProgramData(p => ({ ...p, refTransfer: e.target.value }))}
+                          placeholder="Contoh: BCA a.n. Yoni Widyawati"
+                          required
+                        />
+                        <div style={{ fontSize: 10.5, color: '#1e40af', marginTop: 4 }}>
+                          💡 Tuliskan persis seperti di mutasi rekening agar Owner langsung cocok saat audit mutasi BCA.
+                        </div>
+                      </div>
+                      <div style={styles.inputGroup}>
+                        <label style={styles.label}>Foto Bukti Transfer (Opsional)</label>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          style={{ ...styles.input, padding: 8, background: 'white' }}
+                          onChange={e => setTambahProgramBukti(e.target.files?.[0] || null)}
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  <div style={styles.modalFooter}>
+                    <button type="button" onClick={() => setShowTambahProgramModal(false)} style={styles.btnCancel}>Batal</button>
+                    <button type="submit" style={styles.btnSave} disabled={isTambahProgramProcessing}>
+                      {isTambahProgramProcessing ? '⏳ Menyimpan...' : <><Save size={16} /> Simpan &amp; Aktifkan</>}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ===== MODAL PERPANJANG EXTRA PROGRAM ===== */}
+        {showPerpanjangExtraModal && selectedExtraProg && (
+          <div style={styles.modalOverlay} onClick={() => setShowPerpanjangExtraModal(false)}>
+            <div style={{ ...styles.modalContent(isMobile), maxWidth: '480px' }} onClick={e => e.stopPropagation()}>
+              <div style={styles.modalHeader}>
+                <h3 style={styles.modalTitle}>
+                  <RefreshCw size={20} color="#7c3aed" /> Perpanjang {selectedExtraProg.namaProgram}
+                </h3>
+                <button onClick={() => setShowPerpanjangExtraModal(false)} style={styles.modalClose}><X size={18} /></button>
+              </div>
+              <div style={styles.modalBody}>
+                <div style={{ background: '#f5f3ff', border: '1px solid #ddd6fe', borderRadius: 10, padding: '10px 14px', marginBottom: 14 }}>
+                  <span style={{ fontSize: 12, color: '#5b21b6', lineHeight: 1.5 }}>
+                    Masa aktif saat ini: <strong>{selectedExtraProg.tanggalSelesai}</strong>
+                  </span>
+                </div>
+
+                <form onSubmit={handleSimpanPerpanjangExtra}>
+                  <div style={styles.inputGroup}>
+                    <label style={styles.label}>Tambah Durasi (Bulan)</label>
+                    <select
+                      style={styles.input}
+                      value={extraPerpanjangData.durasiTambah}
+                      onChange={e => {
+                        const dur = parseInt(e.target.value) || 1;
+                        const nom = (selectedExtraProg.nominalBulanan || 200000) * dur;
+                        setExtraPerpanjangData(p => ({ ...p, durasiTambah: dur, nominal: nom }));
+                      }}
+                    >
+                      <option value="1">+1 Bulan</option>
+                      <option value="2">+2 Bulan</option>
+                      <option value="3">+3 Bulan</option>
+                      <option value="6">+6 Bulan</option>
+                      <option value="12">+12 Bulan</option>
+                    </select>
+                  </div>
+
+                  <div style={styles.inputGroup}>
+                    <label style={styles.label}>Nominal Pembayaran (Rp)</label>
+                    <input
+                      type="number"
+                      style={styles.input}
+                      value={extraPerpanjangData.nominal}
+                      onChange={e => setExtraPerpanjangData(p => ({ ...p, nominal: parseInt(e.target.value) || 0 }))}
+                      required
+                    />
+                  </div>
+
+                  <div style={styles.inputGroup}>
+                    <label style={styles.label}>Metode Pembayaran</label>
+                    <select
+                      style={styles.input}
+                      value={extraPerpanjangData.metodeBayar}
+                      onChange={e => setExtraPerpanjangData(p => ({ ...p, metodeBayar: e.target.value }))}
+                    >
+                      <option value="Tunai">💵 Tunai — masuk brankas kasir</option>
+                      <option value="Transfer">💳 Transfer — masuk bank bimbel</option>
+                    </select>
+                  </div>
+
+                  {extraPerpanjangData.metodeBayar === 'Transfer' && (
+                    <div style={{ background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 10, padding: '12px 12px 4px', marginBottom: 14 }}>
+                      <div style={styles.inputGroup}>
+                        <label style={styles.label}>
+                          🏦 Atas Nama Rekening Pengirim <span style={{ color: '#ef4444' }}>*wajib</span>
+                        </label>
+                        <input
+                          type="text"
+                          style={styles.input}
+                          value={extraPerpanjangData.refTransfer}
+                          onChange={e => setExtraPerpanjangData(p => ({ ...p, refTransfer: e.target.value }))}
+                          placeholder="Contoh: BCA a.n. Yoni Widyawati"
+                          required
+                        />
+                      </div>
+                      <div style={styles.inputGroup}>
+                        <label style={styles.label}>Foto Bukti Transfer (Opsional)</label>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          style={{ ...styles.input, padding: 8, background: 'white' }}
+                          onChange={e => setExtraPerpanjangBukti(e.target.files?.[0] || null)}
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  <div style={styles.modalFooter}>
+                    <button type="button" onClick={() => setShowPerpanjangExtraModal(false)} style={styles.btnCancel}>Batal</button>
+                    <button type="submit" style={styles.btnSave} disabled={isPerpanjangExtraProcessing}>
+                      {isPerpanjangExtraProcessing ? '⏳ Menyimpan...' : <><Save size={16} /> Simpan Perpanjangan</>}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
         )}
 
       </div>

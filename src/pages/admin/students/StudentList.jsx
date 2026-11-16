@@ -6,7 +6,7 @@ import { db } from '../../../firebase';
 import { collection, getDocs, deleteDoc, doc, updateDoc, addDoc, serverTimestamp } from "firebase/firestore";
 import * as XLSX from 'xlsx';
 import { 
-  Search, Sparkles, Copy, MessageSquare, Plus, Edit3, Trash2, UserCheck, UserX, Users,
+  Search, Sparkles, Copy, MessageSquare, Plus, PlusCircle, Edit3, Trash2, UserCheck, UserX, Users,
   Home, ChevronRight, BookOpen, RefreshCw, AlertCircle, CheckCircle,
   CreditCard, Calendar, Clock, Hash, Download, PieChart, BarChart3,
   FileSpreadsheet, Printer, Bell, Zap, Send, Mail, User, GraduationCap,
@@ -884,6 +884,11 @@ const StudentList = () => {
                                 )}
                               </div>
                               <div style={styles.studentId}>{s.studentId}</div>
+                              {Array.isArray(s.extraPrograms) && s.extraPrograms.filter(p => p.status === 'Aktif').map(ep => (
+                                <span key={ep.id} style={{ display: 'inline-block', fontSize: 10, fontWeight: 700, color: '#6d28d9', background: '#ede9fe', border: '1px solid #ddd6fe', padding: '1px 6px', borderRadius: 4, marginTop: 3, marginRight: 4 }}>
+                                  🇬🇧 {ep.namaProgram}
+                                </span>
+                              ))}
                             </div>
                           </div>
                         </td>
@@ -937,9 +942,17 @@ const StudentList = () => {
                             <button 
                               onClick={() => navigate(`/admin/students/finance/${s.id}`)} 
                               style={{...styles.btnAction, background: '#dbeafe', color: '#1e40af'}}
-                              title="Keuangan"
+                              title="Keuangan & Pembayaran"
                             >
                               <CreditCard size={14} />
+                            </button>
+                            {/* 🔥 BARU: Tambah Program English Course / Paket Tambahan */}
+                            <button
+                              onClick={() => navigate(`/admin/students/finance/${s.id}?english=1`)}
+                              style={{...styles.btnAction, background: '#ecfdf5', color: '#065f46'}}
+                              title="Tambah Paket English Course / Paket Baru"
+                            >
+                              <PlusCircle size={14} />
                             </button>
                             {/* 🔥 BARU (2026-10-12): revisi kesalahan pembayaran
                                 langsung dari daftar siswa -- membuka halaman

@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { db } from '../../../firebase';
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { bolehCatatAdmin } from '../../../utils/keuanganAudit';
-import { Save, ArrowUpCircle, ArrowDownCircle } from 'lucide-react';
+import { Save, ArrowUpCircle, ArrowDownCircle, BookOpen, ExternalLink } from 'lucide-react';
 import { uploadElearningFile } from '../../../services/uploadService';
 import { KANAL } from '../../../utils/kanalUang';
-import { ambilNomorKwitansiBerikutnya, cetakKwitansi } from '../../../utils/kwitansi';
+import { ambilNomorKwitansiBerikutnya } from '../../../utils/kwitansi';
 
 // 🔥 FIX BUG NYATA (zona waktu & transaksi "gaib"):
 // (1) Tanggal default form ini sebelumnya pakai toISOString() (UTC) -- buat
@@ -34,6 +35,7 @@ const batasBulanBerjalan = () => {
 };
 
 const TransactionForm = () => {
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [alertMsg, setAlertMsg] = useState(null);
   // 🔥 BARU (modul rekonsiliasi & kwitansi): bukti transfer (nomor ref +
@@ -144,9 +146,7 @@ const TransactionForm = () => {
       setRefTransfer('');
       setBuktiFile(null);
       setMintaKwitansi(false);
-      if (dataKwitansi && window.confirm(`Kwitansi ${noKwitansi} sudah dibuat. Cetak sekarang?`)) {
-        cetakKwitansi(dataKwitansi);
-      }
+      // Kwitansi tersimpan di database & riwayat transaksi
     } catch (error) {
       console.error(error);
       showAlert('❌ Gagal menyimpan: ' + error.message);
@@ -166,6 +166,50 @@ const TransactionForm = () => {
           borderRadius: 10, marginBottom: 15, fontWeight: 'bold', fontSize: 13
         }}>{alertMsg}</div>
       )}
+
+      {/* BANNER PANDUAN: JANGAN CATAT SPP / ENGLISH COURSE DI SINI */}
+      <div style={{
+        background: '#eff6ff',
+        border: '1.5px solid #93c5fd',
+        borderRadius: 12,
+        padding: '14px 16px',
+        marginBottom: 16,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        flexWrap: 'wrap',
+        gap: 12
+      }}>
+        <div style={{ flex: 1, minWidth: 260 }}>
+          <strong style={{ color: '#1e40af', fontSize: 13, display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+            💡 Mau catat SPP, Perpanjangan, atau Tambah Paket English Course?
+          </strong>
+          <span style={{ fontSize: 11.5, color: '#1e3a8a', lineHeight: 1.5, display: 'block' }}>
+            Jangan dicatat lewat form ini (karena ini hanya kas operasional umum). 
+            Buka menu <strong>Daftar Siswa &gt; Keuangan Siswa</strong> agar status paket &amp; masa aktif siswa tercatat otomatis!
+          </span>
+        </div>
+        <button
+          type="button"
+          onClick={() => navigate('/admin/students')}
+          style={{
+            background: '#2563eb',
+            color: 'white',
+            border: 'none',
+            padding: '8px 14px',
+            borderRadius: 8,
+            fontWeight: 'bold',
+            fontSize: 12,
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6,
+            boxShadow: '0 2px 6px rgba(37,99,235,0.25)'
+          }}
+        >
+          <BookOpen size={14} /> Ke Daftar Siswa
+        </button>
+      </div>
 
       <div style={styles.card}>
         <h3 style={styles.title}>
