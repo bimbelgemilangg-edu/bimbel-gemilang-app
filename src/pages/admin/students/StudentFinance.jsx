@@ -167,6 +167,24 @@ const StudentFinance = () => {
   const [showModalRincianSesi, setShowModalRincianSesi] = useState(false);
   const [modalRincianData, setModalRincianData] = useState(null);
 
+  // 🔥 BARU (2026-11-16): Modal Ganti / Upgrade Paket Siswa (Kasus Kanita dll: 1 bln -> 6 bln dengan Cicilan)
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [upgradeData, setUpgradeData] = useState({
+    paketId: '',
+    paketNama: '',
+    durasiBulan: 6,
+    hargaPaketBaru: 1800000,
+    metodeBayar: 'Cicilan',
+    tenorCicilan: 3,
+    bayarHariIni: 0,
+    metodeBayarHariIni: 'Tunai',
+    refTransfer: '',
+    catatan: '',
+    customDueDates: []
+  });
+  const [upgradeBukti, setUpgradeBukti] = useState(null);
+  const [isUpgradeProcessing, setIsUpgradeProcessing] = useState(false);
+
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
     window.addEventListener('resize', handleResize);
@@ -971,6 +989,247 @@ const StudentFinance = () => {
     });
   };
 
+  // ===== 🔥 BARU (2026-11-16): GANTI / UPGRADE PAKET SISWA =====
+  // Menangani kasus seperti Kanita: beralih dari 1 bulan ke 6 bulan dengan Cicilan.
+  // Uang yang sudah masuk sebelumnya otomatis diakui sebagai pembayaran paket baru,
+  // sisa tagihan disusun ke jadwal cicilan baru tanpa merusak pembukuan!
+  const getDaftarPaketUpgrade = () => {
+    if (!allPrices) return [];
+    const jenjang = (student?.jenjang || 'smp').toLowerCase();
+    if (student?.kategori === 'English' || jenjang === 'english') {
+      return (allPrices.english?.levels || []).map(l => ({
+        id: l.id,
+        name: l.name,
+        price: parseInt(l.price) || 200000
+      }));
+    }
+    return (allPrices[jenjang]?.packages || []).map(p => ({
+      id: p.id,
+      name: p.name,
+      price: parseInt(p.price) || 0
+    }));
+  };
+
+  const getHargaBulananPaket = (paketId) => {
+    if (!allPrices) return hargaPaket || 300000;
+    const pkgs = getDaftarPaketUpgrade();
+    const found = pkgs.find(p => p.id === paketId);
+    return found ? found.price : (hargaPaket || 300000);
+  };
+
+  const openUpgradeModal = () => {
+    const pkgs = getDaftarPaketUpgrade();
+    const currentPkg = pkgs.find(p => p.id === student?.paket) || pkgs[0] || null;
+    const durasiAwal = 6;
+    const hargaBulanan = currentPkg?.price || hargaPaket || 300000;
+    const totalHargaDefault = hargaBulanan * durasiAwal;
+    const today = tanggalLokalHariIni();
+    const defaultTenor = 3;
+    const dates = [];
+    for (let i = 1; i <= defaultTenor; i++) {
+      dates.push(tambahBulanKeTanggal(today, i));
+    }
+
+    setUpgradeData({
+      paketId: currentPkg?.id || student?.paket || '',
+      paketNama: currentPkg?.name || student?.paketNama || '',
+      durasiBulan: durasiAwal,
+      hargaPaketBaru: totalHargaDefault,
+      metodeBayar: 'Cicilan',
+      tenorCicilan: defaultTenor,
+      bayarHariIni: 0,
+      metodeBayarHariIni: 'Tunai',
+      refTransfer: '',
+      catatan: `Upgrade/Ganti Paket ke ${durasiAwal} bulan (${student?.nama})`,
+      customDueDates: dates
+    });
+    setUpgradeBukti(null);
+    setShowUpgradeModal(true);
+  };
+
+  const handleSimpanUpgrade = async (e) => {
+    e.preventDefault();
+    const durasi = parseInt(upgradeData.durasiBulan) || 0;
+    const hargaBaru = parseInt(upgradeData.hargaPaketBaru) || 0;
+    const bayarHariIni = parseInt(upgradeData.bayarHariIni) || 0;
+    const sudahBayarLama = parseInt(student?.totalBayar || 0);
+
+    if (durasi <= 0) return showAlert('❌ Durasi paket minimal 1 bulan!');
+    if (hargaBaru <= 0) return showAlert('❌ Total biaya paket baru harus diisi!');
+    if (hargaBaru < sudahBayarLama) {
+      return showAlert(`⚠️ Total biaya baru (Rp ${hargaBaru.toLocaleString()}) lebih kecil dari uang yang sudah dibayar siswa (Rp ${sudahBayarLama.toLocaleString()})! Cek kembali.`);
+    }
+
+    if (bayarHariIni > 0 && upgradeData.metodeBayarHariIni === 'Transfer' && !upgradeData.refTransfer.trim()) {
+      return showAlert('⛔ Pembayaran via Transfer WAJIB mengisi Nama Pemilik Rekening Pengirim!');
+    }
+
+    setIsUpgradeProcessing(true);
+    try {
+      const today = tanggalLokalHariIni();
+      const kodeUnik = student?.studentId || id;
+      const tglMulai = student?.tanggalMulai || today;
+      const tglSelesaiBaru = tambahBulanKeTanggal(tglMulai, durasi);
+
+      let buktiUrl = '';
+      if (upgradeBukti) {
+        const up = await uploadElearningFile(upgradeBukti, `bukti_transfer/${today.replace(/-/g, '')}`);
+        if (up?.success && up.downloadURL) buktiUrl = up.downloadURL;
+      }
+
+      let noKwitansi = '';
+      if (bayarHariIni > 0) {
+        noKwitansi = await ambilNomorKwitansiBerikutnya(new Date(`${today}T00:00:00`));
+      }
+
+      const totalBayarBaru = sudahBayarLama + bayarHariIni;
+      const sisaTagihanBaru = Math.max(0, hargaBaru - totalBayarBaru);
+      const isLunasBaru = sisaTagihanBaru === 0;
+
+      const batch = writeBatch(db);
+
+      // 1. Update Dokumen Siswa
+      const studentUpdate = {
+        paket: upgradeData.paketId,
+        paketNama: upgradeData.paketNama || student?.paketNama || '',
+        durasiBulan: durasi,
+        tanggalMulai: tglMulai,
+        tanggalSelesai: tglSelesaiBaru,
+        totalTagihan: hargaBaru,
+        totalBayar: totalBayarBaru,
+        metodeBayar: isLunasBaru ? (bayarHariIni > 0 ? upgradeData.metodeBayarHariIni : (student.metodeBayar || 'Tunai')) : 'Cicilan',
+        status: 'Aktif',
+        isBlocked: false,
+        updatedAt: serverTimestamp()
+      };
+      batch.update(doc(db, "students", id), studentUpdate);
+
+      // 2. Jika ada uang masuk hari ini, catat ke finance_logs
+      if (bayarHariIni > 0) {
+        const logRef = doc(collection(db, "finance_logs"));
+        batch.set(logRef, {
+          studentId: kodeUnik,
+          namaSiswa: student?.nama || '',
+          date: today,
+          type: 'Pemasukan',
+          category: 'Perpanjangan Paket',
+          amount: bayarHariIni,
+          method: upgradeData.metodeBayarHariIni,
+          note: `Upgrade Paket ${durasi} Bulan: ${student?.nama} (Bayar Selisih/Angsuran)` + (upgradeData.refTransfer.trim() ? ` [Rek. Pengirim: ${upgradeData.refTransfer.trim()}]` : ''),
+          kanal: upgradeData.metodeBayarHariIni === 'Tunai' ? KANAL.KAS_ADMIN : KANAL.BANK,
+          refTransfer: upgradeData.refTransfer.trim(),
+          buktiUrl,
+          noKwitansi,
+          statusRekonsiliasi: upgradeData.metodeBayarHariIni === 'Transfer' ? 'pending' : '',
+          createdAt: serverTimestamp()
+        });
+      }
+
+      // 3. Susun Tagihan & Cicilan (finance_tagihan)
+      if (!isLunasBaru) {
+        const detailCicilanBaru = [];
+        let counter = 1;
+
+        // Cicilan #1: Uang lama yang sudah masuk
+        if (sudahBayarLama > 0) {
+          detailCicilanBaru.push({
+            bulanKe: counter++,
+            nominal: sudahBayarLama,
+            status: 'Lunas',
+            jatuhTempo: tglMulai,
+            tanggalBayar: tglMulai,
+            keterangan: 'Pembayaran Awal / Paket Sebelumnya'
+          });
+        }
+
+        // Cicilan #2: Uang tambahan hari ini (jika ada)
+        if (bayarHariIni > 0) {
+          detailCicilanBaru.push({
+            bulanKe: counter++,
+            nominal: bayarHariIni,
+            status: 'Lunas',
+            jatuhTempo: today,
+            tanggalBayar: today,
+            keterangan: 'Pembayaran Saat Upgrade Paket'
+          });
+        }
+
+        // Cicilan #Sisa: Dibagi sesuai tenor yang dipilih
+        const tenorSisa = Math.max(1, parseInt(upgradeData.tenorCicilan) || 1);
+        const nominalPerCicilan = Math.round(sisaTagihanBaru / tenorSisa);
+        let sisaAkumulasi = sisaTagihanBaru;
+
+        for (let i = 0; i < tenorSisa; i++) {
+          const isTerakhir = i === tenorSisa - 1;
+          const nom = isTerakhir ? sisaAkumulasi : nominalPerCicilan;
+          sisaAkumulasi -= nom;
+          const tglJatuhTempo = upgradeData.customDueDates[i] || tambahBulanKeTanggal(today, i + 1);
+
+          detailCicilanBaru.push({
+            bulanKe: counter++,
+            nominal: nom,
+            status: 'Belum Lunas',
+            jatuhTempo: tglJatuhTempo,
+            tanggalBayar: null
+          });
+        }
+
+        const existingCicilanLalu = [
+          ...(Array.isArray(tagihan?.riwayatCicilanLalu) ? tagihan.riwayatCicilanLalu : [])
+        ];
+
+        if (tagihan) {
+          batch.update(doc(db, "finance_tagihan", tagihan.id), {
+            totalTagihan: hargaBaru,
+            sisaTagihan: sisaTagihanBaru,
+            detailCicilan: detailCicilanBaru,
+            riwayatCicilanLalu: existingCicilanLalu,
+            updatedAt: serverTimestamp()
+          });
+        } else {
+          const newTagihanRef = doc(collection(db, "finance_tagihan"));
+          batch.set(newTagihanRef, {
+            studentId: kodeUnik,
+            namaSiswa: student?.nama || '',
+            noHp: student?.ortu?.hp || '',
+            totalTagihan: hargaBaru,
+            sisaTagihan: sisaTagihanBaru,
+            detailCicilan: detailCicilanBaru,
+            riwayatCicilanLalu: [],
+            createdAt: serverTimestamp()
+          });
+        }
+      } else {
+        // Jika lunas penuh
+        if (tagihan) {
+          const pastInstallments = [
+            ...(Array.isArray(tagihan?.riwayatCicilanLalu) ? tagihan.riwayatCicilanLalu : []),
+            ...(Array.isArray(tagihan?.detailCicilan) ? tagihan.detailCicilan : [])
+          ];
+          batch.update(doc(db, "finance_tagihan", tagihan.id), {
+            totalTagihan: hargaBaru,
+            sisaTagihan: 0,
+            detailCicilan: [],
+            riwayatCicilanLalu: pastInstallments,
+            updatedAt: serverTimestamp()
+          });
+        }
+      }
+
+      await batch.commit();
+
+      showAlert(`🎉 Paket berhasil di-upgrade ke ${durasi} Bulan! Data siswa & cicilan telah sinkron.`);
+      setShowUpgradeModal(false);
+      setUpgradeBukti(null);
+      fetchData();
+    } catch (err) {
+      console.error(err);
+      showAlert('❌ Gagal upgrade paket: ' + err.message);
+    } finally {
+      setIsUpgradeProcessing(false);
+    }
+  };
+
   // ===== BAYAR CICILAN =====
   const openBayarModal = (index = null) => {
     if (isPendaftaranLunas() && index === null) {
@@ -1441,93 +1700,152 @@ const StudentFinance = () => {
               </strong>
             </div>
 
-            {!isLunas && !isPendaftaranLunas() && (
-              <button onClick={() => openBayarModal(null)} style={styles.btnLunasin}>
-                <CheckCircle size={16} /> Bayar Lunas
+            {/* === PUSAT AKSI KEUANGAN SISWA TERINTEGRASI === */}
+            <div style={{ marginTop: 14, display: 'flex', flexDirection: 'column', gap: 9 }}>
+              {/* 1. Tombol Bayar Tagihan (jika belum lunas) */}
+              {!isLunas && !isPendaftaranLunas() && (
+                <button onClick={() => openBayarModal(null)} style={styles.btnLunasin}>
+                  <CheckCircle size={16} /> Bayar Sisa Tagihan (Rp {sisa.toLocaleString()})
+                </button>
+              )}
+
+              {/* 2. Tombol Ganti / Upgrade Paket (Untuk kasus Kanita dll: 1 bln -> 6 bln, ubah ke cicilan, dll) */}
+              <button
+                type="button"
+                onClick={openUpgradeModal}
+                style={{
+                  width: '100%',
+                  padding: '12px 14px',
+                  background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: 10,
+                  fontWeight: 'bold',
+                  fontSize: 13,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 8,
+                  boxShadow: '0 3px 10px rgba(37,99,235,0.25)'
+                }}
+              >
+                <RefreshCw size={16} /> 🔄 Ganti / Upgrade Paket Siswa
               </button>
-            )}
 
-            <button
-              onClick={() => {
-                // 🔥 FIX BUG TERKAIT: sebelumnya modal dibuka TANPA reset
-                // `perpanjangData` -- kalau admin pernah buka modal ini
-                // sebelumnya (buat siswa lain, atau sempat pilih durasi
-                // lalu batal), pilihan LAMA itu masih nyangkut & langsung
-                // ke-pre-select lagi begitu modal dibuka ulang. Sekarang
-                // di-reset bersih ke kondisi "belum pilih apa-apa" setiap
-                // kali modal ini dibuka, supaya admin SELALU mulai dari
-                // keadaan netral -- gak ada peninggalan pilihan dari sesi
-                // sebelumnya yang bisa bikin salah pencet.
-                setPerpanjangData({
-                  durasiTambah: 0,
-                  metodeBayar: 'Tunai',
-                  tenor: 1,
-                  tanggalCicilan1: tanggalLokalHariIni(),
-                  customDueDates: []
-                });
-                setPerpanjangRef('');
-                setPerpanjangBukti(null);
-                setShowPerpanjangModal(true);
-              }}
-              style={styles.btnPerpanjang}
-            >
-              <RefreshCw size={16} /> Perpanjang Paket
-            </button>
+              {/* 3. Tombol Perpanjang Masa Paket (Tambah durasi ke depan) */}
+              <button
+                type="button"
+                onClick={() => {
+                  setPerpanjangData({
+                    durasiTambah: 0,
+                    metodeBayar: 'Tunai',
+                    tenor: 1,
+                    tanggalCicilan1: tanggalLokalHariIni(),
+                    customDueDates: []
+                  });
+                  setPerpanjangRef('');
+                  setPerpanjangBukti(null);
+                  setShowPerpanjangModal(true);
+                }}
+                style={{
+                  ...styles.btnPerpanjang,
+                  marginTop: 0,
+                  background: 'linear-gradient(135deg, #7c3aed, #6d28d9)',
+                  boxShadow: '0 3px 10px rgba(124,58,237,0.2)'
+                }}
+              >
+                <Calendar size={16} /> 📅 Perpanjang Masa Paket (Tambah Durasi)
+              </button>
 
-            {/* 🔥 BARU: tombol koreksi -- KHUSUS buat kasus SALAH INPUT (bukan
-                perpanjangan beneran), mis. pendaftaran salah masukin tanggal/
-                nominal/METODE BAYAR. Bedanya ditegasin lewat warna & label,
-                biar admin gak ketuker sama "Perpanjang Paket" (yang selalu
-                NAMBAH). */}
-            <button onClick={openKoreksiModal} style={styles.btnKoreksi}>
-              <Edit3 size={14} /> Koreksi Data (kalau salah input)
-            </button>
-            <button
-              onClick={() => { setPenyesuaianData({ kesepakatan: String(student?.totalTagihan || ''), alasan: '', rincian: '', durasi: '' }); setShowPenyesuaianModal(true); }}
-              style={{ ...styles.btnKoreksi, background: '#0f767e', borderColor: '#0f767e' }}
-              title="Penawaran / diskon / paket pecah / paket promo 2-4 bulan: cicilan & durasi menyesuaikan otomatis"
-            >
-              <Edit3 size={14} /> Penyesuaian Harga / Penawaran
-            </button>
+              {/* 4. Tombol Tambah Program English Course / Lainnya */}
+              <button
+                type="button"
+                onClick={() => {
+                  const defaultNominal = (allPrices?.english?.levels?.find(l => l.id === 'junior')?.price) || 200000;
+                  setTambahProgramData({
+                    programType: 'English Course',
+                    level: 'Junior',
+                    durasiBulan: 1,
+                    nominalBulanan: defaultNominal,
+                    tanggalMulai: tanggalLokalHariIni(),
+                    metodeBayar: 'Tunai',
+                    refTransfer: '',
+                    catatan: '',
+                  });
+                  setTambahProgramBukti(null);
+                  setShowTambahProgramModal(true);
+                }}
+                style={{
+                  width: '100%',
+                  padding: '11px 14px',
+                  background: 'linear-gradient(135deg, #059669, #10b981)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: 10,
+                  fontWeight: 'bold',
+                  fontSize: 12.5,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 8,
+                  boxShadow: '0 3px 10px rgba(16,185,129,0.2)'
+                }}
+              >
+                <PlusCircle size={15} /> 🇬🇧 Tambah Paket English Course / Lainnya
+              </button>
 
-            {/* 🔥 BARU: Tombol Tambah Program English Course / Program Lain */}
-            <button
-              type="button"
-              onClick={() => {
-                const defaultNominal = (allPrices?.english?.levels?.find(l => l.id === 'junior')?.price) || 200000;
-                setTambahProgramData({
-                  programType: 'English Course',
-                  level: 'Junior',
-                  durasiBulan: 1,
-                  nominalBulanan: defaultNominal,
-                  tanggalMulai: tanggalLokalHariIni(),
-                  metodeBayar: 'Tunai',
-                  refTransfer: '',
-                  catatan: '',
-                });
-                setTambahProgramBukti(null);
-                setShowTambahProgramModal(true);
-              }}
-              style={{
-                width: '100%',
-                marginTop: 10,
-                padding: '12px',
-                background: 'linear-gradient(135deg, #059669, #10b981)',
-                color: 'white',
-                border: 'none',
-                borderRadius: 10,
-                fontWeight: 'bold',
-                fontSize: 13,
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 8,
-                boxShadow: '0 4px 12px rgba(16,185,129,0.25)'
-              }}
-            >
-              <PlusCircle size={16} /> 🇬🇧 Tambah Paket English Course / Lainnya
-            </button>
+              {/* 5. Menu Penyesuaian & Koreksi Darurat (Dikelompokkan rapi agar tidak salah pencet) */}
+              <div style={{ marginTop: 6, borderTop: '1px dashed #cbd5e1', paddingTop: 8 }}>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <button
+                    type="button"
+                    onClick={() => { setPenyesuaianData({ kesepakatan: String(student?.totalTagihan || ''), alasan: '', rincian: '', durasi: '' }); setShowPenyesuaianModal(true); }}
+                    style={{
+                      flex: 1,
+                      padding: '8px 10px',
+                      background: '#f0fdfa',
+                      color: '#0f766e',
+                      border: '1px solid #99f6e4',
+                      borderRadius: 8,
+                      fontWeight: 600,
+                      fontSize: 11,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: 4
+                    }}
+                    title="Penawaran / diskon keluarga / promo"
+                  >
+                    <Edit3 size={12} /> Diskon / Penawaran
+                  </button>
+                  <button
+                    type="button"
+                    onClick={openKoreksiModal}
+                    style={{
+                      flex: 1,
+                      padding: '8px 10px',
+                      background: '#fffbeb',
+                      color: '#b45309',
+                      border: '1px solid #fde68a',
+                      borderRadius: 8,
+                      fontWeight: 600,
+                      fontSize: 11,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: 4
+                    }}
+                    title="Hanya jika admin salah ketik tanggal/nama"
+                  >
+                    <ShieldAlert size={12} /> Koreksi Data (Salah Input)
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* CARD PROGRAM & PAKET TAMBAHAN (MULTI-PROGRAM) */}
@@ -1984,6 +2302,259 @@ const StudentFinance = () => {
                     <button type="button" onClick={() => setShowPerpanjangModal(false)} style={styles.btnCancel}>Batal</button>
                     <button type="submit" style={styles.btnSave} disabled={isProcessing || hargaPaket <= 0}>
                       {isProcessing ? '⏳' : <><PlusCircle size={16} /> Perpanjang</>}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 🔥 BARU (2026-11-16): MODAL GANTI / UPGRADE PAKET SISWA (KASUS KANITA: 1 BLN -> 6 BLN DENGAN CICILAN) */}
+        {showUpgradeModal && (
+          <div style={styles.modalOverlay} onClick={() => !isUpgradeProcessing && setShowUpgradeModal(false)}>
+            <div style={{ ...styles.modalContent(isMobile), maxWidth: '560px' }} onClick={e => e.stopPropagation()}>
+              <div style={styles.modalHeader}>
+                <h3 style={styles.modalTitle}><RefreshCw size={20} color="#2563eb" /> Ganti / Upgrade Paket Siswa</h3>
+                <button onClick={() => setShowUpgradeModal(false)} style={styles.modalClose}><X size={18} /></button>
+              </div>
+              <div style={styles.modalBody}>
+                {/* PANDUAN OTOMATIS */}
+                <div style={{ background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 10, padding: '10px 14px', marginBottom: 14 }}>
+                  <div style={{ fontSize: 12, fontWeight: 'bold', color: '#1e40af', display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+                    💡 Uang Pembayaran Sebelumnya Diakui Utuh
+                  </div>
+                  <div style={{ fontSize: 11, color: '#1e3a8a', lineHeight: 1.5 }}>
+                    Uang yang sudah dibayar siswa sebesar <b>Rp {parseInt(student.totalBayar || 0).toLocaleString()}</b> otomatis menjadi kredit pengurang paket baru. Uang orang tua tidak hangus!
+                  </div>
+                </div>
+
+                <form onSubmit={handleSimpanUpgrade}>
+                  {/* PILIH DURASI PAKET BARU */}
+                  <div style={styles.inputGroup}>
+                    <label style={styles.label}>Pilih Durasi Paket Baru</label>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginBottom: 8 }}>
+                      {[1, 3, 6, 12].map(dur => (
+                        <button
+                          key={dur}
+                          type="button"
+                          onClick={() => {
+                            const hargaBln = getHargaBulananPaket(upgradeData.paketId);
+                            const totalBaru = hargaBln * dur;
+                            setUpgradeData(prev => ({
+                              ...prev,
+                              durasiBulan: dur,
+                              hargaPaketBaru: totalBaru
+                            }));
+                          }}
+                          style={{
+                            padding: '10px 6px',
+                            borderRadius: 8,
+                            border: upgradeData.durasiBulan === dur ? '2px solid #2563eb' : '1px solid #cbd5e1',
+                            background: upgradeData.durasiBulan === dur ? '#dbeafe' : 'white',
+                            color: upgradeData.durasiBulan === dur ? '#1e40af' : '#475569',
+                            fontWeight: 'bold',
+                            fontSize: 12,
+                            cursor: 'pointer',
+                            textAlign: 'center'
+                          }}
+                        >
+                          {dur === 12 ? '1 Tahun' : `${dur} Bulan`}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* PILIH JENIS PAKET */}
+                  <div style={styles.inputGroup}>
+                    <label style={styles.label}>Jenis Paket</label>
+                    <select
+                      value={upgradeData.paketId}
+                      onChange={e => {
+                        const pkgId = e.target.value;
+                        const pkgs = getDaftarPaketUpgrade();
+                        const found = pkgs.find(p => p.id === pkgId);
+                        const hargaBln = found ? found.price : hargaPaket;
+                        const totalBaru = hargaBln * (parseInt(upgradeData.durasiBulan) || 1);
+                        setUpgradeData(prev => ({
+                          ...prev,
+                          paketId: pkgId,
+                          paketNama: found?.name || prev.paketNama,
+                          hargaPaketBaru: totalBaru
+                        }));
+                      }}
+                      style={styles.input}
+                    >
+                      {getDaftarPaketUpgrade().map(p => (
+                        <option key={p.id} value={p.id}>
+                          {p.name} (Rp {p.price.toLocaleString()} / bln)
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* TOTAL BIAYA PAKET BARU */}
+                  <div style={styles.inputGroup}>
+                    <label style={styles.label}>
+                      Total Biaya Paket Baru (Rp)
+                      <small style={{ color: '#64748b', fontWeight: 'normal', marginLeft: 6 }}>(Bisa disesuaikan jika ada diskon khusus)</small>
+                    </label>
+                    <input
+                      type="number"
+                      value={upgradeData.hargaPaketBaru}
+                      onChange={e => setUpgradeData(prev => ({ ...prev, hargaPaketBaru: e.target.value }))}
+                      style={{ ...styles.input, fontWeight: 'bold', fontSize: 16, color: '#1e40af' }}
+                      required
+                    />
+                  </div>
+
+                  {/* KARTU KALKULATOR REKONSILIASI */}
+                  <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 10, padding: 12, marginBottom: 14 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11.5, marginBottom: 4 }}>
+                      <span style={{ color: '#64748b' }}>Total Tagihan Paket Baru:</span>
+                      <strong>Rp {(parseInt(upgradeData.hargaPaketBaru) || 0).toLocaleString()}</strong>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11.5, marginBottom: 4 }}>
+                      <span style={{ color: '#16a34a' }}>Sudah Dibayar Sebelumnya:</span>
+                      <strong style={{ color: '#16a34a' }}>- Rp {parseInt(student.totalBayar || 0).toLocaleString()}</strong>
+                    </div>
+                    <div style={{ height: 1, background: '#cbd5e1', margin: '6px 0' }} />
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, fontWeight: 'bold' }}>
+                      <span style={{ color: '#b45309' }}>Sisa Kewajiban yang Harus Diselesaikan:</span>
+                      <strong style={{ color: '#b45309' }}>
+                        Rp {Math.max(0, (parseInt(upgradeData.hargaPaketBaru) || 0) - parseInt(student.totalBayar || 0)).toLocaleString()}
+                      </strong>
+                    </div>
+                  </div>
+
+                  {/* SKEMA PENYELESAIAN SISA TAGIHAN */}
+                  <div style={styles.inputGroup}>
+                    <label style={styles.label}>Cara Penyelesaian Sisa Tagihan</label>
+                    <div style={styles.tabRow3}>
+                      <button
+                        type="button"
+                        onClick={() => setUpgradeData(prev => ({ ...prev, metodeBayar: 'Cicilan' }))}
+                        style={styles.methodBtn(upgradeData.metodeBayar === 'Cicilan')}
+                      >
+                        📋 Cicilan Bertahap
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setUpgradeData(prev => ({ ...prev, metodeBayar: 'Tunai', bayarHariIni: Math.max(0, (parseInt(upgradeData.hargaPaketBaru) || 0) - parseInt(student.totalBayar || 0)), metodeBayarHariIni: 'Tunai' }))}
+                        style={styles.methodBtn(upgradeData.metodeBayar === 'Tunai')}
+                      >
+                        💵 Lunas Tunai
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setUpgradeData(prev => ({ ...prev, metodeBayar: 'Transfer', bayarHariIni: Math.max(0, (parseInt(upgradeData.hargaPaketBaru) || 0) - parseInt(student.totalBayar || 0)), metodeBayarHariIni: 'Transfer' }))}
+                        style={styles.methodBtn(upgradeData.metodeBayar === 'Transfer')}
+                      >
+                        💳 Lunas Transfer
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* JIKA CICILAN */}
+                  {upgradeData.metodeBayar === 'Cicilan' && (
+                    <div style={{ background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 10, padding: '12px 12px 6px', marginBottom: 14 }}>
+                      <div style={styles.inputGroup}>
+                        <label style={styles.label}>Jumlah Angsuran Sisa Tagihan (Tenor)</label>
+                        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                          {[2, 3, 4, 5, 6].map(t => {
+                            const sisa = Math.max(0, (parseInt(upgradeData.hargaPaketBaru) || 0) - parseInt(student.totalBayar || 0) - (parseInt(upgradeData.bayarHariIni) || 0));
+                            const angsuran = Math.round(sisa / t);
+                            return (
+                              <button
+                                key={t}
+                                type="button"
+                                onClick={() => {
+                                  const today = tanggalLokalHariIni();
+                                  const dates = [];
+                                  for (let i = 1; i <= t; i++) {
+                                    dates.push(tambahBulanKeTanggal(today, i));
+                                  }
+                                  setUpgradeData(prev => ({ ...prev, tenorCicilan: t, customDueDates: dates }));
+                                }}
+                                style={styles.tenorBtn(upgradeData.tenorCicilan === t)}
+                              >
+                                {t}x @ Rp {angsuran.toLocaleString()}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {/* OPSI BAYAR SEBAGIAN HARI INI */}
+                      <div style={styles.inputGroup}>
+                        <label style={styles.label}>
+                          Bayar Tambahan Hari Ini? (Opsional)
+                        </label>
+                        <input
+                          type="number"
+                          placeholder="0 jika belum bayar lagi hari ini"
+                          value={upgradeData.bayarHariIni}
+                          onChange={e => setUpgradeData(prev => ({ ...prev, bayarHariIni: e.target.value }))}
+                          style={styles.input}
+                        />
+                        <div style={{ fontSize: 10.5, color: '#92400e', marginTop: 4 }}>
+                          💡 Contoh: jika saat upgrade orang tua langsung titip bayar Rp 300.000 lagi, masukkan di sini. Kwitansi akan otomatis terbit.
+                        </div>
+                      </div>
+
+                      {parseInt(upgradeData.bayarHariIni) > 0 && (
+                        <div style={styles.inputGroup}>
+                          <label style={styles.label}>Metode Pembayaran Hari Ini</label>
+                          <select
+                            value={upgradeData.metodeBayarHariIni}
+                            onChange={e => setUpgradeData(prev => ({ ...prev, metodeBayarHariIni: e.target.value }))}
+                            style={styles.input}
+                          >
+                            <option value="Tunai">💵 Tunai (Kasir Brankas)</option>
+                            <option value="Transfer">💳 Transfer Bank</option>
+                          </select>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* JIKA ADA PEMBAYARAN VIA TRANSFER */}
+                  {(upgradeData.metodeBayar === 'Transfer' || (upgradeData.metodeBayar === 'Cicilan' && parseInt(upgradeData.bayarHariIni) > 0 && upgradeData.metodeBayarHariIni === 'Transfer')) && (
+                    <div style={{ background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 10, padding: 12, marginBottom: 14 }}>
+                      <div style={styles.inputGroup}>
+                        <label style={styles.label}>
+                          🏦 Atas Nama Rekening Pengirim (di Mutasi Bank) <span style={{ color: '#ef4444' }}>*Wajib</span>
+                        </label>
+                        <input
+                          type="text"
+                          value={upgradeData.refTransfer}
+                          onChange={e => setUpgradeData(prev => ({ ...prev, refTransfer: e.target.value }))}
+                          placeholder="Contoh: BCA a.n. Orang Tua Siswa"
+                          style={styles.input}
+                          required
+                        />
+                      </div>
+                      <div style={styles.inputGroup}>
+                        <label style={styles.label}>Foto Bukti Transfer (Opsional)</label>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={e => setUpgradeBukti(e.target.files?.[0] || null)}
+                          style={{ ...styles.input, padding: 8, background: 'white' }}
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* PREVIEW PERIODE MASA AKTIF BARU */}
+                  <div style={{ padding: '8px 12px', background: '#f1f5f9', borderRadius: 8, marginBottom: 14, fontSize: 11.5, color: '#334155' }}>
+                    📅 <b>Masa Aktif Paket Baru:</b> {student.tanggalMulai || tanggalLokalHariIni()} s.d. <b>{tambahBulanKeTanggal(student.tanggalMulai || tanggalLokalHariIni(), parseInt(upgradeData.durasiBulan) || 1)}</b> ({upgradeData.durasiBulan} Bulan)
+                  </div>
+
+                  <div style={styles.modalFooter}>
+                    <button type="button" onClick={() => setShowUpgradeModal(false)} style={styles.btnCancel}>Batal</button>
+                    <button type="submit" style={styles.btnSave} disabled={isUpgradeProcessing}>
+                      {isUpgradeProcessing ? '⏳ Menyimpan...' : <><Save size={16} /> Simpan &amp; Terapkan Upgrade</>}
                     </button>
                   </div>
                 </form>
