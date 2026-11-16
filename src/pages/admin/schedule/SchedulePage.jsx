@@ -1,20 +1,32 @@
 // src/pages/admin/schedule/SchedulePage.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import SidebarAdmin from '../../../components/SidebarAdmin';
 import { db } from '../../../firebase';
-import { collection, getDocs, deleteDoc, doc, writeBatch, updateDoc, setDoc, getDoc, addDoc, query, where, serverTimestamp } from "firebase/firestore";
+import { 
+  collection, getDocs, deleteDoc, doc, writeBatch, updateDoc, 
+  setDoc, getDoc, addDoc, query, where, serverTimestamp 
+} from "firebase/firestore";
 import { 
   Search, Plus, Edit3, Trash2, X, Save, Calendar, Clock, MapPin, 
   BookOpen, Users, GraduationCap, Filter, RefreshCw, ChevronLeft, 
   ChevronRight, Home, ChevronRight as ChevronRightIcon, Flag, Eye, EyeOff,
   Copy, CheckCircle, AlertCircle, Hash, Tag, Link as LinkIcon,
   User, UserPlus, Shield, BadgeCheck, Sparkles, Database, Layers,
-  Palette, PenTool, CalendarDays, Download
+  Palette, PenTool, CalendarDays, Download, Moon, Sun, ArrowRight,
+  Send, CheckCircle2, AlertTriangle, Coffee, Shuffle, Check
 } from 'lucide-react';
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { normalisasiKodeMapel, namaMapelLengkap, isJadwalJenjangSD } from '../../../utils/silabusKurikulumMerdeka';
 import ModalSiapkanLatihanSesi from '../../../components/guru/ModalSiapkanLatihanSesi';
+import { isOwnerSession } from '../../../utils/roleAkses';
+
+// Modular Sub-Components
+import CalmendarTimetableView from './CalmendarTimetableView';
+import ModalPindahRuang from './ModalPindahRuang';
+import ModalDownloadJadwalBesar from './ModalDownloadJadwalBesar';
+import ModalReviewDraftOwner from './ModalReviewDraftOwner';
+import { analyzeScheduleDetails, timeToMinutes, timesOverlap } from './jadwalConflictUtils';
 
 // ============================================================
 // DATA HARI LIBUR NASIONAL INDONESIA
@@ -48,54 +60,27 @@ const LEVELS = ["SD", "SMP", "SMA", "Umum"];
 const KELAS_LIST = ["Semua", "1 SD", "2 SD", "3 SD", "4 SD", "5 SD", "6 SD", "7 SMP", "8 SMP", "9 SMP", "10 SMA", "11 SMA", "12 SMA", "Alumni", "Umum"];
 const MONTH_NAMES = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
 
-// Warna preset untuk event
 const EVENT_COLORS = [
   '#ef4444', '#f59e0b', '#eab308', '#22c55e', '#10b981', 
   '#06b6d4', '#3b82f6', '#8b5cf6', '#ec4899', '#f43f5e'
 ];
 
-// ============================================================
-// 🔥 BARU: PENGECEKAN BENTROK JADWAL
-// ============================================================
-// KENAPA DITAMBAHKAN: sebelumnya sistem sama sekali tidak memberi
-// peringatan kalau admin (sengaja atau tidak sengaja) bikin jadwal yang
-// bentrok -- ruangan yang sama dipakai 2 kelas di jam yang sama, guru
-// yang sama dijadwalkan ngajar 2 tempat sekaligus, atau siswa yang sama
-// dimasukkan ke 2 kelas berbeda di jam yang tumpang tindih. Ini murni
-// PERINGATAN (bukan pemblokiran total) -- ada kalanya bentrok itu memang
-// disengaja (mis. kelas gabungan), jadi admin tetap bisa lanjut menyimpan
-// setelah membaca peringatannya.
-const timesOverlap = (startA, endA, startB, endB) => {
-  // Format waktu "HH:MM" bisa dibandingkan langsung sebagai string
-  // (perbandingan leksikografis) karena selalu 2 digit jam + 2 digit menit.
-  return startA < endB && startB < endA;
-};
+const norm = (s) => String(s || '').trim().toLowerCase();
 
-// ============================================================
-// 🔥 FIX BUG "siswa sudah didaftarkan mapelnya tapi tetap gak muncul di
-// daftar pilihan siswa jadwal": sebelumnya pencocokan enrolledSubjects
-// siswa vs mapel yang lagi dijadwalkan CUMA lewat KODE mapel
-// (formData.mapelId, mis. "MAPEL-015"). Kalau enrolledSubjects siswa
-// disimpan sebagai NAMA mapel (mis. "Bahasa Inggris SMP") -- atau kode di
-// data guru/mapel kebetulan belum sinkron -- siswa itu gak pernah ketemu
-// biar pun dia sudah didaftarkan dengan benar. Sekarang dicocokkan lewat
-// KODE dulu, dan kalau gak ketemu, coba juga lewat NAMA mapel
-// (dinormalisasi huruf kecil + spasi) sebagai fallback -- pola yang sama
-// persis dengan hasSubjectAccess() di StudentDashboard.jsx /
-// StudentModuleView.jsx, supaya konsisten di seluruh sistem: satu siswa
-// yang sudah didaftarkan mapelnya harus lolos di SEMUA titik pengecekan
-// (jadwal, dashboard, halaman baca modul/kuis), bukan cuma sebagian.
-const isStudentEnrolledInMapel = (enrolledSubjects, mapelCode, mapelName) => {
-  const enrolled = Array.isArray(enrolledSubjects) ? enrolledSubjects : [];
-  if (enrolled.length === 0) return false;
-  const norm = (v) => String(v || '').toLowerCase().trim();
-  const targetCode = norm(mapelCode);
-  const targetName = norm(mapelName);
-  return enrolled.some(code => {
-    const c = norm(code);
-    if (c === 'semua') return true;
-    if (targetCode && c === targetCode) return true;
-    if (targetName && c === targetName) return true;
+const isStudentEnrolledInMapel = (enrolledSubjects, targetKode, targetNama) => {
+  if (!Array.isArray(enrolledSubjects) || enrolledSubjects.length === 0) return false;
+  const targetKodeNorm = norm(targetKode);
+  const targetNamaNorm = norm(targetNama);
+  const targetKanoniNorm = norm(namaMapelLengkap(targetKode));
+
+  return enrolledSubjects.some(item => {
+    const itemNorm = norm(item);
+    if (!itemNorm) return false;
+    if (targetKodeNorm && itemNorm === targetKodeNorm) return true;
+    if (targetNamaNorm && itemNorm === targetNamaNorm) return true;
+    if (targetKanoniNorm && itemNorm === targetKanoniNorm) return true;
+    const itemKanoniNorm = norm(namaMapelLengkap(item));
+    if (itemKanoniNorm && targetKanoniNorm && itemKanoniNorm === targetKanoniNorm) return true;
     return false;
   });
 };
@@ -107,6 +92,24 @@ const SchedulePage = () => {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [loading, setLoading] = useState(true);
   const [alertMsg, setAlertMsg] = useState(null);
+  
+  // Theme State (Dark Mode Calmendar vs Normal)
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    return localStorage.getItem('bimbel_schedule_dark_mode') === 'true';
+  });
+
+  const toggleDarkMode = () => {
+    setIsDarkMode(prev => {
+      const next = !prev;
+      localStorage.setItem('bimbel_schedule_dark_mode', String(next));
+      return next;
+    });
+  };
+
+  // Schedule Mode: 'live' (Jadwal Resmi) | 'draft' (Mode Simulasi / Coretan)
+  const [scheduleMode, setScheduleMode] = useState('live');
+  const [draftSchedules, setDraftSchedules] = useState([]);
+  const [draftNotes, setDraftNotes] = useState('');
   
   // Data
   const [schedules, setSchedules] = useState([]);
@@ -125,29 +128,25 @@ const SchedulePage = () => {
     description: ''
   });
   
-  // Calendar
+  // Calendar & Views
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [viewMode, setViewMode] = useState('daily');
+  const [viewMode, setViewMode] = useState('timetable'); // 'timetable' | 'daily' | 'weekly'
   
   // Daily Code
   const [dailyCode, setDailyCode] = useState("");
   const [isEditingCode, setIsEditingCode] = useState(false);
   const [tempCode, setTempCode] = useState("");
   
-  // Modal
+  // Modal Tambah / Edit
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [activePlanet, setActivePlanet] = useState("");
+  const [activePlanet, setActivePlanet] = useState("MERKURIUS");
   const [editId, setEditId] = useState(null);
-  // 🔥 BARU: kalau jadwal yang lagi diedit itu bagian dari seri "Otomatis 4
-  // Pekan", `editingSeriesId` menyimpan penanda seri-nya, dan
-  // `applyToSeries` adalah pilihan admin: terapkan perubahan cuma ke sesi
-  // ini, atau ke SEMUA sesi (4 minggu) yang berbagi seri yang sama.
   const [editingSeriesId, setEditingSeriesId] = useState(null);
   const [applyToSeries, setApplyToSeries] = useState(false);
   const [jadwalLatihanSesi, setJadwalLatihanSesi] = useState(null);
   
-  // Form
+  // Form State
   const defaultForm = {
     start: "14:00", 
     end: "15:30",
@@ -163,23 +162,23 @@ const SchedulePage = () => {
   };
   const [formData, setFormData] = useState(defaultForm);
   
-  // Student filter in modal
+  // Filter Siswa di Modal
   const [studentSearch, setStudentSearch] = useState("");
   const [studentFilterKelas, setStudentFilterKelas] = useState("Semua");
   
-  // Detail modal
+  // Detail Modal
   const [detailSchedule, setDetailSchedule] = useState(null);
 
-  // PDF Download
-  const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
-  const [pdfWeekStart, setPdfWeekStart] = useState(() => {
-    const t = new Date();
-    const y = t.getFullYear();
-    const m = String(t.getMonth() + 1).padStart(2, '0');
-    const d = String(t.getDate()).padStart(2, '0');
-    return `${y}-${m}-${d}`;
-  });
-  const [pdfTeacherFilter, setPdfTeacherFilter] = useState('Semua');
+  // New Modals
+  const [sessionToPindah, setSessionToPindah] = useState(null);
+  const [isMasterDownloadOpen, setIsMasterDownloadOpen] = useState(false);
+  const [isOwnerReviewOpen, setIsOwnerReviewOpen] = useState(false);
+
+  // Filter Cepat Sidebar
+  const [filterPlanet, setFilterPlanet] = useState('Semua');
+  const [filterTeacher, setFilterTeacher] = useState('Semua');
+
+  const isOwner = isOwnerSession();
 
   // ============================================================
   // EFFECTS
@@ -195,9 +194,6 @@ const SchedulePage = () => {
     setTimeout(() => setAlertMsg(null), duration);
   };
 
-  // ============================================================
-  // HELPER: Date String
-  // ============================================================
   const getSmartDateString = (dateObj) => {
     if (!(dateObj instanceof Date) || isNaN(dateObj)) return "";
     const year = dateObj.getFullYear();
@@ -227,34 +223,14 @@ const SchedulePage = () => {
     return customEvents.find(e => e.date === dateStr);
   };
 
-  // ============================================================
-  // 🔥 BARU: CARI BENTROK JADWAL (ruangan / guru / siswa)
-  // ============================================================
-  // Dipanggil sebelum menyimpan (create ATAU edit). `excludeId` dipakai
-  // supaya jadwal yang lagi diedit gak dianggap "bentrok sama dirinya
-  // sendiri". Hasilnya array deskripsi bentrok (bisa kosong = aman).
-  const findScheduleConflicts = (targetDateStr, start, end, planet, teacherId, selectedStudentIds, excludeId) => {
-    const conflicts = [];
-    schedules.forEach(s => {
-      if (s.id === excludeId) return;
-      if (s.dateStr !== targetDateStr) return;
-      if (!s.start || !s.end) return;
-      if (!timesOverlap(start, end, s.start, s.end)) return;
-
-      if (s.planet === planet) {
-        conflicts.push(`🪐 Ruang ${planet} sudah dipakai jam ${s.start}-${s.end} (${s.mapelName || s.title || 'sesi lain'}, ${s.teacherName || '-'})`);
-      }
-      if (teacherId && s.teacherId === teacherId) {
-        conflicts.push(`👨‍🏫 ${s.teacherName || 'Guru ini'} sudah punya kelas jam ${s.start}-${s.end} di Ruang ${s.planet}`);
-      }
-      const sStudentIds = s.studentIds || (s.students || []).map(st => st.id);
-      const overlapIds = sStudentIds.filter(id => selectedStudentIds.includes(id));
-      if (overlapIds.length > 0) {
-        const names = (s.students || []).filter(st => overlapIds.includes(st.id)).map(st => st.nama);
-        conflicts.push(`👥 ${names.join(', ') || (overlapIds.length + ' siswa')} sudah ada jadwal jam ${s.start}-${s.end} di Ruang ${s.planet}`);
-      }
-    });
-    return conflicts;
+  // Helper untuk foto guru
+  const getTeacherPhoto = (item) => {
+    if (item.teacherFotoUrl) return item.teacherFotoUrl;
+    const t = availableTeachers.find(tch =>
+      (item.teacherId && (tch.id === item.teacherId || tch.guruId === item.teacherId)) ||
+      (item.teacherName && tch.nama && tch.nama.toLowerCase() === item.teacherName.toLowerCase())
+    );
+    return t?.fotoUrl || null;
   };
 
   // ============================================================
@@ -263,11 +239,20 @@ const SchedulePage = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      // 1. Fetch schedules
+      // 1. Fetch schedules (Jadwal Resmi)
       const schedSnap = await getDocs(collection(db, "jadwal_bimbel"));
-      setSchedules(schedSnap.docs.map(d => ({ id: d.id, ...d.data() })));
+      setSchedules(schedSnap.docs.map(d => ({ id: d.id, isDraft: false, ...d.data() })));
 
-      // 2. Fetch teachers
+      // 2. Fetch draft schedules (Simulasi)
+      try {
+        const draftSnap = await getDocs(collection(db, "jadwal_draft"));
+        const drafts = draftSnap.docs.map(d => ({ id: d.id, isDraft: true, ...d.data() }));
+        setDraftSchedules(drafts);
+      } catch (e) {
+        console.warn("Draft collection:", e);
+      }
+
+      // 3. Fetch teachers
       const tSnap = await getDocs(collection(db, "teachers"));
       const teachers = tSnap.docs.map(d => ({ 
         id: d.id, 
@@ -276,7 +261,7 @@ const SchedulePage = () => {
       }));
       setAvailableTeachers(teachers);
 
-      // 3. Fetch students
+      // 4. Fetch students
       const sSnap = await getDocs(collection(db, "students"));
       const students = sSnap.docs.map(d => {
         const data = d.data();
@@ -306,7 +291,7 @@ const SchedulePage = () => {
       });
       setAvailableStudents(students);
 
-      // 4. Fetch mapel
+      // 5. Fetch mapel
       const mSnap = await getDocs(collection(db, "mapel"));
       const mapelData = mSnap.docs
         .map(d => ({ 
@@ -314,10 +299,10 @@ const SchedulePage = () => {
           ...d.data(),
           kodeMapel: d.data().kodeMapel || 'MAPEL-' + String(d.id).slice(0, 4)
         }))
-        .filter(m => !m.dinonaktifkan); // v1.5.4: varian hasil migrasi v2 disembunyikan
+        .filter(m => !m.dinonaktifkan);
       setAvailableMapel(mapelData);
 
-      // 5. Fetch daily code
+      // 6. Fetch daily code
       const todayStr = getSmartDateString(selectedDate);
       const codeDocId = 'daily_code_' + todayStr;
       const cSnap = await getDoc(doc(db, "settings", codeDocId));
@@ -329,233 +314,141 @@ const SchedulePage = () => {
         setTempCode("");
       }
 
-      // 6. Fetch custom events
-      const eventDoc = await getDoc(doc(db, "settings", "calendar_events"));
-      if (eventDoc.exists()) {
-        setCustomEvents(eventDoc.data().events || []);
-      } else {
-        setCustomEvents([]);
-      }
-    } catch (e) {
-      console.error("Fetch Error:", e);
-      showAlert("❌ Gagal memuat data");
+      // 7. Fetch custom events
+      const evSnap = await getDocs(collection(db, "custom_events"));
+      setCustomEvents(evSnap.docs.map(d => d.data()));
+
+    } catch (err) {
+      console.error("Gagal load data jadwal:", err);
+      showAlert("❌ Gagal memuat data jadwal!");
     } finally {
       setLoading(false);
     }
   };
 
-  // fetchData sengaja TIDAK masuk deps: ia ditutup-ulang tiap render (bukan
-  // useCallback) dan effect ini hanya boleh jalan saat selectedDate berubah —
-  // pola yang sama dipakai halaman bank-soal (muat() + disable-line).
-  useEffect(() => { fetchData(); }, [selectedDate]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Reset filter kelas ketika jenjang berubah
   useEffect(() => {
-    setStudentFilterKelas("Semua");
-  }, [formData.level]);
+    fetchData();
+  }, [selectedDate]);
 
-  // ============================================================
-  // HANDLERS - CUSTOM EVENTS
-  // ============================================================
-  const handleOpenEventModal = (dateStr = null) => {
-    setEditingEventIndex(null);
-    setEventForm({
-      date: dateStr || getSmartDateString(selectedDate),
-      label: '',
-      color: '#f59e0b',
-      description: ''
+  // Jadwal aktif saat ini berdasarkan mode
+  const currentActiveSchedules = useMemo(() => {
+    let list = scheduleMode === 'draft' ? draftSchedules : schedules;
+    if (filterPlanet !== 'Semua') {
+      list = list.filter(s => s.planet === filterPlanet);
+    }
+    if (filterTeacher !== 'Semua') {
+      list = list.filter(s => s.teacherId === filterTeacher || s.teacherName === filterTeacher);
+    }
+    return list;
+  }, [scheduleMode, draftSchedules, schedules, filterPlanet, filterTeacher]);
+
+  // Analisis real-time bentrok & jeda istirahat di dalam modal tambah/edit
+  const liveConflictAnalysis = useMemo(() => {
+    if (!isModalOpen || !formData.start || !formData.end) return null;
+    const targetDateStr = getSmartDateString(selectedDate);
+    const teacherObj = availableTeachers.find(t => (t.guruId || t.id) === formData.teacherId);
+    return analyzeScheduleDetails({
+      targetDateStr,
+      start: formData.start,
+      end: formData.end,
+      planet: activePlanet,
+      teacherId: formData.teacherId,
+      teacherName: teacherObj?.nama || formData.teacherName,
+      selectedStudentIds: formData.selectedStudents.map(s => s.id),
+      schedules: currentActiveSchedules,
+      excludeId: editId
     });
-    setIsEventModalOpen(true);
-  };
-
-  const handleEditEvent = (index) => {
-    const event = customEvents[index];
-    setEditingEventIndex(index);
-    setEventForm({
-      date: event.date,
-      label: event.label,
-      color: event.color || '#f59e0b',
-      description: event.description || ''
-    });
-    setIsEventModalOpen(true);
-  };
-
-  const handleSaveEvent = async () => {
-    if (!eventForm.date || !eventForm.label) {
-      return showAlert("⚠️ Tanggal dan label wajib diisi!");
-    }
-
-    try {
-      const docRef = doc(db, "settings", "calendar_events");
-      let events = [...customEvents];
-
-      if (editingEventIndex !== null) {
-        events[editingEventIndex] = { ...eventForm };
-      } else {
-        const existing = events.findIndex(e => e.date === eventForm.date);
-        if (existing >= 0) {
-          if (!window.confirm('Tanggal ' + eventForm.date + ' sudah memiliki event. Ganti dengan yang baru?')) {
-            return;
-          }
-          events[existing] = { ...eventForm };
-        } else {
-          events.push({ ...eventForm });
-        }
-      }
-
-      await setDoc(docRef, { events }, { merge: true });
-      setCustomEvents(events);
-      setIsEventModalOpen(false);
-      showAlert("✅ Event berhasil disimpan!");
-      fetchData();
-    } catch (e) {
-      showAlert("❌ Gagal menyimpan event: " + e.message);
-    }
-  };
-
-  const handleDeleteEvent = async (index) => {
-    if (!window.confirm('Hapus event "' + customEvents[index].label + '"?')) return;
-    
-    try {
-      const events = customEvents.filter((_, i) => i !== index);
-      await setDoc(doc(db, "settings", "calendar_events"), { events }, { merge: true });
-      setCustomEvents(events);
-      showAlert("🗑️ Event dihapus!");
-      fetchData();
-    } catch (e) {
-      showAlert("❌ Gagal menghapus event: " + e.message);
-    }
-  };
+  }, [isModalOpen, formData.start, formData.end, formData.teacherId, activePlanet, formData.selectedStudents, currentActiveSchedules, editId, selectedDate, availableTeachers]);
 
   // ============================================================
-  // HANDLERS - SCHEDULES
+  // HANDLERS
   // ============================================================
   const handleTeacherSelect = (teacherId) => {
-    const teacher = availableTeachers.find(t => t.id === teacherId || t.guruId === teacherId);
-    if (teacher) {
-      const guruMapelName = teacher.mapel || teacher.mataPelajaran || '';
-      const guruKodeMapel = teacher.kodeMapel || (guruMapelName ? normalisasiKodeMapel(guruMapelName) : '');
-      const shouldUpdateTitle = !formData.title || formData.title === 'Materi Umum' || formData.title === 'Sesi Belajar';
-      setFormData({
-        ...formData,
-        teacherId: teacher.guruId || teacher.id,
-        teacherName: teacher.nama,
-        mapelId: formData.mapelId || guruKodeMapel || '',
-        mapelName: formData.mapelName || guruMapelName || '',
-        title: shouldUpdateTitle ? (formData.mapelName || guruMapelName || formData.title) : formData.title
-      });
-    } else {
-      setFormData({
-        ...formData,
-        teacherId: '',
-        teacherName: '',
-        mapelId: '',
-        mapelName: ''
-      });
-    }
+    const teacher = availableTeachers.find(t => (t.guruId || t.id) === teacherId);
+    if (!teacher) return;
+    setFormData(prev => ({
+      ...prev,
+      teacherId: teacher.guruId || teacher.id,
+      teacherName: teacher.nama,
+      teacherFotoUrl: teacher.fotoUrl || ''
+    }));
   };
 
-  const handleMapelSelect = (mapelId) => {
-    const mapel = availableMapel.find(m => m.id === mapelId || m.kodeMapel === mapelId);
-    if (mapel) {
-      const shouldUpdateTitle = !formData.title || formData.title === 'Materi Umum' || formData.title === 'Sesi Belajar';
-      setFormData({
-        ...formData,
-        mapelId: mapel.kodeMapel || mapel.id,
-        mapelName: mapel.namaMapel,
-        title: shouldUpdateTitle ? mapel.namaMapel : formData.title
-      });
-    }
+  const handleMapelSelect = (mapelKode) => {
+    const mapel = availableMapel.find(m => (m.kodeMapel || m.id) === mapelKode);
+    if (!mapel) return;
+    setFormData(prev => ({
+      ...prev,
+      mapelId: mapel.kodeMapel || mapel.id,
+      mapelName: mapel.namaMapel,
+      title: mapel.namaMapel
+    }));
   };
 
   const handleOpenModal = (planet, isEdit = false, item = null) => {
-    setActivePlanet(planet);
-    setStudentSearch("");
-    setStudentFilterKelas("Semua");
-    // 🔥 BARU: reset & isi ulang status seri tiap kali modal dibuka
-    setApplyToSeries(false);
+    setActivePlanet(planet || "MERKURIUS");
+    setEditId(isEdit && item ? item.id : null);
     setEditingSeriesId(isEdit && item ? (item.seriesId || null) : null);
-    
+    setApplyToSeries(false);
+
     if (isEdit && item) {
-      setEditId(item.id);
       setFormData({
         start: item.start || "14:00",
         end: item.end || "15:30",
         program: item.program || "Reguler",
         level: item.level || "SD",
         title: item.title || "",
-        mapelId: item.mapelId || item.kodeMapel || "",
-        mapelName: item.mapelName || item.mapel || "",
+        mapelId: item.mapelId || "",
+        mapelName: item.mapelName || "",
         teacherId: item.teacherId || "",
-        teacherName: item.teacherName || item.booker || "",
-        selectedStudents: item.students ? item.students.map(s => ({ 
-          id: s.id || s.studentId,
-          studentId: s.studentId || s.id,
-          nama: s.nama || 'Siswa',
-          kelasSekolah: s.kelasSekolah || 'Umum'
-        })) : [],
+        teacherName: item.teacherName || "",
+        teacherFotoUrl: item.teacherFotoUrl || "",
+        selectedStudents: item.students || [],
         repeat: "Once"
       });
     } else {
-      setEditId(null);
-      setFormData({ ...defaultForm });
+      setFormData({
+        ...defaultForm,
+        start: "14:00",
+        end: "15:30",
+        program: "Reguler",
+        level: "SD"
+      });
     }
+    setStudentSearch("");
+    setStudentFilterKelas("Semua");
     setIsModalOpen(true);
   };
 
-  // ============================================================
-  // 🔥 HANDLER TOGGLE SISWA - PERBAIKAN
-  // ============================================================
   const handleToggleStudent = (student) => {
-    // Cari data lengkap siswa dari availableStudents
-    const fullStudent = availableStudents.find(s => s.id === student.id || s.studentId === student.id);
-    
-    if (!fullStudent) {
-      showAlert("❌ Data siswa tidak ditemukan!");
-      return;
-    }
-    
-    const isSelected = formData.selectedStudents.some(s => s.id === fullStudent.id);
-    let updated = [];
-    
-    if (isSelected) {
-      updated = formData.selectedStudents.filter(s => s.id !== fullStudent.id);
-    } else {
-      updated = [...formData.selectedStudents, {
-        id: fullStudent.id,
-        studentId: fullStudent.studentId || fullStudent.id,
-        nama: fullStudent.nama || 'Siswa',
-        kelasSekolah: fullStudent.kelasSekolah || 'Umum',
-        jenjang: fullStudent.jenjang || '',
-        program: fullStudent.kategori || formData.program || 'Reguler'
-      }];
-    }
-    
-    setFormData(prev => ({ ...prev, selectedStudents: updated }));
+    setFormData(prev => {
+      const exists = prev.selectedStudents.some(s => s.id === student.id || s.studentId === student.studentId);
+      if (exists) {
+        return {
+          ...prev,
+          selectedStudents: prev.selectedStudents.filter(s => s.id !== student.id && s.studentId !== student.studentId)
+        };
+      } else {
+        return {
+          ...prev,
+          selectedStudents: [...prev.selectedStudents, student]
+        };
+      }
+    });
   };
 
-  // ============================================================
-  // 🔥 HANDLER SIMPAN JADWAL - PERBAIKAN
-  // ============================================================
+  // Simpan Jadwal (Live vs Draft)
   const handleSubmitSchedule = async (e) => {
     if (e) e.preventDefault();
     
-    if (!formData.teacherId) {
-      return showAlert("❌ Pilih guru terlebih dahulu!");
-    }
-    if (!formData.mapelId) {
-      return showAlert("❌ Pilih mata pelajaran!");
-    }
-    if (formData.selectedStudents.length === 0) {
-      return showAlert("❌ Minimal 1 siswa wajib dipilih!");
-    }
+    if (!formData.teacherId) return showAlert("❌ Pilih guru terlebih dahulu!");
+    if (!formData.mapelId) return showAlert("❌ Pilih mata pelajaran!");
+    if (formData.selectedStudents.length === 0) return showAlert("❌ Minimal 1 siswa wajib dipilih!");
 
     try {
       const targetDateStr = getSmartDateString(selectedDate);
       
-      // 🔥 Ambil data LENGKAP siswa yang dipilih
       const studentsFullData = formData.selectedStudents.map(s => {
-        // Cari di availableStudents untuk data terbaru
         const student = availableStudents.find(st => st.id === s.id || st.studentId === s.id);
         return student ? {
           id: student.id,
@@ -565,7 +458,6 @@ const SchedulePage = () => {
           jenjang: student.jenjang || '',
           program: student.kategori || formData.program || 'Reguler'
         } : {
-          // Fallback jika siswa tidak ditemukan (gunakan data dari form)
           id: s.id,
           studentId: s.studentId || s.id,
           nama: s.nama || 'Siswa',
@@ -575,16 +467,11 @@ const SchedulePage = () => {
         };
       });
 
-      // 🔥 BARU: cek bentrok SEBELUM menyimpan. Ini cuma PERINGATAN (admin
-      // tetap bisa lanjut) -- ada kalanya bentrok itu memang disengaja.
-      const conflicts = findScheduleConflicts(
-        targetDateStr, formData.start, formData.end, activePlanet,
-        formData.teacherId, studentsFullData.map(s => s.id), editId
-      );
-      if (conflicts.length > 0) {
+      // Cek bentrok sebelum simpan
+      if (liveConflictAnalysis && liveConflictAnalysis.hasConflict) {
         const proceed = window.confirm(
           "⚠️ Terdeteksi kemungkinan BENTROK jadwal:\n\n" +
-          conflicts.map(c => "• " + c).join("\n") +
+          liveConflictAnalysis.conflicts.map(c => "• " + c.message).join("\n") +
           "\n\nTetap simpan jadwal ini?"
         );
         if (!proceed) return;
@@ -604,35 +491,22 @@ const SchedulePage = () => {
         mapelName: namaMapelFinal || judulFinal,
         teacherId: formData.teacherId,
         teacherName: formData.teacherName,
+        teacherFotoUrl: formData.teacherFotoUrl || '',
         start: formData.start,
         end: formData.end,
         students: studentsFullData,
-        // 🔥 FIX BUG: sebelumnya `studentIds` diisi pakai kode unik siswa
-        // (studentId field), padahal `students[].id` di ATAS-nya (baris
-        // sebelumnya) pakai ID DOKUMEN FIRESTORE — dua skema BEDA untuk
-        // data yang seharusnya sama, di dalam 1 dokumen jadwal yang sama.
-        // Kalau ada bagian sistem lain yang baca `studentIds` sambil
-        // ngarep isinya cocok sama `students[].id`, bakal gak nemu apa-apa.
-        // Disamakan jadi ID dokumen juga.
         studentIds: studentsFullData.map(s => s.id),
         dateStr: targetDateStr,
-        status: 'scheduled',
-        // 🔥 FIX: pakai serverTimestamp() biar konsisten sama field lain
-        // (createdAt di bawah, dan field waktu di collection lain kayak
-        // bimbel_modul) — sebelumnya pakai string ISO biasa, tipe datanya
-        // beda sendiri dibanding seluruh sistem yang lain.
+        status: scheduleMode === 'draft' ? 'draft' : 'scheduled',
+        isDraft: scheduleMode === 'draft',
         updatedAt: serverTimestamp()
       };
 
+      const targetCollection = scheduleMode === 'draft' ? "jadwal_draft" : "jadwal_bimbel";
+
       if (editId) {
-        // 🔥 BARU: kalau jadwal ini bagian dari seri 4-mingguan DAN admin
-        // centang "terapkan ke semua sesi", update SEMUA dokumen yang
-        // berbagi seriesId yang sama -- KECUALI `dateStr`, yang harus tetap
-        // beda-beda per sesi (masing-masing tetap di harinya sendiri).
-        // Ini yang jadi jawaban buat "mau ganti ruangan/guru/kelas buat
-        // sekaligus 4 minggu, tanpa hapus satu-satu".
         if (applyToSeries && editingSeriesId) {
-          const seriesQuery = query(collection(db, "jadwal_bimbel"), where("seriesId", "==", editingSeriesId));
+          const seriesQuery = query(collection(db, targetCollection), where("seriesId", "==", editingSeriesId));
           const seriesSnap = await getDocs(seriesQuery);
           const { dateStr: _omitDate, ...seriesUpdateData } = scheduleData;
           const batch = writeBatch(db);
@@ -640,21 +514,16 @@ const SchedulePage = () => {
           await batch.commit();
           showAlert(`✅ ${seriesSnap.docs.length} sesi dalam seri berhasil diperbarui!`);
         } else {
-          // 🔥 UPDATE JADWAL - PASTIKAN STUDENTS TERUPDATE
-          await updateDoc(doc(db, "jadwal_bimbel", editId), scheduleData);
+          await updateDoc(doc(db, targetCollection, editId), scheduleData);
           showAlert("✅ Jadwal berhasil diperbarui!");
         }
       } else {
-        // Handle repeat
         if (formData.repeat === 'Monthly') {
-          // 🔥 BARU: `seriesId` menandai keempat sesi ini sebagai SATU
-          // PAKET, supaya nanti bisa di-edit/dihapus sekaligus (bukan
-          // satu-satu) lewat pilihan "terapkan ke semua sesi di seri ini".
-          const seriesId = doc(collection(db, "jadwal_bimbel")).id;
+          const seriesId = doc(collection(db, targetCollection)).id;
           const batch = writeBatch(db);
           let tempDate = new Date(selectedDate);
           for (let i = 0; i < 4; i++) {
-            const newRef = doc(collection(db, "jadwal_bimbel"));
+            const newRef = doc(collection(db, targetCollection));
             batch.set(newRef, {
               ...scheduleData,
               seriesId,
@@ -667,249 +536,131 @@ const SchedulePage = () => {
           await batch.commit();
           showAlert("✅ 4 jadwal (1 bulan) berhasil dibuat!");
         } else {
-          await addDoc(collection(db, "jadwal_bimbel"), {
+          await addDoc(collection(db, targetCollection), {
             ...scheduleData,
             createdAt: serverTimestamp(),
             attendance_list: []
           });
-          showAlert("✅ Jadwal berhasil dibuat!");
+          showAlert(scheduleMode === 'draft' ? "✅ Sesi draft simulasi tersimpan!" : "✅ Jadwal berhasil disimpan!");
         }
       }
 
       setIsModalOpen(false);
       fetchData();
-    } catch (error) {
-      console.error("Error saving schedule:", error);
-      showAlert("❌ Gagal menyimpan jadwal: " + error.message);
+    } catch (err) {
+      console.error("Gagal simpan jadwal:", err);
+      showAlert("❌ Gagal menyimpan jadwal: " + err.message);
     }
   };
 
-  // ============================================================
-  // 🔥 HANDLER HAPUS JADWAL - AMAN + SADAR SERI 4 MINGGU
-  // ============================================================
-  // 🔥 FIX FITUR: sebelumnya cuma bisa hapus SATU sesi, walaupun sesi itu
-  // bagian dari paket "Otomatis 4 Pekan" -- admin harus hapus 4x manual
-  // kalau mau bersihkan semuanya. Sekarang, kalau sesi ini punya
-  // `seriesId`, admin ditanya dulu: mau hapus SATU ini aja, atau SEMUA
-  // sesi di seri yang sama (4 minggu).
-  const handleDeleteSchedule = async (item) => {
-    if (!item?.id) {
-      showAlert("❌ ID jadwal tidak valid!");
-      return;
-    }
+  // Hapus Jadwal
+  const handleDeleteSchedule = async (scheduleItem) => {
+    const isSeries = !!scheduleItem.seriesId;
+    let deleteSeries = false;
 
-    if (item.seriesId) {
-      const deleteWholeSeries = window.confirm(
-        "📅 Jadwal ini bagian dari seri berulang (4 minggu).\n\n" +
-        "Klik OK untuk hapus SEMUA sesi di seri ini (4 minggu sekaligus).\n" +
-        "Klik Cancel untuk pilihan hapus SATU sesi ini saja."
+    if (isSeries) {
+      const choice = window.confirm(
+        "🔄 Jadwal ini bagian dari seri 4-mingguan.\n\n" +
+        "Klik [OK] untuk HAPUS SELURUH SERI (keempat sesi).\n" +
+        "Klik [Cancel] untuk HANYA HAPUS SESI TANGGAL INI SAJA."
       );
-      if (deleteWholeSeries) {
-        if (!window.confirm("⚠️ Yakin hapus SEMUA sesi (4 minggu) dalam seri ini?\n\nℹ️ Riwayat kehadiran yang sudah tercatat tetap aman, tidak ikut terhapus.")) {
-          return;
-        }
-        try {
-          const seriesQuery = query(collection(db, "jadwal_bimbel"), where("seriesId", "==", item.seriesId));
-          const seriesSnap = await getDocs(seriesQuery);
-          const batch = writeBatch(db);
-          seriesSnap.docs.forEach(d => batch.delete(d.ref));
-          await batch.commit();
-          setSchedules(prev => prev.filter(s => s.seriesId !== item.seriesId));
-          showAlert(`✅ ${seriesSnap.docs.length} sesi dalam seri berhasil dihapus!`);
-          await fetchData();
-        } catch (error) {
-          console.error("Error deleting series:", error);
-          showAlert("❌ Gagal menghapus seri: " + error.message);
-        }
-        return;
+      if (choice) {
+        deleteSeries = true;
+      } else {
+        const confirmSingle = window.confirm("Hapus sesi tanggal " + scheduleItem.dateStr + " saja?");
+        if (!confirmSingle) return;
       }
-      // Kalau admin klik Cancel di atas -> lanjut ke alur hapus satu sesi di bawah
+    } else {
+      if (!window.confirm("Hapus jadwal ini?")) return;
     }
-    
-    // 🔥 FIX BUG: pesan konfirmasi ini SEBELUMNYA BOHONG — bilang "data
-    // kehadiran yang terkait juga akan dihapus", padahal kode di bawahnya
-    // CUMA menghapus dokumen jadwal itu sendiri, TIDAK PERNAH menghapus
-    // data di collection "attendance". Daripada mendadak nambah operasi
-    // hapus baru (berisiko menghilangkan riwayat kehadiran siswa yang
-    // masih berguna), teksnya diperbaiki supaya sesuai KENYATAAN: riwayat
-    // kehadiran memang sengaja DIPERTAHANKAN walau jadwalnya dihapus.
-    if (!window.confirm("⚠️ Apakah Anda yakin ingin menghapus jadwal ini?\n\nℹ️ Riwayat kehadiran siswa yang SUDAH TERCATAT untuk jadwal ini akan TETAP TERSIMPAN (tidak ikut terhapus).\n\n❌ Siswa TIDAK akan terhapus dari sistem.")) {
-      return;
-    }
-    
+
     try {
-      await deleteDoc(doc(db, "jadwal_bimbel", item.id));
-      setSchedules(prev => prev.filter(s => s.id !== item.id));
-      showAlert("✅ Jadwal berhasil dihapus! (Siswa tetap aman)");
-      await fetchData();
-    } catch (error) {
-      console.error("Error deleting schedule:", error);
-      showAlert("❌ Gagal menghapus jadwal: " + error.message);
+      const targetCol = scheduleMode === 'draft' ? "jadwal_draft" : "jadwal_bimbel";
+      if (deleteSeries && scheduleItem.seriesId) {
+        const seriesQuery = query(collection(db, targetCol), where("seriesId", "==", scheduleItem.seriesId));
+        const seriesSnap = await getDocs(seriesQuery);
+        const batch = writeBatch(db);
+        seriesSnap.docs.forEach(d => batch.delete(d.ref));
+        await batch.commit();
+        showAlert(`🗑️ ${seriesSnap.docs.length} sesi dalam seri berhasil dihapus!`);
+      } else {
+        await deleteDoc(doc(db, targetCol, scheduleItem.id));
+        showAlert("🗑️ Jadwal berhasil dihapus!");
+      }
+      fetchData();
+    } catch (err) {
+      console.error("Gagal hapus:", err);
+      showAlert("❌ Gagal menghapus jadwal!");
     }
   };
 
-  // ============================================================
-  // 🔥 HANDLER UPDATE KODE ABSEN
-  // ============================================================
-  const handleUpdateCode = async () => {
-    if (!tempCode.trim()) {
-      showAlert("❌ Kode tidak boleh kosong!");
+  // Salin Jadwal Aktif Minggu Ini ke Draft (Fitur Simulasi)
+  const handleCloneLiveWeekToDraft = async () => {
+    const week = getWeekDates(selectedDate);
+    const weekLive = schedules.filter(s => week.includes(s.dateStr) && s.status !== 'cancelled');
+    if (weekLive.length === 0) {
+      showAlert("⚠️ Tidak ada jadwal aktif di minggu ini untuk disalin ke draft.");
       return;
     }
-    
+
+    const confirm = window.confirm(
+      `Salin ${weekLive.length} sesi jadwal resmi minggu ini ke Mode Draft / Simulasi?\n\n` +
+      `Anda dapat bebas mengubah jam, memindah ruangan, atau mengganti tentor tanpa mengganggu jadwal resmi.`
+    );
+    if (!confirm) return;
+
+    try {
+      const batch = writeBatch(db);
+      weekLive.forEach(item => {
+        const { id, ...data } = item;
+        const draftRef = doc(collection(db, "jadwal_draft"));
+        batch.set(draftRef, {
+          ...data,
+          isDraft: true,
+          status: 'draft',
+          clonedFromId: id,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp()
+        });
+      });
+      await batch.commit();
+      showAlert(`✅ Berhasil menyalin ${weekLive.length} sesi ke Mode Draft!`);
+      fetchData();
+    } catch (err) {
+      console.error("Gagal clone ke draft:", err);
+      showAlert("❌ Gagal menyalin ke draft: " + err.message);
+    }
+  };
+
+  // Update Kode Absen Harian
+  const handleUpdateCode = async () => {
+    if (!tempCode || tempCode.length !== 4) {
+      showAlert("❌ Kode absen harus 4 karakter!");
+      return;
+    }
     try {
       const todayStr = getSmartDateString(selectedDate);
       const codeDocId = 'daily_code_' + todayStr;
-      
       await setDoc(doc(db, "settings", codeDocId), {
-        code: tempCode.trim().toUpperCase(),
-        updatedAt: serverTimestamp(),
-        updatedBy: 'Admin'
+        code: tempCode,
+        date: todayStr,
+        updatedAt: serverTimestamp()
       });
-      
-      setDailyCode(tempCode.trim().toUpperCase());
+      setDailyCode(tempCode);
       setIsEditingCode(false);
       showAlert("✅ Kode absen berhasil diupdate!");
-    } catch (error) {
-      console.error("Error updating code:", error);
-      showAlert("❌ Gagal update kode: " + error.message);
+    } catch (err) {
+      console.error(err);
+      showAlert("❌ Gagal update kode!");
     }
   };
 
-  // ============================================================
-  // 🔥 HANDLER DOWNLOAD JADWAL PDF (PER GURU)
-  // ============================================================
-  const handleDownloadJadwalPDF = () => {
-    const baseDate = new Date(pdfWeekStart);
-    const weekDates = getWeekDates(baseDate); // 7 tanggal, Senin-Minggu
-
-    const weekSchedules = schedules.filter(s => weekDates.includes(s.dateStr));
-    if (weekSchedules.length === 0) {
-      return showAlert("⚠️ Tidak ada jadwal di minggu ini!");
-    }
-
-    // Kelompokkan per guru
-    const byTeacher = {};
-    weekSchedules.forEach(s => {
-      const key = s.teacherId || s.teacherName || 'Tanpa Guru';
-      if (!byTeacher[key]) {
-        byTeacher[key] = {
-          teacherName: s.teacherName || s.booker || 'Tanpa Nama',
-          teacherId: s.teacherId || '-',
-          items: []
-        };
-      }
-      byTeacher[key].items.push(s);
-    });
-
-    let teacherKeys = Object.keys(byTeacher);
-    if (pdfTeacherFilter !== 'Semua') {
-      teacherKeys = teacherKeys.filter(k => k === pdfTeacherFilter);
-    }
-    if (teacherKeys.length === 0) {
-      return showAlert("⚠️ Guru yang dipilih tidak punya jadwal minggu ini!");
-    }
-
-    const docPdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
-    const weekStartLabel = new Date(weekDates[0]).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
-    const weekEndLabel = new Date(weekDates[6]).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
-    const dayOrder = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
-
-    teacherKeys.forEach((key, idx) => {
-      const teacher = byTeacher[key];
-      if (idx > 0) docPdf.addPage();
-
-      docPdf.setFontSize(16);
-      docPdf.setFont(undefined, 'bold');
-      docPdf.text('BIMBEL GEMILANG — JADWAL MENGAJAR', 14, 15);
-      docPdf.setFontSize(11);
-      docPdf.setFont(undefined, 'normal');
-      docPdf.text(`Guru: ${teacher.teacherName} (${teacher.teacherId})`, 14, 23);
-      docPdf.text(`Minggu: ${weekStartLabel} - ${weekEndLabel}`, 14, 29);
-
-      const rows = teacher.items
-        .slice()
-        .sort((a, b) => {
-          const dayA = dayOrder.indexOf(DAYS_ID[new Date(a.dateStr).getDay()]);
-          const dayB = dayOrder.indexOf(DAYS_ID[new Date(b.dateStr).getDay()]);
-          if (dayA !== dayB) return dayA - dayB;
-          return a.start.localeCompare(b.start);
-        })
-        .map(s => {
-          const d = new Date(s.dateStr);
-          const hari = DAYS_ID[d.getDay()];
-          const tgl = `${d.getDate()}/${d.getMonth() + 1}`;
-          const siswaNames = (s.students || []).map(st => st.nama).join(', ') || '-';
-          return [
-            `${hari}\n${tgl}`,
-            `${s.start} - ${s.end}`,
-            s.planet,
-            s.mapelName || '-',
-            s.level,
-            String(s.students?.length || 0),
-            siswaNames,
-          ];
-        });
-
-      autoTable(docPdf, {
-        startY: 34,
-        head: [['Hari/Tgl', 'Jam', 'Ruang', 'Mapel', 'Jenjang', 'Jml Siswa', 'Nama Siswa']],
-        body: rows,
-        styles: { fontSize: 9, cellPadding: 3, valign: 'middle' },
-        headStyles: { fillColor: [30, 41, 59], textColor: 255, fontStyle: 'bold' },
-        columnStyles: {
-          0: { cellWidth: 22 },
-          1: { cellWidth: 26 },
-          2: { cellWidth: 22 },
-          3: { cellWidth: 30 },
-          4: { cellWidth: 18 },
-          5: { cellWidth: 18, halign: 'center' },
-          6: { cellWidth: 'auto' },
-        },
-        theme: 'grid',
-      });
-
-      const pageH = docPdf.internal.pageSize.getHeight();
-      docPdf.setFontSize(8);
-      docPdf.setTextColor(150);
-      docPdf.text(`Dicetak: ${new Date().toLocaleString('id-ID')}`, 14, pageH - 8);
-    });
-
-    const filenameSafe = teacherKeys.length === 1
-      ? byTeacher[teacherKeys[0]].teacherName.replace(/\s+/g, '_')
-      : 'Semua_Guru';
-    docPdf.save(`Jadwal_${filenameSafe}_${weekDates[0]}.pdf`);
-    setIsPdfModalOpen(false);
-    showAlert("✅ PDF jadwal berhasil didownload!");
-  };
-
-  // ============================================================
-  // FILTERED STUDENTS FOR MODAL
-  // ============================================================
-  // 🔥 PERUBAHAN BESAR (atas permintaan eksplisit): siswa yang BELUM
-  // didaftarkan ke mapel ini lewat halaman Edit Siswa (field manual
-  // `enrolledSubjects`) SEKARANG TIDAK MUNCUL SAMA SEKALI di daftar
-  // pilihan sini -- bukan cuma disembunyikan diam-diam, biar admin sadar
-  // kalau ada siswa yang mau dijadwalkan tapi belum didaftarin mapelnya.
-  // Ini pasangan dari perubahan di StudentDashboard.jsx/StudentModuleView.jsx/
-  // StudentQuizView.jsx yang sekarang WAJIB `enrolledSubjects` diisi
-  // sebelum siswa bisa akses materi/kuis mapel itu -- di sini jadi
-  // pengaman TAMBAHAN di sisi penjadwalan: kalau siswa belum terdaftar ke
-  // mapelnya, admin gak akan bisa asal jadwalkan dia ke situ juga.
-  //
-  // 🔥 FIX BUG "siswa sudah didaftarkan mapelnya tapi gak muncul di sini":
-  // sebelumnya pencocokan CUMA lewat KODE mapel (formData.mapelId). Sekarang
-  // pakai isStudentEnrolledInMapel() yang juga fallback lewat NAMA mapel
-  // (formData.mapelName) -- pola yang sama persis dengan hasSubjectAccess()
-  // di StudentDashboard.jsx/StudentModuleView.jsx, supaya konsisten di
-  // seluruh sistem.
+  // Filter Siswa untuk Modal
   const getFilteredStudents = () => {
     return availableStudents.filter(s => {
       const studentId = s.studentId || s.id;
       if (!studentId) return false;
 
-      // 🔥 wajib sudah terdaftar ke mapel yang sedang dijadwalkan (lewat
-      // kode ATAU nama mapel).
       if (formData.mapelId) {
         if (!isStudentEnrolledInMapel(s.enrolledSubjects, formData.mapelId, formData.mapelName)) {
           return false;
@@ -917,9 +668,7 @@ const SchedulePage = () => {
       }
       
       if (studentFilterKelas !== 'Semua') {
-        if (s.kelasSekolah !== studentFilterKelas) {
-          return false;
-        }
+        if (s.kelasSekolah !== studentFilterKelas) return false;
       } else {
         if (formData.level !== 'Umum') {
           const kelas = s.kelasSekolah || '';
@@ -933,68 +682,22 @@ const SchedulePage = () => {
       const searchLower = studentSearch.toLowerCase();
       const matchNama = (s.nama || '').toLowerCase().includes(searchLower);
       const matchId = (studentId || '').toLowerCase().includes(searchLower);
-      
       return matchNama || matchId;
     });
   };
 
   // ============================================================
-  // RENDER: Calendar Mini with Events
-  // ============================================================
-  const renderMiniCalendar = () => {
-    const daysInMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0).getDate();
-    const firstDay = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1).getDay();
-    const today = new Date();
-    const todayStr = getSmartDateString(today);
-    const selStr = getSmartDateString(selectedDate);
-
-    const days = [];
-    for (let i = 0; i < firstDay; i++) {
-      days.push(<div key={'empty-' + i} style={styles.miniDayEmpty}></div>);
-    }
-
-    for (let d = 1; d <= daysInMonth; d++) {
-      const dateObj = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), d);
-      const dateStr = getSmartDateString(dateObj);
-      const isSel = dateStr === selStr;
-      const isToday = dateStr === todayStr;
-      const holiday = isHoliday(dateStr);
-      const isRed = holiday || isSunday(dateObj);
-      const hasSchedule = schedules.some(s => s.dateStr === dateStr);
-      const customEvent = getCustomEvent(dateStr);
-
-      days.push(
-        <div
-          key={d}
-          onClick={() => setSelectedDate(dateObj)}
-          style={styles.miniDay(isSel, isRed, isToday, customEvent)}
-          title={customEvent ? '📌 ' + customEvent.label : holiday ? '🔴 ' + holiday.name : hasSchedule ? 'Ada jadwal' : ''}
-        >
-          <span style={styles.miniDayNum(isSel, isRed, isToday)}>{d}</span>
-          {customEvent && !isSel && (
-            <div style={{...styles.miniEventDot, background: customEvent.color || '#f59e0b'}} />
-          )}
-          {hasSchedule && !isSel && !customEvent && <div style={styles.miniDayDot}></div>}
-          {holiday && <Flag size={8} style={{color: '#ef4444', position: 'absolute', top: 2, right: 2}} />}
-        </div>
-      );
-    }
-
-    return days;
-  };
-
-  // ============================================================
-  // RENDER STUDENT SELECTOR UI - PERBAIKAN
+  // RENDER: Student Selector UI
   // ============================================================
   const renderStudentSelectorUI = () => {
     const listSiswaTersaring = getFilteredStudents();
     return (
       <div style={{ 
         marginTop: '14px', 
-        background: '#f8fafc', 
+        background: isDarkMode ? '#1e293b' : '#f8fafc', 
         padding: '12px', 
         borderRadius: '10px', 
-        border: '1px solid #e2e8f0' 
+        border: isDarkMode ? '1px solid #334155' : '1px solid #e2e8f0' 
       }}>
         <div style={{ 
           display: 'flex', 
@@ -1002,7 +705,7 @@ const SchedulePage = () => {
           marginBottom: '8px', 
           fontSize: '13px' 
         }}>
-          <span style={{ fontWeight: '600', color: '#334155' }}>
+          <span style={{ fontWeight: '600', color: isDarkMode ? '#cbd5e1' : '#334155' }}>
             👥 Pilih Peserta Didik ({formData.selectedStudents.length})
           </span>
           <span style={{ color: '#3b82f6', fontWeight: 'bold' }}>
@@ -1020,8 +723,10 @@ const SchedulePage = () => {
               flex: 1, 
               padding: '6px 10px', 
               fontSize: '13px', 
-              border: '1px solid #cbd5e1', 
+              border: isDarkMode ? '1px solid #475569' : '1px solid #cbd5e1', 
               borderRadius: '6px',
+              background: isDarkMode ? '#0f172a' : '#ffffff',
+              color: isDarkMode ? '#ffffff' : '#0f172a',
               outline: 'none'
             }}
           />
@@ -1031,9 +736,10 @@ const SchedulePage = () => {
             style={{ 
               padding: '6px', 
               fontSize: '13px', 
-              border: '1px solid #cbd5e1', 
+              border: isDarkMode ? '1px solid #475569' : '1px solid #cbd5e1', 
               borderRadius: '6px', 
-              background: 'white' 
+              background: isDarkMode ? '#0f172a' : 'white',
+              color: isDarkMode ? '#ffffff' : '#0f172a'
             }}
           >
             <option value="Semua">Semua {formData.level}</option>
@@ -1049,64 +755,61 @@ const SchedulePage = () => {
         <div style={{ 
           maxHeight: '180px', 
           overflowY: 'auto', 
-          background: 'white', 
-          border: '1px solid #e2e8f0', 
-          borderRadius: '8px' 
+          display: 'flex', 
+          flexDirection: 'column', 
+          gap: '4px' 
         }}>
           {listSiswaTersaring.length === 0 ? (
-            <p style={{ 
-              padding: '15px', 
-              color: '#94a3b8', 
-              fontSize: '12px', 
-              textAlign: 'center' 
-            }}>
-              {formData.mapelId
-                ? 'Belum ada siswa yang terdaftar ke mapel ini. Daftarkan mapelnya dulu lewat halaman Edit Siswa (Data Siswa → pilih siswa → Akses Mapel Manual).'
-                : 'Siswa tidak ditemukan pada kategori jenjang ini'}
-            </p>
+            <div style={{ padding: '12px', textAlign: 'center', fontSize: '12px', color: '#94a3b8' }}>
+              Tidak ada siswa yang cocok atau belum terdaftar mapel ini.
+            </div>
           ) : (
             listSiswaTersaring.map(student => {
-              const checked = formData.selectedStudents.some(s => s.id === student.id);
+              const isSelected = formData.selectedStudents.some(s => s.id === student.id || s.studentId === student.studentId);
               return (
                 <div 
                   key={student.id}
                   onClick={() => handleToggleStudent(student)}
-                  style={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    justifyContent: 'space-between', 
-                    padding: '8px 12px', 
-                    borderBottom: '1px solid #f1f5f9', 
-                    cursor: 'pointer', 
-                    fontSize: '13px',
-                    background: checked ? '#eef2ff' : 'transparent'
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '6px 10px',
+                    borderRadius: '6px',
+                    background: isSelected 
+                      ? (isDarkMode ? '#1e3a8a' : '#eff6ff') 
+                      : (isDarkMode ? '#0f172a' : '#ffffff'),
+                    border: isSelected 
+                      ? '1px solid #3b82f6' 
+                      : (isDarkMode ? '1px solid #334155' : '1px solid #e2e8f0'),
+                    cursor: 'pointer'
                   }}
                 >
-                  <div>
-                    <span style={{ fontWeight: '500', color: '#1e293b' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <div style={{
+                      width: 16, height: 16, borderRadius: 4,
+                      border: isSelected ? 'none' : '1.5px solid #94a3b8',
+                      background: isSelected ? '#3b82f6' : 'transparent',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center'
+                    }}>
+                      {isSelected && <Check size={12} color="white" />}
+                    </div>
+                    <span style={{ fontSize: '12px', fontWeight: 600, color: isDarkMode ? '#f8fafc' : '#0f172a' }}>
                       {student.nama}
                     </span>
-                    <span style={{ fontSize: '11px', color: '#64748b', marginLeft: '4px' }}>
-                      ({student.studentId})
-                    </span>
-                    <span style={{ 
-                      fontSize: '9px', 
-                      background: '#f1f5f9', 
-                      padding: '1px 6px', 
-                      borderRadius: '4px',
-                      marginLeft: '4px'
-                    }}>
-                      {student.kelasSekolah || "Umum"}
+                    <span style={{ fontSize: '10px', color: '#94a3b8' }}>
+                      #{student.studentId?.slice(-4) || student.id?.slice(-4)}
                     </span>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <input 
-                      type="checkbox" 
-                      checked={checked} 
-                      onChange={() => {}} 
-                      style={{ accentColor: '#3b82f6', width: '16px', height: '16px' }}
-                    />
-                  </div>
+                  <span style={{ 
+                    fontSize: '10px', 
+                    padding: '2px 6px', 
+                    borderRadius: '4px',
+                    background: isDarkMode ? '#334155' : '#f1f5f9',
+                    color: isDarkMode ? '#cbd5e1' : '#475569'
+                  }}>
+                    {student.kelasSekolah}
+                  </span>
                 </div>
               );
             })
@@ -1117,7 +820,57 @@ const SchedulePage = () => {
   };
 
   // ============================================================
-  // RENDER: Daily View
+  // RENDER: Mini Calendar
+  // ============================================================
+  const renderMiniCalendar = () => {
+    const daysInMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0).getDate();
+    const firstDay = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1).getDay();
+    const today = new Date();
+    const todayStr = getSmartDateString(today);
+    const selStr = getSmartDateString(selectedDate);
+
+    const days = [];
+    for (let i = 0; i < firstDay; i++) {
+      days.push(<div key={'empty-' + i} style={styles.miniDayEmpty} />);
+    }
+
+    for (let d = 1; d <= daysInMonth; d++) {
+      const thisDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), d);
+      const thisDateStr = getSmartDateString(thisDate);
+      const isSel = thisDateStr === selStr;
+      const isTod = thisDateStr === todayStr;
+      const isSun = thisDate.getDay() === 0;
+      const holiday = isHoliday(thisDateStr);
+      const event = getCustomEvent(thisDateStr);
+      const hasSched = currentActiveSchedules.some(s => s.dateStr === thisDateStr && s.status !== 'cancelled');
+
+      days.push(
+        <div 
+          key={d} 
+          onClick={() => setSelectedDate(thisDate)}
+          style={{
+            ...styles.miniDay(isSel, isSun || !!holiday, isTod, event, isDarkMode),
+            background: isSel 
+              ? '#3b82f6' 
+              : isTod 
+                ? (isDarkMode ? '#1e3a8a' : '#dbeafe')
+                : (isDarkMode ? '#0f172a' : '#ffffff'),
+            color: isSel ? '#ffffff' : (isDarkMode ? '#f8fafc' : '#0f172a')
+          }}
+        >
+          <span style={styles.miniDayNum(isSel, isSun || !!holiday, isTod)}>{d}</span>
+          {hasSched && !isSel && <div style={styles.miniDayDot} />}
+          {event && !isSel && (
+            <div style={{...styles.miniEventDot, background: event.color || '#f59e0b'}} />
+          )}
+        </div>
+      );
+    }
+    return days;
+  };
+
+  // ============================================================
+  // RENDER: Daily View (Matriks 5 Planet)
   // ============================================================
   const renderDailyView = () => {
     const dateStr = getSmartDateString(selectedDate);
@@ -1134,139 +887,119 @@ const SchedulePage = () => {
                 <span style={styles.eventBannerDesc}>{customEvent.description}</span>
               )}
             </div>
-            <button 
-              onClick={() => {
-                const idx = customEvents.findIndex(e => e.date === customEvent.date);
-                handleEditEvent(idx);
-              }}
-              style={styles.eventBannerEdit}
-            >
-              <Edit3 size={12} /> Edit
-            </button>
           </div>
         )}
 
         {PLANETS.map(planet => {
-          const items = schedules.filter(s => s.planet === planet && s.dateStr === dateStr);
+          const items = currentActiveSchedules.filter(s => s.planet === planet && s.dateStr === dateStr);
           return (
-            <div key={planet} style={styles.planetCard}>
-              <div style={styles.planetHeader}>
-                <h4 style={styles.planetName}>🪐 {planet}</h4>
+            <div key={planet} style={{
+              ...styles.planetCard,
+              background: isDarkMode ? '#1e293b' : '#ffffff',
+              borderColor: isDarkMode ? '#334155' : '#e2e8f0'
+            }}>
+              <div style={{
+                ...styles.planetHeader,
+                background: isDarkMode ? '#0f172a' : '#f8fafc',
+                borderBottomColor: isDarkMode ? '#334155' : '#f1f5f9'
+              }}>
+                <h4 style={{
+                  ...styles.planetName,
+                  color: isDarkMode ? '#f8fafc' : '#1e293b'
+                }}>
+                  🪐 Ruang {planet}
+                </h4>
                 <span style={styles.planetCount}>{items.length} sesi</span>
                 <button onClick={() => handleOpenModal(planet)} style={styles.btnAddSmall}>
-                  <Plus size={12} /> Tambah
+                  <Plus size={12} /> Tambah Sesi
                 </button>
               </div>
+
               <div style={styles.planetBody}>
                 {items.length === 0 ? (
-                  <div style={styles.emptyPlanet}>Kosong</div>
+                  <div style={styles.emptyPlanet}>Ruangan kosong hari ini</div>
                 ) : (
                   items.map(item => {
+                    const photo = getTeacherPhoto(item);
                     return (
-                      <div key={item.id} style={styles.scheduleItem}>
+                      <div key={item.id} style={{
+                        ...styles.scheduleItem,
+                        background: isDarkMode ? '#0f172a' : '#f8fafc',
+                        borderColor: isDarkMode ? '#334155' : '#e2e8f0'
+                      }}>
                         <div style={styles.scheduleTop}>
                           <span style={styles.timeBadge}>⏰ {item.start} - {item.end}</span>
                           <span style={styles.programBadge(item.program)}>{item.program}</span>
+                          {item.isDraft && (
+                            <span style={styles.draftBadge}>🧪 Draft</span>
+                          )}
                           {item.seriesId && (
                             <span style={styles.seriesBadge} title="Bagian dari seri 4 minggu">
                               <RefreshCw size={9} /> 4 Minggu
                             </span>
                           )}
                         </div>
-                        <div style={styles.scheduleTitle}>{item.title || "Materi Umum"}</div>
-                        
-                        <div style={styles.scheduleCodes}>
-                          {item.teacherId && (
-                            <span style={styles.codeBadgeTeacher}>
-                              <Hash size={10} /> {item.teacherId}
-                            </span>
-                          )}
-                          {item.mapelId && (
-                            <span style={styles.codeBadgeMapel}>
-                              <Tag size={10} /> {item.mapelId}
-                            </span>
-                          )}
+
+                        <div style={{
+                          ...styles.scheduleTitle,
+                          color: isDarkMode ? '#f8fafc' : '#1e293b'
+                        }}>
+                          {item.title || "Materi Umum"}
                         </div>
-                        
-                        <div style={styles.scheduleInfo}>
-                          <span>👨‍🏫 <b>{item.teacherName || item.booker}</b></span>
-                          <span>📚 {item.level || "SD"}</span>
-                          <span>👥 {item.students?.length || 0} siswa</span>
+
+                        {/* Foto & Identitas Guru */}
+                        <div style={styles.teacherInfoRow}>
+                          {photo ? (
+                            <img src={photo} alt={item.teacherName} style={styles.teacherImgSmall} />
+                          ) : (
+                            <div style={styles.teacherAvatarSmall}>
+                              {item.teacherName?.charAt(0) || 'G'}
+                            </div>
+                          )}
+                          <div style={{ lineHeight: 1.2 }}>
+                            <div style={{ fontSize: 11.5, fontWeight: 700, color: isDarkMode ? '#cbd5e1' : '#1e293b' }}>
+                              👨‍🏫 {item.teacherName || item.booker || '-'}
+                            </div>
+                            <div style={{ fontSize: 10, color: '#94a3b8' }}>
+                              📚 {item.level || "SD"} · 👥 {item.students?.length || 0} siswa
+                            </div>
+                          </div>
                         </div>
-                        
+
+                        {/* Student Chips */}
                         {item.students && item.students.length > 0 && (
                           <div style={styles.studentPreview}>
                             {item.students.slice(0, 3).map((s, i) => (
-                              <span key={i} style={styles.studentChip} title={s.nama + ' (' + (s.studentId || s.id) + ')'}>
+                              <span key={i} style={styles.studentChip}>
                                 {s.nama?.split(' ')[0]}
-                                <span style={styles.studentIdChip}>#{s.studentId?.slice(-4) || s.id?.slice(-4)}</span>
                               </span>
                             ))}
-                            {item.students.length > 3 && <span style={styles.studentMore}>+{item.students.length - 3}</span>}
+                            {item.students.length > 3 && (
+                              <span style={styles.studentMore}>+{item.students.length - 3}</span>
+                            )}
                           </div>
                         )}
-                        
-                        {/* Tombol Aksi Cepat Latihan Sesi / Mode Mandiri */}
-                        <div style={{ marginTop: 8 }}>
-                          {!isJadwalJenjangSD(item) ? (
-                            <button
-                              type="button"
-                              onClick={() => setJadwalLatihanSesi(item)}
-                              title={item.latihanSesi?.status === 'aktif' ? 'Kelola latihan pemahaman sesi tatap muka' : 'Aktifkan Mode Sesi Mandiri jika tentor berhalangan hadir'}
-                              style={{
-                                width: '100%',
-                                padding: '5px 8px',
-                                borderRadius: 6,
-                                background: item.latihanSesi?.status === 'aktif' ? (item.latihanSesi?.isKelasMandiri ? '#eef2ff' : '#f0fdf4') : '#f8fafc',
-                                color: item.latihanSesi?.status === 'aktif' ? (item.latihanSesi?.isKelasMandiri ? '#4338ca' : '#15803d') : '#475569',
-                                border: item.latihanSesi?.status === 'aktif' ? (item.latihanSesi?.isKelasMandiri ? '1px solid #c7d2fe' : '1px solid #86efac') : '1px dashed #cbd5e1',
-                                fontSize: 10.5,
-                                fontWeight: 700,
-                                cursor: 'pointer',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                gap: 4,
-                                marginBottom: 6,
-                              }}
-                            >
-                              {item.latihanSesi?.status === 'aktif' ? (
-                                <>{item.latihanSesi?.isKelasMandiri ? '⚡ Mandiri Aktif' : '✓ Latihan Aktif'} ({item.latihanSesi.totalSoal || item.latihanSesi.soalList?.length || 5})</>
-                              ) : (
-                                <>⚡ Mode Mandiri / Latihan</>
-                              )}
-                            </button>
-                          ) : (
-                            <div
-                              style={{
-                                width: '100%',
-                                padding: '4px 6px',
-                                borderRadius: 6,
-                                background: '#f8fafc',
-                                color: '#64748b',
-                                border: '1px dashed #cbd5e1',
-                                fontSize: 9.5,
-                                fontWeight: 600,
-                                textAlign: 'center',
-                                marginBottom: 6,
-                                boxSizing: 'border-box',
-                              }}
-                              title="Kelas jenjang SD menggunakan materi mandiri tentor"
-                            >
-                              🌱 Mandiri SD
-                            </div>
-                          )}
-                        </div>
 
+                        {/* Tombol Aksi Lengkap + Pindah Ruangan Cepat */}
                         <div style={styles.scheduleActions}>
+                          <button 
+                            type="button"
+                            onClick={() => {
+                              setSessionToPindah(item);
+                            }}
+                            title="Pindah Ruangan Cepat" 
+                            style={styles.btnPindahSm}
+                          >
+                            <Shuffle size={11} /> Pindah Ruang
+                          </button>
                           <button onClick={() => handleOpenModal(planet, true, item)} style={styles.btnEditSm}>
-                            <Edit3 size={12} /> Edit
+                            <Edit3 size={11} /> Edit
                           </button>
                           <button onClick={() => setDetailSchedule(item)} style={styles.btnDetailSm}>
-                            <Eye size={12} /> Detail
+                            <Eye size={11} /> Detail
                           </button>
                           <button onClick={() => handleDeleteSchedule(item)} style={styles.btnDeleteSm}>
-                            <Trash2 size={12} /> Hapus
+                            <Trash2 size={11} /> Hapus
                           </button>
                         </div>
                       </div>
@@ -1282,7 +1015,7 @@ const SchedulePage = () => {
   };
 
   // ============================================================
-  // RENDER: Weekly View with Events
+  // RENDER: Weekly View
   // ============================================================
   const renderWeeklyView = () => {
     const weekDates = getWeekDates(selectedDate);
@@ -1292,14 +1025,23 @@ const SchedulePage = () => {
           const dateObj = new Date(dateStr);
           const dayName = DAYS_ID[dateObj.getDay()];
           const isToday = dateStr === getSmartDateString(new Date());
-          const items = schedules.filter(s => s.dateStr === dateStr);
+          const items = currentActiveSchedules.filter(s => s.dateStr === dateStr && s.status !== 'cancelled');
           const holiday = isHoliday(dateStr);
           const customEvent = getCustomEvent(dateStr);
 
           return (
-            <div key={dateStr} style={styles.weeklyDay(isToday, !!holiday, !!customEvent)}>
+            <div key={dateStr} style={{
+              ...styles.weeklyDay(isToday, !!holiday, !!customEvent),
+              background: isDarkMode ? '#1e293b' : '#ffffff',
+              borderColor: isToday ? '#3b82f6' : (isDarkMode ? '#334155' : '#e2e8f0')
+            }}>
               <div style={styles.weeklyHeader}>
-                <span style={styles.weeklyDayName(!!holiday || isSunday(dateObj))}>{dayName}</span>
+                <span style={{
+                  ...styles.weeklyDayName(!!holiday || isSunday(dateObj)),
+                  color: isDarkMode ? '#f8fafc' : (holiday ? '#ef4444' : '#1e293b')
+                }}>
+                  {dayName}
+                </span>
                 <span style={styles.weeklyDate}>{dateObj.getDate()}/{dateObj.getMonth() + 1}</span>
                 {customEvent && (
                   <div style={{...styles.weeklyEventBadge, background: customEvent.color || '#f59e0b'}}>
@@ -1307,22 +1049,63 @@ const SchedulePage = () => {
                   </div>
                 )}
                 {holiday && <Flag size={10} color="#ef4444" />}
+                <span style={{ marginLeft: 'auto', fontSize: 11, color: '#94a3b8' }}>
+                  {items.length} Sesi
+                </span>
               </div>
+
               <div style={styles.weeklyBody}>
                 {items.length === 0 ? (
-                  <span style={styles.weeklyEmpty}>-</span>
+                  <span style={styles.weeklyEmpty}>Tidak ada jadwal</span>
                 ) : (
-                  items.map(item => (
-                    <div key={item.id} style={styles.weeklyItem}>
-                      <span style={styles.weeklyTime}>{item.start}</span>
-                      <span style={styles.weeklyPlanet}>🪐 {item.planet}</span>
-                      <span style={styles.weeklyTitle}>{item.title || item.mapelName || 'Materi'}</span>
-                      <span style={styles.weeklyTeacher}>👨‍🏫 {item.teacherName || item.booker}</span>
-                      {item.teacherId && (
-                        <span style={styles.weeklyIdBadge}>{item.teacherId}</span>
-                      )}
-                    </div>
-                  ))
+                  items.map(item => {
+                    const photo = getTeacherPhoto(item);
+                    return (
+                      <div key={item.id} style={{
+                        ...styles.weeklyItem,
+                        background: isDarkMode ? '#0f172a' : '#f8fafc',
+                        border: isDarkMode ? '1px solid #334155' : '1px solid #e2e8f0'
+                      }}>
+                        <span style={styles.weeklyTime}>{item.start} - {item.end}</span>
+                        <span style={styles.weeklyPlanet}>🪐 {item.planet}</span>
+                        <span style={{ fontWeight: 700, color: isDarkMode ? '#f8fafc' : '#0f172a' }}>
+                          {item.title || item.mapelName}
+                        </span>
+
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                          {photo ? (
+                            <img src={photo} alt={item.teacherName} style={styles.teacherImgMicro} />
+                          ) : (
+                            <div style={styles.teacherAvatarMicro}>
+                              {item.teacherName?.charAt(0) || 'G'}
+                            </div>
+                          )}
+                          <span style={{ fontSize: 11, color: isDarkMode ? '#cbd5e1' : '#475569' }}>
+                            {item.teacherName || item.booker}
+                          </span>
+                        </div>
+
+                        <div style={{ marginLeft: 'auto', display: 'flex', gap: 4 }}>
+                          <button
+                            type="button"
+                            onClick={() => setSessionToPindah(item)}
+                            style={styles.btnMiniAction}
+                            title="Pindah Ruangan"
+                          >
+                            🔄
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setDetailSchedule(item)}
+                            style={styles.btnMiniAction}
+                            title="Detail"
+                          >
+                            👁️
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })
                 )}
               </div>
             </div>
@@ -1337,139 +1120,68 @@ const SchedulePage = () => {
   // ============================================================
   const renderDetailModal = () => {
     if (!detailSchedule) return null;
+    const photo = getTeacherPhoto(detailSchedule);
     
     return (
       <div style={styles.overlay} onClick={() => setDetailSchedule(null)}>
         <div style={styles.detailModal(isMobile)} onClick={e => e.stopPropagation()}>
           <div style={styles.modalHeader}>
-            <h3>📋 Detail Jadwal</h3>
+            <h3>📋 Detail Jadwal Kelas</h3>
             <button onClick={() => setDetailSchedule(null)} style={styles.btnClose}><X size={20} /></button>
           </div>
           <div style={styles.detailContent}>
-            <div style={styles.detailRow}><span>🪐 Ruang</span><strong>{detailSchedule.planet}</strong></div>
-            <div style={styles.detailRow}><span>⏰ Waktu</span><strong>{detailSchedule.start} - {detailSchedule.end}</strong></div>
+            <div style={styles.detailRow}>
+              <span>🪐 Ruang Kelas</span>
+              <strong>
+                {detailSchedule.planet}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSessionToPindah(detailSchedule);
+                    setDetailSchedule(null);
+                  }}
+                  style={styles.btnPindahDetail}
+                >
+                  <Shuffle size={12} /> Pindah Ruangan
+                </button>
+              </strong>
+            </div>
+            <div style={styles.detailRow}><span>⏰ Waktu Sesi</span><strong>{detailSchedule.start} - {detailSchedule.end}</strong></div>
             <div style={styles.detailRow}><span>📅 Tanggal</span><strong>{detailSchedule.dateStr}</strong></div>
             <div style={styles.detailRow}><span>📚 Program</span><strong>{detailSchedule.program} / {detailSchedule.level}</strong></div>
             {detailSchedule.seriesId && (
-              <div style={styles.detailRow}><span>🔄 Seri</span><strong>Bagian dari jadwal 4 minggu</strong></div>
+              <div style={styles.detailRow}><span>🔄 Seri</span><strong>Bagian dari jadwal 4 minggu berulang</strong></div>
             )}
             
+            {/* Foto & Guru */}
             <div style={styles.detailRow}>
-              <span>👨‍🏫 Guru</span>
-              <strong>
-                {detailSchedule.teacherName || detailSchedule.booker}
-                {detailSchedule.teacherId && (
-                  <span style={{...styles.codeBadgeTeacher, marginLeft: 8, fontSize: 10}}>
-                    <Hash size={10} /> {detailSchedule.teacherId}
-                  </span>
+              <span>👨‍🏫 Tentor / Pengajar</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                {photo ? (
+                  <img src={photo} alt={detailSchedule.teacherName} style={styles.teacherImgSmall} />
+                ) : (
+                  <div style={styles.teacherAvatarSmall}>
+                    {detailSchedule.teacherName?.charAt(0) || 'G'}
+                  </div>
                 )}
-              </strong>
-            </div>
-            <div style={styles.detailRow}>
-              <span>📘 Mapel</span>
-              <strong>
-                {detailSchedule.mapelName || detailSchedule.mapel || '-'}
-                {detailSchedule.mapelId && (
-                  <span style={{...styles.codeBadgeMapel, marginLeft: 8, fontSize: 10}}>
-                    <Tag size={10} /> {detailSchedule.mapelId}
-                  </span>
-                )}
-              </strong>
-            </div>
-            
-            <div style={styles.detailRow}><span>📝 Materi</span><strong>{detailSchedule.title || '-'}</strong></div>
-            <div style={styles.detailDivider} />
-
-            {/* 🔥 Kontrol Mode Sesi Mandiri / Latihan */}
-            <div style={{ marginBottom: 14 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-                <h4 style={{ margin: 0, fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <span>⚡ Mode Sesi & Latihan Mandiri</span>
-                  {detailSchedule.latihanSesi?.status === 'aktif' && (
-                    <span style={{ fontSize: 10, padding: '2px 6px', borderRadius: 4, background: detailSchedule.latihanSesi.isKelasMandiri ? '#e0e7ff' : '#dcfce7', color: detailSchedule.latihanSesi.isKelasMandiri ? '#3730a3' : '#15803d', fontWeight: 800 }}>
-                      {detailSchedule.latihanSesi.isKelasMandiri ? 'MODE MANDIRI AKTIF' : 'LATIHAN AKTIF'}
-                    </span>
-                  )}
-                </h4>
+                <strong>{detailSchedule.teacherName || detailSchedule.booker}</strong>
               </div>
-
-              {!isJadwalJenjangSD(detailSchedule) ? (
-                <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 10, padding: 12 }}>
-                  {detailSchedule.latihanSesi?.status === 'aktif' ? (
-                    <>
-                      <div style={{ fontSize: 11.5, color: '#1e293b', fontWeight: 700, marginBottom: 4 }}>
-                        📝 {detailSchedule.latihanSesi.judul || 'Latihan Pemahaman Sesi'}
-                      </div>
-                      <div style={{ fontSize: 11, color: '#64748b', marginBottom: 8 }}>
-                        Total {detailSchedule.latihanSesi.totalSoal || detailSchedule.latihanSesi.soalList?.length || 5} butir soal · Blind submission aktif
-                        <br />
-                        📊 <b>{Object.keys(detailSchedule.latihanSesi.hasil || {}).length}</b> dari <b>{detailSchedule.students?.length || 0}</b> siswa telah mengumpulkan.
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setJadwalLatihanSesi(detailSchedule);
-                        }}
-                        style={{
-                          padding: '6px 12px',
-                          borderRadius: 8,
-                          background: '#4f46e5',
-                          color: 'white',
-                          border: 'none',
-                          fontSize: 11,
-                          fontWeight: 700,
-                          cursor: 'pointer',
-                        }}
-                      >
-                        ⚙️ Kelola / Edit Butir Latihan
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      <div style={{ fontSize: 11, color: '#475569', marginBottom: 8, lineHeight: 1.4 }}>
-                        Tentor berhalangan hadir atau kelas membutuhkan modul latihan terarah? Anda dapat mengaktifkan <b>Mode Sesi Mandiri</b> untuk kelas ini agar siswa tetap produktif di kelas.
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setJadwalLatihanSesi(detailSchedule);
-                        }}
-                        style={{
-                          padding: '7px 14px',
-                          borderRadius: 8,
-                          background: '#4338ca',
-                          color: 'white',
-                          border: 'none',
-                          fontSize: 11.5,
-                          fontWeight: 800,
-                          cursor: 'pointer',
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: 6,
-                        }}
-                      >
-                        ⚡ Aktifkan Mode Sesi Mandiri (Tentor Berhalangan)
-                      </button>
-                    </>
-                  )}
-                </div>
-              ) : (
-                <div style={{ background: '#f8fafc', border: '1px dashed #cbd5e1', borderRadius: 8, padding: '8px 12px', fontSize: 11, color: '#64748b' }}>
-                  🌱 Kelas jenjang SD menggunakan materi dan pendampingan mandiri tentor.
-                </div>
-              )}
             </div>
 
+            <div style={styles.detailRow}>
+              <span>📘 Mata Pelajaran</span>
+              <strong>{detailSchedule.mapelName || detailSchedule.title || '-'}</strong>
+            </div>
+            
             <div style={styles.detailDivider} />
             
-            <h4 style={{marginBottom: 8, fontSize: 13}}>👥 Daftar Siswa ({detailSchedule.students?.length || 0})</h4>
+            <h4 style={{margin: '8px 0', fontSize: 13}}>👥 Siswa Terdaftar ({detailSchedule.students?.length || 0})</h4>
             {detailSchedule.students && detailSchedule.students.length > 0 ? (
               <div style={styles.detailStudentList}>
                 {detailSchedule.students.map((s, i) => (
                   <div key={i} style={styles.detailStudentItem}>
                     <span style={styles.detailStudentNum}>{i + 1}.</span>
                     <span style={styles.detailStudentName}>{s.nama || s}</span>
-                    <span style={styles.detailStudentId}>#{s.studentId || s.id || '-'}</span>
                     <span style={styles.detailStudentKelas}>{s.kelas || s.kelasSekolah || '-'}</span>
                   </div>
                 ))}
@@ -1484,200 +1196,101 @@ const SchedulePage = () => {
   };
 
   // ============================================================
-  // RENDER: Event Modal
-  // ============================================================
-  const renderEventModal = () => {
-    if (!isEventModalOpen) return null;
-
-    return (
-      <div style={styles.overlay} onClick={() => setIsEventModalOpen(false)}>
-        <div style={styles.modal(isMobile)} onClick={e => e.stopPropagation()}>
-          <div style={styles.modalHeader}>
-            <h3 style={{margin: 0}}>
-              {editingEventIndex !== null ? "✏️ Edit Event" : "📌 Tambah Event Kalender"}
-            </h3>
-            <button onClick={() => setIsEventModalOpen(false)} style={styles.btnClose}>
-              <X size={20} />
-            </button>
-          </div>
-
-          <div style={styles.modalBody}>
-            <div style={styles.formGroup}>
-              <label style={styles.formLabel}>📅 Tanggal</label>
-              <input 
-                type="date" 
-                value={eventForm.date} 
-                onChange={e => setEventForm({...eventForm, date: e.target.value})}
-                style={styles.formInput} 
-              />
-            </div>
-
-            <div style={styles.formGroup}>
-              <label style={styles.formLabel}>🏷️ Label Event</label>
-              <input 
-                type="text" 
-                value={eventForm.label} 
-                onChange={e => setEventForm({...eventForm, label: e.target.value})}
-                style={styles.formInput} 
-                placeholder="Contoh: Rapat Guru, Ujian Semester, Libur"
-              />
-            </div>
-
-            <div style={styles.formGroup}>
-              <label style={styles.formLabel}>📝 Deskripsi (Opsional)</label>
-              <input 
-                type="text" 
-                value={eventForm.description} 
-                onChange={e => setEventForm({...eventForm, description: e.target.value})}
-                style={styles.formInput} 
-                placeholder="Detail tambahan..."
-              />
-            </div>
-
-            <div style={styles.formGroup}>
-              <label style={styles.formLabel}>🎨 Warna</label>
-              <div style={styles.colorPickerRow}>
-                {EVENT_COLORS.map(color => (
-                  <div
-                    key={color}
-                    onClick={() => setEventForm({...eventForm, color})}
-                    style={styles.colorOption(eventForm.color === color, color)}
-                  />
-                ))}
-                <input 
-                  type="color" 
-                  value={eventForm.color} 
-                  onChange={e => setEventForm({...eventForm, color: e.target.value})}
-                  style={styles.colorInput} 
-                />
-              </div>
-            </div>
-
-            <div style={styles.eventPreviewBox}>
-              <strong>Preview:</strong>
-              <div style={{...styles.eventPreview, background: eventForm.color || '#f59e0b'}}>
-                📌 {eventForm.label || 'Label Event'}
-              </div>
-            </div>
-
-            <div style={styles.modalFooter}>
-              {editingEventIndex !== null && (
-                <button 
-                  type="button" 
-                  onClick={() => handleDeleteEvent(editingEventIndex)} 
-                  style={{...styles.btnCancel, color: '#ef4444', borderColor: '#fecaca'}}
-                >
-                  <Trash2 size={14} /> Hapus
-                </button>
-              )}
-              <button type="button" onClick={() => setIsEventModalOpen(false)} style={styles.btnCancel}>
-                Batal
-              </button>
-              <button onClick={handleSaveEvent} style={styles.btnSave}>
-                <Save size={16} /> {editingEventIndex !== null ? 'Update' : 'Simpan'}
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  // ============================================================
-  // RENDER: PDF Download Modal
-  // ============================================================
-  const renderPdfModal = () => {
-    if (!isPdfModalOpen) return null;
-    return (
-      <div style={styles.overlay} onClick={() => setIsPdfModalOpen(false)}>
-        <div style={styles.modal(isMobile)} onClick={e => e.stopPropagation()}>
-          <div style={styles.modalHeader}>
-            <h3 style={{ margin: 0 }}>📄 Download Jadwal Guru (PDF)</h3>
-            <button onClick={() => setIsPdfModalOpen(false)} style={styles.btnClose}><X size={20} /></button>
-          </div>
-          <div style={styles.modalBody}>
-            <div style={styles.formGroup}>
-              <label style={styles.formLabel}>📅 Pilih tanggal (di minggu yang mau didownload)</label>
-              <input
-                type="date"
-                value={pdfWeekStart}
-                onChange={e => setPdfWeekStart(e.target.value)}
-                style={styles.formInput}
-              />
-            </div>
-            <div style={styles.formGroup}>
-              <label style={styles.formLabel}>👨‍🏫 Guru</label>
-              <select
-                value={pdfTeacherFilter}
-                onChange={e => setPdfTeacherFilter(e.target.value)}
-                style={styles.formSelect}
-              >
-                <option value="Semua">Semua Guru (1 file, tiap guru halaman terpisah)</option>
-                {availableTeachers.map(t => (
-                  <option key={t.id} value={t.guruId || t.id}>
-                    {t.nama} {t.mapel ? '- ' + t.mapel : ''}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <p style={{ fontSize: 12, color: '#64748b' }}>
-              PDF berisi jadwal Senin-Minggu untuk minggu yang mengandung tanggal di atas.
-            </p>
-            <div style={styles.modalFooter}>
-              <button type="button" onClick={() => setIsPdfModalOpen(false)} style={styles.btnCancel}>Batal</button>
-              <button onClick={handleDownloadJadwalPDF} style={styles.btnSave}>
-                <Download size={16} /> Download PDF
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  // ============================================================
-  // MAIN RENDER
+  // MAIN RETURN
   // ============================================================
   if (loading) {
     return (
-      <div style={styles.wrapper}>
+      <div style={{
+        ...styles.wrapper,
+        background: isDarkMode ? '#0b1120' : '#f8fafc'
+      }}>
         <SidebarAdmin />
         <div style={styles.mainContent(isMobile)}>
-          <div style={styles.loadingBox}><div style={styles.spinner}></div><p>Memuat jadwal...</p></div>
+          <div style={styles.loadingBox}><div style={styles.spinner}></div><p>Memuat sistem jadwal...</p></div>
         </div>
       </div>
     );
   }
 
   return (
-    <div style={styles.wrapper}>
+    <div style={{
+      ...styles.wrapper,
+      background: isDarkMode ? '#0b1120' : '#f8fafc'
+    }}>
       <SidebarAdmin />
       <div style={styles.mainContent(isMobile)}>
         
         {alertMsg && <div style={styles.toast}>{alertMsg}</div>}
 
-        {/* HEADER */}
-        <div style={styles.headerCard}>
+        {/* OWNER REVIEW NOTIFICATION BANNER */}
+        {isOwner && draftSchedules.length > 0 && (
+          <div style={styles.ownerReviewBanner}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div style={styles.ownerCrownIcon}>👑</div>
+              <div>
+                <strong style={{ fontSize: 13.5, color: '#6d28d9' }}>
+                  Panel Persetujuan Owner: Terdapat {draftSchedules.length} Sesi Draft Menunggu Review
+                </strong>
+                <p style={{ margin: '2px 0 0', fontSize: 11.5, color: '#4c1d95' }}>
+                  Admin telah menyiapkan usulan skema jadwal simulasi. Silakan periksa kesesuaian tentor, jam, dan mood siswa.
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsOwnerReviewOpen(true)}
+              style={styles.btnReviewDraft}
+            >
+              👑 Review & Setujui Draft
+            </button>
+          </div>
+        )}
+
+        {/* TOP HEADER */}
+        <div style={{
+          ...styles.headerCard,
+          background: isDarkMode ? 'linear-gradient(135deg, #0f172a, #1e293b)' : 'linear-gradient(135deg, #1e293b, #334155)',
+          border: isDarkMode ? '1px solid #334155' : 'none'
+        }}>
           <div style={styles.headerLeft}>
-            <h2 style={styles.pageTitle}>
-              <Calendar size={22} /> Manajemen Jadwal
-            </h2>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <Calendar size={22} color="#818cf8" />
+              <h2 style={styles.pageTitle}>Manajemen Jadwal Operasional</h2>
+            </div>
             <p style={styles.headerDate}>
               {selectedDate.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
             </p>
           </div>
+
           <div style={styles.headerRight}>
-            <div style={styles.headerButtons}>
-              <button onClick={() => setIsPdfModalOpen(true)} style={styles.btnEvent}>
-                <Download size={14} /> Download Jadwal
-              </button>
-              <button 
-                onClick={() => handleOpenEventModal(getSmartDateString(selectedDate))} 
-                style={styles.btnEvent}
-              >
-                <Flag size={14} /> Tambah Event
-              </button>
-            </div>
+            {/* Dark Mode Toggle */}
+            <button
+              type="button"
+              onClick={toggleDarkMode}
+              style={{
+                ...styles.btnHeaderAction,
+                background: isDarkMode ? '#f8fafc' : 'rgba(255,255,255,0.15)',
+                color: isDarkMode ? '#0f172a' : '#ffffff'
+              }}
+              title="Ganti Mode Tampilan (Terang / Gelap)"
+            >
+              {isDarkMode ? <Sun size={14} color="#f59e0b" /> : <Moon size={14} />}
+              {isDarkMode ? 'Mode Terang' : 'Dark Mode'}
+            </button>
+
+            {/* Download Jadwal Besar */}
+            <button 
+              onClick={() => setIsMasterDownloadOpen(true)} 
+              style={{
+                ...styles.btnHeaderAction,
+                background: '#4f46e5',
+                color: '#ffffff'
+              }}
+            >
+              <Download size={14} /> Download / Share WA
+            </button>
+
+            {/* Kode Absen Harian */}
             <div style={styles.codeBox}>
               <span style={styles.codeLabel}>KODE ABSEN:</span>
               {isEditingCode ? (
@@ -1695,69 +1308,263 @@ const SchedulePage = () => {
           </div>
         </div>
 
-        {/* VIEW TOGGLE */}
-        <div style={styles.viewToggle}>
-          <button onClick={() => setViewMode('daily')} style={styles.viewBtn(viewMode === 'daily')}>📝 Harian</button>
-          <button onClick={() => setViewMode('weekly')} style={styles.viewBtn(viewMode === 'weekly')}>🗓️ Mingguan</button>
+        {/* MODE SWITCHER: JADWAL RESMI VS SIMULASI / DRAFT */}
+        <div style={styles.modeSwitchBar}>
+          <div style={styles.modeTabs}>
+            <button
+              type="button"
+              onClick={() => setScheduleMode('live')}
+              style={{
+                ...styles.modeTabBtn,
+                background: scheduleMode === 'live' ? '#15803d' : '#f1f5f9',
+                color: scheduleMode === 'live' ? '#ffffff' : '#475569',
+                fontWeight: scheduleMode === 'live' ? 800 : 600
+              }}
+            >
+              <CheckCircle2 size={15} /> 🟢 Jadwal Resmi (Live)
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setScheduleMode('draft')}
+              style={{
+                ...styles.modeTabBtn,
+                background: scheduleMode === 'draft' ? '#7c3aed' : '#f1f5f9',
+                color: scheduleMode === 'draft' ? '#ffffff' : '#475569',
+                fontWeight: scheduleMode === 'draft' ? 800 : 600
+              }}
+            >
+              <Sparkles size={15} /> 🧪 Mode Draft & Simulasi (Coretan Kotor)
+              {draftSchedules.length > 0 && (
+                <span style={styles.draftBadgeCount}>{draftSchedules.length}</span>
+              )}
+            </button>
+          </div>
+
+          {/* Action di mode draft */}
+          {scheduleMode === 'draft' && (
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+              <button
+                type="button"
+                onClick={handleCloneLiveWeekToDraft}
+                style={styles.btnDraftAction}
+              >
+                📋 Salin Jadwal Resmi ke Draft
+              </button>
+              {isOwner ? (
+                <button
+                  type="button"
+                  onClick={() => setIsOwnerReviewOpen(true)}
+                  style={styles.btnDraftApprove}
+                >
+                  👑 Setujui Seluruh Draft
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setIsOwnerReviewOpen(true)}
+                  style={styles.btnDraftSubmit}
+                >
+                  📤 Ajukan ke Owner
+                </button>
+              )}
+            </div>
+          )}
         </div>
 
+        {/* BANNER PERINGATAN KETIKA DI MODE DRAFT */}
+        {scheduleMode === 'draft' && (
+          <div style={styles.draftWarningNotice}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <AlertTriangle size={18} color="#b45309" />
+              <div>
+                <strong>Anda berada di Ruang Simulasi & Coretan Skema Jadwal</strong>
+                <div style={{ fontSize: 11.5, marginTop: 2 }}>
+                  Perubahan, geser jam, atau tambah kelas di sini TIDAK AKAN mengubah jadwal live murid/tentor sampai disetujui Owner.
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* VIEW MODE TOGGLE (CALMENDAR TIMETABLE, PLANET ROOMS, WEEKLY LIST) */}
+        <div style={styles.viewToggle}>
+          <button 
+            onClick={() => setViewMode('timetable')} 
+            style={styles.viewBtn(viewMode === 'timetable', isDarkMode)}
+          >
+            🗓️ Matriks Kalender (Calmendar)
+          </button>
+          <button 
+            onClick={() => setViewMode('daily')} 
+            style={styles.viewBtn(viewMode === 'daily', isDarkMode)}
+          >
+            🪐 Matriks Ruangan (5 Planet)
+          </button>
+          <button 
+            onClick={() => setViewMode('weekly')} 
+            style={styles.viewBtn(viewMode === 'weekly', isDarkMode)}
+          >
+            📋 Ringkasan Mingguan
+          </button>
+        </div>
+
+        {/* CONTENT ROW */}
         <div style={styles.contentRow(isMobile)}>
-          {/* MINI CALENDAR */}
+          
+          {/* SIDEBAR KIRI: MINI CALENDAR & FILTERS (Gaya Calmendar) */}
           <div style={styles.miniCalendarCol(isMobile)}>
-            <div style={styles.miniCalendarCard}>
+            <div style={{
+              ...styles.miniCalendarCard,
+              background: isDarkMode ? '#1e293b' : '#ffffff',
+              borderColor: isDarkMode ? '#334155' : '#e2e8f0'
+            }}>
               <div style={styles.miniCalHeader}>
                 <button onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1))} style={styles.miniCalNav}><ChevronLeft size={14} /></button>
-                <span style={styles.miniCalMonth}>{MONTH_NAMES[currentMonth.getMonth()]} {currentMonth.getFullYear()}</span>
+                <span style={{
+                  ...styles.miniCalMonth,
+                  color: isDarkMode ? '#f8fafc' : '#1e293b'
+                }}>
+                  {MONTH_NAMES[currentMonth.getMonth()]} {currentMonth.getFullYear()}
+                </span>
                 <button onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1))} style={styles.miniCalNav}><ChevronRight size={14} /></button>
               </div>
+
               <div style={styles.miniCalWeekdays}>
                 {['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'].map(d => (
                   <div key={d} style={styles.miniCalWeekday(d)}>{d}</div>
                 ))}
               </div>
+
               <div style={styles.miniCalDays}>
                 {renderMiniCalendar()}
               </div>
 
-              {customEvents.filter(e => {
-                const d = new Date(e.date);
-                return d.getMonth() === currentMonth.getMonth() && d.getFullYear() === currentMonth.getFullYear();
-              }).length > 0 && (
-                <div style={styles.eventList}>
-                  <strong style={styles.eventListTitle}>📌 Event Bulan Ini:</strong>
-                  {customEvents.filter(e => {
-                    const d = new Date(e.date);
-                    return d.getMonth() === currentMonth.getMonth() && d.getFullYear() === currentMonth.getFullYear();
-                  }).sort((a, b) => a.date.localeCompare(b.date)).map((e, idx) => (
-                    <div key={idx} style={styles.eventListItem}>
-                      <div style={{...styles.eventListDot, background: e.color || '#f59e0b'}} />
-                      <span style={styles.eventListDate}>{new Date(e.date).getDate()}</span>
-                      <span style={styles.eventListLabel}>{e.label}</span>
-                      <div style={styles.eventListActions}>
-                        <button onClick={() => handleEditEvent(customEvents.indexOf(e))} style={styles.eventListEdit}>
-                          <Edit3 size={10} />
-                        </button>
-                        <button onClick={() => handleDeleteEvent(customEvents.indexOf(e))} style={styles.eventListDelete}>
-                          <X size={10} />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
+              {/* FILTER RUANGAN & GURU */}
+              <div style={{
+                marginTop: 14,
+                paddingTop: 12,
+                borderTop: isDarkMode ? '1px solid #334155' : '1px solid #f1f5f9'
+              }}>
+                <label style={{ fontSize: 11, fontWeight: 700, color: isDarkMode ? '#94a3b8' : '#64748b', display: 'block', marginBottom: 4 }}>
+                  🪐 Filter Ruangan:
+                </label>
+                <select
+                  value={filterPlanet}
+                  onChange={e => setFilterPlanet(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '6px 10px',
+                    borderRadius: 8,
+                    border: isDarkMode ? '1px solid #475569' : '1px solid #cbd5e1',
+                    background: isDarkMode ? '#0f172a' : '#ffffff',
+                    color: isDarkMode ? '#ffffff' : '#0f172a',
+                    fontSize: 11.5,
+                    marginBottom: 8
+                  }}
+                >
+                  <option value="Semua">Semua Ruangan</option>
+                  {PLANETS.map(p => <option key={p} value={p}>Ruang {p}</option>)}
+                </select>
 
-              <div style={styles.miniCalLegend}>
-                <div style={styles.legendItem}><div style={{...styles.legendDot, background: '#3b82f6'}}></div><span>Jadwal</span></div>
-                <div style={styles.legendItem}><div style={{...styles.legendDot, background: '#ef4444'}}></div><span>Libur</span></div>
-                <div style={styles.legendItem}><div style={{...styles.legendDot, background: '#f59e0b'}}></div><span>Event</span></div>
-                <div style={styles.legendItem}><div style={{...styles.legendDot, background: '#10b981', border: '2px solid #10b981'}}></div><span>Hari Ini</span></div>
+                <label style={{ fontSize: 11, fontWeight: 700, color: isDarkMode ? '#94a3b8' : '#64748b', display: 'block', marginBottom: 4 }}>
+                  👨‍🏫 Filter Tentor:
+                </label>
+                <select
+                  value={filterTeacher}
+                  onChange={e => setFilterTeacher(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '6px 10px',
+                    borderRadius: 8,
+                    border: isDarkMode ? '1px solid #475569' : '1px solid #cbd5e1',
+                    background: isDarkMode ? '#0f172a' : '#ffffff',
+                    color: isDarkMode ? '#ffffff' : '#0f172a',
+                    fontSize: 11.5
+                  }}
+                >
+                  <option value="Semua">Semua Tentor</option>
+                  {availableTeachers.map(t => (
+                    <option key={t.id} value={t.guruId || t.id}>
+                      {t.nama}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* SESI HARI INI (Upcoming Events Style) */}
+              <div style={{
+                marginTop: 14,
+                paddingTop: 12,
+                borderTop: isDarkMode ? '1px solid #334155' : '1px solid #f1f5f9'
+              }}>
+                <div style={{ fontSize: 11.5, fontWeight: 800, color: isDarkMode ? '#f8fafc' : '#1e293b', marginBottom: 8 }}>
+                  📌 Sesi Hari Ini ({getSmartDateString(selectedDate)}):
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6, maxHeight: 180, overflowY: 'auto' }}>
+                  {currentActiveSchedules
+                    .filter(s => s.dateStr === getSmartDateString(selectedDate) && s.status !== 'cancelled')
+                    .slice(0, 5)
+                    .map(item => {
+                      const photo = getTeacherPhoto(item);
+                      return (
+                        <div 
+                          key={item.id} 
+                          onClick={() => setDetailSchedule(item)}
+                          style={{
+                            padding: '6px 8px',
+                            borderRadius: 8,
+                            background: isDarkMode ? '#0f172a' : '#f8fafc',
+                            border: isDarkMode ? '1px solid #334155' : '1px solid #e2e8f0',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 8,
+                            cursor: 'pointer'
+                          }}
+                        >
+                          {photo ? (
+                            <img src={photo} alt={item.teacherName} style={styles.teacherImgMicro} />
+                          ) : (
+                            <div style={styles.teacherAvatarMicro}>
+                              {item.teacherName?.charAt(0) || 'G'}
+                            </div>
+                          )}
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontSize: 11, fontWeight: 700, color: isDarkMode ? '#f8fafc' : '#0f172a', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                              {item.title || item.mapelName}
+                            </div>
+                            <div style={{ fontSize: 9.5, color: '#94a3b8' }}>
+                              {item.start} · 🪐 {item.planet}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                </div>
               </div>
             </div>
           </div>
 
-          {/* MAIN CONTENT */}
+          {/* MAIN CONTENT AREA */}
           <div style={styles.mainCol}>
-            {viewMode === 'daily' ? renderDailyView() : renderWeeklyView()}
+            {viewMode === 'timetable' && (
+              <CalmendarTimetableView
+                weekDates={getWeekDates(selectedDate)}
+                selectedDate={selectedDate}
+                onSelectDate={d => setSelectedDate(d)}
+                schedules={currentActiveSchedules}
+                availableTeachers={availableTeachers}
+                isDarkMode={isDarkMode}
+                onOpenAddModal={handleOpenModal}
+                onOpenEditModal={handleOpenModal}
+                onOpenDetailModal={item => setDetailSchedule(item)}
+                onOpenPindahRuang={item => setSessionToPindah(item)}
+                onDeleteSchedule={handleDeleteSchedule}
+              />
+            )}
+
+            {viewMode === 'daily' && renderDailyView()}
+            {viewMode === 'weekly' && renderWeeklyView()}
           </div>
         </div>
 
@@ -1766,15 +1573,14 @@ const SchedulePage = () => {
           <div style={styles.overlay} onClick={() => setIsModalOpen(false)}>
             <div style={styles.modal(isMobile)} onClick={e => e.stopPropagation()}>
               <div style={styles.modalHeader}>
-                <h3 style={{margin: 0}}>{editId ? "✏️ Edit Sesi" : "✨ Sesi Baru"} - Ruang {activePlanet}</h3>
+                <h3 style={{margin: 0}}>
+                  {editId ? "✏️ Edit Sesi Kelas" : "✨ Sesi Kelas Baru"} - Ruang {activePlanet}
+                  {scheduleMode === 'draft' && <span style={styles.draftBadgeInline}>Mode Simulasi Draft</span>}
+                </h3>
                 <button onClick={() => setIsModalOpen(false)} style={styles.btnClose}><X size={20} /></button>
               </div>
 
               <form onSubmit={handleSubmitSchedule} style={styles.modalBody}>
-                {/* 🔥 BARU: kalau jadwal yang diedit bagian dari seri 4
-                    minggu, tampilkan pilihan lingkup perubahan di paling
-                    atas -- supaya admin sadar dulu sebelum ubah field lain
-                    di bawahnya. */}
                 {editId && editingSeriesId && (
                   <div style={styles.seriesNotice}>
                     <label style={{ display: 'flex', alignItems: 'flex-start', gap: 8, cursor: 'pointer' }}>
@@ -1786,12 +1592,6 @@ const SchedulePage = () => {
                       />
                       <span style={{ fontSize: 12, color: '#78350f' }}>
                         <b>🔄 Jadwal ini bagian dari seri 4 minggu.</b> Terapkan perubahan ke SEMUA sesi di seri ini?
-                        <br />
-                        <span style={{ fontSize: 11, color: '#92400e' }}>
-                          {applyToSeries
-                            ? 'Ruangan/guru/mapel/siswa/jam akan diubah di keempat sesi sekaligus (tanggal masing-masing tetap seperti semula).'
-                            : 'Kalau tidak dicentang, perubahan cuma berlaku untuk sesi tanggal ini saja.'}
-                        </span>
                       </span>
                     </label>
                   </div>
@@ -1799,11 +1599,11 @@ const SchedulePage = () => {
 
                 <div style={styles.modalRow}>
                   <div style={styles.formGroup}>
-                    <label style={styles.formLabel}>⏰ Mulai</label>
+                    <label style={styles.formLabel}>⏰ Jam Mulai</label>
                     <input type="time" value={formData.start} onChange={e => setFormData({...formData, start: e.target.value})} style={styles.formInput} required />
                   </div>
                   <div style={styles.formGroup}>
-                    <label style={styles.formLabel}>⏰ Selesai</label>
+                    <label style={styles.formLabel}>⏰ Jam Selesai</label>
                     <input type="time" value={formData.end} onChange={e => setFormData({...formData, end: e.target.value})} style={styles.formInput} required />
                   </div>
                 </div>
@@ -1827,7 +1627,7 @@ const SchedulePage = () => {
                 </div>
 
                 <div style={styles.formGroup}>
-                  <label style={styles.formLabel}>👨‍🏫 Guru <span style={{ fontWeight: 400, color: '#94a3b8' }}>(guru berhalangan? ganti di sini, siswa & materi tidak terpengaruh)</span></label>
+                  <label style={styles.formLabel}>👨‍🏫 Guru / Tentor</label>
                   <select required value={formData.teacherId} onChange={e => handleTeacherSelect(e.target.value)} style={styles.formSelect}>
                     <option value="">-- Pilih Guru --</option>
                     {availableTeachers.map(t => (
@@ -1838,8 +1638,48 @@ const SchedulePage = () => {
                   </select>
                 </div>
 
+                {/* INDIKATOR REAL-TIME BENTROK & JEDA WAKTU ISTIRAHAT GURU */}
+                {liveConflictAnalysis && (
+                  <div style={styles.conflictAnalysisContainer}>
+                    {liveConflictAnalysis.hasConflict && (
+                      <div style={styles.conflictAlertBox}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 800, color: '#b91c1c', marginBottom: 4 }}>
+                          <AlertTriangle size={15} /> ⛔ BENTROK JADWAL TERDETEKSI:
+                        </div>
+                        <ul style={{ margin: 0, paddingLeft: 18, fontSize: 11, color: '#991b1b', lineHeight: 1.4 }}>
+                          {liveConflictAnalysis.conflicts.map((c, i) => (
+                            <li key={i}>{c.message}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {liveConflictAnalysis.warnings.length > 0 && (
+                      <div style={styles.restWarningBox}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 700, color: '#b45309', marginBottom: 4 }}>
+                          <Coffee size={15} /> ⚠️ PERINGATAN JEDA ISTIRAHAT:
+                        </div>
+                        <ul style={{ margin: 0, paddingLeft: 18, fontSize: 11, color: '#92400e', lineHeight: 1.4 }}>
+                          {liveConflictAnalysis.warnings.map((w, i) => (
+                            <li key={i}>{w.message}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {!liveConflictAnalysis.hasConflict && liveConflictAnalysis.warnings.length === 0 && (
+                      <div style={styles.safeStatusBox}>
+                        <CheckCircle size={15} color="#15803d" />
+                        <span style={{ fontSize: 11.5, color: '#166534', fontWeight: 600 }}>
+                          Ruangan kosong · Guru siap mengajar · ☕ {liveConflictAnalysis.restInfo?.notes || 'Jadwal aman'}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 <div style={styles.formGroup}>
-                  <label style={styles.formLabel}>📘 Mapel</label>
+                  <label style={styles.formLabel}>📘 Mata Pelajaran</label>
                   <select required value={formData.mapelId} onChange={e => handleMapelSelect(e.target.value)} style={styles.formSelect}>
                     <option value="">-- Pilih Mapel --</option>
                     {availableMapel.map(m => (
@@ -1851,16 +1691,16 @@ const SchedulePage = () => {
                 </div>
 
                 <div style={styles.formGroup}>
-                  <label style={styles.formLabel}>📝 Materi / Judul</label>
-                  <input type="text" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} style={styles.formInput} placeholder="Contoh: Matematika Pecahan" />
+                  <label style={styles.formLabel}>📝 Materi / Judul Kelas</label>
+                  <input type="text" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} style={styles.formInput} placeholder="Contoh: Matematika Persamaan Kuadrat" />
                 </div>
 
-                {/* 🔥 ASSIGN SISWA */}
+                {/* ASSIGN SISWA */}
                 {renderStudentSelectorUI()}
 
                 {!editId && (
                   <div style={styles.formGroup}>
-                    <label style={styles.formLabel}>🔄 Pengulangan</label>
+                    <label style={styles.formLabel}>🔄 Pengulangan Sesi</label>
                     <select value={formData.repeat} onChange={e => setFormData({...formData, repeat: e.target.value})} style={styles.formSelect}>
                       <option value="Once">1x Pertemuan Saja</option>
                       <option value="Monthly">Otomatis 4 Pekan (1 Bulan)</option>
@@ -1871,7 +1711,7 @@ const SchedulePage = () => {
                 <div style={styles.modalFooter}>
                   <button type="button" onClick={() => setIsModalOpen(false)} style={styles.btnCancel}>Batal</button>
                   <button type="submit" style={styles.btnSave}>
-                    <Save size={16} /> {editId ? 'Update' : 'Simpan'}
+                    <Save size={16} /> {editId ? 'Perbarui Sesi' : (scheduleMode === 'draft' ? 'Simpan ke Draft' : 'Simpan Jadwal')}
                   </button>
                 </div>
               </form>
@@ -1879,39 +1719,66 @@ const SchedulePage = () => {
           </div>
         )}
 
-        {/* EVENT MODAL */}
-        {renderEventModal()}
+        {/* MODAL PINDAH RUANGAN CEPAT */}
+        {sessionToPindah && (
+          <ModalPindahRuang
+            schedule={sessionToPindah}
+            allSchedules={currentActiveSchedules}
+            teacherPhoto={getTeacherPhoto(sessionToPindah)}
+            onClose={() => setSessionToPindah(null)}
+            onSuccess={(newPlanet, reason) => {
+              showAlert(`✅ Berhasil memindahkan kelas ke Ruangan ${newPlanet}!`);
+              fetchData();
+            }}
+          />
+        )}
+
+        {/* MODAL DOWNLOAD & SHARE JADWAL BESAR */}
+        {isMasterDownloadOpen && (
+          <ModalDownloadJadwalBesar
+            isOpen={isMasterDownloadOpen}
+            onClose={() => setIsMasterDownloadOpen(false)}
+            schedules={currentActiveSchedules}
+            availableTeachers={availableTeachers}
+            selectedDate={selectedDate}
+            onShowAlert={showAlert}
+          />
+        )}
+
+        {/* MODAL REVIEW OWNER FOR DRAFT SIMULATION */}
+        {isOwnerReviewOpen && (
+          <ModalReviewDraftOwner
+            isOpen={isOwnerReviewOpen}
+            onClose={() => setIsOwnerReviewOpen(false)}
+            draftSchedules={draftSchedules}
+            draftNotes={draftNotes}
+            onShowAlert={showAlert}
+            onSuccess={() => {
+              fetchData();
+              setScheduleMode('live');
+            }}
+          />
+        )}
 
         {/* DETAIL MODAL */}
         {renderDetailModal()}
 
-        {/* PDF DOWNLOAD MODAL */}
-        {renderPdfModal()}
-
-        {/* MODAL SIAPKAN LATIHAN SESI / MODE MANDIRI ADMIN */}
+        {/* MODAL SIAPKAN LATIHAN SESI */}
         {jadwalLatihanSesi && (
           <ModalSiapkanLatihanSesi
             schedule={jadwalLatihanSesi}
             teacher={null}
             onClose={() => setJadwalLatihanSesi(null)}
             onSuccess={(updatedLatihan) => {
-              setSchedules((prev) =>
-                prev.map((s) => (s.id === jadwalLatihanSesi.id ? { ...s, latihanSesi: updatedLatihan, isKelasMandiri: updatedLatihan?.isKelasMandiri } : s))
+              setSchedules(prev =>
+                prev.map(s => s.id === jadwalLatihanSesi.id ? { ...s, latihanSesi: updatedLatihan } : s)
               );
-              if (detailSchedule && detailSchedule.id === jadwalLatihanSesi.id) {
-                setDetailSchedule((prev) => ({ ...prev, latihanSesi: updatedLatihan, isKelasMandiri: updatedLatihan?.isKelasMandiri }));
-              }
               setJadwalLatihanSesi(null);
             }}
           />
         )}
 
       </div>
-      <style>{`
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        @keyframes toastIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-      `}</style>
     </div>
   );
 };
@@ -1920,22 +1787,22 @@ const SchedulePage = () => {
 // STYLES
 // ============================================================
 const styles = {
-  wrapper: { display: 'flex', background: '#f8fafc', minHeight: '100vh' },
+  wrapper: { display: 'flex', minHeight: '100vh', transition: 'background 0.3s ease' },
   mainContent: (m) => ({ 
-    marginLeft: m ? '0' : '250px', 
-    padding: m ? '15px' : '30px', 
-    width: '100%', 
+    marginLeft: m ? '0' : '236px', 
+    padding: m ? '12px' : '24px', 
+    width: m ? '100%' : 'calc(100% - 236px)', 
     boxSizing: 'border-box', 
-    transition: '0.3s' 
+    transition: '0.3s',
+    minWidth: 0
   }),
   
   toast: { 
     position: 'fixed', top: 20, right: 20, zIndex: 9999, 
     background: '#1e293b', color: 'white', 
     padding: '12px 20px', borderRadius: 12, 
-    fontWeight: 'bold', fontSize: 14, 
-    boxShadow: '0 10px 30px rgba(0,0,0,0.2)', 
-    animation: 'toastIn 0.3s ease' 
+    fontWeight: 'bold', fontSize: 13, 
+    boxShadow: '0 10px 30px rgba(0,0,0,0.2)' 
   },
   
   loadingBox: { textAlign: 'center', padding: 80, color: '#94a3b8' },
@@ -1946,204 +1813,294 @@ const styles = {
     margin: '0 auto 15px' 
   },
 
+  ownerReviewBanner: {
+    padding: '12px 18px',
+    borderRadius: 14,
+    background: 'linear-gradient(135deg, #f5f3ff, #ede9fe)',
+    border: '1.5px solid #c4b5fd',
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+    flexWrap: 'wrap',
+    gap: 12,
+    boxShadow: '0 4px 14px rgba(124, 58, 237, 0.1)'
+  },
+  ownerCrownIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    background: '#ddd6fe',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: 18
+  },
+  btnReviewDraft: {
+    padding: '8px 16px',
+    borderRadius: 10,
+    background: '#7c3aed',
+    color: '#ffffff',
+    border: 'none',
+    fontSize: 12,
+    fontWeight: 800,
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    gap: 6,
+    boxShadow: '0 4px 12px rgba(124, 58, 237, 0.3)'
+  },
+
   headerCard: { 
-    background: 'linear-gradient(135deg, #1e293b, #334155)', 
-    padding: 20, borderRadius: 16, marginBottom: 20, 
+    padding: '18px 22px', borderRadius: 16, marginBottom: 16, 
     display: 'flex', justifyContent: 'space-between', 
     alignItems: 'center', flexWrap: 'wrap', gap: 15, 
-    color: 'white' 
+    color: 'white',
+    boxShadow: '0 4px 20px rgba(0,0,0,0.06)'
   },
   headerLeft: {},
-  pageTitle: { margin: 0, fontSize: 20, display: 'flex', alignItems: 'center', gap: 8, color: 'white' },
-  headerDate: { margin: '4px 0 0', fontSize: 12, opacity: 0.7 },
-  headerRight: { display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' },
-  headerButtons: { display: 'flex', gap: 8 },
+  pageTitle: { margin: 0, fontSize: 18, fontWeight: 800, color: 'white' },
+  headerDate: { margin: '4px 0 0', fontSize: 12, opacity: 0.8 },
+  headerRight: { display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' },
   
-  btnEvent: { 
-    background: 'rgba(255,255,255,0.15)', 
-    color: 'white', border: '1px solid rgba(255,255,255,0.2)',
-    padding: '8px 14px', borderRadius: 8, cursor: 'pointer',
-    fontWeight: 'bold', fontSize: 12, display: 'flex', alignItems: 'center', gap: 6,
+  btnHeaderAction: { 
+    border: 'none',
+    padding: '8px 14px', borderRadius: 10, cursor: 'pointer',
+    fontWeight: 700, fontSize: 11.5, display: 'flex', alignItems: 'center', gap: 6,
     transition: '0.2s'
   },
   
   codeBox: { 
-    background: 'rgba(255,255,255,0.1)', padding: '8px 14px', 
-    borderRadius: 10, display: 'flex', alignItems: 'center', gap: 10 
+    background: 'rgba(255,255,255,0.1)', padding: '6px 12px', 
+    borderRadius: 10, display: 'flex', alignItems: 'center', gap: 8 
   },
-  codeLabel: { fontSize: 10, fontWeight: 'bold', opacity: 0.8 },
-  codeValue: { fontSize: 18, fontWeight: '900', color: '#fbbf24', fontFamily: 'monospace' },
-  codeEditBtn: { background: 'rgba(255,255,255,0.2)', color: 'white', border: 'none', padding: '4px 10px', borderRadius: 6, cursor: 'pointer', fontSize: 10 },
-  codeInput: { width: 60, padding: '4px 8px', borderRadius: 4, textAlign: 'center', border: 'none', fontSize: 14, fontWeight: 'bold' },
-  codeSaveBtn: { background: '#10b981', color: 'white', border: 'none', padding: '4px 10px', borderRadius: 6, cursor: 'pointer', fontWeight: 'bold' },
+  codeLabel: { fontSize: 10, fontWeight: 800, opacity: 0.85 },
+  codeValue: { fontSize: 16, fontWeight: '900', color: '#fbbf24', fontFamily: 'monospace' },
+  codeEditBtn: { background: 'rgba(255,255,255,0.2)', color: 'white', border: 'none', padding: '3px 8px', borderRadius: 6, cursor: 'pointer', fontSize: 10 },
+  codeInput: { width: 55, padding: '3px 6px', borderRadius: 4, textAlign: 'center', border: 'none', fontSize: 13, fontWeight: 'bold' },
+  codeSaveBtn: { background: '#10b981', color: 'white', border: 'none', padding: '3px 8px', borderRadius: 6, cursor: 'pointer', fontWeight: 'bold' },
 
-  viewToggle: { display: 'flex', gap: 8, marginBottom: 20 },
-  viewBtn: (active) => ({ 
+  modeSwitchBar: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 14,
+    flexWrap: 'wrap',
+    gap: 10
+  },
+  modeTabs: {
+    display: 'flex',
+    gap: 8
+  },
+  modeTabBtn: {
+    padding: '8px 14px',
+    borderRadius: 10,
+    border: 'none',
+    fontSize: 12,
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    gap: 6,
+    transition: '0.15s ease'
+  },
+  draftBadgeCount: {
+    background: '#ffffff',
+    color: '#7c3aed',
+    padding: '1px 6px',
+    borderRadius: 8,
+    fontSize: 10,
+    fontWeight: 900
+  },
+  btnDraftAction: {
+    padding: '7px 12px',
+    borderRadius: 8,
+    background: '#ede9fe',
+    border: '1px solid #c4b5fd',
+    color: '#6d28d9',
+    fontSize: 11,
+    fontWeight: 700,
+    cursor: 'pointer'
+  },
+  btnDraftSubmit: {
+    padding: '7px 14px',
+    borderRadius: 8,
+    background: '#7c3aed',
+    color: '#ffffff',
+    border: 'none',
+    fontSize: 11,
+    fontWeight: 800,
+    cursor: 'pointer'
+  },
+  btnDraftApprove: {
+    padding: '7px 14px',
+    borderRadius: 8,
+    background: '#15803d',
+    color: '#ffffff',
+    border: 'none',
+    fontSize: 11,
+    fontWeight: 800,
+    cursor: 'pointer'
+  },
+  draftWarningNotice: {
+    padding: '10px 14px',
+    borderRadius: 10,
+    background: '#fef3c7',
+    border: '1px solid #fde68a',
+    color: '#92400e',
+    marginBottom: 14,
+    fontSize: 12
+  },
+
+  viewToggle: { display: 'flex', gap: 8, marginBottom: 16 },
+  viewBtn: (active, isDark) => ({ 
     flex: 1, padding: '10px', borderRadius: 10, border: 'none', 
-    fontWeight: 'bold', fontSize: 13, cursor: 'pointer', 
-    background: active ? '#3b82f6' : '#e2e8f0', 
-    color: active ? 'white' : '#64748b', transition: '0.2s' 
+    fontWeight: 800, fontSize: 12, cursor: 'pointer', 
+    background: active ? '#4f46e5' : (isDark ? '#1e293b' : '#e2e8f0'), 
+    color: active ? '#ffffff' : (isDark ? '#94a3b8' : '#64748b'), 
+    transition: '0.2s',
+    boxShadow: active ? '0 4px 12px rgba(79, 70, 229, 0.25)' : 'none'
   }),
 
-  contentRow: (m) => ({ display: 'flex', gap: 20, flexDirection: m ? 'column' : 'row' }),
-  miniCalendarCol: (m) => ({ width: m ? '100%' : '280px', flexShrink: 0 }),
+  contentRow: (m) => ({ display: 'flex', gap: 16, flexDirection: m ? 'column' : 'row' }),
+  miniCalendarCol: (m) => ({ width: m ? '100%' : '260px', flexShrink: 0 }),
   mainCol: { flex: 1, minWidth: 0 },
 
-  miniCalendarCard: { background: 'white', padding: 16, borderRadius: 14, boxShadow: '0 2px 8px rgba(0,0,0,0.04)', border: '1px solid #f1f5f9' },
-  miniCalHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
+  miniCalendarCard: { padding: 14, borderRadius: 16, boxShadow: '0 2px 8px rgba(0,0,0,0.03)', border: '1px solid' },
+  miniCalHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 },
   miniCalNav: { background: '#f1f5f9', border: 'none', padding: '4px 8px', borderRadius: 6, cursor: 'pointer' },
-  miniCalMonth: { fontSize: 13, fontWeight: 'bold', color: '#1e293b' },
+  miniCalMonth: { fontSize: 12.5, fontWeight: 800 },
   miniCalWeekdays: { display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 2, marginBottom: 4 },
-  miniCalWeekday: (d) => ({ textAlign: 'center', fontSize: 10, fontWeight: 'bold', color: d === 'Min' ? '#ef4444' : '#94a3b8', padding: '4px 0' }),
+  miniCalWeekday: (d) => ({ textAlign: 'center', fontSize: 9.5, fontWeight: 'bold', color: d === 'Min' ? '#ef4444' : '#94a3b8', padding: '3px 0' }),
   miniCalDays: { display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 2 },
   miniDayEmpty: { aspectRatio: '1' },
-  miniDay: (sel, red, today, event) => ({
+  miniDay: (sel, red, today, event, isDark) => ({
     aspectRatio: '1', borderRadius: 8, display: 'flex', flexDirection: 'column',
     alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
-    position: 'relative', fontSize: 12, fontWeight: sel ? 'bold' : 'normal',
-    background: sel ? '#3b82f6' : red ? '#fee2e2' : event ? event.color + '20' : 'white',
-    color: sel ? 'white' : red ? '#ef4444' : event ? event.color : today ? '#3b82f6' : '#334155',
-    border: today && !sel ? '2px solid #3b82f6' : red && !sel ? '1px solid #fecaca' : event && !sel ? '1px solid ' + event.color : '1px solid transparent',
-    transition: '0.2s'
+    position: 'relative', fontSize: 11, fontWeight: sel ? 'bold' : 'normal',
+    transition: '0.15s'
   }),
-  miniDayNum: (sel, red, today) => ({ fontSize: 12, fontWeight: sel || today ? 'bold' : 'normal' }),
+  miniDayNum: (sel, red, today) => ({ fontSize: 11, fontWeight: sel || today ? 'bold' : 'normal' }),
   miniDayDot: { width: 4, height: 4, borderRadius: '50%', background: '#3b82f6', marginTop: 2 },
-  miniEventDot: { width: 8, height: 8, borderRadius: '50%', marginTop: 2, border: '1px solid rgba(255,255,255,0.5)' },
-  
-  miniCalLegend: { display: 'flex', gap: 12, marginTop: 12, paddingTop: 10, borderTop: '1px solid #f1f5f9', flexWrap: 'wrap' },
-  legendItem: { display: 'flex', alignItems: 'center', gap: 4, fontSize: 9, color: '#64748b' },
-  legendDot: { width: 8, height: 8, borderRadius: '50%' },
-  
-  eventList: { marginTop: 12, paddingTop: 10, borderTop: '1px solid #f1f5f9' },
-  eventListTitle: { fontSize: 10, color: '#1e293b', display: 'block', marginBottom: 6 },
-  eventListItem: { 
-    display: 'flex', alignItems: 'center', gap: 6, 
-    padding: '4px 6px', borderRadius: 4, 
-    fontSize: 10, background: '#f8fafc', marginBottom: 2 
-  },
-  eventListDot: { width: 6, height: 6, borderRadius: '50%', flexShrink: 0 },
-  eventListDate: { fontWeight: 'bold', color: '#64748b', minWidth: 20 },
-  eventListLabel: { flex: 1, color: '#1e293b' },
-  eventListActions: { display: 'flex', gap: 2 },
-  eventListEdit: { background: 'none', border: 'none', cursor: 'pointer', color: '#64748b', padding: '2px', borderRadius: 4 },
-  eventListDelete: { background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444', padding: '2px', borderRadius: 4 },
+  miniEventDot: { width: 6, height: 6, borderRadius: '50%', marginTop: 2 },
 
   eventBanner: { 
-    padding: '12px 16px', borderRadius: 10, 
+    padding: '10px 14px', borderRadius: 10, 
     display: 'flex', justifyContent: 'space-between', 
     alignItems: 'center', color: 'white', marginBottom: 12 
   },
-  eventBannerContent: { display: 'flex', alignItems: 'center', gap: 10 },
-  eventBannerLabel: { fontWeight: 'bold', fontSize: 14 },
+  eventBannerContent: { display: 'flex', alignItems: 'center', gap: 8 },
+  eventBannerLabel: { fontWeight: 'bold', fontSize: 13 },
   eventBannerDesc: { fontSize: 11, opacity: 0.9 },
-  eventBannerEdit: { 
-    background: 'rgba(255,255,255,0.2)', 
-    border: 'none', color: 'white', 
-    padding: '6px 12px', borderRadius: 6, 
-    cursor: 'pointer', fontSize: 11,
-    display: 'flex', alignItems: 'center', gap: 4
-  },
 
-  weeklyDay: (today, holiday, event) => ({ 
-    background: event ? event + '10' : 'white',
-    borderRadius: 12, padding: 14, 
-    border: holiday ? '2px solid #fecaca' : 
-           event ? '2px solid ' + event :
-           today ? '2px solid #3b82f6' : '1px solid #f1f5f9' 
-  }),
-  weeklyEventBadge: { 
-    fontSize: 9, padding: '2px 8px', borderRadius: 10, 
-    color: 'white', fontWeight: 'bold' 
-  },
+  planetGrid: { display: 'flex', flexDirection: 'column', gap: 14 },
+  planetCard: { borderRadius: 16, overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.03)', border: '1px solid' },
+  planetHeader: { padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 8, borderBottom: '1px solid' },
+  planetName: { margin: 0, fontSize: 13.5, fontWeight: 800, flex: 1 },
+  planetCount: { fontSize: 10, color: '#94a3b8', background: '#f1f5f9', padding: '2px 8px', borderRadius: 8 },
+  btnAddSmall: { background: '#4f46e5', color: 'white', border: 'none', padding: '4px 10px', borderRadius: 7, cursor: 'pointer', fontWeight: 700, fontSize: 10.5, display: 'flex', alignItems: 'center', gap: 4 },
+  planetBody: { padding: 12, display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 10 },
+  emptyPlanet: { gridColumn: '1/-1', textAlign: 'center', padding: 20, color: '#94a3b8', fontSize: 11.5, fontStyle: 'italic' },
 
-  overlay: { position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.6)', display: 'flex', justifyContent: 'center', alignItems: 'flex-end', zIndex: 2000, backdropFilter: 'blur(2px)' },
-  modal: (m) => ({ background: 'white', padding: m ? 20 : 25, borderRadius: m ? '20px 20px 0 0' : 20, width: m ? '100%' : '90%', maxWidth: '650px', maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 20px 50px rgba(0,0,0,0.3)', animation: 'slideUp 0.3s ease' }),
-  detailModal: (m) => ({ background: 'white', padding: m ? 20 : 25, borderRadius: m ? '20px 20px 0 0' : 20, width: m ? '100%' : '90%', maxWidth: '550px', maxHeight: '85vh', overflowY: 'auto', boxShadow: '0 20px 50px rgba(0,0,0,0.3)', animation: 'slideUp 0.3s ease' }),
-  modalHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, paddingBottom: 12, borderBottom: '1px solid #f1f5f9' },
-  btnClose: { background: 'none', border: 'none', fontSize: 22, cursor: 'pointer', color: '#ef4444' },
-  modalBody: { display: 'flex', flexDirection: 'column', gap: 12 },
-  modalRow: { display: 'flex', gap: 10, flexWrap: 'wrap' },
-  formGroup: { flex: 1, minWidth: 140, display: 'flex', flexDirection: 'column', gap: 4 },
-  formLabel: { fontSize: 11, fontWeight: 'bold', color: '#64748b' },
-  formInput: { padding: '10px', borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 13, width: '100%', boxSizing: 'border-box', background: '#f8fafc' },
-  formSelect: { padding: '10px', borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 13, width: '100%', boxSizing: 'border-box', background: 'white' },
-  studentSelectList: { maxHeight: '200px', overflowY: 'auto', background: '#f8fafc', borderRadius: 8, border: '1px solid #e2e8f0', padding: '6px' },
-  modalFooter: { display: 'flex', gap: 10, marginTop: 12, paddingTop: 12, borderTop: '1px solid #f1f5f9' },
-  btnCancel: { flex: 1, padding: 12, borderRadius: 10, border: '1px solid #e2e8f0', background: 'white', fontWeight: 'bold', fontSize: 13, cursor: 'pointer', color: '#64748b' },
-  btnSave: { flex: 2, padding: 12, borderRadius: 10, border: 'none', background: '#1e293b', color: 'white', fontWeight: 'bold', fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 },
-
-  // 🔥 BARU: notifikasi seri 4-mingguan di dalam form edit
-  seriesNotice: { background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 10, padding: 12 },
-
-  colorPickerRow: { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' },
-  colorOption: (selected, color) => ({ 
-    width: 32, height: 32, borderRadius: '50%', 
-    background: color, cursor: 'pointer',
-    border: selected ? '3px solid #1e293b' : '2px solid transparent',
-    transition: '0.2s', boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-  }),
-  colorInput: { width: 40, height: 40, padding: 2, borderRadius: 8, border: '1px solid #e2e8f0', cursor: 'pointer' },
-  
-  eventPreviewBox: { marginTop: 8, padding: 12, background: '#f8fafc', borderRadius: 8, border: '1px solid #e2e8f0' },
-  eventPreview: { padding: '8px 12px', borderRadius: 6, color: 'white', fontWeight: 'bold', fontSize: 13, textAlign: 'center' },
-
-  planetGrid: { display: 'flex', flexDirection: 'column', gap: 15 },
-  planetCard: { background: 'white', borderRadius: 14, overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.04)', border: '1px solid #f1f5f9' },
-  planetHeader: { background: '#f8fafc', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 10, borderBottom: '1px solid #f1f5f9' },
-  planetName: { margin: 0, fontSize: 14, fontWeight: 'bold', color: '#1e293b', flex: 1 },
-  planetCount: { fontSize: 10, color: '#94a3b8', background: '#f1f5f9', padding: '2px 8px', borderRadius: 10 },
-  btnAddSmall: { background: '#3b82f6', color: 'white', border: 'none', padding: '5px 12px', borderRadius: 8, cursor: 'pointer', fontWeight: 'bold', fontSize: 11, display: 'flex', alignItems: 'center', gap: 4 },
-  planetBody: { padding: 16, display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 10 },
-  emptyPlanet: { gridColumn: '1/-1', textAlign: 'center', padding: 20, color: '#94a3b8', fontSize: 12, fontStyle: 'italic' },
-
-  scheduleItem: { background: '#f8fafc', padding: 14, borderRadius: 10, border: '1px solid #e2e8f0', transition: '0.2s' },
-  scheduleTop: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8, flexWrap: 'wrap', gap: 4 },
-  timeBadge: { fontSize: 12, fontWeight: '900', color: '#1e293b', background: '#e2e8f0', padding: '2px 8px', borderRadius: 6 },
+  scheduleItem: { padding: 12, borderRadius: 12, border: '1px solid', display: 'flex', flexDirection: 'column', gap: 6 },
+  scheduleTop: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 4 },
+  timeBadge: { fontSize: 10.5, fontWeight: 800, color: '#1e293b', background: '#e2e8f0', padding: '2px 7px', borderRadius: 6 },
   programBadge: (p) => ({
-    fontSize: 10,
+    fontSize: 9.5,
     fontWeight: 'bold',
-    color: (p === 'English' || p === 'English Course') ? '#7c3aed' : p === 'Privat' || p === 'Private' ? '#b45309' : '#047857',
-    background: (p === 'English' || p === 'English Course') ? '#f5f3ff' : p === 'Privat' || p === 'Private' ? '#fffbeb' : '#ecfdf5',
+    color: (p === 'English' || p === 'English Course') ? '#7c3aed' : p === 'Privat' ? '#b45309' : '#047857',
+    background: (p === 'English' || p === 'English Course') ? '#f5f3ff' : p === 'Privat' ? '#fffbeb' : '#ecfdf5',
     padding: '2px 6px',
     borderRadius: 4,
   }),
-  seriesBadge: { display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 9, fontWeight: 700, color: '#b45309', background: '#fef3c7', padding: '2px 7px', borderRadius: 10 },
-  scheduleTitle: { fontSize: 14, fontWeight: 'bold', marginBottom: 4, color: '#1e293b' },
-  scheduleCodes: { display: 'flex', gap: 6, marginBottom: 4, flexWrap: 'wrap' },
-  codeBadgeTeacher: { display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 9, color: '#3b82f6', background: '#eef2ff', padding: '1px 6px', borderRadius: 10, fontWeight: 600 },
-  codeBadgeMapel: { display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 9, color: '#8b5cf6', background: '#ede9fe', padding: '1px 6px', borderRadius: 10, fontWeight: 600 },
-  scheduleInfo: { display: 'flex', gap: 8, fontSize: 11, color: '#64748b', flexWrap: 'wrap', marginBottom: 6 },
-  studentPreview: { display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 8 },
-  studentChip: { background: '#e0e7ff', color: '#3730a3', padding: '2px 8px', borderRadius: 10, fontSize: 10, fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: 4 },
-  studentIdChip: { fontSize: 8, color: '#94a3b8', background: 'rgba(255,255,255,0.5)', padding: '0 4px', borderRadius: 4, fontFamily: 'monospace' },
-  studentMore: { fontSize: 10, color: '#94a3b8' },
-  scheduleActions: { display: 'flex', gap: 6, borderTop: '1px solid #e2e8f0', paddingTop: 8 },
-  btnEditSm: { flex: 1, padding: '6px', borderRadius: 6, background: '#fef3c7', color: '#b45309', border: 'none', cursor: 'pointer', fontWeight: 'bold', fontSize: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 3 },
-  btnDetailSm: { flex: 1, padding: '6px', borderRadius: 6, background: '#e0e7ff', color: '#3730a3', border: 'none', cursor: 'pointer', fontWeight: 'bold', fontSize: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 3 },
-  btnDeleteSm: { flex: 1, padding: '6px', borderRadius: 6, background: '#fee2e2', color: '#ef4444', border: 'none', cursor: 'pointer', fontWeight: 'bold', fontSize: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 3 },
+  draftBadge: { fontSize: 9, fontWeight: 800, background: '#fef3c7', color: '#b45309', padding: '2px 6px', borderRadius: 4 },
+  draftBadgeInline: { marginLeft: 8, fontSize: 10, fontWeight: 700, background: '#ede9fe', color: '#6d28d9', padding: '2px 8px', borderRadius: 6 },
+  seriesBadge: { display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 9, fontWeight: 700, color: '#b45309', background: '#fef3c7', padding: '2px 6px', borderRadius: 6 },
+  scheduleTitle: { fontSize: 13, fontWeight: 800 },
+  
+  teacherInfoRow: { display: 'flex', alignItems: 'center', gap: 8, margin: '2px 0' },
+  teacherImgSmall: { width: 26, height: 26, borderRadius: '50%', objectFit: 'cover', border: '1.5px solid #818cf8', flexShrink: 0 },
+  teacherAvatarSmall: { width: 26, height: 26, borderRadius: '50%', background: '#6366f1', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 800, flexShrink: 0 },
+  teacherImgMicro: { width: 18, height: 18, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 },
+  teacherAvatarMicro: { width: 18, height: 18, borderRadius: '50%', background: '#6366f1', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 800, flexShrink: 0 },
+
+  studentPreview: { display: 'flex', gap: 4, flexWrap: 'wrap' },
+  studentChip: { background: '#e0e7ff', color: '#3730a3', padding: '1px 6px', borderRadius: 4, fontSize: 9.5, fontWeight: 600 },
+  studentMore: { fontSize: 9.5, color: '#94a3b8' },
+  
+  scheduleActions: { display: 'flex', gap: 4, borderTop: '1px solid rgba(0,0,0,0.06)', paddingTop: 6, marginTop: 4 },
+  btnPindahSm: { flex: 1.2, padding: '5px', borderRadius: 6, background: '#e0e7ff', color: '#3730a3', border: 'none', cursor: 'pointer', fontWeight: 700, fontSize: 9.5, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 3 },
+  btnEditSm: { flex: 1, padding: '5px', borderRadius: 6, background: '#fef3c7', color: '#b45309', border: 'none', cursor: 'pointer', fontWeight: 700, fontSize: 9.5, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 3 },
+  btnDetailSm: { flex: 1, padding: '5px', borderRadius: 6, background: '#f1f5f9', color: '#475569', border: 'none', cursor: 'pointer', fontWeight: 700, fontSize: 9.5, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 3 },
+  btnDeleteSm: { flex: 1, padding: '5px', borderRadius: 6, background: '#fee2e2', color: '#ef4444', border: 'none', cursor: 'pointer', fontWeight: 700, fontSize: 9.5, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 3 },
+  btnMiniAction: { padding: '2px 6px', borderRadius: 4, background: '#ffffff', border: '1px solid #cbd5e1', cursor: 'pointer', fontSize: 10 },
+  btnPindahDetail: { marginLeft: 10, padding: '3px 8px', borderRadius: 6, background: '#e0e7ff', color: '#4338ca', border: 'none', fontSize: 11, fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4 },
 
   weeklyGrid: { display: 'flex', flexDirection: 'column', gap: 10 },
-  weeklyHeader: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8, flexWrap: 'wrap' },
-  weeklyDayName: (red) => ({ fontSize: 13, fontWeight: 'bold', color: red ? '#ef4444' : '#1e293b' }),
+  weeklyDay: (today, holiday, event) => ({ 
+    borderRadius: 12, padding: 12, border: '1px solid'
+  }),
+  weeklyHeader: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6, flexWrap: 'wrap' },
+  weeklyDayName: (red) => ({ fontSize: 12.5, fontWeight: 800 }),
   weeklyDate: { fontSize: 11, color: '#94a3b8' },
+  weeklyEventBadge: { fontSize: 9, padding: '1px 6px', borderRadius: 8, color: 'white', fontWeight: 'bold' },
   weeklyBody: { display: 'flex', flexDirection: 'column', gap: 4 },
   weeklyEmpty: { color: '#94a3b8', fontSize: 11, fontStyle: 'italic' },
-  weeklyItem: { display: 'flex', alignItems: 'center', gap: 8, padding: '6px 10px', background: '#f8fafc', borderRadius: 6, flexWrap: 'wrap' },
-  weeklyTime: { fontSize: 11, fontWeight: 'bold', color: '#3b82f6', background: '#eef2ff', padding: '2px 6px', borderRadius: 4 },
+  weeklyItem: { display: 'flex', alignItems: 'center', gap: 8, padding: '6px 10px', borderRadius: 8, flexWrap: 'wrap' },
+  weeklyTime: { fontSize: 10.5, fontWeight: 800, color: '#3b82f6' },
   weeklyPlanet: { fontSize: 10, color: '#64748b' },
-  weeklyTitle: { fontSize: 11, fontWeight: '500' },
-  weeklyTeacher: { fontSize: 10, color: '#94a3b8' },
-  weeklyIdBadge: { fontSize: 8, color: '#3b82f6', background: '#eef2ff', padding: '1px 4px', borderRadius: 4, fontFamily: 'monospace' },
 
-  detailContent: { display: 'flex', flexDirection: 'column', gap: 10 },
-  detailRow: { display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid #f1f5f9', fontSize: 12 },
-  detailDivider: { height: 1, background: '#e2e8f0', margin: '8px 0' },
-  detailStudentList: { display: 'flex', flexDirection: 'column', gap: 4, maxHeight: 200, overflowY: 'auto' },
+  conflictAnalysisContainer: {
+    margin: '4px 0 10px',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 6
+  },
+  conflictAlertBox: {
+    padding: '8px 12px',
+    borderRadius: 8,
+    background: '#fef2f2',
+    border: '1.5px solid #fecaca'
+  },
+  restWarningBox: {
+    padding: '8px 12px',
+    borderRadius: 8,
+    background: '#fffbeb',
+    border: '1.5px solid #fde68a'
+  },
+  safeStatusBox: {
+    padding: '7px 12px',
+    borderRadius: 8,
+    background: '#f0fdf4',
+    border: '1px solid #bbf7d0',
+    display: 'flex',
+    alignItems: 'center',
+    gap: 8
+  },
+
+  overlay: { position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.6)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 9999, backdropFilter: 'blur(3px)', padding: 16 },
+  modal: (m) => ({ background: 'white', padding: m ? 16 : 24, borderRadius: 18, width: '100%', maxWidth: '620px', maxHeight: '92vh', overflowY: 'auto', boxShadow: '0 25px 50px rgba(0,0,0,0.3)' }),
+  detailModal: (m) => ({ background: 'white', padding: m ? 16 : 24, borderRadius: 18, width: '100%', maxWidth: '540px', maxHeight: '88vh', overflowY: 'auto', boxShadow: '0 25px 50px rgba(0,0,0,0.3)' }),
+  modalHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14, paddingBottom: 10, borderBottom: '1px solid #f1f5f9' },
+  btnClose: { background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8' },
+  modalBody: { display: 'flex', flexDirection: 'column', gap: 10 },
+  modalRow: { display: 'flex', gap: 10, flexWrap: 'wrap' },
+  formGroup: { flex: 1, minWidth: 130, display: 'flex', flexDirection: 'column', gap: 4 },
+  formLabel: { fontSize: 11, fontWeight: 700, color: '#64748b' },
+  formInput: { padding: '9px 12px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 12.5, width: '100%', boxSizing: 'border-box' },
+  formSelect: { padding: '9px 12px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 12.5, width: '100%', boxSizing: 'border-box', background: 'white' },
+  modalFooter: { display: 'flex', gap: 10, marginTop: 14, paddingTop: 12, borderTop: '1px solid #f1f5f9' },
+  btnCancel: { flex: 1, padding: 10, borderRadius: 10, border: '1px solid #e2e8f0', background: 'white', fontWeight: 700, fontSize: 12, cursor: 'pointer', color: '#64748b' },
+  btnSave: { flex: 2, padding: 10, borderRadius: 10, border: 'none', background: '#4f46e5', color: 'white', fontWeight: 800, fontSize: 12.5, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 },
+  seriesNotice: { background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 8, padding: 10 },
+
+  detailContent: { display: 'flex', flexDirection: 'column', gap: 8 },
+  detailRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', borderBottom: '1px solid #f1f5f9', fontSize: 12 },
+  detailDivider: { height: 1, background: '#e2e8f0', margin: '6px 0' },
+  detailStudentList: { display: 'flex', flexDirection: 'column', gap: 4, maxHeight: 180, overflowY: 'auto' },
   detailStudentItem: { display: 'flex', alignItems: 'center', gap: 8, padding: '5px 8px', background: '#f8fafc', borderRadius: 6, fontSize: 11 },
-  detailStudentNum: { color: '#94a3b8', minWidth: 20 },
-  detailStudentName: { fontWeight: 'bold', flex: 1 },
-  detailStudentId: { color: '#94a3b8', fontFamily: 'monospace', fontSize: 9 },
-  detailStudentKelas: { background: '#eef2ff', color: '#3b82f6', padding: '1px 6px', borderRadius: 6, fontSize: 10 }
+  detailStudentNum: { color: '#94a3b8', minWidth: 18 },
+  detailStudentName: { fontWeight: 700, flex: 1 },
+  detailStudentKelas: { background: '#eef2ff', color: '#3b82f6', padding: '1px 6px', borderRadius: 4, fontSize: 9.5 }
 };
 
 export default SchedulePage;
