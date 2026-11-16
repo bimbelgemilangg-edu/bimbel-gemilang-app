@@ -208,6 +208,24 @@ const LoginSiswa = () => {
 
       if (studentData) {
         if (String(studentData.password) === inputPassword) {
+          // 🎯 CEK STATUS AKUN TRIAL CLASS (3 HARI)
+          if (studentData.isTrial) {
+            const now = new Date();
+            const expires = studentData.trialExpiresAt ? new Date(studentData.trialExpiresAt) : null;
+            const tglSelesai = studentData.tanggalSelesai ? new Date(studentData.tanggalSelesai + 'T23:59:59') : null;
+            
+            const isExpired = (expires && now > expires) || (tglSelesai && now > tglSelesai);
+            if (isExpired) {
+              return alert(
+                "⏳ Masa Trial Class (3 Hari) kamu telah selesai!\n\n" +
+                "Terima kasih telah mencoba serunya belajar di Bimbel Gemilang. " +
+                "Yuk hubungi admin untuk mendaftar resmi agar bisa terus akses try out, video materi, dan modul lengkap!"
+              );
+            }
+            localStorage.setItem("isTrialStudent", "true");
+          } else {
+            localStorage.removeItem("isTrialStudent");
+          }
           // 🔥 AMBIL STUDENT ID ASLI (bukan docId)
           const studentId = studentData.studentId || docId;
           

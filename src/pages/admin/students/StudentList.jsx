@@ -3,10 +3,10 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SidebarAdmin from '../../../components/SidebarAdmin';
 import { db } from '../../../firebase';
-import { collection, getDocs, deleteDoc, doc, updateDoc } from "firebase/firestore";
+import { collection, getDocs, deleteDoc, doc, updateDoc, addDoc, serverTimestamp } from "firebase/firestore";
 import * as XLSX from 'xlsx';
 import { 
-  Search, Plus, Edit3, Trash2, UserCheck, UserX, Users,
+  Search, Sparkles, Copy, MessageSquare, Plus, Edit3, Trash2, UserCheck, UserX, Users,
   Home, ChevronRight, BookOpen, RefreshCw, AlertCircle, CheckCircle,
   CreditCard, Calendar, Clock, Hash, Download, PieChart, BarChart3,
   FileSpreadsheet, Printer, Bell, Zap, Send, Mail, User, GraduationCap,
@@ -25,6 +25,17 @@ const StudentList = () => {
   const [deleting, setDeleting] = useState(null);
   const [_showFilters, _setShowFilters] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState(null);
+  // 🎯 TRIAL CLASS STATE
+  const [showTrialModal, setShowTrialModal] = useState(false);
+  const [trialSuccessData, setTrialSuccessData] = useState(null);
+  const [creatingTrial, setCreatingTrial] = useState(false);
+  const [trialForm, setTrialForm] = useState({
+    nama: '',
+    jenjang: 'smp',
+    kelasSekolah: '7 SMP',
+    program: 'Reguler SMP',
+    noHp: ''
+  });
   const [showAccessModal, setShowAccessModal] = useState(false);
   const [sendingAccess, setSendingAccess] = useState(false);
 
@@ -119,8 +130,10 @@ const StudentList = () => {
   const getFilteredByTab = () => {
     let filtered = students;
     
-    if (activeTab !== 'semua') {
-      filtered = filtered.filter(s => getJenjang(s) === activeTab);
+    if (activeTab === 'trial') {
+      filtered = filtered.filter(s => s.isTrial === true || s.status === 'Trial');
+    } else if (activeTab !== 'semua') {
+      filtered = filtered.filter(s => getJenjang(s) === activeTab && !s.isTrial);
     }
     
     if (filterStatus === 'aktif') {
@@ -248,6 +261,85 @@ const StudentList = () => {
     setSendingAccess(false);
   };
 
+
+  // 🎯 GENERATE AKUN TRIAL CLASS (3 HARI)
+  const handleCreateTrial = async (e) => {
+    e.preventDefault();
+    if (!trialForm.nama.trim()) return showAlert('⚠️ Nama calon siswa trial wajib diisi!');
+
+    setCreatingTrial(true);
+    try {
+      const now = new Date();
+      const pad = (n) => String(n).padStart(2, '0');
+      const y = now.getFullYear();
+      const m = pad(now.getMonth() + 1);
+      const d = pad(now.getDate());
+      const tglMulai = `${y}-${m}-${d}`;
+
+      // Hitung 3 hari ke depan
+      const expDate = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
+      const tglSelesai = `${expDate.getFullYear()}-${pad(expDate.getMonth() + 1)}-${pad(expDate.getDate())}`;
+
+      const randomSuffix = Math.floor(100 + Math.random() * 900);
+      const cleanName = trialForm.nama.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 8);
+      const cleanKelas = trialForm.kelasSekolah.toLowerCase().replace(/[^a-z0-9]/g, '');
+      const generatedUsername = `trial.${cleanName || 'siswa'}${randomSuffix}@gemilang.com`;
+      const generatedPassword = `trial${randomSuffix}`;
+      const studentId = `TRL-${y.toString().slice(2)}${m}${d}-${randomSuffix}`;
+
+      // Tentukan mapel default sesuai jenjang
+      let enrolled = ['bind', 'mtk', 'bing'];
+      if (trialForm.jenjang === 'sd') enrolled = ['bind', 'mtk', 'ipa', 'ips', 'bing'];
+      if (trialForm.jenjang === 'smp') enrolled = ['bind', 'mtk', 'ipa', 'ips', 'bing', 'prog_tka'];
+      if (trialForm.jenjang === 'sma') enrolled = ['bind', 'mtk', 'fis', 'kim', 'bio', 'bing', 'prog_tka'];
+      if (trialForm.jenjang === 'english') enrolled = ['bing', 'prog_engc'];
+
+      const newTrialStudent = {
+        nama: trialForm.nama.trim(),
+        username: generatedUsername,
+        password: generatedPassword,
+        studentId: studentId,
+        jenjang: trialForm.jenjang.toUpperCase(),
+        kelasSekolah: trialForm.kelasSekolah,
+        kategori: trialForm.program,
+        detailProgram: `Trial Class - ${trialForm.kelasSekolah}`,
+        paketNama: 'Trial Class 3 Hari',
+        durasiBulan: 0.1,
+        tanggalMulai: tglMulai,
+        tanggalSelesai: tglSelesai,
+        trialExpiresAt: expDate.toISOString(),
+        isTrial: true,
+        status: 'Trial',
+        role: 'siswa',
+        isBlocked: false,
+        totalTagihan: 0,
+        totalBayar: 0,
+        noHp: trialForm.noHp || '',
+        ortu: { hp: trialForm.noHp || '', ayah: '-', ibu: '-' },
+        enrolledSubjects: enrolled,
+        createdAt: serverTimestamp()
+      };
+
+      const docRef = await addDoc(collection(db, 'students'), newTrialStudent);
+      
+      const resultData = {
+        id: docRef.id,
+        ...newTrialStudent,
+        plainPassword: generatedPassword,
+        expiresPanjang: expDate.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+      };
+
+      setTrialSuccessData(resultData);
+      showAlert('✅ Akun Trial Class 3 Hari berhasil diterbitkan!');
+      fetchStudents();
+    } catch (err) {
+      console.error(err);
+      showAlert('❌ Gagal membuat akun trial: ' + err.message);
+    } finally {
+      setCreatingTrial(false);
+    }
+  };
+
   // === EXPORT EXCEL ===
   const handleExportExcel = (dataToExport, filename = 'Laporan_Siswa') => {
     if (dataToExport.length === 0) {
@@ -336,6 +428,197 @@ const StudentList = () => {
         
         {alertMsg && <div style={styles.toast}>{alertMsg}</div>}
 
+        
+        {/* === MODAL BUAT AKUN TRIAL CLASS (3 HARI) === */}
+        {showTrialModal && (
+          <div
+            onClick={() => setShowTrialModal(false)}
+            style={{
+              position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+              background: 'rgba(15, 23, 42, 0.75)', zIndex: 9999,
+              display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20
+            }}
+          >
+            <div
+              onClick={e => e.stopPropagation()}
+              style={{
+                background: 'white', borderRadius: 16, padding: 24, maxWidth: 480, width: '100%',
+                boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.3)'
+              }}
+            >
+              {!trialSuccessData ? (
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+                    <h3 style={{ margin: 0, color: '#1e293b', fontSize: 17, display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <span>🎯</span> Buat Akun Trial Class (3 Hari)
+                    </h3>
+                    <button onClick={() => setShowTrialModal(false)} style={{ border: 'none', background: 'transparent', cursor: 'pointer', fontSize: 18, color: '#94a3b8' }}>✕</button>
+                  </div>
+                  <p style={{ margin: '0 0 16px 0', fontSize: 12, color: '#64748b', lineHeight: 1.5 }}>
+                    Akun uji coba resmi untuk calon siswa. Otomatis berlaku <b>3 hari penuh</b> untuk merasakan fitur aplikasi (Try Out, Materi & Bank Soal). <b>Tidak ada tagihan keuangan!</b>
+                  </p>
+
+                  <form onSubmit={handleCreateTrial}>
+                    <div style={{ marginBottom: 12 }}>
+                      <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#475569', marginBottom: 4 }}>
+                        Nama Calon Siswa *
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="Contoh: Budi Santoso / Alvaro"
+                        value={trialForm.nama}
+                        onChange={e => setTrialForm({ ...trialForm, nama: e.target.value })}
+                        required
+                        style={{ width: '100%', padding: '9px 12px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13, boxSizing: 'border-box' }}
+                      />
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 12 }}>
+                      <div>
+                        <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#475569', marginBottom: 4 }}>
+                          Jenjang
+                        </label>
+                        <select
+                          value={trialForm.jenjang}
+                          onChange={e => {
+                            const j = e.target.value;
+                            let defK = '7 SMP';
+                            if (j === 'sd') defK = '5 SD';
+                            if (j === 'sma') defK = '10 SMA';
+                            if (j === 'english') defK = 'English Kids';
+                            setTrialForm({ ...trialForm, jenjang: j, kelasSekolah: defK });
+                          }}
+                          style={{ width: '100%', padding: '9px 10px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13 }}
+                        >
+                          <option value="sd">SD</option>
+                          <option value="smp">SMP</option>
+                          <option value="sma">SMA</option>
+                          <option value="english">English Course</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#475569', marginBottom: 4 }}>
+                          Kelas
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="Misal: 7 SMP"
+                          value={trialForm.kelasSekolah}
+                          onChange={e => setTrialForm({ ...trialForm, kelasSekolah: e.target.value })}
+                          required
+                          style={{ width: '100%', padding: '9px 10px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13, boxSizing: 'border-box' }}
+                        />
+                      </div>
+                    </div>
+
+                    <div style={{ marginBottom: 16 }}>
+                      <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#475569', marginBottom: 4 }}>
+                        No. WhatsApp Orang Tua (Opsional)
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="Contoh: 08123456789"
+                        value={trialForm.noHp}
+                        onChange={e => setTrialForm({ ...trialForm, noHp: e.target.value })}
+                        style={{ width: '100%', padding: '9px 12px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13, boxSizing: 'border-box' }}
+                      />
+                    </div>
+
+                    <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+                      <button
+                        type="button"
+                        onClick={() => setShowTrialModal(false)}
+                        style={{ padding: '9px 16px', background: '#f1f5f9', color: '#475569', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer', fontSize: 13 }}
+                      >
+                        Batal
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={creatingTrial}
+                        style={{
+                          padding: '9px 20px', background: 'linear-gradient(135deg, #4338ca 0%, #6366f1 100%)',
+                          color: 'white', border: 'none', borderRadius: 8, fontWeight: 800, cursor: 'pointer', fontSize: 13
+                        }}
+                      >
+                        {creatingTrial ? '⏳ Menerbitkan...' : '🚀 Terbitkan Akun (3 Hari)'}
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              ) : (
+                /* KARTU SUKSES TERBITKAN AKUN */
+                <div>
+                  <div style={{ textAlign: 'center', marginBottom: 16 }}>
+                    <div style={{ fontSize: 36, marginBottom: 4 }}>🎉</div>
+                    <h3 style={{ margin: 0, color: '#166534', fontSize: 17 }}>Akun Trial 3 Hari Siap Digunakan!</h3>
+                    <p style={{ margin: '4px 0 0', fontSize: 12, color: '#64748b' }}>
+                      Berikan username dan password di bawah ini kepada calon siswa / wali murid:
+                    </p>
+                  </div>
+
+                  <div style={{ background: '#f8fafc', border: '1.5px dashed #cbd5e1', borderRadius: 12, padding: '14px 16px', marginBottom: 16 }}>
+                    <div style={{ marginBottom: 8, fontSize: 12.5 }}>
+                      <span style={{ color: '#64748b' }}>Nama Siswa:</span> <b>{trialSuccessData.nama}</b> ({trialSuccessData.kelasSekolah})
+                    </div>
+                    <div style={{ marginBottom: 8, fontSize: 13 }}>
+                      <span style={{ color: '#64748b' }}>Username:</span> <b style={{ color: '#4338ca', fontFamily: 'monospace' }}>{trialSuccessData.username}</b>
+                    </div>
+                    <div style={{ marginBottom: 8, fontSize: 13 }}>
+                      <span style={{ color: '#64748b' }}>Password:</span> <b style={{ color: '#dc2626', fontFamily: 'monospace' }}>{trialSuccessData.plainPassword}</b>
+                    </div>
+                    <div style={{ fontSize: 12, color: '#047857', fontWeight: 700 }}>
+                      ⏳ Masa Berlaku: 3 Hari (s.d. {trialSuccessData.expiresPanjang})
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const teks = `🌟 AKUN TRIAL CLASS BIMBEL GEMILANG (3 HARI) 🌟\n\nHalo Kak ${trialSuccessData.nama}!\nSelamat mencoba serunya belajar di Bimbel Gemilang.\n\nBerikut akses login aplikasi kamu:\n🔗 Link: https://bimbel-gemilang-app.vercel.app/login\n👤 Username: ${trialSuccessData.username}\n🔑 Password: ${trialSuccessData.plainPassword}\n⏳ Berlaku Sampai: ${trialSuccessData.expiresPanjang}\n\nYuk langsung login dan coba fitur Try Out CBT serta materi interaktifnya!`;
+                        navigator.clipboard.writeText(teks);
+                        showAlert('📋 Teks akses login berhasil disalin!');
+                      }}
+                      style={{
+                        padding: '10px', background: '#f1f5f9', color: '#1e293b',
+                        border: '1px solid #cbd5e1', borderRadius: 8, fontWeight: 700, cursor: 'pointer', fontSize: 12.5
+                      }}
+                    >
+                      📋 Salin Info Akses Login
+                    </button>
+
+                    {trialSuccessData.noHp && (
+                      <a
+                        href={`https://api.whatsapp.com/send?phone=${trialSuccessData.noHp.replace(/^0/, '62')}&text=${encodeURIComponent(`🌟 AKUN TRIAL CLASS BIMBEL GEMILANG (3 HARI) 🌟\n\nHalo Kak ${trialSuccessData.nama}!\nSelamat mencoba serunya belajar di Bimbel Gemilang.\n\nBerikut akses login aplikasi kamu:\n🔗 Link: https://bimbel-gemilang-app.vercel.app/login\n👤 Username: ${trialSuccessData.username}\n🔑 Password: ${trialSuccessData.plainPassword}\n⏳ Berlaku Sampai: ${trialSuccessData.expiresPanjang}\n\nYuk langsung login dan coba fitur Try Out CBT serta materi interaktifnya!`)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                          textAlign: 'center', padding: '10px', background: '#22c55e', color: 'white',
+                          borderRadius: 8, fontWeight: 800, textDecoration: 'none', fontSize: 12.5
+                        }}
+                      >
+                        💬 Kirim Akses via WhatsApp
+                      </a>
+                    )}
+
+                    <button
+                      type="button"
+                      onClick={() => setShowTrialModal(false)}
+                      style={{
+                        padding: '9px', background: '#1e293b', color: 'white',
+                        border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer', fontSize: 12.5, marginTop: 4
+                      }}
+                    >
+                      Selesai
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* ACCESS MODAL */}
         {showAccessModal && selectedStudent && (
           <div style={styles.modalOverlay} onClick={() => setShowAccessModal(false)}>
@@ -392,6 +675,21 @@ const StudentList = () => {
             </p>
           </div>
           <div style={styles.headerActions}>
+            <button
+              onClick={() => {
+                setTrialSuccessData(null);
+                setShowTrialModal(true);
+              }}
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: 6,
+                padding: '9px 14px', borderRadius: 10,
+                background: 'linear-gradient(135deg, #4338ca 0%, #6366f1 100%)',
+                color: 'white', border: 'none', fontWeight: 800, fontSize: 13,
+                cursor: 'pointer', boxShadow: '0 4px 12px rgba(99, 102, 241, 0.3)'
+              }}
+            >
+              <span>🎯</span> Buat Akun Trial Class (3 Hari)
+            </button>
             <button onClick={handleExport} style={styles.btnExport}>
               <FileSpreadsheet size={16} /> Export
             </button>
