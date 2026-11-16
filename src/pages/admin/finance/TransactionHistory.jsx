@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { ambilNomorKwitansiBerikutnya, cetakKwitansi } from '../../../utils/kwitansi';
 import { tambahBulanKeTanggal } from '../../../utils/durasiPaket';
+import { KANAL } from '../../../utils/kanalUang';
 // 🔥 BARU (hotfix 2026-10-13): pintu koreksi nominal/metode transaksi
 // (diskon / salah input) dengan kaskade atomik ke data siswa + jejak audit.
 import DialogKoreksiTransaksi from '../../../components/DialogKoreksiTransaksi';
@@ -489,14 +490,21 @@ const TransactionHistory = () => {
     }
     try {
       const newAmount = parseInt(editData.amount) || 0;
-      await updateDoc(doc(db, "finance_logs", editData.id), {
+      const updatePayload = {
         date: editData.date,
         type: editData.type,
         category: editData.category,
         amount: newAmount,
-        method: editData.method,
+        method: editData.type === 'Transfer' ? 'Tunai' : editData.method,
         note: editData.note
-      });
+      };
+      if (editData.type === 'Transfer') {
+        updatePayload.kanal = KANAL.KAS_ADMIN;
+        updatePayload.kanalDari = KANAL.KAS_ADMIN;
+        updatePayload.kanalKe = KANAL.BANK;
+        if (!updatePayload.category) updatePayload.category = 'Setor Kas ke Mas Bima (Owner)';
+      }
+      await updateDoc(doc(db, "finance_logs", editData.id), updatePayload);
 
       // 🔥 FIX BUG NYATA (celah yang kelewat dari perbaikan sebelumnya):
       // logika lama CUMA nyesuain totalBayar siswa kalau tipe transaksi
@@ -883,11 +891,9 @@ const TransactionHistory = () => {
                             tiap pemasukan riil (bukan komitmen cicilan, bukan
                             setor kas). */}
 
-                        {t.type !== 'Transfer' && (
-                          <button onClick={() => openEdit(t)} style={styles.btnIcon('#f59e0b')} title="Edit">
-                            <Edit3 size={13} />
-                          </button>
-                        )}
+                        <button onClick={() => openEdit(t)} style={styles.btnIcon('#f59e0b')} title="Edit">
+                          <Edit3 size={13} />
+                        </button>
                         <button onClick={() => confirmDelete(t)} style={styles.btnIcon('#ef4444')} title="Hapus">
                           <Trash2 size={13} />
                         </button>
@@ -919,6 +925,7 @@ const TransactionHistory = () => {
               <select value={editData.type} onChange={e => setEditData(p => ({...p, type: e.target.value}))} style={styles.modalInput}>
                 <option value="Pemasukan">💰 Pemasukan</option>
                 <option value="Pengeluaran">📤 Pengeluaran</option>
+                <option value="Transfer">🔁 Setor Kas (ke Owner / Bank)</option>
               </select>
               <select value={editData.method} onChange={e => setEditData(p => ({...p, method: e.target.value}))} style={styles.modalInput}>
                 <option value="Tunai">💵 Tunai</option>

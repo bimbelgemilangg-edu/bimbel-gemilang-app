@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { db } from '../../../firebase';
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { bolehCatatAdmin } from '../../../utils/keuanganAudit';
-import { Save, ArrowUpCircle, ArrowDownCircle, BookOpen, ExternalLink } from 'lucide-react';
+import { Save, ArrowUpCircle, ArrowDownCircle, Repeat, BookOpen, ExternalLink } from 'lucide-react';
 import { uploadElearningFile } from '../../../services/uploadService';
 import { KANAL } from '../../../utils/kanalUang';
 import { ambilNomorKwitansiBerikutnya } from '../../../utils/kwitansi';
@@ -50,7 +50,8 @@ const TransactionForm = () => {
     category: '',
     amount: '',
     method: 'Tunai',
-    note: ''
+    note: '',
+    tujuanKanal: 'bankBimbel'
   });
 
   const showAlert = (msg, duration = 3000) => {
@@ -62,6 +63,14 @@ const TransactionForm = () => {
     if (type === 'Pemasukan') {
       return ['Penjualan Modul/Buku', 'Penjualan Seragam', 'Kantin/Snack', 'Hibah/Donasi', 'Lainnya'];
     }
+    if (type === 'Transfer') {
+      return [
+        'Setor Kas ke Mas Bima (Owner)',
+        'Setor Tunai ke Bank BSI',
+        'Setor Kas dari Brankas',
+        'Lainnya'
+      ];
+    }
     return ['Gaji Guru/Staf', 'Listrik & Air', 'Sewa Tempat', 'ATK & Perlengkapan', 'Internet/WiFi', 'Marketing/Iklan', 'Konsumsi', 'Maintenance/Service', 'Lainnya'];
   };
 
@@ -69,9 +78,13 @@ const TransactionForm = () => {
     e.preventDefault();
     if (!form.amount || parseInt(form.amount) <= 0) return showAlert('⚠️ Nominal harus diisi!');
     if (!form.category) return showAlert('⚠️ Pilih kategori!');
+
+    const isTransfer = form.type === 'Transfer';
+
     // 🛡 18 Okt (kebijakan owner): pengeluaran BCA bukan hak catat admin.
     const cek = bolehCatatAdmin(form.type, form.method);
     if (!cek.boleh) return showAlert(`⚠️ ${cek.alasan}`);
+
     // 🔥 BARU (modul rekonsiliasi): pemasukan via TRANSFER BANK wajib
     // punya jejak -- nomor referensi struk ATAU foto bukti transfer.
     // Tanpa ini, owner tidak punya bahan buat mencocokkan mutasi
@@ -94,7 +107,8 @@ const TransactionForm = () => {
       // disimpan dulu (lebih baik gagal jelas daripada tersimpan tanpa bukti).
       let buktiUrl = '';
       if (buktiFile) {
-        const hasil = await uploadElearningFile(buktiFile, `bukti_transfer/${form.date.replace(/-/g, '')}`);
+        const folder = isTransfer ? 'bukti_setor_kas' : 'bukti_transfer';
+        const hasil = await uploadElearningFile(buktiFile, `${folder}/${form.date.replace(/-/g, '')}`);
         if (hasil?.success && hasil.downloadURL) buktiUrl = hasil.downloadURL;
         else throw new Error('Upload bukti gagal: ' + (hasil?.error || 'tidak ada URL'));
       }
@@ -108,40 +122,38 @@ const TransactionForm = () => {
         noKwitansi = await ambilNomorKwitansiBerikutnya(new Date(`${form.date}T00:00:00`));
       }
 
-      await addDoc(collection(db, "finance_logs"), {
+      const logPayload = {
         type: form.type,
         date: form.date,
         category: form.category,
         amount: parseInt(form.amount),
-        method: form.method,
-        // 🔥 BARU (modul kanal uang): kanal EKSPLISIT -- Tunai masuk
-        // brankas admin kasir, Transfer masuk rekening bank bimbel.
-        // Semua penghitung saldo (dashboard admin & portal owner) kini
-        // tahu persis pintu masuk/keluar uangnya.
-        kanal: form.method === 'Transfer' ? KANAL.BANK : KANAL.KAS_ADMIN,
+        method: isTransfer ? 'Tunai' : form.method,
+        // Kanal eksplisit: Tunai & Setor Kas berasal dari Kas Admin, Transfer masuk Bank Bimbel
+        kanal: isTransfer ? KANAL.KAS_ADMIN : (form.method === 'Transfer' ? KANAL.BANK : KANAL.KAS_ADMIN),
         note: form.note + (refTransfer.trim() ? ` [Rek: ${refTransfer.trim()}]` : ''),
-        // 18 Okt: penanda pencatat agar admin tak bingung pada entri owner
         dicatatOleh: 'admin',
-        refTransfer: refTransfer.trim(),
         buktiUrl,
-        noKwitansi,
-        // Pemasukan transfer masuk antrean rekonsiliasi owner (pending).
-        statusRekonsiliasi: (form.type === 'Pemasukan' && form.method === 'Transfer') ? 'pending' : '',
         createdAt: serverTimestamp()
-      });
+      };
 
-      showAlert(`✅ ${form.type} berhasil dicatat!${noKwitansi ? ` Kwitansi ${noKwitansi} dibuat.` : ''}`);
-      const dataKwitansi = noKwitansi ? {
-        nomor: noKwitansi, tanggal: form.date,
-        diterimaDari: form.note || 'Pembayaran Umum',
-        jumlah: parseInt(form.amount), keperluan: form.category,
-        metode: form.method, refTransfer: refTransfer.trim(),
-      } : null;
+      if (isTransfer) {
+        logPayload.kanalDari = KANAL.KAS_ADMIN;
+        logPayload.kanalKe = form.tujuanKanal || KANAL.BANK;
+        logPayload.refTransfer = refTransfer.trim() || 'Setor Kas Brankas Admin';
+      } else {
+        logPayload.refTransfer = refTransfer.trim();
+        logPayload.noKwitansi = noKwitansi;
+        logPayload.statusRekonsiliasi = (form.type === 'Pemasukan' && form.method === 'Transfer') ? 'pending' : '';
+      }
+
+      await addDoc(collection(db, "finance_logs"), logPayload);
+
+      showAlert(`✅ ${isTransfer ? 'Setor Kas ke Owner / Bank' : form.type} berhasil dicatat!${noKwitansi ? ` Kwitansi ${noKwitansi} dibuat.` : ''}`);
       setForm(prev => ({
         ...prev,
         amount: '',
         note: '',
-        category: ''
+        category: isTransfer ? 'Setor Kas ke Mas Bima (Owner)' : ''
       }));
       setRefTransfer('');
       setBuktiFile(null);
@@ -156,6 +168,8 @@ const TransactionForm = () => {
   };
 
   const isPemasukan = form.type === 'Pemasukan';
+  const isTransfer = form.type === 'Transfer';
+  const isPengeluaran = form.type === 'Pengeluaran';
   const categories = getCategories(form.type);
 
   return (
@@ -215,6 +229,8 @@ const TransactionForm = () => {
         <h3 style={styles.title}>
           {isPemasukan ? (
             <><ArrowUpCircle size={20} color="#10b981" /> Input Pemasukan</>
+          ) : isTransfer ? (
+            <><Repeat size={20} color="#f59e0b" /> Setor Kas ke Owner / Bank BSI</>
           ) : (
             <><ArrowDownCircle size={20} color="#ef4444" /> Input Pengeluaran</>
           )}
@@ -222,6 +238,8 @@ const TransactionForm = () => {
         <p style={styles.subtitle}>
           {isPemasukan 
             ? 'Catat pemasukan SELAIN SPP/Pendaftaran (contoh: jual buku, seragam, hibah).'
+            : isTransfer
+            ? 'Pindahkan uang fisik dari brankas kasir admin ke Owner (Mas Bima) atau setor ke BSI. Uang keluar dari brankas, tapi BUKAN biaya operasional (laba bersih bimbel tetap aman & utuh).'
             : 'Catat semua uang keluar untuk operasional bimbel.'}
         </p>
 
@@ -229,19 +247,39 @@ const TransactionForm = () => {
         <div style={styles.toggleRow}>
           <button 
             type="button"
-            onClick={() => setForm(prev => ({...prev, type: 'Pemasukan', category: ''}))}
-            style={styles.toggleBtn(true, isPemasukan)}
+            onClick={() => setForm(prev => ({...prev, type: 'Pemasukan', category: '', method: 'Tunai'}))}
+            style={styles.toggleBtn('Pemasukan', isPemasukan)}
           >
-            <ArrowUpCircle size={16} /> Pemasukan
+            <ArrowUpCircle size={15} /> Pemasukan
           </button>
           <button 
             type="button"
-            onClick={() => setForm(prev => ({...prev, type: 'Pengeluaran', category: ''}))}
-            style={styles.toggleBtn(false, !isPemasukan)}
+            onClick={() => setForm(prev => ({...prev, type: 'Pengeluaran', category: '', method: 'Tunai'}))}
+            style={styles.toggleBtn('Pengeluaran', isPengeluaran)}
           >
-            <ArrowDownCircle size={16} /> Pengeluaran
+            <ArrowDownCircle size={15} /> Pengeluaran
+          </button>
+          <button 
+            type="button"
+            onClick={() => setForm(prev => ({...prev, type: 'Transfer', category: 'Setor Kas ke Mas Bima (Owner)', method: 'Tunai', tujuanKanal: 'bankBimbel'}))}
+            style={styles.toggleBtn('Transfer', isTransfer)}
+          >
+            <Repeat size={15} /> 🔁 Setor Kas
           </button>
         </div>
+
+        {/* KOTAK PANDUAN KHUSUS SETOR KAS */}
+        {isTransfer && (
+          <div style={{ background: '#fffbeb', border: '1.5px solid #fde68a', borderRadius: 10, padding: '12px 14px', marginBottom: 16 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 'bold', color: '#b45309', fontSize: 13, marginBottom: 4 }}>
+              <Repeat size={16} /> Pindah Kantong Internal (Kas Brankas &rarr; Rekening BSI / Owner)
+            </div>
+            <p style={{ margin: 0, fontSize: 11.5, color: '#92400e', lineHeight: 1.55 }}>
+              Gunakan tombol ini jika Mas Bima mengambil uang dari brankas kasir untuk disetor ke bank atau diamankan. 
+              <b> Saldo brankas fisik admin akan berkurang</b>, tetapi <b>laba bersih operasional bimbel TIDAK berkurang</b> (karena uangnya hanya pindah tempat penyimpanan).
+            </p>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit}>
           {/* Tanggal */}
@@ -277,43 +315,70 @@ const TransactionForm = () => {
             <label style={styles.label}>Nominal (Rp)</label>
             <input 
               type="number" 
-              placeholder="Contoh: 150000" 
+              placeholder="Contoh: 1000000" 
               value={form.amount} 
               onChange={e => setForm(prev => ({...prev, amount: e.target.value}))} 
               style={{
                 ...styles.input, 
                 fontSize: 18, 
                 fontWeight: 'bold',
-                color: isPemasukan ? '#10b981' : '#ef4444',
-                borderColor: isPemasukan ? '#10b981' : '#ef4444'
+                color: isPemasukan ? '#10b981' : isTransfer ? '#b45309' : '#ef4444',
+                borderColor: isPemasukan ? '#10b981' : isTransfer ? '#f59e0b' : '#ef4444'
               }} 
               required 
             />
           </div>
 
-          {/* Metode */}
-          <div style={styles.inputGroup}>
-            <label style={styles.label}>Metode</label>
-            <select 
-              value={form.method} 
-              onChange={e => setForm(prev => ({...prev, method: e.target.value}))} 
-              style={styles.input}
-            >
-              <option value="Tunai">💵 Tunai</option>
-              <option value="Transfer">💳 Transfer</option>
-            </select>
-            {/* 🔥 BARU (modul kanal uang): penegas "uang masuk lewat pintu
-                mana" -- biar admin sadar sejak input bahwa tunai = brankas
-                kasir, transfer = rekening bimbel (yang dicocokkan owner). */}
-            <div style={{ fontSize: 11, color: '#64748b', fontWeight: 700, marginTop: 6 }}>
-              {form.method === 'Tunai'
-                ? '→ Uang masuk ke: 💵 KAS TUNAI DI ADMIN (brankas kasir). Diserahkan ke owner lewat "Tutup Kasir".'
-                : '→ Uang masuk ke: 🏦 REKENING BANK BIMBEL. Wajib isi bukti di bawah supaya lolos rekonsiliasi owner.'}
+          {/* Metode atau Tujuan Setoran */}
+          {isTransfer ? (
+            <div style={styles.inputGroup}>
+              <label style={styles.label}>Tujuan Setoran Uang Kas</label>
+              <select 
+                value={form.tujuanKanal || 'bankBimbel'} 
+                onChange={e => setForm(prev => ({...prev, tujuanKanal: e.target.value}))} 
+                style={styles.input}
+              >
+                <option value="bankBimbel">🏦 Disetor ke Rekening Bank BSI Bimbel (Rek: 7373265521)</option>
+                <option value="kasOwner">👑 Diserahkan Langsung ke Mas Bima (Owner)</option>
+              </select>
+              <div style={{ fontSize: 11, color: '#64748b', fontWeight: 600, marginTop: 5 }}>
+                💵 Sumber uang: <b>Kas Tunai Fisik di Brankas Admin (Laci Kasir)</b>
+              </div>
             </div>
-          </div>
+          ) : (
+            <div style={styles.inputGroup}>
+              <label style={styles.label}>Metode</label>
+              <select 
+                value={form.method} 
+                onChange={e => setForm(prev => ({...prev, method: e.target.value}))} 
+                style={styles.input}
+              >
+                <option value="Tunai">💵 Tunai</option>
+                <option value="Transfer">💳 Transfer</option>
+              </select>
+              <div style={{ fontSize: 11, color: '#64748b', fontWeight: 700, marginTop: 6 }}>
+                {form.method === 'Tunai'
+                  ? '→ Uang masuk ke: 💵 KAS TUNAI DI ADMIN (brankas kasir). Diserahkan ke owner lewat tombol Setor Kas.'
+                  : '→ Uang masuk ke: 🏦 REKENING BANK BIMBEL. Wajib isi bukti di bawah supaya lolos rekonsiliasi owner.'}
+              </div>
+            </div>
+          )}
 
-          {/* 🔥 BARU (modul rekonsiliasi): detail bukti transfer. */}
-          {form.method === 'Transfer' && (
+          {/* Bukti Setor Kas Opsional */}
+          {isTransfer && (
+            <div style={styles.inputGroup}>
+              <label style={styles.label}>Foto Struk Setoran / Slip Bank (Opsional)</label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={e => setBuktiFile(e.target.files?.[0] || null)}
+                style={{ ...styles.input, padding: 8, background: 'white' }}
+              />
+            </div>
+          )}
+
+          {/* 🔥 BARU (modul rekonsiliasi): detail bukti transfer untuk pemasukan. */}
+          {!isTransfer && form.method === 'Transfer' && (
             <div style={{ background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 10, padding: '12px 12px 2px', marginBottom: 14 }}>
               <div style={styles.inputGroup}>
                 <label style={styles.label}>
@@ -348,13 +413,11 @@ const TransactionForm = () => {
             </div>
           )}
 
-
-
           {/* Keterangan */}
           <div style={styles.inputGroup}>
             <label style={styles.label}>Keterangan</label>
             <textarea 
-              placeholder={isPemasukan ? 'Contoh: Terjual 5 buku paket' : 'Contoh: Bayar listrik bulan ini'} 
+              placeholder={isPemasukan ? 'Contoh: Terjual 5 buku paket' : isTransfer ? 'Contoh: Diserahkan ke Mas Bima untuk disimpan di rekening BSI' : 'Contoh: Bayar listrik bulan ini'} 
               value={form.note} 
               onChange={e => setForm(prev => ({...prev, note: e.target.value}))} 
               style={{...styles.input, height: 80, resize: 'vertical'}} 
@@ -367,10 +430,10 @@ const TransactionForm = () => {
             disabled={loading} 
             style={{
               ...styles.btnSubmit,
-              background: isPemasukan ? '#10b981' : '#ef4444'
+              background: isPemasukan ? '#10b981' : isTransfer ? '#f59e0b' : '#ef4444'
             }}
           >
-            <Save size={16} /> {loading ? 'Menyimpan...' : `Simpan ${form.type}`}
+            <Save size={16} /> {loading ? 'Menyimpan...' : isTransfer ? 'Simpan Setor Kas (Pindah Kantong)' : `Simpan ${form.type}`}
           </button>
         </form>
       </div>
@@ -383,15 +446,29 @@ const styles = {
   title: { margin: '0 0 4px 0', fontSize: 16, color: '#1e293b', display: 'flex', alignItems: 'center', gap: 8, fontWeight: 'bold' },
   subtitle: { fontSize: 12, color: '#94a3b8', marginBottom: 20 },
   toggleRow: { display: 'flex', gap: 8, marginBottom: 20 },
-  toggleBtn: (isIncome, active) => ({
-    flex: 1, padding: '10px', borderRadius: 10,
-    border: active ? `2px solid ${isIncome ? '#10b981' : '#ef4444'}` : '1px solid #e2e8f0',
-    background: active ? (isIncome ? '#f0fdf4' : '#fef2f2') : 'white',
-    color: active ? (isIncome ? '#166534' : '#991b1b') : '#64748b',
-    fontWeight: active ? 'bold' : '500', fontSize: 13,
-    cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-    transition: '0.2s'
-  }),
+  toggleBtn: (mode, active) => {
+    let color = '#10b981';
+    let bg = '#f0fdf4';
+    let text = '#166534';
+    if (mode === 'Pengeluaran') {
+      color = '#ef4444';
+      bg = '#fef2f2';
+      text = '#991b1b';
+    } else if (mode === 'Transfer') {
+      color = '#f59e0b';
+      bg = '#fffbeb';
+      text = '#b45309';
+    }
+    return {
+      flex: 1, padding: '10px 8px', borderRadius: 10,
+      border: active ? `2px solid ${color}` : '1px solid #e2e8f0',
+      background: active ? bg : 'white',
+      color: active ? text : '#64748b',
+      fontWeight: active ? 'bold' : '500', fontSize: 12,
+      cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+      transition: '0.2s', textAlign: 'center'
+    };
+  },
   inputGroup: { marginBottom: 14 },
   label: { display: 'block', fontSize: 12, fontWeight: 'bold', color: '#64748b', marginBottom: 5 },
   input: { width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 14, boxSizing: 'border-box', background: '#f8fafc' },
