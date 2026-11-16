@@ -279,7 +279,7 @@ const FinanceDashboard = () => {
       {/* 🔒 BANNER KEBIJAKAN PRIVASI KEUANGAN OWNER */}
       <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', color: '#334155', padding: '12px 16px', borderRadius: 12, marginBottom: 18, fontSize: 12.5, lineHeight: 1.6 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontWeight: 800, color: '#1e293b', marginBottom: 4 }}>
-          <ShieldCheck size={18} color=#2563eb />
+          <ShieldCheck size={18} color="#2563eb" />
           Otoritas & Kebijakan Keuangan Bimbel Gemilang
         </div>
         <div>
@@ -294,7 +294,7 @@ const FinanceDashboard = () => {
         <div style={styles.mediumCard('#f0fdf4', '#10b981')}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
             <span style={styles.mediumLabel}>📝 Transaksi Bulan Ini</span>
-            <TrendingUp size={20} color=#10b981 />
+            <TrendingUp size={20} color="#10b981" />
           </div>
           <h2 style={{ ...styles.mediumValue, color: '#10b981' }}>
             {methodStats ? (methodStats.Tunai.nMasuk + methodStats.Transfer.nMasuk + methodStats.Tunai.nKeluar + methodStats.Transfer.nKeluar) : 0} <span style={{ fontSize: 14, fontWeight: 600 }}>Transaksi</span>
@@ -312,7 +312,7 @@ const FinanceDashboard = () => {
         <div style={styles.mediumCard('#fff7ed', '#f97316')}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
             <span style={styles.mediumLabel}>⏰ Paket Segera Berakhir</span>
-            <Calendar size={20} color=#f97316 />
+            <Calendar size={20} color="#f97316" />
           </div>
           <h2 style={{ ...styles.mediumValue, color: '#f97316' }}>
             {expiringStudents.length} <span style={{ fontSize: 14, fontWeight: 600 }}>Siswa</span>
@@ -329,7 +329,7 @@ const FinanceDashboard = () => {
         <div style={styles.mediumCard('#eff6ff', '#3b82f6')}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
             <span style={styles.mediumLabel}>📋 Pendaftaran Siswa Baru</span>
-            <Users size={20} color=#3b82f6 />
+            <Users size={20} color="#3b82f6" />
           </div>
           <h2 style={{ ...styles.mediumValue, color: '#3b82f6' }}>
             {newStudents.length} <span style={{ fontSize: 14, fontWeight: 600 }}>Siswa</span>
