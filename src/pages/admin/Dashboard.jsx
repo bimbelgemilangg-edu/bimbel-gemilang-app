@@ -1,5 +1,5 @@
 // src/pages/admin/Dashboard.jsx
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SidebarAdmin from '../../components/SidebarAdmin';
 import { db } from '../../firebase';
@@ -7,9 +7,10 @@ import { collection, query, where, getDocs, onSnapshot, limit, orderBy } from "f
 import { 
   Users, GraduationCap, Calendar, Clock, BookOpen, 
   TrendingUp, AlertCircle, CheckCircle, ArrowRight, Bell, 
-  RefreshCw, Plus, Eye, ChevronRight, LayoutDashboard,
+  RefreshCw, Plus, Eye, ChevronRight, ChevronLeft, LayoutDashboard,
   Trophy, Sparkles, Star, Award, Search, Check,
-  UserPlus, Library, FileText, Send, MessageCircle, ExternalLink, X
+  UserPlus, Library, FileText, Send, MessageCircle, ExternalLink, X,
+  CreditCard, Receipt, BarChart3, Clock3
 } from 'lucide-react';
 import { 
   ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid 
@@ -33,9 +34,19 @@ const Dashboard = () => {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
   const [loading, setLoading] = useState(true);
 
+  // Scroll Container Refs
+  const statsScrollRef = useRef(null);
+  const actionScrollRef = useRef(null);
+  const tunggakanScrollRef = useRef(null);
+
+  const scrollHorizontally = (ref, offset) => {
+    if (ref.current) {
+      ref.current.scrollBy({ left: offset, behavior: 'smooth' });
+    }
+  };
+
   // Filter & Search
   const [searchQuery, setSearchQuery] = useState('');
-  const [chartPeriod, setChartPeriod] = useState('minggu'); // 'minggu' | 'bulan'
 
   // Identitas Admin yang login
   const owner = isOwnerSession();
@@ -270,7 +281,6 @@ const Dashboard = () => {
       });
 
       // Data Grafik Aktivitas Belajar Mingguan
-      const namaHari = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
       const dummyActivities = [
         { hari: 'Sen', kehadiran: 32, tryout: 28 },
         { hari: 'Sel', kehadiran: 45, tryout: 36 },
@@ -351,7 +361,7 @@ const Dashboard = () => {
         {/* TOP HEADER: Title, Search Bar, & User Profile (Mirip Mockup) */}
         {/* ============================================================ */}
         <header style={styles.topHeader(isMobile)}>
-          <div>
+          <div style={{ flexShrink: 0 }}>
             <h1 style={styles.topTitle}>Dashboard</h1>
             <p style={styles.topSubtitle}>
               {time.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
@@ -360,7 +370,7 @@ const Dashboard = () => {
 
           {/* Search Bar Tengah */}
           <form onSubmit={handleSearchSubmit} style={styles.searchBox(isMobile)}>
-            <Search size={17} color="#94a3b8" />
+            <Search size={16} color="#94a3b8" />
             <input
               type="text"
               placeholder="Cari siswa, jadwal, kelas, tentor..."
@@ -378,7 +388,7 @@ const Dashboard = () => {
               style={styles.iconBtn} 
               title="Refresh Data"
             >
-              <RefreshCw size={17} color="#64748b" />
+              <RefreshCw size={16} color="#64748b" />
             </button>
 
             <button 
@@ -387,7 +397,7 @@ const Dashboard = () => {
               style={styles.iconBtn} 
               title="Notifikasi"
             >
-              <Bell size={17} color="#64748b" />
+              <Bell size={16} color="#64748b" />
               {(newStudents.length > 0 || duePayments.length > 0) && (
                 <span style={styles.notifDot}>{newStudents.length + duePayments.length}</span>
               )}
@@ -398,20 +408,43 @@ const Dashboard = () => {
               <div style={styles.userAvatarTop}>
                 {owner ? '👑' : getInitials(namaAdmin)}
               </div>
-              {!isMobile && (
-                <div style={{ textAlign: 'left', lineHeight: 1.2 }}>
-                  <div style={styles.profileName}>{namaAdmin}</div>
-                  <div style={styles.profileRole}>{peranAdmin}</div>
-                </div>
-              )}
+              <div style={{ textAlign: 'left', lineHeight: 1.2, display: isMobile ? 'none' : 'block' }}>
+                <div style={styles.profileName}>{namaAdmin}</div>
+                <div style={styles.profileRole}>{peranAdmin}</div>
+              </div>
             </div>
           </div>
         </header>
 
         {/* ============================================================ */}
-        {/* TOP 4 VIBRANT STAT CARDS (NO MONEY / JANGAN ADA UANG)        */}
+        {/* TOP STAT CARDS (HORIZONTALLY SCROLLABLE - BISA DIGESER)      */}
         {/* ============================================================ */}
-        <section style={styles.statsGrid(isMobile)}>
+        <div style={styles.sectionHeaderFlex}>
+          <div>
+            <span style={styles.sectionSubLabel}>📊 Ringkasan Operasional Hari Ini</span>
+            <span style={styles.scrollHint}>↔ Geser / scroll ke samping</span>
+          </div>
+          <div style={styles.arrowBtnGroup}>
+            <button 
+              type="button" 
+              onClick={() => scrollHorizontally(statsScrollRef, -280)} 
+              style={styles.arrowScrollBtn} 
+              title="Geser Kiri"
+            >
+              <ChevronLeft size={16} />
+            </button>
+            <button 
+              type="button" 
+              onClick={() => scrollHorizontally(statsScrollRef, 280)} 
+              style={styles.arrowScrollBtn} 
+              title="Geser Kanan"
+            >
+              <ChevronRight size={16} />
+            </button>
+          </div>
+        </div>
+
+        <section ref={statsScrollRef} style={styles.statsScrollWrapper} className="custom-scrollbar">
           {/* Card 1: Siswa Aktif (Purple) */}
           <div 
             style={{ ...styles.statCardVibrant, background: 'linear-gradient(135deg, #4f46e5 0%, #6366f1 100%)' }}
@@ -456,12 +489,12 @@ const Dashboard = () => {
               </div>
               <div style={styles.statLabelWhite}>Guru Sudah Mengajar</div>
               <div style={styles.statSubText}>
-                {teacherAttendanceStatus.filter(t => !t.sudahAbsen).length} Guru Belum Isi Absen
+                {teacherAttendanceStatus.filter(t => !t.sudahAbsen).length} Guru Belum Absen
               </div>
             </div>
           </div>
 
-          {/* Card 4: Tindakan Admin & Pendaftaran (Lime Green) */}
+          {/* Card 4: Tindakan Admin & Tunggakan (Lime Green) */}
           <div 
             style={{ ...styles.statCardVibrant, background: 'linear-gradient(135deg, #65a30d 0%, #84cc16 100%)' }}
             onClick={() => navigate('/admin/students')}
@@ -475,6 +508,38 @@ const Dashboard = () => {
               <div style={styles.statSubText}>
                 {newStudents.length} Siswa Baru • {duePayments.length} Tunggakan
               </div>
+            </div>
+          </div>
+
+          {/* Card 5: Pendaftaran Online Baru (Amber / Orange) */}
+          <div 
+            style={{ ...styles.statCardVibrant, background: 'linear-gradient(135deg, #d97706 0%, #f59e0b 100%)' }}
+            onClick={() => navigate('/admin/pendaftaran')}
+          >
+            <div style={styles.statIconBox}>
+              <UserPlus size={22} color="#ffffff" />
+            </div>
+            <div style={styles.statNumberText}>
+              <div style={styles.statValLarge}>{newStudents.length}</div>
+              <div style={styles.statLabelWhite}>Pendaftaran Siswa Baru</div>
+              <div style={styles.statSubText}>Perlu Validasi Kasir</div>
+            </div>
+          </div>
+
+          {/* Card 6: Paket Perlu Diperpanjang (Rose / Red) */}
+          <div 
+            style={{ ...styles.statCardVibrant, background: 'linear-gradient(135deg, #e11d48 0%, #f43f5e 100%)' }}
+            onClick={() => navigate('/admin/students')}
+          >
+            <div style={styles.statIconBox}>
+              <Clock3 size={22} color="#ffffff" />
+            </div>
+            <div style={styles.statNumberText}>
+              <div style={styles.statValLarge}>
+                {students.filter(s => s.isHabis || s.isAkanHabis).length}
+              </div>
+              <div style={styles.statLabelWhite}>Paket Segera Habis</div>
+              <div style={styles.statSubText}>Butuh Reminder Ortu</div>
             </div>
           </div>
         </section>
@@ -584,7 +649,7 @@ const Dashboard = () => {
                 </div>
               </div>
 
-              <div style={{ width: '100%', height: 210, marginTop: 10 }}>
+              <div style={{ width: '100%', height: 200, marginTop: 10 }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
                     <defs>
@@ -611,19 +676,39 @@ const Dashboard = () => {
               </div>
             </div>
 
-            {/* ⚡ AKSI CEPAT MENU UTAMA ADMIN (Ganti "Recommended Jobs") */}
-            <div>
+            {/* ⚡ AKSI CEPAT MENU UTAMA ADMIN (HORIZONTALLY SCROLLABLE CAROUSEL) */}
+            <div style={styles.actionHubSection}>
               <div style={styles.actionHubHeader}>
-                <h3 style={styles.actionHubTitle}>⚡ Akses Cepat Menu Utama</h3>
-                <span style={styles.actionHubBadge}>Pintasan Operasional Harian</span>
+                <div>
+                  <h3 style={styles.actionHubTitle}>⚡ Akses Cepat Menu Utama</h3>
+                  <span style={styles.actionHubBadge}>Pintasan Operasional Harian (Bisa digeser ke samping)</span>
+                </div>
+                <div style={styles.arrowBtnGroup}>
+                  <button 
+                    type="button" 
+                    onClick={() => scrollHorizontally(actionScrollRef, -280)} 
+                    style={styles.arrowScrollBtn} 
+                    title="Geser Kiri"
+                  >
+                    <ChevronLeft size={16} />
+                  </button>
+                  <button 
+                    type="button" 
+                    onClick={() => scrollHorizontally(actionScrollRef, 280)} 
+                    style={styles.arrowScrollBtn} 
+                    title="Geser Kanan"
+                  >
+                    <ChevronRight size={16} />
+                  </button>
+                </div>
               </div>
 
-              <div style={styles.actionGrid(isMobile)}>
+              <div ref={actionScrollRef} style={styles.actionScrollWrapper} className="custom-scrollbar">
                 {/* 1. Kelola Siswa */}
                 <div style={styles.actionCard}>
                   <div style={styles.actionCardHead}>
                     <div style={styles.actionIconBox('#eff6ff', '#2563eb')}>
-                      <Users size={20} />
+                      <Users size={19} />
                     </div>
                     <span style={styles.actionBadgeBlue}>
                       {stats.aktif} Aktif
@@ -653,7 +738,7 @@ const Dashboard = () => {
                 <div style={styles.actionCard}>
                   <div style={styles.actionCardHead}>
                     <div style={styles.actionIconBox('#faf5ff', '#9333ea')}>
-                      <GraduationCap size={20} />
+                      <GraduationCap size={19} />
                     </div>
                     <span style={styles.actionBadgePurple}>
                       {teacherAttendanceStatus.filter(t => !t.sudahAbsen).length > 0 ? '⚠️ Butuh Approval' : '✅ Lengkap'}
@@ -677,13 +762,13 @@ const Dashboard = () => {
                 <div style={styles.actionCard}>
                   <div style={styles.actionCardHead}>
                     <div style={styles.actionIconBox('#fff7ed', '#ea580c')}>
-                      <Trophy size={20} />
+                      <Trophy size={19} />
                     </div>
                     <span style={styles.actionBadgeOrange}>TOBK CBT</span>
                   </div>
                   <h4 style={styles.actionCardTitle}>Bank Soal & TryOut</h4>
                   <p style={styles.actionCardDesc}>
-                    Rilis jadwal tryout akbar, pantau pengerjaan siswa, & periksa kunci.
+                    Rilis jadwal tryout akbar, pantau pengerjaan siswa, & kunci ujian.
                   </p>
                   <div style={styles.actionBtnRow}>
                     <button 
@@ -699,13 +784,13 @@ const Dashboard = () => {
                 <div style={styles.actionCard}>
                   <div style={styles.actionCardHead}>
                     <div style={styles.actionIconBox('#f0fdf4', '#16a34a')}>
-                      <Library size={20} />
+                      <Library size={19} />
                     </div>
                     <span style={styles.actionBadgeGreen}>Buku Digital</span>
                   </div>
                   <h4 style={styles.actionCardTitle}>Perpustakaan & Modul</h4>
                   <p style={styles.actionCardDesc}>
-                    Akses buku PDF Gemilang, generate kuis AI, & draf materi belajar.
+                    Akses buku PDF Gemilang, generate kuis AI, & modul per bab.
                   </p>
                   <div style={styles.actionBtnRow}>
                     <button 
@@ -716,6 +801,72 @@ const Dashboard = () => {
                     </button>
                   </div>
                 </div>
+
+                {/* 5. Kasir & Kwitansi Resmi */}
+                <div style={styles.actionCard}>
+                  <div style={styles.actionCardHead}>
+                    <div style={styles.actionIconBox('#fdf2f8', '#db2777')}>
+                      <Receipt size={19} />
+                    </div>
+                    <span style={styles.actionBadgeRose}>Kasir & Kwitansi</span>
+                  </div>
+                  <h4 style={styles.actionCardTitle}>Kwitansi & Pembayaran</h4>
+                  <p style={styles.actionCardDesc}>
+                    Cetak ulang kwitansi resmi siswa & catatan pembayaran kasir.
+                  </p>
+                  <div style={styles.actionBtnRow}>
+                    <button 
+                      onClick={() => navigate('/admin/finance?tab=kwitansi')} 
+                      style={styles.btnActionRose}
+                    >
+                      Buka Kasir →
+                    </button>
+                  </div>
+                </div>
+
+                {/* 6. Pendaftaran Online Siswa */}
+                <div style={styles.actionCard}>
+                  <div style={styles.actionCardHead}>
+                    <div style={styles.actionIconBox('#e0e7ff', '#4338ca')}>
+                      <UserPlus size={19} />
+                    </div>
+                    <span style={styles.actionBadgeIndigo}>Online Form</span>
+                  </div>
+                  <h4 style={styles.actionCardTitle}>Pendaftaran Online</h4>
+                  <p style={styles.actionCardDesc}>
+                    Validasi pendaftar baru dari website & konfirmasi bukti transfer.
+                  </p>
+                  <div style={styles.actionBtnRow}>
+                    <button 
+                      onClick={() => navigate('/admin/pendaftaran')} 
+                      style={styles.btnActionIndigo}
+                    >
+                      Cek Pendaftar →
+                    </button>
+                  </div>
+                </div>
+
+                {/* 7. Rapor & Smart Analytics */}
+                <div style={styles.actionCard}>
+                  <div style={styles.actionCardHead}>
+                    <div style={styles.actionIconBox('#ecfeff', '#0891b2')}>
+                      <BarChart3 size={19} />
+                    </div>
+                    <span style={styles.actionBadgeCyan}>AI Raport</span>
+                  </div>
+                  <h4 style={styles.actionCardTitle}>Rapor & Analitik</h4>
+                  <p style={styles.actionCardDesc}>
+                    Generate rapor otomatis bulanan & analitik kesiapan UTBK/TKA.
+                  </p>
+                  <div style={styles.actionBtnRow}>
+                    <button 
+                      onClick={() => navigate('/admin/raport')} 
+                      style={styles.btnActionCyan}
+                    >
+                      Buka Rapor →
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -723,24 +874,44 @@ const Dashboard = () => {
         </section>
 
         {/* ============================================================ */}
-        {/* BOTTOM SECTION: TUNGGAKAN & CICILAN SISWA (Ganti Companies)  */}
+        {/* BOTTOM SECTION: TUNGGAKAN & CICILAN SISWA (BISA DIGESER)     */}
         {/* ============================================================ */}
         <section style={styles.bottomTunggakanCard}>
           <div style={styles.tunggakanHeader}>
             <div>
               <h3 style={styles.tunggakanTitle}>
-                ⚠️ Daftar Tunggakan & Cicilan Siswa (Perlu Follow-Up)
+                ⚠️ Daftar Tunggakan & Cicilan Siswa ({duePayments.length} Siswa)
               </h3>
               <p style={styles.tunggakanSubtitle}>
-                Pantau siswa dengan sisa pembayaran paket atau cicilan aktif agar tidak terblokir
+                Pantau siswa dengan cicilan aktif atau jatuh tempo (Geser / scroll ke samping untuk melihat seluruh siswa)
               </p>
             </div>
-            <button 
-              onClick={() => navigate('/admin/finance')} 
-              style={styles.btnLihatSemuaFinance}
-            >
-              Buka Seluruh Keuangan <ArrowRight size={14} />
-            </button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div style={styles.arrowBtnGroup}>
+                <button 
+                  type="button" 
+                  onClick={() => scrollHorizontally(tunggakanScrollRef, -300)} 
+                  style={styles.arrowScrollBtn} 
+                  title="Geser Kiri"
+                >
+                  <ChevronLeft size={16} />
+                </button>
+                <button 
+                  type="button" 
+                  onClick={() => scrollHorizontally(tunggakanScrollRef, 300)} 
+                  style={styles.arrowScrollBtn} 
+                  title="Geser Kanan"
+                >
+                  <ChevronRight size={16} />
+                </button>
+              </div>
+              <button 
+                onClick={() => navigate('/admin/finance')} 
+                style={styles.btnLihatSemuaFinance}
+              >
+                Buka Seluruh Keuangan <ArrowRight size={14} />
+              </button>
+            </div>
           </div>
 
           {duePayments.length === 0 ? (
@@ -751,8 +922,8 @@ const Dashboard = () => {
               </p>
             </div>
           ) : (
-            <div style={styles.tunggakanGrid(isMobile)}>
-              {duePayments.slice(0, 8).map((s) => {
+            <div ref={tunggakanScrollRef} style={styles.tunggakanScrollWrapper} className="custom-scrollbar">
+              {duePayments.map((s) => {
                 const pesanWa = `Halo Ayah/Bunda dari ${s.nama}, kami dari Bimbel Gemilang menginformasikan terkait administrasi bimbingan belajar ananda dengan sisa tagihan sebesar Rp ${s.sisa.toLocaleString('id-ID')}. Mohon konfirmasinya ya Ayah/Bunda. Terima kasih.`;
                 const noHpBersih = (s.hp || '').replace(/\D/g, '');
                 const waLink = noHpBersih ? `https://wa.me/${noHpBersih.startsWith('0') ? '62' + noHpBersih.slice(1) : noHpBersih}?text=${encodeURIComponent(pesanWa)}` : null;
@@ -794,7 +965,7 @@ const Dashboard = () => {
                           style={styles.btnWaOrtu}
                           title="Kirim WhatsApp ke Orang Tua"
                         >
-                          <MessageCircle size={13} /> WA Ortu
+                          <MessageCircle size={13} /> WA
                         </a>
                       )}
                     </div>
@@ -806,6 +977,23 @@ const Dashboard = () => {
         </section>
 
       </div>
+      <style>{`
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .custom-scrollbar::-webkit-scrollbar {
+          height: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: #f1f5f9;
+          border-radius: 999px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: #cbd5e1;
+          border-radius: 999px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: #94a3b8;
+        }
+      `}</style>
     </div>
   );
 };
@@ -818,15 +1006,16 @@ const styles = {
     display: 'flex',
     minHeight: '100vh',
     background: '#f8fafc',
-    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+    overflowX: 'hidden'
   },
   mainContent: (isMobile) => ({
     flex: 1,
+    minWidth: 0,
     marginLeft: isMobile ? 0 : 236,
-    padding: isMobile ? '16px' : '26px 32px',
+    padding: isMobile ? '16px' : '24px 28px',
     boxSizing: 'border-box',
-    width: '100%',
-    maxWidth: '1600px'
+    width: isMobile ? '100%' : 'calc(100% - 236px)'
   }),
   loadingBox: {
     display: 'flex',
@@ -851,7 +1040,7 @@ const styles = {
     alignItems: isMobile ? 'flex-start' : 'center',
     justifyContent: 'space-between',
     gap: 16,
-    marginBottom: 24
+    marginBottom: 20
   }),
   topTitle: {
     margin: 0,
@@ -874,14 +1063,14 @@ const styles = {
     border: '1.5px solid #e2e8f0',
     borderRadius: 14,
     padding: '9px 16px',
-    width: isMobile ? '100%' : '380px',
+    width: isMobile ? '100%' : '340px',
     boxShadow: '0 2px 6px rgba(0,0,0,0.02)',
     boxSizing: 'border-box'
   }),
   searchInput: {
     border: 'none',
     outline: 'none',
-    fontSize: 13,
+    fontSize: 12.5,
     color: '#1e293b',
     width: '100%',
     background: 'transparent'
@@ -889,7 +1078,8 @@ const styles = {
   topRightActions: {
     display: 'flex',
     alignItems: 'center',
-    gap: 10
+    gap: 10,
+    flexShrink: 0
   },
   iconBtn: {
     width: 38,
@@ -941,7 +1131,11 @@ const styles = {
   profileName: {
     fontSize: 12.5,
     fontWeight: 800,
-    color: '#0f172a'
+    color: '#0f172a',
+    maxWidth: 140,
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis'
   },
   profileRole: {
     fontSize: 10.5,
@@ -949,27 +1143,69 @@ const styles = {
     fontWeight: 600
   },
 
-  // TOP 4 VIBRANT STAT CARDS
-  statsGrid: (isMobile) => ({
-    display: 'grid',
-    gridTemplateColumns: isMobile ? '1fr' : 'repeat(4, 1fr)',
-    gap: 16,
-    marginBottom: 24
-  }),
+  // SECTION HEADERS WITH ARROWS
+  sectionHeaderFlex: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8
+  },
+  sectionSubLabel: {
+    fontSize: 13,
+    fontWeight: 800,
+    color: '#334155'
+  },
+  scrollHint: {
+    fontSize: 11,
+    color: '#94a3b8',
+    marginLeft: 10
+  },
+  arrowBtnGroup: {
+    display: 'flex',
+    gap: 6
+  },
+  arrowScrollBtn: {
+    width: 28,
+    height: 28,
+    borderRadius: 8,
+    background: '#ffffff',
+    border: '1px solid #cbd5e1',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    cursor: 'pointer',
+    color: '#475569',
+    transition: '0.2s',
+    boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
+  },
+
+  // HORIZONTALLY SCROLLABLE STAT CARDS
+  statsScrollWrapper: {
+    display: 'flex',
+    gap: 14,
+    overflowX: 'auto',
+    paddingBottom: 10,
+    marginBottom: 20,
+    scrollSnapType: 'x mandatory',
+    WebkitOverflowScrolling: 'touch'
+  },
   statCardVibrant: {
     borderRadius: 18,
-    padding: '20px 20px',
+    padding: '18px',
+    minWidth: 240,
+    flex: '0 0 240px',
+    scrollSnapAlign: 'start',
     display: 'flex',
     alignItems: 'flex-start',
-    gap: 16,
+    gap: 14,
     cursor: 'pointer',
-    boxShadow: '0 10px 20px -5px rgba(79, 70, 229, 0.25)',
+    boxShadow: '0 8px 18px -4px rgba(79, 70, 229, 0.2)',
     transition: 'transform 0.2s ease, box-shadow 0.2s ease'
   },
   statIconBox: {
-    width: 44,
-    height: 44,
-    borderRadius: 14,
+    width: 42,
+    height: 42,
+    borderRadius: 13,
     background: 'rgba(255, 255, 255, 0.22)',
     backdropFilter: 'blur(4px)',
     display: 'flex',
@@ -979,57 +1215,64 @@ const styles = {
   },
   statNumberText: {
     color: '#ffffff',
-    flex: 1
+    flex: 1,
+    minWidth: 0
   },
   statValLarge: {
-    fontSize: 28,
+    fontSize: 26,
     fontWeight: 900,
     lineHeight: 1,
     letterSpacing: -0.5
   },
   statLabelWhite: {
-    fontSize: 13,
+    fontSize: 12.5,
     fontWeight: 700,
-    marginTop: 6,
-    opacity: 0.95
+    marginTop: 5,
+    opacity: 0.95,
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis'
   },
   statSubText: {
-    fontSize: 11,
-    opacity: 0.8,
-    marginTop: 3
+    fontSize: 10.5,
+    opacity: 0.85,
+    marginTop: 2,
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis'
   },
 
   // MIDDLE LAYOUT
   middleLayout: (isMobile) => ({
     display: 'grid',
-    gridTemplateColumns: isMobile ? '1fr' : '330px 1fr',
-    gap: 22,
-    marginBottom: 24
+    gridTemplateColumns: isMobile ? '1fr' : '320px 1fr',
+    gap: 20,
+    marginBottom: 20,
+    alignItems: 'start'
   }),
 
   // SPOTLIGHT CARD (KIRI)
   spotlightCard: {
     background: '#ffffff',
     borderRadius: 22,
-    padding: '24px 20px',
+    padding: '22px 18px',
     border: '1px solid #e2e8f0',
     boxShadow: '0 4px 20px rgba(0,0,0,0.03)',
     display: 'flex',
-    flexDirection: 'column',
-    height: 'fit-content'
+    flexDirection: 'column'
   },
   spotlightHeader: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16
+    marginBottom: 14
   },
   badgeGold: {
-    fontSize: 12,
+    fontSize: 11.5,
     fontWeight: 800,
     color: '#b45309',
     background: '#fef3c7',
-    padding: '4px 10px',
+    padding: '3px 9px',
     borderRadius: 999
   },
   badgeCrown: {
@@ -1037,19 +1280,19 @@ const styles = {
     fontWeight: 800,
     color: '#7c3aed',
     background: '#ede9fe',
-    padding: '4px 8px',
+    padding: '3px 8px',
     borderRadius: 999
   },
   avatarSpotlightWrapper: {
     display: 'flex',
     justifyContent: 'center',
-    margin: '8px 0 14px'
+    margin: '6px 0 12px'
   },
   avatarRingOuter: {
-    width: 90,
-    height: 90,
+    width: 86,
+    height: 86,
     borderRadius: '50%',
-    padding: 4,
+    padding: 3.5,
     background: 'linear-gradient(135deg, #7c3aed, #fbbf24)',
     boxShadow: '0 8px 20px rgba(124, 58, 237, 0.25)',
     display: 'flex',
@@ -1071,59 +1314,59 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    fontSize: 26,
+    fontSize: 24,
     fontWeight: 900
   },
   spotlightProfile: {
     textAlign: 'center',
-    marginBottom: 18
+    marginBottom: 16
   },
   spotlightName: {
     margin: 0,
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: 800,
     color: '#0f172a'
   },
   spotlightRole: {
-    margin: '4px 0 0',
-    fontSize: 12,
+    margin: '3px 0 0',
+    fontSize: 11.5,
     color: '#64748b'
   },
   gaugeRow: {
     display: 'flex',
     justifyContent: 'space-around',
-    padding: '12px 6px',
+    padding: '10px 4px',
     background: '#f8fafc',
-    borderRadius: 16,
-    marginBottom: 20
+    borderRadius: 14,
+    marginBottom: 18
   },
   gaugeItem: {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-    gap: 4
+    gap: 3
   },
   gaugeCircle: (color, bg) => ({
-    width: 46,
-    height: 46,
+    width: 44,
+    height: 44,
     borderRadius: '50%',
     background: bg,
     color: color,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    fontSize: 12,
+    fontSize: 11.5,
     fontWeight: 900,
     border: `2px solid ${color}`
   }),
   gaugeLabel: {
-    fontSize: 10.5,
+    fontSize: 10,
     fontWeight: 700,
     color: '#475569'
   },
   recentStudentsSection: {
     borderTop: '1px solid #f1f5f9',
-    paddingTop: 16
+    paddingTop: 14
   },
   recentTitle: {
     margin: '0 0 10px',
@@ -1141,28 +1384,28 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     gap: 10,
-    padding: '8px 10px',
+    padding: '7px 9px',
     borderRadius: 12,
     background: '#f8fafc',
     cursor: 'pointer',
     transition: '0.2s'
   },
   recentAvatar: {
-    width: 32,
-    height: 32,
+    width: 30,
+    height: 30,
     borderRadius: '50%',
     background: '#e2e8f0',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    fontSize: 11,
+    fontSize: 10.5,
     fontWeight: 800,
     color: '#475569',
     overflow: 'hidden',
     flexShrink: 0
   },
   recentName: {
-    fontSize: 12,
+    fontSize: 11.5,
     fontWeight: 700,
     color: '#1e293b',
     whiteSpace: 'nowrap',
@@ -1170,14 +1413,14 @@ const styles = {
     textOverflow: 'ellipsis'
   },
   recentMeta: {
-    fontSize: 10.5,
+    fontSize: 10,
     color: '#64748b'
   },
   rankBadge: (rank) => ({
-    fontSize: 11,
+    fontSize: 10.5,
     fontWeight: 900,
-    padding: '2px 7px',
-    borderRadius: 8,
+    padding: '2px 6px',
+    borderRadius: 6,
     background: rank === 2 ? '#f1f5f9' : rank === 3 ? '#fff7ed' : '#f8fafc',
     color: rank === 2 ? '#475569' : rank === 3 ? '#c2410c' : '#64748b'
   }),
@@ -1188,7 +1431,7 @@ const styles = {
     background: '#eff6ff',
     border: '1px solid #bfdbfe',
     color: '#1d4ed8',
-    fontSize: 11.5,
+    fontSize: 11,
     fontWeight: 700,
     cursor: 'pointer',
     display: 'flex',
@@ -1201,12 +1444,13 @@ const styles = {
   rightContentCol: {
     display: 'flex',
     flexDirection: 'column',
-    gap: 20
+    gap: 18,
+    minWidth: 0
   },
   chartCard: {
     background: '#ffffff',
     borderRadius: 22,
-    padding: '20px 24px',
+    padding: '18px 22px',
     border: '1px solid #e2e8f0',
     boxShadow: '0 4px 20px rgba(0,0,0,0.03)'
   },
@@ -1215,72 +1459,81 @@ const styles = {
     justifyContent: 'space-between',
     alignItems: 'flex-start',
     flexWrap: 'wrap',
-    gap: 12
+    gap: 10
   },
   chartTitle: {
     margin: 0,
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: 800,
     color: '#0f172a'
   },
   chartSubtitle: {
-    margin: '3px 0 0',
-    fontSize: 12,
+    margin: '2px 0 0',
+    fontSize: 11.5,
     color: '#64748b'
   },
   chartLegendRow: {
     display: 'flex',
-    gap: 14,
-    fontSize: 11.5,
+    gap: 12,
+    fontSize: 11,
     fontWeight: 700
   },
   legendDot: (color) => ({
     color: color
   }),
 
-  // ACTION HUB
+  // ACTION HUB HORIZONTALLY SCROLLABLE
+  actionHubSection: {
+    minWidth: 0
+  },
   actionHubHeader: {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 12
+    marginBottom: 8
   },
   actionHubTitle: {
     margin: 0,
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: 800,
     color: '#0f172a'
   },
   actionHubBadge: {
     fontSize: 11,
-    fontWeight: 700,
+    fontWeight: 600,
     color: '#64748b'
   },
-  actionGrid: (isMobile) => ({
-    display: 'grid',
-    gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, 1fr)',
-    gap: 14
-  }),
+  actionScrollWrapper: {
+    display: 'flex',
+    gap: 14,
+    overflowX: 'auto',
+    paddingBottom: 10,
+    scrollSnapType: 'x mandatory',
+    WebkitOverflowScrolling: 'touch'
+  },
   actionCard: {
     background: '#ffffff',
     borderRadius: 18,
-    padding: '18px',
+    padding: '16px',
     border: '1px solid #e2e8f0',
     boxShadow: '0 2px 10px rgba(0,0,0,0.02)',
     display: 'flex',
     flexDirection: 'column',
-    justifyContent: 'space-between'
+    justifyContent: 'space-between',
+    minWidth: 250,
+    flex: '0 0 250px',
+    scrollSnapAlign: 'start'
   },
   actionCardHead: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 10
+    marginBottom: 8
   },
   actionIconBox: (bg, color) => ({
-    width: 38,
-    height: 38,
-    borderRadius: 12,
+    width: 36,
+    height: 36,
+    borderRadius: 11,
     background: bg,
     color: color,
     display: 'flex',
@@ -1288,46 +1541,70 @@ const styles = {
     justifyContent: 'center'
   }),
   actionBadgeBlue: {
-    fontSize: 11,
+    fontSize: 10.5,
     fontWeight: 800,
     color: '#2563eb',
     background: '#eff6ff',
-    padding: '3px 8px',
+    padding: '2px 8px',
     borderRadius: 999
   },
   actionBadgePurple: {
-    fontSize: 11,
+    fontSize: 10.5,
     fontWeight: 800,
     color: '#7c3aed',
     background: '#faf5ff',
-    padding: '3px 8px',
+    padding: '2px 8px',
     borderRadius: 999
   },
   actionBadgeOrange: {
-    fontSize: 11,
+    fontSize: 10.5,
     fontWeight: 800,
     color: '#ea580c',
     background: '#fff7ed',
-    padding: '3px 8px',
+    padding: '2px 8px',
     borderRadius: 999
   },
   actionBadgeGreen: {
-    fontSize: 11,
+    fontSize: 10.5,
     fontWeight: 800,
     color: '#16a34a',
     background: '#f0fdf4',
-    padding: '3px 8px',
+    padding: '2px 8px',
+    borderRadius: 999
+  },
+  actionBadgeRose: {
+    fontSize: 10.5,
+    fontWeight: 800,
+    color: '#db2777',
+    background: '#fdf2f8',
+    padding: '2px 8px',
+    borderRadius: 999
+  },
+  actionBadgeIndigo: {
+    fontSize: 10.5,
+    fontWeight: 800,
+    color: '#4338ca',
+    background: '#e0e7ff',
+    padding: '2px 8px',
+    borderRadius: 999
+  },
+  actionBadgeCyan: {
+    fontSize: 10.5,
+    fontWeight: 800,
+    color: '#0891b2',
+    background: '#ecfeff',
+    padding: '2px 8px',
     borderRadius: 999
   },
   actionCardTitle: {
-    margin: '0 0 4px',
-    fontSize: 14,
+    margin: '0 0 3px',
+    fontSize: 13.5,
     fontWeight: 800,
     color: '#0f172a'
   },
   actionCardDesc: {
-    margin: '0 0 14px',
-    fontSize: 11.5,
+    margin: '0 0 12px',
+    fontSize: 11,
     color: '#64748b',
     lineHeight: 1.4
   },
@@ -1337,12 +1614,12 @@ const styles = {
   },
   btnActionPrimary: {
     flex: 1,
-    padding: '7px 12px',
-    borderRadius: 9,
+    padding: '7px 10px',
+    borderRadius: 8,
     background: '#4f46e5',
     color: '#ffffff',
     border: 'none',
-    fontSize: 11.5,
+    fontSize: 11,
     fontWeight: 700,
     cursor: 'pointer',
     display: 'flex',
@@ -1351,23 +1628,23 @@ const styles = {
     gap: 4
   },
   btnActionSecondary: {
-    padding: '7px 12px',
-    borderRadius: 9,
+    padding: '7px 10px',
+    borderRadius: 8,
     background: '#f1f5f9',
     color: '#334155',
     border: 'none',
-    fontSize: 11.5,
+    fontSize: 11,
     fontWeight: 700,
     cursor: 'pointer'
   },
   btnActionPurple: {
     width: '100%',
     padding: '7px 12px',
-    borderRadius: 9,
+    borderRadius: 8,
     background: '#7c3aed',
     color: '#ffffff',
     border: 'none',
-    fontSize: 11.5,
+    fontSize: 11,
     fontWeight: 700,
     cursor: 'pointer',
     textAlign: 'center'
@@ -1375,11 +1652,11 @@ const styles = {
   btnActionOrange: {
     width: '100%',
     padding: '7px 12px',
-    borderRadius: 9,
+    borderRadius: 8,
     background: '#ea580c',
     color: '#ffffff',
     border: 'none',
-    fontSize: 11.5,
+    fontSize: 11,
     fontWeight: 700,
     cursor: 'pointer',
     textAlign: 'center'
@@ -1387,11 +1664,47 @@ const styles = {
   btnActionGreen: {
     width: '100%',
     padding: '7px 12px',
-    borderRadius: 9,
+    borderRadius: 8,
     background: '#16a34a',
     color: '#ffffff',
     border: 'none',
-    fontSize: 11.5,
+    fontSize: 11,
+    fontWeight: 700,
+    cursor: 'pointer',
+    textAlign: 'center'
+  },
+  btnActionRose: {
+    width: '100%',
+    padding: '7px 12px',
+    borderRadius: 8,
+    background: '#db2777',
+    color: '#ffffff',
+    border: 'none',
+    fontSize: 11,
+    fontWeight: 700,
+    cursor: 'pointer',
+    textAlign: 'center'
+  },
+  btnActionIndigo: {
+    width: '100%',
+    padding: '7px 12px',
+    borderRadius: 8,
+    background: '#4338ca',
+    color: '#ffffff',
+    border: 'none',
+    fontSize: 11,
+    fontWeight: 700,
+    cursor: 'pointer',
+    textAlign: 'center'
+  },
+  btnActionCyan: {
+    width: '100%',
+    padding: '7px 12px',
+    borderRadius: 8,
+    background: '#0891b2',
+    color: '#ffffff',
+    border: 'none',
+    fontSize: 11,
     fontWeight: 700,
     cursor: 'pointer',
     textAlign: 'center'
@@ -1401,9 +1714,10 @@ const styles = {
   bottomTunggakanCard: {
     background: '#ffffff',
     borderRadius: 22,
-    padding: '24px',
+    padding: '20px 22px',
     border: '1px solid #e2e8f0',
-    boxShadow: '0 4px 20px rgba(0,0,0,0.03)'
+    boxShadow: '0 4px 20px rgba(0,0,0,0.03)',
+    minWidth: 0
   },
   tunggakanHeader: {
     display: 'flex',
@@ -1411,44 +1725,48 @@ const styles = {
     alignItems: 'flex-start',
     flexWrap: 'wrap',
     gap: 12,
-    marginBottom: 18
+    marginBottom: 14
   },
   tunggakanTitle: {
     margin: 0,
-    fontSize: 16.5,
+    fontSize: 15.5,
     fontWeight: 800,
     color: '#b45309'
   },
   tunggakanSubtitle: {
     margin: '3px 0 0',
-    fontSize: 12,
+    fontSize: 11.5,
     color: '#64748b'
   },
   btnLihatSemuaFinance: {
-    padding: '8px 14px',
-    borderRadius: 10,
+    padding: '7px 12px',
+    borderRadius: 9,
     background: '#fff7ed',
     border: '1px solid #fed7aa',
     color: '#c2410c',
-    fontSize: 12,
+    fontSize: 11.5,
     fontWeight: 800,
     cursor: 'pointer',
     display: 'flex',
     alignItems: 'center',
-    gap: 6
+    gap: 5
   },
   emptyTunggakanBox: {
     textAlign: 'center',
-    padding: '30px 16px',
+    padding: '24px 16px',
     background: '#f0fdf4',
     borderRadius: 14,
     border: '1px dashed #bbf7d0'
   },
-  tunggakanGrid: (isMobile) => ({
-    display: 'grid',
-    gridTemplateColumns: isMobile ? '1fr' : 'repeat(4, 1fr)',
-    gap: 14
-  }),
+  tunggakanScrollWrapper: {
+    display: 'flex',
+    gap: 14,
+    overflowX: 'auto',
+    paddingBottom: 10,
+    paddingTop: 4,
+    scrollSnapType: 'x mandatory',
+    WebkitOverflowScrolling: 'touch'
+  },
   tunggakanItemCard: {
     background: '#f8fafc',
     borderRadius: 16,
@@ -1456,31 +1774,35 @@ const styles = {
     border: '1px solid #e2e8f0',
     display: 'flex',
     flexDirection: 'column',
-    justifyContent: 'space-between'
+    justifyContent: 'space-between',
+    minWidth: 240,
+    flex: '0 0 240px',
+    scrollSnapAlign: 'start',
+    boxShadow: '0 2px 8px rgba(0,0,0,0.02)'
   },
   tunggakanItemTop: {
     display: 'flex',
     alignItems: 'center',
     gap: 10,
-    marginBottom: 10
+    marginBottom: 8
   },
   tunggakanAvatar: {
-    width: 38,
-    height: 38,
+    width: 36,
+    height: 36,
     borderRadius: '50%',
     background: '#ede9fe',
     color: '#6d28d9',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: 900,
     overflow: 'hidden',
     flexShrink: 0,
     border: '2px solid #ddd6fe'
   },
   tunggakanName: {
-    fontSize: 12.5,
+    fontSize: 12,
     fontWeight: 800,
     color: '#0f172a',
     whiteSpace: 'nowrap',
@@ -1488,25 +1810,25 @@ const styles = {
     textOverflow: 'ellipsis'
   },
   tunggakanKelas: {
-    fontSize: 10.5,
+    fontSize: 10,
     color: '#64748b'
   },
   tunggakanNominalBox: {
     background: '#fff',
-    borderRadius: 10,
-    padding: '8px 10px',
+    borderRadius: 8,
+    padding: '6px 8px',
     border: '1px solid #cbd5e1',
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 10
+    marginBottom: 8
   },
   tunggakanLabel: {
-    fontSize: 11,
+    fontSize: 10.5,
     color: '#64748b'
   },
   tunggakanRupiah: {
-    fontSize: 12.5,
+    fontSize: 12,
     fontWeight: 800,
     color: '#dc2626'
   },
@@ -1516,22 +1838,22 @@ const styles = {
   },
   btnDetailBayar: {
     flex: 1,
-    padding: '7px 8px',
-    borderRadius: 8,
+    padding: '6px 8px',
+    borderRadius: 7,
     background: '#4f46e5',
     color: '#ffffff',
     border: 'none',
-    fontSize: 11,
+    fontSize: 10.5,
     fontWeight: 700,
     cursor: 'pointer'
   },
   btnWaOrtu: {
-    padding: '7px 10px',
-    borderRadius: 8,
+    padding: '6px 10px',
+    borderRadius: 7,
     background: '#22c55e',
     color: '#ffffff',
     textDecoration: 'none',
-    fontSize: 11,
+    fontSize: 10.5,
     fontWeight: 700,
     display: 'flex',
     alignItems: 'center',
