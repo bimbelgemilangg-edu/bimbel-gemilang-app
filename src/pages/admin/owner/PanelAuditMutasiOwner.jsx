@@ -690,6 +690,15 @@ export default function PanelAuditMutasiOwner({
     setCopiedPrompt(true);
     setTimeout(() => setCopiedPrompt(false), 3000);
   };
+
+  // Cetak / Unduh Laporan SHU Resmi ber-cap & logo
+  const bukaLaporanShuResmi = () => {
+    const w = window.open('/LAPORAN_SHU_BIMBEL_GEMILANG_RESMI.html', '_blank');
+    if (!w) {
+      alert('Mohon izinkan pop-up browser untuk membuka Laporan SHU Resmi.');
+    }
+  };
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
       {/* 1. BAR PEMILIH BULAN AUDIT & NAVIGASI CEPAT (JANUARI S/D SEKARANG) */}
@@ -1159,7 +1168,29 @@ export default function PanelAuditMutasiOwner({
         {exportMode === 'rentang' ? (
           <div style={{ background: 'rgba(255,255,255,0.07)', borderRadius: 12, padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 10, border: '1px solid rgba(255,255,255,0.12)' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
-              {/* Presets Cepat */}
+              {/* 🏆 TOMBOL RESMI LAPORAN SHU & NERACA RESMI (BER-CAP & LOGO) */}
+        <div style={{ marginBottom: 14 }}>
+          <button
+            type="button"
+            onClick={bukaLaporanShuResmi}
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: 8,
+              padding: '12px 20px', borderRadius: 12,
+              background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 100%)',
+              color: '#fbbf24', border: '1.5px solid #f59e0b',
+              fontWeight: 800, fontSize: 13, cursor: 'pointer',
+              boxShadow: '0 4px 14px rgba(49, 46, 129, 0.35)',
+              transition: 'all 0.2s'
+            }}
+          >
+            <span>📜</span> Cetak / Unduh Laporan SHU & Rekonsiliasi Resmi (Ber-Cap Logo Bimbel)
+          </button>
+          <span style={{ fontSize: 11, color: '#64748b', marginLeft: 12 }}>
+            Siap ditunjukkan ke orang tua, investor, maupun tim audit bank (Format A4 resmi).
+          </span>
+        </div>
+
+        {/* Presets Cepat */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
                 <span style={{ fontSize: 11, fontWeight: 700, color: '#e0e7ff' }}>Pilihan Cepat:</span>
                 <button
@@ -1550,6 +1581,45 @@ export default function PanelAuditMutasiOwner({
           </div>
         )}
       </div>
+    
+      {/* MODAL PREVIEW BUKTI TRANSFER OWNER */}
+      {previewBukti && (
+        <div
+          onClick={() => setPreviewBukti(null)}
+          style={{
+            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+            background: 'rgba(15, 23, 42, 0.75)', zIndex: 9999,
+            display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20
+          }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{
+              background: 'white', borderRadius: 16, padding: 20, maxWidth: 500, width: '100%',
+              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.3)', textAlign: 'center'
+            }}
+          >
+            <h4 style={{ margin: '0 0 12px 0', color: '#1e293b', fontSize: 15 }}>📎 Foto Bukti Transfer</h4>
+            <div style={{ maxHeight: '70vh', overflowY: 'auto', marginBottom: 14 }}>
+              <img
+                src={previewBukti}
+                alt="Bukti Transfer"
+                style={{ width: '100%', height: 'auto', borderRadius: 10, border: '1px solid #e2e8f0' }}
+              />
+            </div>
+            <button
+              type="button"
+              onClick={() => setPreviewBukti(null)}
+              style={{
+                padding: '8px 24px', background: '#1e293b', color: 'white',
+                border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer'
+              }}
+            >
+              Tutup Preview
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

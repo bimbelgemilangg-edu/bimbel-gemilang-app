@@ -436,6 +436,9 @@ const StudentFinance = () => {
 
     // 🔥 BARU (modul rekonsiliasi): perpanjangan via TRANSFER BANK wajib
     // punya jejak (nomor struk atau foto bukti) -- sama seperti pembayaran.
+    if (perpanjangData.metodeBayar === 'Transfer' && !perpanjangRef.trim()) {
+      return showAlert('⛔ Perpanjangan via Transfer WAJIB mengisi Nama Pemilik Rekening Pengirim (sesuai mutasi m-banking)!');
+    }
     if (perpanjangData.metodeBayar === 'Transfer' && !perpanjangRef.trim() && !perpanjangBukti) {
       return showAlert('⛔ Perpanjangan transfer WAJIB diisi No. Referensi struk ATAU upload foto bukti transfer -- buat dicocokkan owner dengan mutasi rekening.');
     }
@@ -753,6 +756,9 @@ const StudentFinance = () => {
     // 🔥 BARU (modul rekonsiliasi): pembayaran via TRANSFER BANK wajib
     // punya jejak -- nomor referensi struk ATAU foto bukti transfer.
     // Aturan main baru: setiap pintu uang harus bisa dicocokkan owner.
+    if (payMethod === 'Transfer' && !payRef.trim()) {
+      return showAlert('⛔ Pembayaran via Transfer WAJIB mengisi Nama Pemilik Rekening Pengirim (sesuai mutasi m-banking)!');
+    }
     if (payMethod === 'Transfer' && !payRef.trim() && !payBukti) {
       return showAlert('⛔ Pembayaran transfer WAJIB diisi No. Referensi struk ATAU upload foto bukti transfer -- buat dicocokkan owner dengan mutasi rekening.');
     }
@@ -872,9 +878,7 @@ const StudentFinance = () => {
       setPayRef('');
       setPayBukti(null);
       fetchData();
-      if (window.confirm(`✅ Pembayaran tercatat!\n\nKwitansi resmi ${noKwitansi} sudah dibuat.\nCetak kwitansi sekarang untuk diberikan ke pembayar?`)) {
-        cetakKwitansi(dataCetak);
-      }
+      // Cetak kwitansi dinonaktifkan di area admin
     } catch (error) { 
       console.error(error); 
       showAlert('❌ Gagal: ' + error.message); 

@@ -17,6 +17,7 @@ const TransactionHistory = () => {
   const [transactions, setTransactions] = useState([]);
 
   const [loading, setLoading] = useState(true);
+  const [previewBukti, setPreviewBukti] = useState(null);
 
   // === FILTER ===
   const [filterType, setFilterType] = useState('Semua');
@@ -849,6 +850,20 @@ const TransactionHistory = () => {
                           -- gampang dicocokkan dengan struk/mutasi. */}
                       {t.noKwitansi && <div style={{ fontSize: 9, color: '#7c3aed', fontWeight: 800, marginTop: 2, fontFamily: 'monospace' }}>🧾 {t.noKwitansi}</div>}
                       {t.refTransfer && <div style={{ fontSize: 9, color: '#1d4ed8', fontWeight: 700, marginTop: 1 }}>ref: {t.refTransfer}</div>}
+                      {t.buktiUrl && (
+                        <button
+                          type="button"
+                          onClick={() => setPreviewBukti(t.buktiUrl)}
+                          style={{
+                            display: 'inline-flex', alignItems: 'center', gap: 3,
+                            marginTop: 4, padding: '2px 7px', borderRadius: 4,
+                            background: '#eff6ff', border: '1px solid #bfdbfe',
+                            color: '#1d4ed8', fontSize: 9.5, fontWeight: 700, cursor: 'pointer'
+                          }}
+                        >
+                          📎 Lihat Bukti
+                        </button>
+                      )}
                     </td>
                     <td style={styles.td}>{t.category}{t.dicatatOleh === 'owner' && <span style={{ marginLeft: 6, fontSize: 10, fontWeight: 800, color: '#92400e', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 999, padding: '1px 7px' }}>dicatat owner</span>}</td>
                     <td style={{...styles.td, fontSize: 11, maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'}}>
@@ -867,11 +882,7 @@ const TransactionHistory = () => {
                         {/* 🔥 BARU (modul kwitansi): tombol cetak kwitansi di
                             tiap pemasukan riil (bukan komitmen cicilan, bukan
                             setor kas). */}
-                        {t.type === 'Pemasukan' && t.method !== 'Cicilan' && (
-                          <button onClick={() => cetakKwitansiLog(t)} style={styles.btnIcon('#7c3aed')} title={t.noKwitansi ? `Cetak kwitansi ${t.noKwitansi}` : 'Buatkan nomor & cetak kwitansi'}>
-                            <Printer size={13} />
-                          </button>
-                        )}
+
                         {t.type !== 'Transfer' && (
                           <button onClick={() => openEdit(t)} style={styles.btnIcon('#f59e0b')} title="Edit">
                             <Edit3 size={13} />
@@ -992,7 +1003,46 @@ const TransactionHistory = () => {
           to { opacity: 1; transform: translateY(0); }
         }
       `}</style>
-    </div>
+    
+      {/* MODAL PREVIEW BUKTI TRANSFER */}
+      {previewBukti && (
+        <div
+          onClick={() => setPreviewBukti(null)}
+          style={{
+            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+            background: 'rgba(15, 23, 42, 0.75)', zIndex: 9999,
+            display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20
+          }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{
+              background: 'white', borderRadius: 16, padding: 20, maxWidth: 500, width: '100%',
+              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.3)', textAlign: 'center'
+            }}
+          >
+            <h4 style={{ margin: '0 0 12px 0', color: '#1e293b', fontSize: 15 }}>📎 Foto Bukti Transfer</h4>
+            <div style={{ maxHeight: '70vh', overflowY: 'auto', marginBottom: 14 }}>
+              <img
+                src={previewBukti}
+                alt="Bukti Transfer"
+                style={{ width: '100%', height: 'auto', borderRadius: 10, border: '1px solid #e2e8f0' }}
+              />
+            </div>
+            <button
+              type="button"
+              onClick={() => setPreviewBukti(null)}
+              style={{
+                padding: '8px 24px', background: '#1e293b', color: 'white',
+                border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer'
+              }}
+            >
+              Tutup Preview
+            </button>
+          </div>
+        </div>
+      )}
+</div>
   );
 };
 

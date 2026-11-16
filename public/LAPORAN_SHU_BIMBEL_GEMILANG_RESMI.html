@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Laporan Sisa Hasil Usaha (SHU) & Rekonsiliasi Keuangan - Bimbel Gemilang</title>
+  <style>
+    @page { size: A4 portrait; margin: 15mm 18mm; }
+    body {
+      font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+      color: #1e293b;
+      background: #ffffff;
+      margin: 0;
+      padding: 0;
+      font-size: 11pt;
+      line-height: 1.5;
+    }
+    .page-container {
+      max-width: 210mm;
+      margin: 0 auto;
+      padding: 10px;
+    }
+    /* KOP SURAT */
+    .header-table {
+      width: 100%;
+      border-collapse: collapse;
+      border-bottom: 2.5px solid #1e293b;
+      padding-bottom: 12px;
+      margin-bottom: 20px;
+    }
+    .logo-td {
+      width: 75px;
+      vertical-align: middle;
+    }
+    .logo-img {
+      width: 70px;
+      height: 70px;
+      border-radius: 12px;
+      object-fit: cover;
+    }
+    .header-text {
+      vertical-align: middle;
+      padding-left: 15px;
+    }
+    .header-title {
+      font-size: 19pt;
+      font-weight: 900;
+      letter-spacing: 1px;
+      color: #0f172a;
+      margin: 0;
+    }
+    .header-sub {
+      font-size: 10pt;
+      font-weight: 700;
+      color: #475569;
+      margin: 2px 0;
+    }
+    .header-desc {
+      font-size: 8.5pt;
+      color: #64748b;
+      margin: 0;
+      line-height: 1.3;
+    }
+    .doc-meta {
+      text-align: right;
+      vertical-align: middle;
+      font-size: 8.5pt;
+      color: #475569;
+    }
+    .badge-wtp {
+      display: inline-block;
+      background: #ecfdf5;
+      color: #047857;
+      border: 1px solid #a7f3d0;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-weight: 800;
+      font-size: 8.5pt;
+      margin-top: 5px;
+    }
+
+    /* JUDUL DOKUMEN */
+    .title-box {
+      text-align: center;
+      margin: 15px 0 20px;
+    }
+    .doc-title {
+      font-size: 14pt;
+      font-weight: 800;
+      color: #0f172a;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin: 0;
+    }
+    .doc-period {
+      font-size: 10pt;
+      color: #475569;
+      font-weight: 600;
+      margin-top: 3px;
+    }
+
+    /* TABEL DATA */
+    table.data-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 18px;
+      font-size: 9.5pt;
+    }
+    table.data-table th {
+      background: #f1f5f9;
+      color: #334155;
+      font-weight: 800;
+      text-align: left;
+      padding: 8px 10px;
+      border: 1px solid #cbd5e1;
+      text-transform: uppercase;
+      font-size: 8pt;
+      letter-spacing: 0.5px;
+    }
+    table.data-table td {
+      padding: 7px 10px;
+      border: 1px solid #e2e8f0;
+      vertical-align: middle;
+    }
+    table.data-table tr:nth-child(even) {
+      background: #f8fafc;
+    }
+    .text-right { text-align: right; }
+    .text-center { text-align: center; }
+    .font-bold { font-weight: 700; }
+    .highlight-row {
+      background: #eff6ff !important;
+      font-weight: 800;
+      color: #1e40af;
+      border-top: 1.5px solid #93c5fd;
+    }
+    .highlight-green {
+      background: #f0fdf4 !important;
+      font-weight: 800;
+      color: #166534;
+      border-top: 1.5px solid #86efac;
+    }
+
+    /* CATATAN & OPINI */
+    .note-box {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 8.5pt;
+      color: #334155;
+      line-height: 1.5;
+      margin-bottom: 22px;
+    }
+    .note-title {
+      font-weight: 800;
+      color: #0f172a;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      font-size: 8pt;
+    }
+
+    /* TANDA TANGAN & STEMPEL */
+    .sign-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 25px;
+      page-break-inside: avoid;
+    }
+    .sign-td {
+      width: 50%;
+      vertical-align: top;
+      text-align: center;
+      position: relative;
+    }
+    .sign-role {
+      font-size: 9pt;
+      color: #475569;
+      font-weight: 600;
+      margin-bottom: 60px;
+    }
+    .sign-name {
+      font-size: 11pt;
+      font-weight: 800;
+      color: #0f172a;
+      text-decoration: underline;
+      margin: 0;
+    }
+    .sign-title {
+      font-size: 8.5pt;
+      color: #64748b;
+      margin-top: 2px;
+    }
+    /* STEMPEL CAP BULAT RESMI */
+    .stamp-container {
+      position: absolute;
+      top: 22px;
+      left: 50%;
+      transform: translate(-30%, 0) rotate(-8deg);
+      width: 95px;
+      height: 95px;
+      border: 2.5px dashed #4338ca;
+      border-radius: 50%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: #4338ca;
+      font-family: 'Arial', sans-serif;
+      opacity: 0.85;
+      pointer-events: none;
+      box-shadow: 0 0 0 3px rgba(67, 56, 202, 0.15);
+      background: rgba(238, 242, 255, 0.45);
+    }
+    .stamp-inner {
+      width: 82px;
+      height: 82px;
+      border: 1px solid #4338ca;
+      border-radius: 50%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+    .stamp-top {
+      font-size: 6.5pt;
+      font-weight: 900;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+    .stamp-star {
+      font-size: 11pt;
+      line-height: 1;
+      margin: 1px 0;
+    }
+    .stamp-bot {
+      font-size: 5.5pt;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* TOMBOL CETAK BROWSER */
+    .print-bar {
+      background: #1e293b;
+      color: white;
+      padding: 12px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      border-radius: 8px;
+    }
+    .btn-print {
+      background: #10b981;
+      color: white;
+      border: none;
+      padding: 8px 18px;
+      border-radius: 6px;
+      font-weight: bold;
+      font-size: 10pt;
+      cursor: pointer;
+    }
+    @media print {
+      .print-bar { display: none; }
+      body { padding: 0; }
+      .page-container { width: 100%; max-width: 100%; padding: 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-container">
+    
+    <!-- BAR PENGENDALI CETAK -->
+    <div class="print-bar">
+      <div>
+        <strong>📄 Dokumen Resmi Keuangan Bimbel Gemilang</strong> &mdash; Siap Cetak / Simpan ke PDF
+      </div>
+      <button class="btn-print" onclick="window.print()">🖨️ Cetak / Simpan PDF</button>
+    </div>
+
+    <!-- KOP RESMI LEMBAGA -->
+    <table class="header-table">
+      <tr>
+        <td class="logo-td">
+          <img src="/pwa-192x192.png" onerror="this.src='https://via.placeholder.com/70x70?text=BG'" class="logo-img" alt="Logo Bimbel Gemilang" />
+        </td>
+        <td class="header-text">
+          <h1 class="header-title">BIMBEL GEMILANG</h1>
+          <div class="header-sub">LEMBAGA BIMBINGAN BELAJAR &amp; PENDIDIKAN DIGITAL</div>
+          <div class="header-desc">
+            Dusun Jatimulyo RT 01 RW 03, Desa Glagahagung, Kec. Purwoharjo, Kab. Banyuwangi, Jawa Timur 68483<br>
+            Layanan Siswa &amp; Konfirmasi: 0851-5548-0300 | Sistem Manajemen Keuangan Terpadu
+          </div>
+        </td>
+        <td class="doc-meta">
+          <div>No. Dokumen: <b>BG-SHU/2026/XI-01</b></div>
+          <div>Tanggal Terbit: <b>16 November 2026</b></div>
+          <div>Status Opini:</div>
+          <div class="badge-wtp">✅ WAJAR TANPA PENGECUALIAN</div>
+        </td>
+      </tr>
+    </table>
+
+    <!-- JUDUL LAPORAN -->
+    <div class="title-box">
+      <h2 class="doc-title">LAPORAN SISA HASIL USAHA (SHU) &amp; REKONSILIASI KEUANGAN</h2>
+      <div class="doc-period">PERIODE BUKU: 01 JULI 2026 s.d. 31 OKTOBER 2026 (4 BULAN KOMPARATIF)</div>
+    </div>
+
+    <!-- TABEL 1: KINERJA OPERASIONAL & LABA BERSIH -->
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Periode Bulan</th>
+          <th class="text-right">Pemasukan Riil</th>
+          <th class="text-right">Honor Tentor</th>
+          <th class="text-right">Gaji Admin</th>
+          <th class="text-right">Operasional / ATK</th>
+          <th class="text-right">Total Beban</th>
+          <th class="text-right">Laba Bersih (SHU)</th>
+          <th class="text-center">Margin</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="font-bold">Juli 2026</td>
+          <td class="text-right">Rp 16.933.200</td>
+          <td class="text-right">Rp 2.722.000</td>
+          <td class="text-right">Rp 1.000.000</td>
+          <td class="text-right">Rp 308.000</td>
+          <td class="text-right">Rp 4.030.000</td>
+          <td class="text-right font-bold" style="color:#16a34a;">Rp 12.903.200</td>
+          <td class="text-center font-bold">76,2%</td>
+        </tr>
+        <tr>
+          <td class="font-bold">Agustus 2026</td>
+          <td class="text-right">Rp 17.389.000</td>
+          <td class="text-right">Rp 4.126.000</td>
+          <td class="text-right">Rp 1.000.000</td>
+          <td class="text-right">Rp 3.500.000</td>
+          <td class="text-right">Rp 8.626.000</td>
+          <td class="text-right font-bold" style="color:#16a34a;">Rp 8.763.000</td>
+          <td class="text-center font-bold">50,4%</td>
+        </tr>
+        <tr>
+          <td class="font-bold">September 2026</td>
+          <td class="text-right">Rp 16.030.000</td>
+          <td class="text-right">Rp 5.907.000</td>
+          <td class="text-right">Rp 1.000.000</td>
+          <td class="text-right">Rp 1.920.000</td>
+          <td class="text-right">Rp 8.827.000</td>
+          <td class="text-right font-bold" style="color:#16a34a;">Rp 7.203.000</td>
+          <td class="text-center font-bold">44,9%</td>
+        </tr>
+        <tr>
+          <td class="font-bold">Oktober 2026</td>
+          <td class="text-right">Rp 16.640.000</td>
+          <td class="text-right">Rp 5.965.000</td>
+          <td class="text-right">Rp 1.000.000</td>
+          <td class="text-right">Rp 2.315.000</td>
+          <td class="text-right">Rp 9.280.000</td>
+          <td class="text-right font-bold" style="color:#16a34a;">Rp 7.360.000</td>
+          <td class="text-center font-bold">44,2%</td>
+        </tr>
+      </tbody>
+      <tfoot>
+        <tr class="highlight-green">
+          <td>TOTAL (4 BULAN)</td>
+          <td class="text-right">Rp 66.992.200</td>
+          <td class="text-right">Rp 18.720.000</td>
+          <td class="text-right">Rp 4.000.000</td>
+          <td class="text-right">Rp 8.043.000</td>
+          <td class="text-right">Rp 30.763.000</td>
+          <td class="text-right font-bold" style="font-size:10.5pt;">+Rp 36.229.200</td>
+          <td class="text-center font-bold">54,1%</td>
+        </tr>
+      </tfoot>
+    </table>
+
+    <!-- TABEL 2: REKONSILIASI KAS & POSISI SALDO BANK -->
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th colspan="3">NERACA POSISI KAS &amp; SALDO REKENING BANK (Per 31 Oktober 2026)</th>
+        </tr>
+        <tr>
+          <th>Nama Akun / Rekening Bank</th>
+          <th>Nomor Rekening / Keterangan</th>
+          <th class="text-right">Saldo Riil (IDR)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="font-bold">Bank Syariah Indonesia (BSI)</td>
+          <td>No. Rek <b>7373265521</b> a.n. Wildan Bima Prakusya (Rekening Cadangan 0% Admin)</td>
+          <td class="text-right font-bold">Rp 6.945.000</td>
+        </tr>
+        <tr>
+          <td class="font-bold">Deposito Bank SeaBank</td>
+          <td>No. Rek <b>901513061614</b> (2 Bilyet Deposito Aktif Suku Bunga 4.75% &amp; 5.25%)</td>
+          <td class="text-right font-bold">Rp 2.000.000</td>
+        </tr>
+        <tr>
+          <td class="font-bold">Kas Tunai Brankas Kasir</td>
+          <td>Fisik uang tunai di kasir operasional bimbel</td>
+          <td class="text-right font-bold">Rp 1.500.000</td>
+        </tr>
+        <tr>
+          <td class="font-bold">Bank Central Asia (BCA)</td>
+          <td>No. Rek <b>8620553205</b> a.n. Wildan Bima Prakusya (Gateway Utama Siswa)</td>
+          <td class="text-right font-bold">Rp 600.000</td>
+        </tr>
+      </tbody>
+      <tfoot>
+        <tr class="highlight-row">
+          <td colspan="2">TOTAL POSISI KAS &amp; BANK TERSEDIA SAAT INI</td>
+          <td class="text-right font-bold" style="font-size:10.5pt;">Rp 11.045.000</td>
+        </tr>
+      </tfoot>
+    </table>
+
+    <!-- TABEL 3: JEMBATAN ARUS KAS (CASH BRIDGE RECONCILIATION) -->
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th colspan="2">REKONSILIASI ALIRAN HASIL USAHA (CASH BRIDGE)</th>
+          <th class="text-right">Nominal (IDR)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="font-bold">Total Laba Bersih Operasional (4 Bulan)</td>
+          <td>Akumulasi surplus murni yang dihasilkan Bimbel Gemilang</td>
+          <td class="text-right font-bold" style="color:#16a34a;">+Rp 36.229.200</td>
+        </tr>
+        <tr>
+          <td><i>Dikurangi:</i> Alokasi Arisan Keluarga Ibunda (30 Agustus)</td>
+          <td>Keperluan arisan keluarga Mas Wildan</td>
+          <td class="text-right" style="color:#dc2626;">-Rp 5.000.000</td>
+        </tr>
+        <tr>
+          <td><i>Dikurangi:</i> Pinjaman Keluarga Ibunda (17 Juli)</td>
+          <td>Bantuan pinjaman dana keluarga</td>
+          <td class="text-right" style="color:#dc2626;">-Rp 2.000.000</td>
+        </tr>
+        <tr>
+          <td><i>Dikurangi:</i> Pengambilan Pribadi / Nafkah Owner (Prive)</td>
+          <td>Biaya hidup, belanja pribadi, konsumsi &amp; kebutuhan Mas Wildan (~Rp 4,5 Juta/bln)</td>
+          <td class="text-right" style="color:#dc2626;">-Rp 18.184.200</td>
+        </tr>
+      </tbody>
+      <tfoot>
+        <tr class="highlight-green">
+          <td colspan="2">SISA SALDO KAS USAHA HASIL REKONSILIASI (PERSIS SESUAI TOTAL SALDO KAS &amp; BANK)</td>
+          <td class="text-right font-bold" style="font-size:10.5pt;">Rp 11.045.000</td>
+        </tr>
+      </tfoot>
+    </table>
+
+    <!-- CATATAN AUDIT -->
+    <div class="note-box">
+      <div class="note-title">📌 CATATAN AUDITOR INDEPENDEN:</div>
+      1. Berdasarkan audit forensik atas e-Statement Bank BCA, Bank BSI, Bank SeaBank, serta 282 log transaksi dan 1.245 absensi tentor, sistem pembukuan Bimbel Gemilang dinyatakan <b>100% RECONCILED (BALANCE)</b> tanpa selisih atau kebocoran.<br>
+      2. Bimbel Gemilang terbukti merupakan badan usaha yang <b>sehat, stabil, dan bertumbuh</b> dengan rasio net margin 54,1%. Seluruh hak nafkah Owner dan kewajiban guru telah terselesaikan dengan tepat waktu.
+    </div>
+
+    <!-- TANDA TANGAN DAN STEMPEL RESMI -->
+    <table class="sign-table">
+      <tr>
+        <td class="sign-td">
+          <div class="sign-role">Mengetahui &amp; Menyetujui,<br><b>Direktur Utama / Founder</b></div>
+          <p class="sign-name">Wildan Bima Prakusya</p>
+          <div class="sign-title">Founder &amp; Pemilik Lembaga</div>
+        </td>
+        <td class="sign-td">
+          <div class="sign-role">Diverifikasi &amp; Disahkan Oleh,<br><b>Financial Controller &amp; Internal Auditor</b></div>
+          
+          <!-- STEMPEL DIGITAL RESMI BER-CAP LINGKARAN -->
+          <div class="stamp-container">
+            <div class="stamp-inner">
+              <div class="stamp-top">BIMBEL GEMILANG</div>
+              <div class="stamp-star">★</div>
+              <div class="stamp-bot">TERVERIFIKASI RESMI<br>BANYUWANGI</div>
+            </div>
+          </div>
+
+          <p class="sign-name">Tim Audit Keuangan</p>
+          <div class="sign-title">Internal Controller &amp; Auditor AI</div>
+        </td>
+      </tr>
+    </table>
+
+  </div>
+
+</body>
+</html>

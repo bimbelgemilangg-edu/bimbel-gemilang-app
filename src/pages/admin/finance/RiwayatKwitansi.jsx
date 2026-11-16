@@ -47,6 +47,7 @@ const RiwayatKwitansi = () => {
   const [loading, setLoading] = useState(true);
   const [prosesNomorId, setProsesNomorId] = useState('');
   const [prosesMassal, setProsesMassal] = useState(false);
+  const [previewBukti, setPreviewBukti] = useState(null);
 
   // Query rentang tanggal satu field -- tidak butuh composite index.
   useEffect(() => {
@@ -170,14 +171,7 @@ const RiwayatKwitansi = () => {
             }}
             style={styles.monthInput}
           />
-          <button
-            onClick={() => cetakRingkasanKwitansi(logs, labelBulan(bulan))}
-            disabled={logs.length === 0}
-            style={styles.btnCetakDaftar(logs.length === 0)}
-            title="Cetak rekap semua kwitansi bulan ini (satu halaman daftar bernomor)"
-          >
-            <ListOrdered size={15} /> Cetak Daftar {labelBulan(bulan)}
-          </button>
+          {/* Tombol cetak daftar dinonaktifkan di area admin */}
         </div>
       </div>
 
@@ -188,8 +182,8 @@ const RiwayatKwitansi = () => {
           <b style={{ fontSize: 16, color: '#1e293b' }}>{logs.length}</b>
         </div>
         <div style={styles.statItem}>
-          <span style={styles.statLabel}>Total Nominal</span>
-          <b style={{ fontSize: 16, color: '#7c3aed' }}>{rp(total)}</b>
+          <span style={styles.statLabel}>Status Pembukuan</span>
+          <b style={{ fontSize: 13, color: "#10b981" }}>✅ Terverifikasi Kasir</b>
         </div>
         <div style={styles.statItem}>
           <span style={styles.statLabel}>Belum Bernomor</span>
@@ -263,9 +257,22 @@ const RiwayatKwitansi = () => {
                       {l.refTransfer && <div style={{ fontSize: 9, color: '#1d4ed8', marginTop: 2 }}>ref: {l.refTransfer}</div>}
                     </td>
                     <td style={{ ...styles.td, textAlign: 'center' }}>
-                      <button onClick={() => cetakSatu(l)} disabled={prosesNomorId === l.id} style={styles.btnCetak} title="Cetak kwitansi">
-                        <Printer size={13} /> Cetak
-                      </button>
+                      {l.buktiUrl ? (
+                        <button
+                          type="button"
+                          onClick={() => setPreviewBukti(l.buktiUrl)}
+                          style={{
+                            display: 'inline-flex', alignItems: 'center', gap: 4,
+                            padding: '5px 10px', borderRadius: 8, border: '1px solid #bfdbfe',
+                            background: '#eff6ff', color: '#1d4ed8', fontWeight: 700, fontSize: 11, cursor: 'pointer'
+                          }}
+                          title="Lihat foto bukti transfer"
+                        >
+                          📎 Lihat Bukti
+                        </button>
+                      ) : (
+                        <span style={{ fontSize: 11, color: '#64748b', fontWeight: 600 }}>✅ Tercatat</span>
+                      )}
                     </td>
                   </tr>
                 ))}
@@ -275,7 +282,7 @@ const RiwayatKwitansi = () => {
                   <td colSpan={4} style={{ ...styles.td, textAlign: 'right', fontWeight: 800, color: '#475569' }}>
                     TOTAL {logs.length} KWITANSI — {labelBulan(bulan)}
                   </td>
-                  <td style={{ ...styles.td, textAlign: 'right', fontWeight: 800, color: '#7c3aed' }}>{rp(total)}</td>
+                  <td style={{ ...styles.td, textAlign: 'right', fontWeight: 800, color: '#7c3aed' }}>-</td>
                   <td colSpan={2}></td>
                 </tr>
               </tfoot>
@@ -285,7 +292,46 @@ const RiwayatKwitansi = () => {
       </div>
 
       <style>{`@keyframes spin{to{transform:rotate(360deg)}} .spin{animation:spin 1s linear infinite}`}</style>
-    </div>
+    
+      {/* MODAL PREVIEW BUKTI TRANSFER */}
+      {previewBukti && (
+        <div
+          onClick={() => setPreviewBukti(null)}
+          style={{
+            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+            background: 'rgba(15, 23, 42, 0.75)', zIndex: 9999,
+            display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20
+          }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{
+              background: 'white', borderRadius: 16, padding: 20, maxWidth: 500, width: '100%',
+              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.3)', textAlign: 'center'
+            }}
+          >
+            <h4 style={{ margin: '0 0 12px 0', color: '#1e293b', fontSize: 15 }}>📎 Foto Bukti Transfer</h4>
+            <div style={{ maxHeight: '70vh', overflowY: 'auto', marginBottom: 14 }}>
+              <img
+                src={previewBukti}
+                alt="Bukti Transfer"
+                style={{ width: '100%', height: 'auto', borderRadius: 10, border: '1px solid #e2e8f0' }}
+              />
+            </div>
+            <button
+              type="button"
+              onClick={() => setPreviewBukti(null)}
+              style={{
+                padding: '8px 24px', background: '#1e293b', color: 'white',
+                border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer'
+              }}
+            >
+              Tutup Preview
+            </button>
+          </div>
+        </div>
+      )}
+</div>
   );
 };
 

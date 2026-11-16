@@ -268,225 +268,109 @@ const FinanceDashboard = () => {
     <div>
       {/* HEADER */}
       <div style={styles.headerRow}>
-        <h2 style={styles.pageTitle}>📊 Pusat Kontrol Keuangan</h2>
-        <button onClick={() => setPrivacyMode(!privacyMode)} style={styles.privacyBtn(privacyMode)}>
-          {privacyMode ? <><Eye size={16} /> Tampilkan</> : <><EyeOff size={16} /> Sembunyikan</>}
-        </button>
+        <div>
+          <h2 style={styles.pageTitle}>📋 Pusat Operasional & Layanan Kasir Admin</h2>
+          <p style={{ margin: '4px 0 0', fontSize: 13, color: '#64748b' }}>
+            Pantau aktivitas pendaftaran, masa aktif paket siswa, dan administrasi kasir harian.
+          </p>
+        </div>
       </div>
 
-      {/* === SMART CARDS === */}
-      {/* 🔥 BARU (KUNCI AKSES ADMIN): kartu "Total Aset" (saldo tunai+bank
-          keseluruhan sejak awal) DIHAPUS dari dashboard admin -- cuma
-          boleh dilihat lewat Portal Owner. */}
-      <div style={{ background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1e40af', padding: '10px 14px', borderRadius: 10, marginBottom: 16, fontSize: 12, fontWeight: 600 }}>
-        🔒 Menampilkan statistik bulan berjalan saja. Saldo/aset keseluruhan hanya tersedia di Portal Owner.
+      {/* 🔒 BANNER KEBIJAKAN PRIVASI KEUANGAN OWNER */}
+      <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', color: '#334155', padding: '12px 16px', borderRadius: 12, marginBottom: 18, fontSize: 12.5, lineHeight: 1.6 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontWeight: 800, color: '#1e293b', marginBottom: 4 }}>
+          <ShieldCheck size={18} color=#2563eb />
+          Otoritas & Kebijakan Keuangan Bimbel Gemilang
+        </div>
+        <div>
+          Dashboard Admin difokuskan khusus untuk kelancaran layanan siswa, absensi, dan administrasi kasir.
+          Seluruh laporan laba-rugi, pembukuan keuangan besar, saldo mutasi bank, dan pencetakan dokumen resmi dikelola secara terpusat oleh <b>Owner di Portal Owner</b>.
+        </div>
       </div>
+
+      {/* === SMART OPERATIONAL CARDS (TANPA NOMINAL UANG) === */}
       <div style={styles.cardGrid}>
-        {/* 🔥 BARU (ANTI-BINGUNG): kartu pertama sekarang "UANG TUNAI DI
-            BRANKAS" = selisih tunai bulan berjalan (masuk tunai dikurang
-            keluar tunai). Sebelumnya kartu pertama adalah "Pemasukan Bulan
-            Ini (uang diterima)" yang menampilkan angka GABUNGAN tunai +
-            transfer (misal 16 juta) -- admin kaget karena uang fisik yang
-            bisa dihitung di brankas cuma porsi tunainya (misal 8,2 juta);
-            angka gabungan itu terbaca seolah-olah uang kas fisik. Sekarang
-            angka gabungan tetap ada tapi pindah ke catatan berlabel jelas
-            di bawah kartu, dan posisi uang riil (brankas & rekening) jadi
-            bintang utamanya. */}
+        {/* KARTU 1: AKTIVITAS TRANSAKSI BULAN INI */}
         <div style={styles.mediumCard('#f0fdf4', '#10b981')}>
-          <TrendingUp size={20} color="#10b981" />
-          <span style={styles.mediumLabel}>💵 Uang Tunai di Brankas (selisih bulan ini)</span>
-          <h2 style={{...styles.mediumValue, color: '#10b981'}}>
-            {methodStats ? rp(methodStats.Tunai.masuk - methodStats.Tunai.keluar - monthStats.setorKas) : rp(0)}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+            <span style={styles.mediumLabel}>📝 Transaksi Bulan Ini</span>
+            <TrendingUp size={20} color=#10b981 />
+          </div>
+          <h2 style={{ ...styles.mediumValue, color: '#10b981' }}>
+            {methodStats ? (methodStats.Tunai.nMasuk + methodStats.Transfer.nMasuk + methodStats.Tunai.nKeluar + methodStats.Transfer.nKeluar) : 0} <span style={{ fontSize: 14, fontWeight: 600 }}>Transaksi</span>
           </h2>
-          {methodStats && (
-            <div style={styles.cardSplit}>
-              <span>Masuk tunai: <b>{rp(methodStats.Tunai.masuk)}</b></span>
-              <span>Keluar tunai: <b>{rp(methodStats.Tunai.keluar)}</b></span>
-              {/* 🔥 BARU (modul setor kas): uang yang sudah disetor ke owner
-                  juga MENGURANGI brankas -- kalau tidak ditampilkan, admin
-                  bingung kenapa hitungan brankas tidak sama dengan
-                  masuk-keluar tunai. Setoran bukan pengeluaran (uangnya
-                  pindah ke kas owner), tapi fisik uangnya memang keluar
-                  dari brankas admin. */}
-              {monthStats.setorKas > 0 && <span>🔁 Sudah disetor ke owner: <b>{rp(monthStats.setorKas)}</b></span>}
-            </div>
-          )}
-          <span style={{display: 'block', fontSize: 10, color: '#047857', fontWeight: 700, marginTop: 6, lineHeight: 1.4}}>
-            Uang fisik yang bisa dihitung di brankas bulan ini -- uang transfer tidak termasuk (masuknya ke rekening).
-          </span>
-        </div>
-        {/* 🛡 18 Okt (kebijakan owner): plafon kas operasional admin. */}
-        <div style={styles.mediumCard(stPlafon.melebihi ? '#fef2f2' : '#f0fdf4', stPlafon.melebihi ? '#dc2626' : '#10b981')}>
-          <ShieldCheck size={20} color={stPlafon.melebihi ? '#dc2626' : '#10b981'} />
-          <span style={styles.mediumLabel}>🛡 Plafon Kas Admin (operasional)</span>
-          <h2 style={{...styles.mediumValue, color: stPlafon.melebihi ? '#dc2626' : '#10b981'}}>{rp(saldoBrankas)}</h2>
           <div style={styles.cardSplit}>
-            <span>Plafon: <b>{rp(stPlafon.plafon)}</b></span>
-            <span>Saldo awal: <b>{rp(settKeuangan?.saldoAwalKas || 0)}</b></span>
+            <span>Pemasukan: <b>{methodStats ? (methodStats.Tunai.nMasuk + methodStats.Transfer.nMasuk) : 0}x</b></span>
+            <span>Pengeluaran: <b>{methodStats ? (methodStats.Tunai.nKeluar + methodStats.Transfer.nKeluar) : 0}x</b></span>
           </div>
-          <span style={{display: 'block', fontSize: 10, color: stPlafon.melebihi ? '#991b1b' : '#047857', fontWeight: 700, marginTop: 6, lineHeight: 1.4}}>
-            {stPlafon.melebihi
-              ? `⚠ MELEBIHI PLAFON — wajib serah ${rp(stPlafon.wajibSerah)} ke owner (setor ke rekening bimbel atau brankas owner); catat sebagai Transfer di panel owner.`
-              : 'Aman di bawah plafon. Kelebihan kas wajib diserah ke owner (serah mingguan / akhir bulan).'}
+          <span style={{ display: 'block', fontSize: 10, color: '#047857', fontWeight: 700, marginTop: 6 }}>
+            Aktivitas pencatatan kasir bulan berjalan ({namaBulanIni()}).
           </span>
         </div>
 
-        {/* 🔥 BARU (ANTI-BINGUNG): kartu uang transfer dipisah dari brankas
-            biar admin tidak menjumlahkannya sebagai uang kas fisik. */}
-        <div style={styles.mediumCard('#eef2ff', '#6366f1')}>
-          <CreditCard size={20} color="#6366f1" />
-          <span style={styles.mediumLabel}>💳 Uang Transfer di Rekening (selisih bulan ini)</span>
-          <h2 style={{...styles.mediumValue, color: '#6366f1'}}>
-            {methodStats ? rp(methodStats.Transfer.masuk - methodStats.Transfer.keluar) : rp(0)}
-          </h2>
-          {methodStats && (
-            <div style={styles.cardSplit}>
-              <span>Masuk transfer: <b>{rp(methodStats.Transfer.masuk)}</b></span>
-              <span>Keluar transfer: <b>{rp(methodStats.Transfer.keluar)}</b></span>
-            </div>
-          )}
-          <span style={{display: 'block', fontSize: 10, color: '#4338ca', fontWeight: 700, marginTop: 6, lineHeight: 1.4}}>
-            Masuknya ke rekening bank, bukan ke brankas -- jadi sengaja dipisah dari kartu hijau.
-          </span>
-        </div>
-
-        {/* Pengeluaran Bulan Ini */}
-        <div style={styles.mediumCard('#fef2f2', '#ef4444')}>
-          <TrendingDown size={20} color="#ef4444" />
-          <span style={styles.mediumLabel}>Pengeluaran Bulan Ini</span>
-          <h2 style={{...styles.mediumValue, color: '#ef4444'}}>{rp(monthStats.pengeluaran)}</h2>
-          {/* 🔥 BARU: pecahan tunai vs transfer juga buat pengeluaran. */}
-          {methodStats && (
-            <div style={styles.cardSplit}>
-              <span>💵 Tunai: <b>{rp(methodStats.Tunai.keluar)}</b></span>
-              <span>💳 Transfer: <b>{rp(methodStats.Transfer.keluar)}</b></span>
-              {methodStats.Lainnya.keluar > 0 && <span>❔ Lainnya: <b>{rp(methodStats.Lainnya.keluar)}</b></span>}
-            </div>
-          )}
-        </div>
-
-        {/* Total Piutang */}
+        {/* KARTU 2: SISWA PERLU PERPANJANGAN */}
         <div style={styles.mediumCard('#fff7ed', '#f97316')}>
-          <AlertCircle size={20} color="#f97316" />
-          <span style={styles.mediumLabel}>Total Piutang</span>
-          <h2 style={{...styles.mediumValue, color: '#f97316'}}>{rp(totalPiutang)}</h2>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+            <span style={styles.mediumLabel}>⏰ Paket Segera Berakhir</span>
+            <Calendar size={20} color=#f97316 />
+          </div>
+          <h2 style={{ ...styles.mediumValue, color: '#f97316' }}>
+            {expiringStudents.length} <span style={{ fontSize: 14, fontWeight: 600 }}>Siswa</span>
+          </h2>
+          <div style={styles.cardSplit}>
+            <span>Jatuh tempo 7 hari ke depan</span>
+          </div>
+          <span style={{ display: 'block', fontSize: 10, color: '#c2410c', fontWeight: 700, marginTop: 6 }}>
+            {expiringStudents.length > 0 ? 'Segera hubungi wali murid via WhatsApp di daftar bawah.' : 'Semua paket siswa dalam status aman.'}
+          </span>
+        </div>
+
+        {/* KARTU 3: SISWA BARU MENUNGGU PEMBAYARAN */}
+        <div style={styles.mediumCard('#eff6ff', '#3b82f6')}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+            <span style={styles.mediumLabel}>📋 Pendaftaran Siswa Baru</span>
+            <Users size={20} color=#3b82f6 />
+          </div>
+          <h2 style={{ ...styles.mediumValue, color: '#3b82f6' }}>
+            {newStudents.length} <span style={{ fontSize: 14, fontWeight: 600 }}>Siswa</span>
+          </h2>
+          <div style={styles.cardSplit}>
+            <span>Perlu konfirmasi & kelengkapan paket</span>
+          </div>
+          <span style={{ display: 'block', fontSize: 10, color: '#1d4ed8', fontWeight: 700, marginTop: 6 }}>
+            {newStudents.length > 0 ? 'Ada siswa baru yang perlu diproses administrasinya.' : 'Seluruh data pendaftaran baru sudah lengkap.'}
+          </span>
+        </div>
+
+        {/* KARTU 4: STATUS BRANKAS KASIR */}
+        <div style={styles.mediumCard(stPlafon.melebihi ? '#fef2f2' : '#f8fafc', stPlafon.melebihi ? '#dc2626' : '#64748b')}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+            <span style={styles.mediumLabel}>🛡️ Status Kasir & Brankas</span>
+            <ShieldCheck size={20} color={stPlafon.melebihi ? '#dc2626' : '#10b981'} />
+          </div>
+          <h2 style={{ ...styles.mediumValue, color: stPlafon.melebihi ? '#dc2626' : '#1e293b', fontSize: 18 }}>
+            {stPlafon.melebihi ? '⚠️ Wajib Serah Kas' : '✅ Operasional Aman'}
+          </h2>
+          <div style={styles.cardSplit}>
+            <span>Setoran fisik kasir ke Owner: <b>Rutin Berkala</b></span>
+          </div>
+          <span style={{ display: 'block', fontSize: 10, color: stPlafon.melebihi ? '#991b1b' : '#64748b', fontWeight: 700, marginTop: 6 }}>
+            {stPlafon.melebihi ? 'Uang tunai kasir melebihi batas operasional, segera serahkan ke Owner.' : 'Selalu catat setiap uang masuk dan keluar secara disiplin.'}
+          </span>
         </div>
       </div>
 
-      {/* 🔥 BARU (ANTI-BINGUNG): total gabungan tetap ditampilkan tapi dgn
-          label eksplisit "gabungan tunai + transfer" plus peringatan bahwa
-          angka itu BUKAN uang fisik di brankas -- biar admin gak kaget
-          lagi saat menghitung uang kas manualmente. */}
-      <div style={{ background: '#fffbeb', border: '1px solid #fde68a', color: '#92400e', padding: '10px 14px', borderRadius: 10, marginBottom: 16, fontSize: 12, fontWeight: 600, lineHeight: 1.6 }}>
-        📥 Total uang masuk bulan ini (GABUNGAN tunai + transfer): <b>{rp(monthStats.pemasukan)}</b> -- angka gabungan ini BUKAN uang fisik di brankas; uang kas fisik cuma porsi tunai (kartu hijau di atas).
-        {methodStats && (methodStats.Lainnya.masuk > 0 || methodStats.Lainnya.keluar > 0) && (
-          <> ❔ Transaksi lama tanpa metode: masuk {rp(methodStats.Lainnya.masuk)} / keluar {rp(methodStats.Lainnya.keluar)} -- ikut total gabungan, belum masuk brankas/rekening.</>
-        )}
-        {monthStats.cicilan > 0 && (
-          <> 📋 Cicilan tercatat tapi belum diterima: {rp(monthStats.cicilan)} -- TIDAK termasuk total mana pun di atas.</>
-        )}
+      {/* 💡 PANDUAN PENTING UNTUK ADMIN */}
+      <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 12, padding: '12px 16px', marginBottom: 20 }}>
+        <h4 style={{ margin: '0 0 6px 0', fontSize: 13, fontWeight: 800, color: '#166534' }}>
+          💡 SOP Standar Kasir & Administrasi Bimbel Gemilang:
+        </h4>
+        <ul style={{ margin: 0, paddingLeft: 18, fontSize: 12, color: '#15803d', lineHeight: 1.6 }}>
+          <li><b>Pembayaran Transfer:</b> Admin <u>wajib menulis nama pemilik rekening pengirim</u> (sesuai m-banking pengirim) dan meng-upload foto bukti transfer.</li>
+          <li><b>Uang Tunai Kasir:</b> Seluruh uang tunai di brankas wajib diserahkan ke Owner secara berkala lewat serah terima fisik kasir.</li>
+          <li><b>Kerahasiaan Keuangan:</b> Segala bentuk pencetakan laporan keuangan, rekap total omzet, dan kwitansi resmi berada di bawah wewenang Owner.</li>
+        </ul>
       </div>
-
-      {/* === 🔥 BARU: PANEL RINCIAN UANG TUNAI vs TRANSFER BULAN INI ===
-          Ini inti perbaikannya: admin harus bisa lihat JELAS berapa uang
-          yang masuk/keluar LEWAT TUNAI dan LEWAT TRANSFER di bulan
-          berjalan -- sebelumnya dua-duanya cuma dicampur jadi satu angka
-          "Pemasukan Bulan Ini". Panel ini juga memisahkan "Cicilan"
-          (perpanjangan paket yang dibayar nyicil) karena uang itu BELUM
-          tentu sudah diterima -- kalau dicampur ke tunai/transfer,
-          admin bisa salah mengira kas-nya lebih besar dari kenyataan.
-          Data: finance_logs bulan berjalan saja (query sudah dikunci
-          per-bulan di atas), jadi konsisten dengan aturan "admin cuma
-          boleh lihat bulan berjalan". */}
-      {methodStats && (
-        <div style={styles.methodBox}>
-          <div style={styles.methodHeader}>
-            <DollarSign size={18} />
-            <strong>Rincian Uang Bulan Ini per Metode</strong>
-            <span style={styles.methodSub}>{namaBulanIni()}</span>
-          </div>
-          <div style={styles.methodGrid}>
-            {/* --- UANG TUNAI --- */}
-            <div style={styles.methodCard('#fffbeb', '#f59e0b')}>
-              <div style={styles.methodTitle}>
-                <span style={styles.methodIcon('#fef3c7')}>💵</span>
-                Uang Tunai
-              </div>
-              <div style={styles.methodRow}>
-                <span style={{color: '#64748b'}}>Masuk <small>({methodStats.Tunai.nMasuk}x)</small></span>
-                <b style={{color: '#10b981'}}>+ {rp(methodStats.Tunai.masuk)}</b>
-              </div>
-              <div style={styles.methodRow}>
-                <span style={{color: '#64748b'}}>Keluar <small>({methodStats.Tunai.nKeluar}x)</small></span>
-                <b style={{color: '#ef4444'}}>- {rp(methodStats.Tunai.keluar)}</b>
-              </div>
-              <div style={styles.methodNet('#f59e0b')}>
-                Selisih (kas di brankas): <b>{rp(methodStats.Tunai.masuk - methodStats.Tunai.keluar)}</b>
-              </div>
-            </div>
-
-            {/* --- TRANSFER --- */}
-            <div style={styles.methodCard('#eef2ff', '#6366f1')}>
-              <div style={styles.methodTitle}>
-                <span style={styles.methodIcon('#e0e7ff')}>💳</span>
-                Transfer
-              </div>
-              <div style={styles.methodRow}>
-                <span style={{color: '#64748b'}}>Masuk <small>({methodStats.Transfer.nMasuk}x)</small></span>
-                <b style={{color: '#10b981'}}>+ {rp(methodStats.Transfer.masuk)}</b>
-              </div>
-              <div style={styles.methodRow}>
-                <span style={{color: '#64748b'}}>Keluar <small>({methodStats.Transfer.nKeluar}x)</small></span>
-                <b style={{color: '#ef4444'}}>- {rp(methodStats.Transfer.keluar)}</b>
-              </div>
-              <div style={styles.methodNet('#6366f1')}>
-                Selisih (di rekening): <b>{rp(methodStats.Transfer.masuk - methodStats.Transfer.keluar)}</b>
-              </div>
-            </div>
-
-            {/* --- CICILAN (kalau ada) ---
-                Cuma dirender kalau bulan ini memang ada transaksi
-                cicilan, biar panel gak penuh kartu kosong. */}
-            {(methodStats.Cicilan.masuk > 0 || methodStats.Cicilan.nMasuk > 0) && (
-              <div style={styles.methodCard('#f0fdfa', '#14b8a6')}>
-                <div style={styles.methodTitle}>
-                  <span style={styles.methodIcon('#ccfbf1')}>📋</span>
-                  Cicilan
-                  <span style={styles.methodBadgePending}>belum tentu diterima</span>
-                </div>
-                <div style={styles.methodRow}>
-                  <span style={{color: '#64748b'}}>Tercatat <small>({methodStats.Cicilan.nMasuk}x)</small></span>
-                  <b style={{color: '#0f766e'}}>{rp(methodStats.Cicilan.masuk)}</b>
-                </div>
-                <div style={{fontSize: 10, color: '#94a3b8', marginTop: 4, lineHeight: 1.4}}>
-                  Perpanjangan paket jalur cicilan -- uang baru dihitung
-                  masuk saat tiap cicilannya dibayar (metode Tunai/Transfer).
-                </div>
-              </div>
-            )}
-
-            {/* --- LAINNYA (data lama tanpa metode) ---
-                Penjaga: transaksi lawas yang field method-nya kosong
-                tetap kelihatan di sini, gak hilang dari rincian. */}
-            {(methodStats.Lainnya.masuk > 0 || methodStats.Lainnya.keluar > 0) && (
-              <div style={styles.methodCard('#f8fafc', '#94a3b8')}>
-                <div style={styles.methodTitle}>
-                  <span style={styles.methodIcon('#f1f5f9')}>❔</span>
-                  Tanpa Metode (data lama)
-                </div>
-                <div style={styles.methodRow}>
-                  <span style={{color: '#64748b'}}>Masuk</span>
-                  <b style={{color: '#10b981'}}>+ {rp(methodStats.Lainnya.masuk)}</b>
-                </div>
-                <div style={styles.methodRow}>
-                  <span style={{color: '#64748b'}}>Keluar</span>
-                  <b style={{color: '#ef4444'}}>- {rp(methodStats.Lainnya.keluar)}</b>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
 
       {/* === BARU: ALERT SISWA MASA AKTIF HABIS/AKAN HABIS === */}
       {expiringStudents.length > 0 && (
@@ -549,7 +433,7 @@ const FinanceDashboard = () => {
                   <span style={{fontSize: 10, color: '#94a3b8', marginLeft: 8}}>{s.studentId}</span>
                 </div>
                 <div style={{display: 'flex', alignItems: 'center', gap: 10}}>
-                  <span style={{fontWeight: 'bold', color: '#ef4444'}}>Rp {s.totalTagihan?.toLocaleString()}</span>
+                  <span style={{fontWeight: 'bold', color: '#ef4444', fontSize: 12}}>Menunggu Pembayaran</span>
                   <button 
                     onClick={() => navigate(`/admin/students/finance/${s.id}`)}
                     style={styles.alertBtn}
@@ -566,7 +450,7 @@ const FinanceDashboard = () => {
       {/* === TOP 5 TUNGGAKAN === */}
       {debtors.length > 0 && (
         <div style={styles.debtBox}>
-          <h3 style={styles.debtTitle}>⚠️ Top 5 Tunggakan Terbesar</h3>
+          <h3 style={styles.debtTitle}>📋 Siswa Dalam Jalur Cicilan</h3>
           <div style={styles.debtList}>
             {debtors.map((d, i) => (
               <div key={i} style={styles.debtItem}>
@@ -575,7 +459,7 @@ const FinanceDashboard = () => {
                   <strong>{d.nama}</strong>
                   <span style={{fontSize: 10, color: '#94a3b8', marginLeft: 6}}>{d.kelas}</span>
                 </div>
-                <span style={{fontWeight: 'bold', color: '#ef4444'}}>Rp {d.sisa.toLocaleString()}</span>
+                <span style={{fontWeight: 'bold', color: '#f59e0b', fontSize: 12}}>Cicilan Berjalan</span>
                 <button 
                   onClick={() => navigate(`/admin/students/finance/${d.id}`)}
                   style={styles.debtBtn}

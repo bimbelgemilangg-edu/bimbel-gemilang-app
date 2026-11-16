@@ -408,6 +408,10 @@ const AddStudent = () => {
 
     // 🔥 BARU (modul rekonsiliasi): pendaftaran via TRANSFER BANK wajib
     // meninggalkan jejak -- nomor referensi struk ATAU foto bukti.
+    if (formData.metodeBayar === 'Transfer' && !daftarRef.trim()) {
+      showAlert('⛔ Pendaftaran via Transfer WAJIB mengisi Nama Pemilik Rekening Pengirim (di m-banking) agar Owner bisa mencocokkan mutasi!');
+      return;
+    }
     if (formData.metodeBayar === 'Transfer' && !daftarRef.trim() && !daftarBukti) {
       showAlert('⛔ Pendaftaran transfer WAJIB diisi No. Referensi struk ATAU upload foto bukti transfer -- buat dicocokkan owner dengan mutasi rekening.');
       return;

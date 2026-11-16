@@ -273,11 +273,11 @@ const TransactionForm = () => {
             <div style={{ background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 10, padding: '12px 12px 2px', marginBottom: 14 }}>
               <div style={styles.inputGroup}>
                 <label style={styles.label}>
-                  {isPemasukan ? '🏦 Atas Nama Rekening Pengirim (di Mutasi Bank)' : '💳 Rekening Tujuan / Penerima Transfer'} <span style={{ color: '#ef4444' }}>*sangat penting</span>
+                  🏦 Nama Pemilik Rekening Pengirim (di Mutasi Bank) <span style={{ color: '#ef4444' }}>*WAJIB DIISI</span>
                 </label>
                 <input
                   type="text"
-                  placeholder={isPemasukan ? 'Contoh: BCA a.n. Ibu Astatik / Utji Istanti' : 'Contoh: BCA a.n. Rani Erlitasari (Honor Tentor)'}
+                  placeholder="Contoh: BCA a.n. Yoni Widyawati (Ibu Arya) / Bobby Lazuardi"
                   value={refTransfer}
                   onChange={e => setRefTransfer(e.target.value)}
                   style={styles.input}
@@ -304,13 +304,7 @@ const TransactionForm = () => {
             </div>
           )}
 
-          {/* 🔥 BARU (modul kwitansi): opsi terbit kwitansi bernomor. */}
-          {isPemasukan && (
-            <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12.5, fontWeight: 700, color: '#475569', marginBottom: 14, cursor: 'pointer' }}>
-              <input type="checkbox" checked={mintaKwitansi} onChange={e => setMintaKwitansi(e.target.checked)} />
-              🧾 Terbitkan kwitansi resmi bernomor (logo + terbilang) — bisa langsung dicetak
-            </label>
-          )}
+
 
           {/* Keterangan */}
           <div style={styles.inputGroup}>
