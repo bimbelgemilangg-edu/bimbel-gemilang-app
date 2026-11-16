@@ -2,9 +2,13 @@
 import React, { useState } from 'react';
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import { X, Download, Copy, Check, MessageSquare, FileText, Calendar, Filter } from 'lucide-react';
+import { 
+  X, Download, Copy, Check, MessageSquare, FileText, 
+  Printer, Sparkles, Filter, ExternalLink, Calendar 
+} from 'lucide-react';
 
 const DAYS_ID = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+const DAYS_ORDER = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
 const PLANETS = ["MERKURIUS", "VENUS", "BUMI", "MARS", "JUPITER"];
 
 export default function ModalDownloadJadwalBesar({
@@ -15,12 +19,22 @@ export default function ModalDownloadJadwalBesar({
   selectedDate = new Date(),
   onShowAlert
 }) {
-  const [formatTab, setFormatTab] = useState('pdf'); // 'pdf' | 'wa'
+  const [formatTab, setFormatTab] = useState('excel_print'); // 'excel_print' | 'pdf' | 'wa'
   const [selectedPlanet, setSelectedPlanet] = useState('Semua');
   const [selectedTeacher, setSelectedTeacher] = useState('Semua');
   const [copiedWA, setCopiedWA] = useState(false);
 
   if (!isOpen) return null;
+
+  // Helper foto tentor
+  const getTeacherPhoto = (item) => {
+    if (item.teacherFotoUrl) return item.teacherFotoUrl;
+    const t = availableTeachers.find(tch =>
+      (item.teacherId && (tch.id === item.teacherId || tch.guruId === item.teacherId)) ||
+      (item.teacherName && tch.nama && tch.nama.toLowerCase() === item.teacherName.toLowerCase())
+    );
+    return t?.fotoUrl || null;
+  };
 
   // Hitung rentang 7 hari (Senin - Minggu)
   const getWeekDates = (baseDate) => {
@@ -61,57 +75,358 @@ export default function ModalDownloadJadwalBesar({
     return true;
   });
 
-  // Urutkan jadwal: Hari (Senin -> Minggu) -> Jam Mulai -> Ruangan
-  const dayOrder = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
-  const sortedSchedules = [...filteredSchedules].sort((a, b) => {
-    const dA = new Date(a.dateStr);
-    const dB = new Date(b.dateStr);
-    const dayNameA = DAYS_ID[dA.getDay()];
-    const dayNameB = DAYS_ID[dB.getDay()];
-    const idxA = dayOrder.indexOf(dayNameA);
-    const idxB = dayOrder.indexOf(dayNameB);
+  // Deteksi kategori kelas sesuai Excel Bimbel Gemilang
+  const detectClassCategory = (item) => {
+    const text = `${item.title || ''} ${item.mapelName || ''} ${item.level || ''} ${(item.students || []).map(s => s.kelasSekolah || '').join(' ')}`.toUpperCase();
 
-    if (idxA !== idxB) return idxA - idxB;
-    if (a.start !== b.start) return a.start.localeCompare(b.start);
-    return a.planet.localeCompare(b.planet);
-  });
+    if (item.program === 'English Course' || text.includes('ENGLISH COURSE') || text.includes('ENGLISH')) {
+      return 'ENGLISH_COURSE';
+    }
+    if (text.includes('3 SD') || text.includes('KELAS 3') || text.includes('K3')) return 'SD_3';
+    if (text.includes('4 SD') || text.includes('KELAS 4') || text.includes('K4')) return 'SD_4';
+    if (text.includes('5 SD') || text.includes('KELAS 5') || text.includes('K5')) return 'SD_5';
+    if (text.includes('6 SD') || text.includes('KELAS 6') || text.includes('K6')) return 'SD_6';
+
+    if (text.includes('7 SMP') || text.includes('KELAS 7') || text.includes('K7')) return 'SMP_7';
+    if (text.includes('8 SMP') || text.includes('KELAS 8') || text.includes('K8')) return 'SMP_8';
+    if (text.includes('9 SMP') || text.includes('KELAS 9') || text.includes('9A') || text.includes('9B') || text.includes('K9')) return 'SMP_9';
+
+    if (text.includes('SMA') || item.level === 'SMA') return 'SMA_ALL';
+    if (item.level === 'SD') return 'SD_3';
+    if (item.level === 'SMP') return 'SMP_7';
+    return 'LAINNYA';
+  };
+
+  const SD_CONFIGS = [
+    { key: 'SD_3', title: 'KELAS 3 SD (60 MENIT)', headerBg: '#ea580c', defaultRoom: 'BUMI' },
+    { key: 'SD_4', title: 'KELAS 4 SD (60 MENIT)', headerBg: '#ea580c', defaultRoom: 'MARS' },
+    { key: 'SD_5', title: 'KELAS 5 SD (60 MENIT)', headerBg: '#ea580c', defaultRoom: 'JUPITER' },
+    { key: 'SD_6', title: 'KELAS 6 SD (90 MENIT)', headerBg: '#0284c7', defaultRoom: 'MERKURIUS' },
+  ];
+
+  const SMP_CONFIGS = [
+    { key: 'SMP_7', title: 'KELAS 7 SMP (90 MENIT)', headerBg: '#2563eb', defaultRoom: 'MERKURIUS' },
+    { key: 'SMP_8', title: 'KELAS 8 SMP (90 MENIT)', headerBg: '#2563eb', defaultRoom: 'VENUS' },
+    { key: 'SMP_9', title: 'KELAS 9 SMP (90 MENIT)', headerBg: '#2563eb', defaultRoom: 'BUMI' },
+  ];
+
+  const SMA_EC_CONFIGS = [
+    { key: 'SMA_ALL', title: 'KELAS 10, 11, 12 SMA (90 MENIT)', headerBg: '#7c3aed', defaultRoom: 'BUMI' },
+    { key: 'ENGLISH_COURSE', title: 'ENGLISH COURSE (KIDS & TEENS)', headerBg: '#0891b2', defaultRoom: 'VENUS' },
+  ];
+
+  // ============================================================
+  // GENERATE CETAK / PRINT MODE PERSIS SEPERTI EXCEL (GAMBAR 2)
+  // ============================================================
+  const handlePrintExcelLayout = () => {
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      if (onShowAlert) onShowAlert("⚠️ Izinkan pop-up browser untuk mencetak jadwal!");
+      return;
+    }
+
+    const generateTableHtml = (conf) => {
+      const classItems = filteredSchedules.filter(s => detectClassCategory(s) === conf.key);
+
+      let rowsHtml = '';
+      DAYS_ORDER.forEach(dayName => {
+        const targetDateStr = weekDates.find(dStr => {
+          const d = new Date(dStr);
+          return DAYS_ID[d.getDay()] === dayName;
+        });
+
+        const dayItems = classItems.filter(s => s.dateStr === targetDateStr);
+
+        if (dayItems.length === 0) {
+          rowsHtml += `
+            <tr>
+              <td class="td-day">${dayName}</td>
+              <td class="td-empty" colspan="3">— Kosong —</td>
+            </tr>
+          `;
+        } else {
+          dayItems.forEach((s, idx) => {
+            const photo = getTeacherPhoto(s);
+            const photoHtml = photo 
+              ? `<img src="${photo}" class="teacher-avatar" alt="${s.teacherName || ''}" />`
+              : `<div class="teacher-fallback">${(s.teacherName || 'G').charAt(0)}</div>`;
+
+            rowsHtml += `
+              <tr>
+                ${idx === 0 ? `<td class="td-day" rowspan="${dayItems.length}">${dayName}</td>` : ''}
+                <td class="td-time">⏰ ${s.start} - ${s.end}</td>
+                <td class="td-mapel">
+                  <div class="teacher-box">
+                    ${photoHtml}
+                    <div>
+                      <div class="mapel-title">${s.title || s.mapelName || '-'}</div>
+                      <div class="teacher-name">Tentor: <b>${s.teacherName || s.booker || '-'}</b> (${s.students?.length || 0} Siswa)</div>
+                    </div>
+                  </div>
+                </td>
+                <td class="td-room">🪐 ${s.planet}</td>
+              </tr>
+            `;
+          });
+        }
+      });
+
+      return `
+        <div class="class-card">
+          <div class="class-header" style="background: ${conf.headerBg};">
+            ${conf.title}
+          </div>
+          <table class="schedule-table">
+            <thead>
+              <tr>
+                <th style="width: 65px;">Hari</th>
+                <th style="width: 90px;">Jam</th>
+                <th>Mapel & Tentor</th>
+                <th style="width: 80px;">Ruang</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rowsHtml}
+            </tbody>
+          </table>
+        </div>
+      `;
+    };
+
+    const fullHtml = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Jadwal Pelajaran Reguler - Bimbel Gemilang</title>
+        <style>
+          @page { size: landscape; margin: 8mm; }
+          body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            color: #0f172a;
+            margin: 0;
+            padding: 10px;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+          .main-header {
+            text-align: center;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #0f172a;
+          }
+          .brand-title {
+            font-size: 18px;
+            font-weight: 900;
+            letter-spacing: 0.5px;
+            margin: 0;
+            color: #0f172a;
+          }
+          .period-subtitle {
+            font-size: 11px;
+            color: #475569;
+            margin-top: 3px;
+          }
+          .section-banner {
+            background: #dc2626 !important;
+            color: #ffffff !important;
+            padding: 6px 12px;
+            font-size: 12px;
+            font-weight: 900;
+            border-radius: 6px;
+            margin: 14px 0 8px;
+            letter-spacing: 0.5px;
+          }
+          .grid-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 12px;
+          }
+          .class-card {
+            flex: 1;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            overflow: hidden;
+            break-inside: avoid;
+          }
+          .class-header {
+            color: #ffffff !important;
+            padding: 6px 8px;
+            font-size: 11px;
+            font-weight: 900;
+            text-align: center;
+          }
+          .schedule-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 10px;
+          }
+          .schedule-table th {
+            background: #f1f5f9 !important;
+            padding: 4px 6px;
+            font-size: 9px;
+            font-weight: 800;
+            text-align: left;
+            border-bottom: 1px solid #cbd5e1;
+          }
+          .schedule-table td {
+            padding: 4px 6px;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: middle;
+          }
+          .td-day {
+            font-weight: 800;
+            background: #f8fafc !important;
+            border-right: 1px solid #e2e8f0;
+          }
+          .td-time {
+            font-weight: 700;
+            white-space: nowrap;
+            color: #2563eb;
+          }
+          .td-room {
+            font-weight: 800;
+            white-space: nowrap;
+            color: #4338ca;
+          }
+          .td-empty {
+            color: #94a3b8;
+            font-style: italic;
+          }
+          .teacher-box {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+          }
+          .teacher-avatar {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 1.5px solid #818cf8;
+            flex-shrink: 0;
+          }
+          .teacher-fallback {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: #6366f1 !important;
+            color: #ffffff !important;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: 800;
+            flex-shrink: 0;
+          }
+          .mapel-title {
+            font-weight: 800;
+            font-size: 10.5px;
+            color: #0f172a;
+          }
+          .teacher-name {
+            font-size: 9px;
+            color: #64748b;
+          }
+          .footer-note {
+            margin-top: 14px;
+            padding-top: 6px;
+            border-top: 1px dashed #cbd5e1;
+            font-size: 9px;
+            color: #64748b;
+            display: flex;
+            justifyContent: space-between;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="main-header">
+          <h1 class="brand-title">BIMBEL GEMILANG — JADWAL PELAJARAN REGULER</h1>
+          <div class="period-subtitle">Periode: ${startDateFormatted} s/d ${endDateFormatted} · Arsip Operasional Resmi</div>
+        </div>
+
+        <!-- SECTION SD -->
+        <div class="section-banner">🔴 JADWAL PELAJARAN SD (KELAS 3, 4, 5, 6)</div>
+        <div class="grid-row">
+          ${SD_CONFIGS.map(c => generateTableHtml(c)).join('')}
+        </div>
+
+        <!-- SECTION SMP -->
+        <div class="section-banner">🔴 JADWAL PELAJARAN SMP (KELAS 7, 8, 9)</div>
+        <div class="grid-row">
+          ${SMP_CONFIGS.map(c => generateTableHtml(c)).join('')}
+        </div>
+
+        <!-- SECTION SMA & EC -->
+        <div class="section-banner">🔴 JADWAL PELAJARAN SMA & ENGLISH COURSE</div>
+        <div class="grid-row">
+          ${SMA_EC_CONFIGS.map(c => generateTableHtml(c)).join('')}
+        </div>
+
+        <div class="footer-note">
+          <span>Dicetak otomatis dari Sistem Bimbel Gemilang pada: ${new Date().toLocaleString('id-ID')}</span>
+          <span>Bimbel Gemilang — Membimbing Dengan Hati, Meraih Prestasi Tertinggi ✨</span>
+        </div>
+
+        <script>
+          window.onload = function() {
+            setTimeout(function() {
+              window.print();
+            }, 600);
+          };
+        </script>
+      </body>
+      </html>
+    `;
+
+    printWindow.document.write(fullHtml);
+    printWindow.document.close();
+  };
 
   // Generate Teks WhatsApp
   const generateWhatsAppText = () => {
-    let text = `📢 *JADWAL OPERASIONAL MENGAJAR BIMBEL GEMILANG*\n`;
+    let text = `📢 *JADWAL PELAJARAN REGULER BIMBEL GEMILANG*\n`;
     text += `📅 *Periode:* ${startDateFormatted} s/d ${endDateFormatted}\n`;
-    text += `🏢 *Total Sesi:* ${sortedSchedules.length} Sesi Terjadwal\n`;
     text += `========================================\n\n`;
 
-    if (sortedSchedules.length === 0) {
-      text += `_Tidak ada jadwal aktif untuk periode dan filter yang dipilih._\n`;
-    } else {
-      let currentDay = '';
-      sortedSchedules.forEach(s => {
-        const d = new Date(s.dateStr);
-        const hari = DAYS_ID[d.getDay()];
-        const tgl = `${d.getDate()}/${d.getMonth() + 1}`;
+    // Grouping SD
+    text += `🔴 *JADWAL SD (KELAS 3, 4, 5, 6)*\n`;
+    SD_CONFIGS.forEach(conf => {
+      const items = filteredSchedules.filter(s => detectClassCategory(s) === conf.key);
+      text += `\n📘 *${conf.title}*\n`;
+      if (items.length === 0) {
+        text += `   — Belum ada sesi dijadwalkan —\n`;
+      } else {
+        items.forEach(s => {
+          const d = new Date(s.dateStr);
+          const hari = DAYS_ID[d.getDay()];
+          text += `   • ${hari} (${s.start}-${s.end}) : *${s.title || s.mapelName}*\n`;
+          text += `     Tentor: ${s.teacherName || s.booker} -> 🪐 Ruang ${s.planet}\n`;
+        });
+      }
+    });
 
-        if (hari !== currentDay) {
-          currentDay = hari;
-          text += `🗓️ *${hari.toUpperCase()}, ${tgl}*\n`;
-          text += `----------------------------------------\n`;
-        }
+    // Grouping SMP
+    text += `\n========================================\n`;
+    text += `🔴 *JADWAL SMP (KELAS 7, 8, 9)*\n`;
+    SMP_CONFIGS.forEach(conf => {
+      const items = filteredSchedules.filter(s => detectClassCategory(s) === conf.key);
+      text += `\n📘 *${conf.title}*\n`;
+      if (items.length === 0) {
+        text += `   — Belum ada sesi dijadwalkan —\n`;
+      } else {
+        items.forEach(s => {
+          const d = new Date(s.dateStr);
+          const hari = DAYS_ID[d.getDay()];
+          text += `   • ${hari} (${s.start}-${s.end}) : *${s.title || s.mapelName}*\n`;
+          text += `     Tentor: ${s.teacherName || s.booker} -> 🪐 Ruang ${s.planet}\n`;
+        });
+      }
+    });
 
-        const studentList = (s.students || []).map(st => st.nama?.split(' ')[0] || st).join(', ');
-        const studentCount = s.students?.length || 0;
-
-        text += `⏰ *${s.start} - ${s.end}* | 🪐 *${s.planet}*\n`;
-        text += `   • *Mapel:* ${s.title || s.mapelName || '-'} (${s.level || s.program})\n`;
-        text += `   • *Tentor:* ${s.teacherName || s.booker || '-'}\n`;
-        text += `   • *Siswa (${studentCount}):* ${studentList || '-'}\n\n`;
-      });
-    }
-
-    text += `========================================\n`;
+    text += `\n========================================\n`;
     text += `📌 *SOP & CATATAN TENTOR:*\n`;
-    text += `1. Mohon hadir di Bimbel minimal 10 menit sebelum jam kelas dimulai.\n`;
-    text += `2. Wajib mengisi absensi tentor & siswa di aplikasi setelah sesi selesai.\n`;
+    text += `1. Mohon hadir 10 menit sebelum jam kelas dimulai.\n`;
+    text += `2. Isi absensi tentor & siswa di aplikasi setelah sesi berakhir.\n`;
     text += `3. Jika ada kendala ruangan atau proyektor, segera lapor Admin Operasional.\n`;
     text += `\n_Bimbel Gemilang — Semangat Mendidik Generasi Unggul_ ✨`;
 
@@ -123,87 +438,11 @@ export default function ModalDownloadJadwalBesar({
     navigator.clipboard.writeText(text).then(() => {
       setCopiedWA(true);
       setTimeout(() => setCopiedWA(false), 2500);
-      if (onShowAlert) onShowAlert("✅ Teks jadwal siap share berhasil disalin ke clipboard!");
+      if (onShowAlert) onShowAlert("✅ Teks jadwal WhatsApp berhasil disalin!");
     }).catch(err => {
-      console.error("Gagal menyalin:", err);
-      if (onShowAlert) onShowAlert("❌ Gagal menyalin teks ke clipboard");
+      console.error(err);
+      if (onShowAlert) onShowAlert("❌ Gagal menyalin teks");
     });
-  };
-
-  // Generate & Download PDF Master Timetable
-  const handleDownloadPDF = () => {
-    if (sortedSchedules.length === 0) {
-      if (onShowAlert) onShowAlert("⚠️ Tidak ada jadwal yang cocok untuk didownload!");
-      return;
-    }
-
-    const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
-    
-    // Header Dokumen
-    doc.setFontSize(16);
-    doc.setFont(undefined, 'bold');
-    doc.text('BIMBEL GEMILANG — MASTER JADWAL OPERASIONAL MINGGUAN', 14, 15);
-    
-    doc.setFontSize(10);
-    doc.setFont(undefined, 'normal');
-    doc.text(`Periode: ${startDateFormatted} s/d ${endDateFormatted}  |  Total: ${sortedSchedules.length} Sesi Terjadwal`, 14, 22);
-    if (selectedPlanet !== 'Semua' || selectedTeacher !== 'Semua') {
-      doc.text(`Filter: Ruangan [${selectedPlanet}], Guru [${selectedTeacher}]`, 14, 27);
-    }
-
-    // Rows Data
-    const rows = sortedSchedules.map(s => {
-      const d = new Date(s.dateStr);
-      const hari = DAYS_ID[d.getDay()];
-      const tgl = `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
-      const siswaNames = (s.students || []).map(st => st.nama).join(', ') || '-';
-      const jmlSiswa = String(s.students?.length || 0);
-
-      return [
-        `${hari}\n${tgl}`,
-        `${s.start} - ${s.end}`,
-        s.planet,
-        `${s.title || s.mapelName || '-'}\n(${s.level || s.program})`,
-        s.teacherName || s.booker || '-',
-        jmlSiswa,
-        siswaNames
-      ];
-    });
-
-    autoTable(doc, {
-      startY: selectedPlanet !== 'Semua' || selectedTeacher !== 'Semua' ? 31 : 26,
-      head: [['Hari & Tgl', 'Jam Sesi', 'Ruangan', 'Mata Pelajaran & Jenjang', 'Tentor / Pengajar', 'Jml', 'Daftar Siswa']],
-      body: rows,
-      styles: { fontSize: 8.5, cellPadding: 2.8, valign: 'middle' },
-      headStyles: { fillColor: [30, 41, 59], textColor: [255, 255, 255], fontStyle: 'bold' },
-      columnStyles: {
-        0: { cellWidth: 24, fontStyle: 'bold' },
-        1: { cellWidth: 24, halign: 'center' },
-        2: { cellWidth: 22, fontStyle: 'bold' },
-        3: { cellWidth: 45 },
-        4: { cellWidth: 38 },
-        5: { cellWidth: 14, halign: 'center' },
-        6: { cellWidth: 'auto' }
-      },
-      theme: 'grid',
-      alternateRowStyles: { fillColor: [248, 250, 252] }
-    });
-
-    const pageCount = doc.internal.getNumberOfPages();
-    for (let i = 1; i <= pageCount; i++) {
-      doc.setPage(i);
-      doc.setFontSize(8);
-      doc.setTextColor(150);
-      doc.text(
-        `Dicetak dari Sistem Bimbel Gemilang pada: ${new Date().toLocaleString('id-ID')} — Halaman ${i} dari ${pageCount}`,
-        14,
-        doc.internal.pageSize.getHeight() - 7
-      );
-    }
-
-    doc.save(`Jadwal_Master_Gemilang_${startDateStr}_sd_${endDateStr}.pdf`);
-    if (onShowAlert) onShowAlert("✅ PDF Master Jadwal Mingguan berhasil didownload!");
-    onClose();
   };
 
   return (
@@ -212,10 +451,10 @@ export default function ModalDownloadJadwalBesar({
         {/* Header Modal */}
         <div style={styles.header}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={styles.iconBadge}>📋</div>
+            <div style={styles.iconBadge}>📊</div>
             <div>
-              <h3 style={styles.title}>Download & Share Jadwal Besar</h3>
-              <p style={styles.subtitle}>Ekspor jadwal mingguan lengkap untuk dibagikan ke grup WhatsApp tentor atau dicetak</p>
+              <h3 style={styles.title}>Cetak & Bagikan Jadwal Resmi (Format Excel Gemilang)</h3>
+              <p style={styles.subtitle}>Ekspor format per jenjang SD, SMP, SMA persis seperti susunan Excel resmi Bimbel Gemilang</p>
             </div>
           </div>
           <button onClick={onClose} style={styles.btnClose}><X size={18} /></button>
@@ -225,16 +464,17 @@ export default function ModalDownloadJadwalBesar({
         <div style={styles.tabBar}>
           <button
             type="button"
-            onClick={() => setFormatTab('pdf')}
+            onClick={() => setFormatTab('excel_print')}
             style={{
               ...styles.tabBtn,
-              background: formatTab === 'pdf' ? '#4f46e5' : '#f1f5f9',
-              color: formatTab === 'pdf' ? '#ffffff' : '#475569',
-              fontWeight: formatTab === 'pdf' ? 800 : 600
+              background: formatTab === 'excel_print' ? '#dc2626' : '#f1f5f9',
+              color: formatTab === 'excel_print' ? '#ffffff' : '#475569',
+              fontWeight: formatTab === 'excel_print' ? 800 : 600
             }}
           >
-            <FileText size={15} /> 📄 Cetak / Download PDF Master
+            <Printer size={15} /> 🖨️ Cetak / Simpan PDF (Format Persis Excel + Foto Tentor)
           </button>
+
           <button
             type="button"
             onClick={() => setFormatTab('wa')}
@@ -255,7 +495,7 @@ export default function ModalDownloadJadwalBesar({
             <div style={styles.filterGroup}>
               <label style={styles.filterLabel}>📅 Periode Minggu Ini:</label>
               <div style={styles.periodBadge}>
-                {startDateFormatted} — {endDateFormatted} ({sortedSchedules.length} Sesi)
+                {startDateFormatted} — {endDateFormatted} ({filteredSchedules.length} Sesi)
               </div>
             </div>
 
@@ -266,7 +506,7 @@ export default function ModalDownloadJadwalBesar({
                 onChange={e => setSelectedPlanet(e.target.value)}
                 style={styles.filterSelect}
               >
-                <option value="Semua">Semua Ruangan (5 Planet)</option>
+                <option value="Semua">Semua Ruangan</option>
                 {PLANETS.map(p => <option key={p} value={p}>Ruang {p}</option>)}
               </select>
             </div>
@@ -289,45 +529,45 @@ export default function ModalDownloadJadwalBesar({
           </div>
         </div>
 
-        {/* Tab Content: PDF */}
-        {formatTab === 'pdf' && (
+        {/* Tab: Print Excel */}
+        {formatTab === 'excel_print' && (
           <div style={styles.contentBox}>
             <div style={styles.previewBox}>
-              <div style={{ fontSize: 13, fontWeight: 700, color: '#1e293b', marginBottom: 4 }}>
-                📄 Format PDF Master Mingguan (Landscape A4)
+              <div style={{ fontSize: 13, fontWeight: 800, color: '#0f172a', marginBottom: 4 }}>
+                📄 Format Excel Resmi Gemilang (Lengkap Foto Tentor & Tabel Per Kelas)
               </div>
-              <p style={{ fontSize: 11.5, color: '#64748b', margin: 0, lineHeight: 1.5 }}>
-                Menyajikan tabel visual terpadu berurutan dari Senin s/d Minggu yang mencakup seluruh ruangan (Merkurius, Venus, Bumi, Mars, Jupiter), jam sesi, mata pelajaran, nama tentor, dan daftar murid. Siap dicetak untuk papan pengumuman kantor atau disimpan sebagai arsip mingguan.
+              <p style={{ fontSize: 11.5, color: '#475569', margin: 0, lineHeight: 1.5 }}>
+                Format ini menyusun jadwal per kelas secara berdampingan: <b>Kelas 3 SD, Kelas 4 SD, Kelas 5 SD, Kelas 6 SD</b>, lalu <b>Kelas 7, 8, 9 SMP</b> persis seperti lembar kerja Excel Bimbel Gemilang. Setiap baris dilengkapi <b>Foto Profil Tentor Asli</b>, jam sesi, mata pelajaran, dan ruangan sehingga tentor dan admin langsung tahu siapa mengajar di mana tanpa takut bertabrakan.
               </p>
             </div>
 
             <div style={styles.summaryStats}>
               <div style={styles.statCard}>
                 <span style={styles.statLabel}>Total Sesi</span>
-                <span style={styles.statVal}>{sortedSchedules.length}</span>
+                <span style={styles.statVal}>{filteredSchedules.length}</span>
               </div>
               <div style={styles.statCard}>
                 <span style={styles.statLabel}>Ruangan Aktif</span>
                 <span style={styles.statVal}>
-                  {new Set(sortedSchedules.map(s => s.planet)).size} / 5
+                  {new Set(filteredSchedules.map(s => s.planet)).size} / 5
                 </span>
               </div>
               <div style={styles.statCard}>
                 <span style={styles.statLabel}>Tentor Mengajar</span>
                 <span style={styles.statVal}>
-                  {new Set(sortedSchedules.map(s => s.teacherId || s.teacherName)).size}
+                  {new Set(filteredSchedules.map(s => s.teacherId || s.teacherName)).size}
                 </span>
               </div>
             </div>
           </div>
         )}
 
-        {/* Tab Content: WA */}
+        {/* Tab: WA */}
         {formatTab === 'wa' && (
           <div style={styles.contentBox}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
               <span style={{ fontSize: 12, fontWeight: 700, color: '#334155' }}>
-                Pratinjau Teks WhatsApp (Siap Kirim ke Grup):
+                Pratinjau Teks WhatsApp (Tersusun Per Jenjang & Hari):
               </span>
               <button
                 type="button"
@@ -355,13 +595,13 @@ export default function ModalDownloadJadwalBesar({
           <button type="button" onClick={onClose} style={styles.btnCancel}>
             Tutup
           </button>
-          {formatTab === 'pdf' ? (
+          {formatTab === 'excel_print' ? (
             <button
               type="button"
-              onClick={handleDownloadPDF}
-              style={styles.btnDownload}
+              onClick={handlePrintExcelLayout}
+              style={styles.btnPrintAction}
             >
-              <Download size={16} /> Unduh PDF Master Jadwal
+              <Printer size={16} /> Buka Pratinjau & Cetak / Simpan PDF
             </button>
           ) : (
             <button
@@ -419,7 +659,7 @@ const styles = {
     width: 42,
     height: 42,
     borderRadius: 12,
-    background: '#e0e7ff',
+    background: '#fee2e2',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -427,7 +667,7 @@ const styles = {
   },
   title: {
     margin: 0,
-    fontSize: 17,
+    fontSize: 16.5,
     fontWeight: 800,
     color: '#0f172a'
   },
@@ -514,8 +754,8 @@ const styles = {
   previewBox: {
     padding: 14,
     borderRadius: 12,
-    background: '#eef2ff',
-    border: '1px solid #c7d2fe'
+    background: '#fef2f2',
+    border: '1px solid #fecaca'
   },
   summaryStats: {
     display: 'grid',
@@ -539,7 +779,7 @@ const styles = {
   statVal: {
     fontSize: 18,
     fontWeight: 800,
-    color: '#4f46e5',
+    color: '#dc2626',
     marginTop: 2
   },
   waTextarea: {
@@ -585,10 +825,10 @@ const styles = {
     fontWeight: 700,
     cursor: 'pointer'
   },
-  btnDownload: {
+  btnPrintAction: {
     padding: '9px 20px',
     borderRadius: 10,
-    background: '#4f46e5',
+    background: '#dc2626',
     color: '#ffffff',
     border: 'none',
     fontSize: 12.5,
@@ -597,7 +837,7 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     gap: 6,
-    boxShadow: '0 4px 12px rgba(79, 70, 229, 0.3)'
+    boxShadow: '0 4px 12px rgba(220, 38, 38, 0.3)'
   },
   btnCopyAction: {
     padding: '9px 20px',

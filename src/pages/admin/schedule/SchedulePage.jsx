@@ -22,6 +22,7 @@ import ModalSiapkanLatihanSesi from '../../../components/guru/ModalSiapkanLatiha
 import { isOwnerSession } from '../../../utils/roleAkses';
 
 // Modular Sub-Components
+import GemilangExcelTimetableView from './GemilangExcelTimetableView';
 import CalmendarTimetableView from './CalmendarTimetableView';
 import ModalPindahRuang from './ModalPindahRuang';
 import ModalDownloadJadwalBesar from './ModalDownloadJadwalBesar';
@@ -131,7 +132,7 @@ const SchedulePage = () => {
   // Calendar & Views
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [viewMode, setViewMode] = useState('timetable'); // 'timetable' | 'daily' | 'weekly'
+  const [viewMode, setViewMode] = useState('excel'); // 'excel' | 'daily' | 'timetable' | 'weekly'
   
   // Daily Code
   const [dailyCode, setDailyCode] = useState("");
@@ -1387,13 +1388,13 @@ const SchedulePage = () => {
           </div>
         )}
 
-        {/* VIEW MODE TOGGLE (CALMENDAR TIMETABLE, PLANET ROOMS, WEEKLY LIST) */}
+        {/* VIEW MODE TOGGLE (EXCEL GEMILANG, MATRIKS RUANGAN, KALENDER WAKTU, RINGKASAN) */}
         <div style={styles.viewToggle}>
           <button 
-            onClick={() => setViewMode('timetable')} 
-            style={styles.viewBtn(viewMode === 'timetable', isDarkMode)}
+            onClick={() => setViewMode('excel')} 
+            style={styles.viewBtn(viewMode === 'excel', isDarkMode)}
           >
-            🗓️ Matriks Kalender (Calmendar)
+            📊 Matriks Resmi Excel (Per Kelas & Jenjang)
           </button>
           <button 
             onClick={() => setViewMode('daily')} 
@@ -1402,10 +1403,16 @@ const SchedulePage = () => {
             🪐 Matriks Ruangan (5 Planet)
           </button>
           <button 
+            onClick={() => setViewMode('timetable')} 
+            style={styles.viewBtn(viewMode === 'timetable', isDarkMode)}
+          >
+            🗓️ Kalender Waktu
+          </button>
+          <button 
             onClick={() => setViewMode('weekly')} 
             style={styles.viewBtn(viewMode === 'weekly', isDarkMode)}
           >
-            📋 Ringkasan Mingguan
+            📋 Ringkasan Agenda
           </button>
         </div>
 
@@ -1547,6 +1554,18 @@ const SchedulePage = () => {
 
           {/* MAIN CONTENT AREA */}
           <div style={styles.mainCol}>
+            {viewMode === 'excel' && (
+              <GemilangExcelTimetableView
+                schedules={currentActiveSchedules}
+                availableTeachers={availableTeachers}
+                weekDates={getWeekDates(selectedDate)}
+                isDarkMode={isDarkMode}
+                onOpenModal={handleOpenModal}
+                onOpenDetailModal={item => setDetailSchedule(item)}
+                onOpenPindahRuang={item => setSessionToPindah(item)}
+              />
+            )}
+
             {viewMode === 'timetable' && (
               <CalmendarTimetableView
                 weekDates={getWeekDates(selectedDate)}
