@@ -88,6 +88,9 @@ export default function PanelAuditMutasiOwner({
   const [nominalGajiTentorCustom, setNominalGajiTentorCustom] = useState('');
   const [processingGaji, setProcessingGaji] = useState(false);
 
+  // Modal Preview Bukti Transfer
+  const [previewBukti, setPreviewBukti] = useState(null);
+
   // Otomatis sinkronkan tanggal form saat bulan pilihan berubah
   const handleGantiBulan = (bln) => {
     setBulanPilihan(bln);
@@ -1524,6 +1527,24 @@ export default function PanelAuditMutasiOwner({
                             </div>
                           ) : null;
                         })()}
+
+                        {l.buktiUrl && (
+                          <div style={{ marginTop: 4 }}>
+                            <button
+                              type="button"
+                              onClick={() => setPreviewBukti(l.buktiUrl)}
+                              style={{
+                                display: 'inline-flex', alignItems: 'center', gap: 3,
+                                padding: '2px 7px', borderRadius: 4,
+                                background: '#eff6ff', border: '1px solid #bfdbfe',
+                                color: '#1d4ed8', fontSize: 10, fontWeight: 700, cursor: 'pointer'
+                              }}
+                              title="Lihat foto bukti transfer"
+                            >
+                              📎 Bukti Transfer
+                            </button>
+                          </div>
+                        )}
                       </td>
 
                       <td style={{ padding: '10px 12px', textAlign: 'right', fontWeight: 800, color: '#16a34a', whiteSpace: 'nowrap' }}>
