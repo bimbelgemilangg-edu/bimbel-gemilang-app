@@ -164,6 +164,489 @@ const GROUP_KEYS = ['tryout', 'paket_list', 'packages', 'paketSoal', 'paket_soal
 const GROUP_ITEM_KEYS = ['soal', 'soals', 'questions', 'items', 'data'];
 
 // ============================================================
+// 🎓 PRESET SUBTES & PROMPT AI RESMI UTBK-SNBT 2026 (7 SUBTES)
+// ============================================================
+export const UTBK_SUBTEST_PRESETS = [
+  {
+    id: 'PU',
+    kodeMapel: 'utbk_pu',
+    nama: 'Penalaran Umum (PU)',
+    subjudul: 'TPS · 30 Soal · 30 Menit',
+    namaMapel: 'TPS/Penalaran Umum',
+    subtes: 'PU',
+    jenjang: 'SMA/MA',
+    kelas: '12',
+    tags: 'utbk, snbt, tps, pu, penalaran umum',
+    defaultFileName: 'UTBK 2026 - TPS Penalaran Umum.pdf',
+    subbab: [
+      'Penalaran Induktif (Pola Logika & Sebab-Akibat)',
+      'Penalaran Deduktif (Silogisme & Penarikan Kesimpulan)',
+      'Penalaran Kuantitatif (Hubungan Matematis & Pola Bilangan)',
+    ],
+    deskripsi: 'Mengukur kemampuan memecahkan masalah baru dengan logika induktif, deduktif, dan kuantitatif.',
+    contohHtml: `<!doctype html>
+<html lang="id"><body>
+<article data-gemilang-question data-nomor="1" data-tipe="pg_sederhana" data-paket="1" data-kesulitan="sedang" data-kelas="12">
+<div data-field="materi">Penalaran Induktif</div>
+<div data-field="teks_soal">Semua siswa yang rajin belajar lulus ujian dengan nilai memuaskan. Sebagian siswa yang lulus dengan nilai memuaskan mendapatkan beasiswa prestasi. Diketahui Dimas adalah siswa yang rajin belajar. Kesimpulan yang paling tepat adalah ....</div>
+<ol data-field="opsi_jawaban">
+  <li>Dimas pasti mendapatkan beasiswa prestasi</li>
+  <li>Dimas lulus ujian dengan nilai memuaskan, tetapi mungkin tidak mendapatkan beasiswa prestasi</li>
+  <li>Dimas tidak lulus ujian karena tidak mendapat beasiswa</li>
+  <li>Semua siswa yang mendapat beasiswa rajin belajar seperti Dimas</li>
+  <li>Dimas tidak rajin belajar namun lulus ujian</li>
+</ol>
+<meta data-field="kunci_jawaban" data-value="B" />
+<meta data-field="kunci_terverifikasi" data-value="true" />
+<div data-field="pembahasan">Premis 1: Semua siswa rajin -> lulus nilai memuaskan.
+Premis 2: Sebagian yang lulus nilai memuaskan -> dapat beasiswa prestasi.
+Fakta: Dimas rajin belajar -> Dimas pasti lulus nilai memuaskan. Namun karena hanya sebagian yang dapat beasiswa prestasi, Dimas mungkin mendapatkannya atau mungkin tidak.
+Jawaban: B</div>
+</article>
+
+<article data-gemilang-question data-nomor="2" data-tipe="pg_sederhana" data-paket="1" data-kesulitan="sulit" data-kelas="12">
+<div data-field="materi">Penalaran Kuantitatif</div>
+<div data-field="teks_soal">Perhatikan barisan bilangan berikut: $3, 5, 9, 17, 33, x$. Nilai $x$ yang tepat adalah ....</div>
+<ol data-field="opsi_jawaban">
+  <li>$49$</li>
+  <li>$57$</li>
+  <li>$65$</li>
+  <li>$72$</li>
+  <li>$81$</li>
+</ol>
+<meta data-field="kunci_jawaban" data-value="C" />
+<meta data-field="kunci_terverifikasi" data-value="true" />
+<div data-field="pembahasan">Pola selisih antar suku:
+$5 - 3 = 2 = 2^1$
+$9 - 5 = 4 = 2^2$
+$17 - 9 = 8 = 2^3$
+$33 - 17 = 16 = 2^4$
+Maka selisih berikutnya adalah $2^5 = 32$.
+Sehingga $x = 33 + 32 = 65$.
+Jawaban: C</div>
+</article>
+</body></html>`,
+  },
+  {
+    id: 'PPU',
+    kodeMapel: 'utbk_ppu',
+    nama: 'Pengetahuan & Pemahaman Umum (PPU)',
+    subjudul: 'TPS · 20 Soal · 15 Menit',
+    namaMapel: 'TPS/Pengetahuan & Pemahaman Umum',
+    subtes: 'PPU',
+    jenjang: 'SMA/MA',
+    kelas: '12',
+    tags: 'utbk, snbt, tps, ppu, pengetahuan umum',
+    defaultFileName: 'UTBK 2026 - TPS Pengetahuan dan Pemahaman Umum.pdf',
+    subbab: [
+      'Makna Kata & Frasa Idiomatis',
+      'Hubungan Antar Paragraf & Kepaduan Gagasan',
+      'Bentuk Kata & Afiksasi Kontekstual',
+      'Bahasa Buatan / Bahasa Panda (Kode Logis)',
+    ],
+    deskripsi: 'Mengukur pemahaman kosakata konteks tinggi, struktur wacana, padanan makna, dan bahasa buatan.',
+    contohHtml: `<!doctype html>
+<html lang="id"><body>
+<article data-gemilang-question data-nomor="1" data-tipe="pg_sederhana" data-paket="1" data-kesulitan="sedang" data-kelas="12">
+<div data-field="materi">Makna Kata & Frasa Idiomatis</div>
+<div data-field="teks_soal">Dalam kalimat "Pemerintah berupaya memitigasi dampak anomali iklim global terhadap ketahanan pangan nasional", kata <i>memitigasi</i> memiliki makna yang paling dekat dengan ....</div>
+<ol data-field="opsi_jawaban">
+  <li>Mencegah sepenuhnya secara permanen</li>
+  <li>Mengurangi atau memperkecil risiko bahaya</li>
+  <li>Mengalihkan beban kepada masyarakat</li>
+  <li>Menghapuskan dampak yang telah terjadi</li>
+  <li>Memperkirakan datangnya bencana baru</li>
+</ol>
+<meta data-field="kunci_jawaban" data-value="B" />
+<meta data-field="kunci_terverifikasi" data-value="true" />
+<div data-field="pembahasan">Berdasarkan KBBI, mitigasi adalah tindakan mengurangi dampak atau risiko bencana.
+Jawaban: B</div>
+</article>
+
+<article data-gemilang-question data-nomor="2" data-tipe="pg_sederhana" data-paket="1" data-kesulitan="sulit" data-kelas="12">
+<div data-field="materi">Bahasa Buatan / Bahasa Panda</div>
+<div data-field="teks_soal">Dalam suatu bahasa buatan:<br/>
+• <i>morvi kleta</i> berarti "mobil cepat"<br/>
+• <i>morvi glapa</i> berarti "mobil listrik"<br/>
+• <i>vanti glapa</i> berarti "kereta listrik"<br/>
+Kata yang paling mungkin bermakna "kereta cepat" adalah ....</div>
+<ol data-field="opsi_jawaban">
+  <li><i>kleta morvi</i></li>
+  <li><i>vanti kleta</i></li>
+  <li><i>glapa vanti</i></li>
+  <li><i>kleta vanti</i></li>
+  <li><i>morvi vanti</i></li>
+</ol>
+<meta data-field="kunci_jawaban" data-value="B" />
+<meta data-field="kunci_terverifikasi" data-value="true" />
+<div data-field="pembahasan">Dari perbandingan:
+morvi = mobil, glapa = listrik, kleta = cepat, vanti = kereta.
+Struktur frasa: kata benda mendahului kata sifat.
+Maka "kereta cepat" = vanti kleta.
+Jawaban: B</div>
+</article>
+</body></html>`,
+  },
+  {
+    id: 'PBM',
+    kodeMapel: 'utbk_pbm',
+    nama: 'Pemahaman Bacaan & Menulis (PBM)',
+    subjudul: 'TPS · 20 Soal · 25 Menit',
+    namaMapel: 'TPS/Pemahaman Bacaan & Menulis',
+    subtes: 'PBM',
+    jenjang: 'SMA/MA',
+    kelas: '12',
+    tags: 'utbk, snbt, tps, pbm, bacaan dan menulis',
+    defaultFileName: 'UTBK 2026 - TPS Pemahaman Bacaan dan Menulis.pdf',
+    subbab: [
+      'Ejaan & Tanda Baca (EYD Edisi V / PUEBI)',
+      'Kalimat Efektif & Kesejajaran Struktur',
+      'Konjungsi Antarkalimat & Intrakalimat',
+      'Ide Pokok, Simpulan, & Penggabungan Kalimat',
+    ],
+    deskripsi: 'Menguji tata bahasa baku, keefektifan kalimat, pembentukan kata, dan penataan ide wacana.',
+    contohHtml: `<!doctype html>
+<html lang="id"><body>
+<article data-gemilang-question data-nomor="1" data-tipe="pg_sederhana" data-paket="1" data-kesulitan="sedang" data-kelas="12">
+<div data-field="materi">Ejaan & Tanda Baca (EYD Edisi V)</div>
+<div data-field="teks_soal">Penulisan tanda baca yang paling tepat sesuai kaidah EYD terdapat pada kalimat ....</div>
+<ol data-field="opsi_jawaban">
+  <li>Ibu membeli apel, jeruk, dan mangga di pasar tradisional.</li>
+  <li>Ibu membeli apel, jeruk dan mangga di pasar tradisional.</li>
+  <li>Karena hari hujan deras maka ia tidak dapat menghadiri rapat.</li>
+  <li>Ia berkata; "Hari ini kita harus bekerja lebih giat."</li>
+  <li>Dimas bertanya: di mana letak perpustakaan daerah?</li>
+</ol>
+<meta data-field="kunci_jawaban" data-value="A" />
+<meta data-field="kunci_terverifikasi" data-value="true" />
+<div data-field="pembahasan">Pada rincian lebih dari dua unsur, tanda koma wajib dicantumkan sebelum konjungsi "dan" (EYD V).
+Jawaban: A</div>
+</article>
+
+<article data-gemilang-question data-nomor="2" data-tipe="pg_sederhana" data-paket="1" data-kesulitan="sulit" data-kelas="12">
+<div data-field="materi">Kalimat Efektif</div>
+<div data-field="teks_soal">Kalimat yang memenuhi syarat ketat kalimat efektif (tidak ambigu, hemat kata, dan bersubjek jelas) adalah ....</div>
+<ol data-field="opsi_jawaban">
+  <li>Bagi seluruh peserta ujian diharapkan membawa kartu identitas asli.</li>
+  <li>Penelitian ini bertujuan untuk mendeskripsikan faktor penyebab putus sekolah di daerah pedesaan.</li>
+  <li>Meskipun sudah diperingatkan berulang kali, tetapi anak itu tetap memanjat pohon.</li>
+  <li>Pemerintah harus meningkatkan daripada mutu sarana pendidikan dasar.</li>
+  <li>Soal itu kita sudah bahas secara mendalam bersama tentor kemarin siang.</li>
+</ol>
+<meta data-field="kunci_jawaban" data-value="B" />
+<meta data-field="kunci_terverifikasi" data-value="true" />
+<div data-field="pembahasan">Opsi B memiliki subjek, predikat, dan objek yang utuh tanpa pemborosan kata atau kerancuan preposisi.
+Jawaban: B</div>
+</article>
+</body></html>`,
+  },
+  {
+    id: 'PK',
+    kodeMapel: 'utbk_pk',
+    nama: 'Pengetahuan Kuantitatif (PK)',
+    subjudul: 'TPS · 20 Soal · 20 Menit · Ada Soal Isian Singkat',
+    namaMapel: 'TPS/Pengetahuan Kuantitatif',
+    subtes: 'PK',
+    jenjang: 'SMA/MA',
+    kelas: '12',
+    tags: 'utbk, snbt, tps, pk, pengetahuan kuantitatif',
+    defaultFileName: 'UTBK 2026 - TPS Pengetahuan Kuantitatif.pdf',
+    subbab: [
+      'Aljabar, Eksponen, & Fungsi',
+      'Geometri Bangun Datar & Sudut',
+      'Statistika Dasar & Peluang',
+      'Kecukupan Data (Pernyataan 1 & 2)',
+      'Hubungan Kuantitas P dan Q',
+      'Soal Isian Singkat Numerik (Nomor 16-20)',
+    ],
+    deskripsi: 'Mengukur pemahaman konsep matematika dasar dan logika kalkulasi angka. Wajib support Soal Isian Singkat tanpa opsi A-E.',
+    contohHtml: `<!doctype html>
+<html lang="id"><body>
+<article data-gemilang-question data-nomor="1" data-tipe="pg_sederhana" data-paket="1" data-kesulitan="sedang" data-kelas="12">
+<div data-field="materi">Aljabar, Eksponen, & Fungsi</div>
+<div data-field="teks_soal">Jika $2^{x+1} + 2^{x+2} = 48$, maka nilai dari $x$ adalah ....</div>
+<ol data-field="opsi_jawaban">
+  <li>$1$</li>
+  <li>$2$</li>
+  <li>$3$</li>
+  <li>$4$</li>
+  <li>$5$</li>
+</ol>
+<meta data-field="kunci_jawaban" data-value="C" />
+<meta data-field="kunci_terverifikasi" data-value="true" />
+<div data-field="pembahasan">$2^x \cdot 2 + 2^x \cdot 4 = 48 \implies 6 \cdot 2^x = 48 \implies 2^x = 8 = 2^3 \implies x = 3$.
+Jawaban: C</div>
+</article>
+
+<!-- CONTOH SOAL ISIAN SINGKAT RESMI UTBK PK (NOMOR 16-20 TANPA OPSI A-E) -->
+<article data-gemilang-question data-nomor="16" data-tipe="isian_singkat" data-paket="1" data-kesulitan="sulit" data-kelas="12">
+<div data-field="materi">Soal Isian Singkat Numerik</div>
+<div data-field="teks_soal">Diberikan fungsi kuadrat $f(x) = x^2 - 6x + c$. Jika nilai minimum fungsi tersebut adalah $-4$, maka nilai dari $c$ adalah ....<br/><i>(Isikan jawaban angka bilangan bulat langsung tanpa tanda koma atau spasi)</i></div>
+<meta data-field="kunci_jawaban" data-value="5" />
+<meta data-field="kunci_terverifikasi" data-value="true" />
+<div data-field="pembahasan">Sumbu simetri: $x_p = -\frac{b}{2a} = -\frac{-6}{2(1)} = 3$.
+Nilai minimum: $f(3) = 3^2 - 6(3) + c = 9 - 18 + c = -9 + c$.
+Diketahui $f(3) = -4$, maka $-9 + c = -4 \implies c = 5$.
+Jawaban angka: 5</div>
+</article>
+</body></html>`,
+  },
+  {
+    id: 'LBI',
+    kodeMapel: 'utbk_lbi',
+    nama: 'Literasi Bahasa Indonesia (LBI)',
+    subjudul: 'Literasi · 30 Soal · 45 Menit',
+    namaMapel: 'Literasi/Bahasa Indonesia',
+    subtes: 'LBI',
+    jenjang: 'SMA/MA',
+    kelas: '12',
+    tags: 'utbk, snbt, literasi, lbi, literasi bahasa indonesia',
+    defaultFileName: 'UTBK 2026 - Literasi Bahasa Indonesia.pdf',
+    subbab: [
+      'Menemukan Informasi Tersurat & Fakta Data',
+      'Memahami Gagasan Pokok Teks Sastra & Esai',
+      'Evaluasi & Refleksi Isi Wacana Berkelanjutan',
+      'Simpulan Logis & Inferensi Teks Informasi',
+    ],
+    deskripsi: 'Menguji daya tangkap literasi terhadap teks bacaan ilmiah, infografis, opini, dan karya sastra.',
+    contohHtml: `<!doctype html>
+<html lang="id"><body>
+<article data-gemilang-question data-nomor="1" data-tipe="pg_sederhana" data-paket="1" data-kesulitan="sedang" data-kelas="12">
+<div data-field="materi">Menemukan Informasi Tersurat</div>
+<div data-field="bacaan" data-grup="bacaan_1">
+Transisi energi terbarukan di Indonesia menghadapi tantangan intermitensi pada pembangkit listrik tenaga surya (PLTS) dan angin. Untuk menjaga keandalan pasokan listrik, diperlukan teknologi penyimpan energi skala besar (Battery Energy Storage System/BESS) serta penguatan interkoneksi jaringan transmisi antarpulau. Tanpa kesiapan teknologi penyimpanan, peningkatan penetrasi energi terbarukan dapat mengganggu stabilitas frekuensi sistem jaringan listrik nasional.
+</div>
+<div data-field="teks_soal">Berdasarkan wacana di atas, teknologi yang dibutuhkan untuk mengatasi sifat intermitensi pada energi surya dan angin adalah ....</div>
+<ol data-field="opsi_jawaban">
+  <li>Pembangkit listrik tenaga uap cadangan</li>
+  <li>Sistem penyimpanan energi baterai skala besar (BESS)</li>
+  <li>Pengurangan kapasitas daya pada waktu siang hari</li>
+  <li>Penggantian kabel transmisi lokal dengan kabel tembaga</li>
+  <li>Penghapusan integrasi jaringan kelistrikan nasional</li>
+</ol>
+<meta data-field="kunci_jawaban" data-value="B" />
+<meta data-field="kunci_terverifikasi" data-value="true" />
+<div data-field="pembahasan">Wacana menyatakan secara eksplisit: "...diperlukan teknologi penyimpan energi skala besar (Battery Energy Storage System/BESS)...".
+Jawaban: B</div>
+</article>
+
+<article data-gemilang-question data-nomor="2" data-tipe="pg_sederhana" data-paket="1" data-kesulitan="sedang" data-kelas="12">
+<div data-field="materi">Simpulan Logis & Inferensi</div>
+<div data-field="bacaan" data-grup="bacaan_1">
+Transisi energi terbarukan di Indonesia menghadapi tantangan intermitensi pada pembangkit listrik tenaga surya (PLTS) dan angin. Untuk menjaga keandalan pasokan listrik, diperlukan teknologi penyimpan energi skala besar (Battery Energy Storage System/BESS) serta penguatan interkoneksi jaringan transmisi antarpulau. Tanpa kesiapan teknologi penyimpanan, peningkatan penetrasi energi terbarukan dapat mengganggu stabilitas frekuensi sistem jaringan listrik nasional.
+</div>
+<div data-field="teks_soal">Simpulan yang paling logis apabila penetrasi energi terbarukan ditingkatkan tanpa sistem penyimpanan baterai adalah ....</div>
+<ol data-field="opsi_jawaban">
+  <li>Biaya operasional pembangkit otomatis menjadi nol</li>
+  <li>Kebutuhan energi nasional akan langsung terpenuhi 100%</li>
+  <li>Kestabilan frekuensi jaringan listrik nasional berpotensi terganggu</li>
+  <li>Semua pembangkit listrik konvensional akan segera dipensiunkan</li>
+  <li>Jaringan listrik antarpulau tidak lagi diperlukan</li>
+</ol>
+<meta data-field="kunci_jawaban" data-value="C" />
+<meta data-field="kunci_terverifikasi" data-value="true" />
+<div data-field="pembahasan">Berdasarkan teks: "Tanpa kesiapan teknologi penyimpanan, peningkatan penetrasi energi terbarukan dapat mengganggu stabilitas frekuensi sistem jaringan listrik nasional."
+Jawaban: C</div>
+</article>
+</body></html>`,
+  },
+  {
+    id: 'LBE',
+    kodeMapel: 'utbk_lbe',
+    nama: 'Literasi Bahasa Inggris (LBE)',
+    subjudul: 'Literasi · 20 Soal · 30 Menit',
+    namaMapel: 'Literasi/Bahasa Inggris',
+    subtes: 'LBE',
+    jenjang: 'SMA/MA',
+    kelas: '12',
+    tags: 'utbk, snbt, literasi, lbe, english literacy',
+    defaultFileName: 'UTBK 2026 - Literasi Bahasa Inggris.pdf',
+    subbab: [
+      "Main Idea & Author's Purpose",
+      'Specific Detail & Factual Information',
+      'Inference & Implied Meaning',
+      'Contextual Vocabulary & Pronoun Reference',
+    ],
+    deskripsi: 'Menguji kemampuan mencerna artikel berbahasa Inggris bertema teknologi, sains, sosial, dan lingkungan.',
+    contohHtml: `<!doctype html>
+<html lang="id"><body>
+<article data-gemilang-question data-nomor="1" data-tipe="pg_sederhana" data-paket="1" data-kesulitan="sedang" data-kelas="12">
+<div data-field="materi">Main Idea & Author's Purpose</div>
+<div data-field="bacaan" data-grup="bacaan_1">
+Artificial intelligence systems are rapidly reshaping modern healthcare. Machine learning algorithms can now detect patterns in radiologic imaging that frequently evade the human eye, enabling earlier diagnosis of complex diseases such as metastatic cancer. However, researchers emphasize that these predictive models are designed to augment clinician decision-making rather than replace physician expertise outright. Ethical oversights regarding data transparency and algorithmic bias remain pivotal challenges that must be addressed before universal clinical deployment.
+</div>
+<div data-field="teks_soal">What is the primary topic of the passage?</div>
+<ol data-field="opsi_jawaban">
+  <li>The complete replacement of medical professionals by autonomous computers</li>
+  <li>The promise and prevailing hurdles of integrating AI into healthcare diagnostics</li>
+  <li>The economic costs associated with modern radiologic equipment</li>
+  <li>The history of algorithmic development in computer science</li>
+  <li>Why physicians refuse to adopt artificial intelligence in hospitals</li>
+</ol>
+<meta data-field="kunci_jawaban" data-value="B" />
+<meta data-field="kunci_terverifikasi" data-value="true" />
+<div data-field="pembahasan">The text highlights both the positive promise of AI in diagnostics and the ethical/technical hurdles before universal clinical deployment.
+Jawaban: B</div>
+</article>
+
+<article data-gemilang-question data-nomor="2" data-tipe="pg_sederhana" data-paket="1" data-kesulitan="sulit" data-kelas="12">
+<div data-field="materi">Contextual Vocabulary & Reference</div>
+<div data-field="bacaan" data-grup="bacaan_1">
+Artificial intelligence systems are rapidly reshaping modern healthcare. Machine learning algorithms can now detect patterns in radiologic imaging that frequently evade the human eye, enabling earlier diagnosis of complex diseases such as metastatic cancer. However, researchers emphasize that these predictive models are designed to augment clinician decision-making rather than replace physician expertise outright. Ethical oversights regarding data transparency and algorithmic bias remain pivotal challenges that must be addressed before universal clinical deployment.
+</div>
+<div data-field="teks_soal">The word <b>augment</b> in line 4 is closest in meaning to ....</div>
+<ol data-field="opsi_jawaban">
+  <li>Diminish</li>
+  <li>Supplement</li>
+  <li>Terminate</li>
+  <li>Replicate</li>
+  <li>Discredit</li>
+</ol>
+<meta data-field="kunci_jawaban" data-value="B" />
+<meta data-field="kunci_terverifikasi" data-value="true" />
+<div data-field="pembahasan">"Augment" means to supplement, enhance, or add to existing capabilities.
+Jawaban: B</div>
+</article>
+</body></html>`,
+  },
+  {
+    id: 'PM',
+    kodeMapel: 'utbk_pm',
+    nama: 'Penalaran Matematika (PM)',
+    subjudul: 'Literasi · 20 Soal · 45 Menit · Ada Soal Isian Singkat',
+    namaMapel: 'Literasi/Penalaran Matematika',
+    subtes: 'PM',
+    jenjang: 'SMA/MA',
+    kelas: '12',
+    tags: 'utbk, snbt, literasi, pm, penalaran matematika',
+    defaultFileName: 'UTBK 2026 - Penalaran Matematika.pdf',
+    subbab: [
+      'Bilangan Nyata, Rasio, & Persentase Kontekstual',
+      'Aljabar Finansial & Pemodelan Tarif',
+      'Geometri Spasial & Pengukuran Bangun Ruang',
+      'Ketidakpastian, Peluang Realitas, & Analisis Data',
+      'Soal Isian Singkat Pemodelan Numerik',
+    ],
+    deskripsi: 'Menguji penalaran matematis dalam skenario kehidupan nyata (anggaran, geometri konstruksi, data sensus). Wajib support Isian Singkat.',
+    contohHtml: `<!doctype html>
+<html lang="id"><body>
+<article data-gemilang-question data-nomor="1" data-tipe="pg_sederhana" data-paket="1" data-kesulitan="sedang" data-kelas="12">
+<div data-field="materi">Aljabar Finansial & Pemodelan Tarif</div>
+<div data-field="teks_soal">Sebuah perusahaan logistik menetapkan tarif pengiriman paket sebagai berikut: biaya dasar sebesar Rp10.000 untuk $2\\text{ kg}$ pertama, dan tambahan biaya Rp3.500 untuk setiap kilogram berikutnya. Jika seorang pelanggan membayar total Rp38.000, berapa kilogram berat paket yang dikirimkan?</div>
+<ol data-field="opsi_jawaban">
+  <li>$8\\text{ kg}$</li>
+  <li>$9\\text{ kg}$</li>
+  <li>$10\\text{ kg}$</li>
+  <li>$11\\text{ kg}$</li>
+  <li>$12\\text{ kg}$</li>
+</ol>
+<meta data-field="kunci_jawaban" data-value="C" />
+<meta data-field="kunci_terverifikasi" data-value="true" />
+<div data-field="pembahasan">Misal berat total paket adalah $w\\text{ kg}$ ($w > 2$).
+Total biaya: $10.000 + 3.500(w - 2) = 38.000 \\implies 3.500(w - 2) = 28.000 \\implies w - 2 = 8 \\implies w = 10\\text{ kg}$.
+Jawaban: C</div>
+</article>
+
+<!-- CONTOH SOAL ISIAN SINGKAT RESMI UTBK PM (PEMODELAN NUMERIK TANPA OPSI A-E) -->
+<article data-gemilang-question data-nomor="2" data-tipe="isian_singkat" data-paket="1" data-kesulitan="sulit" data-kelas="12">
+<div data-field="materi">Soal Isian Singkat Pemodelan Numerik</div>
+<div data-field="teks_soal">Sebuah bak penampungan air berbentuk balok memiliki ukuran panjang $4\\text{ m}$, lebar $3\\text{ m}$, dan tinggi $2\\text{ m}$. Bak tersebut diisi air dengan pipa berdebit tetap $150\\text{ liter per menit}$. Berapa menit waktu yang dibutuhkan untuk mengisi bak kosong tersebut hingga terisi tepat $\\frac{3}{4}$ bagian?<br/><i>(Isikan jawaban berupa angka bulat menit saja)</i></div>
+<meta data-field="kunci_jawaban" data-value="120" />
+<meta data-field="kunci_terverifikasi" data-value="true" />
+<div data-field="pembahasan">Volume total bak = $4 \\times 3 \\times 2 = 24\\text{ m}^3 = 24.000\\text{ liter}$.
+Volume air yang dibutuhkan = $\\frac{3}{4} \\times 24.000 = 18.000\\text{ liter}$.
+Waktu pengisian = $\\frac{18.000\\text{ liter}}{150\\text{ liter/menit}} = 120\\text{ menit}$.
+Jawaban angka: 120</div>
+</article>
+</body></html>`,
+  },
+];
+
+export function buildUtbkAiPrompt(subtest) {
+  const isAll = !subtest || subtest === 'all';
+  const targetSubtest = isAll
+    ? null
+    : (typeof subtest === 'string' ? UTBK_SUBTEST_PRESETS.find(s => s.id === subtest || s.subtes === subtest) : subtest);
+
+  const namaSubtes = targetSubtest ? targetSubtest.nama : '7 Subtes UTBK-SNBT 2026';
+  const namaMapel = targetSubtest ? targetSubtest.namaMapel : 'TPS & Literasi UTBK';
+  const subbabList = targetSubtest ? targetSubtest.subbab.map(s => `- ${s}`).join('\n') : `
+- PU: Penalaran Induktif, Penalaran Deduktif, Penalaran Kuantitatif
+- PPU: Makna Kata & Frasa, Hubungan Antar Paragraf, Bahasa Buatan (Panda)
+- PBM: Ejaan (EYD V), Kalimat Efektif, Konjungsi, Kepaduan Wacana
+- PK: Aljabar, Geometri, Statistika, Hubungan P & Q, Soal Isian Singkat (16-20)
+- LBI: Menemukan Informasi, Memahami Teks Sastra, Evaluasi Kritis Wacana
+- LBE: Main Idea, Inference, Contextual Vocabulary
+- PM: Aljabar Kontekstual, Pemodelan Tarif, Geometri Spasial, Soal Isian Singkat
+`;
+
+  return `Kamu adalah asisten ekstraksi dan digitalisasi soal resmi UTBK-SNBT 2026 untuk Bank Soal Bimbel Gemilang.
+Tugasmu: Mengekstrak SELURUH soal dari dokumen PDF/gambar menjadi format HTML MASTER standar Bank Soal Gemilang yang 100% siap diimpor tanpa kesalahan.
+
+============================================================
+KONTEKS & METADATA NASKAH
+============================================================
+- Program: UTBK-SNBT 2026 (Seleksi Nasional Berdasarkan Tes)
+- Target Subtes: ${namaSubtes}
+- Mata Pelajaran Resmi Gemilang: ${namaMapel}
+- Jenjang: SMA / MA
+- Kelas: 12
+- Jenis Ujian: utbk
+
+============================================================
+DAFTAR SUBBAB / MATERI RESMI (Isikan ke data-field="materi")
+============================================================
+${subbabList}
+
+============================================================
+ATURAN WAJIB STRUKTUR HTML MASTER GEMILANG
+============================================================
+1. Format pembungkus:
+<!doctype html>
+<html lang="id"><body>
+<article data-gemilang-question data-nomor="1" data-tipe="pg_sederhana" data-paket="1" data-kesulitan="sedang" data-kelas="12">
+...
+</article>
+</body></html>
+
+2. Setiap nomor soal dibungkus tag <article data-gemilang-question ...>.
+   Atribut wajib pada article:
+   - data-nomor="1" (nomor urut sesuai soal asli)
+   - data-tipe="pg_sederhana" ATAU "isian_singkat" ATAU "pg_kompleks" ATAU "benar_salah"
+   - data-paket="1"
+   - data-kesulitan="mudah" | "sedang" | "sulit"
+   - data-kelas="12"
+
+3. PANDUAN KHUSUS TIPE SOAL UTBK:
+   A. PILIHAN GANDA (A-E):
+      - data-tipe="pg_sederhana"
+      - Opsi diletakkan dalam: <ol data-field="opsi_jawaban"><li>Pilihan A</li><li>Pilihan B</li><li>Pilihan C</li><li>Pilihan D</li><li>Pilihan E</li></ol>
+      - Kunci: <meta data-field="kunci_jawaban" data-value="A" /> (A, B, C, D, atau E)
+   
+   B. SOAL ISIAN SINGKAT (PENTING! Khusus PK No. 16-20 dan PM Numerik):
+      - data-tipe="isian_singkat"
+      - Tag <ol data-field="opsi_jawaban"> DIHAPUS / DIKOSONGKAN (karena siswa mengisi langsung angka di kotak input tanpa opsi A-E).
+      - Kunci ditulis langsung nilai angkanya: <meta data-field="kunci_jawaban" data-value="15" /> atau <meta data-field="kunci_jawaban" data-value="2.5" />.
+      - Pastikan teks soal menyertakan instruksi singkat pengisian angka jika ada di naskah asli.
+
+4. WACANA / TEKS BACAAN BERSAMA (LBI, LBE, PBM, PU):
+   Jika satu teks panjang digunakan untuk beberapa soal (misal soal 1 sampai 3):
+   - Sertakan <div data-field="bacaan" data-grup="bacaan_1">Isi teks bacaan lengkap...</div> pada SETIAP soal dalam grup tersebut.
+   - Atribut data-grup WAJIB sama persis (misal bacaan_1, bacaan_2).
+   - <div data-field="teks_soal"> hanya berisi kalimat pertanyaannya saja.
+
+5. NOTASI MATEMATIKA & FORMULA (KaTeX):
+   - SEMUA rumus, persamaan, simbol matematika, dan variabel WAJIB dibungkus tanda $ ... $ (contoh: $x^2 + 5x + 6 = 0$, $\\frac{a}{b}$, $\\sqrt{2}$, $f(x)$).
+   - Jangan pernah menulis perintah LaTeX mentah di luar tanda $.
+
+6. PEMBAHASAN LENGKAP:
+   - <div data-field="pembahasan">Jelaskan langkah penyelesaian yang runtut, edukatif, dan mudah dipahami siswa. Di akhir baris tuliskan "Jawaban: X".</div>
+
+Hasilkan HANYA kode HTML lengkap dari <!doctype html> sampai </html> tanpa tambahan komentar atau teks pembuka/penutup markdown.`;
+}
+
+
+// ============================================================
 // PROMPT AI GENERATOR — SUMBER KEBENARAN TUNGGAL
 // ------------------------------------------------------------
 // Prompt di bawah ini SENGAJA dibangun langsung dari skema yang
@@ -1237,6 +1720,17 @@ export function normalizeSoal(qMasuk, idx) {
       `Tipe soal otomatis dikoreksi dari "${tipe}" jadi "pg_sederhana" -- soal memiliki opsi pilihan jawaban dan kunci, tetapi AI menandai label "${tipe}".`,
     );
     tipe = 'pg_sederhana';
+  }
+
+  // 🔥 AUTO-RECOVERY ISIAN SINGKAT (UTBK PK & PM):
+  // Jika AI menandai tipe="pg_sederhana" atau tipe belum diatur, tetapi opsiJawaban kosong (< 2),
+  // dan ada kunciJawaban (misal angka '15', '2.5', '120', dll),
+  // maka otomatis ubah tipe jadi "isian_singkat" agar soal numerik UTBK lolos validasi tanpa ditolak!
+  if (['pg_sederhana'].includes(tipe) && opsiJawaban.length === 0 && kunciJawaban) {
+    peringatanLunak.push(
+      `Tipe soal otomatis dikoreksi jadi "isian_singkat" (Isian Singkat Numerik) -- opsi pilihan A-E kosong dan terdapat kunci jawaban resmi "${kunciJawaban}".`,
+    );
+    tipe = 'isian_singkat';
   }
 
   if (!teksSoal.trim()) errors.push('Teks soal kosong.');
@@ -3644,6 +4138,9 @@ export default function ImportHasilScanPage() {
   const [panduLewati, setPanduLewati] = useState(false);
   const [rawInput, setRawInput] = useState('');
   const [sumberAI, setSumberAI] = useState('Gemini Canvas');
+  const [activeUtbkSubtest, setActiveUtbkSubtest] = useState('PU');
+  const [showUtbkPromptModal, setShowUtbkPromptModal] = useState(false);
+  const [copiedPromptToast, setCopiedPromptToast] = useState('');
 
   const [soalList, setSoalList] = useState([]);
   // 🔥 BARU: Upload Gambar Massal -- kumpulkan banyak gambar sekaligus,
@@ -5243,72 +5740,221 @@ Ikuti PERSIS format/skema HTML di bawah ini buat cara nulis soalnya (struktur da
               </div>
             </div>
 
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px', flexWrap: 'wrap', gap: 6 }}>
-                <label style={{ fontSize: '12px', color: '#6b7280', fontWeight: 600 }}>Paste {format === 'html' ? 'HTML MASTER' : format.toUpperCase()}</label>
-                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
-                  <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 600 }}>SD 2026:</span>
+            {/* 🎓 PUSAT PENGIMPORAN KHUSUS UTBK-SNBT 2026 (7 SUBTES) */}
+            <div style={{
+              background: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%)',
+              border: '1.5px solid #4338ca',
+              borderRadius: '14px',
+              padding: '16px 18px',
+              marginBottom: '16px',
+              color: '#ffffff',
+              boxShadow: '0 8px 24px -4px rgba(67, 56, 202, 0.25)',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px', marginBottom: '12px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'linear-gradient(135deg, #6366f1, #a855f7)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px' }}>
+                    🎓
+                  </div>
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span style={{ fontSize: '14px', fontWeight: 800, letterSpacing: '0.5px' }}>
+                        PUSAT IMPOR KHUSUS UTBK-SNBT 2026 (7 SUBTES)
+                      </span>
+                      <span style={{ fontSize: '10.5px', background: '#3b82f6', color: '#ffffff', padding: '2px 8px', borderRadius: '999px', fontWeight: 700 }}>
+                        Resmi BP3 / SNPMB
+                      </span>
+                    </div>
+                    <p style={{ margin: '2px 0 0 0', fontSize: '11.5px', color: '#94a3b8' }}>
+                      Pilih subtes untuk konfigurasi otomatis, salin Prompt AI, atau muat template naskah UTBK (termasuk soal isian singkat).
+                    </p>
+                  </div>
+                </div>
+
+                {/* Prompt AI Action Buttons */}
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                   <button
                     type="button"
-                    onClick={async () => {
-                      try {
-                        const res = await fetch('/bank-soal/to1_tka_matematika_sd_2026_lengkap.html');
-                        if (!res.ok) throw new Error('Berkas tidak ditemukan (' + res.status + ')');
-                        const text = await res.text();
-                        setFormat('html');
-                        setSumberFile('TO 1 TKA Matematika SD 2026.pdf');
-                        setRawInput(text);
-                        runParse(text, 'html');
-                      } catch (e) {
-                        alert('Gagal memuat template TO 1 TKA Matematika SD: ' + e.message);
-                      }
+                    onClick={() => {
+                      const activePreset = UTBK_SUBTEST_PRESETS.find(p => p.id === activeUtbkSubtest) || UTBK_SUBTEST_PRESETS[0];
+                      const promptText = buildUtbkAiPrompt(activePreset);
+                      navigator.clipboard.writeText(promptText);
+                      setCopiedPromptToast(`Prompt AI untuk "${activePreset.nama}" berhasil disalin ke clipboard!`);
+                      setTimeout(() => setCopiedPromptToast(''), 4000);
                     }}
-                    style={{ fontSize: '11px', background: '#ecfdf5', border: '1px solid #a7f3d0', color: '#047857', padding: '3px 9px', borderRadius: '6px', cursor: 'pointer', fontWeight: 700 }}
+                    style={{
+                      background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                      border: 'none',
+                      color: '#ffffff',
+                      padding: '7px 14px',
+                      borderRadius: '8px',
+                      fontSize: '12px',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      boxShadow: '0 2px 8px rgba(16, 185, 129, 0.4)',
+                    }}
                   >
-                    📐 TO 1 Matematika SD (30 Soal)
+                    <span>📋 Salin Prompt AI Gemini / ChatGPT</span>
                   </button>
+
                   <button
                     type="button"
-                    onClick={async () => {
-                      try {
-                        const res = await fetch('/bank-soal/to1_tka_bahasa_indonesia_sd_2026_lengkap.html');
-                        if (!res.ok) throw new Error('Berkas tidak ditemukan (' + res.status + ')');
-                        const text = await res.text();
-                        setFormat('html');
-                        setSumberFile('TO 1 TKA Bahasa Indonesia SD 2026.pdf');
-                        setRawInput(text);
-                        runParse(text, 'html');
-                      } catch (e) {
-                        alert('Gagal memuat template TO 1 TKA B. Indonesia SD: ' + e.message);
-                      }
+                    onClick={() => setShowUtbkPromptModal(true)}
+                    style={{
+                      background: 'rgba(255, 255, 255, 0.1)',
+                      border: '1px solid rgba(255, 255, 255, 0.2)',
+                      color: '#e2e8f0',
+                      padding: '7px 12px',
+                      borderRadius: '8px',
+                      fontSize: '12px',
+                      fontWeight: 600,
+                      cursor: 'pointer',
                     }}
-                    style={{ fontSize: '11px', background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1d4ed8', padding: '3px 9px', borderRadius: '6px', cursor: 'pointer', fontWeight: 700 }}
                   >
-                    📖 TO 1 B. Indonesia SD (30 Soal)
-                  </button>
-                  <button
-                    type="button"
-                    onClick={async () => {
-                      try {
-                        const res = await fetch('/bank-soal/to1_tka_gabungan_sd_2026_lengkap.html');
-                        if (!res.ok) throw new Error('Berkas tidak ditemukan (' + res.status + ')');
-                        const text = await res.text();
-                        setFormat('html');
-                        setSumberFile('TO 1 TKA SD 2026 Gabungan.pdf');
-                        setRawInput(text);
-                        runParse(text, 'html');
-                      } catch (e) {
-                        alert('Gagal memuat template TO 1 Gabungan SD: ' + e.message);
-                      }
-                    }}
-                    style={{ fontSize: '11px', background: '#fdf4ff', border: '1px solid #f0abfc', color: '#86198f', padding: '3px 9px', borderRadius: '6px', cursor: 'pointer', fontWeight: 700 }}
-                  >
-                    📦 TO 1 Gabungan (60 Soal)
+                    👁️ Lihat Prompt
                   </button>
                 </div>
               </div>
 
-              <textarea
+              {/* Toast Notifikasi Salin Prompt */}
+              {copiedPromptToast && (
+                <div style={{
+                  background: 'rgba(16, 185, 129, 0.2)',
+                  border: '1px solid #10b981',
+                  borderRadius: '8px',
+                  padding: '8px 12px',
+                  marginBottom: '12px',
+                  fontSize: '12px',
+                  color: '#a7f3d0',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                }}>
+                  <span>✅</span>
+                  <span><strong>{copiedPromptToast}</strong> Tempelkan (paste) prompt ini ke Gemini Canvas atau ChatGPT bersama file PDF/gambar soalmu.</span>
+                </div>
+              )}
+
+              {/* 7 Subtes Buttons Grid */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '8px', marginTop: '10px' }}>
+                {UTBK_SUBTEST_PRESETS.map((sub) => {
+                  const isSelected = activeUtbkSubtest === sub.id;
+                  const hasIsian = sub.id === 'PK' || sub.id === 'PM';
+                  return (
+                    <button
+                      key={sub.id}
+                      type="button"
+                      onClick={() => {
+                        setActiveUtbkSubtest(sub.id);
+                        // Auto-configure form metadata
+                        setMataPelajaran(sub.namaMapel);
+                        setJenjang('SMA/MA');
+                        setTingkatKelas('12');
+                        setJenisUjian('utbk');
+                        setTags(sub.tags);
+                        setSumberFile(sub.defaultFileName);
+                        setSumberAI('Gemini Canvas');
+                        setFormat('html');
+                        // Load and parse sample
+                        setRawInput(sub.contohHtml);
+                        runParse(sub.contohHtml, 'html');
+                      }}
+                      style={{
+                        padding: '10px 10px',
+                        borderRadius: '10px',
+                        textAlign: 'left',
+                        cursor: 'pointer',
+                        transition: 'all 0.15s ease',
+                        border: isSelected ? '2px solid #818cf8' : '1px solid rgba(255, 255, 255, 0.12)',
+                        background: isSelected
+                          ? 'linear-gradient(135deg, rgba(99, 102, 241, 0.35) 0%, rgba(168, 85, 247, 0.35) 100%)'
+                          : 'rgba(255, 255, 255, 0.04)',
+                        color: '#ffffff',
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+                        <span style={{ fontSize: '13px', fontWeight: 800, color: isSelected ? '#a5b4fc' : '#ffffff' }}>
+                          {sub.id}
+                        </span>
+                        {hasIsian && (
+                          <span style={{ fontSize: '9px', background: '#f59e0b', color: '#000000', padding: '1px 5px', borderRadius: '4px', fontWeight: 800 }} title="Subtes ini memiliki soal isian singkat tanpa pilihan A-E">
+                            ISIAN
+                          </span>
+                        )}
+                      </div>
+                      <div style={{ fontSize: '11px', fontWeight: 600, color: '#e2e8f0', lineHeight: 1.25, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {sub.nama.split('(')[0].trim()}
+                      </div>
+                      <div style={{ fontSize: '10px', color: '#94a3b8', marginTop: '2px' }}>
+                        {sub.subjudul.split('·')[1]?.trim() || ''}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Detail Info Subtes Terpilih */}
+              {(() => {
+                const cur = UTBK_SUBTEST_PRESETS.find(p => p.id === activeUtbkSubtest) || UTBK_SUBTEST_PRESETS[0];
+                return (
+                  <div style={{
+                    marginTop: '12px',
+                    padding: '10px 14px',
+                    borderRadius: '8px',
+                    background: 'rgba(255, 255, 255, 0.06)',
+                    border: '1px solid rgba(255, 255, 255, 0.08)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    flexWrap: 'wrap',
+                    gap: '10px',
+                    fontSize: '11.5px',
+                  }}>
+                    <div>
+                      <span style={{ color: '#818cf8', fontWeight: 700 }}>Subtes Aktif: </span>
+                      <strong>{cur.nama}</strong> ({cur.subjudul})
+                      <span style={{ marginLeft: '10px', color: '#cbd5e1' }}>| Subbab: {cur.subbab.slice(0, 3).join(', ')}</span>
+                      {(cur.id === 'PK' || cur.id === 'PM') && (
+                        <span style={{ marginLeft: '8px', color: '#fcd34d', fontWeight: 700 }}>
+                          ⚡ Mendukung Isian Singkat (Numerik)
+                        </span>
+                      )}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setRawInput(cur.contohHtml);
+                        runParse(cur.contohHtml, 'html');
+                      }}
+                      style={{
+                        background: 'rgba(99, 102, 241, 0.25)',
+                        border: '1px solid #818cf8',
+                        color: '#c7d2fe',
+                        padding: '4px 10px',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                        fontSize: '11px',
+                        fontWeight: 700,
+                      }}
+                    >
+                      ⚡ Reset / Muat Contoh {cur.id}
+                    </button>
+                  </div>
+                );
+              })()}
+            </div>
+
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px', flexWrap: 'wrap', gap: 6 }}>
+                <label style={{ fontSize: '12px', color: '#6b7280', fontWeight: 600 }}>Paste {format === 'html' ? 'HTML MASTER' : format.toUpperCase()}</label>
+                <div style={{ fontSize: '11.5px', color: '#64748b' }}>
+                  Format: <strong>HTML Master Gemilang</strong> (didukung penuh untuk PG, Isian Singkat, & Bacaan Bersama)
+                </div>
+              </div>
+
+              <textarea<textarea
                 rows={14}
                 value={rawInput}
                 onChange={e => setRawInput(e.target.value)}
@@ -5979,6 +6625,162 @@ Ikuti PERSIS format/skema HTML di bawah ini buat cara nulis soalnya (struktur da
           }
         `}
       </style>
+
+      {/* MODAL PROMPT AI KHUSUS UTBK 2026 */}
+      {showUtbkPromptModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(15, 23, 42, 0.75)',
+          backdropFilter: 'blur(4px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 99999,
+          padding: '16px',
+        }}>
+          <div style={{
+            backgroundColor: '#ffffff',
+            borderRadius: '16px',
+            maxWidth: '820px',
+            width: '100%',
+            maxHeight: '90vh',
+            display: 'flex',
+            flexDirection: 'column',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+            border: '1px solid #e2e8f0',
+            overflow: 'hidden',
+          }}>
+            {/* Header Modal */}
+            <div style={{
+              padding: '16px 20px',
+              borderBottom: '1px solid #e2e8f0',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              background: '#0f172a',
+              color: '#ffffff',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <span style={{ fontSize: '20px' }}>🤖</span>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '15px', fontWeight: 800 }}>
+                    Prompt AI Resmi: UTBK {activeUtbkSubtest}
+                  </h3>
+                  <p style={{ margin: 0, fontSize: '11.5px', color: '#94a3b8' }}>
+                    Salin prompt ini ke Gemini Canvas atau ChatGPT bersama berkas PDF/soal Anda
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowUtbkPromptModal(false)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: '#94a3b8',
+                  fontSize: '20px',
+                  cursor: 'pointer',
+                  padding: '4px',
+                }}
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Isi Prompt */}
+            <div style={{ padding: '20px', overflowY: 'auto', flex: 1, backgroundColor: '#f8fafc' }}>
+              <div style={{
+                marginBottom: '14px',
+                padding: '12px 14px',
+                borderRadius: '10px',
+                background: '#eff6ff',
+                border: '1px solid #bfdbfe',
+                fontSize: '12px',
+                color: '#1e40af',
+                lineHeight: 1.5,
+              }}>
+                💡 <strong>Cara Penggunaan:</strong> Klik tombol <strong>"Salin Prompt"</strong> di bawah, lalu buka <strong>Gemini Canvas</strong> (gemini.google.com) atau <strong>ChatGPT</strong>. Tempel prompt ini dan unggah PDF bank soal UTBK Anda. AI akan menghasilkan kode HTML master yang 100% cocok dengan parser Gemilang.
+              </div>
+
+              <textarea
+                readOnly
+                rows={16}
+                value={buildUtbkAiPrompt(UTBK_SUBTEST_PRESETS.find(p => p.id === activeUtbkSubtest) || UTBK_SUBTEST_PRESETS[0])}
+                style={{
+                  width: '100%',
+                  fontFamily: 'monospace',
+                  fontSize: '12px',
+                  lineHeight: '1.5',
+                  padding: '14px',
+                  borderRadius: '10px',
+                  border: '1px solid #cbd5e1',
+                  backgroundColor: '#ffffff',
+                  color: '#334155',
+                  resize: 'none',
+                }}
+              />
+            </div>
+
+            {/* Footer Modal */}
+            <div style={{
+              padding: '14px 20px',
+              borderTop: '1px solid #e2e8f0',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'flex-end',
+              gap: '10px',
+              backgroundColor: '#ffffff',
+            }}>
+              <button
+                type="button"
+                onClick={() => setShowUtbkPromptModal(false)}
+                style={{
+                  padding: '8px 16px',
+                  borderRadius: '8px',
+                  border: '1px solid #d1d5db',
+                  background: '#ffffff',
+                  color: '#4b5563',
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                }}
+              >
+                Tutup
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const activePreset = UTBK_SUBTEST_PRESETS.find(p => p.id === activeUtbkSubtest) || UTBK_SUBTEST_PRESETS[0];
+                  const promptText = buildUtbkAiPrompt(activePreset);
+                  navigator.clipboard.writeText(promptText);
+                  setCopiedPromptToast(`Prompt AI untuk "${activePreset.nama}" berhasil disalin ke clipboard!`);
+                  setShowUtbkPromptModal(false);
+                  setTimeout(() => setCopiedPromptToast(''), 4000);
+                }}
+                style={{
+                  padding: '8px 18px',
+                  borderRadius: '8px',
+                  border: 'none',
+                  background: '#2563eb',
+                  color: '#ffffff',
+                  fontSize: '13px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                }}
+              >
+                📋 Salin ke Clipboard
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -6249,6 +7051,37 @@ function QuestionPreview({ question, mathReady, onCropImage, imageStatus = {}, d
           {q.satuan_jawaban && <span style={{ marginRight: '14px' }}>Satuan jawaban: <strong>{q.satuan_jawaban}</strong></span>}
           {q.toleransi_jawaban !== null && <span style={{ marginRight: '14px' }}>Toleransi: <strong>{q.toleransi_jawaban}</strong></span>}
           {safeArray(q.jawaban_ekuivalen).length > 0 && <span>Jawaban ekuivalen: <strong>{q.jawaban_ekuivalen.join(', ')}</strong></span>}
+        </div>
+      )}
+
+      {/* KOTAK ISIAN SINGKAT / NUMERIK (UTBK PK & PM) */}
+      {['isian_singkat', 'numerik'].includes(q.tipe) && (
+        <div style={{ marginTop: '16px', borderRadius: '12px', padding: '14px 16px', background: '#f8fafc', border: '1.5px dashed #94a3b8' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+            <span style={{ fontSize: '11px', fontWeight: 800, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+              ✍️ FORMAT SOAL: ISIAN SINGKAT (SISWA KETIK JAWABAN LANGSUNG)
+            </span>
+            <span style={{ fontSize: '11px', background: '#e0f2fe', color: '#0369a1', padding: '2px 8px', borderRadius: '6px', fontWeight: 700 }}>
+              CBT UTBK Mode
+            </span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+            <div style={{ flex: '1', minWidth: '200px' }}>
+              <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '4px' }}>Kotak isian yang akan diisi siswa:</div>
+              <input
+                type="text"
+                disabled
+                placeholder="Siswa mengetik angka / jawaban di sini..."
+                style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid #cbd5e1', background: '#ffffff', color: '#94a3b8', fontStyle: 'italic', fontSize: '13.5px' }}
+              />
+            </div>
+            <div style={{ background: '#ecfdf5', border: '1.5px solid #6ee7b7', borderRadius: '10px', padding: '8px 14px', minWidth: '160px' }}>
+              <div style={{ fontSize: '11px', fontWeight: 700, color: '#047857' }}>KUNCI RESMI SISTEM</div>
+              <div style={{ fontSize: '16px', fontWeight: 800, color: '#065f46', fontFamily: 'monospace', marginTop: '2px' }}>
+                {q.kunci_jawaban || '—'}
+              </div>
+            </div>
+          </div>
         </div>
       )}
 

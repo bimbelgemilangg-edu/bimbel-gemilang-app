@@ -202,6 +202,7 @@ const SidebarAdmin = () => {
       items: [
         { name: 'Perpustakaan Digital', path: '/admin/perpustakaan', icon: <Library size={18} /> },
         { name: 'Bank Soal & TryOut', path: '/admin/tobk-publik', icon: <Trophy size={18} /> },
+        { name: 'Import Soal (AI & UTBK)', path: '/admin/bank-soal/import', icon: <FileUp size={18} /> },
         { name: 'Perkakas & Modul AI', path: '/admin/perkakas', icon: <Toolbox size={18} /> },
       ]
     },

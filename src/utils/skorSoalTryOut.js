@@ -81,7 +81,7 @@ function safeArrayLokal(v) {
 // 🔥 BARU: cocokkan jawaban isian_singkat/numerik -- 2 tipe soal yang
 // tadinya SAMA SEKALI TIDAK BISA dikerjain di Try Out (cuma diblokir
 // dari keranjang admin, lihat tipeDidukung() di TerbitkanTryOutPage).
-function cocokJawabanSingkat(soal, jawabanSiswa) {
+export function cocokJawabanSingkat(soal, jawabanSiswa) {
   const jawaban = String(jawabanSiswa ?? '').trim();
   if (!jawaban) return 0;
   const kandidat = [soal.kunciJawaban, ...(soal.jawabanEkuivalen || [])]

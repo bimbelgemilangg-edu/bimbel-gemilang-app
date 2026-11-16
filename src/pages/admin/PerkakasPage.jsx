@@ -41,7 +41,7 @@ const GRUP = [
     keterangan: 'Perkakas pengolahan gudang soal: dari impor mentah sampai terbit ke siswa.',
     items: [
       { path: '/admin/bank-soal/mesin', nama: 'Mesin Bank Soal', ikon: Sparkles, desc: 'TEMPAT UPLOAD JSON/TXT SOAL (hasil AI atau scan) — lalu auto-tag jenjang, kelas, mapel, bab. Juga melihat & mengedit gudang soal.' },
-      { path: '/admin/bank-soal/import', nama: 'Import Buku & Soal (AI)', ikon: Brain, desc: 'Upload PDF/buku/HTML (bukan JSON) — AI mengekstraknya jadi soal terstruktur beserta gambarnya.' },
+      { path: '/admin/bank-soal/import', nama: 'Import Soal (AI & UTBK)', ikon: Brain, desc: 'Pusat impor soal UTBK 7 subtes & buku PDF — didukung prompt AI Gemini/ChatGPT dan soal isian singkat.' },
       // 🔥 BARU (2026-10-07, keluhan owner: menu baru "tidak pernah terlihat"):
       // perkakas baru WAJIB punya kartu di hub ini SELAIN entri sidebar,
       // sebab kebiasaan lama admin adalah membuka hub perkakas.
