@@ -28,6 +28,7 @@ import React, {
   useCallback,
   useMemo,
   useEffect,
+  useRef,
 } from 'react';
 
 import SidebarAdmin from '../../../components/SidebarAdmin';
@@ -590,9 +591,9 @@ KONTEKS & METADATA NASKAH
 - Program: UTBK-SNBT 2026 (Seleksi Nasional Berdasarkan Tes)
 - Target Subtes: ${namaSubtes}
 - Mata Pelajaran Resmi Gemilang: ${namaMapel}
-- Jenjang: SMA / MA
-- Kelas: 12
-- Jenis Ujian: utbk
+- Jenjang: UTBK/SNBT
+- Kelas: Semua
+- Jenis Ujian: SNBT/UTBK
 
 ============================================================
 DAFTAR SUBBAB / MATERI RESMI (Isikan ke data-field="materi")
@@ -4395,6 +4396,8 @@ export default function ImportHasilScanPage() {
   };
 
   const [saving, setSaving] = useState(false);
+  const savingRef = useRef(false);
+  const [saveStepText, setSaveStepText] = useState('');
   const [saveResult, setSaveResult] = useState(null);
   const [saveLog, setSaveLog] = useState([]);
 
@@ -5044,288 +5047,303 @@ Ikuti PERSIS format/skema HTML di bawah ini buat cara nulis soalnya (struktur da
   // ----------------------------------------------------------
 
   const handleSave = useCallback(async () => {
-    if (!soalList.length) return;
+    // 🛡️ Kunci instan anti double-click (mencegah klik ganda menduplikasi soal)
+    if (savingRef.current) return;
 
-    // 🔥 BARU: GERBANG WAJIB -- Mata Pelajaran, Jenis Ujian, dan Jenjang
-    // TIDAK BOLEH kosong. Ditemukan kasus nyata: dulu field-field ini
-    // punya nilai default (Matematika/SMA-MA/Kelas 10) yang diam-diam
-    // ke-pakai kalau admin lupa ganti -- soal TKA Bahasa Indonesia SMP
-    // hampir tersimpan dengan label Matematika/SMA/Kelas 10 tanpa
-    // disadari. Sekarang field-field ini KOSONG by default (memaksa
-    // pilihan sadar), dan di sini ditolak keras kalau masih kosong.
+    // 1. Cek apakah ada naskah yang siap disimpan
+    if (!soalList || soalList.length === 0) {
+      if (rawInput && rawInput.trim()) {
+        try {
+          runParse(rawInput, format);
+          alert("Naskah soal baru saja diekstrak ke pratinjau. Silakan periksa daftar soal yang muncul di bawah, lalu klik \"Simpan Soal Valid ke Bank Soal\" kembali.");
+        } catch (err) {
+          alert("Belum ada soal yang berhasil di-parse. Silakan klik tombol \"🔍 Parse & Preview\" terlebih dahulu.");
+        }
+        return;
+      }
+      alert("Belum ada soal yang siap disimpan. Tempelkan naskah soal dan klik \"🔍 Parse & Preview\" terlebih dahulu.");
+      return;
+    }
+
+    // 2. Validasi Metadata Wajib
     const metadataKurang = [];
-    if (!mataPelajaran) metadataKurang.push('Mata Pelajaran');
-    if (!jenisUjian) metadataKurang.push('Jenis Ujian');
-    if (!jenjang) metadataKurang.push('Jenjang');
+    if (!mataPelajaran) metadataKurang.push("Mata Pelajaran");
+    if (!jenisUjian) metadataKurang.push("Jenis Ujian");
+    if (!jenjang) metadataKurang.push("Jenjang");
     if (metadataKurang.length > 0) {
-      alert(`Lengkapi dulu di Metadata Soal: ${metadataKurang.join(', ')}. Ini wajib diisi supaya soal tidak salah label saat disimpan.`);
+      alert(`Lengkapi dulu di panel Metadata Soal: ${metadataKurang.join(", ")}. Ini wajib diisi agar soal tersimpan dengan label yang tepat.`);
       return;
     }
 
-    // 🔥 BARU: GERBANG WAJIB -- Folder Sumber wajib dipilih/dibuat.
-    // Tanpa ini, soal tidak punya "rumah" (buku/PDF asal) yang jelas,
-    // dan tidak bisa dikelompokkan/dijelajahi per folder+bab nanti di
-    // Terbitkan Kuis (keranjang lintas-folder).
-    if (!folderAktif) {
-      alert('Pilih atau buat Folder Sumber (buku/PDF) dulu di panel "📁 Folder Sumber" sebelum menyimpan.');
-      return;
-    }
-
-    // 🔥 BARU: GERBANG WAJIB -- tolak simpan kalau masih ada gambar
-    // yang terdeteksi rusak/palsu (hasil validasi Image() beneran, lihat
-    // runValidasiGambar) atau masih dalam proses pengecekan. Ini yang
-    // memastikan soal dengan gambar bohongan dari AI (base64 kelihatan
-    // valid tapi datanya korup) TIDAK BISA lolos ke Bank Soal begitu
-    // saja -- admin wajib upload gambar asli manual dulu.
+    // 3. Validasi Gambar (checking / broken)
     const cekKunciSoal = (q) => [
-      ...safeArray(q.gambar).map((_, i) => kunciGambar(q._idx, 'soal', i)),
-      ...(q.bacaan ? safeArray(q.bacaan.gambar).map((_, i) => kunciGambar(q._idx, 'bacaan', i)) : []),
+      ...safeArray(q.gambar).map((_, i) => kunciGambar(q._idx, "soal", i)),
+      ...(q.bacaan ? safeArray(q.bacaan.gambar).map((_, i) => kunciGambar(q._idx, "bacaan", i)) : []),
       ...safeArray(q.opsi_jawaban).flatMap((opt, oi) => safeArray(opt.gambar).map((_, i) => kunciGambar(q._idx, { opsi: oi }, i))),
     ];
 
-    const soalMasihDicek = soalList.filter(q => cekKunciSoal(q).some(k => imageStatus[k] === 'checking'));
+    const soalMasihDicek = soalList.filter(q => cekKunciSoal(q).some(k => imageStatus[k] === "checking"));
     if (soalMasihDicek.length > 0) {
-      alert('Masih memeriksa validitas gambar, tunggu beberapa detik lagi lalu coba simpan ulang.');
+      alert("Sistem masih memverifikasi keabsahan gambar, tunggu beberapa detik lagi lalu coba klik simpan ulang.");
       return;
     }
 
-    const soalGambarRusak = soalList.filter(q => cekKunciSoal(q).some(k => imageStatus[k] === 'broken'));
+    const soalGambarRusak = soalList.filter(q => cekKunciSoal(q).some(k => imageStatus[k] === "broken"));
     if (soalGambarRusak.length > 0) {
       const daftar = soalGambarRusak
-        .map(q => `Soal ${q.nomor}${q.paket ? ` (Paket ${q.paket})` : ''}`)
-        .join(', ');
+        .map(q => `Soal ${q.nomor}${q.paket ? ` (Paket ${q.paket})` : ""}`)
+        .join(", ");
       alert(
-        `Tidak bisa disimpan -- ${soalGambarRusak.length} soal punya gambar RUSAK/PALSU dari hasil scan AI:\n\n${daftar}\n\n` +
-        'Buka panel "KELOLA GAMBAR" di tiap soal itu dan klik "Upload Gambar Manual" untuk mengganti dengan gambar asli, baru simpan lagi.',
+        `Tidak bisa disimpan -- ${soalGambarRusak.length} soal memiliki gambar RUSAK/PALSU dari hasil scan AI:\n\n${daftar}\n\n` +
+        "Buka panel \"KELOLA GAMBAR\" pada soal tersebut dan klik \"Upload Gambar Manual\" untuk mengganti dengan gambar asli sebelum menyimpan.",
       );
       return;
     }
 
+    // 4. Filter Soal Valid
     const invalid = soalList.filter(q => !q.valid);
     if (invalid.length > 0) {
       const proceed = window.confirm(
-        `Ada ${invalid.length} soal yang belum lengkap/valid.\n\nTetap simpan soal yang valid saja?`,
+        `Ada ${invalid.length} soal yang belum lengkap atau belum valid.\n\nTetap simpan ${soalList.length - invalid.length} soal yang valid saja?`,
       );
       if (!proceed) return;
     }
 
     const validSoal = soalList.filter(q => q.valid);
     if (validSoal.length === 0) {
-      setSaveResult({ success: false, error: 'Tidak ada soal valid untuk disimpan.' });
+      setSaveResult({ success: false, error: "Tidak ada soal valid untuk disimpan." });
       return;
     }
 
-    // 🔥 BARU: DETEKSI DUPLIKAT -- ditemukan kasus nyata: kalau PDF yang
-    // sama diimpor 2x (sengaja atau lupa sudah pernah), sistem sebelum
-    // ini diam-diam menyimpan 2 dokumen terpisah untuk soal yang
-    // ISINYA SAMA PERSIS -- siswa bisa ketemu "soal yang sama" 2x, dan
-    // progres Leitner Box-nya kepecah jadi 2 record padahal seharusnya
-    // 1. Sekarang dicek DUA arah sebelum benar-benar menulis:
-    // (1) terhadap SELURUH Bank Soal yang sudah ada, (2) sesama soal
-    // di DALAM batch yang mau disimpan ini (jaga-jaga kalau admin gak
-    // sadar menempel konten yang sama 2x dalam 1 sesi import).
-    let peringatanDuplikat = [];
-    let jumlahBedaGambar = 0;
-    try {
-      const existingSnap = await getDocs(collection(db, 'bank_soal'));
-      const bank = existingSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
-      const hasil = bandingkanDuplikat(validSoal, bank);
-
-      hasil.duplikatPersis.forEach((x) => {
-        peringatanDuplikat.push(
-          `DUPLIKAT PERSIS (teks+gambar+isi+kunci sama): soal ${x.baru.nomor}${x.baru.paket ? ` (Paket ${x.baru.paket})` : ''} -- "${x.pratinjau}…" sudah ada di ${x.sumber === 'bank' ? 'Bank Soal' : 'batch ini juga'}.`
-        );
-      });
-      hasil.kembarBedaKunci.forEach((x) => {
-        peringatanDuplikat.push(
-          `KEMBAR TAPI JAWABAN BEDA: soal ${x.baru.nomor}${x.baru.paket ? ` (Paket ${x.baru.paket})` : ''} -- "${x.pratinjau}…" sama teks+gambar+isi dengan soal di ${x.sumber === 'bank' ? 'Bank Soal' : 'batch ini'}, tetapi KUNCINYA BERBEDA. Ini BUKAN duplikat yang aman dibuang: salah satunya hampir pasti salah kunci. Periksa dulu.`
-        );
-      });
-      jumlahBedaGambar = hasil.teksSamaGambarBeda;
-    } catch (e) {
-      console.error('Gagal cek duplikat (dilewati, tidak menghalangi simpan):', e);
-    }
-
-    if (peringatanDuplikat.length > 0) {
-      const proceed = window.confirm(
-        `⚠️ Terdeteksi ${peringatanDuplikat.length} kemungkinan soal DUPLIKAT:\n\n${peringatanDuplikat.slice(0, 8).join('\n')}` +
-        (peringatanDuplikat.length > 8 ? `\n...dan ${peringatanDuplikat.length - 8} lainnya.` : '') +
-        (jumlahBedaGambar ? `\n\nℹ️ ${jumlahBedaGambar} butir punya perintah sama tetapi GAMBAR/ISI berbeda — itu soal BERBEDA dan sengaja tidak diperingatkan.` : '') +
-        `\n\nKlik OK untuk TETAP simpan semua (termasuk yang mirip di atas), atau Cancel untuk batal dan cek manual dulu.`,
-      );
-      if (!proceed) return;
-    }
-
+    // 🔒 AKTIFKAN LOCK & STATE SAVING SEKETIKA
+    savingRef.current = true;
     setSaving(true);
     setSaveResult(null);
     setSaveLog([]);
+    setSaveStepText("Memeriksa duplikasi soal...");
 
     const logs = [];
     const addLog = message => { logs.push(message); setSaveLog([...logs]); };
 
-    const meta = {
-      mataPelajaran,
-      tingkatKelas,
-      jenjang,
-      jenisUjian,
-      folderId: folderAktif?.id || null,
-      kategori,
-      tags: tags.split(',').map(tag => tag.trim()).filter(Boolean),
-      tingkatKesulitan,
-      sumberFile,
-      sumberAI,
-      // 🔥 BARU (bug nyata ditemukan): soal per-bab biasanya ditandai
-      // `materi` yang SPESIFIK per sub-topik (mis. "Operasi Bilangan
-      // Bulat (soal cerita suhu)"), BUKAN nama bab besar ("Bilangan
-      // Bulat dan Pecahan") -- jadi pencocokan teks longgar ke judul
-      // Modul Materi GAGAL buat sebagian besar soal. Sekarang setiap
-      // soal dalam 1x import yang PUNYA rangkuman materi langsung
-      // ditandai EKSPLISIT `babBuku` = judul bab yang sama persis
-      // kayak judul Modul Materi-nya -- gak nebak dari teks lagi,
-      // jadi PASTI ketemu di sisi siswa (LatihanTKA.jsx dkk).
-      babBuku: (buatJugaModul && rangkumanTerdeteksi && judulBabInput) ? judulBabInput.trim() : null,
-    };
-
-    // Clone dalam (soal + gambar soal + gambar tiap opsi).
-    const soalProcessed = validSoal.map(q => ({
-      ...q,
-      gambar: safeArray(q.gambar).map(image => ({ ...image })),
-      bacaan: q.bacaan ? { ...q.bacaan, gambar: safeArray(q.bacaan.gambar).map(image => ({ ...image })) } : null,
-      opsi_jawaban: safeArray(q.opsi_jawaban).map(opt => ({
-        ...opt,
-        gambar: safeArray(opt.gambar).map(image => ({ ...image })),
-      })),
-    }));
-
-    // ------------------------------------------------------
-    // KUMPULKAN SEMUA GAMBAR BASE64 (gambar soal + gambar tiap opsi)
-    // ------------------------------------------------------
-
-    const toUpload = [];
-
-    soalProcessed.forEach((question, qi) => {
-      safeArray(question.gambar).forEach((image, gi) => {
-        if (safeString(image.dataUrl).startsWith('data:image')) {
-          toUpload.push({
-            key: `q${qi}-soal-g${gi}-${Date.now()}-${Math.random().toString(36).slice(2)}`,
-            dataUrl: image.dataUrl,
-            kind: 'soal',
-            qi, gi,
-          });
+    try {
+      // 5. Auto-Create Folder Sumber jika admin belum memilih
+      let targetFolder = folderAktif;
+      if (!targetFolder?.id) {
+        setSaveStepText("Menyiapkan Folder Sumber...");
+        addLog("📁 Folder Sumber belum dipilih. Membuat folder otomatis untuk batch ini...");
+        const namaFolderOtomatis = (sumberFile && sumberFile.trim())
+          || `${mataPelajaran} - ${jenisUjian} (${new Date().toLocaleDateString("id-ID")})`;
+        try {
+          const payloadFolder = {
+            judul: namaFolderOtomatis,
+            coverUrl: "",
+            mataPelajaran: mataPelajaran || "Semua",
+            jenisUjian: jenisUjian || "Lainnya",
+            jenjang: jenjang || "Semua",
+            jumlahSoal: 0,
+            createdAt: serverTimestamp(),
+            createdBy: "admin",
+          };
+          const docRef = await addDoc(collection(db, "sumber_soal"), payloadFolder);
+          targetFolder = { id: docRef.id, ...payloadFolder };
+          setDaftarFolder(prev => [targetFolder, ...prev]);
+          setFolderAktif(targetFolder);
+          addLog(`✅ Folder Sumber "${namaFolderOtomatis}" siap digunakan.`);
+        } catch (errF) {
+          console.warn("Gagal membuat folder otomatis:", errF);
         }
-      });
+      }
 
-      if (question.bacaan) {
-        safeArray(question.bacaan.gambar).forEach((image, gi) => {
-          if (safeString(image.dataUrl).startsWith('data:image')) {
+      // 6. DETEKSI DUPLIKAT TERFILTER (Performa Cepat)
+      let peringatanDuplikat = [];
+      let jumlahBedaGambar = 0;
+      try {
+        setSaveStepText("Memeriksa riwayat bank soal...");
+        addLog("🔍 Memeriksa kemungkinan soal duplikat di database...");
+        const qBank = mataPelajaran
+          ? query(collection(db, "bank_soal"), where("mataPelajaran", "==", mataPelajaran))
+          : collection(db, "bank_soal");
+        const existingSnap = await getDocs(qBank);
+        const bank = existingSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
+        const hasil = bandingkanDuplikat(validSoal, bank);
+
+        hasil.duplikatPersis.forEach((x) => {
+          peringatanDuplikat.push(
+            `DUPLIKAT PERSIS (teks+gambar+isi+kunci sama): soal ${x.baru.nomor}${x.baru.paket ? ` (Paket ${x.baru.paket})` : ""} -- "${x.pratinjau}…" sudah ada di ${x.sumber === "bank" ? "Bank Soal" : "batch ini juga"}.`
+          );
+        });
+        hasil.kembarBedaKunci.forEach((x) => {
+          peringatanDuplikat.push(
+            `KEMBAR TAPI JAWABAN BEDA: soal ${x.baru.nomor}${x.baru.paket ? ` (Paket ${x.baru.paket})` : ""} -- "${x.pratinjau}…" sama teks+gambar+isi dengan soal di ${x.sumber === "bank" ? "Bank Soal" : "batch ini"}, tetapi KUNCINYA BERBEDA. Periksa dulu.`
+          );
+        });
+        jumlahBedaGambar = hasil.teksSamaGambarBeda;
+      } catch (e) {
+        console.error("Gagal cek duplikat (dilewati, tidak menghalangi simpan):", e);
+      }
+
+      if (peringatanDuplikat.length > 0) {
+        const proceed = window.confirm(
+          `⚠️ Terdeteksi ${peringatanDuplikat.length} kemungkinan soal DUPLIKAT:\n\n${peringatanDuplikat.slice(0, 8).join("\n")}` +
+          (peringatanDuplikat.length > 8 ? `\n...dan ${peringatanDuplikat.length - 8} lainnya.` : "") +
+          (jumlahBedaGambar ? `\n\nℹ️ ${jumlahBedaGambar} butir punya perintah sama tetapi GAMBAR/ISI berbeda (soal berbeda).` : "") +
+          `\n\nKlik OK untuk TETAP simpan semua, atau Cancel untuk membatalkan simpan.`,
+        );
+        if (!proceed) {
+          addLog("❌ Penyimpanan dibatalkan oleh admin karena indikasi duplikat.");
+          return;
+        }
+      }
+
+      const meta = {
+        mataPelajaran,
+        tingkatKelas,
+        jenjang,
+        jenisUjian,
+        folderId: targetFolder?.id || null,
+        kategori,
+        tags: tags.split(",").map(tag => tag.trim()).filter(Boolean),
+        tingkatKesulitan,
+        sumberFile,
+        sumberAI,
+        babBuku: (buatJugaModul && rangkumanTerdeteksi && judulBabInput) ? judulBabInput.trim() : null,
+      };
+
+      // Clone dalam (soal + gambar soal + gambar tiap opsi).
+      const soalProcessed = validSoal.map(q => ({
+        ...q,
+        gambar: safeArray(q.gambar).map(image => ({ ...image })),
+        bacaan: q.bacaan ? { ...q.bacaan, gambar: safeArray(q.bacaan.gambar).map(image => ({ ...image })) } : null,
+        opsi_jawaban: safeArray(q.opsi_jawaban).map(opt => ({
+          ...opt,
+          gambar: safeArray(opt.gambar).map(image => ({ ...image })),
+        })),
+      }));
+
+      // 7. KUMPULKAN DAN UPLOAD GAMBAR BASE64
+      const toUpload = [];
+      soalProcessed.forEach((question, qi) => {
+        safeArray(question.gambar).forEach((image, gi) => {
+          if (safeString(image.dataUrl).startsWith("data:image")) {
             toUpload.push({
-              key: `q${qi}-bacaan-g${gi}-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+              key: `q${qi}-soal-g${gi}-${Date.now()}-${Math.random().toString(36).slice(2)}`,
               dataUrl: image.dataUrl,
-              kind: 'bacaan',
+              kind: "soal",
               qi, gi,
             });
           }
         });
-      }
 
-      safeArray(question.opsi_jawaban).forEach((opt, oi) => {
-        safeArray(opt.gambar).forEach((image, gi) => {
-          if (safeString(image.dataUrl).startsWith('data:image')) {
-            toUpload.push({
-              key: `q${qi}-opsi${oi}-g${gi}-${Date.now()}-${Math.random().toString(36).slice(2)}`,
-              dataUrl: image.dataUrl,
-              kind: 'opsi',
-              qi, oi, gi,
-            });
-          }
-        });
-      });
-    });
-
-    if (toUpload.length > 0) {
-      addLog(`⏳ Menyiapkan ${toUpload.length} gambar (soal + opsi)...`);
-
-      const urlMap = {};
-      const BATCH_SIZE = 2; // Unggah 2 gambar per request agar selalu di bawah batas 4.5 MB Vercel Serverless (HTTP 413)
-      const totalBatches = Math.ceil(toUpload.length / BATCH_SIZE);
-      let totalUploaded = 0;
-      let totalErrors = 0;
-
-      for (let bi = 0; bi < toUpload.length; bi += BATCH_SIZE) {
-        const batch = toUpload.slice(bi, bi + BATCH_SIZE);
-        const batchIndex = Math.floor(bi / BATCH_SIZE) + 1;
-        if (totalBatches > 1) {
-          addLog(`⏳ Mengunggah gambar batch ${batchIndex}/${totalBatches} (${batch.length} gambar)...`);
-        }
-
-        try {
-          const response = await fetch('/api/uploadBankSoalImages', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              images: batch.map(item => ({ key: item.key, dataUrl: item.dataUrl })),
-            }),
-          });
-
-          let result = null;
-          try { result = await response.json(); } catch { result = null; }
-
-          if (!response.ok) {
-            throw new Error(result?.error || `Server upload mengembalikan HTTP ${response.status}`);
-          }
-
-          safeArray(result?.uploaded).forEach(upload => {
-            if (upload?.key && upload?.url) {
-              urlMap[upload.key] = upload.url;
-              totalUploaded++;
+        if (question.bacaan) {
+          safeArray(question.bacaan.gambar).forEach((image, gi) => {
+            if (safeString(image.dataUrl).startsWith("data:image")) {
+              toUpload.push({
+                key: `q${qi}-bacaan-g${gi}-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+                dataUrl: image.dataUrl,
+                kind: "bacaan",
+                qi, gi,
+              });
             }
           });
-
-          const uploadErrors = safeArray(result?.errors);
-          if (uploadErrors.length) totalErrors += uploadErrors.length;
-        } catch (batchErr) {
-          console.error(`Batch upload error (batch ${batchIndex}):`, batchErr);
-          addLog(`⚠️ Gagal unggah batch ${batchIndex}: ${batchErr?.message || 'error jaringan'}`);
-          totalErrors += batch.length;
         }
-      }
 
-      toUpload.forEach(item => {
-        const uploadedUrl = urlMap[item.key];
-        if (!uploadedUrl) return;
-
-        if (item.kind === 'soal') {
-          const images = [...safeArray(soalProcessed[item.qi].gambar)];
-          images[item.gi] = { ...images[item.gi], uploadedUrl, dataUrl: '' };
-          soalProcessed[item.qi] = { ...soalProcessed[item.qi], gambar: images };
-        } else if (item.kind === 'bacaan') {
-          const bacaan = soalProcessed[item.qi].bacaan;
-          const images = [...safeArray(bacaan?.gambar)];
-          images[item.gi] = { ...images[item.gi], uploadedUrl, dataUrl: '' };
-          soalProcessed[item.qi] = { ...soalProcessed[item.qi], bacaan: { ...bacaan, gambar: images } };
-        } else {
-          const opsi = [...safeArray(soalProcessed[item.qi].opsi_jawaban)];
-          const opt = opsi[item.oi];
-          const images = [...safeArray(opt.gambar)];
-          images[item.gi] = { ...images[item.gi], uploadedUrl, dataUrl: '' };
-          opsi[item.oi] = { ...opt, gambar: images };
-          soalProcessed[item.qi] = { ...soalProcessed[item.qi], opsi_jawaban: opsi };
-        }
+        safeArray(question.opsi_jawaban).forEach((opt, oi) => {
+          safeArray(opt.gambar).forEach((image, gi) => {
+            if (safeString(image.dataUrl).startsWith("data:image")) {
+              toUpload.push({
+                key: `q${qi}-opsi${oi}-g${gi}-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+                dataUrl: image.dataUrl,
+                kind: "opsi",
+                qi, oi, gi,
+              });
+            }
+          });
+        });
       });
 
-      if (totalUploaded > 0) {
-        addLog(`✅ ${totalUploaded}/${toUpload.length} gambar berhasil diproses.`);
-      }
-      if (totalErrors > 0) {
-        addLog(`⚠️ ${totalErrors} gambar tidak terunggah ke storage. Gambar tetap disimpan sebagai rujukan.`);
-      }
-    }
+      if (toUpload.length > 0) {
+        setSaveStepText(`Menyiapkan ${toUpload.length} gambar...`);
+        addLog(`⏳ Menyiapkan ${toUpload.length} gambar (soal + opsi)...`);
 
-    // ------------------------------------------------------
-    // FIRESTORE
-    // ------------------------------------------------------
+        const urlMap = {};
+        const BATCH_SIZE = 2;
+        const totalBatches = Math.ceil(toUpload.length / BATCH_SIZE);
+        let totalUploaded = 0;
+        let totalErrors = 0;
 
-    try {
+        for (let bi = 0; bi < toUpload.length; bi += BATCH_SIZE) {
+          const batch = toUpload.slice(bi, bi + BATCH_SIZE);
+          const batchIndex = Math.floor(bi / BATCH_SIZE) + 1;
+          setSaveStepText(`Mengunggah gambar (${batchIndex}/${totalBatches})...`);
+          if (totalBatches > 1) {
+            addLog(`⏳ Mengunggah gambar batch ${batchIndex}/${totalBatches} (${batch.length} gambar)...`);
+          }
+
+          try {
+            const response = await fetch("/api/uploadBankSoalImages", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                images: batch.map(item => ({ key: item.key, dataUrl: item.dataUrl })),
+              }),
+            });
+
+            let result = null;
+            try { result = await response.json(); } catch { result = null; }
+
+            if (!response.ok) {
+              throw new Error(result?.error || `Server upload mengembalikan HTTP ${response.status}`);
+            }
+
+            safeArray(result?.uploaded).forEach(upload => {
+              if (upload?.key && upload?.url) {
+                urlMap[upload.key] = upload.url;
+                totalUploaded++;
+              }
+            });
+
+            const uploadErrors = safeArray(result?.errors);
+            if (uploadErrors.length) totalErrors += uploadErrors.length;
+          } catch (batchErr) {
+            console.error(`Batch upload error (batch ${batchIndex}):`, batchErr);
+            addLog(`⚠️ Gagal unggah batch ${batchIndex}: ${batchErr?.message || "error jaringan"}`);
+            totalErrors += batch.length;
+          }
+        }
+
+        toUpload.forEach(item => {
+          const uploadedUrl = urlMap[item.key];
+          if (!uploadedUrl) return;
+
+          if (item.kind === "soal") {
+            const images = [...safeArray(soalProcessed[item.qi].gambar)];
+            images[item.gi] = { ...images[item.gi], uploadedUrl, dataUrl: "" };
+            soalProcessed[item.qi] = { ...soalProcessed[item.qi], gambar: images };
+          } else if (item.kind === "bacaan") {
+            const bacaan = soalProcessed[item.qi].bacaan;
+            const images = [...safeArray(bacaan?.gambar)];
+            images[item.gi] = { ...images[item.gi], uploadedUrl, dataUrl: "" };
+            soalProcessed[item.qi] = { ...soalProcessed[item.qi], bacaan: { ...bacaan, gambar: images } };
+          } else {
+            const opsi = [...safeArray(soalProcessed[item.qi].opsi_jawaban)];
+            const opt = opsi[item.oi];
+            const images = [...safeArray(opt.gambar)];
+            images[item.gi] = { ...images[item.gi], uploadedUrl, dataUrl: "" };
+            opsi[item.oi] = { ...opt, gambar: images };
+            soalProcessed[item.qi] = { ...soalProcessed[item.qi], opsi_jawaban: opsi };
+          }
+        });
+
+        if (totalUploaded > 0) {
+          addLog(`✅ ${totalUploaded}/${toUpload.length} gambar berhasil diproses.`);
+        }
+        if (totalErrors > 0) {
+          addLog(`⚠️ ${totalErrors} gambar tidak terunggah ke storage. Gambar tetap disimpan sebagai rujukan.`);
+        }
+      }
+
+      // 8. SIMPAN KE FIRESTORE (BATCH WRITE)
+      setSaveStepText(`Menyimpan ${soalProcessed.length} soal ke Bank Soal...`);
       addLog(`📝 Menyimpan ${soalProcessed.length} soal valid ke Firestore...`);
 
       const CHUNK = 400;
@@ -5342,72 +5360,59 @@ Ikuti PERSIS format/skema HTML di bawah ini buat cara nulis soalnya (struktur da
 
         await batch.commit();
         saved += chunk.length;
+        setSaveStepText(`Menyimpan ke Bank Soal (${saved}/${soalProcessed.length})...`);
         addLog(`💾 ${saved}/${soalProcessed.length} soal tersimpan...`);
       }
 
       addLog(`🎉 Selesai! ${saved} soal berhasil masuk Bank Soal.`);
 
-      // 🔥 BARU: catat berapa soal masuk ke folder ini -- dipakai
-      // TerbitkanKuisPage buat tampilkan "X soal" per folder tanpa perlu
-      // query bank_soal setiap kali buka daftar folder.
-      if (folderAktif?.id && saved > 0) {
+      // Update jumlah soal di folder sumber
+      if (targetFolder?.id && saved > 0) {
         try {
-          await updateDoc(doc(db, 'sumber_soal', folderAktif.id), { jumlahSoal: increment(saved) });
-          setFolderAktif(prev => prev ? { ...prev, jumlahSoal: (prev.jumlahSoal || 0) + saved } : prev);
+          await updateDoc(doc(db, "sumber_soal", targetFolder.id), { jumlahSoal: increment(saved) });
+          setFolderAktif(prev => prev ? { ...prev, jumlahSoal: (prev.jumlahSoal || 0) + saved } : targetFolder);
         } catch (e) {
-          console.error('Gagal update jumlahSoal folder:', e);
+          console.error("Gagal update jumlahSoal folder:", e);
         }
       }
 
-      // 🔥 BARU: kalau rangkuman materi kedeteksi & admin centang
-      // "buat juga jadi Modul Materi", bikin 1 dokumen di koleksi yang
-      // SAMA PERSIS dipakai halaman Kelola Materi (bimbel_modul) --
-      // formatnya disamain PERSIS (field & tipe block "text") biar
-      // hasilnya BISA DIBUKA & DIEDIT ULANG normal lewat halaman itu,
-      // bukan data "asing" yang beda skema.
+      // Buat modul materi jika dicentang
       if (buatJugaModul && rangkumanTerdeteksi && saved > 0) {
         try {
-          const judulModul = (judulBabInput || 'Materi Tanpa Judul').toUpperCase();
-          await addDoc(collection(db, 'bimbel_modul'), {
+          const judulModul = (judulBabInput || "Materi Tanpa Judul").toUpperCase();
+          await addDoc(collection(db, "bimbel_modul"), {
             title: judulModul,
-            // 🔥 BARU: field pencocokan EKSAK (bukan tebak dari teks
-            // judul lagi) -- persis sama isinya kayak `babBuku` yang
-            // ditempel ke tiap soal di batch ini.
             babBuku: judulBabInput.trim(),
-            subject: (mataPelajaran || 'Umum').toUpperCase(),
-            guruId: 'admin', // dibuat admin, bukan guru spesifik -- guru manapun yang ngajar kelas terkait tetap bisa pakai
-            guruName: 'Admin (Import Otomatis)',
-            kodeMapel: '',
-            coverImage: '', coverFilePath: '', description: '',
+            subject: (mataPelajaran || "Umum").toUpperCase(),
+            guruId: "admin",
+            guruName: "Admin (Import Otomatis)",
+            kodeMapel: "",
+            coverImage: "", coverFilePath: "", description: "",
             blocks: [{
               id: Date.now(),
-              type: 'text',
-              title: '📄 Rangkuman Materi',
+              type: "text",
+              title: "📄 Rangkuman Materi",
               content: rangkumanTerdeteksi,
-              fileName: '', mimeType: '', fileSize: 0, filePath: '', endTime: '',
-              allowedFileType: 'all', quizId: null, quizTitle: '', quizQuestions: 0, quizDraft: null,
+              fileName: "", mimeType: "", fileSize: 0, filePath: "", endTime: "",
+              allowedFileType: "all", quizId: null, quizTitle: "", quizQuestions: 0, quizDraft: null,
             }],
             quizData: [],
-            // 🔥 "Semua" -- aman & luas dulu, admin bisa persempit lewat
-            // halaman Kelola Materi kalau mau kunci ke kelas tertentu.
-            targetKategori: 'Semua',
-            targetKelas: 'Semua',
+            targetKategori: "Semua",
+            targetKelas: "Semua",
             mingguKe: 1,
             tahunAjaran: new Date().getFullYear().toString(),
-            status: 'aktif',
+            status: "aktif",
             sendToSpecificStudents: false,
             selectedStudents: [],
             studentIds: [],
             totalKonten: 1,
             createdAt: serverTimestamp(),
             updatedAt: serverTimestamp(),
-            updatedBy: 'Admin (Import Otomatis)',
+            updatedBy: "Admin (Import Otomatis)",
           });
           addLog(`📖 Modul Materi "${judulModul}" berhasil dibuat sekaligus.`);
         } catch (e) {
-          // Kegagalan bikin modul TIDAK BOLEH bikin soal yang udah
-          // kesimpen jadi ke-anggap gagal juga -- itu 2 hal terpisah.
-          console.error('Gagal bikin Modul Materi otomatis:', e);
+          console.error("Gagal bikin Modul Materi otomatis:", e);
           addLog(`⚠️ Soal berhasil tersimpan, TAPI modul materi gagal dibuat: ${e.message}`);
         }
       }
@@ -5418,13 +5423,15 @@ Ikuti PERSIS format/skema HTML di bawah ini buat cara nulis soalnya (struktur da
         skipped: soalList.length - validSoal.length,
       });
     } catch (error) {
-      console.error('Firestore save error:', error);
-      addLog(`❌ Gagal simpan Firestore: ${error?.message || 'error tidak diketahui'}`);
-      setSaveResult({ success: false, error: error?.message || 'Gagal menyimpan soal.' });
+      console.error("Firestore save error:", error);
+      addLog(`❌ Gagal simpan Firestore: ${error?.message || "error tidak diketahui"}`);
+      setSaveResult({ success: false, error: error?.message || "Gagal menyimpan soal." });
     } finally {
+      savingRef.current = false;
       setSaving(false);
+      setSaveStepText("");
     }
-  }, [soalList, mataPelajaran, tingkatKelas, jenjang, jenisUjian, folderAktif, kategori, tags, tingkatKesulitan, sumberFile, sumberAI, imageStatus, buatJugaModul, rangkumanTerdeteksi, judulBabInput]);
+  }, [soalList, rawInput, format, runParse, mataPelajaran, tingkatKelas, jenjang, jenisUjian, folderAktif, kategori, tags, tingkatKesulitan, sumberFile, sumberAI, imageStatus, buatJugaModul, rangkumanTerdeteksi, judulBabInput]);
 
   // ==========================================================
   // RENDER
@@ -5854,9 +5861,9 @@ Ikuti PERSIS format/skema HTML di bawah ini buat cara nulis soalnya (struktur da
                         setActiveUtbkSubtest(sub.id);
                         // Auto-configure form metadata
                         setMataPelajaran(sub.namaMapel);
-                        setJenjang('SMA/MA');
-                        setTingkatKelas('12');
-                        setJenisUjian('utbk');
+                        setJenjang('UTBK/SNBT');
+                        setTingkatKelas('Semua');
+                        setJenisUjian('SNBT/UTBK');
                         setTags(sub.tags);
                         setSumberFile(sub.defaultFileName);
                         setSumberAI('Gemini Canvas');
@@ -6566,9 +6573,36 @@ Ikuti PERSIS format/skema HTML di bawah ini buat cara nulis soalnya (struktur da
                       type="button"
                       onClick={handleSave}
                       disabled={saving}
-                      style={{ paddingLeft: '24px', paddingRight: '24px', paddingTop: '12px', paddingBottom: '12px', backgroundColor: '#059669', color: '#ffffff', borderRadius: '12px', fontSize: '14px', fontWeight: '700' }}
+                      style={{
+                        paddingLeft: '24px',
+                        paddingRight: '24px',
+                        paddingTop: '12px',
+                        paddingBottom: '12px',
+                        backgroundColor: saving ? '#6b7280' : '#059669',
+                        color: '#ffffff',
+                        borderRadius: '12px',
+                        fontSize: '14px',
+                        fontWeight: '700',
+                        cursor: saving ? 'not-allowed' : 'pointer',
+                        opacity: saving ? 0.75 : 1,
+                        boxShadow: saving ? 'none' : '0 4px 14px rgba(5, 150, 105, 0.35)',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        transition: 'all 0.2s ease',
+                      }}
                     >
-                      {saving ? '⏳ Menyimpan...' : '💾 Simpan Soal Valid ke Bank Soal'}
+                      {saving ? (
+                        <>
+                          <span style={{ display: 'inline-block', width: '16px', height: '16px', border: '2px solid #ffffff', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+                          <span>Menyimpan ke Bank Soal...</span>
+                        </>
+                      ) : (
+                        <>
+                          <span>💾</span>
+                          <span>Simpan Soal Valid ke Bank Soal</span>
+                        </>
+                      )}
                     </button>
                   </div>
                 )}
@@ -6576,10 +6610,96 @@ Ikuti PERSIS format/skema HTML di bawah ini buat cara nulis soalnya (struktur da
             </>
           )}
         </div>
+
+        {/* 🛡️ Modal Full-Screen Anti Double-Click & Progres Penyimpanan */}
+        {saving && (
+          <div
+            style={{
+              position: 'fixed',
+              inset: 0,
+              zIndex: 99999,
+              backgroundColor: 'rgba(15, 23, 42, 0.75)',
+              backdropFilter: 'blur(4px)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '20px',
+            }}
+          >
+            <div
+              style={{
+                backgroundColor: '#1e293b',
+                color: '#ffffff',
+                borderRadius: '20px',
+                padding: '32px',
+                maxWidth: '480px',
+                width: '100%',
+                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
+                textAlign: 'center',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+              }}
+            >
+              <div style={{ position: 'relative', width: '64px', height: '64px', margin: '0 auto 20px' }}>
+                <div
+                  style={{
+                    width: '64px',
+                    height: '64px',
+                    borderRadius: '50%',
+                    border: '4px solid rgba(16, 185, 129, 0.2)',
+                    borderTopColor: '#10b981',
+                    animation: 'spin 1s linear infinite',
+                  }}
+                />
+                <span style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px' }}>
+                  💾
+                </span>
+              </div>
+
+              <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#ffffff', marginBottom: '8px' }}>
+                Sedang Menyimpan ke Bank Soal...
+              </h3>
+
+              <p style={{ fontSize: '13px', color: '#94a3b8', marginBottom: '20px' }}>
+                {saveStepText || 'Mohon tunggu, sistem sedang memproses data soal, gambar, dan folder sumber...'}
+              </p>
+
+              {saveLog.length > 0 && (
+                <div
+                  style={{
+                    backgroundColor: '#0f172a',
+                    borderRadius: '12px',
+                    padding: '12px',
+                    textAlign: 'left',
+                    maxHeight: '140px',
+                    overflowY: 'auto',
+                    fontSize: '12px',
+                    color: '#cbd5e1',
+                    fontFamily: 'monospace',
+                    border: '1px solid rgba(255, 255, 255, 0.05)',
+                  }}
+                >
+                  {saveLog.map((lg, idx) => (
+                    <div key={idx} style={{ marginBottom: '4px', lineHeight: '1.4' }}>
+                      {lg}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div style={{ marginTop: '16px', fontSize: '11px', color: '#64748b' }}>
+                🔒 Layar terkunci otomatis untuk mencegah klik ganda & duplikasi data. Harap jangan refresh halaman.
+              </div>
+            </div>
+          </div>
+        )}
       </main>
 
       <style>
         {`
+          @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+          }
           .input {
             width: 100%;
             border: 1px solid #d1d5db;
