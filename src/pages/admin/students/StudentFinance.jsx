@@ -268,7 +268,7 @@ const StudentFinance = () => {
         const qAtt1 = query(collection(db, "attendance"), where("studentId", "==", kodeUnik));
         const [snapAtt1, snapTLogs] = await Promise.all([
           getDocs(qAtt1).catch(() => ({ docs: [] })),
-          getDocs(query(collection(db, "teacher_logs"), limit(120))).catch(() => ({ docs: [] }))
+          getDocs(collection(db, "teacher_logs")).catch(() => ({ docs: [] }))
         ]);
         let allAtt = snapAtt1.docs.map(d => ({ id: d.id, ...d.data() }));
 

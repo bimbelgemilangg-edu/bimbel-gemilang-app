@@ -6,9 +6,12 @@ import { doc, getDoc, collection, query, where, getDocs, addDoc, updateDoc, dele
 import { 
   ArrowLeft, Home, ChevronRight, UserCheck, UserX, UserPlus, 
   Calendar, BookOpen, Edit3, Trash2, Save, X, CheckCircle,
-  AlertCircle, Clock, Filter, Download, RefreshCw, Search
+  AlertCircle, Clock, Filter, Download, RefreshCw, Search, Eye
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
+// 🔥 BARU (2026-11-16): Sinkronisasi kuota sesi English Course (8x pertemuan/bulan)
+// dari Jurnal Guru & Absensi Siswa.
+import { hitungKuotaEnglishCourse, isProgramEnglish } from '../../../utils/kuotaEnglishCourse';
 
 const StudentAttendance = () => {
   const navigate = useNavigate();
@@ -40,6 +43,10 @@ const StudentAttendance = () => {
   // Edit Modal
   const [showEditModal, setShowEditModal] = useState(false);
   const [editData, setEditData] = useState(null);
+
+  // 🔥 BARU (2026-11-16): Log guru & modal rincian sesi English Course
+  const [teacherLogsList, setTeacherLogsList] = useState([]);
+  const [showEnglishSesiModal, setShowEnglishSesiModal] = useState(false);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -82,13 +89,66 @@ const StudentAttendance = () => {
       const queries = [
         getDocs(query(collection(db, "attendance"), where("studentId", "==", kodeUnik))).catch(() => ({ docs: [] })),
         getDocs(query(collection(db, "attendance"), where("studentId", "==", id))).catch(() => ({ docs: [] })),
+        getDocs(collection(db, "teacher_logs")).catch(() => ({ docs: [] }))
       ];
-      const [snapByKodeUnik, snapByDocId] = await Promise.all(queries);
+      const [snapByKodeUnik, snapByDocId, snapTeacherLogs] = await Promise.all(queries);
+
+      const logsData = snapTeacherLogs.docs.map(d => ({ id: d.id, ...d.data() }));
+      setTeacherLogsList(logsData);
 
       const merged = new Map();
       [...snapByKodeUnik.docs, ...snapByDocId.docs].forEach(d => {
-        merged.set(d.id, { id: d.id, ...d.data() });
+        merged.set(d.id, { id: d.id, ...d.data(), sumber: 'Absensi Siswa' });
       });
+
+      // 🔥 BARU (2026-11-16): Gabungkan sesi yang dicatat oleh tentor/guru di teacher_logs
+      // sehingga sesi English Course maupun reguler yang diabsen guru otomatis tampil di riwayat kehadiran siswa
+      const sNama = String(studentData.nama || '').toLowerCase().replace(/\s+/g, ' ').trim();
+      logsData.forEach(tlog => {
+        if (!tlog) return;
+        const tgl = String(tlog.tanggal || tlog.date || '').slice(0, 10);
+        if (!tgl) return;
+
+        const hadirList = Array.isArray(tlog.daftarSiswaHadir)
+          ? tlog.daftarSiswaHadir
+          : Array.isArray(tlog.daftarSiswa)
+          ? tlog.daftarSiswa
+          : Array.isArray(tlog.students)
+          ? tlog.students
+          : [];
+
+        const isHadir = hadirList.some(s => {
+          if (!s) return false;
+          const sid = String(s.id || s.studentId || s.nim || '').trim();
+          const snama = String(s.nama || s.namaSiswa || s.studentName || '').toLowerCase().replace(/\s+/g, ' ').trim();
+          return (kodeUnik && sid === kodeUnik) ||
+                 (id && sid === id) ||
+                 (sNama && (snama === sNama || snama.includes(sNama) || sNama.includes(snama)));
+        });
+
+        if (isHadir) {
+          const isEng = Boolean(tlog.isEnglishCourse) || isProgramEnglish(tlog.program || tlog.tipeKelas || tlog.kelasNama || tlog.detail || tlog.sdMapel);
+          const logKey = `tlog_${tlog.id}`;
+          // Hindari duplikasi jika sudah ada absensi siswa pada tanggal dan jenis program yang sama
+          const existingSameDate = Array.from(merged.values()).find(x => 
+            String(x.tanggal || x.date || '').slice(0, 10) === tgl &&
+            ((isEng && (x.isEnglishCourse || isProgramEnglish(x.mapel))) || (!isEng && !isProgramEnglish(x.mapel)))
+          );
+          if (!existingSameDate) {
+            merged.set(logKey, {
+              id: logKey,
+              originalLogId: tlog.id,
+              tanggal: tgl,
+              mapel: isEng ? '🇬🇧 English Course' : (tlog.detail || tlog.program || 'Bimbel Reguler'),
+              status: 'Hadir',
+              keterangan: `👨‍🏫 Tentor: ${tlog.namaGuru || 'Tentor'}${tlog.englishTopic || tlog.materiHariIni ? ` · Materi: ${tlog.englishTopic || tlog.materiHariIni}` : ''}`,
+              sumber: 'Jurnal Guru',
+              isTeacherLog: true
+            });
+          }
+        }
+      });
+
       const data = Array.from(merged.values()).sort(
         (a, b) => new Date(b.tanggal || 0) - new Date(a.tanggal || 0)
       );
@@ -320,9 +380,111 @@ const StudentAttendance = () => {
               <span style={styles.idBadge}>📋 {student.studentId || '-'}</span>
               <span style={styles.classBadge}>{student.kelasSekolah || '-'}</span>
               <span style={styles.programBadge}>{student.kategori === 'English' ? '🇬🇧 English' : '📚 Reguler'}</span>
+              {Array.isArray(student.extraPrograms) && student.extraPrograms.filter(p => p.status === 'Aktif').map(ep => (
+                <span key={ep.id} style={{ ...styles.programBadge, background: '#ede9fe', color: '#6d28d9', border: '1px solid #ddd6fe' }}>
+                  🇬🇧 {ep.namaProgram}
+                </span>
+              ))}
             </div>
           </div>
         </div>
+
+        {/* 🔥 BARU (2026-11-16): CARD KUOTA PERTEMUAN ENGLISH COURSE (8x/BULAN) */}
+        {(() => {
+          const extraEnglish = Array.isArray(student?.extraPrograms)
+            ? student.extraPrograms.find(p => p.status === 'Aktif' && isProgramEnglish(p.programType || p.namaProgram))
+            : null;
+          const isMainEnglish = student?.kategori === 'English' || isProgramEnglish(student?.studentId);
+          const englishProgramObj = extraEnglish || (isMainEnglish ? {
+            namaProgram: 'English Course',
+            durasiBulan: student?.durasiBulan || 1,
+            tanggalMulai: student?.tanggalMulai
+          } : null);
+
+          if (!englishProgramObj) return null;
+
+          const kuota = hitungKuotaEnglishCourse({
+            durasiBulan: englishProgramObj.durasiBulan || 1,
+            tanggalMulai: englishProgramObj.tanggalMulai,
+            attendanceList: attendance,
+            teacherLogs: teacherLogsList,
+            student
+          });
+
+          return (
+            <div style={{
+              background: 'linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%)',
+              border: '1.5px solid #c4b5fd',
+              borderRadius: 14,
+              padding: isMobile ? 14 : 18,
+              marginBottom: 20,
+              boxShadow: '0 2px 8px rgba(109, 40, 217, 0.08)'
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 10, marginBottom: 12 }}>
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ fontSize: 20 }}>🇬🇧</span>
+                    <h4 style={{ margin: 0, fontSize: 15, fontWeight: 800, color: '#5b21b6' }}>
+                      {englishProgramObj.namaProgram || 'English Course'} — Kuota Pertemuan ({kuota.totalKuota} Sesi / {kuota.durasiBulan} Bulan)
+                    </h4>
+                  </div>
+                  <p style={{ margin: '4px 0 0', fontSize: 12, color: '#6d28d9' }}>
+                    Aturan resmi Bimbel Gemilang: 1 bulan = 8x pertemuan, dicocokkan otomatis dari Jurnal Guru &amp; Absensi Siswa.
+                  </p>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{
+                    background: kuota.badgeWarna.bg,
+                    color: kuota.badgeWarna.color,
+                    border: `1px solid ${kuota.badgeWarna.border}`,
+                    padding: '4px 10px',
+                    borderRadius: 20,
+                    fontSize: 12,
+                    fontWeight: 700
+                  }}>
+                    {kuota.labelStatus}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setShowEnglishSesiModal(true)}
+                    style={{
+                      background: '#6d28d9',
+                      color: 'white',
+                      border: 'none',
+                      padding: '6px 14px',
+                      borderRadius: 8,
+                      fontSize: 12,
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 5,
+                      boxShadow: '0 2px 4px rgba(109, 40, 217, 0.2)'
+                    }}
+                  >
+                    <Eye size={13} /> Lihat Rincian {kuota.sesiTerpakai} Sesi
+                  </button>
+                </div>
+              </div>
+
+              {/* Progress bar */}
+              <div style={{ background: '#e2e8f0', height: 10, borderRadius: 10, overflow: 'hidden', marginBottom: 8 }}>
+                <div style={{
+                  background: kuota.isHabis ? '#ef4444' : kuota.isHampirHabis ? '#f59e0b' : '#10b981',
+                  height: '100%',
+                  width: `${kuota.persentase}%`,
+                  borderRadius: 10,
+                  transition: 'width 0.3s ease'
+                }} />
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#64748b', fontWeight: 600 }}>
+                <span>Pertemuan ke-{kuota.sesiTerpakai} dari {kuota.totalKuota} sesi</span>
+                <span>{kuota.sisaSesi > 0 ? `Tersisa ${kuota.sisaSesi} sesi pertemuan lagi` : 'Kuota periode ini sudah terpenuhi / selesai'}</span>
+              </div>
+            </div>
+          );
+        })()}
 
         {/* STATS */}
         <div style={styles.statsRow(isMobile)}>
@@ -487,12 +649,29 @@ const StudentAttendance = () => {
                         <td style={styles.td}>{item.keterangan || '-'}</td>
                         <td style={styles.td}>
                           <div style={styles.actionGroup}>
-                            <button onClick={() => openEditModal(item)} style={styles.btnEdit} title="Edit">
-                              <Edit3 size={13} />
-                            </button>
-                            <button onClick={() => handleDelete(item.id)} style={styles.btnDelete} title="Hapus">
-                              <Trash2 size={13} />
-                            </button>
+                            {item.isTeacherLog ? (
+                              <span style={{
+                                fontSize: 11,
+                                fontWeight: 700,
+                                color: '#0369a1',
+                                background: '#e0f2fe',
+                                border: '1px solid #bae6fd',
+                                padding: '3px 8px',
+                                borderRadius: 6,
+                                whiteSpace: 'nowrap'
+                              }}>
+                                👨‍🏫 Jurnal Guru
+                              </span>
+                            ) : (
+                              <>
+                                <button onClick={() => openEditModal(item)} style={styles.btnEdit} title="Edit">
+                                  <Edit3 size={13} />
+                                </button>
+                                <button onClick={() => handleDelete(item.id)} style={styles.btnDelete} title="Hapus">
+                                  <Trash2 size={13} />
+                                </button>
+                              </>
+                            )}
                           </div>
                         </td>
                       </tr>
@@ -546,6 +725,115 @@ const StudentAttendance = () => {
             </div>
           </div>
         )}
+
+        {/* === MODAL RINCIAN SESI ENGLISH COURSE === */}
+        {showEnglishSesiModal && (() => {
+          const extraEnglish = Array.isArray(student?.extraPrograms)
+            ? student.extraPrograms.find(p => p.status === 'Aktif' && isProgramEnglish(p.programType || p.namaProgram))
+            : null;
+          const isMainEnglish = student?.kategori === 'English' || isProgramEnglish(student?.studentId);
+          const englishProgramObj = extraEnglish || (isMainEnglish ? {
+            namaProgram: 'English Course',
+            durasiBulan: student?.durasiBulan || 1,
+            tanggalMulai: student?.tanggalMulai
+          } : null);
+          const kuota = englishProgramObj ? hitungKuotaEnglishCourse({
+            durasiBulan: englishProgramObj.durasiBulan || 1,
+            tanggalMulai: englishProgramObj.tanggalMulai,
+            attendanceList: attendance,
+            teacherLogs: teacherLogsList,
+            student
+          }) : null;
+
+          return (
+            <div style={styles.modalOverlay} onClick={() => setShowEnglishSesiModal(false)}>
+              <div style={{ ...styles.modalContent(isMobile), width: isMobile ? '95%' : '600px', maxWidth: '640px' }} onClick={e => e.stopPropagation()}>
+                <div style={styles.modalHeader}>
+                  <div>
+                    <h3 style={styles.modalTitle}>🇬🇧 Rincian Sesi {englishProgramObj?.namaProgram || 'English Course'}</h3>
+                    <p style={{ margin: '2px 0 0', fontSize: 12, color: '#64748b' }}>
+                      {student.nama} ({student.studentId || '-'})
+                    </p>
+                  </div>
+                  <button onClick={() => setShowEnglishSesiModal(false)} style={styles.modalClose}><X size={18} /></button>
+                </div>
+                <div style={{ maxHeight: '60vh', overflowY: 'auto', paddingRight: 4 }}>
+                  <div style={{ background: '#f8fafc', padding: 12, borderRadius: 10, border: '1px solid #e2e8f0', marginBottom: 14 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, fontWeight: 700, marginBottom: 6 }}>
+                      <span>Progress Pertemuan: {kuota?.sesiTerpakai || 0} / {kuota?.totalKuota || 8} Sesi</span>
+                      <span style={{ color: kuota?.isHabis ? '#ef4444' : '#059669' }}>
+                        {kuota?.sisaSesi || 0} Sesi Tersisa
+                      </span>
+                    </div>
+                    <div style={{ background: '#e2e8f0', height: 8, borderRadius: 8, overflow: 'hidden' }}>
+                      <div style={{
+                        background: kuota?.isHabis ? '#ef4444' : kuota?.isHampirHabis ? '#f59e0b' : '#10b981',
+                        height: '100%',
+                        width: `${kuota?.persentase || 0}%`,
+                        borderRadius: 8
+                      }} />
+                    </div>
+                  </div>
+
+                  <h4 style={{ margin: '0 0 8px', fontSize: 13, color: '#1e293b' }}>
+                    Riwayat Sesi yang Dihadiri ({kuota?.daftarSesi?.length || 0}):
+                  </h4>
+
+                  {(!kuota?.daftarSesi || kuota.daftarSesi.length === 0) ? (
+                    <div style={{ textAlign: 'center', padding: '24px 10px', color: '#94a3b8', fontSize: 13, background: '#f8fafc', borderRadius: 8 }}>
+                      Belum ada sesi pertemuan English Course yang tercatat hadir.
+                    </div>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                      {kuota.daftarSesi.map((s, idx) => (
+                        <div key={idx} style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          padding: '10px 12px',
+                          borderRadius: 8,
+                          border: '1px solid #e2e8f0',
+                          background: 'white',
+                          gap: 10
+                        }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                            <span style={{
+                              width: 24, height: 24, borderRadius: '50%',
+                              background: '#ede9fe', color: '#6d28d9',
+                              display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              fontSize: 11, fontWeight: 800, flexShrink: 0
+                            }}>
+                              #{idx + 1}
+                            </span>
+                            <div>
+                              <div style={{ fontSize: 12, fontWeight: 700, color: '#1e293b' }}>
+                                {formatDate(s.tanggal)}
+                              </div>
+                              <div style={{ fontSize: 11, color: '#64748b' }}>
+                                👨‍🏫 Tentor: <strong>{s.guru || '-'}</strong> · Materi: {s.materi || '-'}
+                              </div>
+                            </div>
+                          </div>
+                          <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                            <span style={{
+                              fontSize: 10, fontWeight: 700, color: '#0369a1',
+                              background: '#e0f2fe', padding: '2px 8px', borderRadius: 6
+                            }}>
+                              {s.sumber || 'Jurnal Guru'}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                <div style={styles.modalFooter}>
+                  <button type="button" onClick={() => setShowEnglishSesiModal(false)} style={styles.btnCancel}>Tutup</button>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
       </div>
 
       <style>{`

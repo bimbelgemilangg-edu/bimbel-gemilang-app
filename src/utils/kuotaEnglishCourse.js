@@ -40,8 +40,25 @@ export function ekstrakSesiEnglishSiswa({
 } = {}) {
   const sId = String(studentId || '').trim();
   const dId = String(docId || '').trim();
-  const sNama = String(studentNama || '').toLowerCase().trim();
+  const sNama = String(studentNama || '').toLowerCase().replace(/\s+/g, ' ').trim();
   const tglMulai = String(tanggalMulai || '').slice(0, 10);
+
+  // Batas awal pencarian sesi:
+  // Berikan toleransi mundur hingga 14 hari sebelum tanggalMulai bila siswa
+  // sudah masuk kelas beberapa hari sebelum admin sempat menginput paket/pembayaran.
+  let batasAwal = '';
+  if (tglMulai) {
+    try {
+      const d = new Date(tglMulai);
+      if (!Number.isNaN(d.getTime())) {
+        d.setDate(d.getDate() - 14);
+        batasAwal = d.toISOString().slice(0, 10);
+      }
+    } catch {
+      batasAwal = tglMulai;
+    }
+  }
+  if (!batasAwal) batasAwal = tglMulai;
 
   // Map unik per tanggal (1 hari = 1 sesi)
   const sesiMap = new Map();
@@ -52,15 +69,15 @@ export function ekstrakSesiEnglishSiswa({
       if (!att) continue;
       const tgl = String(att.date || att.tanggal || '').slice(0, 10);
       if (!tgl) continue;
-      if (tglMulai && tgl < tglMulai) continue; // sesi sebelum tanggal paket dimulai diabaikan
+      if (batasAwal && tgl < batasAwal) continue; // sesi jauh sebelum periode paket diabaikan
 
       // Cek apakah ini sesi English Course
-      const isEng = Boolean(att.isEnglishCourse) || isProgramEnglish(att.mapel || att.subject || att.program);
+      const isEng = Boolean(att.isEnglishCourse) || isProgramEnglish(att.mapel || att.subject || att.program || att.kategori);
       if (!isEng) continue;
 
       // Cek apakah siswa ini yang hadir
-      const attSid = String(att.studentId || '').trim();
-      const attNama = String(att.studentName || att.namaSiswa || '').toLowerCase().trim();
+      const attSid = String(att.studentId || att.nim || '').trim();
+      const attNama = String(att.studentName || att.namaSiswa || att.nama || '').toLowerCase().replace(/\s+/g, ' ').trim();
 
       const isMatchStudent =
         (sId && attSid === sId) ||
@@ -89,16 +106,23 @@ export function ekstrakSesiEnglishSiswa({
       if (!tlog) continue;
       const tgl = String(tlog.tanggal || tlog.date || '').slice(0, 10);
       if (!tgl) continue;
-      if (tglMulai && tgl < tglMulai) continue;
+      if (batasAwal && tgl < batasAwal) continue;
 
-      const isEng = Boolean(tlog.isEnglishCourse) || isProgramEnglish(tlog.program || tlog.tipeKelas || tlog.kelasNama);
+      const isEng = Boolean(tlog.isEnglishCourse) || isProgramEnglish(tlog.program || tlog.tipeKelas || tlog.kelasNama || tlog.detail || tlog.sdMapel);
       if (!isEng) continue;
 
-      const hadirList = Array.isArray(tlog.daftarSiswaHadir) ? tlog.daftarSiswaHadir : [];
+      const hadirList = Array.isArray(tlog.daftarSiswaHadir)
+        ? tlog.daftarSiswaHadir
+        : Array.isArray(tlog.daftarSiswa)
+        ? tlog.daftarSiswa
+        : Array.isArray(tlog.students)
+        ? tlog.students
+        : [];
+
       const studentInLog = hadirList.find((s) => {
         if (!s) return false;
-        const sid = String(s.id || '').trim();
-        const snama = String(s.nama || '').toLowerCase().trim();
+        const sid = String(s.id || s.studentId || s.nim || '').trim();
+        const snama = String(s.nama || s.namaSiswa || s.studentName || '').toLowerCase().replace(/\s+/g, ' ').trim();
         return (sId && sid === sId) ||
                (dId && sid === dId) ||
                (sNama && (snama === sNama || snama.includes(sNama) || sNama.includes(snama)));
@@ -116,7 +140,7 @@ export function ekstrakSesiEnglishSiswa({
           sesiMap.set(tgl, {
             tanggal: tgl,
             guru: tlog.namaGuru || 'Tentor English',
-            materi: tlog.materiHariIni || tlog.detail || 'English Course Session',
+            materi: tlog.materiHariIni || tlog.englishTopic || tlog.detail || tlog.sdTopik || 'English Course Session',
             status: 'Hadir',
             sumber: 'Jurnal Guru'
           });

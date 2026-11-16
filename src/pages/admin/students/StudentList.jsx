@@ -45,6 +45,8 @@ const StudentList = () => {
   // 🔥 BARU (2026-11-16): Absensi siswa & jurnal guru untuk pelacakan kuota 8x sesi English Course
   const [attendanceList, setAttendanceList] = useState([]);
   const [teacherLogsList, setTeacherLogsList] = useState([]);
+  const [modalRincianData, setModalRincianData] = useState(null);
+  const [showModalRincianSesi, setShowModalRincianSesi] = useState(false);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -60,10 +62,12 @@ const StudentList = () => {
   const fetchStudents = async () => {
     setLoading(true);
     try {
+      // 🔥 Muat seluruh log guru & absensi siswa secara utuh tanpa limit terpotong
+      // agar seluruh sesi (termasuk yang baru saja diabsen hari ini) tercatat 100%.
       const [snap, snapAtt, snapLogs] = await Promise.all([
         getDocs(collection(db, "students")),
-        getDocs(query(collection(db, "attendance"), limit(300))).catch(() => ({ docs: [] })),
-        getDocs(query(collection(db, "teacher_logs"), limit(200))).catch(() => ({ docs: [] }))
+        getDocs(collection(db, "attendance")).catch(() => ({ docs: [] })),
+        getDocs(collection(db, "teacher_logs")).catch(() => ({ docs: [] }))
       ]);
 
       const data = snap.docs.map(d => ({ 
@@ -909,20 +913,41 @@ const StudentList = () => {
                                   student: s
                                 }) : null;
                                 return (
-                                  <span key={ep.id} style={{
-                                    display: 'inline-block',
-                                    fontSize: 10,
-                                    fontWeight: 700,
-                                    color: kuotaEp ? kuotaEp.badgeWarna.color : '#6d28d9',
-                                    background: kuotaEp ? kuotaEp.badgeWarna.bg : '#ede9fe',
-                                    border: `1px solid ${kuotaEp ? kuotaEp.badgeWarna.border : '#ddd6fe'}`,
-                                    padding: '1px 6px',
-                                    borderRadius: 4,
-                                    marginTop: 3,
-                                    marginRight: 4
-                                  }}>
-                                    🇬🇧 {ep.namaProgram} {kuotaEp ? `(${kuotaEp.sesiTerpakai}/${kuotaEp.totalKuota})` : ''}
-                                  </span>
+                                  <button
+                                    key={ep.id}
+                                    type="button"
+                                    onClick={() => {
+                                      if (kuotaEp) {
+                                        setModalRincianData({
+                                          ...kuotaEp,
+                                          namaSiswa: s.nama,
+                                          studentId: s.studentId,
+                                          studentDocId: s.id,
+                                          namaProgram: ep.namaProgram
+                                        });
+                                        setShowModalRincianSesi(true);
+                                      }
+                                    }}
+                                    style={{
+                                      display: 'inline-flex',
+                                      alignItems: 'center',
+                                      gap: 4,
+                                      fontSize: 10,
+                                      fontWeight: 700,
+                                      color: kuotaEp ? kuotaEp.badgeWarna.color : '#6d28d9',
+                                      background: kuotaEp ? kuotaEp.badgeWarna.bg : '#ede9fe',
+                                      border: `1px solid ${kuotaEp ? kuotaEp.badgeWarna.border : '#ddd6fe'}`,
+                                      padding: '2px 7px',
+                                      borderRadius: 6,
+                                      marginTop: 3,
+                                      marginRight: 4,
+                                      cursor: kuotaEp ? 'pointer' : 'default',
+                                      boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
+                                    }}
+                                    title="Klik untuk melihat rincian absensi & kuota sesi English Course"
+                                  >
+                                    🇬🇧 {ep.namaProgram} {kuotaEp ? `(${kuotaEp.sesiTerpakai}/${kuotaEp.totalKuota})` : ''} 👁️
+                                  </button>
                                 );
                               })}
                             </div>
@@ -941,14 +966,44 @@ const StudentList = () => {
                           </span>
                         </td>
                         <td style={styles.td}>
-                          <span style={{
-                            ...styles.masaBadge,
-                            background: masa.bg,
-                            color: masa.color,
-                            border: masa.kuota ? `1px solid ${masa.kuota.badgeWarna.border}` : 'none'
-                          }} title={masa.isEnglishCourse ? `English Course: ${masa.kuota.sesiTerpakai} dari ${masa.kuota.totalKuota} pertemuan terpakai` : undefined}>
-                            {masa.label}
-                          </span>
+                          {masa.isEnglishCourse ? (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (masa.kuota) {
+                                  setModalRincianData({
+                                    ...masa.kuota,
+                                    namaSiswa: s.nama,
+                                    studentId: s.studentId,
+                                    studentDocId: s.id,
+                                    namaProgram: s.kategori || 'English Course'
+                                  });
+                                  setShowModalRincianSesi(true);
+                                }
+                              }}
+                              style={{
+                                ...styles.masaBadge,
+                                background: masa.bg,
+                                color: masa.color,
+                                border: masa.kuota ? `1px solid ${masa.kuota.badgeWarna.border}` : 'none',
+                                cursor: 'pointer',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: 4
+                              }}
+                              title="Klik untuk melihat rincian absensi & kuota sesi English Course"
+                            >
+                              {masa.label} 👁️
+                            </button>
+                          ) : (
+                            <span style={{
+                              ...styles.masaBadge,
+                              background: masa.bg,
+                              color: masa.color
+                            }}>
+                              {masa.label}
+                            </span>
+                          )}
                           {masa.isEnglishCourse && (
                             <div style={{ fontSize: 9.5, color: '#64748b', marginTop: 2 }}>
                               {masa.kuota.isHabis ? 'Kuota selesai' : `Sisa ${masa.kuota.sisaSesi} sesi`}
@@ -1053,6 +1108,136 @@ const StudentList = () => {
             </button>
           </div>
         </div>
+
+        {/* ===== MODAL RINCIAN SESI ENGLISH COURSE (8x/bulan) ===== */}
+        {showModalRincianSesi && modalRincianData && (
+          <div
+            onClick={() => setShowModalRincianSesi(false)}
+            style={{
+              position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+              background: 'rgba(15, 23, 42, 0.75)', zIndex: 9999,
+              display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20
+            }}
+          >
+            <div
+              onClick={e => e.stopPropagation()}
+              style={{
+                background: 'white', borderRadius: 16, padding: 24, maxWidth: 580, width: '100%',
+                maxHeight: '90vh', overflowY: 'auto',
+                boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.3)'
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, paddingBottom: 10, borderBottom: '1px solid #e2e8f0' }}>
+                <h3 style={{ margin: 0, color: '#1e293b', fontSize: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span>🇬🇧</span> Rincian Sesi {modalRincianData.namaProgram || 'English Course'}
+                </h3>
+                <button
+                  onClick={() => setShowModalRincianSesi(false)}
+                  style={{ background: '#f1f5f9', border: 'none', borderRadius: '50%', width: 32, height: 32, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b' }}
+                >
+                  <X size={16} />
+                </button>
+              </div>
+
+              <div style={{ background: '#f8fafc', padding: 12, borderRadius: 10, border: '1px solid #e2e8f0', marginBottom: 16 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 6 }}>
+                  <div>
+                    <strong style={{ fontSize: 14, color: '#1e293b' }}>{modalRincianData.namaSiswa}</strong>
+                    <div style={{ fontSize: 11, color: '#64748b', marginTop: 2 }}>
+                      ID: {modalRincianData.studentId || '-'} • Program: {modalRincianData.namaProgram}
+                    </div>
+                  </div>
+                  <span style={{
+                    display: 'inline-block',
+                    padding: '3px 10px',
+                    borderRadius: 10,
+                    fontSize: 11,
+                    fontWeight: 700,
+                    background: modalRincianData.badgeWarna.bg,
+                    color: modalRincianData.badgeWarna.color,
+                    border: `1px solid ${modalRincianData.badgeWarna.border}`
+                  }}>
+                    {modalRincianData.labelStatus}
+                  </span>
+                </div>
+
+                <div style={{ marginTop: 10, display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#475569' }}>
+                  <span>Sesi Pertemuan Terpakai: <strong>{modalRincianData.sesiTerpakai} dari {modalRincianData.totalKuota} Sesi</strong></span>
+                  <span>Sisa: <strong style={{ color: modalRincianData.sisaSesi === 0 ? '#b91c1c' : '#047857' }}>{modalRincianData.sisaSesi} Sesi</strong></span>
+                </div>
+                <div style={{ height: 8, borderRadius: 4, background: '#e2e8f0', overflow: 'hidden', margin: '6px 0 8px' }}>
+                  <div style={{ height: '100%', width: `${modalRincianData.persentase}%`, background: modalRincianData.isHabis ? '#ef4444' : '#10b981', transition: 'width 0.3s' }} />
+                </div>
+                <div style={{ fontSize: 10.5, color: '#475569', background: '#ecfdf5', padding: '6px 10px', borderRadius: 6, border: '1px solid #a7f3d0', lineHeight: 1.5 }}>
+                  💡 <em>Sesuai SOP Bimbel Gemilang, masa aktif English Course dihitung 8x pertemuan per bulan. Paket baru habis jika seluruh kuota sesi telah selesai dijalankan (dicocokkan otomatis dari absensi guru &amp; siswa).</em>
+                </div>
+              </div>
+
+              <h4 style={{ fontSize: 12, color: '#334155', margin: '0 0 8px 0', fontWeight: 700 }}>
+                Daftar Sesi yang Telah Diikuti ({modalRincianData.daftarSesi?.length || 0}):
+              </h4>
+
+              {(!modalRincianData.daftarSesi || modalRincianData.daftarSesi.length === 0) ? (
+                <div style={{ textAlign: 'center', padding: '24px 12px', background: '#f8fafc', borderRadius: 8, color: '#94a3b8', fontSize: 12 }}>
+                  Belum ada data absensi kehadiran yang tercatat untuk sesi English Course ini.
+                </div>
+              ) : (
+                <div style={{ maxHeight: 260, overflowY: 'auto', border: '1px solid #e2e8f0', borderRadius: 8, marginBottom: 16 }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 11.5 }}>
+                    <thead>
+                      <tr style={{ background: '#f1f5f9', borderBottom: '1px solid #e2e8f0', textAlign: 'left' }}>
+                        <th style={{ padding: '8px 10px', width: 36 }}>#</th>
+                        <th style={{ padding: '8px 10px', width: 90 }}>Tanggal</th>
+                        <th style={{ padding: '8px 10px' }}>Guru / Materi</th>
+                        <th style={{ padding: '8px 10px', width: 75, textAlign: 'center' }}>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {modalRincianData.daftarSesi.map((sesi, idx) => (
+                        <tr key={idx} style={{ borderBottom: '1px solid #f1f5f9', background: idx % 2 === 0 ? 'white' : '#fafafa' }}>
+                          <td style={{ padding: '8px 10px', fontWeight: 700, color: '#64748b' }}>
+                            {idx + 1}
+                          </td>
+                          <td style={{ padding: '8px 10px', fontWeight: 600, color: '#1e293b', whiteSpace: 'nowrap' }}>
+                            📅 {sesi.tanggal}
+                          </td>
+                          <td style={{ padding: '8px 10px' }}>
+                            <div style={{ fontWeight: 600, color: '#334155' }}>{sesi.guru}</div>
+                            <div style={{ fontSize: 10, color: '#64748b' }}>{sesi.materi}</div>
+                          </td>
+                          <td style={{ padding: '8px 10px', textAlign: 'center' }}>
+                            <span style={{ background: '#dcfce7', color: '#166534', padding: '2px 8px', borderRadius: 6, fontSize: 10, fontWeight: 700 }}>
+                              ✓ Hadir
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+                {modalRincianData.studentDocId && (
+                  <button
+                    type="button"
+                    onClick={() => navigate(`/admin/students/finance/${modalRincianData.studentDocId}`)}
+                    style={{ background: '#ede9fe', color: '#6d28d9', border: '1px solid #ddd6fe', padding: '8px 14px', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}
+                  >
+                    <CreditCard size={14} /> Keuangan Siswa
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => setShowModalRincianSesi(false)}
+                  style={{ background: '#3b82f6', color: 'white', border: 'none', padding: '8px 16px', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer' }}
+                >
+                  Tutup
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         <style>{`
           @keyframes spin {
