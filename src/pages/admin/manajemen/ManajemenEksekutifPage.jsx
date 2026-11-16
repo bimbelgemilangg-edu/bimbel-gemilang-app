@@ -40,6 +40,7 @@ import PanelPosisi from '../owner/PanelPosisi';
 import PanelTransaksi from '../owner/PanelTransaksi';
 import PanelInputHonor from '../owner/PanelInputHonor';
 import PanelNeraca from '../owner/PanelNeraca';
+import InputRupiah from '../../../components/InputRupiah';
 
 export default function ManajemenEksekutifPage() {
   const navigate = useNavigate();
@@ -610,12 +611,11 @@ export default function ManajemenEksekutifPage() {
                     <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#475569', marginBottom: 4 }}>
                       Rata-Rata SPP per Siswa:
                     </label>
-                    <input
-                      type="number"
-                      step={25000}
+                    <InputRupiah
                       value={simulasiConfig.sppPerBulan}
                       onChange={(e) => setSimulasiConfig({ ...simulasiConfig, sppPerBulan: Number(e.target.value) || 0 })}
                       style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 14, fontWeight: 700 }}
+                      placeholder="Contoh: 300.000"
                     />
                   </div>
 
@@ -623,12 +623,11 @@ export default function ManajemenEksekutifPage() {
                     <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#475569', marginBottom: 4 }}>
                       Tarif Honor Guru per Sesi:
                     </label>
-                    <input
-                      type="number"
-                      step={5000}
+                    <InputRupiah
                       value={simulasiConfig.honorPerSesi}
                       onChange={(e) => setSimulasiConfig({ ...simulasiConfig, honorPerSesi: Number(e.target.value) || 0 })}
                       style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 14, fontWeight: 700 }}
+                      placeholder="Contoh: 25.000"
                     />
                   </div>
 

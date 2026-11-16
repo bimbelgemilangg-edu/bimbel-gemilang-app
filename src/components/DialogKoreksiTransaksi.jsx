@@ -16,6 +16,7 @@ import { X, Save, ShieldAlert, Receipt } from 'lucide-react';
 import {
   hitungKaskadeKoreksiNominal, validasiAlasanKoreksi, METODE_VALID, METODE_UANG,
 } from '../utils/koreksiNominalTransaksi';
+import InputRupiah from './InputRupiah';
 
 const styles = {
   overlay: {
@@ -187,7 +188,7 @@ const DialogKoreksiTransaksi = ({ log, siswa, siswaId, namaSiswa, onClose, onSuk
           </div>
           <div>
             <label style={styles.label}>Nominal benar (Rp)</label>
-            <input style={styles.input} type="number" min="0" value={nominal} onChange={(e) => setNominal(e.target.value)} />
+            <InputRupiah style={styles.input} value={nominal} onChange={(e) => setNominal(e.target.value)} placeholder="Contoh: 1.000.000" />
           </div>
           <div>
             <label style={styles.label}>Metode benar</label>

@@ -5,6 +5,7 @@ import { db } from '../../../firebase';
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { Save, RefreshCw, BookOpen, Plus, Trash2, X, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import InputRupiah from '../../../components/InputRupiah';
 
 const ManagePaketHarga = () => {
   const navigate = useNavigate();
@@ -144,7 +145,7 @@ const ManagePaketHarga = () => {
                         </div>
                         <div style={s.paketHarga}>
                           <span style={s.rpLabel}>Rp</span>
-                          <input type="number" value={paket.harga} onChange={e => handleHargaChange(jenjang, idx, e.target.value)} style={s.hargaInput} />
+                          <InputRupiah value={paket.harga} onChange={e => handleHargaChange(jenjang, idx, e.target.value)} style={s.hargaInput} placeholder="0" />
                           <button onClick={() => handleDeletePaket(jenjang, idx)} style={s.btnDel}><Trash2 size={14} /></button>
                         </div>
                       </div>

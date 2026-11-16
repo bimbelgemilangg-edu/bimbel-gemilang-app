@@ -19,6 +19,7 @@ import {
   KATEGORI_PRIVE, KATEGORI_GAJI, KATEGORI_SERAH, KATEGORI_OWNER_BARU,
   barisAudit, ringkasanAudit, trenBulanan, keCsvAudit, statusPlafon, PLAFON_DEFAULT,
 } from '../../../utils/keuanganAudit';
+import InputRupiah from '../../../components/InputRupiah';
 
 const st = {
   kartu: { background: '#fff', border: '1px solid #e5e7eb', borderRadius: 14, padding: 14, marginBottom: 12 },
@@ -179,7 +180,7 @@ export default function PanelAudit({ logs = [], rp = (n) => String(n), isMobile 
               </select>
             </label>
             <label style={st.label}>Tanggal<input style={st.input} type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} /></label>
-            <label style={st.label}>Nominal (Rp)<input style={st.input} inputMode="numeric" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} placeholder="2000000" /></label>
+            <label style={st.label}>Nominal (Rp)<InputRupiah style={st.input} value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} placeholder="Contoh: 2.000.000" /></label>
             <label style={st.label}>Kategori
               <select style={st.input} value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })}>
                 {[...KATEGORI_OWNER_BARU, ...daftarKategori.filter((k) => !KATEGORI_OWNER_BARU.includes(k))].map((k) => <option key={k}>{k}</option>)}

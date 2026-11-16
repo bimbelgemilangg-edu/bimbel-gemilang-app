@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import { KANAL } from '../../../utils/kanalUang';
 import { rp as defaultRp } from '../manajemen/manajemenUtils';
+import InputRupiah from '../../../components/InputRupiah';
 
 const DAFTAR_BULAN_2026 = [
   { id: '2026-01', label: 'Januari 2026' },
@@ -892,9 +893,8 @@ export default function PanelAuditMutasiOwner({
                   Terdeteksi <b>{rekapTentorBulanIni.totalSesi} sesi mengajar</b> di sistem (estimasi <b>{formatRp(rekapTentorBulanIni.totalNominalEstimasi)}</b>). Masukkan nominal mutasi riil transfer m-banking Anda:
                 </p>
                 <div style={{ display: 'flex', gap: 8 }}>
-                  <input
-                    type="number"
-                    placeholder={`Contoh: ${rekapTentorBulanIni.totalNominalEstimasi || 4500000}`}
+                  <InputRupiah
+                    placeholder={`Contoh: ${(rekapTentorBulanIni.totalNominalEstimasi || 4500000).toLocaleString('id-ID')}`}
                     value={nominalGajiTentorCustom}
                     onChange={(e) => setNominalGajiTentorCustom(e.target.value)}
                     style={{ flex: 1, padding: '7px 10px', borderRadius: 8, border: '1px solid #d97706', fontSize: 12.5, fontWeight: 700 }}
@@ -1054,9 +1054,8 @@ export default function PanelAuditMutasiOwner({
                 Nominal (Rp) & Keterangan:
               </label>
               <div style={{ display: 'flex', gap: 8 }}>
-                <input
-                  type="number"
-                  placeholder="Nominal Rp (mis: 350000)"
+                <InputRupiah
+                  placeholder="Contoh: 350.000"
                   value={formNominal}
                   onChange={(e) => setFormNominal(e.target.value)}
                   style={{ width: '160px', padding: '7px 10px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 12.5, fontWeight: 800 }}

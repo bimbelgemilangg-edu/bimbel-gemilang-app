@@ -18,6 +18,7 @@ import {
   buatPromptKonsultasiAi,
   hitungFinansialRiil,
 } from '../manajemen/manajemenUtils';
+import InputRupiah from '../../../components/InputRupiah';
 
 export default function PanelSimulasiKelas({
   students = [],
@@ -203,11 +204,11 @@ export default function PanelSimulasiKelas({
               <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#475569', marginBottom: 4 }}>
                 Estimasi SPP Siswa / Bulan:
               </label>
-              <input
-                type="number"
+              <InputRupiah
                 value={simulasiConfig.sppPerBulan}
                 onChange={(e) => setSimulasiConfig({ ...simulasiConfig, sppPerBulan: Number(e.target.value) })}
                 style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13, fontWeight: 700 }}
+                placeholder="Contoh: 300.000"
               />
             </div>
 
@@ -215,11 +216,11 @@ export default function PanelSimulasiKelas({
               <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#475569', marginBottom: 4 }}>
                 Honor Guru per Sesi:
               </label>
-              <input
-                type="number"
+              <InputRupiah
                 value={simulasiConfig.honorPerSesi}
                 onChange={(e) => setSimulasiConfig({ ...simulasiConfig, honorPerSesi: Number(e.target.value) })}
                 style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13, fontWeight: 700 }}
+                placeholder="Contoh: 25.000"
               />
             </div>
 

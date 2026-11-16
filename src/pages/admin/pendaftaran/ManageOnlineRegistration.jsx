@@ -12,6 +12,7 @@ import {
   Home, ChevronRight, FileText, Save, Edit3, Eye,
   Wallet, X, Send, MessageCircle, BookOpen, Hash, Tag
 } from 'lucide-react';
+import InputRupiah from '../../../components/InputRupiah';
 
 const ManageOnlineRegistration = () => {
   const navigate = useNavigate();
@@ -527,7 +528,7 @@ Dengan menandatangani formulir ini, Saya menyatakan SETUJU dan siap MEMATUHI sel
               <form onSubmit={handleSimpanTagihan}>
                 <div style={s.fg}>
                   <label style={s.lb}>Nominal Tagihan (Rp) *</label>
-                  <input type="number" value={payNominal} onChange={e=>setPayNominal(e.target.value)} style={s.inp} required autoFocus placeholder="Masukkan nominal" />
+                  <InputRupiah value={payNominal} onChange={e=>setPayNominal(e.target.value)} style={s.inp} required autoFocus placeholder="Contoh: 500.000" />
                   {selectedPaket && (
                     <small style={{color:'#3b82f6',fontWeight:600}}>📦 {selectedPaket.nama} - {formatRupiah(selectedPaket.harga)}</small>
                   )}

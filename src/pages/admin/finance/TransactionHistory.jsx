@@ -13,6 +13,7 @@ import { KANAL } from '../../../utils/kanalUang';
 // 🔥 BARU (hotfix 2026-10-13): pintu koreksi nominal/metode transaksi
 // (diskon / salah input) dengan kaskade atomik ke data siswa + jejak audit.
 import DialogKoreksiTransaksi from '../../../components/DialogKoreksiTransaksi';
+import InputRupiah from '../../../components/InputRupiah';
 
 const TransactionHistory = () => {
   const [transactions, setTransactions] = useState([]);
@@ -937,7 +938,7 @@ const TransactionHistory = () => {
                 <option value="Cicilan">📋 Cicilan</option>
               </select>
               <input type="text" value={editData.category} onChange={e => setEditData(p => ({...p, category: e.target.value}))} style={styles.modalInput} placeholder="Kategori" />
-              <input type="number" value={editData.amount} onChange={e => setEditData(p => ({...p, amount: e.target.value}))} style={styles.modalInput} placeholder="Nominal" />
+              <InputRupiah value={editData.amount} onChange={e => setEditData(p => ({...p, amount: e.target.value}))} style={styles.modalInput} placeholder="Nominal (Rp)" required />
               <input type="text" value={editData.note} onChange={e => setEditData(p => ({...p, note: e.target.value}))} style={styles.modalInput} placeholder="Keterangan" />
               
               <div style={{background: '#fef3c7', padding: 10, borderRadius: 8, border: '1px solid #fde68a'}}>

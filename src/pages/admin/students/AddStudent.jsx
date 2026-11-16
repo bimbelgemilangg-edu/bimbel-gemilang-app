@@ -21,6 +21,7 @@ import { rincianAmortisasi } from '../owner/keuanganOwnerUtils';
 // = 28 Feb, bukan 3 Mar seperti perilaku setMonth lama).
 import PilihDurasiBulan from '../../../components/admin/PilihDurasiBulan';
 import { tambahBulanKeTanggal, normalisasiDurasi } from '../../../utils/durasiPaket';
+import InputRupiah from '../../../components/InputRupiah';
 
 // 🔥 FIX BUG NYATA (zona waktu): sama seperti di StudentFinance.jsx admin --
 // "tanggal hari ini" harus dari waktu LOKAL, bukan toISOString() (UTC).
@@ -894,7 +895,7 @@ const AddStudent = () => {
             </div>
             <div style={styles.paymentRow}>
               <span>Diskon</span>
-              <input type="number" style={styles.diskonInput} value={formData.diskon} onChange={e => updateField('diskon', e.target.value)} placeholder="0" />
+              <InputRupiah style={styles.diskonInput} value={formData.diskon} onChange={e => updateField('diskon', e.target.value)} placeholder="0" />
             </div>
             <div style={styles.paymentTotal}>
               <span>TOTAL</span>

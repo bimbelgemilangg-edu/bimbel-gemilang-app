@@ -15,6 +15,7 @@ import {
 import PilihDurasiBulan from '../../../components/admin/PilihDurasiBulan';
 import { tambahBulanKeTanggal, normalisasiDurasi } from '../../../utils/durasiPaket';
 import { saringMapelUntukSiswa, pangkasKodeMapelTerpilih } from '../../../utils/aksesMapelPerJenjang';
+import InputRupiah from '../../../components/InputRupiah';
 
 // 🔥 BARU: sama persis logikanya dengan normalisasiNoHp() di AddStudent.jsx
 // -- diperlukan supaya format nomor HASIL EDIT juga selalu 628xxx (format
@@ -980,11 +981,11 @@ const EditStudent = () => {
               </div>
               <div style={styles.financeRow}>
                 <span>Total Tagihan</span>
-                <input 
-                  type="number" 
+                <InputRupiah 
                   style={{...styles.financeInput, border: errorMsg ? '2px solid #ef4444' : '1px solid #e2e8f0'}} 
                   value={formData.totalTagihan} 
                   onChange={handleTotalChange} 
+                  placeholder="Total Tagihan"
                 />
               </div>
               {errorMsg && (

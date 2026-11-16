@@ -32,6 +32,7 @@ import { selisihRingkasanVsLedger, validasiAlasanKoreksi } from '../../../utils/
 // 🔥 BARU (2026-11-16): Pelacakan kuota sesi pertemuan English Course (8x sesi/bulan)
 // dicocokkan otomatis dengan absensi guru & siswa (bukan habis tanggal kalender).
 import { hitungKuotaEnglishCourse, isProgramEnglish, SESI_PER_BULAN_ENGLISH } from '../../../utils/kuotaEnglishCourse';
+import InputRupiah from '../../../components/InputRupiah';
 
 // 🔥 FIX BUG NYATA (zona waktu): "tanggal hari ini" untuk transaksi harus
 // dihitung dari waktu LOKAL perangkat, bukan toISOString() (UTC) -- selama
@@ -2102,7 +2103,7 @@ const StudentFinance = () => {
                 <form onSubmit={handleBayar}>
                   <div style={styles.inputGroup}>
                     <label style={styles.label}>Jumlah (Rp)</label>
-                    <input type="number" style={styles.input} value={payAmount} onChange={e => setPayAmount(e.target.value)} required autoFocus />
+                    <InputRupiah style={styles.input} value={payAmount} onChange={e => setPayAmount(e.target.value)} placeholder="Contoh: 500.000" required autoFocus />
                   </div>
                   <div style={styles.inputGroup}>
                     <label style={styles.label}>Metode</label>
@@ -2399,8 +2400,8 @@ const StudentFinance = () => {
                       Total Biaya Paket Baru (Rp)
                       <small style={{ color: '#64748b', fontWeight: 'normal', marginLeft: 6 }}>(Bisa disesuaikan jika ada diskon khusus)</small>
                     </label>
-                    <input
-                      type="number"
+                    <InputRupiah
+                      placeholder="Contoh: 1.800.000"
                       value={upgradeData.hargaPaketBaru}
                       onChange={e => setUpgradeData(prev => ({ ...prev, hargaPaketBaru: e.target.value }))}
                       style={{ ...styles.input, fontWeight: 'bold', fontSize: 16, color: '#1e40af' }}
@@ -2490,8 +2491,7 @@ const StudentFinance = () => {
                         <label style={styles.label}>
                           Bayar Tambahan Hari Ini? (Opsional)
                         </label>
-                        <input
-                          type="number"
+                        <InputRupiah
                           placeholder="0 jika belum bayar lagi hari ini"
                           value={upgradeData.bayarHariIni}
                           onChange={e => setUpgradeData(prev => ({ ...prev, bayarHariIni: e.target.value }))}
@@ -2576,7 +2576,7 @@ const StudentFinance = () => {
               </p>
               <form onSubmit={handlePenyesuaian}>
                 <label style={styles.formLabel}>Nominal kesepakatan (Rp)</label>
-                <input type="number" value={penyesuaianData.kesepakatan} onChange={(e) => setPenyesuaianData({ ...penyesuaianData, kesepakatan: e.target.value })} style={styles.formInput} required />
+                <InputRupiah value={penyesuaianData.kesepakatan} onChange={(e) => setPenyesuaianData({ ...penyesuaianData, kesepakatan: e.target.value })} style={styles.formInput} placeholder="Contoh: 1.500.000" required />
                 <label style={styles.formLabel}>Alasan penawaran (wajib — jejak audit)</label>
                 <input type="text" value={penyesuaianData.alasan} onChange={(e) => setPenyesuaianData({ ...penyesuaianData, alasan: e.target.value })} style={styles.formInput} placeholder="mis. penawaran keluarga, paket pecah 2 modul, diskon saudara" required />
                 <label style={styles.formLabel}>Rincian paket pecah (opsional)</label>
@@ -2633,11 +2633,11 @@ const StudentFinance = () => {
 
                 <div style={styles.inputGroup}>
                   <label style={styles.label}>Total Tagihan (Rp)</label>
-                  <input type="number" value={koreksiData.totalTagihan} onChange={e => setKoreksiData(p => ({ ...p, totalTagihan: e.target.value }))} style={styles.input} />
+                  <InputRupiah value={koreksiData.totalTagihan} onChange={e => setKoreksiData(p => ({ ...p, totalTagihan: e.target.value }))} style={styles.input} placeholder="Total Tagihan" />
                 </div>
                 <div style={styles.inputGroup}>
                   <label style={styles.label}>Total Dibayar (Rp)</label>
-                  <input type="number" value={koreksiData.totalBayar} onChange={e => setKoreksiData(p => ({ ...p, totalBayar: e.target.value }))} style={styles.input} />
+                  <InputRupiah value={koreksiData.totalBayar} onChange={e => setKoreksiData(p => ({ ...p, totalBayar: e.target.value }))} style={styles.input} placeholder="Total Dibayar" />
                 </div>
 
                 {/* 🔥 BARU: koreksi Metode Pembayaran. Field ini sebelumnya
@@ -2841,11 +2841,11 @@ const StudentFinance = () => {
                   <div style={{ display: 'flex', gap: 10 }}>
                     <div style={{ ...styles.inputGroup, flex: 1 }}>
                       <label style={styles.label}>Biaya per Bulan (Rp)</label>
-                      <input
-                        type="number"
+                      <InputRupiah
                         style={styles.input}
                         value={tambahProgramData.nominalBulanan}
                         onChange={e => setTambahProgramData(p => ({ ...p, nominalBulanan: parseInt(e.target.value) || 0 }))}
+                        placeholder="Contoh: 200.000"
                         required
                       />
                     </div>
@@ -2952,11 +2952,11 @@ const StudentFinance = () => {
 
                   <div style={styles.inputGroup}>
                     <label style={styles.label}>Nominal Pembayaran (Rp)</label>
-                    <input
-                      type="number"
+                    <InputRupiah
                       style={styles.input}
                       value={extraPerpanjangData.nominal}
                       onChange={e => setExtraPerpanjangData(p => ({ ...p, nominal: parseInt(e.target.value) || 0 }))}
+                      placeholder="Nominal perpanjangan"
                       required
                     />
                   </div>

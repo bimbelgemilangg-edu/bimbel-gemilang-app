@@ -13,6 +13,7 @@ import {
   serverTimestamp  // 🔥 TAMBAHKAN INI
 } from "firebase/firestore";
 import { ArrowLeft, RefreshCw, Download, Eye, X, ChevronRight, Home, DollarSign, FileText, Calendar, Save, Globe } from 'lucide-react';
+import InputRupiah from '../../../components/InputRupiah';
 
 const TeacherSalaries = () => {
   const navigate = useNavigate();
@@ -930,12 +931,12 @@ const TeacherSalaries = () => {
                             ) : <span style={{color:'#cbd5e1'}}>-</span>}
                           </td>
                           <td style={styles.tdSmall}>
-                            <input 
-                              type="number" 
+                            <InputRupiah 
                               disabled={isValid} 
                               defaultValue={log.nominal} 
                               onBlur={(e) => handleUpdateNominal(log.id, e.target.value)} 
                               style={{...styles.inputNominal(isMobile), borderColor: isValid ? '#10b981' : '#3b82f6'}} 
+                              placeholder="0"
                             />
                           </td>
                           <td style={styles.tdSmall}>
@@ -1003,9 +1004,9 @@ const TeacherSalaries = () => {
                                   onChange={e => setBonusData({...bonusData, keterangan: e.target.value})} 
                                   style={styles.miniInput} 
                                 />
-                                <input 
-                                  type="number" 
+                                <InputRupiah 
                                   placeholder="Nominal" 
+                                  value={bonusData.nominal}
                                   onChange={e => setBonusData({...bonusData, nominal: e.target.value})} 
                                   style={styles.miniInput} 
                                 />

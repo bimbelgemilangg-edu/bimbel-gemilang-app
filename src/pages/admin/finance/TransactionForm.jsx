@@ -7,6 +7,7 @@ import { Save, ArrowUpCircle, ArrowDownCircle, Repeat, BookOpen, ExternalLink } 
 import { uploadElearningFile } from '../../../services/uploadService';
 import { KANAL } from '../../../utils/kanalUang';
 import { ambilNomorKwitansiBerikutnya } from '../../../utils/kwitansi';
+import InputRupiah from '../../../components/InputRupiah';
 
 // 🔥 FIX BUG NYATA (zona waktu & transaksi "gaib"):
 // (1) Tanggal default form ini sebelumnya pakai toISOString() (UTC) -- buat
@@ -313,9 +314,8 @@ const TransactionForm = () => {
           {/* Nominal */}
           <div style={styles.inputGroup}>
             <label style={styles.label}>Nominal (Rp)</label>
-            <input 
-              type="number" 
-              placeholder="Contoh: 1000000" 
+            <InputRupiah 
+              placeholder="Contoh: 1.000.000" 
               value={form.amount} 
               onChange={e => setForm(prev => ({...prev, amount: e.target.value}))} 
               style={{

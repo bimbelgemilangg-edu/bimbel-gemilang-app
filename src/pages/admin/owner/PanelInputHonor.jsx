@@ -46,6 +46,7 @@ import {
   // polanya janggal -- bukan cuma melihat total rupiah.
   deteksiKejanggalanSesi, deteksiTumpangTindih, LABEL_KEJANGGALAN,
 } from './keuanganOwnerUtils';
+import InputRupiah from '../../../components/InputRupiah';
 
 const KATEGORI_MASUK = ['Penjualan Modul/Buku', 'Penjualan Seragam', 'Kantin/Snack', 'Hibah/Donasi', 'Suntikan Modal Owner', 'Lainnya'];
 const KATEGORI_KELUAR = ['Gaji Guru/Staf', 'Listrik & Air', 'Sewa Tempat', 'ATK & Perlengkapan', 'Internet/WiFi', 'Marketing/Iklan', 'Konsumsi', 'Maintenance/Service', 'Pembelian Aset', 'Lainnya'];
@@ -191,7 +192,7 @@ const BagianInput = ({ rpFmt }) => {
           </div>
           <div style={styles.inputGroup}>
             <label style={styles.label}>Nominal (Rp)</label>
-            <input type="number" value={form.amount} onChange={e => update('amount', e.target.value)} placeholder="Contoh: 500000" style={{ ...styles.input, fontSize: 16, fontWeight: 800 }} required min={1} />
+            <InputRupiah value={form.amount} onChange={e => update('amount', e.target.value)} placeholder="Contoh: 500.000" style={{ ...styles.input, fontSize: 16, fontWeight: 800 }} required />
           </div>
           <div style={styles.inputGroup}>
             <label style={styles.label}>Kanal Uang (pintu masuk/keluar)</label>
