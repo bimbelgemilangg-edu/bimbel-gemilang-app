@@ -37,12 +37,61 @@ const RE_SEGMEN = /(\$\$[\s\S]*?\$\$|\\\[[\s\S]*?\\\]|\$(?!\s)[^\n$]+?\$|\\\([^\
 const RE_BERTINGKAT = /\\(frac|dfrac|tfrac|cfrac|sqrt|sum|prod|int|oint|iint|lim|binom|begin\{)/;
 
 /**
+ * Normalisasi otomatis rumus matematika:
+ * 1. Mengonversi pecahan miring (horizontal) seperti 1/2, 3/4 menjadi pecahan vertikal atas-bawah \frac{1}{2}.
+ * 2. Membungkus perintah LaTeX kali (\times) dan bagi (\div) yang tercecer di luar delimiter $...$.
+ * 3. Menghindari kesalahan render KaTeX pada simbol perkalian dan pembagian.
+ * @param {string} teks
+ * @returns {string}
+ */
+export function normalisasiTeksMatematika(teks) {
+  if (!teks || typeof teks !== 'string') return '';
+  let hasil = teks;
+
+  const mathPlaceholders = [];
+  hasil = hasil.replace(/(\$\$[\s\S]*?\$\$|\\\[[\s\S]*?\\\]|\$(?!\s)[^\n$]+?\$|\\\([^\n]*?\\\))/g, (m) => {
+    let inner = m;
+    if (inner.includes('×') || inner.includes('÷')) {
+      const isDolar = inner.startsWith('$') && inner.endsWith('$');
+      const isDuaDolar = inner.startsWith('$$') && inner.endsWith('$$');
+      let raw = isDuaDolar ? inner.slice(2, -2) : (isDolar ? inner.slice(1, -1) : inner);
+      raw = raw.replace(/×/g, '\\times ').replace(/÷/g, '\\div ');
+      inner = isDuaDolar ? `$$${raw}$$` : (isDolar ? `$${raw}$` : raw);
+    }
+    const ph = `___GB_SAFE_MATH_${mathPlaceholders.length}___`;
+    mathPlaceholders.push(inner);
+    return ph;
+  });
+
+  // Bungkus perintah LaTeX mentah yang tercecer di luar $...$ (mis. \times, \div, \cdot, \frac, \sqrt, dll)
+  hasil = hasil.replace(/(\\(?:times|div|cdot|pm|mp|le|ge|ne|neq|approx|infty|degree|circ|alpha|beta|gamma|theta|pi|sqrt|frac|dfrac)\b(?:\{[^{}]*\}\{[^{}]*\}|\{[^{}]*\}|\[[^[\]]*\]\{[^{}]*\}|(?![a-zA-Z]))(?:\s*=\s*[^,\s\n]+)?)/g, (match) => {
+    return `$${match.trim()}$`;
+  });
+
+  // Konversi pecahan miring sederhana (1/2, 3/4) menjadi pecahan bertingkat atas-bawah (\frac{1}{2})
+  // Mencegah konversi pada tanggal (mis. 16/11/2026) atau url
+  hasil = hasil.replace(/(?<![\d/.:\-\w])([1-9]\d*)\s*\/\s*([1-9]\d*)(?![\d/.:\-\w])/g, (match, pembilang, penyebut) => {
+    if (pembilang.length <= 4 && penyebut.length <= 4) {
+      return `$\\frac{${pembilang}}{${penyebut}}$`;
+    }
+    return match;
+  });
+
+  // Kembalikan placeholder rumus asli
+  for (let idx = 0; idx < mathPlaceholders.length; idx++) {
+    hasil = hasil.split(`___GB_SAFE_MATH_${idx}___`).join(mathPlaceholders[idx]);
+  }
+
+  return hasil;
+}
+
+/**
  * Pecah teks menjadi runtutan segmen teks biasa & segmen matematika.
  * @param {string} teks
  * @returns {{jenis: 'teks'|'inline'|'blok', isi: string}[]}
  */
 export function pecahSegmenMatematika(teks) {
-  const sumber = String(teks ?? '');
+  const sumber = normalisasiTeksMatematika(String(teks ?? ''));
   const keluar = [];
   let terakhir = 0;
   for (const m of sumber.matchAll(RE_SEGMEN)) {
@@ -76,4 +125,4 @@ export function sumberKaTeX(segmen) {
   return RE_BERTINGKAT.test(isi) ? `\\displaystyle ${isi}` : isi;
 }
 
-export default { pecahSegmenMatematika, adaMatematika, sumberKaTeX };
+export default { normalisasiTeksMatematika, pecahSegmenMatematika, adaMatematika, sumberKaTeX };

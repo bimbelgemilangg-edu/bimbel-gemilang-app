@@ -21,7 +21,7 @@
 import React from 'react';
 import 'katex/dist/katex.min.css';
 import { InlineMath, BlockMath } from 'react-katex';
-import { pecahSegmenMatematika, sumberKaTeX } from '../utils/segmenMatematika.js';
+import { pecahSegmenMatematika, sumberKaTeX, normalisasiTeksMatematika } from '../utils/segmenMatematika.js';
 import { renderLatexHtml } from '../utils/renderLatexHtml.js';
 
 function ubahMarkdownTableDanGambar(teks) {
@@ -72,7 +72,7 @@ function ubahMarkdownTableDanGambar(teks) {
 export default function RenderMath({ text }) {
   if (!text) return null;
 
-  const raw = String(text);
+  const raw = normalisasiTeksMatematika(String(text));
   const diproses = ubahMarkdownTableDanGambar(raw);
 
   // Jika teks memuat tag HTML (tabel, gambar, paragraf, div, bold, dll), render dengan renderLatexHtml

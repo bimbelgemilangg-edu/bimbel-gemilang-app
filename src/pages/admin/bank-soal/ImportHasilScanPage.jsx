@@ -112,6 +112,7 @@ import imageCompression from 'browser-image-compression';
 import { putuskanCover } from '../../../utils/batasCoverFirestore';
 import PanduImpor from '../../../components/admin/PanduImpor';
 import { teksPanduan } from '../../../utils/panduImpor';
+import { normalisasiTeksMatematika } from '../../../utils/segmenMatematika';
 
 // ============================================================
 // CONSTANT
@@ -2681,7 +2682,7 @@ function parseHTMLMaster(raw) {
       // kosong itu, dan validasi berteriak "Pilihan jawaban kurang dari 2"
       // padahal HTML sumbernya utuh 4 opsi. Lihat docs di bersihkanOcr.js.
       const bersih = bersihkanOcrTeks(opt.teks || '', { untukOpsi: true });
-      return { ...opt, teks: bersih.teks };
+      return { ...opt, teks: normalisasiTeksMatematika(bersih.teks) };
     });
     // Cacat khas OCR dua kolom: blok opsi terpindah JUGA ke dalam teks soal
     // (soal 2 berkas bab 1 & banyak soal bab 2). Duplikatnya dibuang
@@ -2693,11 +2694,11 @@ function parseHTMLMaster(raw) {
       bersihTeksSoal.teks,
       opsi_jawaban.map((o) => o.teks),
     );
-    bersihTeksSoal.teks = tanpaDuplikat.teks;
+    bersihTeksSoal.teks = normalisasiTeksMatematika(tanpaDuplikat.teks);
     bersihTeksSoal.catatan.push(...tanpaDuplikat.catatan);
 
     const bacaan = bacaanNode ? {
-      teks: bersihkanOcrTeks(htmlNodeText(bacaanNode)).teks,
+      teks: normalisasiTeksMatematika(bersihkanOcrTeks(htmlNodeText(bacaanNode)).teks),
       gambar: parseHTMLImages(bacaanNode),
       // 🔥 BARU: penanda grup bacaan (mis. "bacaan_1") -- kalau beberapa
       // soal berbagi bacaan yang sama, mereka wajib punya nilai grup
@@ -2758,7 +2759,7 @@ function parseHTMLMaster(raw) {
         const teksFinal = mentah.trim() ? mentah : rawNodeText.trim();
         const ekor = lengkapEkorJawaban(teksFinal, normalizeAnswerKey(keyRaw));
         catatanEkorJawaban.push(...ekor.catatan);
-        return ekor.teks;
+        return normalisasiTeksMatematika(ekor.teks);
       })(),
       pernyataan: (() => {
         let p = parseHTMLStatements(tfNode);
@@ -3375,7 +3376,7 @@ function escapeHtml(value) {
 // ============================================================
 
 function renderTextWithMath(text, mathReady) {
-  const value = safeString(text);
+  const value = normalisasiTeksMatematika(safeString(text));
   if (!value) return '';
 
   const katex = mathReady && typeof window !== 'undefined' && window.katex ? window.katex : null;
@@ -3383,7 +3384,10 @@ function renderTextWithMath(text, mathReady) {
   const renderMath = (math, displayMode) => {
     if (katex) {
       try {
-        return katex.renderToString(math, { displayMode, throwOnError: false, output: 'html' });
+        const formula = (!displayMode && /\\(frac|dfrac|tfrac|cfrac|sqrt|sum|prod|int|oint|iint|lim|binom|begin\{)/.test(math))
+          ? `\\displaystyle ${math}`
+          : math;
+        return katex.renderToString(formula, { displayMode, throwOnError: false, output: 'html' });
       } catch {
         return `<span class="math-fallback">${escapeHtml(math)}</span>`;
       }
@@ -3866,7 +3870,7 @@ function ImageWithCrop({ image, onCropped, status }) {
 
 function opsiToPlainForFirestore(opsi) {
   return safeArray(opsi).map(opt => ({
-    teks: opt.teks || '',
+    teks: normalisasiTeksMatematika(opt.teks || ''),
     gambar: safeArray(opt.gambar).map(image => ({
       id: image.id,
       url: image.url,
@@ -3929,7 +3933,7 @@ function buildDoc(q, meta) {
 
   const bacaan = q.bacaan
     ? {
-        teks: q.bacaan.teks || '',
+        teks: normalisasiTeksMatematika(q.bacaan.teks || ''),
         gambar: safeArray(q.bacaan.gambar).map(image => ({
           id: image.id,
           url: image.url,
@@ -3945,7 +3949,7 @@ function buildDoc(q, meta) {
     paket: q.paket ?? null,
     paketNama: q.paketMeta?.nama || null,
     bacaan,
-    soal: q.teks_soal,
+    soal: normalisasiTeksMatematika(q.teks_soal),
     tipe: q.tipe,
     opsiJawaban: opsiToPlainForFirestore(q.opsi_jawaban),
     opsiBenar: q.opsi_benar,
@@ -3957,7 +3961,7 @@ function buildDoc(q, meta) {
     satuanJawaban: q.satuan_jawaban || '',
     toleransiJawaban: q.toleransi_jawaban ?? null,
     kunciTerverifikasi: q.kunci_terverifikasi,
-    pembahasan: bersihkanJejakTeknis(q.pembahasan),
+    pembahasan: normalisasiTeksMatematika(bersihkanJejakTeknis(q.pembahasan)),
     catatanAdmin: q.catatan_admin || '',
     catatanOcr: Array.isArray(q.catatan_ocr) ? q.catatan_ocr : [],
     gambarUrls,
@@ -5954,7 +5958,7 @@ Ikuti PERSIS format/skema HTML di bawah ini buat cara nulis soalnya (struktur da
                 </div>
               </div>
 
-              <textarea<textarea
+              <textarea
                 rows={14}
                 value={rawInput}
                 onChange={e => setRawInput(e.target.value)}
