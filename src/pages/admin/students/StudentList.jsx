@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SidebarAdmin from '../../../components/SidebarAdmin';
 import { db } from '../../../firebase';
-import { collection, getDocs, deleteDoc, doc, updateDoc, addDoc, serverTimestamp } from "firebase/firestore";
+import { collection, getDocs, deleteDoc, doc, updateDoc, addDoc, serverTimestamp, query, limit } from "firebase/firestore";
 import * as XLSX from 'xlsx';
 import { 
   Search, Sparkles, Copy, MessageSquare, Plus, PlusCircle, Edit3, Trash2, UserCheck, UserX, Users,
@@ -12,6 +12,9 @@ import {
   FileSpreadsheet, Printer, Bell, Zap, Send, Mail, User, GraduationCap,
   Layers, TrendingUp, Award, Filter, X, Eye
 } from 'lucide-react';
+// 🔥 BARU (2026-11-16): English Course masa aktif berbasis kuota pertemuan (8x/bulan)
+// dicocokkan otomatis dari absensi guru & siswa (bukan habis kalender).
+import { hitungKuotaEnglishCourse, isProgramEnglish } from '../../../utils/kuotaEnglishCourse';
 
 const StudentList = () => {
   const navigate = useNavigate();
@@ -39,6 +42,10 @@ const StudentList = () => {
   const [showAccessModal, setShowAccessModal] = useState(false);
   const [sendingAccess, setSendingAccess] = useState(false);
 
+  // 🔥 BARU (2026-11-16): Absensi siswa & jurnal guru untuk pelacakan kuota 8x sesi English Course
+  const [attendanceList, setAttendanceList] = useState([]);
+  const [teacherLogsList, setTeacherLogsList] = useState([]);
+
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
     window.addEventListener('resize', handleResize);
@@ -53,7 +60,12 @@ const StudentList = () => {
   const fetchStudents = async () => {
     setLoading(true);
     try {
-      const snap = await getDocs(collection(db, "students"));
+      const [snap, snapAtt, snapLogs] = await Promise.all([
+        getDocs(collection(db, "students")),
+        getDocs(query(collection(db, "attendance"), limit(300))).catch(() => ({ docs: [] })),
+        getDocs(query(collection(db, "teacher_logs"), limit(200))).catch(() => ({ docs: [] }))
+      ]);
+
       const data = snap.docs.map(d => ({ 
         id: d.id, 
         ...d.data(),
@@ -61,6 +73,8 @@ const StudentList = () => {
       }));
       data.sort((a, b) => (a.nama || '').localeCompare(b.nama || ''));
       setStudents(data);
+      setAttendanceList(snapAtt.docs.map(d => ({ id: d.id, ...d.data() })));
+      setTeacherLogsList(snapLogs.docs.map(d => ({ id: d.id, ...d.data() })));
     } catch (error) { 
       console.error("Fetch error:", error); 
     } finally { 
@@ -86,13 +100,36 @@ const StudentList = () => {
   };
 
   const getMasaAktifStatus = (s) => {
-    if (!s.tanggalSelesai) return { label: 'Tidak Diketahui', color: '#94a3b8', bg: '#f1f5f9', days: null };
+    // 🔥 BARU (2026-11-16): English Course masa aktif berbasis kuota pertemuan (8x/bulan)
+    // bukan habis tanggal kalender. Dicocokkan dari absensi guru & siswa.
+    const isEnglish = s.kategori === 'English' || isProgramEnglish(s.studentId);
+    if (isEnglish) {
+      const kuota = hitungKuotaEnglishCourse({
+        durasiBulan: s.durasiBulan || 1,
+        tanggalMulai: s.tanggalMulai,
+        attendanceList,
+        teacherLogs: teacherLogsList,
+        student: s
+      });
+      return {
+        label: kuota.labelStatus,
+        color: kuota.badgeWarna.color,
+        bg: kuota.badgeWarna.bg,
+        days: kuota.isHabis ? -1 : (kuota.isHampirHabis ? 15 : 60),
+        isHabis: kuota.isHabis,
+        isAkanHabis: kuota.isHampirHabis,
+        isEnglishCourse: true,
+        kuota
+      };
+    }
+
+    if (!s.tanggalSelesai) return { label: 'Tidak Diketahui', color: '#94a3b8', bg: '#f1f5f9', days: null, isHabis: false, isAkanHabis: false };
 
     // v1.5.8-hotfix: tanggalSelesai rusak ('-' tersimpan bila tanggalMulai
     // kosong, atau string sampah) dulu jatuh ke cabang else = label 'Aktif'
     // SELAMANYA (NaN gagal di semua perbandingan). Sekarang jujur: tidak diketahui.
     const selesaiParse = new Date(s.tanggalSelesai);
-    if (Number.isNaN(selesaiParse.getTime())) return { label: 'Tidak Diketahui', color: '#94a3b8', bg: '#f1f5f9', days: null };
+    if (Number.isNaN(selesaiParse.getTime())) return { label: 'Tidak Diketahui', color: '#94a3b8', bg: '#f1f5f9', days: null, isHabis: false, isAkanHabis: false };
 
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -101,10 +138,10 @@ const StudentList = () => {
     
     const diffDays = Math.ceil((selesai - today) / (1000 * 60 * 60 * 24));
     
-    if (diffDays < 0) return { label: 'Habis', color: '#ef4444', bg: '#fee2e2', days: diffDays };
-    if (diffDays <= 30) return { label: `${diffDays} hari`, color: '#f59e0b', bg: '#fef3c7', days: diffDays };
-    if (diffDays <= 90) return { label: `${diffDays} hari`, color: '#3b82f6', bg: '#dbeafe', days: diffDays };
-    return { label: 'Aktif', color: '#10b981', bg: '#dcfce7', days: diffDays };
+    if (diffDays < 0) return { label: 'Habis', color: '#ef4444', bg: '#fee2e2', days: diffDays, isHabis: true, isAkanHabis: false };
+    if (diffDays <= 30) return { label: `${diffDays} hari`, color: '#f59e0b', bg: '#fef3c7', days: diffDays, isHabis: false, isAkanHabis: true };
+    if (diffDays <= 90) return { label: `${diffDays} hari`, color: '#3b82f6', bg: '#dbeafe', days: diffDays, isHabis: false, isAkanHabis: false };
+    return { label: 'Aktif', color: '#10b981', bg: '#dcfce7', days: diffDays, isHabis: false, isAkanHabis: false };
   };
 
   const getDurasiBulan = (s) => {
@@ -142,22 +179,15 @@ const StudentList = () => {
       filtered = filtered.filter(s => s.isBlocked);
     } else if (filterStatus === 'habis') {
       filtered = filtered.filter(s => {
-        if (!s.tanggalSelesai) return false;
-        const selesai = new Date(s.tanggalSelesai);
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        selesai.setHours(0, 0, 0, 0);
-        return selesai < today && !s.isBlocked;
+        if (s.isBlocked) return false;
+        const st = getMasaAktifStatus(s);
+        return st.isHabis;
       });
     } else if (filterStatus === 'akan-habis') {
       filtered = filtered.filter(s => {
-        if (!s.tanggalSelesai || s.isBlocked) return false;
-        const selesai = new Date(s.tanggalSelesai);
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        selesai.setHours(0, 0, 0, 0);
-        const diffDays = Math.ceil((selesai - today) / (1000 * 60 * 60 * 24));
-        return diffDays >= 0 && diffDays <= 30;
+        if (s.isBlocked) return false;
+        const st = getMasaAktifStatus(s);
+        return st.isAkanHabis;
       });
     }
     
@@ -181,23 +211,8 @@ const StudentList = () => {
     const total = list.length;
     const aktif = list.filter(s => !s.isBlocked).length;
     const blokir = list.filter(s => s.isBlocked).length;
-    const habis = list.filter(s => {
-      if (!s.tanggalSelesai || s.isBlocked) return false;
-      const selesai = new Date(s.tanggalSelesai);
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      selesai.setHours(0, 0, 0, 0);
-      return selesai < today;
-    }).length;
-    const akanHabis = list.filter(s => {
-      if (!s.tanggalSelesai || s.isBlocked) return false;
-      const selesai = new Date(s.tanggalSelesai);
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      selesai.setHours(0, 0, 0, 0);
-      const diffDays = Math.ceil((selesai - today) / (1000 * 60 * 60 * 24));
-      return diffDays >= 0 && diffDays <= 30;
-    }).length;
+    const habis = list.filter(s => !s.isBlocked && getMasaAktifStatus(s).isHabis).length;
+    const akanHabis = list.filter(s => !s.isBlocked && getMasaAktifStatus(s).isAkanHabis).length;
     
     return { total, aktif, blokir, habis, akanHabis };
   };
@@ -858,8 +873,8 @@ const StudentList = () => {
                     const masa = getMasaAktifStatus(s);
                     const durasiAwal = s.durasiBulan || 0;
                     const sisaTagihan = getSisaTagihan(s);
-                    const isAkanHabis = masa.days !== null && masa.days >= 0 && masa.days <= 30;
-                    const isHabis = masa.days !== null && masa.days < 0;
+                    const isAkanHabis = masa.isAkanHabis;
+                    const isHabis = masa.isHabis;
                     
                     return (
                       <tr key={s.id} style={{
@@ -884,11 +899,32 @@ const StudentList = () => {
                                 )}
                               </div>
                               <div style={styles.studentId}>{s.studentId}</div>
-                              {Array.isArray(s.extraPrograms) && s.extraPrograms.filter(p => p.status === 'Aktif').map(ep => (
-                                <span key={ep.id} style={{ display: 'inline-block', fontSize: 10, fontWeight: 700, color: '#6d28d9', background: '#ede9fe', border: '1px solid #ddd6fe', padding: '1px 6px', borderRadius: 4, marginTop: 3, marginRight: 4 }}>
-                                  🇬🇧 {ep.namaProgram}
-                                </span>
-                              ))}
+                              {Array.isArray(s.extraPrograms) && s.extraPrograms.filter(p => p.status === 'Aktif').map(ep => {
+                                const isEng = isProgramEnglish(ep.programType || ep.namaProgram);
+                                const kuotaEp = isEng ? hitungKuotaEnglishCourse({
+                                  durasiBulan: ep.durasiBulan || 1,
+                                  tanggalMulai: ep.tanggalMulai,
+                                  attendanceList,
+                                  teacherLogs: teacherLogsList,
+                                  student: s
+                                }) : null;
+                                return (
+                                  <span key={ep.id} style={{
+                                    display: 'inline-block',
+                                    fontSize: 10,
+                                    fontWeight: 700,
+                                    color: kuotaEp ? kuotaEp.badgeWarna.color : '#6d28d9',
+                                    background: kuotaEp ? kuotaEp.badgeWarna.bg : '#ede9fe',
+                                    border: `1px solid ${kuotaEp ? kuotaEp.badgeWarna.border : '#ddd6fe'}`,
+                                    padding: '1px 6px',
+                                    borderRadius: 4,
+                                    marginTop: 3,
+                                    marginRight: 4
+                                  }}>
+                                    🇬🇧 {ep.namaProgram} {kuotaEp ? `(${kuotaEp.sesiTerpakai}/${kuotaEp.totalKuota})` : ''}
+                                  </span>
+                                );
+                              })}
                             </div>
                           </div>
                         </td>
@@ -908,10 +944,16 @@ const StudentList = () => {
                           <span style={{
                             ...styles.masaBadge,
                             background: masa.bg,
-                            color: masa.color
-                          }}>
+                            color: masa.color,
+                            border: masa.kuota ? `1px solid ${masa.kuota.badgeWarna.border}` : 'none'
+                          }} title={masa.isEnglishCourse ? `English Course: ${masa.kuota.sesiTerpakai} dari ${masa.kuota.totalKuota} pertemuan terpakai` : undefined}>
                             {masa.label}
                           </span>
+                          {masa.isEnglishCourse && (
+                            <div style={{ fontSize: 9.5, color: '#64748b', marginTop: 2 }}>
+                              {masa.kuota.isHabis ? 'Kuota selesai' : `Sisa ${masa.kuota.sisaSesi} sesi`}
+                            </div>
+                          )}
                         </td>
                         <td style={styles.td}>
                           <span style={{

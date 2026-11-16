@@ -5,13 +5,13 @@ import SidebarAdmin from '../../../components/SidebarAdmin';
 import { db } from '../../../firebase';
 import { 
   doc, getDoc, collection, query, where, getDocs, 
-  updateDoc, addDoc, serverTimestamp, writeBatch
+  updateDoc, addDoc, serverTimestamp, writeBatch, limit
 } from "firebase/firestore";
 import { 
   ArrowLeft, CreditCard, CheckCircle, Clock, AlertCircle,
   Calendar, Home, ChevronRight, Wallet,
   DollarSign, Receipt, TrendingUp, X, Save,
-  RefreshCw, PlusCircle, Edit3, ShieldAlert, Printer
+  RefreshCw, PlusCircle, Edit3, ShieldAlert, Printer, Eye
 } from 'lucide-react';
 // 🔥 BARU (modul rekonsiliasi & kwitansi): bukti transfer + kwitansi
 // bernomor resmi untuk pembayaran & perpanjangan siswa.
@@ -29,6 +29,9 @@ import { rencanaPaketPromo, normalisasiDurasi, normalisasiBonus, tambahBulanKeTa
 // salah nominal / salah metode) + detektor "dua buku tidak cocok".
 import DialogKoreksiTransaksi from '../../../components/DialogKoreksiTransaksi';
 import { selisihRingkasanVsLedger, validasiAlasanKoreksi } from '../../../utils/koreksiNominalTransaksi';
+// 🔥 BARU (2026-11-16): Pelacakan kuota sesi pertemuan English Course (8x sesi/bulan)
+// dicocokkan otomatis dengan absensi guru & siswa (bukan habis tanggal kalender).
+import { hitungKuotaEnglishCourse, isProgramEnglish, SESI_PER_BULAN_ENGLISH } from '../../../utils/kuotaEnglishCourse';
 
 // 🔥 FIX BUG NYATA (zona waktu): "tanggal hari ini" untuk transaksi harus
 // dihitung dari waktu LOKAL perangkat, bukan toISOString() (UTC) -- selama
@@ -158,6 +161,12 @@ const StudentFinance = () => {
   const [extraPerpanjangBukti, setExtraPerpanjangBukti] = useState(null);
   const [isPerpanjangExtraProcessing, setIsPerpanjangExtraProcessing] = useState(false);
 
+  // 🔥 BARU (2026-11-16): Data absensi guru & siswa untuk pelacakan kuota sesi English Course (8x/bulan)
+  const [englishAttendance, setEnglishAttendance] = useState([]);
+  const [englishTeacherLogs, setEnglishTeacherLogs] = useState([]);
+  const [showModalRincianSesi, setShowModalRincianSesi] = useState(false);
+  const [modalRincianData, setModalRincianData] = useState(null);
+
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
     window.addEventListener('resize', handleResize);
@@ -253,6 +262,28 @@ const StudentFinance = () => {
         .map(d => ({ id: d.id, ...d.data() }))
         .sort((a, b) => (b.date || '').localeCompare(a.date || ''));
       setFinanceLogs(logsData);
+
+      // 4. Fetch data absensi & jurnal mengajar guru untuk kuota English Course (8x/bulan)
+      try {
+        const qAtt1 = query(collection(db, "attendance"), where("studentId", "==", kodeUnik));
+        const [snapAtt1, snapTLogs] = await Promise.all([
+          getDocs(qAtt1).catch(() => ({ docs: [] })),
+          getDocs(query(collection(db, "teacher_logs"), limit(120))).catch(() => ({ docs: [] }))
+        ]);
+        let allAtt = snapAtt1.docs.map(d => ({ id: d.id, ...d.data() }));
+
+        // Bila doc ID berbeda dengan kodeUnik, ambil juga absensi berbasis doc ID
+        if (id && id !== kodeUnik) {
+          const qAtt2 = query(collection(db, "attendance"), where("studentId", "==", id));
+          const snapAtt2 = await getDocs(qAtt2).catch(() => ({ docs: [] }));
+          allAtt = [...allAtt, ...snapAtt2.docs.map(d => ({ id: d.id, ...d.data() }))];
+        }
+
+        setEnglishAttendance(allAtt);
+        setEnglishTeacherLogs(snapTLogs.docs.map(d => ({ id: d.id, ...d.data() })));
+      } catch (errAtt) {
+        console.warn("Gagal memuat absensi English Course:", errAtt);
+      }
 
     } catch (error) { 
       console.error("Error:", error); 
@@ -1182,6 +1213,18 @@ const StudentFinance = () => {
     .filter((l) => l && l.type === 'Pemasukan' && l.method !== 'Cicilan')
     .reduce((s, l) => s + (Math.round(Number(l.amount) || 0)), 0);
 
+  // 🔥 BARU (2026-11-16): Pelacakan kuota sesi pertemuan English Course (8x/bulan)
+  const isEnglishUtama = student?.kategori === 'English' || isProgramEnglish(student?.studentId);
+  const kuotaEnglishUtama = isEnglishUtama
+    ? hitungKuotaEnglishCourse({
+        durasiBulan: student.durasiBulan || 1,
+        tanggalMulai: student.tanggalMulai,
+        attendanceList: englishAttendance,
+        teacherLogs: englishTeacherLogs,
+        student
+      })
+    : null;
+
   return (
     <div style={styles.wrapper}>
       <SidebarAdmin />
@@ -1218,9 +1261,33 @@ const StudentFinance = () => {
                   🇬🇧 {ep.namaProgram}
                 </span>
               ))}
-              <span style={{...styles.masaBadge, background: masa.bg, color: masa.color}}>
-                <Clock size={10} /> {masa.label}
-              </span>
+              {kuotaEnglishUtama ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setModalRincianData({
+                      ...kuotaEnglishUtama,
+                      namaSiswa: student.nama,
+                      namaProgram: 'English Course'
+                    });
+                    setShowModalRincianSesi(true);
+                  }}
+                  style={{
+                    ...styles.masaBadge,
+                    background: kuotaEnglishUtama.badgeWarna.bg,
+                    color: kuotaEnglishUtama.badgeWarna.color,
+                    border: `1px solid ${kuotaEnglishUtama.badgeWarna.border}`,
+                    cursor: 'pointer'
+                  }}
+                  title="Klik untuk melihat rincian sesi pertemuan English Course"
+                >
+                  <Clock size={10} /> {kuotaEnglishUtama.labelStatus}
+                </button>
+              ) : (
+                <span style={{...styles.masaBadge, background: masa.bg, color: masa.color}}>
+                  <Clock size={10} /> {masa.label}
+                </span>
+              )}
             </div>
           </div>
           <div style={{display: 'flex', gap: 8, flexShrink: 0}}>
@@ -1299,6 +1366,61 @@ const StudentFinance = () => {
                 </div>
               </div>
             </div>
+
+            {/* 🔥 BARU (2026-11-16): Pelacakan Kuota Sesi Pertemuan English Course (8x/bulan) */}
+            {kuotaEnglishUtama && (
+              <div style={{
+                marginTop: 14,
+                padding: '12px 14px',
+                background: kuotaEnglishUtama.isHabis ? '#fef2f2' : '#f0fdf4',
+                border: `1px solid ${kuotaEnglishUtama.isHabis ? '#fecaca' : '#bbf7d0'}`,
+                borderRadius: 10
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                  <strong style={{ fontSize: 12, color: kuotaEnglishUtama.isHabis ? '#991b1b' : '#166534', display: 'flex', alignItems: 'center', gap: 6 }}>
+                    🇬🇧 Kuota Pertemuan ({kuotaEnglishUtama.sesiTerpakai} / {kuotaEnglishUtama.totalKuota} Sesi)
+                  </strong>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setModalRincianData({
+                        ...kuotaEnglishUtama,
+                        namaSiswa: student.nama,
+                        namaProgram: 'English Course'
+                      });
+                      setShowModalRincianSesi(true);
+                    }}
+                    style={{
+                      background: 'white',
+                      border: '1px solid #cbd5e1',
+                      padding: '3px 8px',
+                      borderRadius: 6,
+                      fontSize: 10.5,
+                      fontWeight: 700,
+                      color: '#475569',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 4
+                    }}
+                  >
+                    <Eye size={11} /> Rincian Sesi ({kuotaEnglishUtama.sesiTerpakai})
+                  </button>
+                </div>
+                <div style={{ height: 8, borderRadius: 4, background: '#e2e8f0', overflow: 'hidden', margin: '6px 0' }}>
+                  <div style={{
+                    height: '100%',
+                    width: `${kuotaEnglishUtama.persentase}%`,
+                    background: kuotaEnglishUtama.isHabis ? '#ef4444' : '#10b981',
+                    transition: 'width 0.3s'
+                  }} />
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10.5, color: '#64748b' }}>
+                  <span>{kuotaEnglishUtama.isHabis ? '🔴 Paket Habis (8/8 Sesi Selesai)' : `🟢 Sisa ${kuotaEnglishUtama.sisaSesi}x pertemuan lagi`}</span>
+                  <span>Standar: 8 Sesi / Bulan</span>
+                </div>
+              </div>
+            )}
 
             {/* Total Akumulasi Riwayat Uang Diterima Sepanjang Waktu */}
             <div style={{
@@ -1446,6 +1568,15 @@ const StudentFinance = () => {
                 {student.extraPrograms.map((prog) => {
                   const masaProg = getMasaStatusExtra(prog.tanggalSelesai);
                   const isAktif = prog.status !== 'Nonaktif';
+                  const isProgEng = isProgramEnglish(prog.programType || prog.namaProgram);
+                  const kuotaProg = isProgEng ? hitungKuotaEnglishCourse({
+                    durasiBulan: prog.durasiBulan || 1,
+                    tanggalMulai: prog.tanggalMulai,
+                    attendanceList: englishAttendance,
+                    teacherLogs: englishTeacherLogs,
+                    student
+                  }) : null;
+
                   return (
                     <div key={prog.id} style={{ background: isAktif ? '#f8fafc' : '#f1f5f9', border: `1px solid ${isAktif ? '#e2e8f0' : '#cbd5e1'}`, borderRadius: 10, padding: 12, opacity: isAktif ? 1 : 0.65 }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
@@ -1454,19 +1585,55 @@ const StudentFinance = () => {
                             {prog.namaProgram}
                           </strong>
                           <span style={{ fontSize: 10, color: '#64748b' }}>
-                            📅 {prog.tanggalMulai} s.d {prog.tanggalSelesai} ({prog.durasiBulan} Bulan)
+                            📅 Mulai: {prog.tanggalMulai} • Durasi: {prog.durasiBulan} Bulan {kuotaProg ? `(${kuotaProg.totalKuota} Sesi)` : `(s.d ${prog.tanggalSelesai})`}
                           </span>
                         </div>
-                        <span style={{ ...styles.masaBadge, background: isAktif ? masaProg.bg : '#e2e8f0', color: isAktif ? masaProg.color : '#64748b', fontSize: 10 }}>
-                          {isAktif ? masaProg.label : 'Nonaktif'}
-                        </span>
+                        {kuotaProg ? (
+                          <span style={{ ...styles.masaBadge, background: kuotaProg.badgeWarna.bg, color: kuotaProg.badgeWarna.color, border: `1px solid ${kuotaProg.badgeWarna.border}`, fontSize: 10 }}>
+                            {kuotaProg.labelStatus}
+                          </span>
+                        ) : (
+                          <span style={{ ...styles.masaBadge, background: isAktif ? masaProg.bg : '#e2e8f0', color: isAktif ? masaProg.color : '#64748b', fontSize: 10 }}>
+                            {isAktif ? masaProg.label : 'Nonaktif'}
+                          </span>
+                        )}
                       </div>
+
+                      {/* Bar kuota khusus English Course */}
+                      {kuotaProg && (
+                        <div style={{ margin: '6px 0 8px 0', background: '#f1f5f9', padding: '6px 8px', borderRadius: 6 }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: '#475569', marginBottom: 3 }}>
+                            <span>Sesi Pertemuan: <strong>{kuotaProg.sesiTerpakai} / {kuotaProg.totalKuota} Sesi</strong></span>
+                            <span>{kuotaProg.isHabis ? '🔴 Habis' : `🟢 Sisa ${kuotaProg.sisaSesi} sesi`}</span>
+                          </div>
+                          <div style={{ height: 6, borderRadius: 3, background: '#e2e8f0', overflow: 'hidden' }}>
+                            <div style={{ height: '100%', width: `${kuotaProg.persentase}%`, background: kuotaProg.isHabis ? '#ef4444' : '#10b981' }} />
+                          </div>
+                        </div>
+                      )}
+
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 11, color: '#475569', marginTop: 6, flexWrap: 'wrap', gap: 6 }}>
                         <span>
                           Total: <strong>Rp {prog.totalBiaya?.toLocaleString()}</strong> • {prog.metodeBayar} {prog.refTransfer ? `(${prog.refTransfer})` : ''}
                         </span>
                         {isAktif && (
-                          <div style={{ display: 'flex', gap: 6 }}>
+                          <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                            {kuotaProg && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setModalRincianData({
+                                    ...kuotaProg,
+                                    namaSiswa: student.nama,
+                                    namaProgram: prog.namaProgram
+                                  });
+                                  setShowModalRincianSesi(true);
+                                }}
+                                style={{ background: '#ecfdf5', color: '#047857', border: '1px solid #a7f3d0', padding: '4px 8px', borderRadius: 6, fontSize: 11, fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}
+                              >
+                                <Eye size={11} /> Sesi ({kuotaProg.sesiTerpakai})
+                              </button>
+                            )}
                             <button
                               type="button"
                               onClick={() => openPerpanjangExtraModal(prog)}
@@ -2269,6 +2436,86 @@ const StudentFinance = () => {
                     </button>
                   </div>
                 </form>
+              </div>
+            </div>
+          </div>
+        {/* ===== MODAL RINCIAN SESI ENGLISH COURSE (8x/bulan) ===== */}
+        {showModalRincianSesi && modalRincianData && (
+          <div style={styles.modalOverlay} onClick={() => setShowModalRincianSesi(false)}>
+            <div style={{ ...styles.modalContent(isMobile), maxWidth: '580px' }} onClick={e => e.stopPropagation()}>
+              <div style={styles.modalHeader}>
+                <h3 style={styles.modalTitle}>
+                  🇬🇧 Rincian Sesi Kehadiran {modalRincianData.namaProgram || 'English Course'}
+                </h3>
+                <button style={styles.modalClose} onClick={() => setShowModalRincianSesi(false)}>
+                  <X size={16} />
+                </button>
+              </div>
+
+              <div style={styles.modalBody}>
+                <div style={{ background: '#f8fafc', padding: 12, borderRadius: 10, border: '1px solid #e2e8f0', marginBottom: 16 }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: '#1e293b' }}>
+                    {modalRincianData.namaSiswa || student.nama}
+                  </div>
+                  <div style={{ fontSize: 11, color: '#64748b', marginTop: 4, display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                    <span>Kuota: <strong>{modalRincianData.totalKuota} Sesi</strong> ({modalRincianData.durasiBulan} Bulan @ 8x)</span>
+                    <span>Terpakai: <strong style={{ color: '#047857' }}>{modalRincianData.sesiTerpakai} Sesi</strong></span>
+                    <span>Sisa: <strong style={{ color: modalRincianData.sisaSesi === 0 ? '#b91c1c' : '#2563eb' }}>{modalRincianData.sisaSesi} Sesi</strong></span>
+                  </div>
+                  <div style={{ marginTop: 8, fontSize: 10.5, color: '#475569', background: '#ecfdf5', padding: '6px 10px', borderRadius: 6, border: '1px solid #a7f3d0', lineHeight: 1.5 }}>
+                    💡 <em>Aturan Bimbel Gemilang: English Course dihitung 8x pertemuan per bulan. Paket baru habis jika seluruh kuota sesi telah selesai dijalankan (dicocokkan otomatis dari absensi guru &amp; absensi siswa).</em>
+                  </div>
+                </div>
+
+                <h4 style={{ fontSize: 12, color: '#334155', margin: '0 0 8px 0', fontWeight: 700 }}>
+                  Daftar Sesi yang Telah Diikuti ({modalRincianData.daftarSesi?.length || 0}):
+                </h4>
+
+                {(!modalRincianData.daftarSesi || modalRincianData.daftarSesi.length === 0) ? (
+                  <div style={{ textAlign: 'center', padding: '24px 12px', background: '#f8fafc', borderRadius: 8, color: '#94a3b8', fontSize: 12 }}>
+                    Belum ada data absensi kehadiran yang tercatat untuk sesi English Course ini.
+                  </div>
+                ) : (
+                  <div style={{ maxHeight: 280, overflowY: 'auto', border: '1px solid #e2e8f0', borderRadius: 8 }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 11.5 }}>
+                      <thead>
+                        <tr style={{ background: '#f1f5f9', borderBottom: '1px solid #e2e8f0', textAlign: 'left' }}>
+                          <th style={{ padding: '8px 10px', width: 36 }}>#</th>
+                          <th style={{ padding: '8px 10px', width: 90 }}>Tanggal</th>
+                          <th style={{ padding: '8px 10px' }}>Guru / Materi</th>
+                          <th style={{ padding: '8px 10px', width: 75, textAlign: 'center' }}>Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {modalRincianData.daftarSesi.map((sesi, idx) => (
+                          <tr key={idx} style={{ borderBottom: '1px solid #f1f5f9', background: idx % 2 === 0 ? 'white' : '#fafafa' }}>
+                            <td style={{ padding: '8px 10px', fontWeight: 700, color: '#64748b' }}>
+                              {idx + 1}
+                            </td>
+                            <td style={{ padding: '8px 10px', fontWeight: 600, color: '#1e293b', whiteSpace: 'nowrap' }}>
+                              📅 {sesi.tanggal}
+                            </td>
+                            <td style={{ padding: '8px 10px' }}>
+                              <div style={{ fontWeight: 600, color: '#334155' }}>{sesi.guru}</div>
+                              <div style={{ fontSize: 10, color: '#64748b' }}>{sesi.materi}</div>
+                            </td>
+                            <td style={{ padding: '8px 10px', textAlign: 'center' }}>
+                              <span style={{ background: '#dcfce7', color: '#166534', padding: '2px 8px', borderRadius: 6, fontSize: 10, fontWeight: 700 }}>
+                                ✓ Hadir
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+
+                <div style={styles.modalFooter}>
+                  <button type="button" onClick={() => setShowModalRincianSesi(false)} style={{ ...styles.btnSave, background: '#3b82f6' }}>
+                    Tutup
+                  </button>
+                </div>
               </div>
             </div>
           </div>
