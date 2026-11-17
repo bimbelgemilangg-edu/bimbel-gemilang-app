@@ -3,14 +3,14 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SidebarAdmin from '../../../components/SidebarAdmin';
 import { db } from '../../../firebase';
-import { collection, getDocs, deleteDoc, doc, updateDoc, addDoc, serverTimestamp, query, limit } from "firebase/firestore";
+import { collection, getDocs, deleteDoc, doc, updateDoc, addDoc, serverTimestamp, query, limit, where } from "firebase/firestore";
 import * as XLSX from 'xlsx';
 import { 
   Search, Sparkles, Copy, MessageSquare, Plus, PlusCircle, Edit3, Trash2, UserCheck, UserX, Users,
   Home, ChevronRight, BookOpen, RefreshCw, AlertCircle, CheckCircle,
   CreditCard, Calendar, Clock, Hash, Download, PieChart, BarChart3,
   FileSpreadsheet, Printer, Bell, Zap, Send, Mail, User, GraduationCap,
-  Layers, TrendingUp, Award, Filter, X, Eye, Camera
+  Layers, TrendingUp, Award, Filter, X, Eye, Camera, AlertTriangle, ShieldCheck
 } from 'lucide-react';
 import { uploadElearningFile } from '../../../services/uploadService';
 // 🔥 BARU (2026-11-16): English Course masa aktif berbasis kuota pertemuan (8x/bulan)
@@ -48,6 +48,11 @@ const StudentList = () => {
   const [teacherLogsList, setTeacherLogsList] = useState([]);
   const [modalRincianData, setModalRincianData] = useState(null);
   const [showModalRincianSesi, setShowModalRincianSesi] = useState(false);
+
+  // 🔥 BARU: Audit Selisih Keuangan Siswa (Buku Kas vs Profil Siswa)
+  const [showAuditModal, setShowAuditModal] = useState(false);
+  const [auditSelisihMap, setAuditSelisihMap] = useState({});
+  const [auditSelisihList, setAuditSelisihList] = useState([]);
 
   // 🔥 BARU: Quick photo upload langsung dari tabel siswa
   const fotoInputRef = useRef(null);
@@ -94,21 +99,76 @@ const StudentList = () => {
   const fetchStudents = async () => {
     setLoading(true);
     try {
-      // 🔥 Muat seluruh log guru & absensi siswa secara utuh tanpa limit terpotong
-      // agar seluruh sesi (termasuk yang baru saja diabsen hari ini) tercatat 100%.
-      const [snap, snapAtt, snapLogs] = await Promise.all([
+      // 🔥 Muat seluruh data: siswa, absensi, jurnal guru, dan finance_logs untuk audit real-time
+      const [snap, snapAtt, snapLogs, logsSnap] = await Promise.all([
         getDocs(collection(db, "students")),
         getDocs(collection(db, "attendance")).catch(() => ({ docs: [] })),
-        getDocs(collection(db, "teacher_logs")).catch(() => ({ docs: [] }))
+        getDocs(collection(db, "teacher_logs")).catch(() => ({ docs: [] })),
+        getDocs(query(collection(db, "finance_logs"), where("type", "==", "Pemasukan"))).catch(() => ({ docs: [] }))
       ]);
 
-      const data = snap.docs.map(d => ({ 
-        id: d.id, 
-        ...d.data(),
-        studentId: d.data().studentId || d.id
-      }));
+      // Map akumulasi uang riil kasir/bank per siswa
+      const logsMapById = {};
+      const logsMapByName = {};
+      logsSnap.docs.forEach(docSnap => {
+        const l = docSnap.data();
+        if (l.method === 'Cicilan') return;
+        const amt = Math.round(Number(l.amount) || 0);
+        if (l.studentId) {
+          logsMapById[l.studentId] = (logsMapById[l.studentId] || 0) + amt;
+        }
+        if (l.namaSiswa) {
+          const keyNama = l.namaSiswa.trim().toLowerCase();
+          logsMapByName[keyNama] = (logsMapByName[keyNama] || 0) + amt;
+        }
+      });
+
+      const selMap = {};
+      const selList = [];
+
+      const data = snap.docs.map(d => {
+        const sData = d.data();
+        const sId = sData.studentId || d.id;
+        const bayar = parseInt(sData.totalBayar || 0);
+        const total = parseInt(sData.totalTagihan || 0);
+        const keyNama = (sData.nama || '').trim().toLowerCase();
+
+        const uangRiil = (logsMapById[sId] !== undefined)
+          ? logsMapById[sId]
+          : (logsMapById[d.id] !== undefined
+            ? logsMapById[d.id]
+            : (logsMapByName[keyNama] || 0));
+
+        // Deteksi siswa lunas semu / selisih kasir
+        if (bayar > 0 && bayar > uangRiil) {
+          const sel = bayar - uangRiil;
+          const auditItem = {
+            id: d.id,
+            studentId: sId,
+            nama: sData.nama,
+            kelas: sData.kelasSekolah || '-',
+            totalTagihan: total,
+            totalBayar: bayar,
+            uangRiil,
+            selisih: sel,
+            isLunasSemu: (total - bayar) <= 0
+          };
+          selMap[d.id] = auditItem;
+          selMap[sId] = auditItem;
+          selList.push(auditItem);
+        }
+
+        return { 
+          id: d.id, 
+          ...sData,
+          studentId: sId
+        };
+      });
+
       data.sort((a, b) => (a.nama || '').localeCompare(b.nama || ''));
       setStudents(data);
+      setAuditSelisihMap(selMap);
+      setAuditSelisihList(selList.sort((a, b) => b.selisih - a.selisih));
       setAttendanceList(snapAtt.docs.map(d => ({ id: d.id, ...d.data() })));
       setTeacherLogsList(snapLogs.docs.map(d => ({ id: d.id, ...d.data() })));
     } catch (error) { 
@@ -733,6 +793,25 @@ const StudentList = () => {
           </div>
           <div style={styles.headerActions}>
             <button
+              onClick={() => setShowAuditModal(true)}
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: 6,
+                padding: '9px 14px', borderRadius: 10,
+                background: auditSelisihList.length > 0 ? '#ea580c' : '#059669',
+                color: 'white', border: 'none', fontWeight: 800, fontSize: 13,
+                cursor: 'pointer', boxShadow: auditSelisihList.length > 0 ? '0 4px 12px rgba(234, 88, 12, 0.3)' : '0 4px 12px rgba(5, 150, 105, 0.2)'
+              }}
+              title="Audit rekonsiliasi data kasir vs profil siswa"
+            >
+              {auditSelisihList.length > 0 ? <AlertTriangle size={16} /> : <ShieldCheck size={16} />}
+              <span>Audit Keuangan</span>
+              {auditSelisihList.length > 0 && (
+                <span style={{ background: '#fff', color: '#ea580c', fontSize: 11, padding: '1px 6px', borderRadius: 999, fontWeight: 900 }}>
+                  {auditSelisihList.length} Selisih
+                </span>
+              )}
+            </button>
+            <button
               onClick={() => {
                 setTrialSuccessData(null);
                 setShowTrialModal(true);
@@ -1072,6 +1151,21 @@ const StudentList = () => {
                           }}>
                             Rp {sisaTagihan.toLocaleString()}
                           </span>
+                          {auditSelisihMap[s.id] && (
+                            <div 
+                              onClick={() => navigate(`/admin/students/finance/${s.id}`)}
+                              style={{ 
+                                fontSize: 9.5, color: '#9a3412', fontWeight: 800, 
+                                background: '#ffedd5', border: '1px solid #fed7aa',
+                                padding: '2px 6px', borderRadius: 4, marginTop: 4,
+                                display: 'inline-flex', alignItems: 'center', gap: 3,
+                                cursor: 'pointer'
+                              }}
+                              title={`Selisih kasir Rp ${auditSelisihMap[s.id].selisih.toLocaleString()}. Klik untuk buka keuangan siswa.`}
+                            >
+                              ⚠️ Selisih Kas Rp {auditSelisihMap[s.id].selisih.toLocaleString()}
+                            </div>
+                          )}
                         </td>
                         <td style={styles.td}>
                           <span style={{
@@ -1289,6 +1383,167 @@ const StudentList = () => {
                 >
                   Tutup
                 </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ===== MODAL AUDIT SELISIH KEUANGAN SISWA ===== */}
+        {showAuditModal && (
+          <div style={styles.modalOverlay} onClick={() => setShowAuditModal(false)}>
+            <div style={{ ...styles.modal, maxWidth: '780px', width: '95%' }} onClick={e => e.stopPropagation()}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '18px 22px', borderBottom: '1px solid #e2e8f0' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <div style={{
+                    width: 38, height: 38, borderRadius: 10,
+                    background: auditSelisihList.length > 0 ? '#ffedd5' : '#dcfce7',
+                    color: auditSelisihList.length > 0 ? '#ea580c' : '#16a34a',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center'
+                  }}>
+                    {auditSelisihList.length > 0 ? <AlertTriangle size={20} /> : <ShieldCheck size={20} />}
+                  </div>
+                  <div>
+                    <h3 style={{ margin: 0, fontSize: 16, fontWeight: 800, color: '#1e293b' }}>
+                      Audit Keuangan & Detektor Selisih Buku Kas
+                    </h3>
+                    <p style={{ margin: '2px 0 0', fontSize: 12, color: '#64748b' }}>
+                      Pemeriksaan otomatis seluruh siswa: membandingkan profil siswa vs kwitansi riil buku kas/bank.
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowAuditModal(false)}
+                  style={{ background: '#f1f5f9', border: 'none', borderRadius: '50%', width: 32, height: 32, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b' }}
+                >
+                  <X size={16} />
+                </button>
+              </div>
+
+              <div style={{ padding: '18px 22px' }}>
+                {/* RINGKASAN METRIK */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12, marginBottom: 16 }}>
+                  <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 10, padding: 12 }}>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: '#64748b' }}>👥 TOTAL SISWA DIPERIKSA</div>
+                    <div style={{ fontSize: 20, fontWeight: 800, color: '#1e293b', marginTop: 4 }}>
+                      {students.length} Siswa
+                    </div>
+                  </div>
+                  <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 10, padding: 12 }}>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: '#166534' }}>✅ SINKRON 100% (KLOP)</div>
+                    <div style={{ fontSize: 20, fontWeight: 800, color: '#15803d', marginTop: 4 }}>
+                      {students.length - auditSelisihList.length} Siswa
+                    </div>
+                  </div>
+                  <div style={{
+                    background: auditSelisihList.length > 0 ? '#fff7ed' : '#f8fafc',
+                    border: `1px solid ${auditSelisihList.length > 0 ? '#fed7aa' : '#e2e8f0'}`,
+                    borderRadius: 10, padding: 12
+                  }}>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: auditSelisihList.length > 0 ? '#c2410c' : '#64748b' }}>
+                      ⚠️ SISWA BERSTATUS LUNAS SEMU
+                    </div>
+                    <div style={{ fontSize: 20, fontWeight: 800, color: auditSelisihList.length > 0 ? '#ea580c' : '#1e293b', marginTop: 4 }}>
+                      {auditSelisihList.length} Siswa
+                    </div>
+                  </div>
+                </div>
+
+                {auditSelisihList.length === 0 ? (
+                  <div style={{
+                    background: '#f0fdf4', border: '1.5px solid #86efac', borderRadius: 12,
+                    padding: '24px 20px', textAlign: 'center'
+                  }}>
+                    <div style={{ fontSize: 32, marginBottom: 6 }}>🛡️✨</div>
+                    <h4 style={{ margin: '0 0 6px', fontSize: 15, fontWeight: 800, color: '#166534' }}>
+                      SEMUA SISWA 100% SINKRON DENGAN BUKU KAS
+                    </h4>
+                    <p style={{ margin: 0, fontSize: 12.5, color: '#15803d', lineHeight: 1.5 }}>
+                      Tidak ditemukan satupun siswa yang berstatus "Lunas Semu". Seluruh angka pembayaran yang tercatat di profil siswa memiliki bukti kwitansi sah di riwayat kasir maupun transfer bank. Keuangan bimbel aman tanpa kebocoran.
+                    </p>
+                  </div>
+                ) : (
+                  <div>
+                    <div style={{
+                      background: '#fff7ed', border: '1px solid #fed7aa', borderRadius: 10,
+                      padding: '10px 14px', marginBottom: 12, fontSize: 12, color: '#9a3412', lineHeight: 1.5
+                    }}>
+                      <b>Perhatian Owner/Admin:</b> Siswa-siswa di bawah ini profilnya tercatat sudah bayar lebih banyak daripada bukti fisik kwitansi kasir. Klik <b>"Buka & Sinkronkan"</b> untuk memulihkan tagihan siswa agar uang tidak hilang.
+                    </div>
+
+                    <div style={{ maxHeight: '340px', overflowY: 'auto', border: '1px solid #e2e8f0', borderRadius: 10 }}>
+                      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+                        <thead>
+                          <tr style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0', textAlign: 'left', color: '#475569' }}>
+                            <th style={{ padding: '10px 12px' }}>Siswa</th>
+                            <th style={{ padding: '10px 12px' }}>Total Tagihan</th>
+                            <th style={{ padding: '10px 12px' }}>Di Profil</th>
+                            <th style={{ padding: '10px 12px' }}>Kwitansi Riil</th>
+                            <th style={{ padding: '10px 12px', color: '#ea580c' }}>Selisih Semu</th>
+                            <th style={{ padding: '10px 12px', textAlign: 'center' }}>Aksi</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {auditSelisihList.map(item => (
+                            <tr key={item.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                              <td style={{ padding: '10px 12px' }}>
+                                <div style={{ fontWeight: 800, color: '#1e293b' }}>{item.nama}</div>
+                                <div style={{ fontSize: 10.5, color: '#64748b' }}>{item.studentId} • {item.kelas}</div>
+                              </td>
+                              <td style={{ padding: '10px 12px', color: '#334155' }}>
+                                Rp {item.totalTagihan.toLocaleString()}
+                              </td>
+                              <td style={{ padding: '10px 12px', color: '#059669', fontWeight: 700 }}>
+                                Rp {item.totalBayar.toLocaleString()}
+                              </td>
+                              <td style={{ padding: '10px 12px', color: '#2563eb', fontWeight: 700 }}>
+                                Rp {item.uangRiil.toLocaleString()}
+                              </td>
+                              <td style={{ padding: '10px 12px', color: '#dc2626', fontWeight: 800 }}>
+                                - Rp {item.selisih.toLocaleString()}
+                              </td>
+                              <td style={{ padding: '10px 12px', textAlign: 'center' }}>
+                                <button
+                                  onClick={() => {
+                                    setShowAuditModal(false);
+                                    navigate(`/admin/students/finance/${item.id}`);
+                                  }}
+                                  style={{
+                                    background: '#ea580c', color: '#fff', border: 'none',
+                                    borderRadius: 6, padding: '6px 10px', fontSize: 11,
+                                    fontWeight: 700, cursor: 'pointer'
+                                  }}
+                                >
+                                  Buka & Sinkronkan
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+
+                <div style={{ marginTop: 16, display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
+                  <button
+                    onClick={() => fetchStudents()}
+                    style={{
+                      background: '#f1f5f9', color: '#334155', border: '1px solid #cbd5e1',
+                      borderRadius: 8, padding: '8px 14px', fontSize: 12.5, fontWeight: 700, cursor: 'pointer'
+                    }}
+                  >
+                    🔄 Pindai Ulang
+                  </button>
+                  <button
+                    onClick={() => setShowAuditModal(false)}
+                    style={{
+                      background: '#3b82f6', color: '#fff', border: 'none',
+                      borderRadius: 8, padding: '8px 16px', fontSize: 12.5, fontWeight: 700, cursor: 'pointer'
+                    }}
+                  >
+                    Tutup
+                  </button>
+                </div>
               </div>
             </div>
           </div>
