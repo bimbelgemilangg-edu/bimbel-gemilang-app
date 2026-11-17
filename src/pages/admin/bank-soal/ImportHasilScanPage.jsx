@@ -2245,10 +2245,11 @@ function serialisasiDomNodeTerkontrol(node) {
     return t ? `${isiAnak}\n\n` : '';
   }
 
-  // List item: tambahkan bullet
+  // List item: tambahkan bullet hanya untuk elemen di dalam ul (bukan ol / opsi pilihan ganda)
   if (tag === 'li') {
+    const isUl = node.parentElement && (node.parentElement.tagName || '').toLowerCase() === 'ul';
     const t = isiAnak.trim();
-    return t ? `• ${isiAnak}\n` : '';
+    return t ? (isUl ? `• ${isiAnak}\n` : `${isiAnak}\n`) : '';
   }
 
   // Div / section / tr
@@ -2554,62 +2555,68 @@ const TAG_HTML_DIKENAL = [
   'ol', 'ul', 'li', 'table', 'thead', 'tbody', 'tr', 'th', 'td', 'img',
   'p', 'br', 'b', 'i', 'em', 'strong', 'sub', 'sup', 'a',
   'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+  'main', 'header', 'section', 'aside', 'nav', 'figure', 'figcaption', 'footer',
+  'style', 'script', 'link',
 ];
 
 function escapeTandaKurungLiar(rawHtml) {
   const teks = safeString(rawHtml);
   const n = teks.length;
-  let out = '';
-  let i = 0;
+  let lastCopied = 0;
+  const chunks = [];
+  let i = teks.indexOf('<');
 
-  while (i < n) {
-    const ch = teks[i];
-
-    if (ch !== '<') { out += ch; i++; continue; }
-
+  while (i !== -1) {
     // Komentar HTML <!-- ... --> -- biarkan apa adanya
     if (teks.startsWith('<!--', i)) {
       const akhir = teks.indexOf('-->', i + 4);
-      const berhenti = akhir === -1 ? n : akhir + 3;
-      out += teks.slice(i, berhenti);
-      i = berhenti;
+      i = teks.indexOf('<', akhir === -1 ? n : akhir + 3);
       continue;
     }
 
     // Cek apakah ini AWALAN tag yang kita kenal: < atau </ + nama tag
-    const cocok = /^<\/?([a-zA-Z!][a-zA-Z0-9]*)/.exec(teks.slice(i));
+    const cocok = /^<\/?([a-zA-Z!][a-zA-Z0-9]*)/.exec(teks.slice(i, i + 32));
     const namaTag = cocok ? cocok[1].toLowerCase() : null;
     const tagDikenal = namaTag && TAG_HTML_DIKENAL.includes(namaTag);
 
     if (tagDikenal) {
-      // Ini tag HTML asli -- salin utuh sampai '>' penutup tag,
-      // hormati atribut dalam tanda kutip yang mungkin memuat '>'
+      // Ini tag HTML asli -- lompat sampai '>' penutup tag (lompat instan melintasi data base64)
       let j = i;
       let dalamKutip = null;
       while (j < n) {
-        const c = teks[j];
         if (dalamKutip) {
-          if (c === dalamKutip) dalamKutip = null;
-        } else if (c === '"' || c === "'") {
-          dalamKutip = c;
-        } else if (c === '>') {
-          j++;
-          break;
+          const nextQ = teks.indexOf(dalamKutip, j);
+          if (nextQ === -1) { j = n; break; }
+          j = nextQ + 1;
+          dalamKutip = null;
+        } else {
+          const c = teks[j];
+          if (c === '"' || c === "'") {
+            dalamKutip = c;
+            j++;
+          } else if (c === '>') {
+            j++;
+            break;
+          } else {
+            j++;
+          }
         }
-        j++;
       }
-      out += teks.slice(i, j);
-      i = j;
+      i = teks.indexOf('<', j);
       continue;
     }
 
     // BUKAN tag dikenal -- ini "<" liar dari LaTeX (pertidaksamaan,
     // interval, dsb) -- escape supaya tidak dianggap awal tag.
-    out += '&lt;';
-    i++;
+    chunks.push(teks.slice(lastCopied, i));
+    chunks.push('&lt;');
+    lastCopied = i + 1;
+    i = teks.indexOf('<', i + 1);
   }
 
-  return out;
+  if (lastCopied === 0) return teks;
+  chunks.push(teks.slice(lastCopied));
+  return chunks.join('');
 }
 
 // 🔥 BARU: ekstraksi rangkuman materi -- TERPISAH TOTAL dari parser
@@ -2718,7 +2725,8 @@ function parseHTMLMaster(raw) {
     const opsi_jawaban = optionNodes.map(optionNode => {
       const images = parseHTMLImages(optionNode);
       const table = parseHTMLTableElement(optionNode.querySelector('table'));
-      const teks = perbaikiKurungHimpunanLatex(htmlNodeText(optionNode).replace(/\{\{\s*GAMBAR(?:_\d+)?\s*\}\}/gi, '')).trim();
+      let teks = perbaikiKurungHimpunanLatex(htmlNodeText(optionNode).replace(/\{\{\s*GAMBAR(?:_\d+)?\s*\}\}/gi, '')).trim();
+      teks = teks.replace(/^[•\-\*▪◦□■◆◇]\s*/, '').trim();
 
       let tabelRows = [];
       let headerTabel = [];

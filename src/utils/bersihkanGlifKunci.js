@@ -56,12 +56,15 @@ export function bawaPenandaKunciOpsi(teks) {
 /**
  * Lepas penanda kunci di AWAL teks opsi; teks selain itu utuh.
  * Masukan bukan string diakalkan jadi '' supaya renderer aman.
+ * Juga melepas bullet list '• ' atau '- ' yang tidak sengaja terbawa dari tag li.
  * @param {string} teks
  * @returns {string}
  */
 export function bersihkanTeksOpsi(teks) {
   if (teks == null) return '';
-  return String(teks).replace(RE_PENANDA_KUNCI_AWAL, '');
+  return String(teks)
+    .replace(RE_PENANDA_KUNCI_AWAL, '')
+    .replace(/^[•\-\*▪◦□■◆◇]\s*/, '');
 }
 
 /**

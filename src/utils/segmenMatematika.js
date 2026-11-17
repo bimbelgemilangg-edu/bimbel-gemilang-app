@@ -28,10 +28,9 @@
 /**
  * Empat gaya delimiter yang diakui kontrak impor:
  *   $$...$$  dan \[...\]  -> blok (boleh multiline)
- *   $...$    dan \(...\)  -> inline (satu baris; "$" diikuti spasi BUKAN
- *                            math, supaya dolar biasa/teks uang tak tertelan)
+ *   $...$    dan \(...\)  -> inline (satu baris; "$" tanpa penutup BUKAN math)
  */
-const RE_SEGMEN = /(\$\$[\s\S]*?\$\$|\\\[[\s\S]*?\\\]|\$(?!\s)[^\n$]+?\$|\\\([^\n]*?\\\))/g;
+const RE_SEGMEN = /(\$\$[\s\S]*?\$\$|\\\[[\s\S]*?\\\]|\$(?!\s*\$)[^\n$]+?\$|\\\([^\n]*?\\\))/g;
 
 /** Konstruksi yang di buku pelajaran dicetak bertingkat (tinggi). */
 const RE_BERTINGKAT = /\\(frac|dfrac|tfrac|cfrac|sqrt|sum|prod|int|oint|iint|lim|binom|begin\{)/;
@@ -40,7 +39,8 @@ const RE_BERTINGKAT = /\\(frac|dfrac|tfrac|cfrac|sqrt|sum|prod|int|oint|iint|lim
  * Normalisasi otomatis rumus matematika:
  * 1. Mengonversi pecahan miring (horizontal) seperti 1/2, 3/4 menjadi pecahan vertikal atas-bawah \frac{1}{2}.
  * 2. Membungkus perintah LaTeX kali (\times) dan bagi (\div) yang tercecer di luar delimiter $...$.
- * 3. Menghindari kesalahan render KaTeX pada simbol perkalian dan pembagian.
+ * 3. Menghindari kesalahan render KaTeX pada simbol perkalian, pembagian, dan tanda minus.
+ * 4. Menyembuhkan ekspresi aljabar terpecah & tanda minus unari/pecahan terpisah.
  * @param {string} teks
  * @returns {string}
  */
@@ -48,8 +48,29 @@ export function normalisasiTeksMatematika(teks) {
   if (!teks || typeof teks !== 'string') return '';
   let hasil = teks;
 
+  // 0a. Satukan tanda minus/plus yang tercecer tepat sebelum math block:
+  // mis. "- $\frac{3}{5}$" -> "$-\frac{3}{5}$" atau "= - $\frac{5}{3}$" -> "=$-\frac{5}{3}$"
+  hasil = hasil.replace(/([=:\s(\[])\s*([+\-–—])\s*\$(\\frac\{[^{}]+\}\{[^{}]+\}|\d+)\$/g, '$1$$$2$3$');
+
+  // 0b. Rapikan spasi liar tepat setelah/sebelum delimiter dolar math:
+  // mis. "$ -5 $" -> "$-5$", "$ \frac{1}{2} $" -> "$\frac{1}{2}$", "$- 18$" -> "$-18$"
+  hasil = hasil.replace(/\$\s+([^\n$]+?)\s+\$/g, '$$$1$');
+  hasil = hasil.replace(/\$\s+([^\n$]+?)\$/g, '$$$1$');
+  hasil = hasil.replace(/\$([^\n$]+?)\s+\$/g, '$$$1$');
+
+  // 0c. Sembuhkan polinomial/aljabar yang terpotong keluar dari $:
+  // mis. "($15a^{2} - 3b^{2}$ +4 ab)" -> "($15a^{2} - 3b^{2} + 4ab$)"
+  // mis. "($30x^{2}$ +19x +5)" -> "($30x^{2} + 19x + 5$)"
+  // mis. "($2x^{2}$ - x)" -> "($2x^{2} - x$)"
+  // mis. "($28x^{2}$ + 18x- 5)" -> "($28x^{2} + 18x - 5$)"
+  hasil = hasil.replace(/\$([^\$]+)\$\s*([+\-–—]\s*[0-9a-zA-Z\s+\-–—^]+?)(?=\s*(?:\$|\)|<|;|\.|$))/g, (match, inside, tail) => {
+    let cleanTail = tail.trim().replace(/([a-zA-Z0-9])\s*([+\-–—])\s*([a-zA-Z0-9])/g, '$1 $2 $3');
+    cleanTail = cleanTail.replace(/^([+\-–—])\s*(\d+)\s*([a-zA-Z]+)/, '$1 $2$3');
+    return `$${inside.trim()} ${cleanTail}$`;
+  });
+
   const mathPlaceholders = [];
-  hasil = hasil.replace(/(\$\$[\s\S]*?\$\$|\\\[[\s\S]*?\\\]|\$(?!\s)[^\n$]+?\$|\\\([^\n]*?\\\))/g, (m) => {
+  hasil = hasil.replace(/(\$\$[\s\S]*?\$\$|\\\[[\s\S]*?\\\]|\$(?!\s*\$)[^\n$]+?\$|\\\([^\n]*?\\\))/g, (m) => {
     let inner = m;
     const isDolar = inner.startsWith('$') && inner.endsWith('$');
     const isDuaDolar = inner.startsWith('$$') && inner.endsWith('$$');
@@ -65,7 +86,13 @@ export function normalisasiTeksMatematika(teks) {
       .replace(/≠/g, '\\ne ')
       .replace(/≈/g, '\\approx ')
       .replace(/[°◦]C\b/g, '^\\circ\\text{C}')
-      .replace(/[°◦]/g, '^\\circ');
+      .replace(/[°◦]/g, '^\\circ')
+      .replace(/[−–]/g, '-');
+
+    // Rapikan spasi setelah minus unari dalam math: "$- 18$" -> "$-18$", "$- 4$" -> "$-4$"
+    raw = raw
+      .replace(/^-\s+(\d+)/, '-$1')
+      .replace(/([=+\-–—(])\s*-\s+(\d+)/g, '$1-$2');
 
     inner = isDuaDolar ? `$$${raw}$$` : (isDolar ? `$${raw}$` : raw);
     const ph = `___GB_SAFE_MATH_${mathPlaceholders.length}___`;
@@ -99,17 +126,34 @@ export function normalisasiTeksMatematika(teks) {
   hasil = hasil.replace(/≠/g, '$\\ne$');
   hasil = hasil.replace(/≈/g, '$\\approx$');
 
+  // Normalisasi tanda minus unicode di luar math:
+  hasil = hasil.replace(/([0-9a-zA-Z\)\]\}]+)\s*[−–]\s*([0-9a-zA-Z\(\[\{]+)/g, '$1 - $2');
+  hasil = hasil.replace(/(^|[\s(=:])\s*[−–]\s*(\d+)/g, '$1-$2');
+
   // Pangkat sederhana di luar math: mis. x^2, x^3, 2^10, 10^-3
   hasil = hasil.replace(/(?<![\w$])([a-zA-Z]|\d+)\^([0-9a-zA-Z\-+]+)(?![\w$])/g, '$$$1^{$2}$');
 
   // Konversi pecahan miring sederhana (1/2, 3/4) menjadi pecahan bertingkat atas-bawah (\frac{1}{2})
-  // Mencegah konversi pada tanggal (mis. 16/11/2026) atau url
+  // Mencegah konversi pada tanggal (mis. 16/11/2026) atau url atau tahun ajaran (2025/2026)
   hasil = hasil.replace(/(?<![\d/.:\-\w])([1-9]\d*)\s*\/\s*([1-9]\d*)(?![\d/.:\-\w])/g, (match, pembilang, penyebut) => {
+    // Jangan konversi tahun (4 digit >= 1900 atau >= 2000, misal 2025/2026)
+    if (pembilang.length === 4 && penyebut.length === 4 && (pembilang.startsWith('19') || pembilang.startsWith('20'))) {
+      return match;
+    }
     if (pembilang.length <= 4 && penyebut.length <= 4) {
       return `$\\frac{${pembilang}}{${penyebut}}$`;
     }
     return match;
   });
+
+  // Fungsi linear & persamaan di luar math:
+  // misal: "f(x) = ax + b", "f(-3) = -18", "2x + y = 14", "x + 2y = 16", "(22x+8)"
+  hasil = hasil.replace(/(?<![\w$\\])([fgh]\([0-9a-zA-Z\-+\s]+\)\s*=\s*[-0-9a-zA-Z\s+\-–—^]+?)(?=[,;.!\s)]|$)/g, (match, eq) => {
+    if (/\b(dan|atau|adalah|jika|maka|untuk|dengan)\b/i.test(eq)) return match;
+    return `$${eq.trim()}$`;
+  });
+  hasil = hasil.replace(/(?<![\w$\\])([0-9]*[a-zA-Z]\s*[+\-–—]\s*[0-9]*[a-zA-Z]\s*=\s*[-]?\d+)(?=[,;.!\s)]|$)/g, '$$$1$');
+  hasil = hasil.replace(/(?<![\w$\\])\((\d+[a-zA-Z]\s*[+\-–—]\s*\d+)\)/g, '($$$1$)');
 
   // Kembalikan placeholder rumus asli
   for (let idx = 0; idx < mathPlaceholders.length; idx++) {
