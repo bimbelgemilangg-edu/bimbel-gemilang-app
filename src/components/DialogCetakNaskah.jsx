@@ -72,8 +72,12 @@ export default function DialogCetakNaskah({ input, onClose }) {
   const [rasioGambar, setRasioGambar] = useState({});
   const [tinggiSiswa, setTinggiSiswa] = useState([]);
   const [tinggiKunci, setTinggiKunci] = useState([]);
+  const [tinggiLebarSiswa, setTinggiLebarSiswa] = useState([]);
+  const [tinggiLebarKunci, setTinggiLebarKunci] = useState([]);
   const refUkurSiswa = useRef(null);
   const refUkurKunci = useRef(null);
+  const refUkurLebarSiswa = useRef(null);
+  const refUkurLebarKunci = useRef(null);
 
   const daftarSoal = Array.isArray(input?.daftarSoal) ? input.daftarSoal : [];
   const meta = {
@@ -125,12 +129,14 @@ export default function DialogCetakNaskah({ input, onClose }) {
     };
     ukur(refUkurSiswa, setTinggiSiswa, blokSiswa.length);
     ukur(refUkurKunci, setTinggiKunci, blokKunci.length);
+    ukur(refUkurLebarSiswa, setTinggiLebarSiswa, blokSiswa.length);
+    ukur(refUkurLebarKunci, setTinggiLebarKunci, blokKunci.length);
     // KENAPA dependensinya jumlah blok + lebar kolom + rasio gambar (bukan
     // array bloknya): isi lapisan ukur hanya bisa berubah kalau salah satu
     // dari itu berubah, sementara identitas array blok memang baru tiap
     // render. Benteng di setter menjaga agar pengukuran yang hasilnya sama
     // tidak memicu render beruntun.
-  }, [blokSiswa.length, blokKunci.length, lebarKolom, rasioGambar]);
+  }, [blokSiswa.length, blokKunci.length, lebarKolom, rasioGambar, kertas.lebarMm]);
 
   // Rasio piksel asli gambar: ditempeli listener setiap lapisan ukur
   // selesai dirender, supaya mesin naskah bisa memilih ukuran gambar
@@ -161,10 +167,10 @@ export default function DialogCetakNaskah({ input, onClose }) {
   const perkiraanKunci = perkiraanTinggiBlokSeksi('kunci', seksi, lebarKolom, rasioGambar, opsiSeksi).slice(1);
 
   const naskahSiswa = blokSiswa.length
-    ? susunNaskahDariBlok(blokSiswa, { kertas: kodeKertas, jumlahKolom, tinggiBlokMm: tinggiSiswa, tinggiPerkiraanMm: perkiraanSiswa, blokPenuh: penuhSiswa, cssTambahan: katexCssInline })
+    ? susunNaskahDariBlok(blokSiswa, { kertas: kodeKertas, jumlahKolom, tinggiBlokMm: tinggiSiswa, tinggiPerkiraanMm: perkiraanSiswa, blokPenuh: penuhSiswa, tinggiLebarMm: tinggiLebarSiswa, cssTambahan: katexCssInline })
     : null;
   const naskahKunci = blokKunci.length
-    ? susunNaskahDariBlok(blokKunci, { kertas: kodeKertas, jumlahKolom, tinggiBlokMm: tinggiKunci, tinggiPerkiraanMm: perkiraanKunci, cssTambahan: katexCssInline })
+    ? susunNaskahDariBlok(blokKunci, { kertas: kodeKertas, jumlahKolom, tinggiBlokMm: tinggiKunci, tinggiPerkiraanMm: perkiraanKunci, tinggiLebarMm: tinggiLebarKunci, cssTambahan: katexCssInline })
     : null;
 
   const docPratinjau = (fragmen) => `<!DOCTYPE html><html lang="id"><head><meta charset="utf-8" />
@@ -283,6 +289,12 @@ export default function DialogCetakNaskah({ input, onClose }) {
           </div>
           <div className="naskah" ref={refUkurKunci} style={{ width: `${lebarKolom}mm` }}>
             {blokKunci.map((b, i) => <div key={`k${i}`} style={{ overflow: 'hidden' }} dangerouslySetInnerHTML={{ __html: b }} />)}
+          </div>
+          <div className="naskah" ref={refUkurLebarSiswa} style={{ width: `${Math.max(100, kertas.lebarMm - 20)}mm` }}>
+            {blokSiswa.map((b, i) => <div key={`sl${i}`} style={{ overflow: 'hidden' }} dangerouslySetInnerHTML={{ __html: b }} />)}
+          </div>
+          <div className="naskah" ref={refUkurLebarKunci} style={{ width: `${Math.max(100, kertas.lebarMm - 20)}mm` }}>
+            {blokKunci.map((b, i) => <div key={`kl${i}`} style={{ overflow: 'hidden' }} dangerouslySetInnerHTML={{ __html: b }} />)}
           </div>
         </div>
       )}

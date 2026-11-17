@@ -155,8 +155,10 @@ export function cssPage(kertas) {
 //                mendampingi teks seperti naskah TKA asli (float kiri),
 //                lebar 40% kolom dibatasi 30..55mm dan tinggi <= 48mm.
 //   r <  0.8  -> gambar menjulang (bagian tumbuhan, skala): blok di
-//                tengah, tinggi <= 58mm, lebar minimal 26mm supaya
-//                detail masih terbaca di cetak hitam-putih.
+//                tengah. Untuk r sangat kurus (<0.5) tinggi <= 70mm,
+//                lebar minimal 26mm. Untuk infografis/diagram data
+//                (0.5 <= r < 0.8) tampil besar proporsional (lebar 75-88% kolom,
+//                tinggi <= 92mm) agar angka dan teks bagan terbaca jelas.
 export function ukuranGambarNaskah(lebarAsli, tinggiAsli, lebarKolom) {
   const l = Number(lebarAsli);
   const t = Number(tinggiAsli);
@@ -173,9 +175,22 @@ export function ukuranGambarNaskah(lebarAsli, tinggiAsli, lebarKolom) {
     if (tinggi > 48) { tinggi = 48; lebar = Math.min(48 * r, 0.45 * lebarKolom); tinggi = lebar / r; }
     return { mode: 'samping', lebarMm: bulat(lebar), tinggiMm: bulat(tinggi) };
   }
-  let tinggi = 58;
+  if (r < 0.5) {
+    let tinggi = 70;
+    let lebar = tinggi * r;
+    if (lebar < 26) { lebar = 26; tinggi = Math.min(70, 26 / r); }
+    return { mode: 'blok', lebarMm: bulat(lebar), tinggiMm: bulat(tinggi) };
+  }
+  // 🔥 2026-11-17 (arahan owner): Gambar infografis/diagram portrait (0.5 <= r < 0.8)
+  // TIDAK boleh kerdil 26mm/41mm yang tidak terbaca! Mengisi 75-88% lebar kolom,
+  // tinggi proporsional hingga 92mm agar data, bagan, dan angka jelas terbaca.
+  const maxLebar = Math.min(lebarKolom * 0.88, 110);
+  let tinggi = Math.min(92, Math.max(70, (lebarKolom * 0.85) / r));
   let lebar = tinggi * r;
-  if (lebar < 26) { lebar = 26; tinggi = Math.min(70, 26 / r); }
+  if (lebar > maxLebar) {
+    lebar = maxLebar;
+    tinggi = lebar / r;
+  }
   return { mode: 'blok', lebarMm: bulat(lebar), tinggiMm: bulat(tinggi) };
 }
 
@@ -271,9 +286,12 @@ export function susunKeKolom(tinggiBlokMm, kapasitasMm, kolomPerHalaman, opsiSus
         let p = halAktif();
         const hl = it.hLebar;
         const isKop = (it.idx === 0);
-        // Cegah wacana yatim di dasar halaman tanpa soal di bawahnya
+        // Cegah wacana yatim di dasar halaman tanpa soal di bawahnya:
+        // Wacana baru TIDAK boleh diselipkan di dasar halaman jika tidak ada ruang
+        // cukup untuk wacana + butir pertama di bawahnya (mencegah tumpang tindih layout).
         const adaSoal = (gIdx + 1 < groups.length && groups[gIdx + 1].jenis === 'soal' && groups[gIdx + 1].items.length > 0);
-        const ruangMin = (adaSoal && !isKop) ? 22 : 0;
+        const tinggiSoalPertama = (adaSoal && groups[gIdx + 1].items[0]) ? groups[gIdx + 1].items[0].h : 35;
+        const ruangMin = (adaSoal && !isKop) ? Math.max(45, tinggiSoalPertama + GAP_SEKSI_MM) : 0;
 
         if (p.seksi.length > 0 && (hl + ruangMin > p.sisa)) {
           bukaHal();
@@ -453,9 +471,10 @@ export function teksKeHtml(teks) {
 //      disuntikkan ke halaman admin untuk lapisan ukur) ----
 export const GAYA_NASKAH = `
 .naskah { font-family: Arial, Helvetica, sans-serif; font-size: 11px; color: #000; background: #fff; line-height: 1.38; }
+.naskah img { image-rendering: -webkit-optimize-contrast; max-width: 100%; }
 .naskah .nsk-hal { position: relative; background: #fff; padding: ${MARGIN_MM}mm ${MARGIN_MM}mm ${FOOTER_MM}mm; box-sizing: border-box; overflow: hidden; break-after: page; page-break-after: always; display: flex; flex-direction: column; }
-.naskah .nsk-hal-konten { position: relative; z-index: 1; flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; gap: 2.2mm; }
-.naskah .nsk-kolomwrap { display: flex; gap: ${GAP_KOLOM_MM}mm; align-items: flex-start; }
+.naskah .nsk-hal-konten { position: relative; z-index: 1; flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; gap: 2.2mm; box-sizing: border-box; }
+.naskah .nsk-kolomwrap { display: flex; gap: ${GAP_KOLOM_MM}mm; align-items: flex-start; flex: 0 0 auto; width: 100%; box-sizing: border-box; }
 .naskah .nsk-kolom { flex: 1 1 0; min-width: 0; overflow: hidden; }
 
 /* 🔥 Tata letak 1 Kolom + Kolom Catatan (Coretan Siswa) */
@@ -563,8 +582,8 @@ export const GAYA_NASKAH = `
    panjang, enak dibaca), soal-soalnya tetap dua kolom di bawah pita. Halaman
    jadi kolom flex vertikal supaya pita dan kolom tidak saling menimpa. */
 .naskah .nsk-hal--lebar { display: flex; flex-direction: column; }
-.naskah .nsk-hal--lebar .nsk-kolomwrap { flex: 1 1 auto; min-height: 0; height: auto; }
-.naskah .nsk-band { width: 100%; margin-bottom: 2.5mm; }
+.naskah .nsk-hal--lebar .nsk-kolomwrap { flex: 0 0 auto; width: 100%; min-height: 0; height: auto; }
+.naskah .nsk-band { flex: 0 0 auto; width: 100%; margin-bottom: 2.5mm; box-sizing: border-box; }
 .naskah .nsk-band .nsk-butir, .naskah .nsk-band .nsk-bacaan { break-inside: auto; page-break-inside: auto; }
 .naskah .nsk-band .nsk-bacaan { font-size: 10pt; line-height: 1.48; padding: 5pt 7pt; }
 .naskah .nsk-band .nsk-butir { font-size: 10.8px; line-height: 1.42; }
@@ -1257,10 +1276,10 @@ export function estimasiTinggiBlokMm(mode, soal, lebarKolom, rasioGambar = {}, o
   const tipeSoal = String(soal?.tipe || 'pg_sederhana');
   let tinggiIsi = 0;
   if (tipeSoal === 'benar_salah' || tipeSoal === 'pg_kategori') {
-    tinggiIsi = barisBenarSalah(soal).reduce((acc, b) => acc + Math.max(6, Math.ceil(Math.max(1, String(b.teks || '').length) / hurufSebaris) * 4.6), 6);
+    tinggiIsi = barisBenarSalah(soal).reduce((acc, b) => acc + Math.max(8.5, Math.ceil(Math.max(1, String(b.teks || '').length) / hurufSebaris) * 4.6 + 3), 10);
   } else if (tipeSoal === 'pg_kompleks') {
     const per = Array.isArray(soal?.pernyataan) ? soal.pernyataan : [];
-    tinggiIsi = per.reduce((acc, q) => acc + Math.ceil(Math.max(1, String(typeof q === 'string' ? q : q?.teks || '').length) / hurufSebaris) * 4.6, 0);
+    tinggiIsi = per.reduce((acc, q) => acc + Math.max(7, Math.ceil(Math.max(1, String(typeof q === 'string' ? q : q?.teks || '').length) / hurufSebaris) * 4.6 + 2), 4);
   } else if (tipeSoal === 'menjodohkan') {
     const pas = Array.isArray(soal?.pasangan) ? soal.pasangan : [];
     tinggiIsi = Math.ceil(pas.length / 2) * 6 + 4;
@@ -1275,7 +1294,7 @@ export function estimasiTinggiBlokMm(mode, soal, lebarKolom, rasioGambar = {}, o
   if (tabelData) {
     const baris = Array.isArray(tabelData.baris || tabelData.rows || tabelData.data) ? (tabelData.baris || tabelData.rows || tabelData.data) : [];
     const hasHeader = Boolean(Array.isArray(tabelData?.header || tabelData?.headers || tabelData?.kolom) && (tabelData.header || tabelData.headers || tabelData.kolom).length > 0);
-    tinggiTabel = Math.max(10, ((baris.length + (hasHeader ? 1 : 0)) * 6.5) + 4);
+    tinggiTabel = Math.max(12, ((baris.length + (hasHeader ? 1 : 0)) * 7) + 6);
   }
   return Math.round(barisTeks + tinggiGambar + tinggiGambarBacaan + barisBacaan + barisOpsi + tinggiIsi + tinggiTabel + 4);
 }
@@ -1363,8 +1382,66 @@ export function gayaWatermark(o = {}) {
   white-space: nowrap;
   margin-top: 1.2mm;
 }
+/* 🔥 Watermark Grid Anti-Bocor / Anti-Crop di setiap butir soal:
+   Kisi 3 kolom x 6 baris merata menutupi seluruh halaman dari atas ke bawah,
+   sehingga bila soal mana pun dipotong (crop), stempel watermark ASET BIMBEL GEMILANG
+   dan logo resmi dipastikan tetap tertempel di belakangnya. */
+.wm-grid-anticrop {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(6, 1fr);
+  gap: 4mm;
+  padding: 8mm 6mm;
+  pointer-events: none;
+  z-index: 0;
+}
+.wm-stamp-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transform: rotate(-22deg);
+  user-select: none;
+}
+.wm-stamp-item img {
+  width: 24mm !important;
+  height: 24mm !important;
+  object-fit: contain !important;
+  opacity: ${Math.min(0.13, (opacity || 0.12) * 0.92)} !important;
+  margin-bottom: 1mm !important;
+}
+.wm-stamp-item .wm-stamp-teks {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 7.5pt;
+  font-weight: 900;
+  letter-spacing: 1.2px;
+  color: #0f172a;
+  opacity: ${Math.min(0.13, (opacity || 0.12) * 0.95)};
+  text-transform: uppercase;
+  white-space: nowrap;
+  text-align: center;
+}
+.wm-stamp-item .wm-stamp-sub {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 5pt;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  color: #334155;
+  opacity: ${Math.min(0.11, (opacity || 0.12) * 0.8)};
+  text-transform: uppercase;
+  white-space: nowrap;
+  margin-top: 0.4mm;
+  text-align: center;
+}
 .nsk-kolomwrap, .nsk-band, .nsk-hal-konten, .nsk-catatan-wrap, .kotak, .kepala, .identitas { position: relative; z-index: 1; }
-@media print { .wm-gemilang, .wm-pola-titik { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+@media print {
+  .wm-gemilang, .wm-pola-titik, .wm-grid-anticrop, .wm-stamp-item {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
 `;
 }
 
@@ -1375,8 +1452,19 @@ export function gayaWatermark(o = {}) {
 export function watermarkHtml(o = {}) {
   const logo = o.logo || LOGO_WATERMARK;
   const mode = o.mode === 'tetap' ? ' tetap' : '';
+  const stamps = Array.from({ length: 18 }, () => `
+    <div class="wm-stamp-item">
+      <img src="${escapeHtml(logo)}" alt="" />
+      <div class="wm-stamp-teks">ASET BIMBEL GEMILANG</div>
+      <div class="wm-stamp-sub">DOKUMEN RESMI</div>
+    </div>
+  `).join('');
+
   return `<div class="wm-gemilang${mode}" aria-hidden="true">
   <div class="wm-pola-titik"></div>
+  <div class="wm-grid-anticrop">
+    ${stamps}
+  </div>
   <div class="wm-konten">
     <img src="${escapeHtml(logo)}" alt="" />
     <div class="wm-teks-aset">ASET BIMBEL GEMILANG</div>
