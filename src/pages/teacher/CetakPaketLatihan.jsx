@@ -387,7 +387,8 @@ export default function CetakPaketLatihan() {
 
   // ---- 🔥 BARU: mesin naskah (ukur -> susun -> pratinjau -> cetak) ----
   const kertas = kertasDariKode(kodeKertas);
-  const jumlahKolom = kolomPaksa > 0 ? kolomPaksa : kolomOtomatis(kertas);
+  const isCatatan = kolomPaksa === 'catatan';
+  const jumlahKolom = isCatatan ? 'catatan' : (kolomPaksa > 0 ? kolomPaksa : kolomOtomatis(kertas));
   const lebarKolom = lebarKolomMm(kertas, jumlahKolom);
   // Lebar isi kertas (untuk mengukur blok yang dicetak lebar penuh).
   const lebarIsiKertas = Math.round((kertas.lebarMm - 2 * MARGIN_MM) * 10) / 10;
@@ -784,10 +785,11 @@ export default function CetakPaketLatihan() {
             {gayaLembar === 'naskah' && (
               <label style={{ fontSize: 11.5, color: '#475569', display: 'flex', gap: 6, alignItems: 'center' }}>
                 kolom
-                <select value={kolomPaksa} onChange={(e) => setKolomPaksa(Number(e.target.value))} style={gayaSelect}>
+                <select value={kolomPaksa} onChange={(e) => setKolomPaksa(e.target.value === 'catatan' ? 'catatan' : Number(e.target.value))} style={gayaSelect}>
                   <option value={0}>otomatis ({kolomOtomatis(kertas)} kolom)</option>
-                  <option value={1}>1 kolom</option>
-                  <option value={2}>2 kolom</option>
+                  <option value={1}>1 kolom (lebar penuh)</option>
+                  <option value={2}>2 kolom (standar ujian)</option>
+                  <option value="catatan">1 kolom + kolom catatan (coretan siswa)</option>
                 </select>
               </label>
             )}
@@ -799,7 +801,7 @@ export default function CetakPaketLatihan() {
                 <button style={gayaPill(tabPratinjau === 'siswa')} onClick={() => setTabPratinjau('siswa')}>👀 pratinjau lembar siswa</button>
                 <button style={gayaPill(tabPratinjau === 'kunci')} onClick={() => setTabPratinjau('kunci')}>🔑 pratinjau kunci guru</button>
                 <span style={{ fontSize: 11, color: '#64748b' }}>
-                  {naskahSiswa.jumlahHalaman} halaman · {jumlahKolom} kolom · lebar kolom {naskahSiswa.lebarKolomMm}mm
+                  {naskahSiswa.jumlahHalaman} halaman · {isCatatan ? '1 kolom + catatan' : `${jumlahKolom} kolom`} · lebar kolom {naskahSiswa.lebarKolomMm}mm
                 </span>
               </div>
               {naskahSiswa.peringatan.length > 0 && (

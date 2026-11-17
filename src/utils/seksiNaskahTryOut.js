@@ -133,7 +133,8 @@ export function rencanaSeksiNaskah(paket) {
  */
 export function blokNaskahDariSeksi(mode, meta, seksi, lebarKolom, rasioGambar = {}, opsi = {}) {
   const kapasitasMm = Number(opsi.kapasitasMm) > 0 ? Number(opsi.kapasitasMm) : 0;
-  const kolomPerHalaman = opsi.kolomPerHalaman > 1 ? opsi.kolomPerHalaman : 2;
+  const isCatatan = opsi.kolomPerHalaman === 'catatan' || opsi.modeKolom === 'catatan';
+  const kolomPerHalaman = isCatatan ? 'catatan' : (opsi.kolomPerHalaman > 1 ? opsi.kolomPerHalaman : 2);
   const kop = mode === 'kunci'
     ? `<div class="nsk-peringatan">PEGANGAN GURU — JANGAN DICETAK UNTUK SISWA</div>${kopNaskahHtml(meta, 'KUNCI & PEMBAHASAN', false)}`
     : kopNaskahHtml(meta, 'NASKAH SOAL', true);
@@ -171,7 +172,8 @@ export function blokNaskahDariSeksi(mode, meta, seksi, lebarKolom, rasioGambar =
  */
 export function perkiraanTinggiBlokSeksi(mode, seksi, lebarKolom, rasioGambar = {}, opsi = {}) {
   const kapasitasMm = Number(opsi.kapasitasMm) > 0 ? Number(opsi.kapasitasMm) : 0;
-  const kolomPerHalaman = opsi.kolomPerHalaman > 1 ? opsi.kolomPerHalaman : 2;
+  const isCatatan = opsi.kolomPerHalaman === 'catatan' || opsi.modeKolom === 'catatan';
+  const kolomPerHalaman = isCatatan ? 'catatan' : (opsi.kolomPerHalaman > 1 ? opsi.kolomPerHalaman : 2);
   const tinggi = [26];
   (Array.isArray(seksi) ? seksi : []).forEach((sec) => {
     if (sec.judul) tinggi.push(9);
@@ -200,7 +202,8 @@ export function perkiraanTinggiBlokSeksi(mode, seksi, lebarKolom, rasioGambar = 
  */
 export function daftarBlokPenuhSeksi(mode, seksi, lebarKolom, rasioGambar = {}, opsi = {}) {
   const kapasitasMm = Number(opsi.kapasitasMm) > 0 ? Number(opsi.kapasitasMm) : 0;
-  const kolomPerHalaman = opsi.kolomPerHalaman > 1 ? opsi.kolomPerHalaman : 2;
+  const isCatatan = opsi.kolomPerHalaman === 'catatan' || opsi.modeKolom === 'catatan';
+  const perHal = isCatatan ? 1 : (opsi.kolomPerHalaman > 1 ? opsi.kolomPerHalaman : 1);
   const ambang = kapasitasMm > 0 ? ambangBacaanPanjangMm(kapasitasMm) : Infinity;
   const tanda = [false]; // kop
   (Array.isArray(seksi) ? seksi : []).forEach((sec) => {
@@ -211,12 +214,12 @@ export function daftarBlokPenuhSeksi(mode, seksi, lebarKolom, rasioGambar = {}, 
     }
     for (const unit of kelompokkanStimulus(sec.soalList || [])) {
       if (unit.jenis === 'bacaan') {
-        for (const chunk of blokBacaanNaskah(unit, lebarKolom, rasioGambar, kapasitasMm, kolomPerHalaman)) {
-          tanda.push(!!chunk.penuh);
+        for (const chunk of blokBacaanNaskah(unit, lebarKolom, rasioGambar, kapasitasMm, perHal)) {
+          tanda.push(perHal > 1 ? true : !!chunk.penuh);
         }
       } else {
         const t = estimasiTinggiBlokMm('siswa', unit.soal, lebarKolom, rasioGambar, { tanpaBacaan: unit.tanpaBacaan, gambarAngkat: unit.gambarAngkat });
-        tanda.push(butuhLebarPenuh(t, ambang));
+        tanda.push(perHal > 1 && butuhLebarPenuh(t, ambang));
       }
     }
   });

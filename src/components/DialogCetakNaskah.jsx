@@ -91,7 +91,8 @@ export default function DialogCetakNaskah({ input, onClose }) {
 
   const seksi = rencanaSeksiNaskah(input).seksi;
   const kertas = kertasDariKode(kodeKertas);
-  const jumlahKolom = kolomPaksa > 0 ? kolomPaksa : kolomOtomatis(kertas);
+  const isCatatan = kolomPaksa === 'catatan';
+  const jumlahKolom = isCatatan ? 'catatan' : (kolomPaksa > 0 ? kolomPaksa : kolomOtomatis(kertas));
   const lebarKolom = lebarKolomMm(kertas, jumlahKolom);
   // 🔥 2026-10-29 (audit owner: satu bacaan dicetak berulang per soal di PDF
   // TO Bahasa Inggris): mesin seksi kini butuh kapasitas kolom + jumlah kolom
@@ -99,7 +100,7 @@ export default function DialogCetakNaskah({ input, onClose }) {
   // (b) wacana raksasa bisa naik ke pita lebar penuh, sama seperti mesin
   // halaman guru CetakPaketLatihan.
   const kapasitasMm = kapasitasKolomMm(kertas);
-  const opsiSeksi = { kapasitasMm, kolomPerHalaman: jumlahKolom };
+  const opsiSeksi = { kapasitasMm, kolomPerHalaman: jumlahKolom, modeKolom: isCatatan ? 'catatan' : undefined };
 
   const blokSiswa = daftarSoal.length ? blokNaskahDariSeksi('siswa', meta, seksi, lebarKolom, rasioGambar, opsiSeksi) : [];
   const blokKunci = daftarSoal.length ? blokNaskahDariSeksi('kunci', meta, seksi, lebarKolom, rasioGambar, opsiSeksi) : [];
@@ -223,17 +224,18 @@ export default function DialogCetakNaskah({ input, onClose }) {
               </label>
               <label style={{ fontSize: 11.5, color: '#475569', display: 'flex', gap: 6, alignItems: 'center' }}>
                 kolom
-                <select value={kolomPaksa} onChange={(e) => setKolomPaksa(Number(e.target.value))} style={gayaSelect}>
+                <select value={kolomPaksa} onChange={(e) => setKolomPaksa(e.target.value === 'catatan' ? 'catatan' : Number(e.target.value))} style={gayaSelect}>
                   <option value={0}>otomatis ({kolomOtomatis(kertas)} kolom)</option>
-                  <option value={1}>1 kolom</option>
-                  <option value={2}>2 kolom</option>
+                  <option value={1}>1 kolom (lebar penuh)</option>
+                  <option value={2}>2 kolom (standar ujian)</option>
+                  <option value="catatan">1 kolom + kolom catatan (coretan siswa)</option>
                 </select>
               </label>
               <button style={gayaPill(tab === 'siswa')} onClick={() => setTab('siswa')}>👀 lembar siswa</button>
               <button style={gayaPill(tab === 'kunci')} onClick={() => setTab('kunci')}>🔑 kunci guru</button>
               {hasilAktif && (
                 <span style={{ fontSize: 11, color: '#64748b' }}>
-                  {hasilAktif.jumlahHalaman} halaman · {jumlahKolom} kolom · lebar kolom {hasilAktif.lebarKolomMm}mm
+                  {hasilAktif.jumlahHalaman} halaman · {isCatatan ? '1 kolom + catatan' : `${jumlahKolom} kolom`} · lebar kolom {hasilAktif.lebarKolomMm}mm
                 </span>
               )}
             </div>

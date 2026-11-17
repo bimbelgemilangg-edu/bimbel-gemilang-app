@@ -142,9 +142,9 @@ test('bendera blokPenuh dihormati untuk wacana yang masih muat satu kolom', () =
   assert.deepEqual(lebarHalaman[0], [0, 1]);
 });
 
-test('bendera blokPenuh TIDAK membuang halaman untuk blok yang terukur pendek', () => {
+test('bendera blokPenuh dihormati untuk wacana lebar penuh tanpa membuang halaman', () => {
   const { lebarHalaman } = susunKeKolom([26, 90, 40], KAPASITAS, 2, { blokPenuh: [false, true, false] });
-  assert.ok(lebarHalaman.every((p) => p.length === 0), '90 mm jauh di bawah ambang -> tetap dua kolom');
+  assert.deepEqual(lebarHalaman[0], [0, 1], 'blok wacana 90 mm menjadi pita lebar penuh di atas soal');
 });
 
 test('dua wacana panjang beruntun tidak ditumpuk di satu pita bila tidak muat', () => {

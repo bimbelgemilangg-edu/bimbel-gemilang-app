@@ -106,8 +106,22 @@ export function kertasDariKode(kode) {
   return DAFTAR_KERTAS.find((k) => k.kode === String(kode || '').toUpperCase()) || DAFTAR_KERTAS[0];
 }
 
+/**
+ * Geometri untuk opsi "1 Kolom + Kolom Catatan (Coretan Siswa)":
+ * Soal mengambil ~73% lebar (~135mm), kolom catatan/coretan mengambil ~27% (~50mm).
+ */
+export function lebarKolomCatatanMm(kertas) {
+  const usable = kertas.lebarMm - 2 * MARGIN_MM;
+  const lebarCatatan = Math.round(usable * 0.27);
+  const lebarSoal = Math.round((usable - lebarCatatan - GAP_KOLOM_MM) * 10) / 10;
+  return { lebarSoal, lebarCatatan };
+}
+
 /** Lebar satu kolom = lebar isi dibagi kolom, dikurangi sela antar kolom. */
 export function lebarKolomMm(kertas, jumlahKolom) {
+  if (jumlahKolom === 'catatan') {
+    return lebarKolomCatatanMm(kertas).lebarSoal;
+  }
   const n = jumlahKolom > 1 ? jumlahKolom : 1;
   const isi = kertas.lebarMm - 2 * MARGIN_MM - (n - 1) * GAP_KOLOM_MM;
   return Math.round((isi / n) * 10) / 10;
@@ -192,98 +206,212 @@ export function kolomPilihanNaskah(daftarTeksOpsi, lebarKolom) {
  */
 export function susunKeKolom(tinggiBlokMm, kapasitasMm, kolomPerHalaman, opsiSusun = {}) {
   const kapasitas = kapasitasMm > 0 ? kapasitasMm : 100;
-  const perHal = kolomPerHalaman > 1 ? kolomPerHalaman : 1;
+  const isCatatan = kolomPerHalaman === 'catatan' || opsiSusun.modeKolom === 'catatan';
+  const perHal = isCatatan ? 1 : (kolomPerHalaman > 1 ? kolomPerHalaman : 1);
   const penuhDitandai = Array.isArray(opsiSusun.blokPenuh) ? opsiSusun.blokPenuh : [];
-  // Tinggi SUNGGUHAN versi lebar penuh (diukur browser pada lebar isi kertas).
-  // Bila ada, ini yang dipakai; kalau belum terukur, jatuh ke taksiran
-  // FAKTOR_TINGGI_LEBAR_PENUH yang sengaja konservatif (lebih tinggi).
   const tinggiLebarTerukur = Array.isArray(opsiSusun.tinggiLebarMm) ? opsiSusun.tinggiLebarMm : null;
-  // Satu kolom (A5) memang sudah selebar isi kertas; tidak ada "kanan-kiri"
-  // untuk dihindari, jadi pita lebar penuh hanya untuk tata letak dua kolom.
-  const pakaiPita = perHal > 1;
+  const pakaiPita = perHal > 1 && !isCatatan;
   const daftar = Array.isArray(tinggiBlokMm) ? tinggiBlokMm : [];
-  const halaman = [];       // [[indeksBlok,...], ...] per kolom
-  const lebarHalaman = [];  // PITA lebar penuh per halaman (sejajar `halaman`)
-  const modeHalaman = [];   // 'kolom' | 'lebar'
-  const luapan = [];        // halaman yang pitanya melewati satu halaman penuh
-  const peringatan = [];    // blok yang MASIH lebih tinggi dari satu halaman penuh
-  let kolomSaatIni = [];
-  let tinggiSaatIni = 0;
-  let tinggiPita = 0;
-  let kapAktif = kapasitas; // sisa tinggi kolom pada halaman aktif (dipotong pita)
 
-  const aktif = () => halaman[halaman.length - 1];
-  const pitaAktif = () => lebarHalaman[lebarHalaman.length - 1] || [];
-  const bukaHalaman = (mode = 'kolom') => {
-    halaman.push([]);
-    lebarHalaman.push([]);
-    modeHalaman.push(mode);
-    luapan.push(false);
-    tinggiPita = 0;
-    kapAktif = kapasitas;
-  };
-  const tutupKolom = () => {
-    if (!kolomSaatIni.length) return;
-    if (!aktif() || aktif().length >= perHal) bukaHalaman();
-    aktif().push(kolomSaatIni);
-    kolomSaatIni = [];
-    tinggiSaatIni = 0;
-  };
-  // Pita lebar penuh: wacana panjang membentang selebar isi kertas di ATAS
-  // halaman, lalu soal-soalnya menyusul dua kolom di bawahnya (persis susunan
-  // buku ujian: baca dulu, baru kerjakan). Tidak ada kertas terbuang.
-  const tambahPita = (i, hLebar) => {
-    if (!aktif() || aktif().length > 0 || tinggiPita + hLebar > kapasitas) {
-      tutupKolom();
-      bukaHalaman('lebar');
-    }
-    pitaAktif().push(i);
-    tinggiPita += hLebar;
-    kapAktif = Math.max(0, kapasitas - tinggiPita);
-    modeHalaman[modeHalaman.length - 1] = 'lebar';
-    // Wacana lebih panjang dari satu halaman penuh: halamannya dibiarkan
-    // MENGALIR (tinggi otomatis) supaya teksnya tidak terpotong diam-diam.
-    if (tinggiPita > kapasitas) luapan[luapan.length - 1] = true;
-  };
+  if (!daftar.length) {
+    return { halaman: [], peringatan: [], modeHalaman: [], lebarHalaman: [], luapan: [], strukturHalaman: [] };
+  }
 
-  daftar.forEach((tinggi, i) => {
-    const h = Number.isFinite(tinggi) && tinggi > 0 ? tinggi : 10;
-    // Gerbang ganda: (1) tingginya memang di atas ambang "panjang", DAN
-    // (2) ditandai daftarBlokPenuh ATAU tinggi nyata melewati satu kolom.
-    // Tanpa gerbang (1) blok yang ditaksir panjang tapi terukur pendek akan
-    // membuang satu halaman; tanpa (2) wacana raksasa tetap diremas di kolom.
-    const lebarPenuh = pakaiPita
-      && h > ambangBacaanPanjangMm(kapasitas)
-      && (!!penuhDitandai[i] || butuhLebarPenuh(h, kapasitas));
+  const peringatan = [];
 
-    if (!lebarPenuh) {
-      if (!aktif()) bukaHalaman();
-      if (tinggiSaatIni + h > kapAktif) {
-        if (kolomSaatIni.length) tutupKolom();
-        // kolom baru pun tak akan muat di bawah pita -> halaman baru tanpa pita
-        else if (pitaAktif().length && h > kapAktif) bukaHalaman();
+  // Tentukan blok mana saja yang menjadi pita lebar penuh
+  const isBand = new Array(daftar.length).fill(false);
+  if (pakaiPita) {
+    for (let i = 1; i < daftar.length; i += 1) {
+      const h = Number.isFinite(daftar[i]) && daftar[i] > 0 ? daftar[i] : 10;
+      if (!!penuhDitandai[i] || butuhLebarPenuh(h, kapasitas)) {
+        isBand[i] = true;
       }
-      kolomSaatIni.push(i);
-      tinggiSaatIni += h;
-      if (tinggiSaatIni >= kapAktif) tutupKolom();
-      return;
     }
+    // Kop (indeks 0) ikut naik ke pita bila blok 1 adalah pita dan muat bersama kop di halaman 1
+    if (daftar.length > 1 && isBand[1]) {
+      const h0 = Number.isFinite(daftar[0]) && daftar[0] > 0 ? daftar[0] : 26;
+      const h1 = Number.isFinite(daftar[1]) && daftar[1] > 0 ? daftar[1] : 40;
+      const h1Lebar = (tinggiLebarTerukur && tinggiLebarTerukur[1] > 0) ? tinggiLebarTerukur[1] : tinggiLebarPenuhMm(h1);
+      if (h0 + h1Lebar <= kapasitas) {
+        isBand[0] = true;
+      }
+    }
+  }
 
-    const terukur = tinggiLebarTerukur ? Number(tinggiLebarTerukur[i]) : 0;
-    const hLebar = terukur > 0 ? terukur : tinggiLebarPenuhMm(h);
-    if (hLebar > kapasitas) peringatan.push(i);
-    const tinggiKop = Number(daftar[0]) > 0 ? Number(daftar[0]) : 26;
-    // Kepala dokumen yang masih "terbuka" ikut naik ke pita: tanpa ini ada
-    // halaman yang isinya cuma kop (separuh kertas terbuang).
-    const kopTerbuka = i > 0 && tinggiKop + hLebar <= kapasitas
-      && kolomSaatIni.length === 1 && kolomSaatIni[0] === 0 && !(aktif() && aktif().length);
-    if (kopTerbuka) { kolomSaatIni = []; tinggiSaatIni = 0; }
-    else tutupKolom();
-    if (kopTerbuka) tambahPita(0, tinggiKop);
-    tambahPita(i, hLebar);
+  // Kelompokkan butir menjadi segmen-segmen ('band' atau 'soal')
+  const groups = [];
+  let currGroup = null;
+  for (let i = 0; i < daftar.length; i += 1) {
+    const h = Number.isFinite(daftar[i]) && daftar[i] > 0 ? daftar[i] : 10;
+    const jenis = isBand[i] ? 'band' : 'soal';
+    if (!currGroup || currGroup.jenis !== jenis) {
+      currGroup = { jenis, items: [] };
+      groups.push(currGroup);
+    }
+    const terukur = (tinggiLebarTerukur && i < tinggiLebarTerukur.length && tinggiLebarTerukur[i] > 0) ? tinggiLebarTerukur[i] : 0;
+    const hLebar = terukur > 0 ? terukur : (i === 0 ? h : tinggiLebarPenuhMm(h));
+    if (isBand[i] && hLebar > kapasitas) peringatan.push(i);
+    currGroup.items.push({ idx: i, h, hLebar });
+  }
+
+  const strukturHalaman = [];
+  const bukaHal = () => {
+    strukturHalaman.push({ seksi: [], sisa: kapasitas, luapan: false });
+  };
+  bukaHal();
+
+  const halAktif = () => strukturHalaman[strukturHalaman.length - 1];
+  const GAP_SEKSI_MM = 2.5;
+
+  for (let gIdx = 0; gIdx < groups.length; gIdx += 1) {
+    const g = groups[gIdx];
+    if (g.jenis === 'band') {
+      for (const it of g.items) {
+        let p = halAktif();
+        const hl = it.hLebar;
+        const isKop = (it.idx === 0);
+        // Cegah wacana yatim di dasar halaman tanpa soal di bawahnya
+        const adaSoal = (gIdx + 1 < groups.length && groups[gIdx + 1].jenis === 'soal' && groups[gIdx + 1].items.length > 0);
+        const ruangMin = (adaSoal && !isKop) ? 22 : 0;
+
+        if (p.seksi.length > 0 && (hl + ruangMin > p.sisa)) {
+          bukaHal();
+          p = halAktif();
+        }
+        if (hl > p.sisa && p.seksi.length === 0) {
+          p.luapan = true;
+        }
+        p.seksi.push({ jenis: 'band', blok: [it.idx], h: hl });
+        p.sisa = Math.max(0, p.sisa - hl - GAP_SEKSI_MM);
+      }
+    } else {
+      let items = [...g.items];
+      while (items.length > 0) {
+        let p = halAktif();
+        if (p.sisa < 15 && p.seksi.length > 0) {
+          bukaHal();
+          p = halAktif();
+        }
+
+        let bestM = 0;
+        let bestSplit = null;
+        let bestH = 0;
+
+        for (let m = 1; m <= items.length; m += 1) {
+          const sub = items.slice(0, m);
+          if (perHal === 1) {
+            const H = sub.reduce((acc, x) => acc + x.h, 0);
+            if (H <= p.sisa || m === 1) {
+              if (H <= p.sisa) {
+                bestM = m;
+                bestSplit = [sub, []];
+                bestH = H;
+              } else if (p.seksi.length === 0) {
+                bestM = 1;
+                bestSplit = [sub, []];
+                bestH = H;
+                break;
+              }
+            } else {
+              break;
+            }
+          } else {
+            const tot = sub.reduce((acc, x) => acc + x.h, 0);
+            let H;
+            let split;
+            if (m === 1) {
+              H = sub[0].h;
+              split = [sub, []];
+            } else {
+              let minDiff = Infinity;
+              let optK = 1;
+              let optH = tot;
+              let pref = 0;
+              for (let k = 1; k < m; k += 1) {
+                pref += sub[k - 1].h;
+                const h1 = pref;
+                const h2 = tot - pref;
+                const diff = Math.abs(h1 - h2);
+                const secH = Math.max(h1, h2);
+                if (diff < minDiff) {
+                  minDiff = diff;
+                  optK = k;
+                  optH = secH;
+                }
+              }
+              H = optH;
+              split = [sub.slice(0, optK), sub.slice(optK)];
+            }
+            if (H <= p.sisa || m === 1) {
+              if (H <= p.sisa) {
+                bestM = m;
+                bestSplit = split;
+                bestH = H;
+              } else if (p.seksi.length === 0) {
+                bestM = 1;
+                bestSplit = split;
+                bestH = H;
+                break;
+              }
+            } else {
+              break;
+            }
+          }
+        }
+
+        if (bestM === 0) {
+          bukaHal();
+          continue;
+        }
+
+        const col1 = bestSplit[0].map((x) => x.idx);
+        const col2 = bestSplit[1].map((x) => x.idx);
+        p.seksi.push({ jenis: isCatatan ? 'catatan' : 'kolom', kolom: [col1, col2], h: bestH });
+        p.sisa = Math.max(0, p.sisa - bestH - GAP_SEKSI_MM);
+        items = items.slice(bestM);
+        if (items.length > 0) {
+          bukaHal();
+        }
+      }
+    }
+  }
+
+  // Bangun struktur backward-compatible untuk halaman & lebarHalaman
+  const halaman = [];
+  const lebarHalaman = [];
+  const modeHalaman = [];
+  const luapan = [];
+
+  strukturHalaman.forEach((p) => {
+    const bands = [];
+    const col1 = [];
+    const col2 = [];
+    p.seksi.forEach((sec) => {
+      if (sec.jenis === 'band') {
+        bands.push(...sec.blok);
+      } else {
+        if (sec.kolom[0]) col1.push(...sec.kolom[0]);
+        if (sec.kolom[1]) col2.push(...sec.kolom[1]);
+      }
+    });
+    lebarHalaman.push(bands);
+    const kolomHal = [];
+    if (col1.length > 0) kolomHal.push(col1);
+    if (col2.length > 0) kolomHal.push(col2);
+    halaman.push(kolomHal);
+    modeHalaman.push(bands.length > 0 ? 'lebar' : (isCatatan ? 'catatan' : 'kolom'));
+    luapan.push(p.luapan);
   });
-  tutupKolom();
-  return { halaman, peringatan, modeHalaman, lebarHalaman, luapan };
+
+  return {
+    halaman,
+    peringatan,
+    modeHalaman,
+    lebarHalaman,
+    luapan,
+    strukturHalaman,
+  };
 }
 
 // ---- render teks: escape + KaTeX (dipindah dari cetakLatihan.js supaya
@@ -325,9 +453,40 @@ export function teksKeHtml(teks) {
 //      disuntikkan ke halaman admin untuk lapisan ukur) ----
 export const GAYA_NASKAH = `
 .naskah { font-family: Arial, Helvetica, sans-serif; font-size: 11px; color: #000; background: #fff; line-height: 1.38; }
-.naskah .nsk-hal { position: relative; background: #fff; padding: ${MARGIN_MM}mm ${MARGIN_MM}mm ${FOOTER_MM}mm; overflow: hidden; break-after: page; page-break-after: always; }
-.naskah .nsk-kolomwrap { display: flex; gap: ${GAP_KOLOM_MM}mm; height: 100%; align-items: flex-start; }
+.naskah .nsk-hal { position: relative; background: #fff; padding: ${MARGIN_MM}mm ${MARGIN_MM}mm ${FOOTER_MM}mm; box-sizing: border-box; overflow: hidden; break-after: page; page-break-after: always; display: flex; flex-direction: column; }
+.naskah .nsk-hal-konten { position: relative; z-index: 1; flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; gap: 2.2mm; }
+.naskah .nsk-kolomwrap { display: flex; gap: ${GAP_KOLOM_MM}mm; align-items: flex-start; }
 .naskah .nsk-kolom { flex: 1 1 0; min-width: 0; overflow: hidden; }
+
+/* 🔥 Tata letak 1 Kolom + Kolom Catatan (Coretan Siswa) */
+.naskah .nsk-hal--catatan .nsk-hal-konten { height: 100%; }
+.naskah .nsk-catatan-wrap { display: flex; gap: 4.5mm; height: 100%; align-items: stretch; }
+.naskah .nsk-catatan-soal { flex: 1 1 auto; min-width: 0; overflow: hidden; }
+.naskah .nsk-catatan-kolom {
+  flex: 0 0 auto;
+  border-left: 1.2pt dashed #94a3b8;
+  padding-left: 3.5mm;
+  display: flex;
+  flex-direction: column;
+}
+.naskah .nsk-catatan-head {
+  font-size: 7.5pt;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: #475569;
+  text-transform: uppercase;
+  border-bottom: 0.6pt solid #cbd5e1;
+  padding-bottom: 1.5mm;
+  margin-bottom: 2mm;
+  text-align: center;
+}
+.naskah .nsk-catatan-grid {
+  flex: 1 1 auto;
+  background-image: radial-gradient(#94a3b8 0.75px, transparent 0.75px);
+  background-size: 4.5mm 4.5mm;
+  border-radius: 1mm;
+  opacity: 0.65;
+}
 .naskah .nsk-kop { border-bottom: 0.8mm solid #000; padding-bottom: 1.5mm; margin-bottom: 2mm; break-inside: avoid; }
 .naskah .nsk-kop h1 { font-size: 14px; margin: 0 0 1mm; letter-spacing: 0.4px; }
 .naskah .nsk-kop .nsk-meta { font-size: 10.5px; color: #000; }
@@ -882,30 +1041,31 @@ export function blokBacaanNaskah(unit, lebarKolom, rasioGambar = {}, kapasitasMm
   if (!bacaan) {
     if (!gambarAngkat.length || !runGrup) return [];
     const rentangG = ` untuk soal ${unit.dari}–${unit.sampai}`;
+    const nKol = kolomPerHalaman === 'catatan' ? 1 : (kolomPerHalaman > 1 ? kolomPerHalaman : 1);
+    const lebarPenuhImg = nKol > 1;
+    const lebarCetakImg = lebarPenuhImg ? (lebarKolom * nKol + (nKol - 1) * GAP_KOLOM_MM) : lebarKolom;
     const isi = gambarAngkat.map((url) => {
       const r = rasioGambar[url] ?? RASIO_BAWAAN_GAMBAR;
-      return imgNaskahHtml(url, `Gambar stimulus${rentangG}`, ukuranGambarStimulus(r, lebarKolom));
+      return imgNaskahHtml(url, `Gambar stimulus${rentangG}`, ukuranGambarStimulus(r, lebarCetakImg));
     }).join('');
     const tinggi = gambarAngkat.reduce((acc, url) => {
       const r = rasioGambar[url] ?? RASIO_BAWAAN_GAMBAR;
       return acc + ukuranGambarStimulus(r, lebarKolom).tinggiMm + 2;
     }, 8);
     return [{
-      html: `<div class="nsk-bacaan"><div class="nsk-bacaan-judul">Perhatikan gambar berikut${rentangG}</div>${isi}</div>`,
+      html: `<div class="${lebarPenuhImg ? 'nsk-bacaan nsk-bacaan-panjang' : 'nsk-bacaan'}"><div class="nsk-bacaan-judul">Perhatikan gambar berikut${rentangG}</div>${isi}</div>`,
       tinggi: Math.round(tinggi * 10) / 10,
-      penuh: false,
+      penuh: lebarPenuhImg,
     }];
   }
-  const nKolom = kolomPerHalaman > 1 ? kolomPerHalaman : 1;
+  const isCatatan = kolomPerHalaman === 'catatan';
+  const nKolom = isCatatan ? 1 : (kolomPerHalaman > 1 ? kolomPerHalaman : 1);
   const lebarHalaman = lebarKolom * nKolom + (nKolom - 1) * GAP_KOLOM_MM;
   const kapasitas = kapasitasMm > 0 ? kapasitasMm : 100000;
-  // 🔥 2026-10-09 (owner: "perkecil font bacaan dan rapikan agar muat kanan
-  // kiri, atau khusus bacaan panjang gausah kanan kiri").
-  // Bacaan yang di kolom lebih tinggi dari ambang "panjang" dicetak sebagai
-  // PITA LEBAR PENUH (barisnya selebar isi kertas). Pemecahan per paragraf
-  // kini hanya cadangan terakhir: bila wacana masih lebih tinggi dari satu
-  // halaman penuh meski sudah dilebarkan.
-  const lebarPenuh = estimasiTinggiBacaan(bacaan, lebarKolom, rasioGambar, gambarAngkat) > ambangBacaanPanjangMm(kapasitas);
+  // 🔥 2026-11-17 (arahan owner): Pada mode 2 kolom, wacana/bacaan tidak boleh
+  // diremas setengah kolom (92mm), melainkan membentang selebar halaman (lebar penuh / pita)
+  // di atas soal-soalnya, lalu soal di bawahnya dipecah jadi 2 kolom.
+  const lebarPenuh = nKolom > 1;
   const lebarCetak = lebarPenuh ? lebarHalaman : lebarKolom;
   const rentang = unit.dari && unit.sampai && unit.sampai > unit.dari
     ? ` untuk soal ${unit.dari}–${unit.sampai}`
@@ -1019,18 +1179,20 @@ export function daftarBlokNaskah(mode, paket, soalList, lebarKolom, rasioGambar 
  *   2. susunKeKolom — supaya blok itu tidak diselipkan ke kolom biasa.
  */
 export function daftarBlokPenuh(mode, paket, soalList, lebarKolom, rasioGambar = {}, kapasitasMm = 0, kolomPerHalaman = 2) {
+  const isCatatan = kolomPerHalaman === 'catatan';
+  const perHal = isCatatan ? 1 : (kolomPerHalaman > 1 ? kolomPerHalaman : 1);
   const daftar = Array.isArray(soalList) ? soalList : [];
   if (mode === 'kunci') return [false, ...daftar.map(() => false)];
   const tanda = [false]; // kop
   for (const unit of kelompokkanStimulus(daftar)) {
     if (unit.jenis === 'bacaan') {
-      for (const chunk of blokBacaanNaskah(unit, lebarKolom, rasioGambar, kapasitasMm, kolomPerHalaman)) tanda.push(!!chunk.penuh);
+      for (const chunk of blokBacaanNaskah(unit, lebarKolom, rasioGambar, kapasitasMm, perHal)) tanda.push(!!chunk.penuh);
     } else {
       const t = estimasiTinggiBlokMm('siswa', unit.soal, lebarKolom, rasioGambar, { tanpaBacaan: unit.tanpaBacaan, gambarAngkat: unit.gambarAngkat });
       // Butir berwacana raksasa (wacana menempel di stem — pola impor HTML
       // Master/Tinitus) ikut lebar penuh: di kolom 92 mm teks semacam itu jadi
       // dinding huruf sempit dan di kertas owner meluber lewat kaki halaman.
-      tanda.push(butuhLebarPenuh(t, ambangBacaanPanjangMm(kapasitasMm)));
+      tanda.push(perHal > 1 && butuhLebarPenuh(t, ambangBacaanPanjangMm(kapasitasMm)));
     }
   }
   return tanda;
@@ -1166,9 +1328,43 @@ export function gayaWatermark(o = {}) {
   return `
 .wm-gemilang { ${posisi} display: flex; align-items: center; justify-content: center;
   pointer-events: none; z-index: 0; overflow: hidden; }
-.wm-gemilang img { width: ${ukuran}mm; height: ${ukuran}mm; object-fit: contain; opacity: ${opacity}; }
-.nsk-kolomwrap, .nsk-band, .kotak, .kepala, .identitas { position: relative; z-index: 1; }
-@media print { .wm-gemilang { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+.wm-pola-titik {
+  position: absolute; inset: 0;
+  background-image: radial-gradient(#64748b 0.9px, transparent 0.9px);
+  background-size: 7mm 7mm;
+  opacity: 0.16;
+  pointer-events: none;
+}
+.wm-konten {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  transform: rotate(-16deg);
+  text-align: center;
+  user-select: none;
+}
+.wm-gemilang img, .wm-konten img { width: ${ukuran}mm; height: ${ukuran}mm; object-fit: contain; opacity: ${opacity}; margin-bottom: 2.5mm; }
+.wm-teks-aset {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 20pt;
+  font-weight: 900;
+  letter-spacing: 2.5px;
+  color: #0f172a;
+  opacity: ${Math.min(0.14, (opacity || 0.12) * 0.95)};
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.wm-subteks {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 9.5pt;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  color: #334155;
+  opacity: ${Math.min(0.12, (opacity || 0.12) * 0.8)};
+  text-transform: uppercase;
+  white-space: nowrap;
+  margin-top: 1.2mm;
+}
+.nsk-kolomwrap, .nsk-band, .nsk-hal-konten, .nsk-catatan-wrap, .kotak, .kepala, .identitas { position: relative; z-index: 1; }
+@media print { .wm-gemilang, .wm-pola-titik { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
 `;
 }
 
@@ -1179,7 +1375,14 @@ export function gayaWatermark(o = {}) {
 export function watermarkHtml(o = {}) {
   const logo = o.logo || LOGO_WATERMARK;
   const mode = o.mode === 'tetap' ? ' tetap' : '';
-  return `<div class="wm-gemilang${mode}" aria-hidden="true"><img src="${escapeHtml(logo)}" alt="" /></div>`;
+  return `<div class="wm-gemilang${mode}" aria-hidden="true">
+  <div class="wm-pola-titik"></div>
+  <div class="wm-konten">
+    <img src="${escapeHtml(logo)}" alt="" />
+    <div class="wm-teks-aset">ASET BIMBEL GEMILANG</div>
+    <div class="wm-subteks">DOKUMEN RESMI UJIAN &amp; OPERASIONAL</div>
+  </div>
+</div>`;
 }
 
 /**
@@ -1270,7 +1473,8 @@ export function seimbangkanKolomHalaman(halaman, tinggi, kolomPerHalaman, kapasi
 
 export function susunNaskahDariBlok(blokHtml, opsi = {}) {
   const kertas = kertasDariKode(opsi.kertas);
-  const nKolom = opsi.jumlahKolom > 0 ? opsi.jumlahKolom : kolomOtomatis(kertas);
+  const isCatatan = opsi.jumlahKolom === 'catatan' || opsi.modeKolom === 'catatan';
+  const nKolom = isCatatan ? 'catatan' : (opsi.jumlahKolom > 0 ? opsi.jumlahKolom : kolomOtomatis(kertas));
   const kapasitas = kapasitasKolomMm(kertas);
   const tinggi = Array.isArray(opsi.tinggiBlokMm) && opsi.tinggiBlokMm.length === blokHtml.length
     ? opsi.tinggiBlokMm
@@ -1278,47 +1482,65 @@ export function susunNaskahDariBlok(blokHtml, opsi = {}) {
   const hasilKolom = susunKeKolom(tinggi, kapasitas, nKolom, {
     blokPenuh: opsi.blokPenuh,
     tinggiLebarMm: opsi.tinggiLebarMm,
+    modeKolom: isCatatan ? 'catatan' : undefined,
   });
   const peringatan = hasilKolom.peringatan;
   const pitaHalaman = Array.isArray(hasilKolom.lebarHalaman) ? hasilKolom.lebarHalaman : [];
-  const luapan = Array.isArray(hasilKolom.luapan) ? hasilKolom.luapan : [];
-  // 🔥 2026-10-09 (owner: "jangan sampai ada sisa"): halaman TERAKHIR
-  // diseimbangkan antar kolom. Menyisakan setengah kolom kosong terlihat
-  // seperti kesalahan tata letak, padahal hanya akhir dokumen. Blok tetap
-  // utuh (tidak dipotong) dan URUTAN nomor tetap dijaga per kolom.
-  // Halaman terakhir yang punya PITA lebar penuh tidak diseimbangkan: ruang
-  // kolomnya sudah dipotong tinggi pita, dan menyebar blok ke kolom lain bisa
-  // membuat isinya meluber di bawah pita.
-  // Halaman ber-PITA (bacaan lebar penuh) TIDAK diseimbangkan: ruang kolomnya
-  // sudah dipotong tinggi pita, menyebar blok bisa membuatnya meluber.
-  const halaman = hasilKolom.halaman.map((kolomLista, h) => {
-    const pita = pitaHalaman[h] || [];
-    if (pita.length) return kolomLista;
-    const seimbang = seimbangkanKolomHalaman([kolomLista], tinggi, nKolom, kapasitas);
-    return Array.isArray(seimbang[0]) ? seimbang[0] : kolomLista;
-  });
-  const totalHal = Math.max(1, halaman.length);
+  const struktur = Array.isArray(hasilKolom.strukturHalaman) ? hasilKolom.strukturHalaman : [];
+  const totalHal = Math.max(1, struktur.length);
   // Watermark default HIDUP. Dimatikan hanya dengan `watermark: false`
   // eksplisit (mis. dokumen internal yang tidak akan beredar).
   const denganWatermark = opsi.watermark !== false;
-  const isiHalaman = halaman
-    .map((kolomLista, h) => {
-      // 🔥 PITA LEBAR PENUH: wacana panjang membentang selebar isi kertas di
-      // ATAS halaman (tanpa kanan-kiri), soal-soalnya tetap dua kolom di
-      // bawahnya — persis buku ujian: baca dulu, baru kerjakan.
+
+  const lebarHal = kertas.lebarMm;
+  const tinggiHal = kertas.tinggiMm;
+  const { lebarSoal, lebarCatatan } = lebarKolomCatatanMm(kertas);
+
+  const isiHalaman = struktur
+    .map((p, h) => {
+      let kontenHtml = '';
+      if (isCatatan) {
+        const semuaBlokHal = [];
+        p.seksi.forEach((sec) => {
+          if (sec.jenis === 'band') semuaBlokHal.push(...sec.blok);
+          else {
+            if (sec.kolom[0]) semuaBlokHal.push(...sec.kolom[0]);
+            if (sec.kolom[1]) semuaBlokHal.push(...sec.kolom[1]);
+          }
+        });
+        kontenHtml = `
+          <div class="nsk-catatan-wrap">
+            <div class="nsk-catatan-soal" style="width:${lebarSoal}mm;">
+              ${semuaBlokHal.map((b) => blokHtml[b]).join('')}
+            </div>
+            <div class="nsk-catatan-kolom" style="width:${lebarCatatan}mm;">
+              <div class="nsk-catatan-head">✏️ CATATAN / CORETAN SISWA</div>
+              <div class="nsk-catatan-grid"></div>
+            </div>
+          </div>
+        `;
+      } else {
+        kontenHtml = p.seksi.map((sec) => {
+          if (sec.jenis === 'band') {
+            return `<div class="nsk-band">${sec.blok.map((b) => blokHtml[b]).join('')}</div>`;
+          }
+          const kolom = sec.kolom
+            .map((col) => `<div class="nsk-kolom">${col.map((b) => blokHtml[b]).join('')}</div>`)
+            .join('');
+          return `<div class="nsk-kolomwrap">${kolom}</div>`;
+        }).join('');
+      }
+
       const pita = pitaHalaman[h] || [];
-      const kolom = kolomLista.map((indeks) => `<div class="nsk-kolom">${indeks.map((b) => blokHtml[b]).join('')}</div>`).join('');
-      const lebarHal = kertas.lebarMm;
-      const tinggiHal = kertas.tinggiMm;
-      const kelasHal = `nsk-hal${pita.length ? ' nsk-hal--lebar' : ''}${luapan[h] ? ' nsk-hal--luapan' : ''}`;
+      const kelasHal = `nsk-hal${pita.length ? ' nsk-hal--lebar' : ''}${p.luapan ? ' nsk-hal--luapan' : ''}${isCatatan ? ' nsk-hal--catatan' : ''}`;
       return `<div class="${kelasHal}" style="width:${lebarHal}mm;height:${tinggiHal}mm;">
         ${denganWatermark ? watermarkHtml({ ...opsi, mode: 'halaman' }) : ''}
-        ${pita.length ? `<div class="nsk-band">${pita.map((b) => blokHtml[b]).join('')}</div>` : ''}
-        <div class="nsk-kolomwrap">${kolom}</div>
+        <div class="nsk-hal-konten">${kontenHtml}</div>
         <div class="nsk-footer">— ${h + 1} / ${totalHal} —</div>
       </div>`;
     })
     .join('');
+
   const gayaWm = denganWatermark ? gayaWatermark({ ...opsi, mode: 'halaman' }) : '';
   const fragmen = `<style>${cssPage(kertas)}${opsi.cssTambahan || ''}${GAYA_NASKAH}${gayaWm}</style><div class="naskah">${isiHalaman}</div>`;
   return {
@@ -1333,6 +1555,7 @@ export function susunNaskahDariBlok(blokHtml, opsi = {}) {
 }
 
 export default {
+  lebarKolomCatatanMm,
   daftarBlokPenuh,
   ambangBacaanPanjangMm,
   tinggiLebarPenuhMm,
