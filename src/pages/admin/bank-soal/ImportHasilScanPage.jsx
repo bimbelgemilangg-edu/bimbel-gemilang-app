@@ -76,7 +76,7 @@ import { ATURAN_OCR_MASTER } from '../../../utils/promptMasterOcr';
 // sadar gambar+kunci. Detektor lama membandingkan TEKS PERINTAH SAJA, jadi
 // dua soal infografis ber-poster berbeda diperingatkan sebagai duplikat,
 // sementara pasangan kembar ber-kunci berbeda lolos tanpa diperiksa.
-import { bandingkanDuplikat } from '../../../utils/kunciDuplikatSoal';
+import { bandingkanDuplikat, kunciDuplikatKetat } from '../../../utils/kunciDuplikatSoal';
 // 🔥 2026-10-09 (owner): "waktu tekan mata pelajaran harusnya yang awal muncul
 // jenjang — contoh SD, kan masa udah ada Kimia?" Form ini dulu menanyakan
 // mapel SEBELUM jenjang dan menawarkan daftar datar, sehingga SD bisa tertag
@@ -4400,6 +4400,7 @@ export default function ImportHasilScanPage() {
   const [saveStepText, setSaveStepText] = useState('');
   const [saveResult, setSaveResult] = useState(null);
   const [saveLog, setSaveLog] = useState([]);
+  const [membersihkanDuplikat, setMembersihkanDuplikat] = useState(false);
 
   // -------- Prompt AI khusus (generate prompt sinkron dengan skema sistem) --------
   const [showPromptPanel, setShowPromptPanel] = useState(false);
@@ -5043,6 +5044,89 @@ Ikuti PERSIS format/skema HTML di bawah ini buat cara nulis soalnya (struktur da
   }, [runParse]);
 
   // ----------------------------------------------------------
+  // BERSIHKAN SOAL DUPLIKAT 1:1 DI DATABASE BANK SOAL
+  // ----------------------------------------------------------
+  const handleBersihkanDuplikatBankSoal = useCallback(async () => {
+    if (membersihkanDuplikat) return;
+    const konfirmasi = window.confirm(
+      'Sistem akan memindai SELURUH soal di Bank Soal dan mencari soal yang DUPLIKAT PERSIS 1 BANDING 1 (teks sama, wacana/stimulus sama, opsi jawaban sama, kunci sama, tabel sama, dan gambar sama).\n\nJika ditemukan, satu soal utama akan dipertahankan dan dokumen salinan kembarannya akan langsung dihapus dari database.\n\nLanjutkan pemindaian sekarang?'
+    );
+    if (!konfirmasi) return;
+
+    setMembersihkanDuplikat(true);
+    try {
+      const snap = await getDocs(collection(db, BANK_SOAL_COLLECTION));
+      const docs = snap.docs
+        .map(d => ({ id: d.id, ...d.data() }))
+        .filter(d => d.status !== 'dihapus' && d.status !== 'nonaktif');
+
+      // Kelompokkan berdasarkan sidik jari 1:1 murni
+      const kelompok = new Map();
+      docs.forEach(s => {
+        const k = kunciDuplikatKetat(s);
+        if (!k) return;
+        if (!kelompok.has(k)) kelompok.set(k, []);
+        kelompok.get(k).push(s);
+      });
+
+      const daftarHapus = [];
+      let jumlahGrup = 0;
+
+      kelompok.forEach((anggota) => {
+        if (anggota.length > 1) {
+          jumlahGrup++;
+          // Urutkan: yang dibuat paling awal dipertahankan
+          const diurut = [...anggota].sort((a, b) => {
+            const timeA = a.createdAt?.seconds || (typeof a.createdAt === 'number' ? a.createdAt : 0);
+            const timeB = b.createdAt?.seconds || (typeof b.createdAt === 'number' ? b.createdAt : 0);
+            return timeA - timeB;
+          });
+          // Anggota index 0 disimpan, index 1..n dihapus
+          for (let i = 1; i < diurut.length; i++) {
+            daftarHapus.push(diurut[i]);
+          }
+        }
+      });
+
+      if (daftarHapus.length === 0) {
+        alert(`✨ Selesai! Dari total ${docs.length} butir soal di Bank Soal, TIDAK DITEMUKAN duplikat 1:1. Seluruh soal unik dan Bank Soal sudah bersih.`);
+        return;
+      }
+
+      const lanjutHapus = window.confirm(
+        `🔍 Hasil Analisis Duplikat 1:1:\n\n` +
+        `• Total soal aktif diperiksa: ${docs.length} butir\n` +
+        `• Ditemukan: ${jumlahGrup} kelompok soal kembar identik\n` +
+        `• Jumlah salinan duplikat yang akan dihapus: ${daftarHapus.length} dokumen\n\n` +
+        `Contoh soal yang terduplikasi:\n` +
+        daftarHapus.slice(0, 3).map((d, i) => `${i + 1}. "${String(d.soal || d.teksSoal || '').slice(0, 60)}..." (ID: ${d.id})`).join('\n') +
+        `\n\nKlik OK untuk langsung menghapus ${daftarHapus.length} dokumen duplikat ini dari database.`
+      );
+      if (!lanjutHapus) return;
+
+      // Hapus dokumen duplikat per batch 400
+      let terhapus = 0;
+      const CHUNK = 400;
+      for (let i = 0; i < daftarHapus.length; i += CHUNK) {
+        const chunk = daftarHapus.slice(i, i + CHUNK);
+        const batch = writeBatch(db);
+        chunk.forEach(item => {
+          batch.delete(doc(db, BANK_SOAL_COLLECTION, item.id));
+        });
+        await batch.commit();
+        terhapus += chunk.length;
+      }
+
+      alert(`🎉 SUKSES! Sebanyak ${terhapus} dokumen soal duplikat 1:1 telah berhasil dihapus langsung dari database. Bank Soal kini bersih!`);
+    } catch (err) {
+      console.error('Gagal membersihkan duplikat:', err);
+      alert('Gagal membersihkan duplikat: ' + (err.message || 'error tidak diketahui'));
+    } finally {
+      setMembersihkanDuplikat(false);
+    }
+  }, [membersihkanDuplikat]);
+
+  // ----------------------------------------------------------
   // SAVE
   // ----------------------------------------------------------
 
@@ -5154,45 +5238,66 @@ Ikuti PERSIS format/skema HTML di bawah ini buat cara nulis soalnya (struktur da
         }
       }
 
-      // 6. DETEKSI DUPLIKAT TERFILTER (Performa Cepat)
-      let peringatanDuplikat = [];
-      let jumlahBedaGambar = 0;
+      // 6. DETEKSI & DEDUPLIKASI 1:1 OTOMATIS (Murni Persis: Teks, Bacaan, Opsi, Kunci & Gambar)
+      setSaveStepText("Memeriksa duplikasi 1:1 di database...");
+      addLog("🔍 Memeriksa duplikasi 1:1 (teks, wacana, opsi, kunci, dan gambar harus persis sama)...");
+
+      let soalSiapSimpan = [...validSoal];
       try {
-        setSaveStepText("Memeriksa riwayat bank soal...");
-        addLog("🔍 Memeriksa kemungkinan soal duplikat di database...");
         const qBank = mataPelajaran
-          ? query(collection(db, "bank_soal"), where("mataPelajaran", "==", mataPelajaran))
-          : collection(db, "bank_soal");
+          ? query(collection(db, BANK_SOAL_COLLECTION), where("mataPelajaran", "==", mataPelajaran))
+          : collection(db, BANK_SOAL_COLLECTION);
         const existingSnap = await getDocs(qBank);
-        const bank = existingSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
-        const hasil = bandingkanDuplikat(validSoal, bank);
+        const bank = existingSnap.docs
+          .map((d) => ({ id: d.id, ...d.data() }))
+          .filter(d => d.status !== 'dihapus' && d.status !== 'nonaktif');
 
-        hasil.duplikatPersis.forEach((x) => {
-          peringatanDuplikat.push(
-            `DUPLIKAT PERSIS (teks+gambar+isi+kunci sama): soal ${x.baru.nomor}${x.baru.paket ? ` (Paket ${x.baru.paket})` : ""} -- "${x.pratinjau}…" sudah ada di ${x.sumber === "bank" ? "Bank Soal" : "batch ini juga"}.`
-          );
-        });
-        hasil.kembarBedaKunci.forEach((x) => {
-          peringatanDuplikat.push(
-            `KEMBAR TAPI JAWABAN BEDA: soal ${x.baru.nomor}${x.baru.paket ? ` (Paket ${x.baru.paket})` : ""} -- "${x.pratinjau}…" sama teks+gambar+isi dengan soal di ${x.sumber === "bank" ? "Bank Soal" : "batch ini"}, tetapi KUNCINYA BERBEDA. Periksa dulu.`
-          );
-        });
-        jumlahBedaGambar = hasil.teksSamaGambarBeda;
-      } catch (e) {
-        console.error("Gagal cek duplikat (dilewati, tidak menghalangi simpan):", e);
-      }
+        // Saring duplikat 1:1 di dalam batch itu sendiri & yang sudah ada di Bank Soal
+        const seenBatch = new Set();
+        const daftarUnik = [];
+        let dupInternal = 0;
+        let dupDiBank = 0;
 
-      if (peringatanDuplikat.length > 0) {
-        const proceed = window.confirm(
-          `⚠️ Terdeteksi ${peringatanDuplikat.length} kemungkinan soal DUPLIKAT:\n\n${peringatanDuplikat.slice(0, 8).join("\n")}` +
-          (peringatanDuplikat.length > 8 ? `\n...dan ${peringatanDuplikat.length - 8} lainnya.` : "") +
-          (jumlahBedaGambar ? `\n\nℹ️ ${jumlahBedaGambar} butir punya perintah sama tetapi GAMBAR/ISI berbeda (soal berbeda).` : "") +
-          `\n\nKlik OK untuk TETAP simpan semua, atau Cancel untuk membatalkan simpan.`,
-        );
-        if (!proceed) {
-          addLog("❌ Penyimpanan dibatalkan oleh admin karena indikasi duplikat.");
+        for (const q of validSoal) {
+          const qLengkap = {
+            ...q,
+            mataPelajaran: q.mapel_soal || mataPelajaran,
+            jenjang: q.jenjang || jenjang,
+            tingkatKelas: q.kelas_soal || tingkatKelas,
+          };
+          const kKetat = kunciDuplikatKetat(qLengkap);
+
+          // Cek apakah duplikat persis 1:1 sudah ada di Bank Soal
+          if (kKetat && bank.some(b => kunciDuplikatKetat(b) === kKetat)) {
+            dupDiBank++;
+            continue; // Otomatis lewati agar tidak dobel di database!
+          }
+
+          // Cek apakah duplikat persis 1:1 kembar di dalam batch naskah itu sendiri
+          if (kKetat && seenBatch.has(kKetat)) {
+            dupInternal++;
+            continue; // Otomatis simpan 1 butir saja!
+          }
+
+          if (kKetat) seenBatch.add(kKetat);
+          daftarUnik.push(q);
+        }
+
+        if (dupInternal > 0) {
+          addLog(`ℹ️ ${dupInternal} butir soal duplikat 1:1 di dalam naskah otomatis dilewati (hanya 1 salinan disimpan).`);
+        }
+        if (dupDiBank > 0) {
+          addLog(`ℹ️ ${dupDiBank} butir soal yang SUDAH ADA di Bank Soal dilewati otomatis agar tidak terduplikasi.`);
+        }
+
+        if (daftarUnik.length === 0) {
+          alert('ℹ️ Seluruh soal pada naskah ini sudah pernah tersimpan di Bank Soal (duplikat 1:1). Tidak ada soal baru yang perlu ditambahkan.');
           return;
         }
+
+        soalSiapSimpan = daftarUnik;
+      } catch (e) {
+        console.error("Gagal verifikasi duplikat (melanjutkan dengan seluruh soal valid):", e);
       }
 
       const meta = {
@@ -5210,7 +5315,7 @@ Ikuti PERSIS format/skema HTML di bawah ini buat cara nulis soalnya (struktur da
       };
 
       // Clone dalam (soal + gambar soal + gambar tiap opsi).
-      const soalProcessed = validSoal.map(q => ({
+      const soalProcessed = soalSiapSimpan.map(q => ({
         ...q,
         gambar: safeArray(q.gambar).map(image => ({ ...image })),
         bacaan: q.bacaan ? { ...q.bacaan, gambar: safeArray(q.bacaan.gambar).map(image => ({ ...image })) } : null,
@@ -5452,11 +5557,38 @@ Ikuti PERSIS format/skema HTML di bawah ini buat cara nulis soalnya (struktur da
         <div style={{ padding: '16px', maxWidth: '72rem', marginLeft: 'auto', marginRight: 'auto', display: 'flex', flexDirection: 'column', gap: '20px' }}>
           {/* HEADER */}
           <div>
-            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px' }}>
-              <h1 style={{ fontSize: '24px', fontWeight: '700', color: '#1f2937' }}>Import Buku & Soal (AI)</h1>
-              <span style={{ paddingLeft: '10px', paddingRight: '10px', paddingTop: '4px', paddingBottom: '4px', borderRadius: '9999px', backgroundColor: '#d1fae5', color: '#047857', fontSize: '12px', fontWeight: '700' }}>
-                SAFE IMPORT
-              </span>
+            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px' }}>
+                <h1 style={{ fontSize: '24px', fontWeight: '700', color: '#1f2937' }}>Import Buku & Soal (AI)</h1>
+                <span style={{ paddingLeft: '10px', paddingRight: '10px', paddingTop: '4px', paddingBottom: '4px', borderRadius: '9999px', backgroundColor: '#d1fae5', color: '#047857', fontSize: '12px', fontWeight: '700' }}>
+                  SAFE IMPORT
+                </span>
+              </div>
+
+              {/* 🧹 TOMBOL MEMBERSIHKAN DUPLIKAT 1:1 DI DATABASE */}
+              <button
+                type="button"
+                onClick={handleBersihkanDuplikatBankSoal}
+                disabled={membersihkanDuplikat}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '9px 16px',
+                  borderRadius: '12px',
+                  backgroundColor: membersihkanDuplikat ? '#6b7280' : '#6366f1',
+                  color: '#ffffff',
+                  fontSize: '13px',
+                  fontWeight: 700,
+                  border: 'none',
+                  cursor: membersihkanDuplikat ? 'not-allowed' : 'pointer',
+                  boxShadow: '0 4px 12px rgba(99, 102, 241, 0.3)',
+                  transition: 'all 0.15s ease',
+                }}
+              >
+                <span>{membersihkanDuplikat ? '⏳' : '🧹'}</span>
+                <span>{membersihkanDuplikat ? 'Memindai Database...' : 'Bersihkan Soal Duplikat 1:1 di Database'}</span>
+              </button>
             </div>
             <p style={{ color: '#6b7280', fontSize: '14px', marginTop: '4px' }}>
               Import soal hasil scan AI ke Bank Soal Gemilang — mendukung 1 file JSON gabungan

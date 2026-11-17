@@ -37,124 +37,166 @@ function normTeks(s) {
   return String(s || '')
     .toLowerCase()
     .replace(/<[^>]+>/g, ' ')
-    .replace(/[^\w\s]/g, '')
+    .replace(/[\r\n\t]+/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
 }
 
 /**
- * Kumpulkan SEMUA url gambar yang dilihat siswa dari sebuah butir:
- * gambar di badan soal (`gambarUrls`, `gambar[].url`) DAN gambar di dalam
- * pilihan jawaban (`opsiJawaban[].gambar[].url`). Diurutkan supaya dua
- * dokumen dengan urutan penyimpanan berbeda tetap menghasilkan sidik jari
- * yang sama.
+ * Sidik jari wacana / stimulus / bacaan
+ */
+export function sidikJariBacaan(soal) {
+  const b = soal?.bacaan || soal?.stimulus || soal?.wacana;
+  if (!b) return '';
+  if (typeof b === 'string') return normTeks(b);
+  const teks = normTeks(b.teks || b.text || b.content || '');
+  const gbr = Array.isArray(b.gambar)
+    ? b.gambar.map(g => (typeof g === 'string' ? g : g?.url || g?.uploadedUrl || g?.dataUrl?.slice(0, 80) || '')).filter(Boolean).sort().join(',')
+    : '';
+  return `${teks}#gbr:${gbr}`;
+}
+
+/**
+ * Kumpulkan SEMUA url & data gambar yang dilihat siswa dari sebuah butir:
+ * gambar di badan soal (`gambarUrls`, `gambar`), gambar wacana/bacaan,
+ * DAN gambar di dalam pilihan jawaban (`opsiJawaban[].gambar`).
+ * Mendukung string URL, objek `{url, uploadedUrl}`, maupun `dataUrl` base64.
  * @returns {string} sidik jari gabungan, '' bila tidak ada gambar
  */
 export function sidikJariGambar(soal) {
   const url = [];
   const dorong = (v) => {
-    const s = String(v || '').trim();
-    if (s) url.push(s);
+    if (!v) return;
+    if (typeof v === 'string') {
+      const s = v.trim();
+      if (s.startsWith('data:image')) {
+        url.push(`b64:${s.length}:${s.slice(0, 45)}:${s.slice(-30)}`);
+      } else if (s) {
+        url.push(s);
+      }
+    } else if (typeof v === 'object') {
+      if (v.uploadedUrl) url.push(v.uploadedUrl);
+      else if (v.url) url.push(v.url);
+      else if (v.dataUrl) {
+        const s = String(v.dataUrl).trim();
+        url.push(`b64:${s.length}:${s.slice(0, 45)}:${s.slice(-30)}`);
+      }
+    }
   };
+
   (Array.isArray(soal?.gambarUrls) ? soal.gambarUrls : []).forEach(dorong);
-  (Array.isArray(soal?.gambar) ? soal.gambar : []).forEach((g) => {
-    if (typeof g === 'string') dorong(g);
-    else dorong(g?.url || g?.uploadedUrl);
-  });
-  (Array.isArray(soal?.opsiJawaban) ? soal.opsiJawaban : []).forEach((o) => {
-    if (o && typeof o === 'object' && Array.isArray(o.gambar)) {
-      o.gambar.forEach((g) => dorong(typeof g === 'string' ? g : g?.url || g?.uploadedUrl));
+  (Array.isArray(soal?.gambar) ? soal.gambar : []).forEach(dorong);
+
+  // Gambar di wacana / bacaan
+  const b = soal?.bacaan || soal?.stimulus || soal?.wacana;
+  if (b && typeof b === 'object' && Array.isArray(b.gambar)) {
+    b.gambar.forEach(dorong);
+  }
+
+  // Gambar di pilihan jawaban
+  const opsi = Array.isArray(soal?.opsiJawaban) ? soal.opsiJawaban
+    : Array.isArray(soal?.opsi_jawaban) ? soal.opsi_jawaban
+    : Array.isArray(soal?.options) ? soal.options : [];
+  opsi.forEach((o) => {
+    if (o && typeof o === 'object') {
+      if (Array.isArray(o.gambar)) o.gambar.forEach(dorong);
+      if (o.url || o.dataUrl) dorong(o);
     }
   });
+
   return [...new Set(url)].sort().join(' ');
 }
 
 /**
- * Isi butir per tipe, dinormalkan — supaya dua butir yang perintahnya sama
-// tetapi pernyataan/pilihan/pasangannya beda TIDAK dianggap kembar.
+ * Isi butir per tipe, dinormalkan 1:1 — mendukung semua alias format impor
+ * (opsi_jawaban, tabel_benar_salah, pasangan, pernyataan).
  */
-function sidikJariIsi(soal) {
+export function sidikJariIsi(soal) {
   const bagian = [];
-  const opsi = Array.isArray(soal?.opsiJawaban) ? soal.opsiJawaban : [];
-  if (opsi.length) bagian.push(opsi.map((o) => normTeks(typeof o === 'string' ? o : o?.teks)).join(' | '));
+
+  // 1. Opsi Jawaban (mendukung opsiJawaban, opsi_jawaban, options, pilihan)
+  const opsi = Array.isArray(soal?.opsiJawaban) ? soal.opsiJawaban
+    : Array.isArray(soal?.opsi_jawaban) ? soal.opsi_jawaban
+    : Array.isArray(soal?.options) ? soal.options
+    : Array.isArray(soal?.pilihan) ? soal.pilihan : [];
+
+  if (opsi.length) {
+    bagian.push('opsi:' + opsi.map((o) => {
+      if (typeof o === 'string') return normTeks(o);
+      const teksO = normTeks(o?.teks || o?.text || '');
+      const gbrO = Array.isArray(o?.gambar) && o.gambar.length ? `[gbr:${o.gambar.length}]` : '';
+      return `${teksO}${gbrO}`;
+    }).join(' | '));
+  }
+
+  // 2. Pernyataan (Benar/Salah atau Kategori)
   const pernyataan = Array.isArray(soal?.pernyataan) ? soal.pernyataan : [];
-  if (pernyataan.length) bagian.push(pernyataan.map((p) => normTeks(typeof p === 'string' ? p : p?.teks)).join(' | '));
-  const tabel = Array.isArray(soal?.tabelBenarSalah) ? soal.tabelBenarSalah : [];
-  if (tabel.length) bagian.push(tabel.map((b) => `${normTeks(b?.pernyataan)}=${normTeks(b?.kunci)}`).join(' | '));
-  const pasangan = Array.isArray(soal?.pasangan) ? soal.pasangan : [];
-  if (pasangan.length) bagian.push(pasangan.map((p) => `${normTeks(p?.kiri)}>${normTeks(p?.kanan)}`).join(' | '));
+  if (pernyataan.length) {
+    bagian.push('pernyataan:' + pernyataan.map((p) => {
+      if (typeof p === 'string') return normTeks(p);
+      return `${normTeks(p?.teks || p?.pernyataan || '')}=${normTeks(p?.jawaban || p?.kunci || '')}`;
+    }).join(' | '));
+  }
+
+  // 3. Tabel Benar/Salah & Tabel Soal
+  const tabel = Array.isArray(soal?.tabelBenarSalah) ? soal.tabelBenarSalah
+    : Array.isArray(soal?.tabel_benar_salah) ? soal.tabel_benar_salah : [];
+  if (tabel.length) {
+    bagian.push('tabel:' + tabel.map((b) => {
+      if (typeof b === 'string') return normTeks(b);
+      return `${normTeks(b?.pernyataan || b?.teks || '')}=${normTeks(b?.kunci || b?.jawaban || '')}`;
+    }).join(' | '));
+  }
+
+  // 4. Pasangan / Menjodohkan
+  const pasangan = Array.isArray(soal?.pasangan) ? soal.pasangan
+    : Array.isArray(soal?.matching) ? soal.matching : [];
+  if (pasangan.length) {
+    bagian.push('pasangan:' + pasangan.map((p) => `${normTeks(p?.kiri)}>${normTeks(p?.kanan)}`).join(' | '));
+  }
+
   return bagian.join(' # ');
 }
 
 /**
- * Kunci pengelompokan duplikat.
- * @returns {string|null} null berarti butir ini TIDAK ikut diperiksa
- *   (teks terlalu pendek — menuduh berdasarkan 14 karakter terlalu berisiko)
- */
-/**
- * Untuk PENGELOMPOKAN di halaman pembersih kunci jawaban TIDAK ikut: dua butir
- * kembar yang salah satunya salah ketik kunci tetap duplikat yang harus
- * disatukan (yang salah dibuang). Untuk PERINGATAN DI HULU dipakai
- * kunciDuplikatKetat + kunciKembarTanpaKunci, supaya perbedaan jawaban justru
- * terlihat, bukan ditelan.
- */
-export function kunciDuplikat(soal) {
-  return kunciKembarTanpaKunci(soal);
-}
-
-/**
- * Sidik jari kunci jawaban, dinormalkan.
- * Huruf besar/kecil dan spasi disamakan; array diurutkan supaya ["A","C"]
- * dan ["C","A"] dianggap sama.
+ * Sidik jari kunci jawaban universal (mendukung kunciJawaban, kunci_jawaban, kunci, jawaban)
  */
 export function sidikJariKunci(soal) {
-  const k = soal?.kunciJawaban;
+  const k = soal?.kunciJawaban ?? soal?.kunci_jawaban ?? soal?.kunci ?? soal?.jawaban ?? soal?.key;
   if (Array.isArray(k)) return [...k].map((x) => normTeks(x)).sort().join(',');
   return normTeks(k);
 }
 
 /**
- * TIGA TINGKAT KEMIRIPAN.
- * Owner 2026-10-08: "detektor duplikat harusnya ada di awal saat scan soal,
- * pastikan dilihat dari jawaban kan juga kadang jawaban beda". Maka keputusan
- * duplikat dibuat BERJENJANG, bukan biner:
- *
- *   kunciDuplikatKetat()     teks + gambar + isi + KUNCI
- *                            sama semua  -> DUPLIKAT PERSIS
- *   kunciKembarTanpaKunci()  teks + gambar + isi, kunci TIDAK ikut
- *                            sama di sini tapi beda di tingkat atas
- *                            -> KEMBAR BEDA KUNCI: JANGAN dihapus; salah satu
- *                               hampir pasti salah kunci. Periksa manusia.
- *   kunciTeksSaja()          teks perintah saja
- *                            sama di sini tapi beda di tingkat tengah
- *                            -> BEDA GAMBAR/ISI: BUKAN duplikat dan TIDAK BOLEH
- *                               diperingatkan (inilah kasus poster-kembar).
+ * Kunci pengelompokan duplikat 1:1 ketat (kunci jawaban, teks, bacaan, isi, dan gambar WAJIB sama).
  */
+export function kunciDuplikat(soal) {
+  return kunciDuplikatKetat(soal);
+}
+
 export function kunciKembarTanpaKunci(soal) {
   const teks = normTeks(teksSoalDari(soal));
   if (teks.length < MIN_TEKS_DUPLIKAT) return null;
-  return [
-    String(soal?.mataPelajaran || soal?.mapel || '').trim(),
-    String(soal?.jenjang || '').trim(),
-    String(soal?.tingkatKelas || soal?.kelas || '').trim(),
-    teks,
-    sidikJariGambar(soal),
-    sidikJariIsi(soal),
-  ].join('|||');
+  const mapel = String(soal?.mataPelajaran || soal?.mapel || soal?.mapel_soal || '').trim().toLowerCase();
+  const jenjang = String(soal?.jenjang || '').trim().toLowerCase();
+  const kelas = String(soal?.tingkatKelas || soal?.kelas || soal?.kelas_soal || '').trim().toLowerCase();
+  const bacaan = sidikJariBacaan(soal);
+  const gambar = sidikJariGambar(soal);
+  const isi = sidikJariIsi(soal);
+
+  return [mapel, jenjang, kelas, teks, bacaan, gambar, isi].join('|||');
 }
 
 export function kunciTeksSaja(soal) {
   const teks = normTeks(teksSoalDari(soal));
   if (teks.length < MIN_TEKS_DUPLIKAT) return null;
-  return [
-    String(soal?.mataPelajaran || soal?.mapel || '').trim(),
-    String(soal?.jenjang || '').trim(),
-    String(soal?.tingkatKelas || soal?.kelas || '').trim(),
-    teks,
-  ].join('|||');
+  const mapel = String(soal?.mataPelajaran || soal?.mapel || soal?.mapel_soal || '').trim().toLowerCase();
+  const jenjang = String(soal?.jenjang || '').trim().toLowerCase();
+  const kelas = String(soal?.tingkatKelas || soal?.kelas || soal?.kelas_soal || '').trim().toLowerCase();
+  return [mapel, jenjang, kelas, teks].join('|||');
 }
 
-/** Kunci duplikat ketat: ikut menghitung kunci jawaban. */
+/** Kunci duplikat ketat 1:1: TEKS + BACAAN + OPSI/ISI + KUNCI JAWABAN + GAMBAR sama persis */
 export function kunciDuplikatKetat(soal) {
   const tengah = kunciKembarTanpaKunci(soal);
   if (!tengah) return null;
@@ -261,7 +303,7 @@ export function alasanDuplikat(soal) {
 }
 
 export default {
-  MIN_TEKS_DUPLIKAT, sidikJariGambar, sidikJariIsi, sidikJariKunci,
+  MIN_TEKS_DUPLIKAT, sidikJariGambar, sidikJariIsi, sidikJariKunci, sidikJariBacaan,
   kunciDuplikat, kunciDuplikatKetat, kunciKembarTanpaKunci, kunciTeksSaja,
   bandingkanDuplikat, bandingkanDuaButir, alasanDuplikat,
 };
