@@ -215,7 +215,7 @@ export function daftarBlokPenuhSeksi(mode, seksi, lebarKolom, rasioGambar = {}, 
     for (const unit of kelompokkanStimulus(sec.soalList || [])) {
       if (unit.jenis === 'bacaan') {
         for (const chunk of blokBacaanNaskah(unit, lebarKolom, rasioGambar, kapasitasMm, perHal)) {
-          tanda.push(perHal > 1 ? true : !!chunk.penuh);
+          tanda.push(!!chunk.penuh);
         }
       } else {
         const t = estimasiTinggiBlokMm('siswa', unit.soal, lebarKolom, rasioGambar, { tanpaBacaan: unit.tanpaBacaan, gambarAngkat: unit.gambarAngkat });

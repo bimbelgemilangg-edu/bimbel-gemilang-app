@@ -92,8 +92,14 @@ uji('gambar melebar (grafik v-t) jadi blok sepenuh kolom', () => {
   assert.equal(u.lebarMm, 87.4);
   assert.equal(u.tinggiMm, 21.8);
 });
-uji('gambar kotak (lingkaran) mendampingi teks, tidak melebihi 45% kolom', () => {
+uji('gambar kotak / infografis jadi blok tengah terbaca, tidak kerdil samping', () => {
   const u = ukuranGambarNaskah(800, 700, 92);
+  assert.equal(u.mode, 'blok');
+  assert.ok(u.lebarMm >= 60 && u.lebarMm <= 0.88 * 92 + 0.01, `lebar ${u.lebarMm}`);
+  assert.ok(u.tinggiMm <= 92.01, `tinggi ${u.tinggiMm}`);
+});
+uji('mode samping hanya aktif bila izinkanSamping diminta eksplisit', () => {
+  const u = ukuranGambarNaskah(800, 700, 92, { izinkanSamping: true });
   assert.equal(u.mode, 'samping');
   assert.ok(u.lebarMm >= 30 && u.lebarMm <= 0.45 * 92 + 0.01, `lebar ${u.lebarMm}`);
   assert.ok(u.tinggiMm <= 48.01, `tinggi ${u.tinggiMm}`);

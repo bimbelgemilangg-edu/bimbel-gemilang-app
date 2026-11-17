@@ -149,47 +149,62 @@ export function cssPage(kertas) {
 // ---- ukuran gambar: "tidak terlalu kecil dan tidak terlalu besar" ----
 // KENAPA dihitung dari piksel asli: gambar scan 1500px yang dipaksa
 // 30mm menjadi buram, diagram 300px yang dilebar 90mm menjadi pecah.
-// Tiga wilayah rasio (lebar/tinggi):
-//   r >= 2.2  -> diagram melebar (grafik v-t, tabel): sepenuh kolom.
-//   0.8..2.2  -> gambar "kotak" (lingkaran, struktur, foto):
-//                mendampingi teks seperti naskah TKA asli (float kiri),
-//                lebar 40% kolom dibatasi 30..55mm dan tinggi <= 48mm.
-//   r <  0.8  -> gambar menjulang (bagian tumbuhan, skala): blok di
-//                tengah. Untuk r sangat kurus (<0.5) tinggi <= 70mm,
-//                lebar minimal 26mm. Untuk infografis/diagram data
-//                (0.5 <= r < 0.8) tampil besar proporsional (lebar 75-88% kolom,
-//                tinggi <= 92mm) agar angka dan teks bagan terbaca jelas.
-export function ukuranGambarNaskah(lebarAsli, tinggiAsli, lebarKolom) {
+// Wilayah rasio (lebar/tinggi):
+//   r >= 2.0  -> diagram melebar (grafik v-t, tabel): sepenuh kolom (blok di tengah).
+//   0.5..2.0  -> standar naskah ujian (infografis, diagram, foto, chart):
+//                WAJIB mode 'blok' di tengah, mengisi 75-88% lebar kolom
+//                (65-82mm pada 2 kolom, hingga 110mm pada 1 kolom) dengan tinggi
+//                maksimal 92mm agar teks dan angka terbaca jelas saat dicetak,
+//                dan opsi jawaban tidak terhimpit di samping.
+//   r <  0.5  -> gambar menjulang tinggi (bagian tumbuhan, skala): blok di
+//                tengah, tinggi <= 75mm, lebar minimal 28mm.
+export function ukuranGambarNaskah(lebarAsli, tinggiAsli, lebarKolom, preferensi = {}) {
   const l = Number(lebarAsli);
   const t = Number(tinggiAsli);
   if (!Number.isFinite(l) || !Number.isFinite(t) || l <= 0 || t <= 0) return null;
   const r = l / t;
   const bulat = (x) => Math.round(x * 10) / 10;
-  if (r >= 2.2) {
+  const izinkanSamping = preferensi?.izinkanSamping === true;
+
+  // 1. Diagram / grafik / tabel sangat lebar (r >= 2.0)
+  if (r >= 2.0) {
     const lebar = Math.min(0.95 * lebarKolom, 165);
     return { mode: 'blok', lebarMm: bulat(lebar), tinggiMm: bulat(lebar / r) };
   }
-  if (r >= 0.8) {
+
+  // 2. Hanya bila pemanggil EKSPLISIT meminta mode samping (mis. thumbnail kecil khusus)
+  if (izinkanSamping && r >= 0.8) {
     let lebar = Math.max(30, Math.min(0.4 * lebarKolom, 55));
     let tinggi = lebar / r;
     if (tinggi > 48) { tinggi = 48; lebar = Math.min(48 * r, 0.45 * lebarKolom); tinggi = lebar / r; }
     return { mode: 'samping', lebarMm: bulat(lebar), tinggiMm: bulat(tinggi) };
   }
+
+  // 3. Gambar sangat tinggi / kurus (r < 0.5)
   if (r < 0.5) {
-    let tinggi = 70;
+    let tinggi = 75;
     let lebar = tinggi * r;
-    if (lebar < 26) { lebar = 26; tinggi = Math.min(70, 26 / r); }
+    if (lebar < 28) { lebar = 28; tinggi = Math.min(85, 28 / r); }
+    if (lebar > lebarKolom * 0.85) { lebar = lebarKolom * 0.85; tinggi = lebar / r; }
     return { mode: 'blok', lebarMm: bulat(lebar), tinggiMm: bulat(tinggi) };
   }
-  // 🔥 2026-11-17 (arahan owner): Gambar infografis/diagram portrait (0.5 <= r < 0.8)
-  // TIDAK boleh kerdil 26mm/41mm yang tidak terbaca! Mengisi 75-88% lebar kolom,
-  // tinggi proporsional hingga 92mm agar data, bagan, dan angka jelas terbaca.
+
+  // 4. Standar naskah cetak ujian (0.5 <= r < 2.0): foto, bagan, infografis, diagram geometri
+  // WAJIB mode: 'blok' di tengah, mengisi 75-88% lebar kolom (di 2 kolom: 68-82mm,
+  // di 1 kolom: hingga 110mm) dengan tinggi dibatasi maksimal 92mm agar semua teks,
+  // angka, dan detail terbaca jelas saat dicetak, dan opsi tidak terhimpit di samping.
   const maxLebar = Math.min(lebarKolom * 0.88, 110);
-  let tinggi = Math.min(92, Math.max(70, (lebarKolom * 0.85) / r));
-  let lebar = tinggi * r;
-  if (lebar > maxLebar) {
-    lebar = maxLebar;
-    tinggi = lebar / r;
+  let targetLebar = Math.min(lebarKolom * 0.85, 105);
+  let tinggi = targetLebar / r;
+  let lebar = targetLebar;
+  if (tinggi > 92) {
+    tinggi = 92;
+    lebar = Math.min(92 * r, maxLebar);
+  }
+  // Pastikan lebar tidak terlalu kecil untuk keterbacaan teks/angka di dalam gambar
+  if (lebar < Math.min(58, lebarKolom * 0.7)) {
+    lebar = Math.min(Math.max(58, lebarKolom * 0.75), maxLebar);
+    tinggi = Math.min(95, lebar / r);
   }
   return { mode: 'blok', lebarMm: bulat(lebar), tinggiMm: bulat(tinggi) };
 }
@@ -291,9 +306,19 @@ export function susunKeKolom(tinggiBlokMm, kapasitasMm, kolomPerHalaman, opsiSus
         // cukup untuk wacana + butir pertama di bawahnya (mencegah tumpang tindih layout).
         const adaSoal = (gIdx + 1 < groups.length && groups[gIdx + 1].jenis === 'soal' && groups[gIdx + 1].items.length > 0);
         const tinggiSoalPertama = (adaSoal && groups[gIdx + 1].items[0]) ? groups[gIdx + 1].items[0].h : 35;
-        const ruangMin = (adaSoal && !isKop) ? Math.max(45, tinggiSoalPertama + GAP_SEKSI_MM) : 0;
+        const ruangMin = (adaSoal && !isKop) ? Math.max(50, tinggiSoalPertama + GAP_SEKSI_MM) : 0;
 
-        if (p.seksi.length > 0 && (hl + ruangMin > p.sisa)) {
+        // Aturan tata letak naskah ujian:
+        // Bila halaman sudah memiliki blok kolom soal sebelumnya, wacana baru di tengah halaman
+        // hanya boleh diselipkan jika ruang sisa sangat lapang (>= 85mm).
+        // Jika ruang sisa < 85mm, wacana baru wajib membuka halaman baru agar teks dan butirnya
+        // utuh di halaman yang sama, tanpa terhimpit atau tumpang tindih dengan soal di atasnya.
+        const sudahAdaKolom = p.seksi.some((s) => s.jenis === 'kolom' || s.jenis === 'catatan');
+        const ruangMinBandTengah = Math.max(85, hl + tinggiSoalPertama + 25);
+        if (sudahAdaKolom && p.sisa < ruangMinBandTengah && !isKop) {
+          bukaHal();
+          p = halAktif();
+        } else if (p.seksi.length > 0 && (hl + ruangMin > p.sisa)) {
           bukaHal();
           p = halAktif();
         }
@@ -525,12 +550,12 @@ export const GAYA_NASKAH = `
    seksiNaskahTryOut.js) -- pita tipis berbingkai, tidak boleh terbelah
    kolom, dan terpisah jelas dari butir pertama seksinya. */
 .naskah .nsk-seksi { border: 0.4mm solid #000; padding: 1mm 2.5mm; font-size: 11.5px; font-weight: 800; letter-spacing: 0.6px; text-transform: uppercase; margin: 0 0 2.5mm; break-inside: avoid; }
-.naskah .nsk-butir { margin: 0 0 2.2mm; break-inside: avoid; display: flex; gap: 2mm; }
+.naskah .nsk-butir { margin: 0 0 2.2mm; break-inside: avoid; display: flex; gap: 2mm; clear: both; }
 .naskah .nsk-butir > .nsk-no { flex: 0 0 5.5mm; font-weight: 800; text-align: left; }
 .naskah .nsk-butir > .nsk-isi { flex: 1 1 auto; min-width: 0; }
-.naskah .nsk-gbr-samping { float: left; margin: 0 3mm 1.5mm 0; }
-.naskah .nsk-gbr-blok { display: block; margin: 1.5mm auto; }
-.naskah .nsk-opsi { display: grid; gap: 0.4mm 4mm; margin: 1mm 0 0 7.5mm; }
+.naskah .nsk-gbr-samping { float: left; margin: 0 3mm 1.5mm 0; max-width: 45%; }
+.naskah .nsk-gbr-blok { display: block; margin: 2mm auto; max-width: 100%; clear: both; }
+.naskah .nsk-opsi { display: grid; gap: 0.4mm 4mm; margin: 1mm 0 0 7.5mm; clear: both; }
 .naskah .nsk-opsi > span { break-inside: avoid; }
 /* 🔥 2026-10-09: kotak centang KOSONG untuk pg_kompleks di lembar siswa.
    Sebelumnya satu-satunya "kotak" di lembar adalah glif ☑/☐ yang terbawa
@@ -539,22 +564,22 @@ export const GAYA_NASKAH = `
    (kotak kosong berbingkai), terlepas dari bersih/kotor datanya. */
 .naskah .nsk-kotak-centang { display: inline-block; width: 3.2mm; height: 3.2mm; border: 0.35mm solid #1f2937; border-radius: 0.5mm; margin: 0 1.4mm 0 0; vertical-align: -0.5mm; }
 /* 🔥 TABEL SOAL CETAK: render tabel data matematika/ipa/ips di lembar siswa & guru */
-.naskah .nsk-tabel { margin: 1.5mm 0 2mm 0; width: 100%; overflow: hidden; break-inside: avoid; }
+.naskah .nsk-tabel { margin: 1.5mm 0 2mm 0; width: 100%; overflow: hidden; break-inside: avoid; clear: both; }
 .naskah .nsk-tabel table { width: 100%; border-collapse: collapse; font-size: 8.5pt; line-height: 1.25; border: 0.35mm solid #000; }
 .naskah .nsk-tabel th { background: #f1f5f9; font-weight: bold; border: 0.35mm solid #000; padding: 1mm 1.5mm; text-align: left; }
 .naskah .nsk-tabel td { border: 0.35mm solid #000; padding: 1mm 1.5mm; vertical-align: top; }
-.naskah .nsk-bs { margin: 1.5mm 0 0 7.5mm; }
+.naskah .nsk-bs { margin: 1.5mm 0 0 7.5mm; clear: both; }
 .naskah .nsk-bs-head, .naskah .nsk-bs-row { display: grid; grid-template-columns: 1fr 14mm 14mm; gap: 2mm; align-items: start; }
 .naskah .nsk-bs-head { font-size: 8.5pt; font-weight: bold; border-bottom: 0.4pt solid #000; padding-bottom: 1mm; }
 .naskah .nsk-bs-head > span:nth-child(2), .naskah .nsk-bs-head > span:nth-child(3),
 .naskah .nsk-bs-row > span:nth-child(2), .naskah .nsk-bs-row > span:nth-child(3) { text-align: center; }
 .naskah .nsk-bs-row { padding: 1.1mm 0; border-bottom: 0.3pt dotted #94a3b8; break-inside: avoid; }
 .naskah .nsk-bs-kotak { width: 6mm; height: 6mm; border: 0.5pt solid #000; border-radius: 1mm; justify-self: center; }
-.naskah .nsk-jodoh { display: grid; grid-template-columns: 1fr 1fr; gap: 5mm; margin: 1.5mm 0 0 7.5mm; }
+.naskah .nsk-jodoh { display: grid; grid-template-columns: 1fr 1fr; gap: 5mm; margin: 1.5mm 0 0 7.5mm; clear: both; }
 .naskah .nsk-jodoh-kol { display: grid; gap: 1.2mm; }
 .naskah .nsk-jodoh-kol > span { break-inside: avoid; border-bottom: 0.3pt dotted #94a3b8; padding-bottom: 1mm; }
-.naskah .nsk-isian { margin: 2mm 0 0 7.5mm; font-size: 10.5pt; }
-.naskah .nsk-esai { margin: 2mm 0 0 7.5mm; }
+.naskah .nsk-isian { margin: 2mm 0 0 7.5mm; font-size: 10.5pt; clear: both; }
+.naskah .nsk-esai { margin: 2mm 0 0 7.5mm; clear: both; }
 .naskah .nsk-esai > div { border-bottom: 0.4pt solid #64748b; height: 7mm; }
 .naskah .nsk-kunci-baris { font-size: 10.8px; }
 /* 2026-10-10: gaya buku untuk kode sumber & pembahasan (permintaan owner). */
@@ -617,6 +642,48 @@ function imgNaskahHtml(src, alt, ukuran) {
 export const RASIO_BAWAAN_GAMBAR = 1.3;
 
 /**
+ * Mencari rasio aspek gambar (lebar/tinggi) dari peta rasioGambar secara tangguh.
+ * Mengenal URL absolut, URL relatif, pathname, dan encoding URI.
+ */
+export function ambilRasioGambar(url, rasioGambar = {}) {
+  if (!url || typeof url !== 'string' || !rasioGambar || typeof rasioGambar !== 'object') {
+    return RASIO_BAWAAN_GAMBAR;
+  }
+  // 1. Direct hit
+  if (rasioGambar[url] !== undefined && Number.isFinite(rasioGambar[url]) && rasioGambar[url] > 0) {
+    return rasioGambar[url];
+  }
+  // 2. Decode URI
+  try {
+    const decoded = decodeURI(url);
+    if (rasioGambar[decoded] !== undefined && Number.isFinite(rasioGambar[decoded]) && rasioGambar[decoded] > 0) {
+      return rasioGambar[decoded];
+    }
+  } catch {}
+  // 3. Pathname normalized (hilangkan origin, query string, dan hash)
+  let pathname = '';
+  try {
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      pathname = new URL(url).pathname;
+    } else {
+      pathname = url.split('?')[0].split('#')[0];
+    }
+  } catch {}
+  if (pathname && rasioGambar[pathname] !== undefined && Number.isFinite(rasioGambar[pathname]) && rasioGambar[pathname] > 0) {
+    return rasioGambar[pathname];
+  }
+  // 4. Scan pencocokan sufiks / pathname
+  for (const [key, val] of Object.entries(rasioGambar)) {
+    if (!key || !Number.isFinite(val) || val <= 0) continue;
+    if (key === url || key === pathname) return val;
+    if (pathname && pathname.length > 2) {
+      if (key.endsWith(pathname) || pathname.endsWith(key)) return val;
+    }
+  }
+  return RASIO_BAWAAN_GAMBAR;
+}
+
+/**
  * HTML satu butir naskah siswa. `rasioGambar` adalah peta url -> rasio
 // (lebar/tinggi piksel asli) yang diisi halaman saat gambar dimuat;
 // tanpa peta ini ukuran gambar jatuh ke rasio bawaan.
@@ -653,7 +720,7 @@ export function bacaanNaskahHtml(soal, nomor, lebarKolom, rasioGambar = {}) {
   const isi = segmen
     .map((sg) => {
       if (sg.jenis === 'teks') return `<div>${teksKeHtml(sg.isi)}</div>`;
-      const r = rasioGambar[sg.url] ?? RASIO_BAWAAN_GAMBAR;
+      const r = ambilRasioGambar(sg.url, rasioGambar);
       const ukuran = ukuranGambarNaskah(r, 1, lebarKolom) || { mode: 'blok', lebarMm: 45, tinggiMm: 35 };
       return imgNaskahHtml(sg.url, `Gambar bacaan nomor ${nomor}`, ukuran);
     })
@@ -684,7 +751,7 @@ function gambarDalamTeks(teks, gambarUrls, nomor, rasioGambar, lebarKolom) {
   return pisahTeksDanGambar(teks, gambarUrls)
     .map((sg) => {
       if (sg.jenis === 'teks') return teksKeHtml(sg.isi);
-      const r = rasioGambar[sg.url] ?? RASIO_BAWAAN_GAMBAR;
+      const r = ambilRasioGambar(sg.url, rasioGambar);
       const u = ukuranGambarNaskah(r, 1, lebarKolom * 0.9) || { mode: 'blok', lebarMm: 40, tinggiMm: 30 };
       return imgNaskahHtml(sg.url, `Gambar nomor ${nomor}`, u);
     })
@@ -768,7 +835,7 @@ export function butirNaskahHtml(soal, nomor, lebarKolom, rasioGambar = {}, opsiB
   const badan = segmen
     .map((sg) => {
       if (sg.jenis === 'teks') return `<div>${teksKeHtml(sg.isi)}</div>`;
-      const r = rasioGambar[sg.url] ?? RASIO_BAWAAN_GAMBAR;
+      const r = ambilRasioGambar(sg.url, rasioGambar);
       const ukuran = ukuranGambarNaskah(r, 1, lebarKolom) || { mode: 'blok', lebarMm: 40, tinggiMm: 30 };
       return imgNaskahHtml(sg.url, `Gambar soal nomor ${nomor}`, ukuran);
     })
@@ -797,7 +864,7 @@ export function butirNaskahHtml(soal, nomor, lebarKolom, rasioGambar = {}, opsiB
           .map((g) => {
             const src = g?.uploadedUrl || g?.url || '';
             if (!src) return '';
-            const r = rasioGambar[src] ?? RASIO_BAWAAN_GAMBAR;
+            const r = ambilRasioGambar(src, rasioGambar);
             const ukuran = ukuranGambarNaskah(r, 1, lebarKolom * 0.5) || { mode: 'blok', lebarMm: 30, tinggiMm: 22 };
             return imgNaskahHtml(src, `Gambar pilihan ${huruf}`, ukuran);
           })
@@ -991,6 +1058,18 @@ export function kelompokkanStimulus(daftar, nomorAwal = 1) {
     let j = i;
     while (j < daftarSoal.length && kunci(daftarSoal[j]) === k) j += 1;
     const runPanjang = j - i;
+    if (runPanjang === 1) {
+      const bcn = bacaanDari(daftarSoal[i]);
+      const teksBcn = String(bcn?.teks || '');
+      // Wacana mandiri untuk SATU soal: bila tidak tergolong raksasa (>1000 huruf),
+      // biarkan menyatu di butir soal (tanpaBacaan: false) mengalir rapi di kolom
+      // tanpa memecah layout halaman menjadi pita kosong.
+      if (teksBcn.length <= 1000) {
+        units.push({ jenis: 'butir', soal: daftarSoal[i], nomor: i + 1 + geser, tanpaBacaan: false, gambarAngkat: [] });
+        i += 1;
+        continue;
+      }
+    }
     const gambarAngkat = runPanjang >= 2
       ? (k.startsWith('gbr:')
         ? gambarButirDari(daftarSoal[i])
@@ -1019,7 +1098,7 @@ export function estimasiTinggiBacaan(bacaan, lebarKolom, rasioGambar = {}, gamba
   const gambar = (Array.isArray(bacaan?.gambar) ? bacaan.gambar : []).reduce((acc, g) => {
     const src = typeof g === 'string' ? g : (g?.url || g?.uploadedUrl || '');
     if (!src) return acc;
-    const r = rasioGambar[src] ?? RASIO_BAWAAN_GAMBAR;
+    const r = ambilRasioGambar(src, rasioGambar);
     const u = ukuranGambarNaskah(r, 1, lebarKolom);
     return acc + (u ? u.tinggiMm + 2 : 30);
   }, 0);
@@ -1028,7 +1107,7 @@ export function estimasiTinggiBacaan(bacaan, lebarKolom, rasioGambar = {}, gamba
   // yang dirender blokBacaanNaskah supaya taksiran != kenyataan tidak terjadi.
   const tambahan = (Array.isArray(gambarTambahan) ? gambarTambahan : []).reduce((acc, src) => {
     if (!src) return acc;
-    const r = rasioGambar[src] ?? RASIO_BAWAAN_GAMBAR;
+    const r = ambilRasioGambar(src, rasioGambar);
     return acc + ukuranGambarStimulus(r, lebarKolom).tinggiMm + 2;
   }, 0);
   return Math.round(baris + gambar + tambahan + 10); // +judul blok & padding
@@ -1064,11 +1143,11 @@ export function blokBacaanNaskah(unit, lebarKolom, rasioGambar = {}, kapasitasMm
     const lebarPenuhImg = nKol > 1;
     const lebarCetakImg = lebarPenuhImg ? (lebarKolom * nKol + (nKol - 1) * GAP_KOLOM_MM) : lebarKolom;
     const isi = gambarAngkat.map((url) => {
-      const r = rasioGambar[url] ?? RASIO_BAWAAN_GAMBAR;
+      const r = ambilRasioGambar(url, rasioGambar);
       return imgNaskahHtml(url, `Gambar stimulus${rentangG}`, ukuranGambarStimulus(r, lebarCetakImg));
     }).join('');
     const tinggi = gambarAngkat.reduce((acc, url) => {
-      const r = rasioGambar[url] ?? RASIO_BAWAAN_GAMBAR;
+      const r = ambilRasioGambar(url, rasioGambar);
       return acc + ukuranGambarStimulus(r, lebarKolom).tinggiMm + 2;
     }, 8);
     return [{
@@ -1136,7 +1215,7 @@ export function blokBacaanNaskah(unit, lebarKolom, rasioGambar = {}, kapasitasMm
       }
       continue;
     } else {
-      const r = rasioGambar[sg.url] ?? RASIO_BAWAAN_GAMBAR;
+      const r = ambilRasioGambar(sg.url, rasioGambar);
       const u = ukuranGambarNaskah(r, 1, lebarCetak) || { mode: 'blok', lebarMm: 40, tinggiMm: 30 };
       html = imgNaskahHtml(sg.url, 'Gambar bacaan', u);
       hCetak = u.tinggiMm + 2;
@@ -1152,7 +1231,7 @@ export function blokBacaanNaskah(unit, lebarKolom, rasioGambar = {}, kapasitasMm
   // bacaan (teks dulu, gambar stimulus menyusul) — dicetak SEKALI di sini dan
   // tidak lagi di tiap butir (lihat opts.lewati di butirNaskahHtml).
   for (const url of gambarAngkat) {
-    const r = rasioGambar[url] ?? RASIO_BAWAAN_GAMBAR;
+    const r = ambilRasioGambar(url, rasioGambar);
     const u = ukuranGambarStimulus(r, lebarCetak);
     const hCetakG = u.tinggiMm + 2;
     const hLaporG = lebarPenuh ? ukuranGambarStimulus(r, lebarKolom).tinggiMm + 2 : hCetakG;
@@ -1252,7 +1331,7 @@ export function estimasiTinggiBlokMm(mode, soal, lebarKolom, rasioGambar = {}, o
   const teksBacaan = bacaan ? String(bacaan.teks || '') : '';
   const gambarBacaan = bacaan && Array.isArray(bacaan.gambar) ? bacaan.gambar.filter(Boolean) : [];
   const tinggiGambar = gambar.reduce((acc, url) => {
-    const r = rasioGambar[url] ?? RASIO_BAWAAN_GAMBAR;
+    const r = ambilRasioGambar(url, rasioGambar);
     const u = ukuranGambarNaskah(r, 1, lebarKolom);
     return acc + (u ? u.tinggiMm + 2 : 30);
   }, 0);
@@ -1263,7 +1342,7 @@ export function estimasiTinggiBlokMm(mode, soal, lebarKolom, rasioGambar = {}, o
   const tinggiGambarBacaan = gambarBacaan.reduce((acc, url) => {
     const src = typeof url === 'string' ? url : (url?.uploadedUrl || url?.url || '');
     if (!src) return acc;
-    const r = rasioGambar[src] ?? RASIO_BAWAAN_GAMBAR;
+    const r = ambilRasioGambar(src, rasioGambar);
     const u = ukuranGambarNaskah(r, 1, lebarKolom);
     return acc + (u ? u.tinggiMm + 2 : 30);
   }, 0);
@@ -1664,6 +1743,7 @@ export default {
   kapasitasKolomMm,
   cssPage,
   ukuranGambarNaskah,
+  ambilRasioGambar,
   kolomPilihanNaskah,
   susunKeKolom,
   escapeHtml,

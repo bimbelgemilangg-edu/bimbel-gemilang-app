@@ -478,14 +478,28 @@ export default function CetakPaketLatihan() {
 
   // Rasio piksel asli gambar: ditempeli listener saat lapisan ukur_mount.
   useEffect(() => {
-    const wadah = [refUkurSiswa.current, refUkurKunci.current].filter(Boolean);
+    const wadah = [refUkurSiswa.current, refUkurKunci.current, refUkurLebarSiswa.current, refUkurLebarKunci.current].filter(Boolean);
     const pasang = [];
     wadah.forEach((w) => {
       w.querySelectorAll('img').forEach((img) => {
         const catat = () => {
           if (!img.naturalWidth || !img.naturalHeight) return;
           const r = img.naturalWidth / img.naturalHeight;
-          setRasioGambar((lama) => (Math.abs((lama[img.src] ?? 0) - r) < 0.001 ? lama : { ...lama, [img.src]: r }));
+          const rawSrc = img.getAttribute('src') || '';
+          let pathname = '';
+          try {
+            pathname = new URL(img.src, window.location.origin).pathname;
+          } catch {}
+          setRasioGambar((lama) => {
+            const bedaSrc = Math.abs((lama[img.src] ?? 0) - r) >= 0.001;
+            const bedaRaw = rawSrc && Math.abs((lama[rawSrc] ?? 0) - r) >= 0.001;
+            const bedaPath = pathname && Math.abs((lama[pathname] ?? 0) - r) >= 0.001;
+            if (!bedaSrc && !bedaRaw && !bedaPath) return lama;
+            const update = { ...lama, [img.src]: r };
+            if (rawSrc) update[rawSrc] = r;
+            if (pathname) update[pathname] = r;
+            return update;
+          });
         };
         if (img.complete) catat();
         else { img.addEventListener('load', catat, { once: true }); pasang.push([img, catat]); }
