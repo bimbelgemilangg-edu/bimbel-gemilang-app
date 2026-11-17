@@ -1927,7 +1927,8 @@ export function normalizeSoal(qMasuk, idx) {
   }
 
   // 🔥 BARU: Sinyal 7b -- soal MENUNJUK tabel di teksnya ("Perhatikan tabel...", dst)
-  // TAPI TIDAK ADA tabel terlampir sama sekali.
+  // TAPI TIDAK ADA tabel terlampir sama sekali (baik dalam bentuk <table>, tabel_soal,
+  // maupun dalam bentuk gambar ilustrasi tabel yang di-crop).
   const menunjukTabelDiTeks = /\b(perhatikan|lihat|sesuai|berdasarkan|pada)\s+tabel\b/i.test(teksSoal)
     || /\btabel\s+(berikut|di\s+bawah|di\s+atas|tersebut|ini|data|nilai|distribusi|frekuensi|skor)\b/i.test(teksSoal);
   const adaTabelDiSoal = Boolean(
@@ -1936,7 +1937,10 @@ export function normalizeSoal(qMasuk, idx) {
     (pernyataan && pernyataan.length > 0) ||
     (tabelBenarSalah && tabelBenarSalah.length > 0) ||
     (bacaan && bacaan.teks && bacaan.teks.includes('<table')) ||
-    teksSoal.includes('<table')
+    teksSoal.includes('<table') ||
+    adaGambarDiSoal ||
+    adaGambarDiBacaan ||
+    adaGambarDiOpsi
   );
   if (menunjukTabelDiTeks && !adaTabelDiSoal) {
     errors.push(
