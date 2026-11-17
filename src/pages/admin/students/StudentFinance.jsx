@@ -508,6 +508,110 @@ const StudentFinance = () => {
     setIsKoreksiProcessing(false);
   };
 
+  // 🔥 FITUR REKONSILIASI KEUANGAN (Penyelamat Kebocoran Kas):
+  // Mengembalikan totalBayar siswa persis sesuai riwayat uang kas/bank riil di
+  // buku besar (finance_logs), memulihkan sisa tagihan, dan merapikan baris cicilan.
+  const handleSinkronkanKeBukuBesar = async () => {
+    if (!student) return;
+    const totalTagihanSiswa = parseInt(student.totalTagihan || 0);
+
+    // Hitung akumulasi uang riil dari buku besar siklus paket ini
+    const tMulai = student.tanggalMulai ? String(student.tanggalMulai).slice(0, 10) : '';
+    const logsSiklus = tMulai
+      ? financeLogs.filter(l => l && l.type !== 'Transfer' && l.method !== 'Cicilan' && (l.date || '') >= tMulai)
+      : financeLogs.filter(l => l && l.type !== 'Transfer' && l.method !== 'Cicilan');
+
+    const logsValid = logsSiklus.length > 0
+      ? logsSiklus
+      : financeLogs.filter(l => l && l.type !== 'Transfer' && l.method !== 'Cicilan');
+
+    const uangRiil = logsValid.reduce((s, l) => s + (Math.round(Number(l.amount) || 0)), 0);
+    const sisaRiil = Math.max(0, totalTagihanSiswa - uangRiil);
+
+    const konfirmasi = window.confirm(
+      `⚠️ REKONSILIASI BUKU KAS DENGAN DATA SISWA:\n\n` +
+      `Siswa: ${student.nama} (${student.studentId || '-'})\n` +
+      `• Total Tagihan Paket: Rp ${totalTagihanSiswa.toLocaleString()}\n` +
+      `• Uang Riil Diterima di Kwitansi/Buku Kas: Rp ${uangRiil.toLocaleString()} (${logsValid.length} kwitansi)\n` +
+      `• Tercatat Saat Ini di Ringkasan: Rp ${(student.totalBayar || 0).toLocaleString()}\n\n` +
+      `Sistem akan mengembalikan Total Dibayar menjadi Rp ${uangRiil.toLocaleString()} dan memulihkan Sisa Tagihan Rp ${sisaRiil.toLocaleString()} agar siswa tidak dianggap Lunas secara keliru.\n\n` +
+      `Lanjutkan sinkronisasi?`
+    );
+    if (!konfirmasi) return;
+
+    setIsProcessing(true);
+    try {
+      const batch = writeBatch(db);
+
+      // 1. Update students doc
+      batch.update(doc(db, "students", id), {
+        totalBayar: uangRiil
+      });
+
+      // 2. Update finance_tagihan doc jika ada
+      if (tagihan) {
+        const detailAman = Array.isArray(tagihan.detailCicilan) ? [...tagihan.detailCicilan] : [];
+        const nCicilan = detailAman.length || 1;
+        const nominalRata = Math.round(totalTagihanSiswa / nCicilan);
+
+        let sisaUang = uangRiil;
+        const cicilanBaru = detailAman.map((c, i) => {
+          const targetNominal = (i === nCicilan - 1)
+            ? totalTagihanSiswa - (nominalRata * (nCicilan - 1))
+            : nominalRata;
+
+          if (sisaUang >= targetNominal && targetNominal > 0) {
+            sisaUang -= targetNominal;
+            return {
+              ...c,
+              nominal: targetNominal,
+              status: 'Lunas',
+              tanggalBayar: c.tanggalBayar || logsValid[i]?.date || tanggalLokalHariIni()
+            };
+          } else {
+            sisaUang = 0;
+            return {
+              ...c,
+              nominal: targetNominal,
+              status: 'Belum Lunas',
+              tanggalBayar: null
+            };
+          }
+        });
+
+        batch.update(doc(db, "finance_tagihan", tagihan.id), {
+          totalTagihan: totalTagihanSiswa,
+          sisaTagihan: sisaRiil,
+          detailCicilan: cicilanBaru
+        });
+      }
+
+      // 3. Catat audit trail ke koreksi_data_log
+      batch.set(doc(collection(db, "koreksi_data_log")), {
+        studentId: student?.studentId || id,
+        namaSiswa: student?.nama || '',
+        sebelum: {
+          totalTagihan: student.totalTagihan || 0,
+          totalBayar: student.totalBayar || 0,
+        },
+        sesudah: {
+          totalTagihan: totalTagihanSiswa,
+          totalBayar: uangRiil,
+        },
+        alasan: `Sinkronisasi otomatis ringkasan dengan buku kas (selisih semu dipulihkan). Sisa tagihan Rp ${sisaRiil.toLocaleString()} aktif kembali.`,
+        createdAt: serverTimestamp(),
+      });
+
+      await batch.commit();
+      showAlert(`✅ Berhasil disinkronkan! Total Dibayar dikembalikan ke Rp ${uangRiil.toLocaleString()}. Sisa tagihan Rp ${sisaRiil.toLocaleString()} aktif kembali.`);
+      fetchData();
+    } catch (err) {
+      console.error(err);
+      showAlert(`❌ Gagal sinkronisasi: ${err.message}`);
+    }
+    setIsProcessing(false);
+  };
+
   // ===== FITUR MULTI-PROGRAM / PAKET TAMBAHAN (ENGLISH COURSE, DLL) =====
   const handleSimpanProgramBaru = async (e) => {
     e.preventDefault();
@@ -1410,10 +1514,32 @@ const StudentFinance = () => {
           sisaTagihan: Math.max(0, (tagihan.sisaTagihan || 0) - nominal)
         });
       } else if (tagihan && payingIndex === null) {
-        const newDetails = detailCicilanAman.map(c => ({
-          ...c, status: 'Lunas', tanggalBayar: c.status === 'Belum Lunas' ? today : c.tanggalBayar
-        }));
-        batch.update(doc(db, "finance_tagihan", tagihan.id), { detailCicilan: newDetails, sisaTagihan: 0 });
+        // 🔥 FIX BUG NYATA: Sebelumnya opsi Pelunasan (payingIndex === null)
+        // secara membabi buta mengubah SEMUA baris cicilan menjadi 'Lunas',
+        // walaupun uang yang dibayar saat itu sebenarnya kurang dari sisa tagihan!
+        // Sekarang: Cek apakah nominal mencukupi seluruh sisa tagihan.
+        // Jika cukup: tandai semua cicilan lunas.
+        // Jika tidak cukup: alokasikan berurutan ke cicilan yang belum lunas.
+        const sisaSebelumnya = Math.max(0, parseInt(student.totalTagihan || 0) - parseInt(student.totalBayar || 0));
+        let newDetails;
+        if (nominal >= sisaSebelumnya) {
+          newDetails = detailCicilanAman.map(c => ({
+            ...c, status: 'Lunas', tanggalBayar: c.status === 'Belum Lunas' ? today : c.tanggalBayar
+          }));
+        } else {
+          let sisaUang = nominal;
+          newDetails = detailCicilanAman.map(c => {
+            if (c.status === 'Lunas') return c;
+            const nomCicilan = Number(c.nominal) || 0;
+            if (sisaUang >= nomCicilan && nomCicilan > 0) {
+              sisaUang -= nomCicilan;
+              return { ...c, status: 'Lunas', tanggalBayar: today };
+            }
+            return c;
+          });
+        }
+        const sisaBaru = Math.max(0, (tagihan.sisaTagihan || sisaSebelumnya) - nominal);
+        batch.update(doc(db, "finance_tagihan", tagihan.id), { detailCicilan: newDetails, sisaTagihan: sisaBaru });
       }
 
       await batch.commit();
@@ -1565,12 +1691,35 @@ const StudentFinance = () => {
 
         {selisihBuku !== 0 && (
           <div style={styles.bannerSelisih}>
-            <AlertCircle size={15} style={{ flexShrink: 0 }} />
-            <div>
-              <strong>Ringkasan & buku besar tidak cocok (selisih Rp {Math.abs(selisihBuku).toLocaleString()}).</strong>{' '}
-              Biasanya ada diskon / salah nominal / salah metode pada salah satu baris Riwayat Pembayaran yang belum
-              dikoreksi dari sisi buku besar. Klik ✏️ Koreksi pada baris riwayat yang salah -- JANGAN pakai
-              "Koreksi Data" untuk menutupi selisih ini (koreksi itu hanya menimpa ringkasan, buku besar & kwitansi tetap).
+            <AlertCircle size={18} style={{ flexShrink: 0, marginTop: 2, color: '#d97706' }} />
+            <div style={{ flex: 1 }}>
+              <div style={{ fontWeight: 800, fontSize: 13, color: '#92400e', marginBottom: 4 }}>
+                ⚠️ Ringkasan Siswa & Buku Kas Tidak Cocok (Selisih Rp {Math.abs(selisihBuku).toLocaleString()})
+              </div>
+              <div style={{ fontSize: 12, color: '#78350f', lineHeight: 1.5 }}>
+                {selisihBuku < 0 ? (
+                  <>
+                    Field <b>Total Dibayar</b> di profil siswa saat ini tercatat <b>Rp {(student.totalBayar || 0).toLocaleString()}</b>,
+                    padahal uang riil di kwitansi/buku kas baru <b>Rp {totalSemuaUangMasuk.toLocaleString()}</b>.
+                    Status "Lunas" saat ini adalah <b>Lunas Semu</b> (tanpa kwitansi/mutasi uang riil untuk selisih Rp {Math.abs(selisihBuku).toLocaleString()}).
+                  </>
+                ) : (
+                  <>
+                    Uang riil yang masuk di kwitansi/buku kas (<b>Rp {totalSemuaUangMasuk.toLocaleString()}</b>) lebih besar daripada yang tercatat di profil siswa.
+                  </>
+                )}
+              </div>
+              <div style={{ marginTop: 10, display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+                <button
+                  type="button"
+                  onClick={handleSinkronkanKeBukuBesar}
+                  disabled={isProcessing}
+                  style={styles.btnSinkronBuku}
+                  title="Klik untuk menyinkronkan data siswa persis dengan riwayat kwitansi buku besar"
+                >
+                  ⚡ Sinkronkan Ringkasan ke Buku Kas (Pulihkan Tagihan Rp {Math.max(0, (student.totalTagihan || 0) - totalSemuaUangMasuk).toLocaleString()})
+                </button>
+              </div>
             </div>
           </div>
         )}
@@ -3167,7 +3316,8 @@ const styles = {
   historyNote: { fontSize: 9, color: '#94a3b8' },
   historyRight: { textAlign: 'right' },
   // 🔥 BARU: tombol kecil cetak kwitansi di baris riwayat pembayaran.
-  bannerSelisih: { display: 'flex', gap: 10, alignItems: 'flex-start', background: '#fff7ed', border: '1.5px solid #f59e0b', borderRadius: 12, padding: '10px 12px', marginBottom: 14, fontSize: 11.5, color: '#7c2d12', lineHeight: 1.55 },
+  bannerSelisih: { display: 'flex', gap: 10, alignItems: 'flex-start', background: '#fff7ed', border: '1.5px solid #f59e0b', borderRadius: 12, padding: '12px 14px', marginBottom: 14, fontSize: 11.5, color: '#7c2d12', lineHeight: 1.55 },
+  btnSinkronBuku: { background: '#d97706', color: '#ffffff', border: 'none', borderRadius: 8, padding: '7px 14px', fontSize: 12, fontWeight: 800, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6, boxShadow: '0 2px 4px rgba(217, 119, 6, 0.25)' },
   btnKwitansiKecil: { display: 'inline-flex', alignItems: 'center', gap: 4, marginTop: 4, padding: '3px 8px', background: '#f5f3ff', color: '#6d28d9', border: '1px solid #ddd6fe', borderRadius: 6, cursor: 'pointer', fontWeight: 800, fontSize: 9 },
   
   modalOverlay: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: 20 },

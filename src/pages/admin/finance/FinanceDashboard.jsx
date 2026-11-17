@@ -5,7 +5,7 @@ import { saldoKasAdmin, statusPlafon, PLAFON_DEFAULT } from '../../../utils/keua
 import { collection, query, onSnapshot, getDocs, where , doc, getDoc} from "firebase/firestore";
 import { 
   Eye, EyeOff, TrendingUp, TrendingDown,
-  CreditCard, AlertCircle, Users, ArrowRight, DollarSign,
+  CreditCard, AlertCircle, AlertTriangle, Users, ArrowRight, DollarSign,
   Calendar, RefreshCw, MessageCircle
 , ShieldCheck} from 'lucide-react';
 
@@ -49,6 +49,9 @@ const FinanceDashboard = () => {
 
   // 🔥 BARU: siswa yang masa aktif paketnya sudah habis / akan habis dalam 7 hari
   const [expiringStudents, setExpiringStudents] = useState([]);
+
+  // 🔥 BARU: radar audit siswa dengan selisih buku kas (lunas semu / uang kwitansi kurang)
+  const [selisihBukuStudents, setSelisihBukuStudents] = useState([]);
 
   useEffect(() => {
     // 🔥 BARU (KUNCI AKSES ADMIN): sama seperti TransactionHistory.jsx --
@@ -125,22 +128,35 @@ const FinanceDashboard = () => {
       setMethodStats(perMetode);
     });
 
-    // Fetch piutang & siswa baru
+    // Fetch piutang & siswa baru & audit radar kebocoran
     const fetchDebtsAndNew = async () => {
       try {
-        const snap = await getDocs(collection(db, "students"));
+        const [snap, logsSnap] = await Promise.all([
+          getDocs(collection(db, "students")),
+          getDocs(query(collection(db, "finance_logs"), where("type", "==", "Pemasukan"))).catch(() => ({ docs: [] }))
+        ]);
+
+        // Map akumulasi uang riil kasir/bank per siswa dari buku besar
+        const logsMapById = {};
+        const logsMapByName = {};
+        logsSnap.docs.forEach(docSnap => {
+          const l = docSnap.data();
+          if (l.method === 'Cicilan') return; // komitmen, belum uang riil
+          const amt = Math.round(Number(l.amount) || 0);
+          if (l.studentId) {
+            logsMapById[l.studentId] = (logsMapById[l.studentId] || 0) + amt;
+          }
+          if (l.namaSiswa) {
+            const keyNama = l.namaSiswa.trim().toLowerCase();
+            logsMapByName[keyNama] = (logsMapByName[keyNama] || 0) + amt;
+          }
+        });
+
         let totalHutang = 0;
         let listNunggak = [];
         let listBaru = [];
-        // 🔥 BARU: daftar siswa yang masa aktif paketnya SUDAH HABIS atau
-        // AKAN habis dalam 7 hari -- sebelumnya status ini CUMA dihitung
-        // di StudentList.jsx (kekubur di kolom tabel panjang, gampang
-        // kelewat), gak pernah muncul sebagai peringatan yang menonjol di
-        // "Pusat Kontrol Keuangan" ini -- padahal siswa yang masa
-        // aktifnya habis itu jelas urusan keuangan (perlu diperpanjang/
-        // ditagih). Logika ambang batasnya SAMA PERSIS dengan
-        // getMasaAktifStatus() di StudentList.jsx, biar konsisten.
         let listHabisMasa = [];
+        let listSelisihBuku = [];
         const todayForExpiry = new Date();
         todayForExpiry.setHours(0, 0, 0, 0);
         
@@ -149,6 +165,30 @@ const FinanceDashboard = () => {
           const total = parseInt(d.totalTagihan || 0);
           const bayar = parseInt(d.totalBayar || 0);
           const sisa = total - bayar;
+          const kode = d.studentId || doc.id;
+          const keyNama = (d.nama || '').trim().toLowerCase();
+
+          // Hitung uang riil kwitansi
+          const uangRiilKwitansi = (logsMapById[kode] !== undefined)
+            ? logsMapById[kode]
+            : (logsMapById[doc.id] !== undefined
+              ? logsMapById[doc.id]
+              : (logsMapByName[keyNama] || 0));
+
+          // 🚨 Radar Audit: Deteksi Siswa Lunas Semu / Selisih Buku Kas
+          // Bila di profil siswa tercatat bayar > 0 DAN bayar > uangRiilKwitansi
+          if (bayar > 0 && bayar > uangRiilKwitansi) {
+            listSelisihBuku.push({
+              id: doc.id,
+              nama: d.nama,
+              studentId: d.studentId || doc.id,
+              totalTagihan: total,
+              totalBayar: bayar,
+              uangRiil: uangRiilKwitansi,
+              selisih: bayar - uangRiilKwitansi,
+              isLunasSemu: sisa <= 0
+            });
+          }
           
           if (sisa > 0) {
             totalHutang += sisa;
@@ -215,6 +255,7 @@ const FinanceDashboard = () => {
         setNewStudents(listBaru);
         // Urutkan yang paling mendesak dulu (sudah lewat paling lama, baru yang mau habis)
         setExpiringStudents(listHabisMasa.sort((a, b) => a.diffDays - b.diffDays));
+        setSelisihBukuStudents(listSelisihBuku.sort((a, b) => b.selisih - a.selisih));
         setLoading(false);
       } catch (error) {
         console.error(error);
@@ -371,6 +412,80 @@ const FinanceDashboard = () => {
           <li><b>Kerahasiaan Keuangan:</b> Segala bentuk pencetakan laporan keuangan, rekap total omzet, dan kwitansi resmi berada di bawah wewenang Owner.</li>
         </ul>
       </div>
+
+      {/* === 🚨 RADAR AUDIT KEBOCORAN KEUANGAN SISWA (LUNAS SEMU) === */}
+      {selisihBukuStudents.length > 0 && (
+        <div style={{
+          background: '#fff7ed',
+          border: '1.5px solid #f97316',
+          borderRadius: 14,
+          padding: '16px 18px',
+          marginBottom: 20,
+          boxShadow: '0 4px 12px rgba(249, 115, 22, 0.08)'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10, flexWrap: 'wrap', gap: 8 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, color: '#9a3412', fontWeight: 800, fontSize: 14 }}>
+              <AlertTriangle size={20} color="#ea580c" />
+              <span>🚨 Radar Audit: Ditemukan {selisihBukuStudents.length} Siswa Berstatus "Lunas Semu" / Selisih Buku Kas</span>
+            </div>
+            <span style={{ background: '#ea580c', color: '#fff', fontSize: 11, fontWeight: 800, padding: '4px 12px', borderRadius: 999 }}>
+              Total Selisih: Rp {selisihBukuStudents.reduce((acc, s) => acc + s.selisih, 0).toLocaleString()}
+            </span>
+          </div>
+          <p style={{ margin: '0 0 12px', fontSize: 12, color: '#7c2d12', lineHeight: 1.5 }}>
+            Sistem mendeteksi siswa yang profilnya tercatat sudah membayar lebih banyak daripada kwitansi fisik di buku kas/bank.
+            Kondisi ini berpotensi membuat siswa dianggap lunas padahal uang belum disetor wali murid.
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {selisihBukuStudents.map(s => (
+              <div key={s.id} style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                background: '#ffffff',
+                border: '1px solid #fed7aa',
+                borderRadius: 10,
+                padding: '10px 14px',
+                flexWrap: 'wrap',
+                gap: 8
+              }}>
+                <div>
+                  <div style={{ fontWeight: 800, fontSize: 13, color: '#1e293b' }}>
+                    {s.nama} <span style={{ fontSize: 11, color: '#64748b', fontWeight: 400 }}>({s.studentId})</span>
+                  </div>
+                  <div style={{ fontSize: 11, color: '#64748b', marginTop: 2 }}>
+                    Tagihan: <b>Rp {s.totalTagihan.toLocaleString()}</b> • Di Profil: <span style={{ color: '#059669', fontWeight: 700 }}>Rp {s.totalBayar.toLocaleString()}</span> • Uang Riil Kwitansi: <b style={{ color: '#2563eb' }}>Rp {s.uangRiil.toLocaleString()}</b>
+                  </div>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{ fontSize: 10, color: '#9a3412', fontWeight: 700 }}>Selisih Semu</div>
+                    <div style={{ fontSize: 13, fontWeight: 800, color: '#dc2626' }}>- Rp {s.selisih.toLocaleString()}</div>
+                  </div>
+                  <button
+                    onClick={() => navigate(`/admin/students/finance/${s.id}`)}
+                    style={{
+                      background: '#ea580c',
+                      color: '#fff',
+                      border: 'none',
+                      borderRadius: 8,
+                      padding: '7px 12px',
+                      fontSize: 12,
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 4
+                    }}
+                  >
+                    Buka & Sinkronkan <ArrowRight size={14} />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* === BARU: ALERT SISWA MASA AKTIF HABIS/AKAN HABIS === */}
       {expiringStudents.length > 0 && (
