@@ -114,6 +114,7 @@ import { putuskanCover } from '../../../utils/batasCoverFirestore';
 import PanduImpor from '../../../components/admin/PanduImpor';
 import { teksPanduan } from '../../../utils/panduImpor';
 import { normalisasiTeksMatematika } from '../../../utils/segmenMatematika';
+import { renderLatexHtml } from '../../../utils/renderLatexHtml';
 
 // ============================================================
 // CONSTANT
@@ -2173,34 +2174,97 @@ function parseCSV(raw) {
 // terbawa dalam satu file HTML dan selanjutnya bisa diupload ke storage.
 // ============================================================
 
+function serialisasiDomNodeTerkontrol(node) {
+  if (!node) return '';
+  if (node.nodeType === 3) { // TEXT_NODE
+    return node.nodeValue || '';
+  }
+  if (node.nodeType !== 1) { // ELEMENT_NODE
+    return '';
+  }
+
+  const tag = (node.tagName || '').toLowerCase();
+
+  // Elemen yang dibuang (diproses terpisah sebagai gambar/tabel/script)
+  if (['script', 'style', 'svg', 'table', 'img'].includes(tag)) {
+    return '';
+  }
+
+  // Elemen ber-data-latex
+  if (node.hasAttribute?.('data-latex')) {
+    const latex = node.getAttribute('data-latex');
+    return latex ? `$${latex}$` : '';
+  }
+
+  // Baris baru eksplisit
+  if (tag === 'br') {
+    return '\n';
+  }
+
+  // Rekursif ke anak-anaknya
+  let isiAnak = '';
+  for (const child of Array.from(node.childNodes || [])) {
+    isiAnak += serialisasiDomNodeTerkontrol(child);
+  }
+
+  // Pertahankan tag tipografi inline yang sah (miring, tebal, garis bawah, pangkat, indeks, mark)
+  if (tag === 'i' || tag === 'em') {
+    const t = isiAnak.trim();
+    return t ? `<em>${isiAnak}</em>` : '';
+  }
+  if (tag === 'b' || tag === 'strong') {
+    const t = isiAnak.trim();
+    return t ? `<strong>${isiAnak}</strong>` : '';
+  }
+  if (tag === 'u') {
+    const t = isiAnak.trim();
+    return t ? `<u>${isiAnak}</u>` : '';
+  }
+  if (tag === 'sup') {
+    const t = isiAnak.trim();
+    return t ? `<sup>${isiAnak}</sup>` : '';
+  }
+  if (tag === 'sub') {
+    const t = isiAnak.trim();
+    return t ? `<sub>${isiAnak}</sub>` : '';
+  }
+  if (tag === 'mark') {
+    const t = isiAnak.trim();
+    return t ? `<mark>${isiAnak}</mark>` : '';
+  }
+
+  // Headings h1-h6: judul wacana / bab penting
+  if (/^h[1-6]$/.test(tag)) {
+    const t = isiAnak.trim();
+    return t ? `\n\n**${t}**\n\n` : '';
+  }
+
+  // Paragraf dan blockquote: pisahkan dengan \n\n agar jarak antar-paragraf bernapas
+  if (tag === 'p' || tag === 'blockquote') {
+    const t = isiAnak.trim();
+    return t ? `${isiAnak}\n\n` : '';
+  }
+
+  // List item: tambahkan bullet
+  if (tag === 'li') {
+    const t = isiAnak.trim();
+    return t ? `• ${isiAnak}\n` : '';
+  }
+
+  // Div / section / tr
+  if (tag === 'div' || tag === 'section' || tag === 'article' || tag === 'tr') {
+    return `${isiAnak}\n`;
+  }
+
+  return isiAnak;
+}
+
 function htmlNodeText(node) {
   if (!node) return '';
-  const clone = node.cloneNode(true);
-  clone.querySelectorAll?.('img, table, script, style, svg').forEach(el => el.remove());
-  clone.querySelectorAll?.('[data-latex]').forEach(el => {
-    const latex = el.getAttribute('data-latex');
-    if (latex) el.replaceWith(document.createTextNode(`$${latex}$`));
-  });
-  // 🔥 2026-10-27 (insiden "rumus tidak seperti buku"): textContent MELUMAT
-  // semua batas elemen, sehingga baris bullet naskah sumber (definisi
-  // himpunan A/B/C, fungsi sepenggal g(y), langkah penyelesaian) terlem jadi
-  // SATU paragraf panjang di preview, layar siswa, dan cetak. Kembalikan
-  // struktur barisnya: <br> jadi ganti baris, dan setiap elemen blok
-  // menyumbang satu ganti baris penutup.
-  clone.querySelectorAll?.('br').forEach(el => el.replaceWith(document.createTextNode('\n')));
-  // Bullet yang ditulis INLINE di sumber ("...90;• g(y) = ...") dipisah jadi
-  // barisnya sendiri supaya tata letaknya seperti daftar di buku.
-  clone.querySelectorAll?.('*').forEach((el) => {
-    if (el.children.length === 0 && el.textContent.includes('•')) {
-      el.textContent = el.textContent.replace(/([^\n])•/g, '$1\n•');
-    }
-  });
-  clone.querySelectorAll?.('li, p, tr, h1, h2, h3, h4, h5, h6, div').forEach((el) => {
-    el.appendChild(document.createTextNode('\n'));
-  });
-  return safeString(clone.textContent)
-    .replace(/\s+\n/g, '\n')
-    .replace(/\n\s+/g, '\n')
+  const hasil = serialisasiDomNodeTerkontrol(node);
+  return safeString(hasil)
+    .replace(/[ \t]+\n/g, '\n')
+    .replace(/\n[ \t]+/g, '\n')
     .replace(/\n{3,}/g, '\n\n')
     .trim();
 }
@@ -2699,7 +2763,7 @@ function parseHTMLMaster(raw) {
     bersihTeksSoal.catatan.push(...tanpaDuplikat.catatan);
 
     const bacaan = bacaanNode ? {
-      teks: normalisasiTeksMatematika(bersihkanOcrTeks(htmlNodeText(bacaanNode)).teks),
+      teks: normalisasiTeksMatematika(bersihkanOcrTeks(htmlNodeText(bacaanNode), { jagaBaris: true }).teks),
       gambar: parseHTMLImages(bacaanNode),
       // 🔥 BARU: penanda grup bacaan (mis. "bacaan_1") -- kalau beberapa
       // soal berbagi bacaan yang sama, mereka wajib punya nilai grup
@@ -3376,55 +3440,60 @@ function escapeHtml(value) {
 // INLINE MATH
 // ============================================================
 
-function renderTextWithMath(text, mathReady) {
-  const value = normalisasiTeksMatematika(safeString(text));
-  if (!value) return '';
+function renderTextWithMath(text) {
+  const safe = safeString(text);
+  if (!safe) return '';
 
-  const katex = mathReady && typeof window !== 'undefined' && window.katex ? window.katex : null;
+  const raw = normalisasiTeksMatematika(safe);
+  let hasil = raw;
 
-  const renderMath = (math, displayMode) => {
-    if (katex) {
-      try {
-        const formula = (!displayMode && /\\(frac|dfrac|tfrac|cfrac|sqrt|sum|prod|int|oint|iint|lim|binom|begin\{)/.test(math))
-          ? `\\displaystyle ${math}`
-          : math;
-        return katex.renderToString(formula, { displayMode, throwOnError: false, output: 'html' });
-      } catch {
-        return `<span class="math-fallback">${escapeHtml(math)}</span>`;
-      }
-    }
-    return `<span class="math-fallback">${escapeHtml(math)}</span>`;
-  };
+  // Lindungi rumus matematika
+  const rumusSimpanan = [];
+  hasil = hasil.replace(/(\$\$[\s\S]*?\$\$|\$[^$\n]+\$|\\\[[\s\S]*?\\\]|\\\([\s\S]*?\\\))/g, (m) => {
+    const ph = `___GB_MATH_FORMULA_${rumusSimpanan.length}___`;
+    rumusSimpanan.push(m);
+    return ph;
+  });
 
-  let output = '';
-  let i = 0;
+  // Markdown headings (#, ##, ###, ####)
+  hasil = hasil.replace(/^#{1,6}\s+(.+)$/gm, '<div class="gb-judul-wacana" style="font-weight:800;font-size:1.08em;color:#1e293b;margin:16px 0 8px;letter-spacing:-0.01em;">$1</div>');
 
-  while (i < value.length) {
-    if (value[i] === '$' && value[i + 1] === '$') {
-      const end = value.indexOf('$$', i + 2);
-      if (end >= 0) { output += renderMath(value.slice(i + 2, end), true); i = end + 2; continue; }
-    }
+  // Judul wacana/teks mandiri pada baris tersendiri (misal "Text 1", "Text 2", "Passage A", "Wacana 1", "Teks 1")
+  hasil = hasil.replace(/^((?:Text|Passage|Wacana|Teks|Part|Bab)\s+[A-Z0-9]+)\s*$/gmi, '<div class="gb-judul-wacana" style="font-weight:800;font-size:1.1em;color:#1e293b;margin:18px 0 8px;border-left:3px solid #6366f1;padding-left:8px;">$1</div>');
 
-    if (value[i] === '\\' && value[i + 1] === '(') {
-      const end = value.indexOf('\\)', i + 2);
-      if (end >= 0) { output += renderMath(value.slice(i + 2, end), false); i = end + 2; continue; }
-    }
+  // Sumber wacana (misal "(Adapted from https://...)" atau "(Sumber: ...)")
+  hasil = hasil.replace(/^(\((?:Adapted from|Sumber|Source|Disadur dari)[^)]+\))\s*$/gmi, '<div class="gb-sumber-wacana" style="font-style:italic;color:#64748b;font-size:0.92em;margin:6px 0 14px;">$1</div>');
 
-    if (value[i] === '\\' && value[i + 1] === '[') {
-      const end = value.indexOf('\\]', i + 2);
-      if (end >= 0) { output += renderMath(value.slice(i + 2, end), true); i = end + 2; continue; }
-    }
+  // Tebal: **teks**
+  hasil = hasil.replace(/\*\*([^*\n]+?)\*\*/g, '<strong>$1</strong>');
+  // Miring asteris: *teks*
+  hasil = hasil.replace(/(^|[^\*])\*([^\*\s\n](?:[^*\n]*?[^\*\s\n])?)\*(?!\*)/g, '$1<em>$2</em>');
+  // Miring garis bawah: _teks_
+  hasil = hasil.replace(/(^|[^a-zA-Z0-9_])_([^_\s\n](?:[^_\n]*?[^_\s\n])?)_(?![a-zA-Z0-9_])/g, '$1<em>$2</em>');
 
-    if (value[i] === '$') {
-      const end = value.indexOf('$', i + 1);
-      if (end > i + 1) { output += renderMath(value.slice(i + 1, end), false); i = end + 1; continue; }
-    }
-
-    output += escapeHtml(value[i]);
-    i++;
+  // Kembalikan rumus matematika
+  for (let idx = 0; idx < rumusSimpanan.length; idx++) {
+    hasil = hasil.split(`___GB_MATH_FORMULA_${idx}___`).join(rumusSimpanan[idx]);
   }
 
-  return output.replace(/\n/g, '<br/>');
+  // Format paragraf dan jeda baris
+  if (hasil.includes('\n\n')) {
+    const blokParagraf = hasil.split(/\n{2,}/);
+    hasil = blokParagraf.map((p) => {
+      const trimmed = p.trim();
+      if (!trimmed) return '';
+      if (/^<(div|table|h[1-6]|figure|p|ul|ol)\b/i.test(trimmed)) return trimmed;
+      return `<div class="gb-paragraf" style="margin-bottom:12px;line-height:1.75;">${trimmed.replace(/\n/g, '<br/>')}</div>`;
+    }).filter(Boolean).join('\n');
+  } else if (!/<(p|div|table|br)\b/i.test(hasil) && hasil.includes('\n')) {
+    hasil = hasil.replace(/\n/g, '<br/>');
+  }
+
+  try {
+    return renderLatexHtml(hasil);
+  } catch {
+    return hasil;
+  }
 }
 
 // ============================================================
@@ -4401,6 +4470,7 @@ export default function ImportHasilScanPage() {
   const [saveResult, setSaveResult] = useState(null);
   const [saveLog, setSaveLog] = useState([]);
   const [membersihkanDuplikat, setMembersihkanDuplikat] = useState(false);
+  const [memeriksaRumus, setMemeriksaRumus] = useState(false);
 
   // -------- Prompt AI khusus (generate prompt sinkron dengan skema sistem) --------
   const [showPromptPanel, setShowPromptPanel] = useState(false);
@@ -5127,6 +5197,89 @@ Ikuti PERSIS format/skema HTML di bawah ini buat cara nulis soalnya (struktur da
   }, [membersihkanDuplikat]);
 
   // ----------------------------------------------------------
+  // GENERAL CHECK & STANDARISASI RUMUS MATEMATIKA BANK SOAL
+  // ----------------------------------------------------------
+  const handleGeneralCheckRumusBankSoal = useCallback(async () => {
+    if (memeriksaRumus) return;
+    const konfirmasi = window.confirm(
+      'Sistem akan memindai seluruh soal di Bank Soal dan memeriksa format rumus matematika, simbol pecahan vertikal (atas-bawah), perkalian, pembagian KaTeX, serta tipografi wacana.\n\nApakah Anda ingin menjalankan General Check sekarang?'
+    );
+    if (!konfirmasi) return;
+
+    setMemeriksaRumus(true);
+    try {
+      const snap = await getDocs(collection(db, BANK_SOAL_COLLECTION));
+      const docs = snap.docs
+        .map(d => ({ id: d.id, ...d.data() }))
+        .filter(d => d.status !== 'dihapus' && d.status !== 'nonaktif');
+
+      let butuhPerbaikan = [];
+      docs.forEach(s => {
+        const teksLama = s.soal || s.teksSoal || s.teks_soal || '';
+        const bacaanLama = s.bacaan?.teks || s.stimulus?.teks || '';
+        const teksBaru = normalisasiTeksMatematika(teksLama);
+        const bacaanBaru = normalisasiTeksMatematika(bacaanLama);
+
+        const bedaTeks = teksBaru !== teksLama;
+        const bedaBacaan = bacaanLama && bacaanBaru !== bacaanLama;
+
+        if (bedaTeks || bedaBacaan) {
+          butuhPerbaikan.push({
+            id: s.id,
+            teksLama,
+            teksBaru,
+            bacaanLama,
+            bacaanBaru,
+            soalAsli: s,
+          });
+        }
+      });
+
+      if (butuhPerbaikan.length === 0) {
+        alert(`✨ General Check Selesai!\n\nTotal ${docs.length} butir soal di Bank Soal sudah diperiksa. Seluruh rumus matematika, pecahan vertikal, dan format KaTeX sudah 100% rapi dan standar!`);
+        return;
+      }
+
+      const konfirmasiUpdate = window.confirm(
+        `🔍 Hasil General Check Bank Soal:\n\n` +
+        `• Total soal aktif diperiksa: ${docs.length} butir\n` +
+        `• Ditemukan: ${butuhPerbaikan.length} butir yang notasi rumusnya dapat distandarisasikan otomatis (pecahan bertingkat atas-bawah, perkalian/pembagian KaTeX, simbol perbandingan, derajat).\n\n` +
+        `Contoh soal yang diperbaiki:\n` +
+        butuhPerbaikan.slice(0, 3).map((d, i) => `${i + 1}. ID: ${d.id}\n   Lama: "${d.teksLama.slice(0, 50)}..."\n   Baru: "${d.teksBaru.slice(0, 50)}..."`).join('\n\n') +
+        `\n\nKlik OK untuk langsung menstandarisasikan ${butuhPerbaikan.length} butir soal ini di database.`
+      );
+      if (!konfirmasiUpdate) return;
+
+      let terupdate = 0;
+      const CHUNK = 400;
+      for (let i = 0; i < butuhPerbaikan.length; i += CHUNK) {
+        const chunk = butuhPerbaikan.slice(i, i + CHUNK);
+        const batch = writeBatch(db);
+        chunk.forEach(item => {
+          const updateData = {};
+          if (item.soalAsli.soal) updateData.soal = item.teksBaru;
+          if (item.soalAsli.teksSoal) updateData.teksSoal = item.teksBaru;
+          if (item.soalAsli.teks_soal) updateData.teks_soal = item.teksBaru;
+          if (item.bacaanBaru && item.soalAsli.bacaan) {
+            updateData.bacaan = { ...item.soalAsli.bacaan, teks: item.bacaanBaru };
+          }
+          updateData.updatedAt = serverTimestamp();
+          batch.update(doc(db, BANK_SOAL_COLLECTION, item.id), updateData);
+        });
+        await batch.commit();
+        terupdate += chunk.length;
+      }
+
+      alert(`🎉 SUKSES! Sebanyak ${terupdate} butir soal di Bank Soal telah berhasil diperbarui ke notasi matematika KaTeX standar tinggi.`);
+    } catch (err) {
+      console.error('General check error:', err);
+      alert('Gagal menjalankan General Check: ' + (err.message || 'error tidak diketahui'));
+    } finally {
+      setMemeriksaRumus(false);
+    }
+  }, [memeriksaRumus]);
+
+  // ----------------------------------------------------------
   // SAVE
   // ----------------------------------------------------------
 
@@ -5565,30 +5718,57 @@ Ikuti PERSIS format/skema HTML di bawah ini buat cara nulis soalnya (struktur da
                 </span>
               </div>
 
-              {/* 🧹 TOMBOL MEMBERSIHKAN DUPLIKAT 1:1 DI DATABASE */}
-              <button
-                type="button"
-                onClick={handleBersihkanDuplikatBankSoal}
-                disabled={membersihkanDuplikat}
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  padding: '9px 16px',
-                  borderRadius: '12px',
-                  backgroundColor: membersihkanDuplikat ? '#6b7280' : '#6366f1',
-                  color: '#ffffff',
-                  fontSize: '13px',
-                  fontWeight: 700,
-                  border: 'none',
-                  cursor: membersihkanDuplikat ? 'not-allowed' : 'pointer',
-                  boxShadow: '0 4px 12px rgba(99, 102, 241, 0.3)',
-                  transition: 'all 0.15s ease',
-                }}
-              >
-                <span>{membersihkanDuplikat ? '⏳' : '🧹'}</span>
-                <span>{membersihkanDuplikat ? 'Memindai Database...' : 'Bersihkan Soal Duplikat 1:1 di Database'}</span>
-              </button>
+              <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px' }}>
+                {/* 🔍 GENERAL CHECK RUMUS */}
+                <button
+                  type="button"
+                  onClick={handleGeneralCheckRumusBankSoal}
+                  disabled={memeriksaRumus}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '9px 16px',
+                    borderRadius: '12px',
+                    backgroundColor: memeriksaRumus ? '#6b7280' : '#059669',
+                    color: '#ffffff',
+                    fontSize: '13px',
+                    fontWeight: 700,
+                    border: 'none',
+                    cursor: memeriksaRumus ? 'not-allowed' : 'pointer',
+                    boxShadow: '0 4px 12px rgba(5, 150, 105, 0.25)',
+                    transition: 'all 0.15s ease',
+                  }}
+                >
+                  <span>{memeriksaRumus ? '⏳' : '🔍'}</span>
+                  <span>{memeriksaRumus ? 'Memeriksa Rumus...' : 'General Check & Standarisasi Rumus'}</span>
+                </button>
+
+                {/* 🧹 TOMBOL MEMBERSIHKAN DUPLIKAT 1:1 DI DATABASE */}
+                <button
+                  type="button"
+                  onClick={handleBersihkanDuplikatBankSoal}
+                  disabled={membersihkanDuplikat}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '9px 16px',
+                    borderRadius: '12px',
+                    backgroundColor: membersihkanDuplikat ? '#6b7280' : '#6366f1',
+                    color: '#ffffff',
+                    fontSize: '13px',
+                    fontWeight: 700,
+                    border: 'none',
+                    cursor: membersihkanDuplikat ? 'not-allowed' : 'pointer',
+                    boxShadow: '0 4px 12px rgba(99, 102, 241, 0.3)',
+                    transition: 'all 0.15s ease',
+                  }}
+                >
+                  <span>{membersihkanDuplikat ? '⏳' : '🧹'}</span>
+                  <span>{membersihkanDuplikat ? 'Memindai Database...' : 'Bersihkan Soal Duplikat 1:1 di Database'}</span>
+                </button>
+              </div>
             </div>
             <p style={{ color: '#6b7280', fontSize: '14px', marginTop: '4px' }}>
               Import soal hasil scan AI ke Bank Soal Gemilang — mendukung 1 file JSON gabungan

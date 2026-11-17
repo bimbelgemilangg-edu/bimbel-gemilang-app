@@ -44,6 +44,16 @@ function barisGarbar(baris) {
   // 🔥 Baris yang diawali kata kunci pembahasan/jawaban/penjelasan atau simbol derajat (°C / ◦C)
   // adalah isi pembahasan sah, bukan sampah OCR.
   if (/^(pembahasan|jawaban|penjelasan|solusi|kunci)\b/i.test(t) || /[°◦]C/i.test(t)) return false;
+
+  // 🔥 Baris judul wacana/teks/bacaan/bab/bagian (misal "Text 1", "Text 2", "Teks A", "Passage 1", "Wacana 2", "Bab 1", "Part 1") adalah kepala wacana sah, BUKAN sampah OCR
+  if (/^(text|teks|passage|wacana|bacaan|bagian|part|bab|section|tabel|grafik|gambar|lampiran|studi|kasus)\b/i.test(t)) return false;
+
+  // 🔥 Baris berformat (HTML tag, markdown heading #, bold **, italic _, math $) adalah format sah
+  if (/^<[a-z0-9]+/i.test(t) || /^#{1,6}\s+/i.test(t) || /^\*\*[^*]+\*\*/i.test(t) || /^_[^_]+_/.test(t) || /^<em>/i.test(t) || /^<strong>/i.test(t) || /^\$/i.test(t)) return false;
+
+  // 🔥 Sumber dan kutipan (misal "(Adapted from https://...)", "Sumber: ...", "Adapted from ...")
+  if (/^\(?\s*(adapted|sumber|source|disadur|dikutip|referensi|kutipan)\b/i.test(t) || /(https?:\/\/|www\.)/i.test(t)) return false;
+
   const huruf = t.replace(/[^a-zA-Z]/g, '');
   if (huruf.length < 3) return false;
   const vokal = (huruf.match(/[aeiouAEIOU]/g) || []).length;
@@ -60,7 +70,10 @@ function barisGarbar(baris) {
     // untuk dinilai rasio vokalnya secara adil; frasa Indonesia sungguhan
     // sepanjang <= 4 huruf hampir selalu punya >= 2 vokal ("pada", "bila",
     // "kalian", "ion", "pH" aman karena panjang/rasionya beda).
-    if (huruf.length <= 4 && rasioVokal < 0.34) return true;
+    if (huruf.length <= 4 && rasioVokal < 0.34) {
+      if (/^(text|teks|part|bab|data|note|task|item|grafik|soal|kuis)\b/i.test(t)) return false;
+      return true;
+    }
   }
 
   // 🔥 ATURAN 2 -- rasio vokal sangat rendah di baris berapa pun panjangnya.

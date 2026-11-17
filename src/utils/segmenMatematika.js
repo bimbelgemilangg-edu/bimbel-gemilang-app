@@ -51,13 +51,23 @@ export function normalisasiTeksMatematika(teks) {
   const mathPlaceholders = [];
   hasil = hasil.replace(/(\$\$[\s\S]*?\$\$|\\\[[\s\S]*?\\\]|\$(?!\s)[^\n$]+?\$|\\\([^\n]*?\\\))/g, (m) => {
     let inner = m;
-    if (inner.includes('×') || inner.includes('÷')) {
-      const isDolar = inner.startsWith('$') && inner.endsWith('$');
-      const isDuaDolar = inner.startsWith('$$') && inner.endsWith('$$');
-      let raw = isDuaDolar ? inner.slice(2, -2) : (isDolar ? inner.slice(1, -1) : inner);
-      raw = raw.replace(/×/g, '\\times ').replace(/÷/g, '\\div ');
-      inner = isDuaDolar ? `$$${raw}$$` : (isDolar ? `$${raw}$` : raw);
-    }
+    const isDolar = inner.startsWith('$') && inner.endsWith('$');
+    const isDuaDolar = inner.startsWith('$$') && inner.endsWith('$$');
+    let raw = isDuaDolar ? inner.slice(2, -2) : (isDolar ? inner.slice(1, -1) : inner);
+
+    // Ganti simbol unicode di dalam rumus LaTeX menjadi perintah KaTeX yang valid
+    raw = raw
+      .replace(/×/g, '\\times ')
+      .replace(/÷/g, '\\div ')
+      .replace(/±/g, '\\pm ')
+      .replace(/≤/g, '\\le ')
+      .replace(/≥/g, '\\ge ')
+      .replace(/≠/g, '\\ne ')
+      .replace(/≈/g, '\\approx ')
+      .replace(/[°◦]C\b/g, '^\\circ\\text{C}')
+      .replace(/[°◦]/g, '^\\circ');
+
+    inner = isDuaDolar ? `$$${raw}$$` : (isDolar ? `$${raw}$` : raw);
     const ph = `___GB_SAFE_MATH_${mathPlaceholders.length}___`;
     mathPlaceholders.push(inner);
     return ph;
@@ -67,6 +77,30 @@ export function normalisasiTeksMatematika(teks) {
   hasil = hasil.replace(/(\\(?:times|div|cdot|pm|mp|le|ge|ne|neq|approx|infty|degree|circ|alpha|beta|gamma|theta|pi|sqrt|frac|dfrac)\b(?:\{[^{}]*\}\{[^{}]*\}|\{[^{}]*\}|\[[^[\]]*\]\{[^{}]*\}|(?![a-zA-Z]))(?:\s*=\s*[^,\s\n]+)?)/g, (match) => {
     return `$${match.trim()}$`;
   });
+
+  // Derajat di luar math: 30°C -> $30^\circ\text{C}$, 45° -> $45^\circ$
+  hasil = hasil.replace(/(\d+)\s*[°◦]\s*C\b/g, '$$$1^\\circ\\text{C}$');
+  hasil = hasil.replace(/(\d+)\s*[°◦]\b/g, '$$$1^\\circ$');
+
+  // Akar di luar math: √16 -> $\sqrt{16}$, √(x+1) -> $\sqrt{x+1}$
+  hasil = hasil.replace(/√\s*\(([^)]+)\)/g, '$\\sqrt{$1}$');
+  hasil = hasil.replace(/√\s*\{([^}]+)\}/g, '$\\sqrt{$1}$');
+  hasil = hasil.replace(/√\s*(\d+|[a-zA-Z])\b/g, '$\\sqrt{$1}$');
+  hasil = hasil.replace(/√/g, '$\\sqrt{}$');
+
+  // Operasi matematika di luar math: 12 ÷ 3 -> $12 \div 3$, 4 × 5 -> $4 \times 5$, ± -> $\pm$
+  hasil = hasil.replace(/([0-9a-zA-Z\)\]\}]+)\s*÷\s*([0-9a-zA-Z\(\[\{]+)/g, '$$1 \\div $2$');
+  hasil = hasil.replace(/÷/g, '$\\div$');
+  hasil = hasil.replace(/([0-9a-zA-Z\)\]\}]+)\s*×\s*([0-9a-zA-Z\(\[\{]+)/g, '$$1 \\times $2$');
+  hasil = hasil.replace(/×/g, '$\\times$');
+  hasil = hasil.replace(/±/g, '$\\pm$');
+  hasil = hasil.replace(/≤/g, '$\\le$');
+  hasil = hasil.replace(/≥/g, '$\\ge$');
+  hasil = hasil.replace(/≠/g, '$\\ne$');
+  hasil = hasil.replace(/≈/g, '$\\approx$');
+
+  // Pangkat sederhana di luar math: mis. x^2, x^3, 2^10, 10^-3
+  hasil = hasil.replace(/(?<![\w$])([a-zA-Z]|\d+)\^([0-9a-zA-Z\-+]+)(?![\w$])/g, '$$$1^{$2}$');
 
   // Konversi pecahan miring sederhana (1/2, 3/4) menjadi pecahan bertingkat atas-bawah (\frac{1}{2})
   // Mencegah konversi pada tanggal (mis. 16/11/2026) atau url
