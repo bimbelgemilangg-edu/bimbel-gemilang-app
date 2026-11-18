@@ -130,6 +130,8 @@ export function pilihBarisBenarSalah(soal) {
 //                  tak pernah bisa dicentang siswa (renderer pakai huruf)
 // - isian/numerik: minimal ada kunci atau jawaban ekuivalen
 export function soalBisaDinilai(soal) {
+  // 🔥 FITUR KOREKSI TENTOR: Soal yang dianulir/bonus selalu bisa dinilai
+  if (soal?.anulirBonus) return true;
   const tipe = soal?.tipe || 'pg_sederhana';
   if (tipe === 'benar_salah' || tipe === 'pg_kategori') {
     return barisBenarSalahBisaDinilai(pilihBarisBenarSalah(soal));
@@ -157,6 +159,10 @@ export function soalBisaDinilai(soal) {
 }
 
 export function skorSatuSoal(soal, jawaban) {
+  // 🔥 FITUR KOREKSI TENTOR: Jika soal dianulir/diberi bonus oleh tentor
+  // (misal soal cacat / impor AI salah total), siswa yang mengerjakan
+  // langsung mendapat skor 1 (benar penuh).
+  if (soal?.anulirBonus) return 1;
   const tipe = soal.tipe || 'pg_sederhana';
   // 🔥 BARU: esai TIDAK punya skor otomatis. Kontribusi nilainya datang
   // dari penilaian manual admin (poinEsai), bukan dari fungsi ini.

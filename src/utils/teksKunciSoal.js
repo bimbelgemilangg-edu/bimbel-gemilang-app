@@ -21,6 +21,9 @@ import { pilihBarisBenarSalah } from './skorSoalTryOut.js';
  * @returns {string} kunci dalam bentuk teks yang bisa disebut/dicetak
  */
 export function teksKunciSoal(soal) {
+  if (soal?.anulirBonus) {
+    return '🎁 BONUS / DIANULIR (Semua jawaban dinilai benar 100%)';
+  }
   const tipe = soal?.tipe || 'pg_sederhana';
   if (tipe === 'esai' || tipe === 'uraian') return 'penilaian manual guru (0-100)';
   if (tipe === 'pg_sederhana') {

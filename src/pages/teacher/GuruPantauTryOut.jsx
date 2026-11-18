@@ -31,6 +31,12 @@ import { bacaIdentitasGuru, guruCocokDenganTentor } from '../../utils/identitasG
 import DialogCetakNaskah from '../../components/DialogCetakNaskah';
 import { teksKunciSoal as teksKunci } from '../../utils/teksKunciSoal';
 import { kebijakanGagalMuat } from '../../utils/keputusanMuat';
+import {
+  normalisasiKunciBaru,
+  terapkanKoreksiPadaDaftarSoal,
+  hitungUlangSatuSesi,
+  eksekusiKoreksiDanHitungUlang,
+} from '../../utils/koreksiKunciTryOut';
 import RenderMath from '../../components/RenderMath';
 import RenderTable from '../../components/RenderTable';
 import LihatGambar from '../../components/LihatGambar';
@@ -115,6 +121,13 @@ export default function GuruPantauTryOut() {
   // padahal justru sebelum itulah tentor butuh mempelajarinya untuk
   // mengajar. Tab 'tinjau' menampilkan paket langsung dari bank soal.
   const [tab, setTab] = useState('peserta');
+  // State untuk fitur Koreksi Kunci Jawaban oleh Tentor
+  const [inputKoreksi, setInputKoreksi] = useState({});
+  const [sedangKoreksiIndex, setSedangKoreksiIndex] = useState(null);
+  const [sedangHitungUlangSemua, setSedangHitungUlangSemua] = useState(false);
+  const [modalHasilKoreksi, setModalHasilKoreksi] = useState(null);
+  const [filterKoreksi, setFilterKoreksi] = useState('semua');
+  const [soalFokusId, setSoalFokusId] = useState(null);
   useEffect(() => {
     const saatResize = () => setIsMobile(window.innerWidth <= 768);
     window.addEventListener('resize', saatResize);
@@ -231,6 +244,171 @@ export default function GuruPantauTryOut() {
     } finally { setSimpanEsaiId(''); }
   }
 
+  /**
+   * Eksekusi koreksi kunci satu butir soal oleh tentor dan hitung ulang skor semua siswa.
+   */
+  async function handleSimpanKoreksi(soalIndex, inputData) {
+    if (!paket) return;
+    const soal = (paket.daftarSoal || [])[soalIndex];
+    if (!soal) return;
+
+    const { kunciBaru, anulirBonus, catatan } = inputData || {};
+
+    const konfirmasi = window.confirm(
+      `Konfirmasi Perubahan Kunci Soal #${soalIndex + 1}:\n\n` +
+      (anulirBonus
+        ? `• Status: Dianulir / Diberi Bonus Penuh (Semua siswa yang mengikuti akan mendapat nilai benar 100%)\n`
+        : `• Kunci Baru: ${kunciBaru}\n`) +
+      (catatan ? `• Catatan Tentor: ${catatan}\n\n` : '\n') +
+      `Sistem akan secara OTOMATIS menghitung ulang seluruh skor siswa, akurasi, dan XP dari sesi try out ini.\n\n` +
+      `Lanjutkan simpan dan hitung ulang?`
+    );
+    if (!konfirmasi) return;
+
+    setSedangKoreksiIndex(soalIndex);
+    setPesan({ tipe: null, teks: '' });
+
+    try {
+      const daftarBaru = terapkanKoreksiPadaDaftarSoal(paket.daftarSoal || [], soalIndex, {
+        kunciBaru,
+        anulirBonus: !!anulirBonus,
+        catatan,
+        infoTentor: guru,
+      });
+
+      const res = await eksekusiKoreksiDanHitungUlang({
+        db,
+        paketId: paket.id,
+        paket,
+        daftarSoalBaru: daftarBaru,
+        sesiList,
+        soalIndex,
+        infoTentor: guru,
+        catatan,
+        anulirBonus: !!anulirBonus,
+        firestoreOps: { updateDoc, doc, getDoc, serverTimestamp },
+        auditFn: (evt, data) => catatAudit(evt, { kategori: KATEGORI.LAINNYA, ...data }),
+      });
+
+      // Update state lokal paket
+      setPaket((lama) => ({
+        ...lama,
+        daftarSoal: daftarBaru,
+        terakhirDikoreksiPada: new Date().toISOString(),
+        terakhirDikoreksiOleh: guru.guruNama,
+      }));
+
+      // Update state lokal sesiList secara reaktif
+      setSesiList((lama) =>
+        lama.map((s) => {
+          const match = res.rincianPerubahan.find((r) => r.sesiId === s.id);
+          if (match) {
+            return {
+              ...s,
+              totalSkor: match.totalSkor,
+              totalSkorPersen: match.totalSkorPersen,
+              xpMentah: match.xpMentah,
+              xpFinal: match.xpFinal,
+              dikoreksiOlehTentor: guru.guruNama,
+            };
+          }
+          return s;
+        })
+      );
+
+      // Jika tentor sedang membuka detail jawaban seorang siswa, perbarui juga
+      if (detail) {
+        const match = res.rincianPerubahan.find((r) => r.sesiId === detail.id);
+        if (match) {
+          setDetail((lamaDetail) => ({
+            ...lamaDetail,
+            totalSkor: match.totalSkor,
+            totalSkorPersen: match.totalSkorPersen,
+            xpMentah: match.xpMentah,
+            xpFinal: match.xpFinal,
+          }));
+        }
+      }
+
+      // Bersihkan input koreksi form soal ini
+      setInputKoreksi((m) => {
+        const c = { ...m };
+        delete c[String(soal.id)];
+        return c;
+      });
+
+      // Tampilkan modal hasil hitung ulang
+      setModalHasilKoreksi(res);
+
+      setPesan({
+        tipe: 'ok',
+        teks: `✅ Kunci Soal #${soalIndex + 1} berhasil diperbarui! Sebanyak ${res.totalSesiDiproses} sesi siswa telah dihitung ulang (${res.jumlahBerubah} siswa mengalami perubahan skor).`,
+      });
+    } catch (e) {
+      console.error('Gagal koreksi kunci:', e);
+      setPesan({ tipe: 'err', teks: `Gagal memperbarui kunci jawaban: ${e.message}` });
+    } finally {
+      setSedangKoreksiIndex(null);
+    }
+  }
+
+  /**
+   * Hitung ulang seluruh sesi yang sudah selesai terhadap daftarSoal aktif paket saat ini.
+   */
+  async function handleHitungUlangSemua() {
+    if (!paket || sesiList.length === 0) return;
+    const konfirmasi = window.confirm(
+      `Hitung ulang seluruh ${sesiList.filter((s) => s.status === 'selesai').length} sesi peserta yang sudah selesai?\n\n` +
+      `Ini akan mensinkronkan ulang seluruh skor, akurasi persen, dan XP siswa berdasarkan seluruh kunci jawaban terkini.`
+    );
+    if (!konfirmasi) return;
+
+    setSedangHitungUlangSemua(true);
+    setPesan({ tipe: null, teks: '' });
+
+    try {
+      const res = await eksekusiKoreksiDanHitungUlang({
+        db,
+        paketId: paket.id,
+        paket,
+        daftarSoalBaru: paket.daftarSoal || [],
+        sesiList,
+        soalIndex: 0,
+        infoTentor: guru,
+        catatan: 'Sinkronisasi menyeluruh seluruh sesi try out',
+        anulirBonus: false,
+        firestoreOps: { updateDoc, doc, getDoc, serverTimestamp },
+        auditFn: (evt, data) => catatAudit(evt, { kategori: KATEGORI.LAINNYA, ...data }),
+      });
+
+      setSesiList((lama) =>
+        lama.map((s) => {
+          const match = res.rincianPerubahan.find((r) => r.sesiId === s.id);
+          if (match) {
+            return {
+              ...s,
+              totalSkor: match.totalSkor,
+              totalSkorPersen: match.totalSkorPersen,
+              xpMentah: match.xpMentah,
+              xpFinal: match.xpFinal,
+            };
+          }
+          return s;
+        })
+      );
+
+      setModalHasilKoreksi(res);
+      setPesan({
+        tipe: 'ok',
+        teks: `✅ Sinkronisasi tuntas! ${res.totalSesiDiproses} sesi siswa telah dihitung ulang (${res.jumlahBerubah} siswa mengalami pembaruan nilai).`,
+      });
+    } catch (e) {
+      setPesan({ tipe: 'err', teks: `Gagal sinkronisasi sesi: ${e.message}` });
+    } finally {
+      setSedangHitungUlangSemua(false);
+    }
+  }
+
   const daftar = paket?.daftarSoal || [];
   const selesai = sesiList.filter((s) => s.status === 'selesai').length;
   const rerata = sesiList.length ? Math.round(sesiList.reduce((a, s) => a + (Number(s.totalSkorPersen) || 0), 0) / sesiList.length) : 0;
@@ -290,24 +468,41 @@ export default function GuruPantauTryOut() {
                 siswa). "Tinjau" = baca paket LANGSUNG dari bank soal, tanpa
                 menunggu siapa pun mengerjakan -- jawaban atas keluhan
                 owner 2026-10-06. */}
-            <div style={{ display: 'flex', gap: 8, margin: '12px 0', flexWrap: 'wrap' }}>
-              {[
-                ['peserta', `👥 Peserta & Penilaian (${sesiList.length})`],
-                ['tinjau', `📖 Tinjau Soal & Pembahasan (${daftar.length})`],
-              ].map(([k, lbl]) => (
+            <div style={{ display: 'flex', gap: 8, margin: '12px 0', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                {[
+                  ['peserta', `👥 Peserta & Penilaian (${sesiList.length})`],
+                  ['tinjau', `📖 Tinjau Soal & Pembahasan (${daftar.length})`],
+                  ['koreksi', `✏️ Koreksi Kunci & Hitung Ulang (${daftar.length})`],
+                ].map(([k, lbl]) => (
+                  <button
+                    key={k}
+                    onClick={() => { setTab(k); setSoalFokusId(null); }}
+                    style={{
+                      padding: '8px 14px', borderRadius: 10, fontSize: 12, fontWeight: 800, cursor: 'pointer',
+                      border: tab === k ? '1.5px solid #3730a3' : '1px solid #d1d5db',
+                      background: tab === k ? '#eef2ff' : 'white',
+                      color: tab === k ? '#3730a3' : '#475569',
+                    }}
+                  >
+                    {lbl}
+                  </button>
+                ))}
+              </div>
+              {tab === 'koreksi' && sesiList.filter((s) => s.status === 'selesai').length > 0 && (
                 <button
-                  key={k}
-                  onClick={() => setTab(k)}
+                  type="button"
+                  onClick={handleHitungUlangSemua}
+                  disabled={sedangHitungUlangSemua}
                   style={{
-                    padding: '8px 14px', borderRadius: 10, fontSize: 12, fontWeight: 800, cursor: 'pointer',
-                    border: tab === k ? '1.5px solid #3730a3' : '1px solid #d1d5db',
-                    background: tab === k ? '#eef2ff' : 'white',
-                    color: tab === k ? '#3730a3' : '#475569',
+                    padding: '7px 12px', borderRadius: 8, border: '1px solid #10b981',
+                    background: '#ecfdf5', color: '#047857', fontSize: 11.5, fontWeight: 800,
+                    cursor: 'pointer', opacity: sedangHitungUlangSemua ? 0.6 : 1,
                   }}
                 >
-                  {lbl}
+                  {sedangHitungUlangSemua ? '🔄 Mensinkronkan...' : '🔄 Sinkronkan Seluruh Peserta Selesai'}
                 </button>
-              ))}
+              )}
             </div>
 
             {tab === 'peserta' && (<>
@@ -394,8 +589,33 @@ export default function GuruPantauTryOut() {
                           #106 tidak berlaku untuk pembahasan. Kotak pembahasan
                           disalin persis gaya admin (ungu, RenderMath) supaya
                           dua portal tidak punya dua bahasa visual. */}
-                      <div style={{ marginTop: 10, background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 8, padding: 10, fontSize: 12, color: '#166534' }}>
-                        <b>🔑 Kunci:</b> {teksKunci(s)}
+                      <div style={{ marginTop: 10, background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 8, padding: 10, fontSize: 12, color: '#166534', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
+                        <div>
+                          <b>🔑 Kunci Sistem:</b> {teksKunci(s)}
+                          {s.dikoreksiTentor && (
+                            <span style={{ marginLeft: 8, background: '#dcfce7', color: '#15803d', padding: '2px 8px', borderRadius: 6, fontSize: 11, fontWeight: 700 }}>
+                              ✅ Telah Dikoreksi Tentor ({s.koreksiTentor?.oleh})
+                            </span>
+                          )}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setTab('koreksi');
+                            setSoalFokusId(s.id);
+                            setTimeout(() => {
+                              const el = document.getElementById(`soal-koreksi-${s.id}`);
+                              if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            }, 150);
+                          }}
+                          style={{
+                            fontSize: 11, padding: '4px 10px', borderRadius: 6,
+                            border: '1px solid #f59e0b', background: '#fffbeb', color: '#b45309',
+                            fontWeight: 700, cursor: 'pointer',
+                          }}
+                        >
+                          ✏️ Kunci Keliru? Koreksi Butir Ini
+                        </button>
                       </div>
                       {s.pembahasan && (
                         <div style={{ marginTop: 8, background: '#f5f3ff', borderRadius: 8, padding: 10, fontSize: 12, color: '#4c1d95' }}>
@@ -471,8 +691,33 @@ export default function GuruPantauTryOut() {
                       />
                       {s.tabelSoal && <RenderTable table={s.tabelSoal} />}
                       <RendererSoalGuru soal={s} jawabanTerpilih={jwb} modeTinjau onKlikGambar={setGambarDibuka} />
-                      <div style={{ marginTop: 10, background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 8, padding: 10, fontSize: 12, color: '#166534' }}>
-                        <b>🔑 Kunci:</b> {teksKunci(s)}
+                      <div style={{ marginTop: 10, background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 8, padding: 10, fontSize: 12, color: '#166534', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
+                        <div>
+                          <b>🔑 Kunci Sistem:</b> {teksKunci(s)}
+                          {s.dikoreksiTentor && (
+                            <span style={{ marginLeft: 8, background: '#dcfce7', color: '#15803d', padding: '2px 8px', borderRadius: 6, fontSize: 11, fontWeight: 700 }}>
+                              ✅ Telah Dikoreksi Tentor ({s.koreksiTentor?.oleh})
+                            </span>
+                          )}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setTab('koreksi');
+                            setSoalFokusId(s.id);
+                            setTimeout(() => {
+                              const el = document.getElementById(`soal-koreksi-${s.id}`);
+                              if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            }, 150);
+                          }}
+                          style={{
+                            fontSize: 11, padding: '4px 10px', borderRadius: 6,
+                            border: '1px solid #f59e0b', background: '#fffbeb', color: '#b45309',
+                            fontWeight: 700, cursor: 'pointer',
+                          }}
+                        >
+                          ✏️ Kunci Keliru? Koreksi Butir Ini
+                        </button>
                       </div>
                       {s.pembahasan && (
                         <div style={{ marginTop: 8, background: '#f5f3ff', borderRadius: 8, padding: 10, fontSize: 12, color: '#4c1d95' }}>
@@ -484,10 +729,477 @@ export default function GuruPantauTryOut() {
                 })}
               </div>
             )}
+
+            {tab === 'koreksi' && (
+              <div>
+                <div style={{ background: '#ecfdf5', border: '1px solid #a7f3d0', borderRadius: 12, padding: 14, marginBottom: 14 }}>
+                  <div style={{ fontSize: 13, fontWeight: 800, color: '#065f46', display: 'flex', alignItems: 'center', gap: 6 }}>
+                    🎯 Ruang Validasi & Koreksi Kunci Jawaban Tentor
+                  </div>
+                  <div style={{ fontSize: 11.5, color: '#047857', marginTop: 4, lineHeight: 1.5 }}>
+                    Sebagai tentor terhubung, Anda dapat memvalidasi dan membetulkan kunci jawaban yang keliru dari bank soal atau AI pihak ketiga.
+                    Saat Anda mengoreksi kunci dan mengklik simpan, sistem secara <b>OTOMATIS menghitung ulang seluruh skor siswa</b> yang sudah selesai
+                    (menyesuaikan persentase akurasi, skor skala resmi ujian, serta saldo XP siswa) demi keadilan belajar.
+                  </div>
+                </div>
+
+                {/* Filter Status Soal */}
+                <div style={{ display: 'flex', gap: 8, marginBottom: 14, flexWrap: 'wrap', alignItems: 'center' }}>
+                  <span style={{ fontSize: 11.5, fontWeight: 700, color: '#475569' }}>Filter Butir:</span>
+                  {[
+                    ['semua', `Semua (${daftar.length})`],
+                    ['belum', `🔍 Kunci Asli (${daftar.filter((s) => !s.dikoreksiTentor && !s.anulirBonus).length})`],
+                    ['terkoreksi', `✅ Dikoreksi Tentor (${daftar.filter((s) => s.dikoreksiTentor && !s.anulirBonus).length})`],
+                    ['bonus', `🎁 Dianulir/Bonus (${daftar.filter((s) => s.anulirBonus).length})`],
+                  ].map(([fk, label]) => (
+                    <button
+                      key={fk}
+                      type="button"
+                      onClick={() => setFilterKoreksi(fk)}
+                      style={{
+                        padding: '5px 12px', borderRadius: 999, fontSize: 11, fontWeight: 700, cursor: 'pointer',
+                        border: filterKoreksi === fk ? '1.5px solid #059669' : '1px solid #cbd5e1',
+                        background: filterKoreksi === fk ? '#d1fae5' : 'white',
+                        color: filterKoreksi === fk ? '#065f46' : '#64748b',
+                      }}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+
+                {daftar.length === 0 && (
+                  <div style={{ fontSize: 12, color: '#94a3b8', background: 'white', padding: 14, borderRadius: 10, border: '1px solid #e2e8f0' }}>
+                    Paket ini tidak memuat butir soal.
+                  </div>
+                )}
+
+                {daftar
+                  .map((s, i) => ({ soal: s, index: i }))
+                  .filter(({ soal: s }) => {
+                    if (filterKoreksi === 'belum') return !s.dikoreksiTentor && !s.anulirBonus;
+                    if (filterKoreksi === 'terkoreksi') return !!s.dikoreksiTentor && !s.anulirBonus;
+                    if (filterKoreksi === 'bonus') return !!s.anulirBonus;
+                    return true;
+                  })
+                  .map(({ soal: s, index: i }) => {
+                    const tipe = s.tipe || 'pg_sederhana';
+                    const formState = inputKoreksi[s.id] || {
+                      kunciBaru: teksKunci(s),
+                      anulirBonus: !!s.anulirBonus,
+                      catatan: s.koreksiTentor?.catatan || '',
+                    };
+                    const isFokus = soalFokusId === s.id;
+                    const isSedangSimpan = sedangKoreksiIndex === i;
+
+                    return (
+                      <div
+                        key={s.id || i}
+                        id={`soal-koreksi-${s.id}`}
+                        style={{
+                          background: 'white',
+                          border: isFokus ? '2px solid #2563eb' : (s.anulirBonus ? '1.5px solid #c084fc' : (s.dikoreksiTentor ? '1.5px solid #86efac' : '1px solid #e2e8f0')),
+                          borderRadius: 12,
+                          padding: 16,
+                          marginBottom: 14,
+                          boxShadow: isFokus ? '0 0 0 3px rgba(37,99,235,0.15)' : 'none',
+                          transition: 'all 0.2s ease',
+                        }}
+                      >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 8 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                            <span style={{ fontSize: 12, fontWeight: 800, color: '#0f172a' }}>Soal {i + 1}</span>
+                            <span style={{ fontSize: 10, background: '#f1f5f9', color: '#475569', padding: '2px 8px', borderRadius: 6, fontWeight: 700 }}>
+                              {String(tipe).replace(/_/g, ' ')}
+                            </span>
+                            {s.mapel && (
+                              <span style={{ fontSize: 10, background: '#eff6ff', color: '#1e40af', padding: '2px 8px', borderRadius: 6, fontWeight: 700 }}>
+                                {s.mapel}
+                              </span>
+                            )}
+                          </div>
+                          <div>
+                            {s.anulirBonus ? (
+                              <span style={{ fontSize: 11, background: '#f3e8ff', color: '#7e22ce', padding: '3px 10px', borderRadius: 999, fontWeight: 800 }}>
+                                🎁 DIANULIR / BONUS PENUH
+                              </span>
+                            ) : s.dikoreksiTentor ? (
+                              <span style={{ fontSize: 11, background: '#dcfce7', color: '#15803d', padding: '3px 10px', borderRadius: 999, fontWeight: 800 }}>
+                                ✅ DIKOREKSI TENTOR ({s.koreksiTentor?.oleh || 'Tentor'})
+                              </span>
+                            ) : (
+                              <span style={{ fontSize: 11, background: '#f1f5f9', color: '#64748b', padding: '3px 10px', borderRadius: 999, fontWeight: 700 }}>
+                                🔍 Kunci Asli Sistem
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Stimulus Bacaan */}
+                        {s.bacaan?.teks && (
+                          <div style={{ background: '#f8fafc', borderRadius: 8, padding: 10, marginBottom: 10, fontSize: 12.5, color: '#334155' }}>
+                            <RenderMath text={s.bacaan.teks} />
+                          </div>
+                        )}
+
+                        {/* Teks Soal & Gambar */}
+                        <TeksSoalBergambar
+                          teks={s.soal || s.teks_soal}
+                          gambarUrls={s.gambarUrls}
+                          gambarMeta={s.gambarMeta || null}
+                          onKlikGambar={setGambarDibuka}
+                          gayaTeks={{ marginBottom: 10, fontSize: 13, color: '#1e293b', fontWeight: 600 }}
+                          gayaGambar={{ maxWidth: 220, maxHeight: 180, borderRadius: 8, margin: '8px 0 10px' }}
+                        />
+
+                        {s.tabelSoal && <RenderTable table={s.tabelSoal} />}
+
+                        {/* Tampilan Kunci Aktif Saat Ini */}
+                        <div style={{ margin: '10px 0', padding: '8px 12px', borderRadius: 8, background: '#f8fafc', border: '1px solid #e2e8f0', fontSize: 12 }}>
+                          <span style={{ color: '#64748b', fontWeight: 600 }}>Kunci Aktif Saat Ini: </span>
+                          <b style={{ color: s.anulirBonus ? '#7e22ce' : (s.dikoreksiTentor ? '#15803d' : '#0369a1') }}>
+                            {teksKunci(s)}
+                          </b>
+                          {s.koreksiTentor?.catatan && (
+                            <div style={{ fontSize: 11, color: '#475569', marginTop: 4, fontStyle: 'italic' }}>
+                              Catatan tentor: &quot;{s.koreksiTentor.catatan}&quot;
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Panel Form Koreksi Kunci */}
+                        <div style={{ marginTop: 12, background: '#fdfefe', border: '1.5px dashed #cbd5e1', borderRadius: 10, padding: 14 }}>
+                          <div style={{ fontSize: 12, fontWeight: 800, color: '#0f172a', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
+                            ✏️ Ubah Kunci Jawaban Butir #{i + 1}
+                          </div>
+
+                          {/* Opsi Anulir / Bonus Toggle */}
+                          <div style={{ marginBottom: 12, background: '#faf5ff', border: '1px solid #e9d5ff', borderRadius: 8, padding: '8px 12px' }}>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 12, fontWeight: 700, color: '#6b21a8' }}>
+                              <input
+                                type="checkbox"
+                                checked={formState.anulirBonus}
+                                onChange={(e) => {
+                                  const checked = e.target.checked;
+                                  setInputKoreksi((m) => ({
+                                    ...m,
+                                    [s.id]: { ...formState, anulirBonus: checked },
+                                  }));
+                                }}
+                              />
+                              🎁 Anulir butir soal ini (Beri bonus nilai 100% untuk semua siswa karena soal cacat/keliru total)
+                            </label>
+                          </div>
+
+                          {/* Form Input Sesuai Tipe Soal (jika tidak dianulir) */}
+                          {!formState.anulirBonus && (
+                            <div style={{ marginBottom: 12 }}>
+                              {tipe === 'pg_sederhana' && (
+                                <div>
+                                  <div style={{ fontSize: 11, color: '#475569', fontWeight: 700, marginBottom: 6 }}>
+                                    Pilih opsi yang benar:
+                                  </div>
+                                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                                    {['A', 'B', 'C', 'D', 'E'].slice(0, (s.opsiJawaban || []).length || 5).map((huruf, idx) => {
+                                      const teksOpsi = (s.opsiJawaban || [])[idx];
+                                      const isiOpsi = typeof teksOpsi === 'string' ? teksOpsi : (teksOpsi?.teks || '');
+                                      const isDipilih = formState.kunciBaru === huruf;
+                                      return (
+                                        <button
+                                          key={huruf}
+                                          type="button"
+                                          onClick={() => {
+                                            setInputKoreksi((m) => ({
+                                              ...m,
+                                              [s.id]: { ...formState, kunciBaru: huruf },
+                                            }));
+                                          }}
+                                          style={{
+                                            display: 'flex', alignItems: 'center', gap: 10, textAlign: 'left',
+                                            padding: '8px 12px', borderRadius: 8, cursor: 'pointer',
+                                            border: isDipilih ? '2px solid #059669' : '1px solid #cbd5e1',
+                                            background: isDipilih ? '#ecfdf5' : 'white',
+                                            color: isDipilih ? '#065f46' : '#334155',
+                                            fontWeight: isDipilih ? 700 : 500, fontSize: 12,
+                                          }}
+                                        >
+                                          <span style={{
+                                            width: 24, height: 24, borderRadius: 999, display: 'flex', alignItems: 'center',
+                                            justifyContent: 'center', background: isDipilih ? '#059669' : '#e2e8f0',
+                                            color: isDipilih ? 'white' : '#475569', fontWeight: 800, fontSize: 11,
+                                          }}>
+                                            {huruf}
+                                          </span>
+                                          <div style={{ flex: 1 }}>
+                                            <RenderMath text={isiOpsi || `Pilihan ${huruf}`} />
+                                          </div>
+                                          {isDipilih && <span style={{ fontSize: 11, color: '#059669', fontWeight: 800 }}>✔ Kunci Terpilih</span>}
+                                        </button>
+                                      );
+                                    })}
+                                  </div>
+                                </div>
+                              )}
+
+                              {tipe === 'pg_kompleks' && (
+                                <div>
+                                  <div style={{ fontSize: 11, color: '#475569', fontWeight: 700, marginBottom: 6 }}>
+                                    Centang opsi-opsi yang benar (bisa lebih dari satu):
+                                  </div>
+                                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                                    {['A', 'B', 'C', 'D', 'E'].slice(0, (s.opsiJawaban || []).length || 5).map((huruf) => {
+                                      const arrKunci = Array.isArray(formState.kunciBaru)
+                                        ? formState.kunciBaru
+                                        : String(formState.kunciBaru || '').split(/[\s,]+/);
+                                      const isChecked = arrKunci.includes(huruf);
+                                      return (
+                                        <button
+                                          key={huruf}
+                                          type="button"
+                                          onClick={() => {
+                                            const set = new Set(arrKunci);
+                                            if (isChecked) set.delete(huruf);
+                                            else set.add(huruf);
+                                            const baru = [...set].filter(Boolean).sort().join(', ');
+                                            setInputKoreksi((m) => ({
+                                              ...m,
+                                              [s.id]: { ...formState, kunciBaru: baru },
+                                            }));
+                                          }}
+                                          style={{
+                                            padding: '8px 14px', borderRadius: 8, cursor: 'pointer',
+                                            border: isChecked ? '2px solid #059669' : '1px solid #cbd5e1',
+                                            background: isChecked ? '#ecfdf5' : 'white',
+                                            color: isChecked ? '#065f46' : '#475569',
+                                            fontWeight: 800, fontSize: 12,
+                                          }}
+                                        >
+                                          {isChecked ? `[✔] Opsi ${huruf}` : `[ ] Opsi ${huruf}`}
+                                        </button>
+                                      );
+                                    })}
+                                  </div>
+                                </div>
+                              )}
+
+                              {(tipe === 'benar_salah' || tipe === 'pg_kategori') && (
+                                <div>
+                                  <div style={{ fontSize: 11, color: '#475569', fontWeight: 700, marginBottom: 6 }}>
+                                    Tentukan status benar / salah per baris pernyataan:
+                                  </div>
+                                  {pilihBarisBenarSalah(s).map((b, bIdx) => {
+                                    const teksPernyataan = typeof b === 'string' ? b : (b?.teks || b?.pernyataan || `Pernyataan ${bIdx + 1}`);
+                                    const arrBs = Array.isArray(formState.kunciBaru) ? formState.kunciBaru : [];
+                                    const currentVal = arrBs[bIdx] || kunciBarisBenarSalah(b) || 'benar';
+                                    return (
+                                      <div key={bIdx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, background: 'white', border: '1px solid #e2e8f0', borderRadius: 8, padding: '8px 12px', marginBottom: 6 }}>
+                                        <div style={{ fontSize: 12, color: '#334155', flex: 1 }}>
+                                          <b>{bIdx + 1}.</b> <RenderMath text={teksPernyataan} />
+                                        </div>
+                                        <div style={{ display: 'flex', gap: 6 }}>
+                                          {['benar', 'salah'].map((st) => (
+                                            <button
+                                              key={st}
+                                              type="button"
+                                              onClick={() => {
+                                                const salin = [...arrBs];
+                                                salin[bIdx] = st;
+                                                setInputKoreksi((m) => ({
+                                                  ...m,
+                                                  [s.id]: { ...formState, kunciBaru: salin },
+                                                }));
+                                              }}
+                                              style={{
+                                                padding: '4px 10px', borderRadius: 6, fontSize: 11, fontWeight: 700, cursor: 'pointer',
+                                                border: currentVal === st ? (st === 'benar' ? '1.5px solid #16a34a' : '1.5px solid #dc2626') : '1px solid #cbd5e1',
+                                                background: currentVal === st ? (st === 'benar' ? '#dcfce7' : '#fee2e2') : 'white',
+                                                color: currentVal === st ? (st === 'benar' ? '#15803d' : '#b91c1c') : '#64748b',
+                                              }}
+                                            >
+                                              {st === 'benar' ? '✔ Benar' : '✖ Salah'}
+                                            </button>
+                                          ))}
+                                        </div>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              )}
+
+                              {(tipe === 'isian_singkat' || tipe === 'numerik') && (
+                                <div>
+                                  <div style={{ fontSize: 11, color: '#475569', fontWeight: 700, marginBottom: 4 }}>
+                                    Ketikkan jawaban teks / angka yang benar:
+                                  </div>
+                                  <input
+                                    type="text"
+                                    value={formState.kunciBaru || ''}
+                                    onChange={(e) => {
+                                      const val = e.target.value;
+                                      setInputKoreksi((m) => ({
+                                        ...m,
+                                        [s.id]: { ...formState, kunciBaru: val },
+                                      }));
+                                    }}
+                                    placeholder="Contoh: 42 atau fotosintesis"
+                                    style={{ width: '100%', maxWidth: 360, padding: '7px 10px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 12.5 }}
+                                  />
+                                </div>
+                              )}
+                            </div>
+                          )}
+
+                          {/* Input Alasan Koreksi */}
+                          <div style={{ marginBottom: 12 }}>
+                            <div style={{ fontSize: 11, color: '#475569', fontWeight: 700, marginBottom: 4 }}>
+                              Alasan / Catatan Tentor (opsional, tersimpan di riwayat):
+                            </div>
+                            <input
+                              type="text"
+                              value={formState.catatan || ''}
+                              onChange={(e) => {
+                                const val = e.target.value;
+                                setInputKoreksi((m) => ({
+                                  ...m,
+                                  [s.id]: { ...formState, catatan: val },
+                                }));
+                              }}
+                              placeholder="Misal: Kunci AI keliru pada tanda kurung, jawaban benar seharusnya B..."
+                              style={{ width: '100%', padding: '7px 10px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 12 }}
+                            />
+                          </div>
+
+                          {/* Tombol Simpan & Hitung Ulang */}
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                            <button
+                              type="button"
+                              onClick={() => handleSimpanKoreksi(i, formState)}
+                              disabled={isSedangSimpan}
+                              style={{
+                                padding: '9px 18px', borderRadius: 10, border: 'none',
+                                background: '#059669', color: 'white', fontSize: 12.5, fontWeight: 800,
+                                cursor: 'pointer', opacity: isSedangSimpan ? 0.6 : 1,
+                                display: 'inline-flex', alignItems: 'center', gap: 6,
+                              }}
+                            >
+                              {isSedangSimpan ? '🔄 Menghitung Ulang Seluruh Peserta...' : '💾 Simpan Kunci Baru & Hitung Ulang Skor Siswa 🔄'}
+                            </button>
+                            <span style={{ fontSize: 11, color: '#64748b' }}>
+                              ⚡ Otomatis menyesuaikan akurasi persentase, skor ujian, dan saldo XP seluruh peserta yang sudah selesai.
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+              </div>
+            )}
           </>
         )}
         </div>
       </main>
+
+      {/* Modal Popup Hasil Hitung Ulang Skor Siswa */}
+      {modalHasilKoreksi && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(15, 23, 42, 0.6)', backdropFilter: 'blur(3px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          zIndex: 9999, padding: 16,
+        }}>
+          <div style={{
+            background: 'white', borderRadius: 16, maxWidth: 620, width: '100%',
+            maxHeight: '90vh', overflowY: 'auto', padding: 20, boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+              <span style={{ fontSize: 24 }}>🎉</span>
+              <div>
+                <h3 style={{ margin: 0, fontSize: 16, color: '#0f172a' }}>Koreksi Kunci & Hitung Ulang Berhasil!</h3>
+                <div style={{ fontSize: 11.5, color: '#64748b', marginTop: 2 }}>
+                  Soal #{modalHasilKoreksi.soalNomor} telah diperbarui. Nilai seluruh peserta telah disesuaikan secara adil.
+                </div>
+              </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 8, margin: '14px 0' }}>
+              <div style={{ background: '#f8fafc', padding: 10, borderRadius: 10, border: '1px solid #e2e8f0' }}>
+                <div style={{ fontSize: 10, color: '#64748b', fontWeight: 700 }}>Total Sesi Diproses</div>
+                <div style={{ fontSize: 18, fontWeight: 800, color: '#2563eb' }}>{modalHasilKoreksi.totalSesiDiproses} Sesi</div>
+              </div>
+              <div style={{ background: '#f8fafc', padding: 10, borderRadius: 10, border: '1px solid #e2e8f0' }}>
+                <div style={{ fontSize: 10, color: '#64748b', fontWeight: 700 }}>Siswa Berubah Nilai</div>
+                <div style={{ fontSize: 18, fontWeight: 800, color: '#16a34a' }}>{modalHasilKoreksi.jumlahBerubah} Siswa</div>
+              </div>
+            </div>
+
+            <div style={{ fontSize: 12, fontWeight: 800, color: '#334155', marginBottom: 6 }}>Rincian Perubahan Nilai Siswa:</div>
+            {modalHasilKoreksi.rincianPerubahan?.length === 0 ? (
+              <div style={{ fontSize: 12, color: '#94a3b8', padding: 10, background: '#f8fafc', borderRadius: 8 }}>
+                Belum ada siswa yang menyelesaikan try out ini. Nilai kunci baru akan langsung digunakan saat siswa mengerjakan.
+              </div>
+            ) : (
+              <div style={{ border: '1px solid #e2e8f0', borderRadius: 10, overflow: 'hidden', marginBottom: 16 }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 11.5 }}>
+                  <thead>
+                    <tr style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0', color: '#64748b', textAlign: 'left' }}>
+                      <th style={{ padding: '8px 10px' }}>Nama Siswa</th>
+                      <th style={{ padding: '8px 10px', textAlign: 'center' }}>Akurasi Skor</th>
+                      <th style={{ padding: '8px 10px', textAlign: 'center' }}>XP Final</th>
+                      <th style={{ padding: '8px 10px', textAlign: 'center' }}>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {modalHasilKoreksi.rincianPerubahan.map((r, rIdx) => (
+                      <tr key={r.sesiId || rIdx} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                        <td style={{ padding: '8px 10px', fontWeight: 600, color: '#0f172a' }}>{r.nama}</td>
+                        <td style={{ padding: '8px 10px', textAlign: 'center' }}>
+                          <span style={{ color: '#64748b' }}>{r.totalSkorPersenLama}%</span>
+                          <span style={{ margin: '0 4px', color: '#94a3b8' }}>→</span>
+                          <b style={{ color: r.totalSkorPersen >= r.totalSkorPersenLama ? '#16a34a' : '#dc2626' }}>{r.totalSkorPersen}%</b>
+                        </td>
+                        <td style={{ padding: '8px 10px', textAlign: 'center' }}>
+                          <span style={{ color: '#64748b' }}>{r.xpFinalLama}</span>
+                          <span style={{ margin: '0 4px', color: '#94a3b8' }}>→</span>
+                          <b>{r.xpFinal}</b>
+                          {r.selisihXp !== 0 && (
+                            <span style={{ marginLeft: 4, fontSize: 10.5, fontWeight: 700, color: r.selisihXp > 0 ? '#16a34a' : '#dc2626' }}>
+                              ({r.selisihXp > 0 ? '+' : ''}{r.selisihXp})
+                            </span>
+                          )}
+                        </td>
+                        <td style={{ padding: '8px 10px', textAlign: 'center' }}>
+                          {r.berubah ? (
+                            <span style={{ background: '#dcfce7', color: '#15803d', padding: '2px 6px', borderRadius: 6, fontWeight: 700, fontSize: 10 }}>
+                              ⚡ Diperbarui
+                            </span>
+                          ) : (
+                            <span style={{ background: '#f1f5f9', color: '#94a3b8', padding: '2px 6px', borderRadius: 6, fontWeight: 700, fontSize: 10 }}>
+                              Tetap
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+              <button
+                type="button"
+                onClick={() => setModalHasilKoreksi(null)}
+                style={{
+                  padding: '8px 16px', borderRadius: 8, border: 'none', background: '#2563eb',
+                  color: 'white', fontWeight: 700, fontSize: 12, cursor: 'pointer',
+                }}
+              >
+                Tutup & Kembali
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {gambarDibuka && (
         <LihatGambar
           src={gambarDibuka}
