@@ -62,10 +62,11 @@ const SidebarSiswa = ({ activeMenu, setActiveMenu, isOpen, setIsOpen }) => {
         { id: 'dashboard', label: 'Dashboard', icon: <Home size={18} />, path: '/siswa/dashboard', color: '#3b82f6' },
       ],
     },
-    ...(keadaanTarget.status === 'siap' ? [{
-      label: 'TARGET KAMPUS',
+    ...(keadaanTarget.status === 'siap' || keadaanTarget.status === 'belum_pilih' || targetUjianAi?.jenjang === 'SMA' ? [{
+      label: 'TARGET PTN 2027',
       items: [
-        { id: 'target-kampus', label: 'Target Kampusku', icon: <Target size={18} />, path: '/siswa/target-kampus', color: '#7c3aed' },
+        { id: 'target-kampus', label: 'Target Kampusku', icon: <Target size={18} />, path: '/siswa/target-kampus', color: '#0d9488', badge: 'SNBT' },
+        { id: 'katalog-ptn', label: 'Katalog 173 PTN', icon: <GraduationCap size={18} />, path: '/siswa/katalog-ptn', color: '#0f766e' },
       ],
     }] : []),
     {

@@ -1,8 +1,8 @@
 // src/pages/student/KatalogKampusPage.jsx
 // ============================================================
-// Halaman Eksplorasi 173 PTN & Jurusan (Benchmark AmbisPTN 1:1)
-// Dilengkapi Logo Universitas Resmi, Filter 38 Provinsi, Tab 'Sesuai Skormu',
-// dan Tombol 1-Klik 'Jadikan Target Impian' untuk Siswa Gemilang.
+// Halaman Eksplorasi 173 PTN & 4.594 Jurusan (Benchmark AmbisPTN 1:1)
+// Dilengkapi Logo Universitas Resmi, Filter 36 Provinsi, Tab Sesuai Skormu,
+// dan Tombol 1-Klik 'Jadikan Pilihan 1 & 2' untuk Siswa Gemilang.
 // ============================================================
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -11,7 +11,6 @@ import {
   Building2,
   GraduationCap,
   MapPin,
-  ChevronLeft,
   ChevronRight,
   Filter,
   Check,
@@ -20,32 +19,40 @@ import {
   Target,
   Sparkles,
   X,
+  Compass,
 } from 'lucide-react';
-import rawDataPtn from '../../data/imporPtnData.json';
-import { getLogoPtn, getMonogramPtn } from '../../utils/logoPtnHelper';
+import {
+  getDaftarPtnAmbis,
+  getDaftarProdiAmbis,
+  useTargetKampusSiswa,
+  simpanPilihanTarget,
+} from '../../services/targetKampusService';
+import { getLogoPtn } from '../../utils/logoPtnHelper';
 import { useProfilSiswa } from '../../utils/profilSiswa';
-import { doc, setDoc } from 'firebase/firestore';
-import { db } from '../../firebase';
 
 export default function KatalogKampusPage() {
   const navigate = useNavigate();
   const profil = useProfilSiswa();
   const studentId = localStorage.getItem('studentId') || localStorage.getItem('studentNim') || '';
 
+  const { target: targetSiswa } = useTargetKampusSiswa(studentId);
+
   const [tabAktif, setTabAktif] = useState('kampus'); // 'kampus' | 'sesuai-skor' | 'jurusan'
   const [cariTeks, setCariTeks] = useState('');
   const [provinsiFilter, setProvinsiFilter] = useState('Semua');
-  const [bidangFilter, setBidangFilter] = useState('Semua'); // 'Semua' | 'Saintek' | 'Soshum'
+  const [rumpunFilter, setRumpunFilter] = useState('Semua'); // 'Semua' | 'saintek' | 'soshum'
   const [modalPtnTerpilih, setModalPtnTerpilih] = useState(null);
+  const [cariDiModal, setCariDiModal] = useState('');
+  const [rumpunModalFilter, setRumpunModalFilter] = useState('Semua');
   const [notifSukses, setNotifSukses] = useState('');
 
-  // 1. Ekstrak data PTN dan Prodi
-  const daftarPtn = useMemo(() => rawDataPtn.ptn || [], []);
-  const daftarProdi = useMemo(() => rawDataPtn.prodi || [], []);
+  // 1. Ambil 173 PTN dan 4.594 Prodi
+  const daftarPtn = useMemo(() => getDaftarPtnAmbis(), []);
+  const daftarProdi = useMemo(() => getDaftarProdiAmbis(), []);
 
   // 2. Daftar Provinsi Unik
   const listProvinsi = useMemo(() => {
-    const setP = new Set(daftarPtn.map((p) => p.provinsi).filter(Boolean));
+    const setP = new Set(daftarPtn.map((p) => p.province).filter(Boolean));
     return ['Semua', ...Array.from(setP).sort()];
   }, [daftarPtn]);
 
@@ -54,16 +61,17 @@ export default function KatalogKampusPage() {
     let list = daftarPtn;
 
     if (provinsiFilter !== 'Semua') {
-      list = list.filter((p) => p.provinsi === provinsiFilter);
+      list = list.filter((p) => p.province === provinsiFilter);
     }
 
     if (cariTeks.trim()) {
       const q = cariTeks.toLowerCase();
       list = list.filter((p) => {
-        const matchNama = (p.nama || '').toLowerCase().includes(q);
-        const matchSingkat = (p.singkatan || '').toLowerCase().includes(q);
-        const matchProv = (p.provinsi || '').toLowerCase().includes(q);
-        return matchNama || matchSingkat || matchProv;
+        const matchNama = (p.name || '').toLowerCase().includes(q);
+        const matchSingkat = (p.short_name || '').toLowerCase().includes(q);
+        const matchKota = (p.city || '').toLowerCase().includes(q);
+        const matchProv = (p.province || '').toLowerCase().includes(q);
+        return matchNama || matchSingkat || matchKota || matchProv;
       });
     }
 
@@ -74,226 +82,206 @@ export default function KatalogKampusPage() {
   const prodiTersaring = useMemo(() => {
     let list = daftarProdi;
 
-    if (bidangFilter !== 'Semua') {
-      list = list.filter((pr) => pr.bidang === bidangFilter);
+    if (rumpunFilter !== 'Semua') {
+      list = list.filter((pr) => pr.rumpun === rumpunFilter);
+    }
+
+    if (provinsiFilter !== 'Semua') {
+      const ptnDiProvinsi = new Set(daftarPtn.filter((p) => p.province === provinsiFilter).map((p) => p.slug));
+      list = list.filter((pr) => ptnDiProvinsi.has(pr.uni_slug));
     }
 
     if (cariTeks.trim()) {
       const q = cariTeks.toLowerCase();
       list = list.filter((pr) => {
-        const matchP = (pr.namaProdi || '').toLowerCase().includes(q);
-        const matchK = (pr.namaPtn || '').toLowerCase().includes(q);
-        return matchP || matchK;
+        const matchProdi = (pr.name || '').toLowerCase().includes(q);
+        const matchUni = (pr.uni_name || '').toLowerCase().includes(q);
+        const matchShort = (pr.uni_short || '').toLowerCase().includes(q);
+        return matchProdi || matchUni || matchShort;
       });
     }
 
     return list;
-  }, [daftarProdi, bidangFilter, cariTeks]);
+  }, [daftarProdi, daftarPtn, rumpunFilter, provinsiFilter, cariTeks]);
 
-  // Pasang sebagai target siswa
-  const pasangSebagaiTarget = async (prodi, pilihanKe = 1) => {
-    if (!studentId) {
-      alert('Sesi siswa belum terdeteksi. Silakan login kembali.');
-      return;
-    }
-    try {
-      const skorMin = prodi.skorReferensi?.minimum?.nilai || 720;
-      const ref = doc(db, 'siswa_target_kampus', studentId);
-      await setDoc(ref, {
-        updatedAt: new Date().toISOString(),
-        pilihan1: pilihanKe === 1 ? {
-          idPtn: prodi.idPtn,
-          namaPtn: prodi.namaPtn,
-          idProdi: prodi.id,
-          namaProdi: prodi.namaProdi,
-          bidang: prodi.bidang,
-          skorAcuan: skorMin,
-        } : undefined,
-        pilihan2: pilihanKe === 2 ? {
-          idPtn: prodi.idPtn,
-          namaPtn: prodi.namaPtn,
-          idProdi: prodi.id,
-          namaProdi: prodi.namaProdi,
-          bidang: prodi.bidang,
-          skorAcuan: skorMin,
-        } : undefined,
-      }, { merge: true });
-
-      // Simpan juga ke localStorage
-      localStorage.setItem(`target_pilihan_${pilihanKe}`, JSON.stringify({
-        namaPtn: prodi.namaPtn,
-        namaProdi: prodi.namaProdi,
-        skorAcuan: skorMin,
-      }));
-
-      setNotifSukses(`Berhasil memasang ${prodi.namaProdi} (${prodi.namaPtn}) sebagai Pilihan ${pilihanKe}! 🎯`);
-      setTimeout(() => setNotifSukses(''), 4500);
-    } catch (err) {
-      console.error('Gagal menyimpan target kampus:', err);
-      // Fallback localStorage
-      localStorage.setItem(`target_pilihan_${pilihanKe}`, JSON.stringify({
-        namaPtn: prodi.namaPtn,
-        namaProdi: prodi.namaProdi,
-        skorAcuan: prodi.skorReferensi?.minimum?.nilai || 720,
-      }));
-      setNotifSukses(`Target tersimpan di perangkat lokal: ${prodi.namaProdi} (${prodi.namaPtn}) sebagai Pilihan ${pilihanKe}!`);
-      setTimeout(() => setNotifSukses(''), 4500);
-    }
+  // Simpan Target
+  const handleSimpanPilihan = async (pilihanKe, majorData) => {
+    await simpanPilihanTarget(studentId, pilihanKe, majorData);
+    setNotifSukses(`🎉 ${majorData.name} (${majorData.uni_short || majorData.uni_name}) berhasil disimpan sebagai Target Pilihan ${pilihanKe}!`);
+    setTimeout(() => setNotifSukses(''), 3500);
   };
 
+  const p1 = targetSiswa?.pilihan1;
+  const p2 = targetSiswa?.pilihan2;
+
   return (
-    <div style={K.wrap}>
-      {/* Header Bar */}
-      <div style={K.headerBar}>
-        <button
-          type="button"
-          onClick={() => navigate('/siswa/dashboard')}
-          style={K.btnKembali}
-        >
-          <ChevronLeft size={18} />
-          <span>Kembali ke Beranda</span>
-        </button>
-        <span style={K.badgeHeader}>DATABASE 173 PTN SNPMB 2027</span>
-      </div>
-
-      <div style={K.headerInfo}>
-        <h1 style={K.judulUtama}>Katalog &amp; Eksplorasi Kampus PTN</h1>
-        <p style={K.subJudul}>
-          Telusuri daya tampung, tingkat keketatan, dan estimasi skor UTBK untuk 173 perguruan tinggi negeri se-Indonesia.
-        </p>
-      </div>
-
-      {/* Banner Notifikasi Sukses */}
+    <div style={st.wrap}>
+      {/* Toast Notification */}
       {notifSukses && (
-        <div style={K.bannerSukses}>
-          <Sparkles size={18} color="#047857" />
+        <div style={st.toastNotif}>
+          <Sparkles size={18} color="#0d9488" />
           <span>{notifSukses}</span>
         </div>
       )}
 
-      {/* Search & Tabs */}
-      <div style={K.kontainerKontrol}>
-        {/* Search Input */}
-        <div style={K.searchWrap}>
+      {/* Header */}
+      <div style={st.headerWrap}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 14 }}>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontSize: 24 }}>🏛️</span>
+              <h1 style={st.judul}>Eksplorasi Kampus &amp; Jurusan UTBK 2027</h1>
+            </div>
+            <p style={st.subJudul}>
+              Katalog resmi <b>173 PTN</b> &amp; <b>4.594 Program Studi</b> Nasional. Dapatkan data daya tampung SNBT, keketatan, dan estimasi skor UTBK akurat.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => navigate('/siswa/target-kampus')}
+            style={st.btnLihatTargetKu}
+          >
+            <Target size={16} /> Lihat Target Kampusku
+          </button>
+        </div>
+
+        {/* Tab Navigasi 1:1 AmbisPTN */}
+        <div style={st.tabBar}>
+          <button
+            type="button"
+            onClick={() => setTabAktif('kampus')}
+            style={tabAktif === 'kampus' ? st.tabAktif : st.tabBiasa}
+          >
+            🏛️ Kampus ({daftarPtn.length})
+          </button>
+          <button
+            type="button"
+            onClick={() => setTabAktif('jurusan')}
+            style={tabAktif === 'jurusan' ? st.tabAktif : st.tabBiasa}
+          >
+            📚 Jurusan ({daftarProdi.length.toLocaleString('id-ID')})
+          </button>
+          <button
+            type="button"
+            onClick={() => setTabAktif('sesuai-skor')}
+            style={tabAktif === 'sesuai-skor' ? st.tabAktif : st.tabBiasa}
+          >
+            🎯 Sesuai Skormu
+          </button>
+        </div>
+      </div>
+
+      {/* Search & Filter Bar */}
+      <div style={st.filterBar}>
+        <div style={st.searchBarWrap}>
           <Search size={18} color="#94a3b8" />
           <input
             type="text"
             value={cariTeks}
             onChange={(e) => setCariTeks(e.target.value)}
-            placeholder="Cari nama kampus (UI, ITB, UGM...) atau jurusan (Kedokteran, Informatika...)"
-            style={K.searchInput}
+            placeholder="Cari kampus (UI, ITB, UGM...), kota, atau jurusan impian..."
+            style={st.searchInput}
           />
           {cariTeks && (
-            <button
-              type="button"
-              onClick={() => setCariTeks('')}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2 }}
-            >
-              <X size={16} color="#94a3b8" />
+            <button type="button" onClick={() => setCariTeks('')} style={st.btnClearSearch}>
+              <X size={15} color="#94a3b8" />
             </button>
           )}
         </div>
 
-        {/* Tab Switcher & Dropdown Filter */}
-        <div style={K.filterRow}>
-          <div style={K.tabsNav}>
-            <button
-              type="button"
-              onClick={() => setTabAktif('kampus')}
-              style={{ ...K.tabBtn, ...(tabAktif === 'kampus' ? K.tabBtnAktif : {}) }}
+        <div style={st.filterDropdowns}>
+          <div style={st.selectWrap}>
+            <MapPin size={15} color="#0d9488" />
+            <select
+              value={provinsiFilter}
+              onChange={(e) => setProvinsiFilter(e.target.value)}
+              style={st.selectProvinsi}
             >
-              🏛️ Kampus ({ptnTersaring.length})
-            </button>
-            <button
-              type="button"
-              onClick={() => setTabAktif('jurusan')}
-              style={{ ...K.tabBtn, ...(tabAktif === 'jurusan' ? K.tabBtnAktif : {}) }}
-            >
-              📚 Jurusan ({prodiTersaring.length})
-            </button>
-            <button
-              type="button"
-              onClick={() => setTabAktif('sesuai-skor')}
-              style={{ ...K.tabBtn, ...(tabAktif === 'sesuai-skor' ? K.tabBtnAktif : {}) }}
-            >
-              🎯 Sesuai Skormu
-            </button>
+              {listProvinsi.map((prov) => (
+                <option key={prov} value={prov}>
+                  {prov === 'Semua' ? '🗺️ Semua Provinsi (36)' : prov}
+                </option>
+              ))}
+            </select>
           </div>
 
-          {tabAktif === 'kampus' ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <span style={{ fontSize: 12, color: '#64748b', fontWeight: 700 }}>Provinsi:</span>
-              <select
-                value={provinsiFilter}
-                onChange={(e) => setProvinsiFilter(e.target.value)}
-                style={K.dropdownFilter}
+          {tabAktif !== 'kampus' && (
+            <div style={st.btnGroupRumpun}>
+              <button
+                type="button"
+                onClick={() => setRumpunFilter('Semua')}
+                style={rumpunFilter === 'Semua' ? st.btnRumpunAktif : st.btnRumpunBiasa}
               >
-                {listProvinsi.map((prov) => (
-                  <option key={prov} value={prov}>{prov}</option>
-                ))}
-              </select>
-            </div>
-          ) : (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <span style={{ fontSize: 12, color: '#64748b', fontWeight: 700 }}>Rumpun:</span>
-              <select
-                value={bidangFilter}
-                onChange={(e) => setBidangFilter(e.target.value)}
-                style={K.dropdownFilter}
+                Semua
+              </button>
+              <button
+                type="button"
+                onClick={() => setRumpunFilter('saintek')}
+                style={rumpunFilter === 'saintek' ? st.btnRumpunAktif : st.btnRumpunBiasa}
               >
-                <option value="Semua">Semua Rumpun</option>
-                <option value="Saintek">Saintek (IPA/Teknik)</option>
-                <option value="Soshum">Soshum (IPS/Bisnis)</option>
-              </select>
+                Saintek
+              </button>
+              <button
+                type="button"
+                onClick={() => setRumpunFilter('soshum')}
+                style={rumpunFilter === 'soshum' ? st.btnRumpunAktif : st.btnRumpunBiasa}
+              >
+                Soshum
+              </button>
             </div>
           )}
         </div>
       </div>
 
       {/* ============================================================ */}
-      {/* 1. TAMPILAN TAB KAMPUS                                       */}
+      {/* TAB 1: KAMPUS (173 PTN)                                      */}
       {/* ============================================================ */}
       {tabAktif === 'kampus' && (
-        <div style={K.gridKampus}>
+        <div style={st.ptnGrid}>
           {ptnTersaring.map((ptn) => {
             const logoUrl = getLogoPtn(ptn);
-            const monogram = getMonogramPtn(ptn);
-            const prodiKampus = daftarProdi.filter((pr) => pr.idPtn === ptn.id);
-
             return (
               <div
-                key={ptn.id}
-                onClick={() => setModalPtnTerpilih({ ...ptn, prodiList: prodiKampus })}
-                style={K.cardKampusItem}
+                key={ptn.id || ptn.slug}
+                onClick={() => {
+                  setModalPtnTerpilih(ptn);
+                  setCariDiModal('');
+                  setRumpunModalFilter('Semua');
+                }}
+                style={st.ptnCard}
               >
-                <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                  {logoUrl ? (
+                <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+                  <div style={st.ptnLogoWrap}>
                     <img
                       src={logoUrl}
-                      alt={ptn.nama}
-                      style={K.logoKampusImg}
-                      onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                      alt={ptn.short_name || ptn.name}
+                      style={st.ptnLogoImg}
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/Emblem_of_Ministry_of_Education_and_Culture_%28Indonesia%29.svg/240px-Emblem_of_Ministry_of_Education_and_Culture_%28Indonesia%29.svg.png';
+                      }}
                     />
-                  ) : (
-                    <div style={{ ...K.monogramFallback, background: monogram.bg }}>
-                      {monogram.inisial}
-                    </div>
-                  )}
+                  </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={K.singkatanKampusBadge}>{ptn.singkatan || 'PTN'}</div>
-                    <h3 style={K.namaKampusTeks}>{ptn.nama}</h3>
-                    <div style={K.lokasiKampusRow}>
-                      <MapPin size={13} color="#64748b" />
-                      <span>{ptn.provinsi || 'Indonesia'} • {ptn.wilayahBesar || 'Nasional'}</span>
+                    <div style={st.ptnShortText}>{ptn.short_name || ptn.name}</div>
+                    <div style={st.ptnFullNameText} title={ptn.name}>
+                      {ptn.name}
+                    </div>
+                    <div style={st.ptnLocationText}>
+                      <MapPin size={12} color="#94a3b8" />
+                      <span>{ptn.city || ''}{ptn.province ? `, ${ptn.province}` : ''}</span>
                     </div>
                   </div>
                 </div>
 
-                <div style={K.footerCardKampus}>
-                  <span style={{ fontSize: 11.5, color: '#0f766e', fontWeight: 700 }}>
-                    {prodiKampus.length > 0 ? `${prodiKampus.length} Program Studi Terdata` : 'Klaster Mandiri'}
+                <div style={st.ptnCardFooter}>
+                  <span style={st.badgeAkreditasi}>{ptn.accreditation || 'Unggul'}</span>
+                  <span style={st.badgeProdiCount}>
+                    {ptn.major_count || ptn.majors?.length || 0} Jurusan
                   </span>
-                  <span style={K.btnLihatDetail}>Lihat Jurusan →</span>
+                  <button type="button" style={st.btnLihatJurusan}>
+                    Lihat Jurusan <ChevronRight size={14} />
+                  </button>
                 </div>
               </div>
             );
@@ -302,75 +290,70 @@ export default function KatalogKampusPage() {
       )}
 
       {/* ============================================================ */}
-      {/* 2. TAMPILAN TAB JURUSAN & SESUAI SKORMU                     */}
+      {/* TAB 2: JURUSAN (4.594 PRODI NASIONAL)                        */}
       {/* ============================================================ */}
-      {(tabAktif === 'jurusan' || tabAktif === 'sesuai-skor') && (
-        <div style={K.listProdiGrid}>
-          {prodiTersaring.map((prodi) => {
-            const skorMin = prodi.skorReferensi?.minimum?.nilai || 710;
-            const skorRata = prodi.skorReferensi?.rataRata?.nilai || 735;
-            const keketatanPersen = prodi.keketatan ? (prodi.keketatan * 100).toFixed(2) : '2.5';
+      {tabAktif === 'jurusan' && (
+        <div style={st.prodiList}>
+          {prodiTersaring.slice(0, 50).map((pr) => {
+            const isPilihan1 = p1?.majorSlug === pr.slug || p1?.majorId === pr.id;
+            const isPilihan2 = p2?.majorSlug === pr.slug || p2?.majorId === pr.id;
 
             return (
-              <div key={prodi.id} style={K.cardProdiItem}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 10 }}>
+              <div key={pr.id || pr.slug} style={st.prodiRowCard}>
+                <div style={{ display: 'flex', gap: 12, alignItems: 'center', flex: '1 1 320px' }}>
+                  <img
+                    src={getLogoPtn({ uni_logo: pr.uni_logo, slug: pr.uni_slug, singkatan: pr.uni_short })}
+                    alt={pr.uni_short}
+                    style={st.prodiUniLogo}
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/Emblem_of_Ministry_of_Education_and_Culture_%28Indonesia%29.svg/240px-Emblem_of_Ministry_of_Education_and_Culture_%28Indonesia%29.svg.png';
+                    }}
+                  />
                   <div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-                      <span style={K.badgeBidangProdi}>{prodi.bidang || 'Saintek'}</span>
-                      <span style={{ fontSize: 11, color: '#64748b', fontWeight: 700 }}>{prodi.jenjang || 'S1'}</span>
+                    <div style={st.prodiMajorTitle}>{pr.name}</div>
+                    <div style={st.prodiUniSubtitle}>
+                      {pr.uni_name} {pr.uni_short ? `(${pr.uni_short})` : ''}
                     </div>
-                    <h3 style={K.namaProdiTeks}>{prodi.namaProdi}</h3>
-                    <div style={{ fontSize: 12.5, fontWeight: 700, color: '#0d9488' }}>
-                      {prodi.namaPtn}
-                    </div>
-                  </div>
-
-                  <div style={{ textAlign: 'right' }}>
-                    <span style={{ fontSize: 10, color: '#64748b', fontWeight: 600 }}>Target Skor:</span>
-                    <div style={{ fontSize: 17, fontWeight: 900, color: '#0f766e' }}>
-                      {skorMin} Poin
+                    <div style={{ display: 'flex', gap: 6, marginTop: 4 }}>
+                      <span style={st.chipDegree}>{pr.degree_type || 'Sarjana'}</span>
+                      <span style={pr.rumpun === 'soshum' ? st.chipSoshum : st.chipSaintek}>
+                        {pr.rumpun_label || 'Saintek'}
+                      </span>
                     </div>
                   </div>
                 </div>
 
-                {/* 3 Metrik Kunci */}
-                <div style={K.metrikTigaCol}>
-                  <div style={K.metrikBoxMini}>
-                    <span style={K.labelMini}>Daya Tampung</span>
-                    <div style={K.valMini}>{prodi.dayaTampung?.nilai || 60} Kursi</div>
+                <div style={st.prodiStatsCol}>
+                  <div style={st.statItemRow}>
+                    <span style={st.statItemLabel}>Passing Score:</span>
+                    <b style={{ color: '#0d9488', fontSize: 14 }}>{pr.passing_score || 700}</b>
                   </div>
-                  <div style={K.metrikBoxMini}>
-                    <span style={K.labelMini}>Peminat</span>
-                    <div style={K.valMini}>{prodi.peminat?.nilai || 2400} Orang</div>
+                  <div style={st.statItemRow}>
+                    <span style={st.statItemLabel}>Kuota:</span>
+                    <b>{pr.capacity || 50}</b>
                   </div>
-                  <div style={K.metrikBoxMini}>
-                    <span style={K.labelMini}>Keketatan</span>
-                    <div style={{ ...K.valMini, color: '#dc2626' }}>{keketatanPersen}%</div>
+                  <div style={st.statItemRow}>
+                    <span style={st.statItemLabel}>Keketatan:</span>
+                    <b>{pr.selectivity ? `${(pr.selectivity * 100).toFixed(1)}%` : '3.0%'}</b>
                   </div>
                 </div>
 
-                <div style={K.footerProdiAksi}>
-                  <div style={{ fontSize: 11, color: '#64748b' }}>
-                    Subtes Kunci: <b>{prodi.subtesKunci || 'Penalaran Matematika & Literasi'}</b>
-                  </div>
-                  <div style={{ display: 'flex', gap: 6 }}>
-                    <button
-                      type="button"
-                      onClick={() => pasangSebagaiTarget(prodi, 1)}
-                      style={K.btnPasangTarget1}
-                      title="Pasang sebagai Target Pilihan 1"
-                    >
-                      Pilihan 1 🎯
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => pasangSebagaiTarget(prodi, 2)}
-                      style={K.btnPasangTarget2}
-                      title="Pasang sebagai Target Pilihan 2"
-                    >
-                      Pilihan 2 ⭐
-                    </button>
-                  </div>
+                <div style={st.prodiActionCol}>
+                  <button
+                    type="button"
+                    onClick={() => handleSimpanPilihan(1, pr)}
+                    style={isPilihan1 ? st.btnTerpilihP1 : st.btnAksiP1}
+                  >
+                    {isPilihan1 ? '✓ Pilihan 1' : '⭐ Pilihan 1'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleSimpanPilihan(2, pr)}
+                    style={isPilihan2 ? st.btnTerpilihP2 : st.btnAksiP2}
+                  >
+                    {isPilihan2 ? '✓ Pilihan 2' : '🎯 Pilihan 2'}
+                  </button>
                 </div>
               </div>
             );
@@ -379,99 +362,208 @@ export default function KatalogKampusPage() {
       )}
 
       {/* ============================================================ */}
-      {/* MODAL DETAIL KAMPUS TERPILIH                                 */}
+      {/* TAB 3: SESUAI SKORMU                                         */}
       {/* ============================================================ */}
-      {modalPtnTerpilih && (
-        <div style={K.modalOverlay} onClick={() => setModalPtnTerpilih(null)}>
-          <div style={K.modalBox} onClick={(e) => e.stopPropagation()}>
-            <div style={K.modalHeaderRow}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                {getLogoPtn(modalPtnTerpilih) ? (
+      {tabAktif === 'sesuai-skor' && (
+        <div style={st.prodiList}>
+          {prodiTersaring.slice(0, 40).map((pr) => {
+            const isPilihan1 = p1?.majorSlug === pr.slug || p1?.majorId === pr.id;
+            const isPilihan2 = p2?.majorSlug === pr.slug || p2?.majorId === pr.id;
+
+            return (
+              <div key={pr.id || pr.slug} style={st.prodiRowCard}>
+                <div style={{ display: 'flex', gap: 12, alignItems: 'center', flex: '1 1 320px' }}>
                   <img
-                    src={getLogoPtn(modalPtnTerpilih)}
-                    alt={modalPtnTerpilih.nama}
-                    style={{ width: 48, height: 48, objectFit: 'contain' }}
+                    src={getLogoPtn({ uni_logo: pr.uni_logo, slug: pr.uni_slug, singkatan: pr.uni_short })}
+                    alt={pr.uni_short}
+                    style={st.prodiUniLogo}
                   />
-                ) : (
-                  <div style={{ ...K.monogramFallback, width: 44, height: 44 }}>
-                    {getMonogramPtn(modalPtnTerpilih).inisial}
+                  <div>
+                    <div style={st.prodiMajorTitle}>{pr.name}</div>
+                    <div style={st.prodiUniSubtitle}>{pr.uni_name}</div>
                   </div>
-                )}
+                </div>
+
+                <div style={st.prodiStatsCol}>
+                  <div style={st.statItemRow}>
+                    <span style={st.statItemLabel}>Passing Score:</span>
+                    <b style={{ color: '#0d9488', fontSize: 14 }}>{pr.passing_score}</b>
+                  </div>
+                  <div style={st.statItemRow}>
+                    <span style={st.statItemLabel}>Kuota:</span>
+                    <b>{pr.capacity} Kursi</b>
+                  </div>
+                </div>
+
+                <div style={st.prodiActionCol}>
+                  <button
+                    type="button"
+                    onClick={() => handleSimpanPilihan(1, pr)}
+                    style={isPilihan1 ? st.btnTerpilihP1 : st.btnAksiP1}
+                  >
+                    {isPilihan1 ? '✓ Pilihan 1' : '⭐ Pilihan 1'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleSimpanPilihan(2, pr)}
+                    style={isPilihan2 ? st.btnTerpilihP2 : st.btnAksiP2}
+                  >
+                    {isPilihan2 ? '✓ Pilihan 2' : '🎯 Pilihan 2'}
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Modal Detail PTN */}
+      {modalPtnTerpilih && (
+        <div style={st.modalOverlay} onClick={() => setModalPtnTerpilih(null)}>
+          <div style={st.modalContent} onClick={(e) => e.stopPropagation()}>
+            <div style={st.modalHeader}>
+              <div style={{ display: 'flex', gap: 14, alignItems: 'center' }}>
+                <img
+                  src={getLogoPtn(modalPtnTerpilih)}
+                  alt={modalPtnTerpilih.short_name || modalPtnTerpilih.name}
+                  style={st.modalUniLogo}
+                />
                 <div>
-                  <h3 style={{ margin: 0, fontSize: 16, fontWeight: 900, color: '#0f172a' }}>
-                    {modalPtnTerpilih.nama}
-                  </h3>
-                  <div style={{ fontSize: 12, color: '#64748b' }}>
-                    {modalPtnTerpilih.provinsi} • {modalPtnTerpilih.websiteResmi || 'Situs Resmi PTN'}
+                  <h3 style={st.modalUniTitle}>{modalPtnTerpilih.name}</h3>
+                  <div style={st.modalUniMeta}>
+                    <MapPin size={13} color="#0d9488" />
+                    <span>{modalPtnTerpilih.city}, {modalPtnTerpilih.province}</span>
+                    <span>•</span>
+                    <span style={st.badgeAkreditasi}>{modalPtnTerpilih.accreditation || 'Unggul'}</span>
+                    {modalPtnTerpilih.website && (
+                      <a
+                        href={modalPtnTerpilih.website}
+                        target="_blank"
+                        rel="noreferrer"
+                        style={st.linkWebsiteUni}
+                      >
+                        Situs Resmi <ExternalLink size={12} />
+                      </a>
+                    )}
                   </div>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => setModalPtnTerpilih(null)}
-                style={K.btnCloseModal}
+                style={st.btnCloseModal}
               >
                 <X size={20} color="#64748b" />
               </button>
             </div>
 
-            <div style={{ padding: '16px 20px', maxHeight: '65vh', overflowY: 'auto' }}>
-              <h4 style={{ margin: '0 0 10px', fontSize: 14, fontWeight: 800, color: '#0f172a' }}>
-                Daftar Program Studi Terdata ({modalPtnTerpilih.prodiList?.length || 0})
-              </h4>
+            {/* Filter di dalam Modal */}
+            <div style={st.modalFilterBar}>
+              <div style={st.searchBarWrap}>
+                <Search size={16} color="#94a3b8" />
+                <input
+                  type="text"
+                  value={cariDiModal}
+                  onChange={(e) => setCariDiModal(e.target.value)}
+                  placeholder={`Cari jurusan di ${modalPtnTerpilih.short_name || 'kampus ini'}...`}
+                  style={st.searchInput}
+                />
+              </div>
+              <div style={st.btnGroupRumpun}>
+                <button
+                  type="button"
+                  onClick={() => setRumpunModalFilter('Semua')}
+                  style={rumpunModalFilter === 'Semua' ? st.btnRumpunAktif : st.btnRumpunBiasa}
+                >
+                  Semua
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setRumpunModalFilter('saintek')}
+                  style={rumpunModalFilter === 'saintek' ? st.btnRumpunAktif : st.btnRumpunBiasa}
+                >
+                  Saintek
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setRumpunModalFilter('soshum')}
+                  style={rumpunModalFilter === 'soshum' ? st.btnRumpunAktif : st.btnRumpunBiasa}
+                >
+                  Soshum
+                </button>
+              </div>
+            </div>
 
-              {modalPtnTerpilih.prodiList?.length ? (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                  {modalPtnTerpilih.prodiList.map((pr) => (
-                    <div key={pr.id} style={K.itemProdiModal}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                        <div>
-                          <span style={K.badgeBidangProdi}>{pr.bidang}</span>
-                          <h5 style={{ margin: '3px 0 2px', fontSize: 13.5, fontWeight: 800, color: '#0f172a' }}>
-                            {pr.namaProdi}
-                          </h5>
-                          <span style={{ fontSize: 11, color: '#64748b' }}>
-                            Daya Tampung: {pr.dayaTampung?.nilai || 50} • Keketatan: {(pr.keketatan ? (pr.keketatan * 100).toFixed(1) : 2.5)}%
+            {/* Daftar Jurusan Kampus Ini */}
+            <div style={st.modalListMajor}>
+              {(modalPtnTerpilih.majors || [])
+                .filter((m) => {
+                  if (rumpunModalFilter !== 'Semua' && m.rumpun !== rumpunModalFilter) return false;
+                  if (cariDiModal.trim()) {
+                    return (m.name || '').toLowerCase().includes(cariDiModal.toLowerCase());
+                  }
+                  return true;
+                })
+                .map((m) => {
+                  const mComplete = {
+                    ...m,
+                    uni_name: modalPtnTerpilih.name,
+                    uni_short: modalPtnTerpilih.short_name,
+                    uni_slug: modalPtnTerpilih.slug,
+                    uni_logo: modalPtnTerpilih.logo_url,
+                  };
+                  const isPilihan1 = p1?.majorSlug === m.slug || p1?.majorId === m.id;
+                  const isPilihan2 = p2?.majorSlug === m.slug || p2?.majorId === m.id;
+
+                  return (
+                    <div key={m.id || m.slug} style={st.modalMajorRow}>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={st.modalMajorName}>{m.name}</div>
+                        <div style={{ display: 'flex', gap: 6, marginTop: 4 }}>
+                          <span style={st.chipDegree}>{m.degree_type || 'Sarjana'}</span>
+                          <span style={m.rumpun === 'soshum' ? st.chipSoshum : st.chipSaintek}>
+                            {m.rumpun_label || 'Saintek'}
                           </span>
-                        </div>
-                        <div style={{ textAlign: 'right' }}>
-                          <span style={{ fontSize: 10, color: '#64748b' }}>Passing Grade:</span>
-                          <div style={{ fontSize: 15, fontWeight: 900, color: '#0f766e' }}>
-                            {pr.skorReferensi?.minimum?.nilai || 720}
-                          </div>
+                          <span style={st.chipAkreditasi}>{m.accreditation || 'Unggul'}</span>
                         </div>
                       </div>
 
-                      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 6, marginTop: 8 }}>
+                      <div style={st.modalStatsCol}>
+                        <div>
+                          <span style={{ fontSize: 11, color: '#64748b' }}>Passing Score: </span>
+                          <b style={{ color: '#0d9488', fontSize: 13.5 }}>{m.passing_score || 700}</b>
+                        </div>
+                        <div>
+                          <span style={{ fontSize: 11, color: '#64748b' }}>Kuota SNBT: </span>
+                          <b style={{ color: '#1e293b' }}>{m.capacity || 50} Kursi</b>
+                        </div>
+                        <div>
+                          <span style={{ fontSize: 11, color: '#64748b' }}>Keketatan: </span>
+                          <b style={{ color: '#64748b' }}>
+                            {m.selectivity ? `${(m.selectivity * 100).toFixed(1)}%` : '3.0%'}
+                          </b>
+                        </div>
+                      </div>
+
+                      <div style={st.modalActionCol}>
                         <button
                           type="button"
-                          onClick={() => {
-                            pasangSebagaiTarget(pr, 1);
-                            setModalPtnTerpilih(null);
-                          }}
-                          style={K.btnPasangTarget1}
+                          onClick={() => handleSimpanPilihan(1, mComplete)}
+                          style={isPilihan1 ? st.btnTerpilihP1 : st.btnAksiP1}
                         >
-                          Pilihan 1 🎯
+                          {isPilihan1 ? '✓ Pilihan 1' : '⭐ Pilihan 1'}
                         </button>
                         <button
                           type="button"
-                          onClick={() => {
-                            pasangSebagaiTarget(pr, 2);
-                            setModalPtnTerpilih(null);
-                          }}
-                          style={K.btnPasangTarget2}
+                          onClick={() => handleSimpanPilihan(2, mComplete)}
+                          style={isPilihan2 ? st.btnTerpilihP2 : st.btnAksiP2}
                         >
-                          Pilihan 2 ⭐
+                          {isPilihan2 ? '✓ Pilihan 2' : '🎯 Pilihan 2'}
                         </button>
                       </div>
                     </div>
-                  ))}
-                </div>
-              ) : (
-                <div style={{ padding: 24, textAlign: 'center', color: '#64748b', fontSize: 13 }}>
-                  Data rincian prodi untuk kampus ini tersedia di portal resmi panitia SNPMB.
-                </div>
-              )}
+                  );
+                })}
             </div>
           </div>
         </div>
@@ -480,306 +572,77 @@ export default function KatalogKampusPage() {
   );
 }
 
-const K = {
-  wrap: {
-    maxWidth: 960,
-    margin: '0 auto',
-    padding: '20px 16px 40px',
-  },
-  headerBar: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  btnKembali: {
+const st = {
+  wrap: { maxWidth: 1180, margin: '0 auto', padding: '20px 16px 80px' },
+  headerWrap: { marginBottom: 20 },
+  judul: { fontSize: 22, fontWeight: 900, color: '#0f172a', margin: 0, letterSpacing: '-0.3px' },
+  subJudul: { fontSize: 13, color: '#475569', margin: '4px 0 16px', lineHeight: 1.5 },
+  btnLihatTargetKu: {
     display: 'inline-flex',
     alignItems: 'center',
-    gap: 4,
-    background: 'none',
-    border: 'none',
-    color: '#0d9488',
-    fontSize: 13,
-    fontWeight: 700,
-    cursor: 'pointer',
-    padding: 0,
-  },
-  badgeHeader: {
-    fontSize: 10.5,
-    fontWeight: 900,
-    color: '#0d9488',
-    background: '#ccfbf1',
-    padding: '4px 10px',
-    borderRadius: 99,
-  },
-  headerInfo: {
-    marginBottom: 16,
-  },
-  judulUtama: {
-    margin: '4px 0 6px',
-    fontSize: 22,
-    fontWeight: 900,
-    color: '#0f172a',
-  },
-  subJudul: {
-    margin: 0,
-    fontSize: 13,
-    color: '#64748b',
-    lineHeight: 1.5,
-  },
-  bannerSukses: {
-    display: 'flex',
-    alignItems: 'center',
     gap: 8,
-    background: '#f0fdf4',
-    border: '1.5px solid #86efac',
-    color: '#166534',
-    padding: '10px 16px',
-    borderRadius: 14,
-    fontSize: 12.5,
-    fontWeight: 700,
-    marginBottom: 16,
-  },
-  kontainerKontrol: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 12,
-    marginBottom: 20,
-  },
-  searchWrap: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 10,
-    background: '#ffffff',
-    border: '1.5px solid #e2e8f0',
-    borderRadius: 16,
-    padding: '10px 16px',
-    boxShadow: '0 2px 8px rgba(0,0,0,0.03)',
-  },
-  searchInput: {
-    flex: 1,
-    border: 'none',
-    outline: 'none',
-    fontSize: 13,
-    color: '#1e293b',
-  },
-  filterRow: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    flexWrap: 'wrap',
-    gap: 10,
-  },
-  tabsNav: {
-    display: 'flex',
-    gap: 6,
-  },
-  tabBtn: {
-    background: '#f1f5f9',
-    border: 'none',
-    color: '#64748b',
-    padding: '8px 14px',
-    borderRadius: 12,
-    fontSize: 12.5,
-    fontWeight: 800,
-    cursor: 'pointer',
-    transition: 'all 0.2s ease',
-  },
-  tabBtnAktif: {
-    background: '#0d9488',
-    color: '#ffffff',
-  },
-  dropdownFilter: {
-    background: '#ffffff',
-    border: '1.5px solid #e2e8f0',
-    borderRadius: 10,
-    padding: '6px 12px',
-    fontSize: 12,
-    fontWeight: 700,
-    color: '#1e293b',
-    cursor: 'pointer',
-  },
-  gridKampus: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-    gap: 14,
-  },
-  cardKampusItem: {
-    background: '#ffffff',
-    border: '1.5px solid #e2e8f0',
-    borderRadius: 18,
-    padding: 16,
-    cursor: 'pointer',
-    boxShadow: '0 4px 14px rgba(0,0,0,0.03)',
-    transition: 'all 0.2s ease',
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'space-between',
-  },
-  logoKampusImg: {
-    width: 44,
-    height: 44,
-    objectFit: 'contain',
-    flexShrink: 0,
-  },
-  monogramFallback: {
-    width: 44,
-    height: 44,
-    borderRadius: 12,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    color: '#ffffff',
-    fontWeight: 900,
-    fontSize: 15,
-    flexShrink: 0,
-  },
-  singkatanKampusBadge: {
-    fontSize: 10,
-    fontWeight: 900,
-    color: '#0d9488',
-    letterSpacing: 0.5,
-  },
-  namaKampusTeks: {
-    margin: '2px 0 4px',
-    fontSize: 14,
-    fontWeight: 800,
-    color: '#0f172a',
-    lineHeight: 1.3,
-  },
-  lokasiKampusRow: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 4,
-    fontSize: 11.5,
-    color: '#64748b',
-  },
-  footerCardKampus: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: 14,
-    paddingTop: 10,
-    borderTop: '1px solid #f1f5f9',
-  },
-  btnLihatDetail: {
-    fontSize: 12,
-    fontWeight: 800,
-    color: '#0d9488',
-  },
-  listProdiGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-    gap: 14,
-  },
-  cardProdiItem: {
-    background: '#ffffff',
-    border: '1.5px solid #e2e8f0',
-    borderRadius: 18,
-    padding: 16,
-    boxShadow: '0 4px 14px rgba(0,0,0,0.03)',
-  },
-  badgeBidangProdi: {
-    fontSize: 9.5,
-    fontWeight: 900,
-    color: '#0284c7',
-    background: '#e0f2fe',
-    padding: '2px 6px',
-    borderRadius: 6,
-  },
-  namaProdiTeks: {
-    margin: '3px 0 1px',
-    fontSize: 14.5,
-    fontWeight: 800,
-    color: '#0f172a',
-  },
-  metrikTigaCol: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(3, 1fr)',
-    gap: 8,
-    margin: '12px 0',
-  },
-  metrikBoxMini: {
-    background: '#f8fafc',
-    borderRadius: 10,
-    padding: '8px 10px',
-    textAlign: 'center',
-  },
-  labelMini: {
-    fontSize: 10,
-    color: '#64748b',
-    fontWeight: 700,
-  },
-  valMini: {
-    fontSize: 13,
-    fontWeight: 900,
-    color: '#0f172a',
-    marginTop: 2,
-  },
-  footerProdiAksi: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    flexWrap: 'wrap',
-    gap: 8,
-    paddingTop: 10,
-    borderTop: '1px dashed #e2e8f0',
-  },
-  btnPasangTarget1: {
     background: '#0d9488',
     color: '#ffffff',
     border: 'none',
-    padding: '6px 12px',
-    borderRadius: 8,
-    fontSize: 11,
+    borderRadius: 10,
+    padding: '9px 16px',
+    fontSize: 12.5,
     fontWeight: 800,
     cursor: 'pointer',
   },
-  btnPasangTarget2: {
-    background: '#f0fdfa',
-    border: '1.5px solid #ccfbf1',
-    color: '#0f766e',
-    padding: '5px 12px',
-    borderRadius: 8,
-    fontSize: 11,
-    fontWeight: 800,
-    cursor: 'pointer',
-  },
-  modalOverlay: {
-    position: 'fixed',
-    inset: 0,
-    background: 'rgba(15, 23, 42, 0.65)',
-    zIndex: 9999,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 16,
-  },
-  modalBox: {
-    background: '#ffffff',
-    borderRadius: 24,
-    maxWidth: 580,
-    width: '100%',
-    overflow: 'hidden',
-    boxShadow: '0 20px 40px rgba(0,0,0,0.2)',
-  },
-  modalHeaderRow: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: '16px 20px',
-    borderBottom: '1px solid #e2e8f0',
-  },
-  btnCloseModal: {
-    background: 'none',
-    border: 'none',
-    cursor: 'pointer',
-    padding: 4,
-  },
-  itemProdiModal: {
-    background: '#f8fafc',
-    border: '1px solid #e2e8f0',
-    borderRadius: 14,
-    padding: 12,
-  },
+  tabBar: { display: 'inline-flex', background: '#f1f5f9', borderRadius: 10, padding: 3, gap: 4 },
+  tabAktif: { background: '#0d9488', color: '#ffffff', border: 'none', padding: '8px 14px', borderRadius: 8, fontSize: 12, fontWeight: 800, cursor: 'pointer' },
+  tabBiasa: { background: 'none', color: '#475569', border: 'none', padding: '8px 14px', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer' },
+  filterBar: { display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center', marginBottom: 16, paddingBottom: 14, borderBottom: '1px solid #f1f5f9' },
+  searchBarWrap: { flex: '1 1 280px', display: 'flex', alignItems: 'center', gap: 8, background: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: 10, padding: '8px 12px' },
+  searchInput: { border: 'none', background: 'none', outline: 'none', fontSize: 13, width: '100%', color: '#1e293b' },
+  btnClearSearch: { background: 'none', border: 'none', cursor: 'pointer', padding: 0 },
+  filterDropdowns: { display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' },
+  selectWrap: { display: 'flex', alignItems: 'center', gap: 6, background: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: 10, padding: '6px 10px' },
+  selectProvinsi: { border: 'none', background: 'none', outline: 'none', fontSize: 12.5, fontWeight: 600, color: '#334155', cursor: 'pointer' },
+  btnGroupRumpun: { display: 'inline-flex', background: '#f1f5f9', borderRadius: 8, padding: 2, gap: 2 },
+  btnRumpunAktif: { background: '#ffffff', color: '#0d9488', border: 'none', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', borderRadius: 6, padding: '5px 10px', fontSize: 11.5, fontWeight: 800, cursor: 'pointer' },
+  btnRumpunBiasa: { background: 'none', color: '#64748b', border: 'none', borderRadius: 6, padding: '5px 10px', fontSize: 11.5, fontWeight: 600, cursor: 'pointer' },
+  ptnGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 14 },
+  ptnCard: { background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 14, padding: 14, cursor: 'pointer', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' },
+  ptnLogoWrap: { width: 44, height: 44, borderRadius: 10, background: '#f8fafc', border: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 4, flexShrink: 0 },
+  ptnLogoImg: { maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' },
+  ptnShortText: { fontSize: 13.5, fontWeight: 800, color: '#0f172a' },
+  ptnFullNameText: { fontSize: 11.5, color: '#64748b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginTop: 1 },
+  ptnLocationText: { display: 'flex', alignItems: 'center', gap: 4, fontSize: 10.5, color: '#94a3b8', marginTop: 4 },
+  ptnCardFooter: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 12, paddingTop: 10, borderTop: '1px solid #f8fafc' },
+  badgeAkreditasi: { fontSize: 10, fontWeight: 800, color: '#0f766e', background: '#ccfbf1', padding: '2px 6px', borderRadius: 6 },
+  badgeProdiCount: { fontSize: 10.5, color: '#64748b', fontWeight: 600 },
+  btnLihatJurusan: { display: 'flex', alignItems: 'center', gap: 2, background: 'none', border: 'none', color: '#0d9488', fontSize: 11, fontWeight: 800, cursor: 'pointer', padding: 0 },
+  prodiList: { display: 'flex', flexDirection: 'column', gap: 10 },
+  prodiRowCard: { background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 12, padding: 12, display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
+  prodiUniLogo: { width: 40, height: 40, objectFit: 'contain', borderRadius: 8, border: '1px solid #e2e8f0', padding: 3 },
+  prodiMajorTitle: { fontSize: 14, fontWeight: 800, color: '#0f172a' },
+  prodiUniSubtitle: { fontSize: 12, color: '#64748b' },
+  chipDegree: { fontSize: 10.5, fontWeight: 800, background: '#f1f5f9', color: '#475569', padding: '2px 8px', borderRadius: 6 },
+  chipSaintek: { fontSize: 10.5, fontWeight: 800, background: '#e0f2fe', color: '#0284c7', padding: '2px 8px', borderRadius: 6 },
+  chipSoshum: { fontSize: 10.5, fontWeight: 800, background: '#fef3c7', color: '#d97706', padding: '2px 8px', borderRadius: 6 },
+  prodiStatsCol: { display: 'flex', gap: 16, alignItems: 'center', flexShrink: 0 },
+  statItemRow: { display: 'flex', flexDirection: 'column', fontSize: 11 },
+  statItemLabel: { color: '#94a3b8', fontSize: 10 },
+  prodiActionCol: { display: 'flex', gap: 6, flexShrink: 0 },
+  btnAksiP1: { background: '#0d9488', color: '#ffffff', border: 'none', padding: '7px 11px', borderRadius: 8, fontSize: 11, fontWeight: 800, cursor: 'pointer' },
+  btnTerpilihP1: { background: '#ccfbf1', color: '#0f766e', border: '1px solid #0d9488', padding: '7px 11px', borderRadius: 8, fontSize: 11, fontWeight: 800, cursor: 'default' },
+  btnAksiP2: { background: '#0f766e', color: '#ffffff', border: 'none', padding: '7px 11px', borderRadius: 8, fontSize: 11, fontWeight: 800, cursor: 'pointer' },
+  btnTerpilihP2: { background: '#f0fdf4', color: '#166534', border: '1px solid #16a34a', padding: '7px 11px', borderRadius: 8, fontSize: 11, fontWeight: 800, cursor: 'default' },
+  toastNotif: { position: 'fixed', bottom: 24, right: 24, background: '#0f172a', color: '#ffffff', padding: '12px 18px', borderRadius: 12, boxShadow: '0 8px 24px rgba(0,0,0,0.25)', display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, fontWeight: 700, zIndex: 9999 },
+  modalOverlay: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(15, 23, 42, 0.65)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: 16 },
+  modalContent: { background: '#ffffff', borderRadius: 20, maxWidth: 720, width: '100%', maxHeight: '90vh', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 40px rgba(0,0,0,0.2)', overflow: 'hidden' },
+  modalHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', padding: '16px 20px', borderBottom: '1px solid #f1f5f9' },
+  modalUniLogo: { width: 50, height: 50, objectFit: 'contain', borderRadius: 10, border: '1px solid #e2e8f0', padding: 4, flexShrink: 0 },
+  modalUniTitle: { fontSize: 17, fontWeight: 900, color: '#0f172a', margin: 0 },
+  modalUniMeta: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#64748b', marginTop: 4, flexWrap: 'wrap' },
+  linkWebsiteUni: { display: 'inline-flex', alignItems: 'center', gap: 3, color: '#0d9488', textDecoration: 'none', fontWeight: 700 },
+  btnCloseModal: { background: 'none', border: 'none', cursor: 'pointer', padding: 4 },
+  modalFilterBar: { display: 'flex', gap: 10, padding: '12px 20px', background: '#f8fafc', borderBottom: '1px solid #e2e8f0', alignItems: 'center', flexWrap: 'wrap' },
+  modalListMajor: { padding: '12px 20px', overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: 10 },
+  modalMajorRow: { background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 12, padding: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' },
+  modalMajorName: { fontSize: 14, fontWeight: 800, color: '#0f172a' },
+  modalStatsCol: { display: 'flex', gap: 12, fontSize: 12, flexShrink: 0 },
+  modalActionCol: { display: 'flex', gap: 6, flexShrink: 0 },
 };

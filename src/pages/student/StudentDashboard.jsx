@@ -11,6 +11,7 @@ import { Html5Qrcode } from "html5-qrcode";
 import { useNavigate } from 'react-router-dom';
 import { RAPORT_COLLECTIONS } from '../../firebase/raportCollection';
 import { ChipTargetSiswa, KartuTargetSiswa } from '../../components/BannerTargetSiswa';
+import { useTargetKampusSiswa } from '../../services/targetKampusService';
 import PusatAmbisGemilang from '../../components/dashboard/PusatAmbisGemilang';
 import StudentDigitalCard from '../../components/StudentDigitalCard';
 import MaskotAstronot from '../../components/MaskotAstronot';
@@ -171,6 +172,7 @@ const StudentDashboard = () => {
   // lazy membaca nilai yang sama pada mount, hasil akhirnya identik.
   const isLoggedInAwal = localStorage.getItem('isSiswaLoggedIn') === 'true';
   const [studentId, setStudentId] = useState(() => (isLoggedInAwal ? localStorage.getItem('studentId') : null));
+  const { target: targetKampusAmbis } = useTargetKampusSiswa(studentId);
   const [studentDocId, setStudentDocId] = useState(() => (isLoggedInAwal ? localStorage.getItem('studentDocId') : null)); // docId Firestore asli (beda dari NIS)
   const [studentProfile, setStudentProfile] = useState(null);
   const [studentKelas, setStudentKelas] = useState(() => localStorage.getItem('studentKelas') || '');
@@ -1061,7 +1063,7 @@ const StudentDashboard = () => {
           studentProfile={studentProfile || {}}
           progresStreak={progresStreak}
           progresXp={progresXp}
-          targetKampus={null}
+          targetKampus={targetKampusAmbis?.pilihan1 || null}
           skorTerkini={raportSummary?.nilaiAkhir || null}
         />
 

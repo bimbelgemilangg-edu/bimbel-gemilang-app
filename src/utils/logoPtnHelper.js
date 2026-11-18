@@ -40,20 +40,37 @@ const LOGO_PTN_MAP = {
 };
 
 /**
- * Mendapatkan URL Logo PTN berdasarkan singkatan, nama kampus, atau ID PTN.
+ * Mendapatkan URL Logo PTN berdasarkan singkatan, nama kampus, ID, atau slug.
  */
 export function getLogoPtn(ptn) {
   if (!ptn) return null;
-  const singkatan = String(ptn.singkatan || '').toUpperCase().trim();
-  const nama = String(ptn.nama || ptn.namaPtn || '').toUpperCase().trim();
+  if (typeof ptn === 'string') {
+    if (ptn.startsWith('http://') || ptn.startsWith('https://')) return ptn;
+    ptn = { nama: ptn };
+  }
 
-  if (LOGO_PTN_MAP[singkatan]) {
+  // 1. Direct logo_url or uni_logo
+  if (ptn.logo_url && typeof ptn.logo_url === 'string') return ptn.logo_url;
+  if (ptn.uni_logo && typeof ptn.uni_logo === 'string') return ptn.uni_logo;
+  if (ptn.logo && typeof ptn.logo === 'string') return ptn.logo;
+
+  const singkatan = String(ptn.singkatan || ptn.short_name || ptn.uni_short || '').toUpperCase().trim();
+  const nama = String(ptn.nama || ptn.name || ptn.namaPtn || ptn.uni_name || '').toUpperCase().trim();
+  const slug = String(ptn.slug || ptn.uni_slug || '').trim().toLowerCase();
+
+  // 2. High-res SVG / PNG Wikipedia map
+  if (singkatan && LOGO_PTN_MAP[singkatan]) {
     return LOGO_PTN_MAP[singkatan];
   }
 
-  // Pencocokan nama fleksibel
+  // 3. Pencocokan nama fleksibel di map
   for (const [key, url] of Object.entries(LOGO_PTN_MAP)) {
     if (nama.includes(key)) return url;
+  }
+
+  // 4. AmbisPTN Cloudflare R2 bucket logo jika slug tersedia
+  if (slug) {
+    return `https://pub-2e9177a2ddc44249bf5d7ec937bdae0a.r2.dev/universities/logos/${slug}.png`;
   }
 
   return null;
