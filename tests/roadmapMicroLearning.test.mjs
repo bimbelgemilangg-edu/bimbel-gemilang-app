@@ -25,22 +25,40 @@ test('deteksi jenjang ujian akhir (SD, SMP, SMA/UTBK)', () => {
   assert.equal(reg, null);
 });
 
-test('arsitektur micro-learning: durasi 15-25 menit & 10-15 butir per unit', () => {
+test('arsitektur micro-learning: durasi 15-25 menit & 10-15 butir per unit & pemisahan subtes murni', () => {
   for (const j of ['SD', 'SMP', 'SMA']) {
     const units = getDaftarUnitJalurUjian(j).filter((u) => u.tipe !== 'review');
-    assert.ok(units.length >= 5, `Jenjang ${j} minimal memiliki 5 unit bertahap`);
+    assert.ok(units.length >= 8, `Jenjang ${j} minimal memiliki 8 unit bertahap (ditemukan ${units.length})`);
     for (const u of units) {
       assert.ok(u.durasiMenit >= 15 && u.durasiMenit <= 25, `${j} Unit ${u.unitNomor} durasi ${u.durasiMenit} mnt melebihi batas ramah micro-learning`);
       assert.ok(u.jumlahSoal >= 10 && u.jumlahSoal <= 15, `${j} Unit ${u.unitNomor} jumlah soal ${u.jumlahSoal} butir melebihi batas micro-learning`);
       assert.ok(Boolean(u.polaFokus), `${j} Unit ${u.unitNomor} wajib memiliki fokus pola soal`);
+      assert.ok(Boolean(u.subtesKode), `${j} Unit ${u.unitNomor} wajib memiliki kode subtes yang jelas`);
+      assert.ok(Boolean(u.kategoriSubtes), `${j} Unit ${u.unitNomor} wajib memiliki kategori subtes`);
+
+      // Tidak boleh mencampurkan Matematika dan Bahasa Indonesia dalam 1 unit latihan (unit 1-7)
+      if (u.unitNomor < 8) {
+        assert.ok(!u.judul.toLowerCase().includes(' dan '), `${j} Unit ${u.unitNomor} tidak boleh mencampur dua mapel dengan kata 'dan'`);
+        if (j === 'SMP' || j === 'SD') {
+          assert.ok(
+            u.kategoriSubtes === 'Matematika' || u.kategoriSubtes === 'Bahasa Indonesia',
+            `${j} Unit ${u.unitNomor} harus murni Matematika atau Bahasa Indonesia`
+          );
+        } else if (j === 'SMA') {
+          assert.ok(
+            ['PU', 'PK', 'PBM', 'PPU', 'LBI', 'LBE', 'PM'].includes(u.subtesKode),
+            `SMA Unit ${u.unitNomor} harus merupakan salah satu dari 7 subtes resmi SNPMB`
+          );
+        }
+      }
     }
   }
 });
 
-test('anti-zonk fallback preset: kesiapan 100% soal untuk seluruh unit SD, SMP, SMA', () => {
-  // SD
-  for (let u = 1; u <= 5; u++) {
-    const target = u === 5 ? 15 : 12;
+test('anti-zonk fallback preset: kesiapan 100% soal untuk seluruh 8 unit SD, SMP, SMA', () => {
+  // SD (8 Unit)
+  for (let u = 1; u <= 8; u++) {
+    const target = u === 8 ? 14 : 12;
     const soal = getSoalPresetUnitRoadmap('SD', u, target);
     assert.equal(soal.length, target, `SD Unit ${u} gagal menghasilkan ${target} soal master`);
     for (const s of soal) {
@@ -49,9 +67,9 @@ test('anti-zonk fallback preset: kesiapan 100% soal untuk seluruh unit SD, SMP, 
     }
   }
 
-  // SMP
-  for (let u = 1; u <= 6; u++) {
-    const target = u === 6 ? 15 : 12;
+  // SMP (8 Unit)
+  for (let u = 1; u <= 8; u++) {
+    const target = u === 8 ? 14 : 12;
     const soal = getSoalPresetUnitRoadmap('SMP', u, target);
     assert.equal(soal.length, target, `SMP Unit ${u} gagal menghasilkan ${target} soal master`);
     for (const s of soal) {
@@ -60,9 +78,9 @@ test('anti-zonk fallback preset: kesiapan 100% soal untuk seluruh unit SD, SMP, 
     }
   }
 
-  // SMA / UTBK
-  for (let u = 1; u <= 6; u++) {
-    const target = u === 6 ? 15 : 12;
+  // SMA / UTBK (8 Unit)
+  for (let u = 1; u <= 8; u++) {
+    const target = u === 8 ? 14 : 12;
     const soal = getSoalPresetUnitRoadmap('SMA', u, target);
     assert.equal(soal.length, target, `SMA Unit ${u} gagal menghasilkan ${target} soal master`);
     for (const s of soal) {

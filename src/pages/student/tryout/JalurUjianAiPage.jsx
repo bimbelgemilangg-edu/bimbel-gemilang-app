@@ -38,6 +38,60 @@ import {
 } from '../../../utils/jalurUjianAiConfig';
 import MaskotAstronot from '../../../components/MaskotAstronot';
 
+/**
+ * Membangun laporan breakdown penguasaan per subtes / per mapel murni (Benchmark AmbisPTN)
+ * Memastikan analisis siswa terisolasi, objektif, dan tidak mencampur Matematika vs Bahasa Indonesia.
+ */
+function bangunBreakdownSubtes(unitList = []) {
+  const subtesMap = new Map();
+  (unitList || []).filter((u) => u.tipe !== 'review').forEach((u) => {
+    const kode = u.subtesKode || u.mapel || `Unit ${u.unitNomor}`;
+    const namaSubtes = u.mapel || u.judul;
+    const kat = u.kategoriSubtes || 'Subtes';
+    if (!subtesMap.has(kode)) {
+      subtesMap.set(kode, {
+        kode,
+        nama: namaSubtes,
+        kategori: kat,
+        unitNomorAwal: u.unitNomor,
+        unitList: [],
+        skorList: [],
+      });
+    }
+    const item = subtesMap.get(kode);
+    item.unitList.push(u);
+    if (u.status === 'completed' && u.skor != null) {
+      item.skorList.push(Number(u.skor));
+    }
+  });
+
+  return Array.from(subtesMap.values()).map((st) => {
+    const ada = st.skorList.length > 0;
+    const skorRata = ada ? Math.round(st.skorList.reduce((a, b) => a + b, 0) / st.skorList.length) : null;
+    let labelStatus = `Belum Dikerjakan (Mulai Unit ${st.unitNomorAwal})`;
+    let warna = '#64748b';
+    if (ada) {
+      if (skorRata >= 80) {
+        labelStatus = 'Sangat Kuat 🚀';
+        warna = '#10b981';
+      } else if (skorRata >= 65) {
+        labelStatus = 'Cukup Baik 👍';
+        warna = '#0284c7';
+      } else {
+        labelStatus = 'Perlu Pemantapan ⚠️';
+        warna = '#d97706';
+      }
+    }
+    return {
+      ...st,
+      skorRata,
+      sudahSelesai: ada,
+      labelStatus,
+      warna,
+    };
+  });
+}
+
 export default function JalurUjianAiPage() {
   const navigate = useNavigate();
   const profil = useProfilSiswa();
@@ -147,6 +201,36 @@ export default function JalurUjianAiPage() {
     return hitungProgresiJalur(daftarUnit, sesiList);
   }, [daftarUnit, sesiList]);
 
+  // Tab Filter Subtes / Mata Pelajaran Mandiri (Benchmark AmbisPTN Practice)
+  const [filterSubtesAktif, setFilterSubtesAktif] = useState('semua');
+
+  const daftarFilter = useMemo(() => {
+    const j = targetJenjang?.jenjang || 'SMP';
+    if (j === 'SMA') {
+      return [
+        { id: 'semua', label: '🌟 Semua Misi (8 Unit)' },
+        { id: 'TPS', label: '🧠 TPS (PU, PK, PBM, PPU)' },
+        { id: 'Literasi', label: '📖 Literasi (LBI, LBE, PM)' },
+        { id: 'Simulasi', label: '🎯 Simulasi Terpadu' },
+      ];
+    }
+    return [
+      { id: 'semua', label: '🌟 Semua Misi (8 Unit)' },
+      { id: 'Matematika', label: '📐 TKA Matematika (4 Unit)' },
+      { id: 'Bahasa Indonesia', label: '📖 TKA B. Indonesia (3 Unit)' },
+      { id: 'Simulasi', label: '🎯 Simulasi Terpadu' },
+    ];
+  }, [targetJenjang]);
+
+  // Saring node unit yang tampil sesuai tab filter
+  const unitListTampil = useMemo(() => {
+    if (filterSubtesAktif === 'semua') return unitList;
+    return unitList.filter((u) => {
+      if (u.tipe === 'review') return true;
+      return u.kategoriSubtes === filterSubtesAktif;
+    });
+  }, [unitList, filterSubtesAktif]);
+
   // 4. Target Kampus Siswa (Bagi jenjang SMA/UTBK)
   const keadaanTarget = useDataTargetKampus(studentId, profil);
   const targetKampusData = useMemo(() => {
@@ -168,6 +252,9 @@ export default function JalurUjianAiPage() {
 
   // 5. Analisis Perilaku & Kognitif oleh Asisten Belajar Gemilang (HANYA sesi Roadmap siswa yang aktif)
   const analisisBelajar = useMemo(() => {
+    // Bangun breakdown skor per subtes / per mapel murni (Benckmark AmbisPTN)
+    const breakdownSubtes = bangunBreakdownSubtes(unitList);
+
     // Kumpulan ID unit sah milik Roadmap ini
     const validRoadmapIds = new Set();
     daftarUnit.forEach((u) => {
@@ -211,6 +298,7 @@ export default function JalurUjianAiPage() {
         evaluasiWacana: 'Asisten Belajar Gemilang akan menganalisis daya tahan membacamu dalam membedah wacana panjang dan kekebalan terhadap distraktor setelah kamu menuntaskan Unit 1.',
         evaluasiHitung: 'Ketelitian rumus dan pemodelan aljabarmu akan terpetakan secara presisi setelah kamu mengumpulkan jawaban simulasi pertama.',
         pesanTanggungJawab: 'Setiap siswa memiliki potensi dan kurva belajar yang unik. Mulai dari Unit 1 (12 soal • 20 menit) untuk memetakan kekuatan belajarmu!',
+        breakdownSubtes,
         sesiSelesai: [],
       };
     }
@@ -285,9 +373,10 @@ export default function JalurUjianAiPage() {
       evaluasiWacana,
       evaluasiHitung,
       pesanTanggungJawab,
+      breakdownSubtes,
       sesiSelesai: sesiRoadmapSelesai,
     };
-  }, [daftarUnit, sesiList, selesaiCount, studentId, studentDocId, profil]);
+  }, [daftarUnit, sesiList, selesaiCount, studentId, studentDocId, profil, unitList]);
 
   // Handler klik node unit
   const handleKlikUnit = (unit) => {
@@ -325,7 +414,7 @@ export default function JalurUjianAiPage() {
   // JIKA SISWA BUKAN KELAS AKHIR
   if (!targetJenjang) {
     return (
-      <div style={st.bukanAkhirWrapper}>
+      <div style={st.bukanAkhIRWrapper || st.bukanAkhirWrapper}>
         <div style={st.kartuBukanAkhir}>
           <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 16 }}>
             <MaskotAstronot size={110} />
@@ -351,8 +440,8 @@ export default function JalurUjianAiPage() {
     );
   }
 
-  // Hitung ketinggian dinamis peta berdasarkan jumlah unit
-  const tinggiMap = Math.max(760, unitList.length * 155 + 180);
+  // Hitung ketinggian dinamis peta berdasarkan jumlah unit yang tampil
+  const tinggiMap = Math.max(680, unitListTampil.length * 145 + 180);
 
   return (
     <div style={st.container}>
@@ -481,6 +570,31 @@ export default function JalurUjianAiPage() {
         )}
       </div>
 
+      {/* 🧭 TAB NAVIGASI SUBTES (BENCHMARK AMBISPTN PRACTICE) */}
+      <div style={st.tabFilterSubtesWrap}>
+        <div style={st.tabFilterSubtesScroll}>
+          {daftarFilter.map((f) => {
+            const isAktif = filterSubtesAktif === f.id;
+            return (
+              <button
+                key={f.id}
+                type="button"
+                onClick={() => setFilterSubtesAktif(f.id)}
+                style={{
+                  ...st.btnFilterSubtes,
+                  background: isAktif ? '#0f766e' : 'rgba(255, 255, 255, 0.92)',
+                  color: isAktif ? '#ffffff' : '#0f766e',
+                  border: isAktif ? '1.5px solid #0f766e' : '1.5px solid rgba(255, 255, 255, 0.7)',
+                  boxShadow: isAktif ? '0 4px 12px rgba(15, 118, 110, 0.35)' : '0 2px 6px rgba(0,0,0,0.06)',
+                }}
+              >
+                {f.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
       {/* ============================================================ */}
       {/* 🗺️ PETA JALUR BERLIKU (WINDING GAME PATH) ALA DUOLINGO       */}
       {/* ============================================================ */}
@@ -493,13 +607,14 @@ export default function JalurUjianAiPage() {
           xmlns="http://www.w3.org/2000/svg"
         >
           {/* Path berliku dinamis menghubungkan dari node bawah ke atas */}
-          {unitList.map((u, i) => {
-            if (i >= unitList.length - 1) return null;
+          {unitListTampil.map((u, i) => {
+            if (i >= unitListTampil.length - 1) return null;
             // Node i ada di posisi (x1, y1), Node i+1 di (x2, y2)
             const y1 = tinggiMap - 120 - i * 145;
             const y2 = tinggiMap - 120 - (i + 1) * 145;
+            const isTopReviewNext = i + 1 === unitListTampil.length - 1;
             const x1 = i === 0 ? 180 : i % 2 === 1 ? 100 : 260;
-            const x2 = i + 1 === unitList.length - 1 ? 180 : (i + 1) % 2 === 1 ? 100 : 260;
+            const x2 = isTopReviewNext ? 180 : (i + 1) % 2 === 1 ? 100 : 260;
             const cx1 = x1;
             const cy1 = (y1 + y2) / 2;
             const cx2 = x2;
@@ -526,7 +641,7 @@ export default function JalurUjianAiPage() {
         <div style={{ ...st.ornamenKosmik, top: '75%', left: '12%' }}>✨</div>
 
         {/* RENDER NODE-NODE BERTAHAP SECARA BERLIKU DARI BAWAH KE ATAS */}
-        {unitList.map((unit, idx) => {
+        {unitListTampil.map((unit, idx) => {
           const yPos = tinggiMap - 120 - idx * 145;
           const isTopReview = unit.tipe === 'review';
           const xPos = isTopReview ? '50%' : idx === 0 ? '50%' : idx % 2 === 1 ? '28%' : '72%';
@@ -549,7 +664,7 @@ export default function JalurUjianAiPage() {
             );
           }
 
-          if (idx === 0) {
+          if (unit.unitNomor === 1) {
             return (
               <div
                 key={unit.id}
@@ -948,6 +1063,60 @@ export default function JalurUjianAiPage() {
               </div>
             )}
 
+            {/* 📊 DIAGNOSA PENGUASAAN SUBTES / MAPEL (FORMAT AMBISPTN BENCHMARK) */}
+            <div style={st.kartuBreakdownSubtes}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                  <BarChart3 size={17} color="#0d9488" />
+                  <span style={{ fontSize: 13.5, fontWeight: 800, color: '#0f766e' }}>
+                    Diagnosa Penguasaan Subtes / Mapel
+                  </span>
+                </div>
+                <span style={{ fontSize: 11, fontWeight: 700, color: '#64748b' }}>
+                  Standar {targetJenjang.jenjang === 'SMA' ? '7 Subtes SNPMB' : 'TKA Mandiri'}
+                </span>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {(analisisBelajar.breakdownSubtes || []).map((stItem) => (
+                  <div key={stItem.kode} style={st.barisBreakdownItem}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 12, marginBottom: 4 }}>
+                      <span style={{ fontWeight: 800, color: '#1e293b' }}>
+                        {stItem.nama}
+                      </span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        {stItem.sudahSelesai ? (
+                          <span style={{ fontWeight: 900, color: stItem.warna, fontSize: 13 }}>
+                            {stItem.skorRata}%
+                          </span>
+                        ) : null}
+                        <span style={{
+                          fontSize: 10.5,
+                          fontWeight: 800,
+                          padding: '2px 8px',
+                          borderRadius: 6,
+                          background: stItem.sudahSelesai ? (stItem.skorRata >= 80 ? '#dcfce7' : stItem.skorRata >= 65 ? '#dbeafe' : '#fef3c7') : '#f1f5f9',
+                          color: stItem.warna,
+                        }}>
+                          {stItem.labelStatus}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div style={st.barSubtesTrack}>
+                      <div style={{
+                        height: '100%',
+                        width: stItem.sudahSelesai ? `${Math.min(100, Math.max(5, stItem.skorRata))}%` : '0%',
+                        background: stItem.warna,
+                        borderRadius: 99,
+                        transition: 'width 0.4s ease',
+                      }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
             {/* HISTORI CAPAIAN MISI */}
             <div style={{ marginBottom: 16 }}>
               <div style={{ fontSize: 12.5, fontWeight: 800, color: '#1e293b', marginBottom: 8 }}>
@@ -1000,6 +1169,10 @@ export default function JalurUjianAiPage() {
 // ============================================================
 function KomponenNodeStart({ unit, onKlik }) {
   const isCompleted = unit.status === 'completed';
+  const labelSubtes = unit.subtesKode
+    ? (unit.subtesKode === 'MTK' ? 'TKA MTK' : unit.subtesKode === 'BINDO' ? 'TKA B. Indo' : unit.subtesKode)
+    : (unit.mapel || 'Unit 1');
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
       <button
@@ -1014,7 +1187,7 @@ function KomponenNodeStart({ unit, onKlik }) {
             ? '0 10px 24px rgba(16, 185, 129, 0.45), inset 0 2px 4px rgba(255,255,255,0.4)'
             : '0 10px 24px rgba(249, 115, 22, 0.5), inset 0 2px 4px rgba(255,255,255,0.4)',
         }}
-        title="Mulai Misi Tahap 1"
+        title={`Tahap ${unit.unitNomor}: ${unit.judul}`}
       >
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
           {isCompleted ? (
@@ -1030,7 +1203,7 @@ function KomponenNodeStart({ unit, onKlik }) {
 
       <div style={st.labelNodeBawah}>
         <span style={{ fontWeight: 800, color: '#064e3b', fontSize: 11.5 }}>
-          {unit.polaFokus ? `Unit 1 • ${unit.polaFokus.split('&')[0].trim()}` : (unit.judul.length > 22 ? unit.judul.slice(0, 22) + '...' : unit.judul)}
+          Unit 1 • {labelSubtes}
         </span>
         {isCompleted && (
           <span style={{ fontSize: 11, fontWeight: 800, color: '#047857', marginLeft: 4 }}>
@@ -1048,6 +1221,9 @@ function KomponenNodeStart({ unit, onKlik }) {
 function KomponenNodeUnit({ unit, onKlik }) {
   const isCompleted = unit.status === 'completed';
   const isCurrent = unit.status === 'current';
+  const labelSubtes = unit.subtesKode
+    ? (unit.subtesKode === 'MTK' ? 'TKA MTK' : unit.subtesKode === 'BINDO' ? 'TKA B. Indo' : unit.subtesKode === 'TERPADU' ? 'Simulasi Terpadu' : unit.subtesKode)
+    : (unit.mapel || `Unit ${unit.unitNomor}`);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
@@ -1068,7 +1244,7 @@ function KomponenNodeUnit({ unit, onKlik }) {
               ? '0 8px 18px rgba(16, 185, 129, 0.35)'
               : '0 6px 14px rgba(13, 148, 136, 0.35)',
         }}
-        title={unit.judul}
+        title={`Tahap ${unit.unitNomor}: ${unit.judul}`}
       >
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
           {isCompleted ? (
@@ -1086,7 +1262,7 @@ function KomponenNodeUnit({ unit, onKlik }) {
 
       <div style={st.labelNodeBawah}>
         <span style={{ fontWeight: 800, color: '#064e3b', fontSize: 11 }}>
-          {unit.polaFokus ? `Unit ${unit.unitNomor} • ${unit.polaFokus.split('&')[0].trim()}` : (unit.mapel || `Unit ${unit.unitNomor}`)}
+          Unit {unit.unitNomor} • {labelSubtes}
         </span>
         {isCompleted && (
           <span style={{ fontSize: 10.5, fontWeight: 800, color: '#047857', marginLeft: 3 }}>
@@ -1194,6 +1370,52 @@ const st = {
     padding: '10px 14px',
     boxShadow: '0 4px 14px rgba(15, 118, 110, 0.15)',
   },
+  tabFilterSubtesWrap: {
+    position: 'relative',
+    zIndex: 10,
+    margin: '10px 16px 14px',
+  },
+  tabFilterSubtesScroll: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 8,
+    overflowX: 'auto',
+    paddingBottom: 4,
+    scrollbarWidth: 'none',
+  },
+  btnFilterSubtes: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: 6,
+    padding: '7px 14px',
+    borderRadius: 99,
+    fontSize: 12,
+    fontWeight: 800,
+    whiteSpace: 'nowrap',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+  },
+  kartuBreakdownSubtes: {
+    background: '#ffffff',
+    border: '1.5px solid #ccfbf1',
+    borderRadius: 14,
+    padding: '14px 16px',
+    marginBottom: 14,
+    boxShadow: '0 4px 12px rgba(13, 148, 136, 0.08)',
+  },
+  barisBreakdownItem: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 4,
+    padding: '8px 0',
+    borderBottom: '1px solid #f1f5f9',
+  },
+  barSubtesTrack: {
+    height: 7,
+    background: '#e2e8f0',
+    borderRadius: 99,
+    overflow: 'hidden',
+  },
   progressBarTrack: {
     height: 8,
     background: '#e2e8f0',
@@ -1254,7 +1476,7 @@ const st = {
     borderRadius: 99,
     boxShadow: '0 2px 6px rgba(0,0,0,0.1)',
     textAlign: 'center',
-    maxWidth: 140,
+    maxWidth: 165,
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap',

@@ -170,95 +170,160 @@ export function getDaftarUnitJalurUjian(jenjang = 'SMP') {
   const j = String(jenjang).toUpperCase();
 
   // ------------------------------------------------------------
-  // 🎒 1. JALUR UJIAN TKA SD (KELAS 6 / FASE C) — 12-15 SOAL (15-20 MNT)
+  // 🎒 1. JALUR UJIAN TKA SD (KELAS 6 / FASE C) — SUBTES MURNI 12-14 SOAL (20 MNT)
+  // Dipisah tegas: Matematika dan Bahasa Indonesia TIDAK DICAMPUR
   // ------------------------------------------------------------
   if (j === 'SD') {
     return [
       {
         id: 'jalur-ai-sd-u1',
         unitNomor: 1,
-        judul: 'Unit 1: Pola Pecahan & Bacaan Sastra Fabel',
-        subjudul: 'Pecahan Senilai, Rasio & Amanat Cerita',
+        judul: 'Unit 1: TKA Matematika — Pecahan & Bilangan Rasional',
+        subjudul: 'Pecahan Senilai, Bentuk Desimal & Operasi Hitung',
         tipe: 'start',
-        mapel: 'Matematika Dasar & Teks Fiksi SD',
-        polaFokus: 'Bilangan Rasional & Sastra Anak',
+        mapel: 'TKA Matematika',
+        subtesKode: 'MTK',
+        kategoriSubtes: 'Matematika',
+        polaFokus: 'Pecahan Senilai & Perbandingan Rasio',
         durasiMenit: 20,
         jumlahSoal: 12,
         passingGrade: 60,
         xpReward: 100,
         icon: 'Rocket',
         posisiAlign: 'center',
-        deskripsi: 'Misi kilat 20 menit: kuasai pola hitung pecahan senilai dan temukan amanat tersirat teks fabel anak.',
+        deskripsi: 'Misi kilat 20 menit: taklukkan operasi hitung pecahan senilai dan perbandingan rasio bilangan.',
       },
       {
         id: 'jalur-ai-sd-u2',
         unitNomor: 2,
-        judul: 'Unit 2: Pola Keliling, Luas & Fakta Wacana Tersurat',
-        subjudul: 'Geometri Datar Gabungan & Teks Informasi',
+        judul: 'Unit 2: TKA Bahasa Indonesia — Fakta Wacana Tersurat',
+        subjudul: 'Menemukan Fakta Kunci & Ide Tersurat dalam Teks Informasi',
         tipe: 'unit',
-        mapel: 'Geometri Pengukuran & Wacana Informasi',
-        polaFokus: 'Geometri Bidang & Fakta Tersurat',
+        mapel: 'TKA Bahasa Indonesia',
+        subtesKode: 'BINDO',
+        kategoriSubtes: 'Bahasa Indonesia',
+        polaFokus: 'Teks Informasi & Fakta Tersurat',
         durasiMenit: 20,
         jumlahSoal: 12,
         passingGrade: 65,
         xpReward: 120,
         icon: 'BookOpen',
         posisiAlign: 'left',
-        deskripsi: 'Misi kilat 20 menit: bedah rumus luas/keliling bangun datar gabungan dan tandai fakta tersurat.',
+        deskripsi: 'Misi kilat 20 menit: bedah wacana informasi dan temukan fakta kunci tanpa terkecoh opsi mirip.',
       },
       {
         id: 'jalur-ai-sd-u3',
         unitNomor: 3,
-        judul: 'Unit 3: Pola Kecepatan, Debit & Ringkasan Ide Pokok',
-        subjudul: 'Pengukuran Terapan & Gagasan Utama Paragraf',
+        judul: 'Unit 3: TKA Matematika — Geometri Keliling & Luas',
+        subjudul: 'Bangun Datar Gabungan & Pemecahan Masalah Luas',
         tipe: 'unit',
-        mapel: 'Matematika Terapan & Ringkasan Bacaan',
-        polaFokus: 'Pengukuran Debit/Kecepatan & Ide Pokok',
+        mapel: 'TKA Matematika',
+        subtesKode: 'MTK',
+        kategoriSubtes: 'Matematika',
+        polaFokus: 'Geometri Keliling & Luas Bangun Datar',
         durasiMenit: 20,
         jumlahSoal: 12,
         passingGrade: 70,
         xpReward: 140,
         icon: 'Sparkles',
         posisiAlign: 'right',
-        deskripsi: 'Misi kilat 20 menit: taklukkan soal cerita debit/kecepatan dan simpulkan ide pokok paragraf dengan tepat.',
+        deskripsi: 'Misi kilat 20 menit: kuasai rumus luas/keliling bangun gabungan dengan pemotongan bidang cerdas.',
       },
       {
         id: 'jalur-ai-sd-u4',
         unitNomor: 4,
-        judul: 'Unit 4: Pola Pengolahan Data & Makna Tersirat',
-        subjudul: 'Diagram Batang, Piktogram & Kesimpulan Cerita',
+        judul: 'Unit 4: TKA Bahasa Indonesia — Sastra Fabel & Makna Tersirat',
+        subjudul: 'Amanat Cerita, Watak Tokoh & Pesan Moral Fabel',
         tipe: 'unit',
-        mapel: 'Data Sederhana & Literasi Inferensial',
-        polaFokus: 'Statistika Diagram & Makna Tersirat',
+        mapel: 'TKA Bahasa Indonesia',
+        subtesKode: 'BINDO',
+        kategoriSubtes: 'Bahasa Indonesia',
+        polaFokus: 'Sastra Anak & Amanat Tersirat',
         durasiMenit: 20,
         jumlahSoal: 12,
-        passingGrade: 75,
+        passingGrade: 70,
         xpReward: 160,
         icon: 'Award',
         posisiAlign: 'left',
-        deskripsi: 'Misi kilat 20 menit: baca data tabel/diagram dan tarik kesimpulan tersirat dari bacaan tanpa ragu.',
+        deskripsi: 'Misi kilat 20 menit: temukan amanat tersembunyi dan watak tokoh fabel dengan jeli.',
       },
       {
         id: 'jalur-ai-sd-u5',
         unitNomor: 5,
-        judul: 'Unit 5: Pengayaan Penalaran HOTS Standarisasi SD',
-        subjudul: 'Kombinasi Pola Problem Solving Menuju SMP Favorit',
+        judul: 'Unit 5: TKA Matematika — Pengukuran Kecepatan & Debit',
+        subjudul: 'Soal Cerita Jarak Waktu Kecepatan serta Debit Volume',
         tipe: 'unit',
-        mapel: 'TKA SD HOTS Matematika & Literasi',
-        polaFokus: 'HOTS Problem Solving Standar Asesmen Daerah',
-        durasiMenit: 25,
-        jumlahSoal: 15,
-        passingGrade: 80,
-        xpReward: 200,
-        icon: 'Trophy',
+        mapel: 'TKA Matematika',
+        subtesKode: 'MTK',
+        kategoriSubtes: 'Matematika',
+        polaFokus: 'Satuan Kecepatan & Debit Aliran',
+        durasiMenit: 20,
+        jumlahSoal: 12,
+        passingGrade: 75,
+        xpReward: 180,
+        icon: 'Sparkles',
         posisiAlign: 'right',
-        deskripsi: 'Tantangan pemantapan 25 menit: asah reflek menghadapi soal penalaran tingkat tinggi standar masuk SMP.',
+        deskripsi: 'Misi kilat 20 menit: modelkan kasus aliran debit dan susul-menyusul kecepatan tanpa bingung satuan.',
+      },
+      {
+        id: 'jalur-ai-sd-u6',
+        unitNomor: 6,
+        judul: 'Unit 6: TKA Bahasa Indonesia — Ide Pokok & Simpulan Teks',
+        subjudul: 'Menentukan Gagasan Utama Paragraf & Simpulan Akhir',
+        tipe: 'unit',
+        mapel: 'TKA Bahasa Indonesia',
+        subtesKode: 'BINDO',
+        kategoriSubtes: 'Bahasa Indonesia',
+        polaFokus: 'Gagasan Utama & Simpulan Paragraf',
+        durasiMenit: 20,
+        jumlahSoal: 12,
+        passingGrade: 75,
+        xpReward: 200,
+        icon: 'BookOpen',
+        posisiAlign: 'left',
+        deskripsi: 'Misi kilat 20 menit: kuasai teknik skimming untuk menyimpulkan ide pokok paragraf secara presisi.',
+      },
+      {
+        id: 'jalur-ai-sd-u7',
+        unitNomor: 7,
+        judul: 'Unit 7: TKA Matematika — Pengolahan Data & Diagram',
+        subjudul: 'Membaca Tabel, Diagram Batang, Garis & Rata-rata Nilai',
+        tipe: 'unit',
+        mapel: 'TKA Matematika',
+        subtesKode: 'MTK',
+        kategoriSubtes: 'Matematika',
+        polaFokus: 'Statistika Tabel Diagram & Rata-rata',
+        durasiMenit: 20,
+        jumlahSoal: 12,
+        passingGrade: 80,
+        xpReward: 220,
+        icon: 'Award',
+        posisiAlign: 'right',
+        deskripsi: 'Misi kilat 20 menit: ekstrak informasi dari tabel/diagram dan hitung nilai mean secara kilat.',
+      },
+      {
+        id: 'jalur-ai-sd-u8',
+        unitNomor: 8,
+        judul: 'Unit 8: Simulasi Terpadu Asesmen Standarisasi SD',
+        subjudul: 'Simulasi Lengkap Matematika & Bahasa Indonesia Menuju SMP',
+        tipe: 'unit',
+        mapel: 'Simulasi Terpadu TKA SD',
+        subtesKode: 'TERPADU',
+        kategoriSubtes: 'Simulasi',
+        polaFokus: 'Simulasi Terpadu Standarisasi SD',
+        durasiMenit: 25,
+        jumlahSoal: 14,
+        passingGrade: 80,
+        xpReward: 250,
+        icon: 'Trophy',
+        posisiAlign: 'left',
+        deskripsi: 'Tantangan puncak 25 menit: simulasi gabungan standar Asesmen TKA SD untuk membuktikan kesiapan masuk SMP impian!',
       },
       {
         id: 'jalur-ai-sd-review',
-        unitNomor: 6,
-        judul: 'Review & Analisis Kelulusan SD',
-        subjudul: 'Radar Penguasaan Materi & Rekomendasi Belajar',
+        unitNomor: 9,
+        judul: 'Radar Diagnosa TKA SD & Analisis Kelulusan',
+        subjudul: 'Breakdown Penguasaan Matematika vs Bahasa Indonesia',
         tipe: 'review',
         posisiAlign: 'center',
         deskripsi: 'Analisis komprehensif performamu dari seluruh unit. Temukan kekuatanmu dan materi yang perlu ditingkatkan!',
@@ -267,223 +332,321 @@ export function getDaftarUnitJalurUjian(jenjang = 'SMP') {
   }
 
   // ------------------------------------------------------------
-  // 🎓 2. JALUR UJIAN UTBK-SNBT SMA (KELAS 12 / FASE F) — 12-15 SOAL (18-20 MNT)
+  // 🎓 2. JALUR UJIAN UTBK-SNBT SMA (KELAS 12 / FASE F) — 7 SUBTES RESMI SNPMB
+  // 100% PURE SUBTES: PU, PK, PBM, PPU, LBI, LBE, PM + SIMULASI TERPADU
   // ------------------------------------------------------------
   if (j === 'SMA' || j === 'SMK') {
     return [
       {
         id: 'jalur-ai-sma-u1',
         unitNomor: 1,
-        judul: 'Unit 1: Pola Aljabar Kuantitatif & Wacana Kritis',
-        subjudul: 'Persamaan Linear, Fungsi Kuadrat & Ide Pokok Wacana',
+        judul: 'Unit 1: Penalaran Umum (PU)',
+        subjudul: 'Penalaran Induktif, Deduktif & Logika Silogisme',
         tipe: 'start',
-        mapel: 'Pengetahuan Kuantitatif (PK) & Literasi B. Indonesia',
-        polaFokus: 'Aljabar Fungsi & Wacana Kritis',
+        mapel: 'Penalaran Umum (PU)',
+        subtesKode: 'PU',
+        kategoriSubtes: 'TPS',
+        polaFokus: 'Logika Silogisme & Penalaran Analitis',
         durasiMenit: 20,
         jumlahSoal: 12,
         passingGrade: 60,
         xpReward: 120,
         icon: 'Rocket',
         posisiAlign: 'center',
-        deskripsi: 'Misi kilat 20 menit: kuasai fungsi aljabar kuantitatif dan temukan argumen utama wacana analitis.',
+        deskripsi: 'Misi kilat 20 menit: taklukkan logika deduktif, modus tollens, silogisme, dan pola deret analitis khas UTBK.',
       },
       {
         id: 'jalur-ai-sma-u2',
         unitNomor: 2,
-        judul: 'Unit 2: Trik Kecukupan Data (1) & (2) + Silogisme PU',
-        subjudul: 'Data Sufficiency Kuantitatif & Logika Deduktif',
+        judul: 'Unit 2: Pengetahuan Kuantitatif (PK)',
+        subjudul: 'Aljabar, Kuantitas P vs Q & Kecukupan Data (1) (2)',
         tipe: 'unit',
-        mapel: 'Pengetahuan Kuantitatif & Penalaran Umum (PU)',
-        polaFokus: 'Kecukupan Data & Penalaran Deduktif',
+        mapel: 'Pengetahuan Kuantitatif (PK)',
+        subtesKode: 'PK',
+        kategoriSubtes: 'TPS',
+        polaFokus: 'Aljabar & Kecukupan Data (1) (2)',
         durasiMenit: 20,
         jumlahSoal: 12,
         passingGrade: 65,
         xpReward: 140,
         icon: 'BookOpen',
         posisiAlign: 'left',
-        deskripsi: 'Misi kilat 20 menit: kuasai format khas UTBK "apakah pernyataan cukup?" dengan trik cepat tanpa hitung panjang.',
+        deskripsi: 'Misi kilat 20 menit: kuasai format khas UTBK "apakah pernyataan cukup?" dan relasi nilai P vs Q.',
       },
       {
         id: 'jalur-ai-sma-u3',
         unitNomor: 3,
-        judul: 'Unit 3: Pola Soal Cerita PM & Struktur Baku PBM',
-        subjudul: 'Penalaran Matematika Kontekstual & Ejaan Bahasa',
+        judul: 'Unit 3: Pemahaman Bacaan & Menulis (PBM)',
+        subjudul: 'Kaidah Ejaan Baku, Kalimat Efektif & Bentuk Rancu',
         tipe: 'unit',
-        mapel: 'Penalaran Matematika (PM) & PBM',
-        polaFokus: 'Matematika Kontekstual & Kaidah Baku PBM',
+        mapel: 'Pemahaman Bacaan & Menulis (PBM)',
+        subtesKode: 'PBM',
+        kategoriSubtes: 'TPS',
+        polaFokus: 'Ejaan PUEBI & Kalimat Efektif',
         durasiMenit: 20,
         jumlahSoal: 12,
         passingGrade: 70,
         xpReward: 160,
         icon: 'Sparkles',
         posisiAlign: 'right',
-        deskripsi: 'Misi kilat 20 menit: modelkan kasus perbandingan bertingkat dan bedah kalimat rancu standar PBM.',
+        deskripsi: 'Misi kilat 20 menit: deteksi kesalahan penulisan kata, tanda baca, konjungsi intrakalimat, dan kalimat mubazir.',
       },
       {
         id: 'jalur-ai-sma-u4',
         unitNomor: 4,
-        judul: 'Unit 4: Barisan, Deret & Literasi Bahasa Inggris',
-        subjudul: 'Pola Aritmetika Lanjutan & Main Idea Teks Akademis',
+        judul: 'Unit 4: Pengetahuan & Pemahaman Umum (PPU)',
+        subjudul: 'Makna Kontekstual Kata, Sinonim, Antonim & Logika Kalimat',
         tipe: 'unit',
-        mapel: 'Penalaran Kuantitatif & Literasi B. Inggris',
-        polaFokus: 'Deret Angka & Skimming Teks Inggris',
+        mapel: 'Pengetahuan & Pemahaman Umum (PPU)',
+        subtesKode: 'PPU',
+        kategoriSubtes: 'TPS',
+        polaFokus: 'Kosakata Kontekstual & Hubungan Paragraf',
         durasiMenit: 20,
         jumlahSoal: 12,
         passingGrade: 70,
         xpReward: 180,
         icon: 'Award',
         posisiAlign: 'left',
-        deskripsi: 'Misi kilat 20 menit: temukan pola suku ke-n deret dan kuasai strategi skimming wacana bahasa Inggris.',
+        deskripsi: 'Misi kilat 20 menit: bongkar makna tersirat kata khusus, perumpamaan bahasa, dan koherensi antarparagraf.',
       },
       {
         id: 'jalur-ai-sma-u5',
         unitNomor: 5,
-        judul: 'Unit 5: Kuantitas P vs Q & Analitis HOTS',
-        subjudul: 'Membandingkan Nilai P & Q serta Penarikan Kesimpulan',
+        judul: 'Unit 5: Literasi Bahasa Indonesia (LBI)',
+        subjudul: 'Wacana Naratif, Argumentatif & Rekonstruksi Gagasan',
         tipe: 'unit',
-        mapel: 'Pengetahuan Kuantitatif & Penalaran Analitis',
-        polaFokus: 'Relasi Kuantitas P vs Q & Logika Analitis',
+        mapel: 'Literasi Bahasa Indonesia',
+        subtesKode: 'LBI',
+        kategoriSubtes: 'Literasi',
+        polaFokus: 'Wacana Kritis & Rekonstruksi Gagasan',
         durasiMenit: 20,
         jumlahSoal: 12,
         passingGrade: 75,
         xpReward: 200,
         icon: 'Sparkles',
         posisiAlign: 'right',
-        deskripsi: 'Misi kilat 20 menit: tentukan hubungan kuantitas P dan Q dengan teknik substitusi eliminasi kilat.',
+        deskripsi: 'Misi kilat 20 menit: asah reading stamina pada teks panjang saintifik dan tarik inferensi akurat.',
       },
       {
         id: 'jalur-ai-sma-u6',
         unitNomor: 6,
-        judul: 'Unit 6: Pengayaan Terpadu 7 Subtes Skolastik SNBT',
-        subjudul: 'Kombinasi Pola HOTS TPS & Tes Literasi Lengkap',
+        judul: 'Unit 6: Literasi Bahasa Inggris (LBE)',
+        subjudul: 'Main Idea, Author Tone & Inferred Meaning',
         tipe: 'unit',
-        mapel: 'Simulasi Terpadu 7 Subtes UTBK',
-        polaFokus: 'HOTS Terintegrasi Standar SNPMB',
-        durasiMenit: 25,
-        jumlahSoal: 15,
+        mapel: 'Literasi Bahasa Inggris',
+        subtesKode: 'LBE',
+        kategoriSubtes: 'Literasi',
+        polaFokus: 'Skimming Teks Akademis & Inferensi Bahasa Inggris',
+        durasiMenit: 20,
+        jumlahSoal: 12,
+        passingGrade: 75,
+        xpReward: 220,
+        icon: 'Award',
+        posisiAlign: 'left',
+        deskripsi: 'Misi kilat 20 menit: temukan ide pokok teks akademis berbahasa Inggris dan tebak maksud penulis secara cepat.',
+      },
+      {
+        id: 'jalur-ai-sma-u7',
+        unitNomor: 7,
+        judul: 'Unit 7: Penalaran Matematika (PM)',
+        subjudul: 'Pemodelan Kasus Cerita, Aritmetika Sosial & Data Realistis',
+        tipe: 'unit',
+        mapel: 'Penalaran Matematika (PM)',
+        subtesKode: 'PM',
+        kategoriSubtes: 'Literasi',
+        polaFokus: 'Pemodelan Matematika Realistis & Soal Cerita',
+        durasiMenit: 20,
+        jumlahSoal: 12,
         passingGrade: 80,
-        xpReward: 250,
+        xpReward: 240,
+        icon: 'Sparkles',
+        posisiAlign: 'right',
+        deskripsi: 'Misi kilat 20 menit: konversikan studi kasus kehidupan nyata menjadi model persamaan matematika solutif.',
+      },
+      {
+        id: 'jalur-ai-sma-u8',
+        unitNomor: 8,
+        judul: 'Unit 8: Simulasi Terpadu 7 Subtes UTBK-SNBT',
+        subjudul: 'Simulasi Mini Komprehensif Lengkap TPS & Tes Literasi',
+        tipe: 'unit',
+        mapel: 'Simulasi Terpadu 7 Subtes',
+        subtesKode: 'TERPADU',
+        kategoriSubtes: 'Simulasi',
+        polaFokus: 'Simulasi Terpadu 7 Subtes Resmi SNPMB',
+        durasiMenit: 25,
+        jumlahSoal: 14,
+        passingGrade: 80,
+        xpReward: 300,
         icon: 'Trophy',
         posisiAlign: 'left',
-        deskripsi: 'Tantangan puncak 25 menit: rangkum seluruh spektrum 7 subtes UTBK-SNBT menuju kampus impian!',
+        deskripsi: 'Tantangan puncak 25 menit: rangkum seluruh 7 subtes resmi SNPMB (2 soal per subtes) menuju kampus impian!',
       },
       {
         id: 'jalur-ai-sma-review',
-        unitNomor: 7,
-        judul: 'Review & Analisis SNBT Kampus',
-        subjudul: 'Peluang Lolos Jurusan Impian & Rekomendasi Materi',
+        unitNomor: 9,
+        judul: 'Radar Diagnosa 7 Subtes & Peluang Kampus',
+        subjudul: 'Breakdown Skor PU, PK, PBM, PPU, LBI, LBE, PM',
         tipe: 'review',
         posisiAlign: 'center',
-        deskripsi: 'Analisis komprehensif seluruh subtes untuk memaksimalkan peluang lolos SNBT.',
+        deskripsi: 'Analisis komprehensif penguasaan 7 subtes UTBK-SNBT untuk mengukur peluang lolos PTN impian.',
       },
     ];
   }
 
   // ------------------------------------------------------------
-  // 🏫 3. JALUR UJIAN TKA SMP (KELAS 9 / FASE D) — 12-15 SOAL (20 MNT)
+  // 🏫 3. JALUR UJIAN TKA SMP (KELAS 9 / FASE D) — SUBTES MURNI 12-14 SOAL (20 MNT)
+  // Dipisah tegas: Matematika dan Bahasa Indonesia TIDAK DICAMPUR
   // ------------------------------------------------------------
   return [
     {
       id: 'jalur-ai-smp-u1',
       unitNomor: 1,
-      judul: 'Unit 1: Pola Aritmetika, Akar & Wacana Tersurat',
-      subjudul: 'Bilangan Real, Bentuk Akar & Fakta Teks Laporan',
+      judul: 'Unit 1: TKA Matematika — Pola Bilangan & Aritmetika',
+      subjudul: 'Bilangan Real, Pangkat, Bentuk Akar & Deret Aritmetika',
       tipe: 'start',
-      mapel: 'Matematika Bilangan & Teks Informasi',
-      polaFokus: 'Bilangan Real & Fakta Tersurat',
+      mapel: 'TKA Matematika',
+      subtesKode: 'MTK',
+      kategoriSubtes: 'Matematika',
+      polaFokus: 'Bilangan Real, Pangkat & Bentuk Akar',
       durasiMenit: 20,
       jumlahSoal: 12,
       passingGrade: 60,
       xpReward: 100,
       icon: 'Rocket',
       posisiAlign: 'center',
-      deskripsi: 'Misi kilat 20 menit: taklukkan operasi akar/pangkat dan amankan fakta langsung pada wacana laporan tanpa ragu.',
+      deskripsi: 'Misi kilat 20 menit: taklukkan operasi akar, pangkat, dan pola bilangan real tanpa kesalahan hitung dasar.',
     },
     {
       id: 'jalur-ai-smp-u2',
       unitNomor: 2,
-      judul: 'Unit 2: Kunci Aljabar & Trik Distraktor Negasi',
-      subjudul: 'PLSV, Pemfaktoran & Kalimat Bertolak Belakang',
+      judul: 'Unit 2: TKA Bahasa Indonesia — Membaca Fakta Tersurat',
+      subjudul: 'Menemukan Informasi Pokok & Fakta Akurat pada Teks Laporan',
       tipe: 'unit',
-      mapel: 'Aljabar Dasar & Wacana Analitis',
-      polaFokus: 'Aljabar & Distraktor Kata Negasi',
+      mapel: 'TKA Bahasa Indonesia',
+      subtesKode: 'BINDO',
+      kategoriSubtes: 'Bahasa Indonesia',
+      polaFokus: 'Wacana Informasi & Fakta Tersurat',
       durasiMenit: 20,
       jumlahSoal: 12,
       passingGrade: 65,
       xpReward: 120,
       icon: 'BookOpen',
       posisiAlign: 'left',
-      deskripsi: 'Misi kilat 20 menit: bongkar aljabar dasar dan latih ketelitian membedakan opsi jebakan "kecuali/bukan".',
+      deskripsi: 'Misi kilat 20 menit: amankan fakta eksplisit pada bacaan laporan dan wacana analitis tanpa terkecoh opsi serupa.',
     },
     {
       id: 'jalur-ai-smp-u3',
       unitNomor: 3,
-      judul: 'Unit 3: Pola Geometri Pythagoras & Makna Tersirat',
-      subjudul: 'Segitiga, Sudut & Menarik Kesimpulan Paragraf',
+      judul: 'Unit 3: TKA Matematika — Kunci Aljabar & Relasi Fungsi',
+      subjudul: 'PLSV, Pemfaktoran Aljabar & Perhitungan Nilai Fungsi',
       tipe: 'unit',
-      mapel: 'Geometri Pengukuran & Literasi Tersirat',
-      polaFokus: 'Pythagoras Sudut & Informasi Tersirat',
+      mapel: 'TKA Matematika',
+      subtesKode: 'MTK',
+      kategoriSubtes: 'Matematika',
+      polaFokus: 'Bentuk Aljabar, PLSV & Relasi Fungsi',
       durasiMenit: 20,
       jumlahSoal: 12,
       passingGrade: 70,
       xpReward: 140,
       icon: 'Sparkles',
       posisiAlign: 'right',
-      deskripsi: 'Misi kilat 20 menit: kuasai tripel Pythagoras dan simpulkan maksud tersembunyi penulis teks dengan jeli.',
+      deskripsi: 'Misi kilat 20 menit: bongkar aljabar linear, substitusi variabel, dan formula fungsi dengan langkah taktis.',
     },
     {
       id: 'jalur-ai-smp-u4',
       unitNomor: 4,
-      judul: 'Unit 4: Pola Soal Cerita SPLDV & Menilai Opini',
-      subjudul: 'Sistem Persamaan Dua Variabel & Evaluasi Gagasan',
+      judul: 'Unit 4: TKA Bahasa Indonesia — Teks Sastra & Makna Tersirat',
+      subjudul: 'Amanat Fiksi, Unsur Intrinsik Cerpen & Makna Simbolik',
       tipe: 'unit',
-      mapel: 'Aljabar Terapan & Evaluasi Teks',
-      polaFokus: 'SPLDV Kontekstual & Fakta vs Opini',
+      mapel: 'TKA Bahasa Indonesia',
+      subtesKode: 'BINDO',
+      kategoriSubtes: 'Bahasa Indonesia',
+      polaFokus: 'Teks Sastra & Simpulan Tersirat',
       durasiMenit: 20,
       jumlahSoal: 12,
       passingGrade: 70,
       xpReward: 160,
       icon: 'Award',
       posisiAlign: 'left',
-      deskripsi: 'Misi kilat 20 menit: modelkan cerita toko/tarif menjadi SPLDV dan pisahkan fakta dari opini penulis.',
+      deskripsi: 'Misi kilat 20 menit: simpulkan pesan tersembunyi pengarang dan bedah konflik batin tokoh dalam cerita.',
     },
     {
       id: 'jalur-ai-smp-u5',
       unitNomor: 5,
-      judul: 'Unit 5: Analisis Data, Peluang & Refleksi Bahasa',
-      subjudul: 'Mean, Median, Diagram & Menanggapi Isi Teks',
+      judul: 'Unit 5: TKA Matematika — Geometri & Teorema Pythagoras',
+      subjudul: 'Segitiga Siku-siku, Tripel Pythagoras & Sudut Garis',
       tipe: 'unit',
-      mapel: 'Statistika Peluang & Tanggapan Kritis',
-      polaFokus: 'Data Peluang & Refleksi Teks',
+      mapel: 'TKA Matematika',
+      subtesKode: 'MTK',
+      kategoriSubtes: 'Matematika',
+      polaFokus: 'Geometri Pengukuran & Tripel Pythagoras',
       durasiMenit: 20,
       jumlahSoal: 12,
       passingGrade: 75,
       xpReward: 180,
       icon: 'Sparkles',
       posisiAlign: 'right',
-      deskripsi: 'Misi kilat 20 menit: analisis ukuran data statistik dan tanggapi sudut pandang bacaan secara kritis.',
+      deskripsi: 'Misi kilat 20 menit: kuasai tripel Pythagoras dan perhitungan sudut/sisi bangun geometri tanpa berbelit-belit.',
     },
     {
       id: 'jalur-ai-smp-u6',
       unitNomor: 6,
-      judul: 'Unit 6: Pengayaan Variasi Naskah Asli TKA SMP',
-      subjudul: 'Kombinasi Pola HOTS ASPD/TKA Matematika & B. Indo',
+      judul: 'Unit 6: TKA Bahasa Indonesia — Fakta vs Opini & Resensi Kritis',
+      subjudul: 'Membedakan Pernyataan Fakta, Opini Penulis & Resensi Buku',
       tipe: 'unit',
-      mapel: 'TKA SMP Naskah Asli Terpadu',
-      polaFokus: 'Kombinasi Soal Ujian Asli Standar Daerah',
-      durasiMenit: 25,
-      jumlahSoal: 15,
+      mapel: 'TKA Bahasa Indonesia',
+      subtesKode: 'BINDO',
+      kategoriSubtes: 'Bahasa Indonesia',
+      polaFokus: 'Fakta vs Opini & Resensi Kritis',
+      durasiMenit: 20,
+      jumlahSoal: 12,
+      passingGrade: 75,
+      xpReward: 200,
+      icon: 'BookOpen',
+      posisiAlign: 'left',
+      deskripsi: 'Misi kilat 20 menit: evaluasi objektivitas teks dan bedakan kalimat fakta dari kalimat opini subjektif.',
+    },
+    {
+      id: 'jalur-ai-smp-u7',
+      unitNomor: 7,
+      judul: 'Unit 7: TKA Matematika — Analisis Data Statistika & Peluang',
+      subjudul: 'Ukuran Pemusatan Data, Diagram Batang & Titik Sampel',
+      tipe: 'unit',
+      mapel: 'TKA Matematika',
+      subtesKode: 'MTK',
+      kategoriSubtes: 'Matematika',
+      polaFokus: 'Statistika Mean/Median & Peluang Kejadian',
+      durasiMenit: 20,
+      jumlahSoal: 12,
       passingGrade: 80,
       xpReward: 220,
+      icon: 'Award',
+      posisiAlign: 'right',
+      deskripsi: 'Misi kilat 20 menit: analisis ukuran data statistik (mean, median) dan hitung peluang kejadian secara cepat.',
+    },
+    {
+      id: 'jalur-ai-smp-u8',
+      unitNomor: 8,
+      judul: 'Unit 8: Simulasi Terpadu Prediksi TKA SMP 2026',
+      subjudul: 'Kombinasi Pola HOTS ASPD/TKA Matematika & Bahasa Indonesia',
+      tipe: 'unit',
+      mapel: 'Simulasi Prediksi TKA SMP',
+      subtesKode: 'TERPADU',
+      kategoriSubtes: 'Simulasi',
+      polaFokus: 'Simulasi Terpadu Matematika & Bahasa Indonesia',
+      durasiMenit: 25,
+      jumlahSoal: 14,
+      passingGrade: 80,
+      xpReward: 260,
       icon: 'Trophy',
       posisiAlign: 'left',
-      deskripsi: 'Tantangan pemantapan 25 menit: uji reflek menghadapi soal kombinasi standar Asesmen TKA daerah.',
+      deskripsi: 'Tantangan puncak 25 menit: uji reflek menghadapi simulasi kombinasi standar Asesmen TKA daerah menuju SMA unggulan!',
     },
     {
       id: 'jalur-ai-smp-review',
-      unitNomor: 7,
-      judul: 'Review & Analisis Kelulusan SMP',
-      subjudul: 'Pemetaan Daya Saing Masuk SMA/SMK Favorit',
+      unitNomor: 9,
+      judul: 'Radar Diagnosa TKA SMP & Evaluasi Kelulusan',
+      subjudul: 'Breakdown Penguasaan Matematika vs Bahasa Indonesia',
       tipe: 'review',
       posisiAlign: 'center',
       deskripsi: 'Analisis komprehensif kemampuan belajar dan panduan fokus materi menuju kelulusan cemerlang.',
@@ -565,76 +728,69 @@ export function hitungProgresiJalur(daftarUnit = [], sesiList = []) {
 export function getSoalPresetUnitRoadmap(jenjang = 'SMP', unitNomor = 1, targetJumlah = 12) {
   const j = String(jenjang).toUpperCase();
 
-  // 1. TKA SD (Kelas 6)
+  // 1. TKA SD (Kelas 6) — Subtes Murni Matematika vs Bahasa Indonesia
   if (j === 'SD') {
     const mtk = Array.isArray(SOAL_TKA_2026_SD_MTK) ? SOAL_TKA_2026_SD_MTK : [];
     const indo = Array.isArray(SOAL_TKA_2026_SD_BINDO) ? SOAL_TKA_2026_SD_BINDO : [];
-    if (unitNomor === 5) {
-      return [...mtk.slice(22, 30), ...indo.slice(23, 30)].slice(0, targetJumlah);
+
+    if (unitNomor === 1) return mtk.slice(0, targetJumlah); // MTK Bilangan Pecahan
+    if (unitNomor === 2) return indo.slice(0, targetJumlah); // BINDO Fakta Wacana
+    if (unitNomor === 3) return mtk.slice(10, 10 + targetJumlah).length >= targetJumlah ? mtk.slice(10, 10 + targetJumlah) : [...mtk.slice(10), ...mtk.slice(0, targetJumlah - (mtk.length - 10))]; // MTK Geometri
+    if (unitNomor === 4) return indo.slice(10, 10 + targetJumlah).length >= targetJumlah ? indo.slice(10, 10 + targetJumlah) : [...indo.slice(10), ...indo.slice(0, targetJumlah - (indo.length - 10))]; // BINDO Sastra Fabel
+    if (unitNomor === 5) return mtk.slice(18, 18 + targetJumlah).length >= targetJumlah ? mtk.slice(18, 18 + targetJumlah) : [...mtk.slice(18), ...mtk.slice(0, targetJumlah - (mtk.length - 18))]; // MTK Kecepatan & Debit
+    if (unitNomor === 6) return indo.slice(18, 18 + targetJumlah).length >= targetJumlah ? indo.slice(18, 18 + targetJumlah) : [...indo.slice(18), ...indo.slice(0, targetJumlah - (indo.length - 18))]; // BINDO Ide Pokok
+    if (unitNomor === 7) return mtk.slice(6, 6 + targetJumlah); // MTK Statistika Data
+    if (unitNomor === 8) {
+      // Simulasi Terpadu Standarisasi SD (14 Soal: 7 MTK + 7 BINDO)
+      return [...mtk.slice(0, 7), ...indo.slice(0, 7)].slice(0, targetJumlah);
     }
-    const step = 6;
-    const startIdx = ((unitNomor - 1) * step) % Math.max(1, mtk.length - step);
-    const mtkPart = mtk.slice(startIdx, startIdx + step);
-    const indoPart = indo.slice(startIdx, startIdx + step);
-    const gabungan = [...mtkPart, ...indoPart];
-    return gabungan.length >= targetJumlah ? gabungan.slice(0, targetJumlah) : gabungan;
+    return mtk.slice(0, targetJumlah);
   }
 
-  // 2. UTBK-SNBT SMA (Kelas 12)
-  if (j === 'SMA') {
+  // 2. UTBK-SNBT SMA (Kelas 12) — 7 Subtes Resmi SNPMB Murni
+  if (j === 'SMA' || j === 'SMK') {
     const allUtbk = Array.isArray(SOAL_PRESET_UTBK) ? SOAL_PRESET_UTBK : [];
-    // Pemetaan indeks 7 subtes UTBK
+    // Pemetaan indeks 7 subtes UTBK Katkiel (160 butir):
     // PU (0..29), PPU (30..49), PBM (50..69), PK (70..89), LBI (90..119), LBE (120..139), PM (140..159)
-    if (unitNomor === 1) return allUtbk.slice(0, targetJumlah); // PU
-    if (unitNomor === 2) return allUtbk.slice(70, 70 + targetJumlah); // PK
-    if (unitNomor === 3) return allUtbk.slice(90, 90 + targetJumlah); // LBI
-    if (unitNomor === 4) return allUtbk.slice(120, 120 + targetJumlah); // LBE
-    if (unitNomor === 5) return allUtbk.slice(140, 140 + targetJumlah); // PM
-    if (unitNomor === 6) {
-      // 15 Soal Terpadu 7 Subtes (2 PU, 2 PPU, 2 PBM, 2 PK, 2 LBI, 2 LBE, 3 PM)
+    if (unitNomor === 1) return allUtbk.slice(0, targetJumlah); // PU: Penalaran Umum
+    if (unitNomor === 2) return allUtbk.slice(70, 70 + targetJumlah); // PK: Pengetahuan Kuantitatif
+    if (unitNomor === 3) return allUtbk.slice(50, 50 + targetJumlah); // PBM: Pemahaman Bacaan & Menulis
+    if (unitNomor === 4) return allUtbk.slice(30, 30 + targetJumlah); // PPU: Pengetahuan & Pemahaman Umum
+    if (unitNomor === 5) return allUtbk.slice(90, 90 + targetJumlah); // LBI: Literasi Bahasa Indonesia
+    if (unitNomor === 6) return allUtbk.slice(120, 120 + targetJumlah); // LBE: Literasi Bahasa Inggris
+    if (unitNomor === 7) return allUtbk.slice(140, 140 + targetJumlah); // PM: Penalaran Matematika
+    if (unitNomor === 8) {
+      // 14 Soal Simulasi Terpadu 7 Subtes (2 PU, 2 PK, 2 PBM, 2 PPU, 2 LBI, 2 LBE, 2 PM)
       return [
-        ...allUtbk.slice(12, 14), // PU
-        ...allUtbk.slice(30, 32), // PPU
-        ...allUtbk.slice(50, 52), // PBM
-        ...allUtbk.slice(82, 84), // PK
-        ...allUtbk.slice(102, 104), // LBI
-        ...allUtbk.slice(132, 134), // LBE
-        ...allUtbk.slice(152, 155), // PM
+        ...allUtbk.slice(12, 14), // 2 PU
+        ...allUtbk.slice(82, 84), // 2 PK
+        ...allUtbk.slice(62, 64), // 2 PBM
+        ...allUtbk.slice(42, 44), // 2 PPU
+        ...allUtbk.slice(102, 104), // 2 LBI
+        ...allUtbk.slice(132, 134), // 2 LBE
+        ...allUtbk.slice(152, 154), // 2 PM
       ].slice(0, targetJumlah);
     }
     return allUtbk.slice(0, targetJumlah);
   }
 
-  // 3. TKA SMP (Kelas 9)
+  // 3. TKA SMP (Kelas 9) — Subtes Murni Matematika vs Bahasa Indonesia
   const mtkSmp = Array.isArray(SOAL_TKA_2026_SMP_MTK_PAKET_B) ? SOAL_TKA_2026_SMP_MTK_PAKET_B : [];
   const indoSmp = Array.isArray(SOAL_TKA_2026_SMP_BINDO_PAKET_A) ? SOAL_TKA_2026_SMP_BINDO_PAKET_A : [];
 
-  if (unitNomor === 1) {
-    // Bilangan Real & Fakta Tersurat
-    return [...mtkSmp.slice(0, 6), ...indoSmp.slice(0, 6)].slice(0, targetJumlah);
-  }
-  if (unitNomor === 2) {
-    // Aljabar & Distraktor Negasi
-    return [...mtkSmp.slice(6, 12), ...indoSmp.slice(6, 12)].slice(0, targetJumlah);
-  }
-  if (unitNomor === 3) {
-    // Geometri Pythagoras & Makna Tersirat
-    return [...mtkSmp.slice(12, 18), ...indoSmp.slice(12, 18)].slice(0, targetJumlah);
-  }
-  if (unitNomor === 4) {
-    // SPLDV Kontekstual & Opini vs Fakta
-    return [...mtkSmp.slice(18, 24), ...indoSmp.slice(18, 24)].slice(0, targetJumlah);
-  }
-  if (unitNomor === 5) {
-    // Data Peluang & Refleksi Teks
-    return [...mtkSmp.slice(24, 30), ...indoSmp.slice(24, 30)].slice(0, targetJumlah);
-  }
-  if (unitNomor === 6) {
-    // Pengayaan Naskah Asli Standar Daerah (15 Soal)
-    return [...mtkSmp.slice(0, 8), ...indoSmp.slice(0, 7)].slice(0, targetJumlah);
+  if (unitNomor === 1) return mtkSmp.slice(0, targetJumlah); // MTK Bilangan Real & Aritmetika
+  if (unitNomor === 2) return indoSmp.slice(0, targetJumlah); // BINDO Fakta Wacana Tersurat
+  if (unitNomor === 3) return mtkSmp.slice(10, 10 + targetJumlah).length >= targetJumlah ? mtkSmp.slice(10, 10 + targetJumlah) : [...mtkSmp.slice(10), ...mtkSmp.slice(0, targetJumlah - (mtkSmp.length - 10))]; // MTK Aljabar & Fungsi
+  if (unitNomor === 4) return indoSmp.slice(10, 10 + targetJumlah).length >= targetJumlah ? indoSmp.slice(10, 10 + targetJumlah) : [...indoSmp.slice(10), ...indoSmp.slice(0, targetJumlah - (indoSmp.length - 10))]; // BINDO Sastra & Makna Tersirat
+  if (unitNomor === 5) return mtkSmp.slice(18, 18 + targetJumlah).length >= targetJumlah ? mtkSmp.slice(18, 18 + targetJumlah) : [...mtkSmp.slice(18), ...mtkSmp.slice(0, targetJumlah - (mtkSmp.length - 18))]; // MTK Geometri & Pythagoras
+  if (unitNomor === 6) return indoSmp.slice(18, 18 + targetJumlah).length >= targetJumlah ? indoSmp.slice(18, 18 + targetJumlah) : [...indoSmp.slice(18), ...indoSmp.slice(0, targetJumlah - (indoSmp.length - 18))]; // BINDO Fakta vs Opini
+  if (unitNomor === 7) return mtkSmp.slice(6, 6 + targetJumlah); // MTK Statistika & Peluang
+  if (unitNomor === 8) {
+    // Simulasi Terpadu Prediksi TKA SMP (14 Soal: 7 MTK + 7 BINDO)
+    return [...mtkSmp.slice(0, 7), ...indoSmp.slice(0, 7)].slice(0, targetJumlah);
   }
 
-  return [...mtkSmp.slice(0, 6), ...indoSmp.slice(0, 6)].slice(0, targetJumlah);
+  return mtkSmp.slice(0, targetJumlah);
 }
 
 /**
