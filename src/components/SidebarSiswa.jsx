@@ -88,7 +88,7 @@ const SidebarSiswa = ({ activeMenu, setActiveMenu, isOpen, setIsOpen }) => {
         { id: 'tryout', label: 'Try Out Terjadwal', icon: <Calendar size={18} />, path: '/siswa/tryout', color: '#f59e0b', badge: 'Jadwal' },
         { id: 'latihan-harian', label: 'Latihan Harian', icon: <Flame size={18} />, path: '/siswa/latihan-harian', color: '#dc2626' },
         // 📚 Modul Belajar UTBK: HANYA MUNCUL KHUSUS KELAS 12 SMA (Paten)
-        ...(infoTingkat.bisaAksesFitukUtbk || infoTingkat.isKelas12 ? [{
+        ...(infoTingkat.isKelas12 ? [{
           id: 'modul',
           label: 'Modul Belajar UTBK',
           icon: <BookOpen size={18} />,
