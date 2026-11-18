@@ -6,7 +6,6 @@
 import { useState, useEffect } from 'react';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '../firebase';
-import rawDataPtn from '../data/ambisPtnData.json';
 import { getLogoPtn } from '../utils/logoPtnHelper';
 import {
   getDaftarPtnAmbis,

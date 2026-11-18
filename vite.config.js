@@ -21,11 +21,7 @@ export default defineConfig({
       registerType: 'autoUpdate', // Otomatis update di HP siswa/guru saat Anda push kode baru
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
       workbox: {
-        // Dinaikkan sedikit dari 5MB -> 6MB sebagai jaga-jaga tambahan,
-        // TAPI perbaikan utamanya ada di manualChunks di bawah: vendor
-        // dipecah jadi beberapa file supaya tidak ada satu chunk pun yang
-        // mendekati limit ini lagi ke depannya.
-        maximumFileSizeToCacheInBytes: 6000000,
+        maximumFileSizeToCacheInBytes: 12000000,
         globIgnores: ['**/ekstraksi-buku/**']
       },
       manifest: {
@@ -82,6 +78,11 @@ export default defineConfig({
         // Yang boleh dipisah HANYA library besar & berdiri sendiri yang
         // TIDAK bergantung ke React sama sekali secara langsung.
         manualChunks(id) {
+          // Dataset PTN & Soal Mandiri dipisah ke chunk sendiri
+          if (id.includes('src/data/') || id.includes('ambisPtnData') || id.includes('imporPtnData')) {
+            return 'vendor-ptn-data';
+          }
+
           if (!id.includes('node_modules')) return;
 
           // Library besar & berdiri sendiri (tidak bergantung ke React) ->

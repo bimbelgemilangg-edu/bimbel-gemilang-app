@@ -1,22 +1,66 @@
 // src/utils/ambisPtnDataHelper.js
 // ============================================================
 // Helper Data Resmi 173 PTN & 4.594 Prodi AmbisPTN 1:1
-// Berisi fungsi-fungsi murni tanpa dependensi React / Firebase.
+// Universal Module: Berjalan mulus di Vite Bundler dan Node.js
 // ============================================================
-import rawDataPtn from '../data/ambisPtnData.json' with { type: 'json' };
+import ambisPtnData from '../data/ambisPtnData.js';
+
+// Cache map universitas untuk pencarian cepat O(1)
+const ptnMap = new Map();
+(ambisPtnData.universities || []).forEach((u) => {
+  ptnMap.set(u.slug, u);
+  if (u.id) ptnMap.set(String(u.id), u);
+});
+
+// Cache array prodi terhidrasi (dengan nama & logo universitas)
+let cachedHydratedMajors = null;
+let cachedHydratedUniversities = null;
 
 /**
  * Mengambil dataset resmi AmbisPTN: 173 PTN
+ * Setiap PTN secara dinamis dilengkapi daftar prodi miliknya
  */
 export function getDaftarPtnAmbis() {
-  return rawDataPtn.universities || [];
+  if (cachedHydratedUniversities) return cachedHydratedUniversities;
+
+  const prodiByUni = new Map();
+  (ambisPtnData.majors || []).forEach((m) => {
+    if (!prodiByUni.has(m.uni_slug)) {
+      prodiByUni.set(m.uni_slug, []);
+    }
+    prodiByUni.get(m.uni_slug).push(m);
+  });
+
+  cachedHydratedUniversities = (ambisPtnData.universities || []).map((u) => {
+    const listMajor = prodiByUni.get(u.slug) || [];
+    return {
+      ...u,
+      major_count: listMajor.length || u.major_count || 0,
+      majors: listMajor,
+    };
+  });
+
+  return cachedHydratedUniversities;
 }
 
 /**
  * Mengambil dataset prodi nasional AmbisPTN: 4.594 prodi
+ * Setiap prodi dilengkapi uni_name, uni_short, uni_logo
  */
 export function getDaftarProdiAmbis() {
-  return rawDataPtn.majors || [];
+  if (cachedHydratedMajors) return cachedHydratedMajors;
+
+  cachedHydratedMajors = (ambisPtnData.majors || []).map((m) => {
+    const uni = ptnMap.get(m.uni_slug);
+    return {
+      ...m,
+      uni_name: uni?.name || m.uni_slug,
+      uni_short: uni?.short_name || '',
+      uni_logo: uni?.logo_url || null,
+    };
+  });
+
+  return cachedHydratedMajors;
 }
 
 /**
