@@ -27,7 +27,7 @@ import {
   useTargetKampusSiswa,
   simpanPilihanTarget,
 } from '../../services/targetKampusService';
-import { getLogoPtn } from '../../utils/logoPtnHelper';
+import LogoKampus from '../../components/LogoKampus';
 import { useProfilSiswa } from '../../utils/profilSiswa';
 
 export default function KatalogKampusPage() {
@@ -239,7 +239,6 @@ export default function KatalogKampusPage() {
       {tabAktif === 'kampus' && (
         <div style={st.ptnGrid}>
           {ptnTersaring.map((ptn) => {
-            const logoUrl = getLogoPtn(ptn);
             return (
               <div
                 key={ptn.id || ptn.slug}
@@ -251,17 +250,7 @@ export default function KatalogKampusPage() {
                 style={st.ptnCard}
               >
                 <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-                  <div style={st.ptnLogoWrap}>
-                    <img
-                      src={logoUrl}
-                      alt={ptn.short_name || ptn.name}
-                      style={st.ptnLogoImg}
-                      onError={(e) => {
-                        e.target.onerror = null;
-                        e.target.src = 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/Emblem_of_Ministry_of_Education_and_Culture_%28Indonesia%29.svg/240px-Emblem_of_Ministry_of_Education_and_Culture_%28Indonesia%29.svg.png';
-                      }}
-                    />
-                  </div>
+                  <LogoKampus ptn={ptn} size={46} radius={10} />
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={st.ptnShortText}>{ptn.short_name || ptn.name}</div>
                     <div style={st.ptnFullNameText} title={ptn.name}>
@@ -301,14 +290,10 @@ export default function KatalogKampusPage() {
             return (
               <div key={pr.id || pr.slug} style={st.prodiRowCard}>
                 <div style={{ display: 'flex', gap: 12, alignItems: 'center', flex: '1 1 320px' }}>
-                  <img
-                    src={getLogoPtn({ uni_logo: pr.uni_logo, slug: pr.uni_slug, singkatan: pr.uni_short })}
-                    alt={pr.uni_short}
-                    style={st.prodiUniLogo}
-                    onError={(e) => {
-                      e.target.onerror = null;
-                      e.target.src = 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/Emblem_of_Ministry_of_Education_and_Culture_%28Indonesia%29.svg/240px-Emblem_of_Ministry_of_Education_and_Culture_%28Indonesia%29.svg.png';
-                    }}
+                  <LogoKampus
+                    ptn={{ uni_logo: pr.uni_logo, slug: pr.uni_slug, singkatan: pr.uni_short, name: pr.uni_name }}
+                    size={40}
+                    radius={8}
                   />
                   <div>
                     <div style={st.prodiMajorTitle}>{pr.name}</div>
@@ -373,10 +358,10 @@ export default function KatalogKampusPage() {
             return (
               <div key={pr.id || pr.slug} style={st.prodiRowCard}>
                 <div style={{ display: 'flex', gap: 12, alignItems: 'center', flex: '1 1 320px' }}>
-                  <img
-                    src={getLogoPtn({ uni_logo: pr.uni_logo, slug: pr.uni_slug, singkatan: pr.uni_short })}
-                    alt={pr.uni_short}
-                    style={st.prodiUniLogo}
+                  <LogoKampus
+                    ptn={{ uni_logo: pr.uni_logo, slug: pr.uni_slug, singkatan: pr.uni_short, name: pr.uni_name }}
+                    size={40}
+                    radius={8}
                   />
                   <div>
                     <div style={st.prodiMajorTitle}>{pr.name}</div>
@@ -423,11 +408,7 @@ export default function KatalogKampusPage() {
           <div style={st.modalContent} onClick={(e) => e.stopPropagation()}>
             <div style={st.modalHeader}>
               <div style={{ display: 'flex', gap: 14, alignItems: 'center' }}>
-                <img
-                  src={getLogoPtn(modalPtnTerpilih)}
-                  alt={modalPtnTerpilih.short_name || modalPtnTerpilih.name}
-                  style={st.modalUniLogo}
-                />
+                <LogoKampus ptn={modalPtnTerpilih} size={50} radius={12} />
                 <div>
                   <h3 style={st.modalUniTitle}>{modalPtnTerpilih.name}</h3>
                   <div style={st.modalUniMeta}>

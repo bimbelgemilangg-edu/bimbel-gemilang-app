@@ -7,10 +7,10 @@ import rawDataPtn from '../src/data/imporPtnData.json' with { type: 'json' };
 
 test('logoPtnHelper: resolusi logo resmi dan fallback monogram', () => {
   const logoUI = getLogoPtn({ singkatan: 'UI', nama: 'Universitas Indonesia' });
-  assert.ok(logoUI && logoUI.includes('Makara_UI'), 'Logo UI harus merujuk ke Makara UI');
+  assert.ok(logoUI && (logoUI.includes('ui.png') || logoUI.includes('ambisptn.com')), 'Logo UI harus tersedia dari AmbisPTN');
 
   const logoITB = getLogoPtn({ singkatan: 'ITB', nama: 'Institut Teknologi Bandung' });
-  assert.ok(logoITB && logoITB.includes('Institut_Teknologi_Bandung'), 'Logo ITB harus tersedia');
+  assert.ok(logoITB && (logoITB.includes('itb.png') || logoITB.includes('ambisptn.com')), 'Logo ITB harus tersedia dari AmbisPTN');
 
   const monogram = getMonogramPtn({ singkatan: 'POLSRI', nama: 'Politeknik Negeri Sriwijaya' });
   assert.equal(monogram.inisial, 'POLSRI');

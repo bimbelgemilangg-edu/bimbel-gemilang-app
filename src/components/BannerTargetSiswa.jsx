@@ -9,7 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import { useDataTargetKampus } from '../services/dataTargetKampus';
 import { susunBannerTarget, teksChipTarget } from '../utils/bannerTargetSiswa';
 import { ZONA } from '../utils/zonaKesiapan';
-import { getLogoPtn } from '../utils/logoPtnHelper';
+import LogoKampus from './LogoKampus';
 import { Target, ChevronRight, Sparkles } from 'lucide-react';
 
 const WARNA_ZONA = {
@@ -165,13 +165,6 @@ export function KartuTargetSiswa({ studentId, profil }) {
 
       <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
         {banner.pilihan.map((p) => {
-          const logoPtn = getLogoPtn({
-            nama: p.namaPtn,
-            singkatan: p.singkatan || '',
-            slug: p.idPtn,
-            logo_url: p.logoUrl,
-          });
-
           return (
             <div
               key={p.urutan}
@@ -186,23 +179,15 @@ export function KartuTargetSiswa({ studentId, profil }) {
                 alignItems: 'flex-start',
               }}
             >
-              <img
-                src={logoPtn}
-                alt={p.namaPtn}
-                style={{
-                  width: 44,
-                  height: 44,
-                  objectFit: 'contain',
-                  borderRadius: 8,
-                  padding: 2,
-                  border: '1px solid #f1f5f9',
-                  background: '#f8fafc',
-                  flexShrink: 0,
+              <LogoKampus
+                ptn={{
+                  nama: p.namaPtn,
+                  singkatan: p.singkatan || '',
+                  slug: p.idPtn,
+                  logo_url: p.logoUrl,
                 }}
-                onError={(e) => {
-                  e.target.onerror = null;
-                  e.target.src = 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/Emblem_of_Ministry_of_Education_and_Culture_%28Indonesia%29.svg/240px-Emblem_of_Ministry_of_Education_and_Culture_%28Indonesia%29.svg.png';
-                }}
+                size={44}
+                radius={8}
               />
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: 10, fontWeight: 800, color: '#0d9488', textTransform: 'uppercase' }}>

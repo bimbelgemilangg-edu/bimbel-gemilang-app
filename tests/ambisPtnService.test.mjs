@@ -55,7 +55,7 @@ test('targetKampusService: perhitungan GAP dan ambis meter', () => {
   assert.equal(hKosong.zona, 'TANPA_DATA');
 });
 
-test('logoPtnHelper: resolusi logo resmi Cloudflare R2 dan fallback monogram', () => {
+test('logoPtnHelper: resolusi logo resmi AmbisPTN dan fallback monogram', () => {
   const logoApiBanyuwangi = getLogoPtn({
     slug: 'akademi-penerbang-indonesia-banyuwangi',
     uni_name: 'Akademi Penerbang Indonesia Banyuwangi',
@@ -63,5 +63,8 @@ test('logoPtnHelper: resolusi logo resmi Cloudflare R2 dan fallback monogram', (
   assert.ok(logoApiBanyuwangi.includes('akademi-penerbang-indonesia-banyuwangi.png'));
 
   const logoUi = getLogoPtn({ singkatan: 'UI' });
-  assert.ok(logoUi && logoUi.includes('Makara_UI'));
+  assert.ok(logoUi && (logoUi.includes('ui.png') || logoUi.includes('ambisptn.com')));
+
+  const monogram = getMonogramPtn({ singkatan: 'UNDIP', nama: 'Universitas Diponegoro' });
+  assert.equal(monogram.inisial, 'UNDIP');
 });
