@@ -218,6 +218,9 @@ import LatihanHarianPage from './pages/student/gemilang/LatihanHarianPage';
 import BukuInteraktifPage from './pages/student/gemilang/BukuInteraktifPage';
 import AksesBelajarPage from './pages/student/AksesBelajarPage';
 import KodeSoalSiswaPage from './pages/student/tryout/KodeSoalSiswaPage';
+// 📚 MODUL BELAJAR UTBK (AmbisPTN standard: 7 Subtes, 46 Bab)
+import ModulBelajarUtbkPage from './pages/student/modul/ModulBelajarUtbkPage';
+import ModulReaderUtbkPage from './pages/student/modul/ModulReaderUtbkPage';
 import BukuPdfPage from './pages/student/BukuPdfPage';
 import KelolaBukuPdfPage from './pages/admin/buku/KelolaBukuPdfPage';
 import BottomNavSiswa from './components/BottomNavSiswa';import BukuBacaPage from './pages/student/gemilang/BukuBacaPage';
@@ -1035,41 +1038,23 @@ function App() {
         {/* 🔖 20 Okt: arsip kode soal siswa (sinkron buku tulis <-> sistem) */}
         <Route path="/siswa/kode-soal" element={<SiswaPage><KodeSoalSiswaPage /></SiswaPage>} />
         <Route path="/siswa/tryout/:paketId" element={<SiswaFiturBelajar fitur="Try Out"><TryOutView /></SiswaFiturBelajar>} />
-        <Route path="/siswa/materi" element={<SiswaPageBelajar fitur="E-Learning"><StudentElearning /></SiswaPageBelajar>} />
-        {/* 📱 20 Okt: hub tombol tengah navigasi bawah */}
-        <Route path="/siswa/akses-belajar" element={<SiswaPageBelajar fitur="E-Learning"><AksesBelajarPage /></SiswaPageBelajar>} />
-        {/* 📚 20 Okt (pivot owner): buku digital = PDF konvensional yang
-            bisa dibalik; pembahasan terpisah untuk guru. */}
-        <Route path="/siswa/buku-pdf" element={<SiswaPageBelajar fitur="Buku Digital"><BukuPdfPage mode="siswa" /></SiswaPageBelajar>} />
-        <Route path="/siswa/buku-pdf/:bukuId" element={<SiswaPageBelajar fitur="Buku Digital"><BukuPdfPage mode="siswa" /></SiswaPageBelajar>} />
+        {/* 📚 MODUL BELAJAR UTBK 2027 (AmbisPTN Standard 1:1, 7 Subtes, 46 Bab Terstruktur) */}
+        <Route path="/siswa/modul" element={<SiswaPageBelajar fitur="Materi Modul"><ModulBelajarUtbkPage /></SiswaPageBelajar>} />
+        <Route path="/siswa/modul/:subtestKode/:babSlug" element={<SiswaFiturBelajar fitur="Materi Modul"><ModulReaderUtbkPage /></SiswaFiturBelajar>} />
+
+        {/* 🔄 REDIRECT PERMANEN FITUR LAMA (Materi Belajar, E-Learning, Buku PDF Gemilang) KE MODUL UTBK BARU */}
+        <Route path="/siswa/materi" element={<Navigate to="/siswa/modul" replace />} />
+        <Route path="/siswa/akses-belajar" element={<Navigate to="/siswa/modul" replace />} />
+        <Route path="/siswa/buku-pdf" element={<Navigate to="/siswa/modul" replace />} />
+        <Route path="/siswa/buku-pdf/:bukuId" element={<Navigate to="/siswa/modul" replace />} />
         <Route path="/guru/buku-pdf" element={<GuruPage><BukuPdfPage mode="guru" /></GuruPage>} />
         <Route path="/guru/buku-pdf/:bukuId" element={<GuruPage><BukuPdfPage mode="guru" /></GuruPage>} />
-        {/* MATERI v2 -- tampilan materi belajar baru (fase 1-2,
-            docs/RENCANA-ROMBAK-MATERI.md). Reader full-screen. */}
-        <Route
-          path="/siswa/belajar"
-          element={
-            <SiswaPageBelajar fitur="Materi Belajar">
-              <BelajarHome />
-            </SiswaPageBelajar>
-          }
-        />
-        <Route
-          path="/siswa/belajar/:materiId"
-          element={
-            <SiswaPageBelajar fitur="Materi Belajar">
-              <BelajarDaftarIsi />
-            </SiswaPageBelajar>
-          }
-        />
-        <Route
-          path="/siswa/belajar/:materiId/:babId"
-          element={
-            <SiswaFiturBelajar fitur="Materi Belajar">
-              <BelajarReader />
-            </SiswaFiturBelajar>
-          }
-        />
+        <Route path="/siswa/belajar" element={<Navigate to="/siswa/modul" replace />} />
+        <Route path="/siswa/belajar/:materiId" element={<Navigate to="/siswa/modul" replace />} />
+        <Route path="/siswa/belajar/:materiId/:babId" element={<Navigate to="/siswa/modul" replace />} />
+        <Route path="/siswa/buku" element={<Navigate to="/siswa/modul" replace />} />
+        <Route path="/siswa/buku/:bukuId" element={<Navigate to="/siswa/modul" replace />} />
+        <Route path="/siswa/buku/:bukuId/:babId" element={<Navigate to="/siswa/modul" replace />} />
         <Route path="/siswa/jadwal" element={<SiswaPage><StudentSchedule /></SiswaPage>} />
         <Route path="/siswa/keuangan" element={<SiswaPage><StudentFinanceSiswa /></SiswaPage>} />
         <Route path="/siswa/rapor" element={<SiswaPage><StudentGrades /></SiswaPage>} />
@@ -1104,13 +1089,6 @@ function App() {
           element={<SiswaFiturBelajar fitur="Latihan Harian"><LatihanHarianPage /></SiswaFiturBelajar>}
         />
 
-        {/* 🔥 BUKU INTERAKTIF DIGITAL -- rak buku, daftar isi, reader per bab */}
-        <Route path="/siswa/buku" element={<SiswaFiturBelajar fitur="Buku Digital"><BukuInteraktifPage /></SiswaFiturBelajar>} />
-        <Route path="/siswa/buku/:bukuId" element={<SiswaFiturBelajar fitur="Buku Digital"><BukuInteraktifPage /></SiswaFiturBelajar>} />
-        <Route
-          path="/siswa/buku/:bukuId/:babId"
-          element={<SiswaFiturBelajar fitur="Buku Digital"><BukuBacaPage /></SiswaFiturBelajar>}
-        />
 
         {/* REDIRECT */}
         <Route path="/teacher/*" element={<Navigate to="/guru/dashboard" replace />} />

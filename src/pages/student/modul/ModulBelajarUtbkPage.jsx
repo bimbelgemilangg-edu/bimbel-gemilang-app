@@ -1,0 +1,575 @@
+// src/pages/student/modul/ModulBelajarUtbkPage.jsx
+// ==============================================================================
+// MODUL BELAJAR UTBK-SNBT 2027 (AmbisPTN Standard 1:1)
+// 7 Subtes • 46 Bab Terstruktur • 100% UNLOCKED untuk Siswa Gemilang
+// ==============================================================================
+
+import React, { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
+import {
+  BookOpen,
+  Search,
+  CheckCircle2,
+  Clock,
+  Sparkles,
+  ArrowRight,
+  Flame,
+  Award,
+  BookMarked,
+  Filter,
+  Check,
+} from 'lucide-react';
+import {
+  DAFTAR_SUBTES_MODUL,
+  SEMUA_BAB_MODUL,
+  hitungStatistikModulSiswa,
+  getTerakhirDibaca,
+} from '../../../data/ambisModulUtbkData.js';
+
+export default function ModulBelajarUtbkPage() {
+  const navigate = useNavigate();
+  const [selectedSubtes, setSelectedSubtes] = useState('ALL');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [studentId, setStudentId] = useState('');
+  const [statistik, setStatistik] = useState({
+    totalBab: 46,
+    totalSelesai: 0,
+    persenTotal: 0,
+    perSubtes: {},
+    babSelesaiIds: [],
+  });
+  const [terakhirDibaca, setTerakhirDibaca] = useState(null);
+
+  useEffect(() => {
+    const sid =
+      localStorage.getItem('studentId') ||
+      localStorage.getItem('studentNim') ||
+      localStorage.getItem('studentDocId') ||
+      'siswa_gemilang_default';
+    setStudentId(sid);
+    const stat = hitungStatistikModulSiswa(sid);
+    setStatistik(stat);
+    const last = getTerakhirDibaca(sid);
+    setTerakhirDibaca(last);
+  }, []);
+
+  // Filter bab berdasarkan subtes dan pencarian
+  const filteredBab = useMemo(() => {
+    return SEMUA_BAB_MODUL.filter((bab) => {
+      const matchSubtes = selectedSubtes === 'ALL' || bab.subtestKode === selectedSubtes;
+      const q = searchQuery.toLowerCase().trim();
+      const matchSearch =
+        !q ||
+        bab.judul.toLowerCase().includes(q) ||
+        bab.subtestNama.toLowerCase().includes(q) ||
+        bab.subtestKode.toLowerCase().includes(q) ||
+        bab.ringkasanSingkat.toLowerCase().includes(q) ||
+        (bab.learningObjectives && bab.learningObjectives.some((o) => o.toLowerCase().includes(q)));
+      return matchSubtes && matchSearch;
+    });
+  }, [selectedSubtes, searchQuery]);
+
+  return (
+    <div style={{ maxWidth: 1100, margin: '0 auto', padding: '16px 14px 40px', fontFamily: 'system-ui, -apple-system, sans-serif' }}>
+      {/* 🌟 HERO BANNER */}
+      <div
+        style={{
+          background: 'linear-gradient(135deg, #0d9488 0%, #0f766e 60%, #115e59 100%)',
+          borderRadius: 20,
+          padding: '24px 22px',
+          color: '#ffffff',
+          boxShadow: '0 10px 25px -5px rgba(13, 148, 136, 0.3)',
+          marginBottom: 20,
+          position: 'relative',
+          overflow: 'hidden',
+        }}
+      >
+        <div
+          style={{
+            position: 'absolute',
+            top: -20,
+            right: -20,
+            width: 140,
+            height: 140,
+            borderRadius: '50%',
+            background: 'radial-gradient(circle, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 70%)',
+            pointerEvents: 'none',
+          }}
+        />
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+          <span
+            style={{
+              background: 'rgba(255,255,255,0.2)',
+              backdropFilter: 'blur(4px)',
+              padding: '4px 10px',
+              borderRadius: 20,
+              fontSize: 11,
+              fontWeight: 700,
+              letterSpacing: '0.04em',
+              textTransform: 'uppercase',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 5,
+            }}
+          >
+            <Sparkles size={13} />
+            Standar Kurikulum AmbisPTN 1:1
+          </span>
+          <span
+            style={{
+              background: '#fef08a',
+              color: '#854d0e',
+              padding: '4px 10px',
+              borderRadius: 20,
+              fontSize: 11,
+              fontWeight: 800,
+            }}
+          >
+            🔓 100% UNLOCKED
+          </span>
+        </div>
+
+        <h1 style={{ margin: '0 0 6px', fontSize: 24, fontWeight: 800, letterSpacing: '-0.02em' }}>
+          Modul Belajar UTBK-SNBT 2027
+        </h1>
+        <p style={{ margin: '0 0 16px', fontSize: 13, opacity: 0.92, maxWidth: 640, lineHeight: 1.5 }}>
+          Pelajari konsep kunci, trik kilat 30 detik, jebakan umum, contoh soal bertahap, dan kuis cek pemahaman interaktif untuk 7 subtes resmi SNBT.
+        </p>
+
+        {/* Progress Bar Siswa */}
+        <div
+          style={{
+            background: 'rgba(0, 0, 0, 0.15)',
+            backdropFilter: 'blur(6px)',
+            borderRadius: 14,
+            padding: '12px 14px',
+            maxWidth: 620,
+          }}
+        >
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+            <span style={{ fontSize: 12, fontWeight: 700 }}>Progres Penguasaan Modul Kamu</span>
+            <span style={{ fontSize: 12, fontWeight: 800, color: '#fef08a' }}>
+              {statistik.totalSelesai} / {statistik.totalBab} Bab ({statistik.persenTotal}%)
+            </span>
+          </div>
+          <div style={{ width: '100%', height: 8, background: 'rgba(255,255,255,0.25)', borderRadius: 999, overflow: 'hidden' }}>
+            <div
+              style={{
+                width: `${statistik.persenTotal}%`,
+                height: '100%',
+                background: 'linear-gradient(90deg, #fef08a, #a3e635)',
+                borderRadius: 999,
+                transition: 'width 0.4s ease',
+              }}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* 📌 WIDGET TERAKHIR DIBACA (JIKA ADA) */}
+      {terakhirDibaca && (
+        <div
+          style={{
+            background: '#ffffff',
+            border: '1px solid #ccfbf1',
+            borderRadius: 16,
+            padding: '12px 16px',
+            marginBottom: 20,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 12,
+            boxShadow: '0 2px 8px rgba(13, 148, 136, 0.08)',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
+            <div
+              style={{
+                width: 36,
+                height: 36,
+                borderRadius: 10,
+                background: '#f0fdfa',
+                color: '#0d9488',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0,
+              }}
+            >
+              <BookMarked size={20} />
+            </div>
+            <div style={{ minWidth: 0 }}>
+              <div style={{ fontSize: 10.5, fontWeight: 700, color: '#0d9488', textTransform: 'uppercase' }}>
+                Lanjutkan Belajar Terakhir
+              </div>
+              <div
+                style={{
+                  fontSize: 13,
+                  fontWeight: 800,
+                  color: '#0f172a',
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                }}
+              >
+                [{terakhirDibaca.subtestKode}] {terakhirDibaca.judul}
+              </div>
+            </div>
+          </div>
+          <button
+            onClick={() => navigate(`/siswa/modul/${terakhirDibaca.subtestKode}/${terakhirDibaca.babSlug}`)}
+            style={{
+              background: '#0d9488',
+              color: '#ffffff',
+              border: 'none',
+              borderRadius: 10,
+              padding: '7px 14px',
+              fontSize: 11.5,
+              fontWeight: 700,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 5,
+              flexShrink: 0,
+            }}
+          >
+            Lanjut <ArrowRight size={14} />
+          </button>
+        </div>
+      )}
+
+      {/* 🔍 SEARCH BAR & SUBTEST FILTER TABS */}
+      <div style={{ marginBottom: 18 }}>
+        {/* Input Pencarian */}
+        <div style={{ position: 'relative', marginBottom: 12 }}>
+          <Search
+            size={18}
+            style={{
+              position: 'absolute',
+              left: 14,
+              top: '50%',
+              transform: 'translateY(-50%)',
+              color: '#94a3b8',
+            }}
+          />
+          <input
+            type="text"
+            placeholder="Cari bab, topik, atau kata kunci (contoh: Silogisme, Vieta, EYD V, P vs Q)..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            style={{
+              width: '100%',
+              boxSizing: 'border-box',
+              padding: '11px 14px 11px 42px',
+              borderRadius: 12,
+              border: '1.5px solid #e2e8f0',
+              fontSize: 13,
+              outline: 'none',
+              background: '#ffffff',
+              color: '#0f172a',
+              transition: 'border-color 0.2s',
+            }}
+            onFocus={(e) => (e.target.style.borderColor = '#0d9488')}
+            onBlur={(e) => (e.target.style.borderColor = '#e2e8f0')}
+          />
+        </div>
+
+        {/* Tab Subtes */}
+        <div
+          style={{
+            display: 'flex',
+            gap: 8,
+            overflowX: 'auto',
+            paddingBottom: 4,
+            WebkitOverflowScrolling: 'touch',
+          }}
+        >
+          <button
+            onClick={() => setSelectedSubtes('ALL')}
+            style={{
+              padding: '8px 14px',
+              borderRadius: 12,
+              border: selectedSubtes === 'ALL' ? '2px solid #0d9488' : '1px solid #e2e8f0',
+              background: selectedSubtes === 'ALL' ? '#f0fdfa' : '#ffffff',
+              color: selectedSubtes === 'ALL' ? '#0d9488' : '#64748b',
+              fontWeight: selectedSubtes === 'ALL' ? 800 : 600,
+              fontSize: 12,
+              cursor: 'pointer',
+              whiteSpace: 'nowrap',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+            }}
+          >
+            📚 Semua ({SEMUA_BAB_MODUL.length})
+          </button>
+
+          {DAFTAR_SUBTES_MODUL.map((sub) => {
+            const isSelected = selectedSubtes === sub.kode;
+            const subStat = statistik.perSubtes[sub.kode];
+            return (
+              <button
+                key={sub.kode}
+                onClick={() => setSelectedSubtes(sub.kode)}
+                style={{
+                  padding: '8px 14px',
+                  borderRadius: 12,
+                  border: isSelected ? `2px solid ${sub.badgeWarna}` : '1px solid #e2e8f0',
+                  background: isSelected ? sub.bgLight : '#ffffff',
+                  color: isSelected ? sub.badgeWarna : '#475569',
+                  fontWeight: isSelected ? 800 : 600,
+                  fontSize: 12,
+                  cursor: 'pointer',
+                  whiteSpace: 'nowrap',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  transition: 'all 0.15s ease',
+                }}
+              >
+                <span>{sub.emoji}</span>
+                <span>{sub.kode}</span>
+                <span
+                  style={{
+                    background: isSelected ? sub.badgeWarna : '#f1f5f9',
+                    color: isSelected ? '#ffffff' : '#64748b',
+                    borderRadius: 999,
+                    padding: '1px 6px',
+                    fontSize: 10,
+                    fontWeight: 700,
+                  }}
+                >
+                  {subStat ? `${subStat.selesai}/${sub.totalBab}` : sub.totalBab}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* 📚 GRID BAB MODUL */}
+      {filteredBab.length === 0 ? (
+        <div
+          style={{
+            background: '#ffffff',
+            borderRadius: 16,
+            border: '1px dashed #cbd5e1',
+            padding: '40px 20px',
+            textAlign: 'center',
+            color: '#64748b',
+          }}
+        >
+          <BookOpen size={36} style={{ color: '#cbd5e1', margin: '0 auto 10px' }} />
+          <div style={{ fontSize: 15, fontWeight: 700, color: '#0f172a' }}>Tidak ada modul yang cocok</div>
+          <div style={{ fontSize: 12.5, color: '#94a3b8', marginTop: 4 }}>
+            Coba ubah kata kunci pencarian atau pilih tab subtes lain.
+          </div>
+        </div>
+      ) : (
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
+            gap: 16,
+          }}
+        >
+          {filteredBab.map((bab) => {
+            const isSelesai = statistik.babSelesaiIds.includes(bab.id);
+            return (
+              <div
+                key={bab.id}
+                style={{
+                  background: '#ffffff',
+                  borderRadius: 16,
+                  border: isSelesai ? '1.5px solid #a7f3d0' : '1px solid #e2e8f0',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                  padding: 16,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
+                  transition: 'all 0.2s ease',
+                  position: 'relative',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.boxShadow = '0 6px 16px rgba(0,0,0,0.08)';
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.04)';
+                  e.currentTarget.style.transform = 'translateY(0)';
+                }}
+              >
+                <div>
+                  {/* Top Bar Card */}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <span
+                        style={{
+                          background: bab.subtestBgLight,
+                          color: bab.subtestWarna,
+                          padding: '3px 8px',
+                          borderRadius: 6,
+                          fontSize: 10.5,
+                          fontWeight: 800,
+                          letterSpacing: '0.02em',
+                        }}
+                      >
+                        {bab.subtestEmoji} {bab.subtestKode}
+                      </span>
+                      <span style={{ fontSize: 10.5, color: '#94a3b8', fontWeight: 600 }}>
+                        Bab {bab.babNumber}
+                      </span>
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <span
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 4,
+                          fontSize: 11,
+                          color: '#64748b',
+                          fontWeight: 600,
+                        }}
+                      >
+                        <Clock size={12} /> {bab.durasiBacaMenit}m
+                      </span>
+
+                      {isSelesai ? (
+                        <span
+                          style={{
+                            background: '#dcfce7',
+                            color: '#15803d',
+                            padding: '2px 8px',
+                            borderRadius: 999,
+                            fontSize: 10,
+                            fontWeight: 800,
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: 3,
+                          }}
+                        >
+                          <Check size={11} strokeWidth={3} /> Selesai
+                        </span>
+                      ) : (
+                        <span
+                          style={{
+                            background: '#f1f5f9',
+                            color: '#64748b',
+                            padding: '2px 8px',
+                            borderRadius: 999,
+                            fontSize: 10,
+                            fontWeight: 700,
+                          }}
+                        >
+                          Siap Dibaca
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Judul Bab */}
+                  <h3
+                    style={{
+                      margin: '0 0 6px',
+                      fontSize: 15,
+                      fontWeight: 800,
+                      color: '#0f172a',
+                      lineHeight: 1.35,
+                    }}
+                  >
+                    {bab.judul}
+                  </h3>
+
+                  {/* Ringkasan Singkat */}
+                  <p
+                    style={{
+                      margin: '0 0 12px',
+                      fontSize: 12,
+                      color: '#64748b',
+                      lineHeight: 1.45,
+                    }}
+                  >
+                    {bab.ringkasanSingkat}
+                  </p>
+
+                  {/* Learning Objectives Preview */}
+                  {bab.learningObjectives && bab.learningObjectives.length > 0 && (
+                    <div
+                      style={{
+                        background: '#f8fafc',
+                        borderRadius: 10,
+                        padding: '8px 10px',
+                        marginBottom: 14,
+                        border: '1px solid #f1f5f9',
+                      }}
+                    >
+                      <div style={{ fontSize: 10.5, fontWeight: 700, color: '#475569', marginBottom: 4 }}>
+                        🎯 Sasaran Penguasaan:
+                      </div>
+                      <div style={{ fontSize: 11, color: '#64748b', lineHeight: 1.4 }}>
+                        • {bab.learningObjectives[0]}
+                      </div>
+                      {bab.learningObjectives[1] && (
+                        <div style={{ fontSize: 11, color: '#64748b', lineHeight: 1.4, marginTop: 2 }}>
+                          • {bab.learningObjectives[1]}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* Bottom Actions */}
+                <div style={{ paddingTop: 8, borderTop: '1px solid #f1f5f9', display: 'flex', gap: 8 }}>
+                  <button
+                    onClick={() => navigate(`/siswa/modul/${bab.subtestKode}/${bab.slug}`)}
+                    style={{
+                      flex: 1,
+                      background: isSelesai ? '#0f766e' : '#0d9488',
+                      color: '#ffffff',
+                      border: 'none',
+                      borderRadius: 10,
+                      padding: '9px 12px',
+                      fontSize: 12,
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: 6,
+                      boxShadow: '0 2px 4px rgba(13, 148, 136, 0.2)',
+                    }}
+                  >
+                    <BookOpen size={14} />
+                    {isSelesai ? 'Baca Ulang & Kuis' : 'Mulai Belajar'}
+                  </button>
+
+                  <button
+                    onClick={() => navigate('/siswa/roadmap')}
+                    title="Lanjut Latihan Soal Subtes Terkait di Roadmap"
+                    style={{
+                      background: '#f0fdfa',
+                      color: '#0d9488',
+                      border: '1px solid #99f6e4',
+                      borderRadius: 10,
+                      padding: '9px 12px',
+                      fontSize: 12,
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 4,
+                    }}
+                  >
+                    <Flame size={14} />
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}

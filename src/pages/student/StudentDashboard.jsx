@@ -920,9 +920,7 @@ const StudentDashboard = () => {
             ...(cekAi ? [{ key: 'roadmap', label: 'Roadmap', emoji: '🗺️', warna: '#ccfbf1', warnaTeks: '#0f766e', segeraHadir: false }] : []),
             { key: 'latihan', label: 'Latihan Harian', emoji: '📝', warna: '#ecfeff', warnaTeks: '#155e75', segeraHadir: false },
             { key: 'tryout', label: 'TryOut Terjadwal', emoji: '📅', warna: '#fef3c7', warnaTeks: '#92400e', segeraHadir: false },
-            // 🔥 BARU: tile "Bank Soal" (placeholder "Segera") diganti jadi
-            // pintu masuk Buku Interaktif Digital (rak -> daftar isi -> reader).
-            { key: 'buku', label: 'Buku PDF Gemilang', emoji: '📙', warna: '#ffedd5', warnaTeks: '#9a3412', segeraHadir: false },
+            { key: 'modul', label: 'Modul Belajar UTBK', emoji: '📚', warna: '#ccfbf1', warnaTeks: '#0f766e', segeraHadir: false },
             { key: 'progres', label: 'Progres Saya', emoji: '📊', warna: '#dcfce7', warnaTeks: '#166534', segeraHadir: true },
             { key: 'leaderboard', label: 'Leaderboard', emoji: '🏆', warna: '#fce7f3', warnaTeks: '#9d174d', segeraHadir: false },
             { key: 'kehadiran', label: 'Kehadiran', emoji: '🗓️', warna: '#dbeafe', warnaTeks: '#1e40af', segeraHadir: false },
@@ -1001,8 +999,8 @@ const StudentDashboard = () => {
                         navigate('/siswa/tryout');
                       } else if (m.key === 'leaderboard') {
                         navigate('/siswa/leaderboard');
-                      } else if (m.key === 'buku') {
-                        navigate('/siswa/buku-pdf');
+                      } else if (m.key === 'modul') {
+                        navigate('/siswa/modul');
                       } else if (m.segeraHadir) {
                         alert(`✨ ${m.label} segera hadir!`);
                       }
@@ -1636,8 +1634,8 @@ const StudentDashboard = () => {
               <div style={{ fontSize: 11, color: '#64748b' }}>{studentProfile?.kelasSekolah || studentKelas || '-'} • {studentProfile?.kategori || studentProgram || 'Reguler'}</div>
               {studentNim && <div style={{ fontSize: 9, color: '#94a3b8', fontFamily: 'monospace' }}>ID: {studentNim}</div>}
             </div>
-            <button onClick={() => navigate('/siswa/materi')} style={{ padding: '9px 16px', background: '#1E3A8A', color: 'white', border: 'none', borderRadius: 12, fontWeight: 700, fontSize: 11, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5 }}>
-              <BookOpen size={14} /> Materi Belajar
+            <button onClick={() => navigate('/siswa/modul')} style={{ padding: '9px 16px', background: '#0d9488', color: 'white', border: 'none', borderRadius: 12, fontWeight: 700, fontSize: 11, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5 }}>
+              <BookOpen size={14} /> Modul Belajar
             </button>
           </div>
         </div>

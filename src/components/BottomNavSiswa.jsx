@@ -56,18 +56,18 @@ export default function BottomNavSiswa() {
                 key={m.id}
                 type="button"
                 onClick={() => navigate(m.rute)}
-                title="Akses Belajar Mudah — e-learning & buku digital"
+                title="Modul Belajar UTBK 2027 — 7 Subtes AmbisPTN"
                 style={{
                   width: 64, height: 64, borderRadius: '50%', marginTop: -36,
-                  background: 'linear-gradient(135deg,#8B5CF6,#5B2ECC)',
+                  background: 'linear-gradient(135deg,#0d9488,#0f766e)',
                   color: '#fff', border: '4px solid #fff',
-                  boxShadow: on ? '0 8px 22px rgba(91,46,204,0.55)' : '0 6px 16px rgba(91,46,204,0.38)',
+                  boxShadow: on ? '0 8px 22px rgba(13,148,136,0.55)' : '0 6px 16px rgba(13,148,136,0.38)',
                   display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
                   cursor: 'pointer', flexShrink: 0,
                 }}
               >
                 <GraduationCap size={22} />
-                <span style={{ fontSize: 7.5, fontWeight: 800, marginTop: 1, letterSpacing: 0.2 }}>BELAJAR</span>
+                <span style={{ fontSize: 7.5, fontWeight: 800, marginTop: 1, letterSpacing: 0.2 }}>MODUL</span>
               </button>
             );
           }

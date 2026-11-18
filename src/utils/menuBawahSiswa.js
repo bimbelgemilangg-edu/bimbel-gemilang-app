@@ -10,7 +10,7 @@
 export const DAFTAR_MENU_BAWAH = [
   { id: 'beranda', label: 'Beranda', rute: '/siswa/dashboard', icon: 'Home' },
   { id: 'tryout', label: 'Try Out', rute: '/siswa/tryout', icon: 'Rocket' },
-  { id: 'akses', label: 'Akses Belajar', rute: '/siswa/akses-belajar', icon: 'GraduationCap', tengah: true },
+  { id: 'akses', label: 'Modul Belajar', rute: '/siswa/modul', icon: 'GraduationCap', tengah: true },
   { id: 'jadwal', label: 'Jadwal', rute: '/siswa/jadwal', icon: 'Calendar' },
   { id: 'absensi', label: 'Scan Absensi', rute: '/siswa/scan-absensi', icon: 'Camera' },
 ];

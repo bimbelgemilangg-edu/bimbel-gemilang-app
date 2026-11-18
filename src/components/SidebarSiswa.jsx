@@ -84,10 +84,8 @@ const SidebarSiswa = ({ activeMenu, setActiveMenu, isOpen, setIsOpen }) => {
         // 📅 Try Out Terjadwal: Try out manual ujian besar resmi dari tentor / admin
         { id: 'tryout', label: 'Try Out Terjadwal', icon: <Calendar size={18} />, path: '/siswa/tryout', color: '#f59e0b', badge: 'Jadwal' },
         { id: 'latihan-harian', label: 'Latihan Harian', icon: <Flame size={18} />, path: '/siswa/latihan-harian', color: '#dc2626' },
-        { id: 'belajar', label: 'Materi Belajar', icon: <Library size={18} />, path: '/siswa/belajar', color: '#1E9BF0', badge: 'BARU' },
-        { id: 'materi', label: 'E-Learning', icon: <BookOpen size={18} />, path: '/siswa/materi', color: '#10b981' },
-  // 📙 20 Okt: pintu eksplisit buku PDF di sidebar (desktop & drawer)
-  { id: 'bukupdf', label: 'Buku PDF Gemilang', icon: <BookOpen size={18} />, path: '/siswa/buku-pdf', color: '#f97316' },
+        // 📚 Modul Belajar UTBK: Materi resmi 7 subtes UTBK-SNBT 2027 diadopsi dari AmbisPTN
+        { id: 'modul', label: 'Modul Belajar UTBK', icon: <BookOpen size={18} />, path: '/siswa/modul', color: '#0d9488', badge: '7 Subtes' },
         { id: 'jadwal', label: 'Jadwal', icon: <Calendar size={18} />, path: '/siswa/jadwal', color: '#ec4899' },
         // 📷 Scan Absensi: Pemindaian QR absensi tatap muka & foto kehadiran
         { id: 'scan-absensi', label: 'Scan Absensi', icon: <Camera size={18} />, path: '/siswa/scan-absensi', color: '#059669', badge: 'Kamera' },
