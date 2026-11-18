@@ -50,19 +50,20 @@ uji('deteksiJenjangUjianAkhir: hanya mendeteksi kelas 6 SD, 9 SMP, 12 SMA/SMK/UT
 
 uji('getDaftarUnitJalurUjian: mengembalikan unit bertahap untuk SD, SMP, SMA', () => {
   const unitsSmp = getDaftarUnitJalurUjian('SMP');
-  assert.equal(unitsSmp.length, 5);
+  assert.equal(unitsSmp.length, 9);
   assert.equal(unitsSmp[0].tipe, 'start');
   assert.equal(unitsSmp[0].unitNomor, 1);
-  assert.equal(unitsSmp[3].unitNomor, 4);
-  assert.equal(unitsSmp[4].tipe, 'review');
+  assert.equal(unitsSmp[7].unitNomor, 8);
+  assert.equal(unitsSmp[8].tipe, 'review');
 
   const unitsSd = getDaftarUnitJalurUjian('SD');
-  assert.equal(unitsSd.length, 5);
+  assert.equal(unitsSd.length, 9);
   assert.equal(unitsSd[0].tipe, 'start');
 
   const unitsSma = getDaftarUnitJalurUjian('SMA');
-  assert.equal(unitsSma.length, 5);
-  assert.equal(unitsSma[3].jumlahSoal, 50);
+  assert.equal(unitsSma.length, 9);
+  assert.equal(unitsSma[0].jumlahSoal, 12);
+  assert.equal(unitsSma[7].jumlahSoal, 14);
 });
 
 uji('hitungProgresiJalur: Unit 1 selalu terbuka, Unit N terbuka setelah Unit N-1 selesai', () => {

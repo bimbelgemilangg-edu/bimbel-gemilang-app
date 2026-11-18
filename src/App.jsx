@@ -82,6 +82,10 @@ import AuditLogPage from './pages/admin/AuditLogPage';
 import ImporDatabasePtnPage from './pages/admin/ptn/ImporDatabasePtnPage';
 import TargetKampusSiswaPage from './pages/admin/ptn/TargetKampusSiswaPage';
 import TargetKampuskuPage from './pages/student/TargetKampuskuPage';
+import StatistikBelajarPage from './pages/student/StatistikBelajarPage';
+import TesMinatBakatPage from './pages/student/TesMinatBakatPage';
+import KatalogKampusPage from './pages/student/KatalogKampusPage';
+import TryOutAkbarPage from './pages/student/TryOutAkbarPage';
 
 import StudentList from './pages/admin/students/StudentList';
 import AddStudent from './pages/admin/students/AddStudent';
@@ -1076,6 +1080,14 @@ function App() {
             siswa yang tidak didaftarkan melihat penjelasan, bukan kartu
             kosong -- jadi SD/SMP tidak "tersentuh" walau tahu URL-nya. */}
         <Route path="/siswa/target-kampus" element={<SiswaPage><TargetKampuskuPage /></SiswaPage>} />
+        {/* 📊 Statistik Belajar & Kalender Heatmap (AmbisPTN 1:1) */}
+        <Route path="/siswa/statistik" element={<SiswaPage><StatistikBelajarPage /></SiswaPage>} />
+        {/* 🧭 Tes Minat & Bakat Holland RIASEC (AmbisPTN 1:1) */}
+        <Route path="/siswa/minat-bakat" element={<SiswaPage><TesMinatBakatPage /></SiswaPage>} />
+        {/* 🏛️ Katalog 173 PTN & Eksplorasi Prodi (AmbisPTN 1:1) */}
+        <Route path="/siswa/katalog-ptn" element={<SiswaPage><KatalogKampusPage /></SiswaPage>} />
+        {/* 🏆 Event Try Out Akbar Terjadwal & Bedah Soal Tentor (AmbisPTN 1:1) */}
+        <Route path="/siswa/tryout-akbar" element={<SiswaPage><TryOutAkbarPage /></SiswaPage>} />
         <Route
           path="/siswa/leaderboard-raport"
           element={<SiswaPage><StudentLeaderboard /></SiswaPage>}

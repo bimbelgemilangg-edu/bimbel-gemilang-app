@@ -11,6 +11,7 @@ import { Html5Qrcode } from "html5-qrcode";
 import { useNavigate } from 'react-router-dom';
 import { RAPORT_COLLECTIONS } from '../../firebase/raportCollection';
 import { ChipTargetSiswa, KartuTargetSiswa } from '../../components/BannerTargetSiswa';
+import PusatAmbisGemilang from '../../components/dashboard/PusatAmbisGemilang';
 import StudentDigitalCard from '../../components/StudentDigitalCard';
 import MaskotAstronot from '../../components/MaskotAstronot';
 import { deteksiJenjangUjianAkhir } from '../../utils/jalurUjianAiConfig';
@@ -1054,6 +1055,15 @@ const StudentDashboard = () => {
             </div>
           );
         })()}
+
+        {/* 🔥 PUSAT AMBIS GEMILANG (BENCHMARK AMBISPTN 1:1) */}
+        <PusatAmbisGemilang
+          studentProfile={studentProfile || {}}
+          progresStreak={progresStreak}
+          progresXp={progresXp}
+          targetKampus={null}
+          skorTerkini={raportSummary?.nilaiAkhir || null}
+        />
 
         <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(3, 1fr)' : 'repeat(3, 1fr)', gap: isMobile ? 8 : 14, marginBottom: 16 }}>
           {[

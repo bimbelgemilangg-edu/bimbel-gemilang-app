@@ -87,9 +87,9 @@ export function deteksiJenjangUjianAkhir(siswaAtauKelas) {
     };
   }
 
-  // 4. Cek Kelas 12 SMA / SMK
-  const isSma = k.includes('sma') || k.includes('smk') || k.includes('ma') || j.includes('sma') || j.includes('smk') || j.includes('ma');
-  if (angka === 12 || (isSma && (angka === 12 || k.includes('xii'))) || k.includes('12 sma') || k.includes('sma 12') || k.includes('12 smk') || k.includes('kelas 12')) {
+  // 4. Cek Kelas 12 SMA / SMK / Alumni / UTBK
+  const isSma = k.includes('sma') || k.includes('smk') || k.includes('ma') || j.includes('sma') || j.includes('smk') || j.includes('ma') || k.includes('utbk') || k.includes('alumni') || k.includes('xii');
+  if (angka === 12 || k.includes('xii') || (isSma && (angka === 12 || k.includes('xii') || k.includes('utbk') || k.includes('alumni'))) || k.includes('12 sma') || k.includes('sma 12') || k.includes('12 smk') || k.includes('kelas 12')) {
     return {
       jenjang: 'SMA',
       kelas: '12',
@@ -146,12 +146,18 @@ export function deteksiJenjangUjianAkhir(siswaAtauKelas) {
  */
 export function isPaketOtomatisAi(paket) {
   if (!paket) return false;
+  // 🔒 Jika paket berlabel ujian terjadwal, tryout akbar, atau naskah besar (>20 soal atau >35 menit),
+  // maka paket tersebut BUKAN modul micro-learning roadmap, melainkan Try Out Terjadwal / Akbar.
+  const nSoal = paket.daftarSoal?.length || paket.totalSoal || 0;
+  const durasi = Number(paket.durasiMenit) || 0;
+  if (nSoal > 20 || durasi > 35) return false;
+  if (paket.isAkbar === true || paket.terjadwal === true || paket.eventAkbar === true) return false;
+
   if (paket.jalurUjianAi === true) return true;
-  if (paket.otomatis === true) return true;
+  if (paket.microLearning === true) return true;
   if (paket.sumber === 'mesin-otomatis') return true;
+  if (paket.otomatis === true) return true;
   if (Boolean(paket.templateId)) return true;
-  const judul = String(paket.judul || '').toUpperCase();
-  if (judul.includes('PEMAHAMAN TKA') || judul.includes('TRY OUT OTOMATIS')) return true;
   return false;
 }
 
@@ -669,7 +675,10 @@ export function hitungProgresiJalur(daftarUnit = [], sesiList = []) {
       if (s.tryoutId) sesiSelesaiMap.set(s.tryoutId, s);
       if (s.unitId) sesiSelesaiMap.set(s.unitId, s);
       if (s.id) sesiSelesaiMap.set(s.id, s);
-      if (s.unitNomor != null) sesiSelesaiMap.set(`unitNomor_${s.unitNomor}`, s);
+      // Hanya petakan unitNomor jika sesi memang eksplisit berasal dari Jalur Ujian AI / Roadmap
+      if (s.jalurUjianAi && s.unitNomor != null) {
+        sesiSelesaiMap.set(`unitNomor_${s.unitNomor}`, s);
+      }
     }
   });
 
