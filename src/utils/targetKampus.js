@@ -39,8 +39,10 @@ export function validasiPilihan(p, urutan) {
   if (!p || typeof p !== 'object') {
     return [`Pilihan ${urutan}: entri kosong`];
   }
-  if (!p.idPtn) masalah.push(`Pilihan ${urutan}: idPtn kosong`);
-  if (!p.idProdi) masalah.push(`Pilihan ${urutan}: idProdi kosong`);
+  const adaPtn = Boolean(p.idPtn || p.namaPtnKustom || p.namaPtn);
+  const adaProdi = Boolean(p.idProdi || p.namaProdiKustom || p.namaProdi);
+  if (!adaPtn) masalah.push(`Pilihan ${urutan}: idPtn kosong`);
+  if (!adaProdi) masalah.push(`Pilihan ${urutan}: idProdi kosong`);
   if (p.urutan !== undefined && Number(p.urutan) !== urutan) {
     masalah.push(`Pilihan ${urutan}: field urutan berisi ${p.urutan}`);
   }
@@ -53,7 +55,7 @@ export function validasiPilihan(p, urutan) {
  * @param {object} o
  * @param {string} o.studentId
  * @param {number} o.tahunSeleksi
- * @param {Array} o.pilihan maksimal 2 entri { urutan, idPtn, idProdi, labelPribadi }
+ * @param {Array} o.pilihan maksimal 2 entri { urutan, idPtn, idProdi, labelPribadi, namaPtnKustom, namaProdiKustom, skorAcuanKustom }
  * @param {number|null} o.targetSkorPribadi boleh kosong — sebagian siswa belum
  *   berani memasang angka, dan memaksa mereka mengarang angka justru merusak data
  * @param {number} [o.versi] dinaikkan otomatis oleh buatVersiBaru()
@@ -81,11 +83,16 @@ export function bentukTarget({
     tahunSeleksi: Number(tahunSeleksi) || null,
     pilihan: daftar.map((p, i) => ({
       urutan: i + 1,
-      idPtn: String(p?.idPtn || ''),
-      idProdi: String(p?.idProdi || ''),
+      idPtn: String(p?.idPtn || (p?.namaPtnKustom ? 'kustom' : '')),
+      idProdi: String(p?.idProdi || (p?.namaProdiKustom ? 'kustom' : '')),
       // labelPribadi adalah sebutan dari SISWA ("impian", "cadangan dekat
       // rumah"), bukan penilaian sistem. Sengaja teks bebas.
       labelPribadi: String(p?.labelPribadi || ''),
+      namaPtnKustom: String(p?.namaPtnKustom || p?.namaPtn || ''),
+      namaProdiKustom: String(p?.namaProdiKustom || p?.namaProdi || ''),
+      skorAcuanKustom: p?.skorAcuanKustom != null && Number.isFinite(Number(p.skorAcuanKustom))
+        ? Number(p.skorAcuanKustom)
+        : null,
     })),
     targetSkorPribadi: skor,
     versi: Number(versi) || 1,
@@ -184,7 +191,29 @@ export function susunPerbandingan(target, dataProdi = {}, skorSiswa = null) {
   const ambil = (p) => peta.get(`${p?.idPtn}|${p?.idProdi}`) || null;
 
   const baris = (target?.pilihan || []).map((p) => {
-    const prodi = ambil(p);
+    let prodi = ambil(p);
+    const isKustom = Boolean(p?.namaPtnKustom || p?.namaProdiKustom || p?.isKustom || (p?.idPtn === 'kustom' && p?.idProdi === 'kustom'));
+    if (!prodi && isKustom) {
+      const namaPtn = p.namaPtnKustom || p.idPtn;
+      const namaProdi = p.namaProdiKustom || p.idProdi;
+      const skorRef = Number(p.skorAcuanKustom || target?.targetSkorPribadi || 700);
+      prodi = {
+        idPtn: p.idPtn || 'kustom',
+        idProdi: p.idProdi || 'kustom',
+        namaPtn,
+        namaProdi,
+        jenjang: 'S1',
+        bidang: 'Saintek/Soshum',
+        kampus: namaPtn,
+        skorReferensi: {
+          minimum: { nilai: skorRef, statusData: 'kustom', label: 'Skor Target Siswa' },
+          rataRata: { nilai: skorRef + 20, statusData: 'kustom', label: 'Estimasi Rata-rata' },
+          maksimum: { nilai: skorRef + 60, statusData: 'kustom', label: 'Estimasi Aman' },
+        },
+        statusData: 'kustom',
+        jalurSeleksi: 'snbt',
+      };
+    }
     if (!prodi) {
       // Prodi tidak ada di database. Ini kejadian NYATA, bukan tepi kasus:
       // hanya 266 prodi dari 32 PTN yang terdata (§2.4 dokumen audit).
@@ -203,9 +232,9 @@ export function susunPerbandingan(target, dataProdi = {}, skorSiswa = null) {
       idProdi: p.idProdi,
       labelPribadi: p.labelPribadi,
       tersedia: true,
-      namaPtn: prodi.namaPtn || null,
-      namaProdi: prodi.namaProdi || null,
-      jenjang: prodi.jenjang || null,
+      namaPtn: prodi.namaPtn || p.namaPtnKustom || null,
+      namaProdi: prodi.namaProdi || p.namaProdiKustom || null,
+      jenjang: prodi.jenjang || 'S1',
       bidang: prodi.bidang || null,
       kampus: prodi.kampus || null,
       dayaTampung: prodi.dayaTampung || null,

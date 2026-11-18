@@ -17,6 +17,7 @@ import {
 } from 'recharts';
 import { ambilSesiAdmin, LABEL_PERAN_ADMIN } from '../../utils/adminAuth';
 import { isOwnerSession } from '../../utils/roleAkses';
+import { hitungProyeksiStokMenipis } from '../../utils/mesinTryOutOtomatis';
 
 const tanggalLokalHariIni = () => {
   const n = new Date();
@@ -75,6 +76,7 @@ const Dashboard = () => {
   const [newStudents, setNewStudents] = useState([]);
   const [teacherAttendanceStatus, setTeacherAttendanceStatus] = useState([]);
   const [chartData, setChartData] = useState([]);
+  const [stokPeringatan, setStokPeringatan] = useState([]);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 1024);
@@ -292,6 +294,26 @@ const Dashboard = () => {
       ];
       setChartData(dummyActivities);
 
+      // 5. Early Warning System (EWS) Stok Soal Try Out Otomatis (< 2 Minggu)
+      try {
+        const snapTemplates = await getDocs(collection(db, "tryout_templates"));
+        const daftarTemplate = snapTemplates.docs
+          .map((d) => ({ id: d.id, ...d.data() }))
+          .filter((t) => t.aktif !== false);
+        const semuaPeringatan = [];
+        for (const t of daftarTemplate) {
+          if (t.jenjang && Array.isArray(t.komposisi)) {
+            const w = await hitungProyeksiStokMenipis(t.jenjang, t.komposisi);
+            if (w && w.length > 0) {
+              semuaPeringatan.push(...w.map((p) => ({ ...p, templateNama: t.nama })));
+            }
+          }
+        }
+        setStokPeringatan(semuaPeringatan);
+      } catch (errStok) {
+        console.warn("EWS stok check warn:", errStok);
+      }
+
     } catch (err) { 
       console.error("Dashboard error:", err); 
     } finally { 
@@ -415,6 +437,52 @@ const Dashboard = () => {
             </div>
           </div>
         </header>
+
+        {/* ============================================================ */}
+        {/* ⚠️ EARLY WARNING SYSTEM (EWS): STOK SOAL MENIPIS < 2 PEKAN  */}
+        {/* ============================================================ */}
+        {stokPeringatan.length > 0 && (
+          <div style={styles.ewsWarningBanner}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+              <div style={styles.ewsIconWrapper}>
+                <AlertCircle size={22} color="#dc2626" />
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                  <span style={styles.ewsTitle}>⚠️ Early Warning AI: Stok Soal Try Out & Roadmap Menipis (&lt; 2 Minggu)</span>
+                  <span style={styles.ewsBadgeCount}>{stokPeringatan.length} Subtes Kritis</span>
+                </div>
+                <p style={styles.ewsDesc}>
+                  AI mendeteksi stok butir soal baru di Bank Soal hampir habis dan diproyeksikan tidak mencukupi untuk 2 minggu ke depan.
+                  Segera unggah atau impor naskah soal baru agar jadwal otomatis dan asesmen roadmap siswa berjalan tanpa hambatan:
+                </p>
+                <div style={styles.ewsTagList}>
+                  {stokPeringatan.map((p, idx) => (
+                    <span key={idx} style={styles.ewsTagItem}>
+                      <strong>{p.jenjang}</strong> • {p.mapel}: tersisa <b>{p.sisaSoalBaru} butir baru</b> (kebutuhan 2 pekan: {p.butuhDuaPekan} butir)
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+            <div style={styles.ewsActionWrap}>
+              <button
+                type="button"
+                onClick={() => navigate('/admin/bank-soal/import')}
+                style={styles.ewsBtnImport}
+              >
+                <Plus size={15} /> Impor Soal Baru
+              </button>
+              <button
+                type="button"
+                onClick={() => navigate('/admin/bank-soal/tryout-otomatis')}
+                style={styles.ewsBtnAtur}
+              >
+                Kelola Jadwal Otomatis
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* ============================================================ */}
         {/* TOP STAT CARDS (HORIZONTALLY SCROLLABLE - BISA DIGESER)      */}
@@ -1858,6 +1926,92 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     gap: 4
+  },
+  // Early Warning System (EWS) Styles
+  ewsWarningBanner: {
+    background: 'linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)',
+    border: '1.5px solid #fca5a5',
+    borderRadius: 16,
+    padding: '16px 20px',
+    margin: '0 0 20px 0',
+    boxShadow: '0 4px 12px rgba(220, 38, 38, 0.08)',
+  },
+  ewsIconWrapper: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    background: '#fee2e2',
+    border: '1px solid #fecaca',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+  },
+  ewsTitle: {
+    fontSize: 14.5,
+    fontWeight: 800,
+    color: '#991b1b',
+  },
+  ewsBadgeCount: {
+    background: '#dc2626',
+    color: '#ffffff',
+    fontSize: 11,
+    fontWeight: 800,
+    padding: '2px 8px',
+    borderRadius: 99,
+  },
+  ewsDesc: {
+    fontSize: 12.5,
+    color: '#7f1d1d',
+    lineHeight: 1.5,
+    margin: '6px 0 10px',
+  },
+  ewsTagList: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  ewsTagItem: {
+    background: '#ffffff',
+    border: '1px solid #fca5a5',
+    borderRadius: 8,
+    padding: '4px 10px',
+    fontSize: 11.5,
+    color: '#991b1b',
+    boxShadow: '0 1px 3px rgba(0,0,0,0.03)',
+  },
+  ewsActionWrap: {
+    display: 'flex',
+    gap: 10,
+    marginTop: 14,
+    flexWrap: 'wrap',
+  },
+  ewsBtnImport: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: 6,
+    background: '#dc2626',
+    color: '#ffffff',
+    border: 'none',
+    borderRadius: 10,
+    padding: '8px 16px',
+    fontSize: 12.5,
+    fontWeight: 800,
+    cursor: 'pointer',
+    boxShadow: '0 2px 6px rgba(220, 38, 38, 0.25)',
+  },
+  ewsBtnAtur: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: 6,
+    background: '#ffffff',
+    color: '#991b1b',
+    border: '1px solid #fca5a5',
+    borderRadius: 10,
+    padding: '8px 14px',
+    fontSize: 12.5,
+    fontWeight: 700,
+    cursor: 'pointer',
   }
 };
 

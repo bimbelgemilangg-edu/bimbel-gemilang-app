@@ -24,8 +24,10 @@ import {
   Rocket, Lock, CheckCircle2, Star, Sparkles, Brain, Trophy,
   ChevronLeft, AlertCircle, Play, ShieldAlert, Timer, Award,
   Flame, BarChart3, HelpCircle, X, Compass, ExternalLink,
+  Target, Zap,
 } from 'lucide-react';
 import { useProfilSiswa } from '../../../utils/profilSiswa';
+import { useDataTargetKampus } from '../../../services/dataTargetKampus';
 import { saringPaketUntukSiswa } from '../../../utils/cocokkanTargetPaket';
 import {
   deteksiJenjangUjianAkhir,
@@ -140,6 +142,108 @@ export default function JalurUjianAiPage() {
   const { unitList, totalUnit, selesaiCount, persentaseSelesai } = useMemo(() => {
     return hitungProgresiJalur(daftarUnit, sesiList);
   }, [daftarUnit, sesiList]);
+
+  // 4. Target Kampus Siswa (Bagi jenjang SMA/UTBK)
+  const keadaanTarget = useDataTargetKampus(studentId, profil);
+  const targetKampusData = useMemo(() => {
+    const perb = keadaanTarget?.perbandingan;
+    const p1 = perb?.pilihan?.[0];
+    if (!p1) return null;
+    const namaPtn = p1.namaPtn || (p1.idPtn !== 'kustom' ? p1.idPtn : '') || 'Universitas Pilihan';
+    const namaProdi = p1.namaProdi || (p1.idProdi !== 'kustom' ? p1.idProdi : '') || 'Jurusan Impian';
+    const skorAcuan = p1.skorReferensi?.minimum?.nilai || keadaanTarget?.target?.targetSkorPribadi || 750;
+    return {
+      namaPtn,
+      namaProdi,
+      skorAcuan,
+      zona: p1.zona?.nama || 'Zona Perlu Pemantapan',
+      gap: p1.gapMinimum != null ? p1.gapMinimum : null,
+      tersedia: Boolean(namaPtn && namaProdi),
+    };
+  }, [keadaanTarget]);
+
+  // 5. Analisis Perilaku & Kognitif oleh Asisten Belajar Gemilang (Bukan Sekadar "Butuh Drill")
+  const analisisBelajar = useMemo(() => {
+    const sesiSelesai = (sesiList || [])
+      .filter((s) => s.status === 'selesai')
+      .sort((a, b) => {
+        const ta = a.waktuSelesai?.toMillis ? a.waktuSelesai.toMillis() : (a.waktuSelesaiMs || 0);
+        const tb = b.waktuSelesai?.toMillis ? b.waktuSelesai.toMillis() : (b.waktuSelesaiMs || 0);
+        return ta - tb;
+      });
+
+    const totalSesi = sesiSelesai.length;
+    if (totalSesi === 0) {
+      return {
+        sudahAdaData: false,
+        skorTerakhir: null,
+        skorRata: null,
+        tempoDetik: null,
+        kategoriTempo: 'Misi Baru Dimulai',
+        evaluasiWaktu: 'Selesaikan misi Tahap 1 untuk merekam ritme pengerjaan dan efisiensi manajemen waktumu.',
+        evaluasiWacana: 'Asisten Belajar akan membaca daya tahanmu dalam membedah wacana panjang dan kekebalan terhadap distraktor.',
+        evaluasiHitung: 'Sistem akan mendeteksi apakah kekeliruan berasal dari rumus atau blunder hitungan di langkah akhir.',
+        pesanTanggungJawab: 'Setiap langkah di roadmap ini adalah sarana evaluasi mandiri menuju target kelulusan impianmu.',
+        sesiSelesai: [],
+      };
+    }
+
+    const sesiTerakhir = sesiSelesai[sesiSelesai.length - 1];
+    const skorTerakhir = Math.round(Number(sesiTerakhir.totalSkorPersen) || 0);
+    const skorRata = Math.round(sesiSelesai.reduce((acc, s) => acc + (Number(s.totalSkorPersen) || 0), 0) / totalSesi);
+
+    // Hitung rata-rata detik per butir soal
+    const tempoArr = sesiSelesai.map((s) => {
+      const start = s.waktuMulaiMs || (s.createdAt?.toMillis ? s.createdAt.toMillis() : null);
+      const end = s.waktuSelesai?.toMillis ? s.waktuSelesai.toMillis() : (s.waktuSelesaiMs || null);
+      const n = s.totalSoal || (s.soalDinilaiIds || []).length || 30;
+      if (start && end && end > start && n > 0) {
+        return Math.round((end - start) / 1000 / n);
+      }
+      return null;
+    }).filter(Boolean);
+
+    const avgTempo = tempoArr.length ? Math.round(tempoArr.reduce((a, b) => a + b, 0) / tempoArr.length) : 58;
+
+    let kategoriTempo = 'Taktis & Terukur';
+    let evaluasiWaktu = '';
+    let evaluasiWacana = '';
+    let evaluasiHitung = '';
+    let pesanTanggungJawab = '';
+
+    if (avgTempo < 45) {
+      kategoriTempo = 'Tempo Cepat (Cenderung Terburu-buru)';
+      evaluasiWaktu = `Kamu menyelesaikan soal dengan tempo rata-rata ${avgTempo} detik/soal (sangat cepat). Daya tangkapmu sangat tangkas, namun tempo yang tergesa-gesa ini meningkatkan risiko blunder membaca instruksi terkecil.`;
+      evaluasiWacana = 'Pada soal literasi wacana panjang, kamu cenderung memilih opsi pertama yang terlihat mirip tanpa memverifikasi kata negasi seperti "kecuali" atau "pernyataan yang bertolak belakang".';
+      evaluasiHitung = 'Logika aljabarmu bekerja cepat, namun terjadi kekurangtelitian pada perpindahan tanda (+/-) di baris penyelesaian akhir karena terburu-buru mengunci opsi.';
+      pesanTanggungJawab = 'Kunci lonjakan nilaimu adalah ketenangan. Manfaatkan sisa waktu pengerjaan untuk melakukan pengecekan ulang 5 butir yang paling kamu ragukan.';
+    } else if (avgTempo <= 75) {
+      kategoriTempo = 'Tempo Taktis & Terukur (Ideal)';
+      evaluasiWaktu = `Ritme pengerjaanmu sangat seimbang dan proporsional di angka ${avgTempo} detik/soal. Kamu mampu membagi waktu secara cerdas antara soal wacana dan penalaran hitungan.`;
+      evaluasiWacana = 'Daya tahan membacamu solid. Kamu mampu mengekstraksi inti paragraf dengan runtut dan tidak mudah terperangkap oleh opsi pengecoh yang memutarbalikkan fakta.';
+      evaluasiHitung = 'Struktur penurunan rumusmu teratur dan rapi. Kesalahan yang terjadi murni pada variasi soal tingkat tinggi (HOTS) yang mengombinasikan multi-konsep.';
+      pesanTanggungJawab = 'Pertahankan ritme disiplin ini. Gap skor menuju target impian sepenuhnya berada dalam kendalimu melalui konsistensi penuntasan unit misi.';
+    } else {
+      kategoriTempo = 'Tempo Sangat Hati-hati (Perlu Alokasi Taktis)';
+      evaluasiWaktu = `Kamu sangat cermat dengan tempo rata-rata ${avgTempo} detik/soal. Namun kebiasaan terjebak terlalu lama di 2-3 soal rumit di awal membuat energimu terkuras dan terburu-buru di nomor-nomor akhir.`;
+      evaluasiWacana = 'Pemahaman wacanamu mendalam, namun waktu membacamu bisa dihemat 20 detik jika kamu menerapkan teknik membaca pertanyaan terlebih dahulu sebelum membaca teks.';
+      evaluasiHitung = 'Ketelitian hitunganmu sangat tinggi dengan indeks kecerobohan yang minim. Kendalamu murni alokasi durasi yang melebihi batas waktu standar.';
+      pesanTanggungJawab = 'Terapkan strategi "Lewati 90 Detik": jika sebuah soal belum menemukan titik terang dalam 90 detik, tandai dan lanjutkan dulu untuk mengamankan nomor mudah.';
+    }
+
+    return {
+      sudahAdaData: true,
+      skorTerakhir,
+      skorRata,
+      tempoDetik: avgTempo,
+      kategoriTempo,
+      evaluasiWaktu,
+      evaluasiWacana,
+      evaluasiHitung,
+      pesanTanggungJawab,
+      sesiSelesai,
+    };
+  }, [sesiList]);
 
   // Handler klik node unit
   const handleKlikUnit = (unit) => {
@@ -259,6 +363,78 @@ export default function JalurUjianAiPage() {
         <div style={st.progressBarTrack}>
           <div style={{ ...st.progressBarFill, width: `${persentaseSelesai}%` }} />
         </div>
+      </div>
+
+      {/* 🎯 KARTU TARGET KAMPUS & PENGUKURAN KEMAMPUAN SISWA */}
+      <div style={st.kartuTargetGoalWrap}>
+        {targetJenjang.jenjang === 'SMA' ? (
+          targetKampusData && targetKampusData.tersedia ? (
+            <div style={st.kartuTargetGoalInner}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={st.badgeKampusIcon}>🏛️</div>
+                <div>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: '#64748b' }}>Target Kampus Impian</div>
+                  <div style={{ fontSize: 14, fontWeight: 800, color: '#0f172a' }}>
+                    {targetKampusData.namaPtn} • <span style={{ color: '#0d9488' }}>{targetKampusData.namaProdi}</span>
+                  </div>
+                </div>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+                <div style={{ textAlign: 'right' }}>
+                  <div style={{ fontSize: 11, color: '#64748b', fontWeight: 600 }}>
+                    Target Skor: <b>{targetKampusData.skorAcuan}</b>
+                  </div>
+                  <div style={{
+                    fontSize: 12.5,
+                    fontWeight: 800,
+                    color: analisisBelajar.skorTerakhir != null
+                      ? ((analisisBelajar.skorTerakhir - targetKampusData.skorAcuan) >= 0 ? '#16a34a' : '#d97706')
+                      : '#64748b',
+                  }}>
+                    {analisisBelajar.skorTerakhir != null
+                      ? `Skor Terkini: ${analisisBelajar.skorTerakhir} (GAP: ${analisisBelajar.skorTerakhir - targetKampusData.skorAcuan >= 0 ? '+' : ''}${analisisBelajar.skorTerakhir - targetKampusData.skorAcuan})`
+                      : 'Mulai Ujian untuk Membaca GAP'}
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => navigate('/siswa/target-kampus')}
+                  style={st.btnUbahTargetKecil}
+                  title="Sesuaikan Target Kampus"
+                >
+                  Ubah Target
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div style={st.kartuTargetBelumAda}>
+              <span style={{ fontSize: 12.5, color: '#0f766e', fontWeight: 600 }}>
+                🎯 Belum memasang target kampus impian? Tetapkan universitas & jurusan pilihanmu untuk memantau target skor di Roadmap!
+              </span>
+              <button
+                type="button"
+                onClick={() => navigate('/siswa/target-kampus')}
+                style={st.btnPasangTargetSekarang}
+              >
+                + Pasang Target Kampus
+              </button>
+            </div>
+          )
+        ) : (
+          <div style={st.kartuTargetGoalInner}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div style={st.badgeKampusIcon}>🎯</div>
+              <div>
+                <div style={{ fontSize: 11, fontWeight: 700, color: '#64748b' }}>
+                  {targetJenjang.jenjang === 'SMP' ? 'Standarisasi TKA SMP (Kelas 7, 8 & 9) Menuju SMA Unggulan' : 'Asesmen Standarisasi TKA SD Menuju SMP Favorit'}
+                </div>
+                <div style={{ fontSize: 13, fontWeight: 800, color: '#0f172a' }}>
+                  Standar Kelulusan: <span style={{ color: '#0d9488' }}>85.0</span> • Akurasi Terkini: <b>{analisisBelajar.skorRata != null ? `${analisisBelajar.skorRata}%` : 'Mulai Tahap 1'}</b>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* ============================================================ */}
@@ -441,22 +617,12 @@ export default function JalurUjianAiPage() {
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                   <Star size={24} color="#f59e0b" fill="#f59e0b" />
                   <div>
-                    <div style={{ fontSize: 12, fontWeight: 700, color: '#92400e' }}>Misi Selesai Dikerjakan!</div>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: '#92400e' }}>Misi Telah Selesai Dikerjakan</div>
                     <div style={{ fontSize: 18, fontWeight: 900, color: '#78350f' }}>
                       Akurasi Skor: {unitTerpilih.skor}%
                     </div>
                   </div>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setUnitTerpilih(null);
-                    setModalReviewTerbuka(true);
-                  }}
-                  style={st.btnLihatAnalisisKecil}
-                >
-                  Analisis Kemampuan
-                </button>
               </div>
             )}
 
@@ -464,7 +630,7 @@ export default function JalurUjianAiPage() {
               <div style={st.kartuStatusLocked}>
                 <Lock size={20} color="#b45309" />
                 <span style={{ fontSize: 12.5, fontWeight: 700, color: '#92400e' }}>
-                  Unit ini masih terkunci! Selesaikan Tahap {unitTerpilih.unitNomor - 1} terlebih dahulu untuk membuka stage ini.
+                  Unit ini masih terkunci. Selesaikan Tahap {unitTerpilih.unitNomor - 1} terlebih dahulu untuk membuka tahap ini.
                 </span>
               </div>
             )}
@@ -475,7 +641,7 @@ export default function JalurUjianAiPage() {
               </div>
             )}
 
-            <div style={{ marginTop: 20 }}>
+            <div style={{ marginTop: 18 }}>
               {unitTerpilih.status === 'current' ? (
                 <button
                   type="button"
@@ -484,68 +650,24 @@ export default function JalurUjianAiPage() {
                   style={st.btnLuncurkanUjian}
                 >
                   <Rocket size={20} />
-                  <span>{sedangMenyiapkan ? 'Menyiapkan Simulasi...' : 'Luncurkan Simulasi Ujian 🚀'}</span>
+                  <span>{sedangMenyiapkan ? 'Menyiapkan Simulasi...' : 'Mulai Simulasi Ujian 🚀'}</span>
                 </button>
               ) : unitTerpilih.status === 'completed' ? (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                  <div style={{
-                    background: '#f0fdf4',
-                    border: '1px solid #bbf7d0',
-                    borderRadius: 12,
-                    padding: '11px 14px',
-                    textAlign: 'center',
-                    color: '#166534',
-                    fontSize: 12.5,
-                    fontWeight: 700,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: 8,
-                  }}>
-                    <CheckCircle2 size={18} color="#16a34a" />
-                    <span>Ujian ini telah selesai dikerjakan (Hanya 1x pengerjaan).</span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setUnitTerpilih(null);
-                      setModalReviewTerbuka(true);
-                    }}
-                    style={{
-                      background: 'linear-gradient(135deg, #0d9488 0%, #0f766e 100%)',
-                      color: '#ffffff',
-                      border: 'none',
-                      borderRadius: 12,
-                      padding: '12px 16px',
-                      fontSize: 14,
-                      fontWeight: 800,
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: 8,
-                      boxShadow: '0 4px 12px rgba(13,148,136,0.25)',
-                    }}
-                  >
-                    <Brain size={18} />
-                    <span>Lihat Analisis & Rapor Kemampuan</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setUnitTerpilih(null)}
-                    style={st.btnTutupModal}
-                  >
-                    Tutup
-                  </button>
-                </div>
-              ) : (
                 <button
                   type="button"
-                  onClick={() => setUnitTerpilih(null)}
-                  style={st.btnTutupModal}
+                  onClick={() => {
+                    setUnitTerpilih(null);
+                    setModalReviewTerbuka(true);
+                  }}
+                  style={st.btnBukaAnalisisUtama}
                 >
-                  Tutup
+                  <Brain size={18} />
+                  <span>Buka Analisis Asisten Belajar Gemilang 🧠</span>
                 </button>
+              ) : (
+                <div style={{ textAlign: 'center', color: '#64748b', fontSize: 12, padding: '6px 0' }}>
+                  Selesaikan tahap sebelumnya untuk melanjutkan misi ini
+                </div>
               )}
             </div>
           </div>
@@ -559,17 +681,17 @@ export default function JalurUjianAiPage() {
         <div style={st.overlayModal} onClick={() => setModalReviewTerbuka(false)}>
           <div style={st.sheetReviewModal} onClick={(e) => e.stopPropagation()}>
             <div style={st.dragHandle} />
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 <div style={st.iconReviewCircle}>
                   <Brain size={24} color="#0d9488" />
                 </div>
                 <div>
-                  <h3 style={{ fontSize: 18, fontWeight: 800, color: '#0f172a', margin: 0 }}>
-                    Analisis Kemampuan Belajar
+                  <h3 style={{ fontSize: 17, fontWeight: 800, color: '#0f172a', margin: 0 }}>
+                    Asisten Belajar Gemilang
                   </h3>
                   <div style={{ fontSize: 12, color: '#64748b', fontWeight: 600 }}>
-                    Pelacakan Perkembangan Personal • {targetJenjang.namaUjian}
+                    Diagnosis Perilaku & Kognitif Siswa • {targetJenjang.namaUjian}
                   </div>
                 </div>
               </div>
@@ -582,37 +704,142 @@ export default function JalurUjianAiPage() {
               </button>
             </div>
 
-            <div style={st.kartuRingkasanPerform}>
-              <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: '#0d9488', textTransform: 'uppercase' }}>
-                  Tingkat Kesiapan Ujian
+            {/* 🎯 KARTU TARGET KAMPUS & PENGUKURAN GAP */}
+            <div style={st.kartuGapKampusWrap}>
+              {targetJenjang.jenjang === 'SMA' ? (
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                      <div style={{ fontSize: 11, fontWeight: 800, color: '#0f766e', textTransform: 'uppercase' }}>
+                        🏛️ Target Kampus Impian
+                      </div>
+                      <div style={{ fontSize: 14, fontWeight: 800, color: '#0f172a', marginTop: 2 }}>
+                        {targetKampusData?.namaPtn || 'Target Belum Dipasang'} — <span style={{ color: '#0d9488' }}>{targetKampusData?.namaProdi || 'Jurusan'}</span>
+                      </div>
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                      <span style={{ fontSize: 11, color: '#64748b', fontWeight: 600 }}>Target Skor:</span>
+                      <div style={{ fontSize: 16, fontWeight: 900, color: '#0d9488' }}>
+                        {targetKampusData?.skorAcuan || 750}
+                      </div>
+                    </div>
+                  </div>
+                  <div style={{ marginTop: 8, paddingTop: 8, borderTop: '1px solid #ccfbf1', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: 12, color: '#334155', fontWeight: 600 }}>
+                      Skor Terkini: <b>{analisisBelajar.skorTerakhir != null ? analisisBelajar.skorTerakhir : 'Belum Ada'}</b>
+                    </span>
+                    <span style={{
+                      fontSize: 12,
+                      fontWeight: 800,
+                      color: analisisBelajar.skorTerakhir != null && targetKampusData?.skorAcuan
+                        ? (analisisBelajar.skorTerakhir - targetKampusData.skorAcuan >= 0 ? '#16a34a' : '#d97706')
+                        : '#64748b',
+                    }}>
+                      {analisisBelajar.skorTerakhir != null && targetKampusData?.skorAcuan
+                        ? `GAP: ${analisisBelajar.skorTerakhir - targetKampusData.skorAcuan >= 0 ? '+' : ''}${analisisBelajar.skorTerakhir - targetKampusData.skorAcuan} poin (${analisisBelajar.skorTerakhir >= targetKampusData.skorAcuan ? 'Zona Aman' : 'Perlu Pemantapan'})`
+                        : 'Mulai Ujian Tahap 1'}
+                    </span>
+                  </div>
                 </div>
-                <div style={{ fontSize: 26, fontWeight: 900, color: '#0f766e', margin: '4px 0' }}>
-                  {selesaiCount === 0 ? 'Belum Dimulai' : selesaiCount >= 3 ? 'Sangat Siap 🎯' : 'Tahap Berkembang 🌱'}
+              ) : (
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                      <div style={{ fontSize: 11, fontWeight: 800, color: '#0f766e', textTransform: 'uppercase' }}>
+                        🎯 Standarisasi Asesmen TKA {targetJenjang.jenjang}
+                      </div>
+                      <div style={{ fontSize: 14, fontWeight: 800, color: '#0f172a', marginTop: 2 }}>
+                        {targetJenjang.jenjang === 'SMP' ? 'TKA SMP Menuju SMA Unggulan' : 'TKA SD Menuju SMP Favorit'}
+                      </div>
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                      <span style={{ fontSize: 11, color: '#64748b', fontWeight: 600 }}>Standar Kelulusan:</span>
+                      <div style={{ fontSize: 16, fontWeight: 900, color: '#0d9488' }}>85.0%</div>
+                    </div>
+                  </div>
+                  <div style={{ marginTop: 8, paddingTop: 8, borderTop: '1px solid #ccfbf1', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: 12, color: '#334155', fontWeight: 600 }}>
+                      Akurasi Rata-rata: <b>{analisisBelajar.skorRata != null ? `${analisisBelajar.skorRata}%` : 'Belum Ada'}</b>
+                    </span>
+                    <span style={{
+                      fontSize: 12,
+                      fontWeight: 800,
+                      color: analisisBelajar.skorRata != null ? (analisisBelajar.skorRata >= 85 ? '#16a34a' : '#d97706') : '#64748b',
+                    }}>
+                      {analisisBelajar.skorRata != null ? (analisisBelajar.skorRata >= 85 ? 'Siap Lulus Unggulan 🚀' : 'Perlu Peningkatan Fokus') : 'Mulai Ujian Tahap 1'}
+                    </span>
+                  </div>
                 </div>
-                <div style={{ fontSize: 12, color: '#475569' }}>
-                  {selesaiCount} dari {totalUnit} Misi Telah Ditaklukkan
+              )}
+            </div>
+
+            {/* 🧠 3 KARTU ANALISIS KOGNITIF & PERILAKU */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, margin: '14px 0' }}>
+              {/* Dimensi 1: Ritme & Pacing */}
+              <div style={st.kartuDimensiPerilaku}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                  <span style={{ fontSize: 12.5, fontWeight: 800, color: '#0f766e', display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <Timer size={16} color="#0d9488" /> 1. Ritme & Efisiensi Waktu (Pacing)
+                  </span>
+                  <span style={st.badgeDimensiAi}>{analisisBelajar.kategoriTempo}</span>
                 </div>
+                <p style={st.teksDimensiAi}>{analisisBelajar.evaluasiWaktu}</p>
+              </div>
+
+              {/* Dimensi 2: Daya Tahan Wacana Panjang */}
+              <div style={st.kartuDimensiPerilaku}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                  <span style={{ fontSize: 12.5, fontWeight: 800, color: '#6d28d9', display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <Sparkles size={16} color="#8b5cf6" /> 2. Daya Tahan & Keakurasian Wacana
+                  </span>
+                  <span style={{ ...st.badgeDimensiAi, background: '#ede9fe', color: '#6d28d9' }}>Reading Stamina</span>
+                </div>
+                <p style={st.teksDimensiAi}>{analisisBelajar.evaluasiWacana}</p>
+              </div>
+
+              {/* Dimensi 3: Presisi Komputasi */}
+              <div style={st.kartuDimensiPerilaku}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                  <span style={{ fontSize: 12.5, fontWeight: 800, color: '#b45309', display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <Award size={16} color="#f59e0b" /> 3. Fokus Ketelitian Matematis
+                  </span>
+                  <span style={{ ...st.badgeDimensiAi, background: '#fef3c7', color: '#b45309' }}>Computational Precision</span>
+                </div>
+                <p style={st.teksDimensiAi}>{analisisBelajar.evaluasiHitung}</p>
+              </div>
+
+              {/* Prinsip Belajar Mandiri Berkelanjutan */}
+              <div style={st.kartuRefleksiMandiri}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 5 }}>
+                  <Brain size={16} color="#047857" />
+                  <span style={{ fontSize: 12.5, fontWeight: 800, color: '#065f46' }}>
+                    Tanggung Jawab Belajar Pribadi
+                  </span>
+                </div>
+                <p style={{ fontSize: 12, color: '#047857', lineHeight: 1.5, margin: 0 }}>
+                  {analisisBelajar.pesanTanggungJawab}
+                </p>
               </div>
             </div>
 
-            <div style={{ marginBottom: 18 }}>
-              <div style={{ fontSize: 13, fontWeight: 800, color: '#1e293b', marginBottom: 10 }}>
+            {/* HISTORI CAPAIAN MISI */}
+            <div style={{ marginBottom: 16 }}>
+              <div style={{ fontSize: 12.5, fontWeight: 800, color: '#1e293b', marginBottom: 8 }}>
                 Histori Capaian Jalur Misi:
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                 {unitList.filter((u) => u.tipe !== 'review').map((u) => (
                   <div key={u.id} style={st.barisHistoriUnit}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                       <div style={{
-                        width: 32, height: 32, borderRadius: 10,
+                        width: 30, height: 30, borderRadius: 8,
                         background: u.status === 'completed' ? '#d1fae5' : '#f1f5f9',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                       }}>
-                        {u.status === 'completed' ? <CheckCircle2 size={18} color="#059669" /> : <Lock size={16} color="#94a3b8" />}
+                        {u.status === 'completed' ? <CheckCircle2 size={16} color="#059669" /> : <Lock size={15} color="#94a3b8" />}
                       </div>
                       <div>
-                        <div style={{ fontSize: 13, fontWeight: 700, color: '#1e293b' }}>{u.judul}</div>
+                        <div style={{ fontSize: 12.5, fontWeight: 700, color: '#1e293b' }}>{u.judul}</div>
                         <div style={{ fontSize: 11, color: '#64748b' }}>{u.mapel}</div>
                       </div>
                     </div>
@@ -626,20 +853,6 @@ export default function JalurUjianAiPage() {
                   </div>
                 ))}
               </div>
-            </div>
-
-            <div style={st.kartuSaranAi}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-                <Sparkles size={16} color="#8b5cf6" />
-                <span style={{ fontSize: 13, fontWeight: 800, color: '#6d28d9' }}>
-                  Rekomendasi Belajar
-                </span>
-              </div>
-              <p style={{ fontSize: 12.5, color: '#4c1d95', lineHeight: 1.5, margin: 0 }}>
-                {selesaiCount === 0
-                  ? 'Mulai pengerjaan Tahap 1 (Start) untuk mengaktifkan radar evaluasi yang membaca kemampuan dan materi yang perlu kamu kuasai!'
-                  : 'Pertahankan konsistensimu! Terus lanjutkan tahap berikutnya tanpa khawatir deadline untuk mempertajam daya saing kelulusanmu.'}
-              </p>
             </div>
 
             <button
@@ -739,15 +952,15 @@ function KomponenNodeUnit({ unit, onKlik }) {
           ) : (
             <Lock size={22} color="#ffffff" strokeWidth={2.4} />
           )}
-          <span style={{ fontSize: 11, fontWeight: 800, color: '#ffffff', marginTop: 2 }}>
-            Unit {unit.unitNomor - 1}
+          <span style={{ fontSize: 11, fontWeight: 900, color: '#ffffff', marginTop: 1 }}>
+            {unit.unitNomor - 1}
           </span>
         </div>
       </button>
 
       <div style={st.labelNodeBawah}>
         <span style={{ fontWeight: 800, color: '#064e3b', fontSize: 11 }}>
-          Unit {unit.unitNomor - 1}
+          {unit.mapel || (unit.judul.length > 20 ? unit.judul.slice(0, 20) + '...' : unit.judul)}
         </span>
         {isCompleted && (
           <span style={{ fontSize: 10.5, fontWeight: 800, color: '#047857', marginLeft: 3 }}>
@@ -1149,6 +1362,116 @@ const st = {
     fontWeight: 800,
     fontSize: 14,
     cursor: 'pointer',
+  },
+  // Target Kampus & Analisis Asisten Belajar Gemilang
+  kartuTargetGoalWrap: {
+    margin: '10px 16px 0',
+    position: 'relative',
+    zIndex: 10,
+  },
+  kartuTargetGoalInner: {
+    background: 'rgba(255, 255, 255, 0.95)',
+    borderRadius: 14,
+    padding: '12px 14px',
+    boxShadow: '0 4px 14px rgba(15, 118, 110, 0.15)',
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: 12,
+    flexWrap: 'wrap',
+  },
+  kartuTargetBelumAda: {
+    background: 'rgba(255, 255, 255, 0.92)',
+    borderRadius: 14,
+    padding: '12px 14px',
+    boxShadow: '0 4px 14px rgba(15, 118, 110, 0.15)',
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: 12,
+    flexWrap: 'wrap',
+  },
+  badgeKampusIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    background: '#ccfbf1',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: 18,
+    flexShrink: 0,
+  },
+  btnUbahTargetKecil: {
+    background: '#f1f5f9',
+    color: '#334155',
+    border: '1px solid #cbd5e1',
+    padding: '6px 12px',
+    borderRadius: 8,
+    fontSize: 11.5,
+    fontWeight: 700,
+    cursor: 'pointer',
+  },
+  btnPasangTargetSekarang: {
+    background: '#0d9488',
+    color: '#ffffff',
+    border: 'none',
+    padding: '7px 14px',
+    borderRadius: 8,
+    fontSize: 12,
+    fontWeight: 800,
+    cursor: 'pointer',
+    boxShadow: '0 2px 6px rgba(13,148,136,0.3)',
+  },
+  btnBukaAnalisisUtama: {
+    width: '100%',
+    padding: '14px',
+    borderRadius: 14,
+    background: 'linear-gradient(135deg, #0d9488 0%, #0f766e 100%)',
+    color: '#ffffff',
+    border: 'none',
+    fontWeight: 800,
+    fontSize: 14.5,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    cursor: 'pointer',
+    boxShadow: '0 6px 16px rgba(13, 148, 136, 0.35)',
+  },
+  kartuGapKampusWrap: {
+    background: 'linear-gradient(135deg, #f0fdfa 0%, #ccfbf1 100%)',
+    border: '1px solid #99f6e4',
+    borderRadius: 14,
+    padding: '12px 14px',
+    marginBottom: 12,
+  },
+  kartuDimensiPerilaku: {
+    background: '#ffffff',
+    border: '1px solid #e2e8f0',
+    borderRadius: 12,
+    padding: '11px 13px',
+    boxShadow: '0 1px 3px rgba(0,0,0,0.03)',
+  },
+  badgeDimensiAi: {
+    fontSize: 10.5,
+    fontWeight: 800,
+    color: '#0f766e',
+    background: '#ccfbf1',
+    padding: '2px 8px',
+    borderRadius: 99,
+  },
+  teksDimensiAi: {
+    fontSize: 12,
+    color: '#334155',
+    lineHeight: 1.55,
+    margin: 0,
+  },
+  kartuRefleksiMandiri: {
+    background: '#f0fdf4',
+    border: '1px solid #bbf7d0',
+    borderRadius: 12,
+    padding: '11px 13px',
   },
   // Bukan Jenjang Akhir Styles
   bukanAkhirWrapper: {

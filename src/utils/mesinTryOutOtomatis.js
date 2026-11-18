@@ -209,7 +209,7 @@ export async function ambilSoalDariBank(opts) {
   return pool.slice(0, jumlah);
 }
 
-export async function idSoalBaruDipakai(jenjang, batasPaket = 10) {
+export async function idSoalBaruDipakai(jenjang, batasPaket = 200) {
   const snap = await getDocs(collection(dbPakai, COL_PAKET));
   const paket = snap.docs
     .map((d) => ({ id: d.id, ...d.data() }))
@@ -236,6 +236,51 @@ export async function idSoalBaruDipakai(jenjang, batasPaket = 10) {
     }
   }
   return ids;
+}
+
+/**
+ * Early Warning System (EWS): Hitung apakah stok soal baru tersisa < 2 minggu pemakaian
+ * untuk komposisi template otomatis tertentu.
+ */
+export async function hitungProyeksiStokMenipis(jenjang = 'SMP', komposisi = []) {
+  try {
+    const dipakai = await idSoalBaruDipakai(jenjang, 200);
+    let snap;
+    try {
+      snap = await getDocs(query(collection(dbPakai, COL_BANK), where('status', '==', 'aktif'), limit(2000)));
+    } catch (_e) {
+      snap = await getDocs(query(collection(dbPakai, COL_BANK), limit(2000)));
+    }
+    const bank = snap.docs.map((d) => ({ id: d.id, ...d.data() })).filter(layakUntukTryOut);
+
+    const peringatan = [];
+    for (const k of komposisi || []) {
+      const mapel = k.mapel;
+      const butuhPerPaket = Number(k.jumlah) || 10;
+      const butuhDuaPekan = butuhPerPaket * 2;
+
+      const sisaSoalBaru = bank.filter((s) =>
+        !dipakai.has(s.id) &&
+        cocokkanMapel(s.mapel || s.mataPelajaran, mapel) &&
+        cocokkanJenjang(s.jenjang, jenjang)
+      );
+
+      if (sisaSoalBaru.length < butuhDuaPekan) {
+        peringatan.push({
+          jenjang,
+          mapel,
+          butuhPerPaket,
+          butuhDuaPekan,
+          sisaSoalBaru: sisaSoalBaru.length,
+          hariTersisa: Math.max(1, Math.round((sisaSoalBaru.length / Math.max(butuhPerPaket, 1)) * 7)),
+        });
+      }
+    }
+    return peringatan;
+  } catch (err) {
+    console.error('Gagal menghitung proyeksi stok:', err);
+    return [];
+  }
 }
 
 export async function susunSoalDariKomposisi(template, excludeIds, opts = {}) {
@@ -356,7 +401,7 @@ export async function siapkanDrafDariTemplate(template, slot, rules) {
   // Gemini maupun melahirkan draf bersasaran "Semua".
   const pagar = pagarIdentitasTemplate(template, r.izinkanSemua === true);
   if (!pagar.ok) return pagar;
-    const exclude = await idSoalBaruDipakai(template.jenjang, 10);
+  const exclude = await idSoalBaruDipakai(template.jenjang, 200);
   // fitur preview: paket SUSULAN menyuntik id yang wajib dilewati
   for (const idTambahan of (r.excludeIds || [])) {
     if (exclude && typeof exclude.add === 'function') exclude.add(idTambahan);

@@ -6,8 +6,12 @@ import { db } from '../../../firebase';
 import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, serverTimestamp } from 'firebase/firestore';
 import {
   Calendar, Plus, Trash2, Save, Play, RefreshCw, Sparkles, Send, EyeOff, Settings2,
+  AlertCircle,
 } from 'lucide-react';
-import { COL_TEMPLATE, COL_PAKET, DEFAULT_TEMPLATE_SMA, siapkanDrafMingguIni, terbitkanDraf, nonaktifkanPaket } from '../../../utils/mesinTryOutOtomatis';
+import {
+  COL_TEMPLATE, COL_PAKET, DEFAULT_TEMPLATE_SMA, siapkanDrafMingguIni, terbitkanDraf, nonaktifkanPaket,
+  hitungProyeksiStokMenipis,
+} from '../../../utils/mesinTryOutOtomatis';
 import { KATALOG_MAPEL } from '../../../utils/mesinTaksonomiSoal';
 // 🔥 BARU (audit 2026-10-10): normalisasi bentuk targetKelas/targetKategori
 // saat template disimpan. Lihat kepala utils/cocokkanTargetPaket.js.
@@ -61,6 +65,8 @@ export default function JadwalTryOutOtomatisPage() {
   // ADA di data siswa, bukan teks bebas -- permintaan owner supaya admin
   // tidak menebak-nebak nilai kelas.
   const [kelasSiswa, setKelasSiswa] = useState([]);
+  const [stokPeringatan, setStokPeringatan] = useState([]);
+
   // fungsi murni ini lalu setState sendiri SETELAH await (pola yang sama
   // dengan DaftarTryOutPage.jsx).
   async function ambilTemplateDanDraf() {
@@ -80,15 +86,27 @@ export default function JadwalTryOutOtomatisPage() {
         return tb - ta;
       })
       .slice(0, 30);
-    // 🔥 FIX 2026-10-13: kelasSiswa dulu diselipkan di DALAM tiap dokumen
-    // template dan tidak pernah sampai ke state (d.kelasSiswa undefined),
-    // sehingga dropdown kelas hanya berisi satu opsi dan sasaran tersimpan
-    // terlihat seperti "Semua kelas" di layar admin. Kini dikembalikan
-    // sebagai field tingkat atas dan disetel oleh kedua pemanggil.
+
+    const daftarT = st.docs.map((d) => ({ id: d.id, ...d.data() }));
+    const semuaPeringatan = [];
+    for (const t of daftarT.filter((x) => x.aktif !== false)) {
+      if (t.jenjang && Array.isArray(t.komposisi)) {
+        try {
+          const w = await hitungProyeksiStokMenipis(t.jenjang, t.komposisi);
+          if (w && w.length > 0) {
+            semuaPeringatan.push(...w.map((p) => ({ ...p, templateNama: t.nama })));
+          }
+        } catch (e) {
+          console.warn('Gagal cek stok template:', t.nama, e);
+        }
+      }
+    }
+
     return {
-      templates: st.docs.map((d) => ({ id: d.id, ...d.data() })),
+      templates: daftarT,
       otomatis,
       kelasSiswa: [...unikKelas].sort((a, b) => a.localeCompare(b, 'id', { numeric: true })),
+      stokPeringatan: semuaPeringatan,
     };
   }
 
@@ -101,6 +119,7 @@ export default function JadwalTryOutOtomatisPage() {
       setTemplates(d.templates);
       setDrafList(d.otomatis);
       setKelasSiswa(d.kelasSiswa || []);
+      setStokPeringatan(d.stokPeringatan || []);
     } catch (e) {
       setPesan('❌ ' + e.message);
     } finally {
@@ -117,6 +136,7 @@ export default function JadwalTryOutOtomatisPage() {
         setTemplates(d.templates);
         setDrafList(d.otomatis);
         setKelasSiswa(d.kelasSiswa || []);
+        setStokPeringatan(d.stokPeringatan || []);
       } catch (e) {
         if (hidup) setPesan('❌ ' + e.message);
       } finally {
@@ -317,23 +337,97 @@ export default function JadwalTryOutOtomatisPage() {
         padding: isMobile ? '70px 14px 32px' : '24px 28px',
       }}
       >
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center', marginBottom: 8 }}>
-          <h1 style={{ margin: 0, fontSize: 20, fontWeight: 800, color: '#1e293b' }}>
-            <Calendar size={22} style={{ verticalAlign: -4, marginRight: 8 }} />
-            Try Out Otomatis
-          </h1>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center', marginBottom: 14 }}>
+          <div>
+            <h1 style={{ margin: 0, fontSize: 20, fontWeight: 800, color: '#1e293b' }}>
+              <Calendar size={22} style={{ verticalAlign: -4, marginRight: 8, color: '#4f46e5' }} />
+              Try Out Otomatis & Roadmap
+            </h1>
+            <p style={{ margin: '2px 0 0', fontSize: 12, color: '#64748b' }}>
+              Mesin penyusun paket try out terintegrasi langsung ke Jalur Kemampuan Siswa (Roadmap)
+            </p>
+          </div>
           <div style={{ flex: 1 }} />
-          <button type="button" style={st.btnGhost} onClick={muat} disabled={busy}><RefreshCw size={14} /> Refresh</button>
-          <button type="button" style={st.btnSecondary} onClick={siapkanSemua} disabled={busy || !templates.length}>
-            <Play size={14} /> Siapkan draf minggu ini
-          </button>
-          <button type="button" style={st.btnPrimary} onClick={terbitkanSemuaDraf} disabled={busy || !drafMenunggu.length}>
-            <Send size={14} /> Terbitkan semua draf ({drafMenunggu.length})
-          </button>
-          <button type="button" style={st.btnGhost} onClick={() => setEdit({ ...kosong(), _baru: true })}>
-            <Plus size={14} /> Template rules
-          </button>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+            <button type="button" style={st.btnGhost} onClick={muat} disabled={busy} title="Segarkan data">
+              <RefreshCw size={14} /> Refresh
+            </button>
+            <button type="button" style={st.btnGhost} onClick={() => setEdit({ ...kosong(), _baru: true })}>
+              <Plus size={14} /> Tambah Rules
+            </button>
+            <button type="button" style={st.btnSecondary} onClick={siapkanSemua} disabled={busy || !templates.length}>
+              <Play size={14} /> Siapkan Draf Minggu Ini
+            </button>
+            {drafMenunggu.length > 0 && (
+              <button type="button" style={{ ...st.btnPrimary, background: '#16a34a' }} onClick={terbitkanSemuaDraf} disabled={busy}>
+                <Send size={14} /> Terbitkan {drafMenunggu.length} Draf 🚀
+              </button>
+            )}
+          </div>
         </div>
+
+        {/* ⚠️ EARLY WARNING SYSTEM (EWS): STOK SOAL MENIPIS */}
+        {stokPeringatan.length > 0 && (
+          <div style={{
+            background: 'linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)',
+            border: '1.5px solid #fca5a5',
+            borderRadius: 14,
+            padding: '14px 18px',
+            marginBottom: 16,
+            display: 'flex',
+            gap: 12,
+            alignItems: 'flex-start',
+            boxShadow: '0 2px 8px rgba(220,38,38,0.06)',
+          }}>
+            <AlertCircle size={22} color="#dc2626" style={{ flexShrink: 0, marginTop: 2 }} />
+            <div style={{ flex: 1 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                <span style={{ fontWeight: 800, fontSize: 14, color: '#991b1b' }}>
+                  ⚠️ Early Warning AI: Stok Soal Try Out & Roadmap Menipis (&lt; 2 Minggu)
+                </span>
+                <span style={{ background: '#dc2626', color: '#fff', fontSize: 11, fontWeight: 800, padding: '1px 7px', borderRadius: 99 }}>
+                  {stokPeringatan.length} Subtes Kritis
+                </span>
+              </div>
+              <p style={{ fontSize: 12.5, color: '#7f1d1d', lineHeight: 1.5, margin: '4px 0 8px' }}>
+                Mesin mendeteksi bank soal untuk template otomatis berikut tersisa untuk kurang dari 2 minggu pemakaian (stok butir baru belum dipakai &lt; 2 pekan). Segera unggah soal baru agar jadwal otomatis dan roadmap siswa berjalan lancar:
+              </p>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 }}>
+                {stokPeringatan.map((p, idx) => (
+                  <span key={idx} style={{
+                    background: '#ffffff',
+                    border: '1px solid #fca5a5',
+                    borderRadius: 8,
+                    padding: '3px 9px',
+                    fontSize: 11.5,
+                    fontWeight: 700,
+                    color: '#991b1b',
+                  }}>
+                    <strong>{p.jenjang}</strong> • {p.mapel}: tersisa <b>{p.sisaSoalBaru} butir baru</b> (butuh 2 pekan: {p.butuhDuaPekan} butir)
+                  </span>
+                ))}
+              </div>
+              <a
+                href="/admin/bank-soal/import"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  background: '#dc2626',
+                  color: '#ffffff',
+                  borderRadius: 8,
+                  padding: '6px 14px',
+                  fontSize: 12,
+                  fontWeight: 800,
+                  textDecoration: 'none',
+                  boxShadow: '0 2px 6px rgba(220,38,38,0.25)',
+                }}
+              >
+                <Plus size={14} /> Impor Naskah Soal Baru Sekarang
+              </a>
+            </div>
+          </div>
+        )}
 
         <div style={st.infoBox}>
           <b>Cara kerja mesin ini (3 langkah):</b>
@@ -622,38 +716,60 @@ export default function JadwalTryOutOtomatisPage() {
                       ))}
                     </div>
                   </div>
-                  <button type="button" style={st.btnSecondary} disabled={busy || t.aktif === false} onClick={() => siapkanDraf(t)}>
-                    <Sparkles size={14} /> Siapkan draf
-                  </button>
-                  {/* 🔥 ROMBAK 2026-10-13: template lama yang stoknya belum
-                      siap (SD/UTBK/SMA) bisa DITIDURKAN admin sendiri supaya
-                      antrian minggu ini tidak penuh baris ❌ — tanpa perlu
-                      engineer menyentuh data produksi. */}
-                  <button type="button" style={st.btnGhost} disabled={busy} onClick={async () => {
-                    setBusy(true);
-                    try {
-                      await updateDoc(doc(db, COL_TEMPLATE, t.id), {
-                        aktif: t.aktif === false,
-                        updatedAt: serverTimestamp(),
-                      });
-                      await muat();
-                    } catch (e) {
-                      setPesan('❌ ' + e.message);
-                    } finally {
-                      setBusy(false);
-                    }
-                  }}
-                  >{t.aktif === false ? '✅ Bangunkan' : '💤 Tidurkan'}
-                  </button>
-                  <button type="button" style={st.btnGhost} onClick={() => setEdit({ ...t })}>Edit rules</button>
-                  <button type="button" style={st.iconDanger} onClick={async () => {
-                    if (window.confirm(`Hapus template ${t.nama}?`)) {
-                      await deleteDoc(doc(db, COL_TEMPLATE, t.id));
-                      await muat();
-                    }
-                  }}
-                  ><Trash2 size={14} />
-                  </button>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                    <button
+                      type="button"
+                      style={{ ...st.btnPrimary, background: '#4f46e5' }}
+                      disabled={busy || t.aktif === false}
+                      onClick={() => siapkanDraf(t)}
+                      title="Susun draf try out otomatis dari template ini"
+                    >
+                      <Sparkles size={14} /> Siapkan Draf
+                    </button>
+                    <button
+                      type="button"
+                      style={st.btnGhost}
+                      onClick={() => setEdit({ ...t })}
+                      title="Ubah susunan mapel atau waktu"
+                    >
+                      <Settings2 size={13} /> Edit Rules
+                    </button>
+                    <button
+                      type="button"
+                      style={st.btnGhost}
+                      disabled={busy}
+                      onClick={async () => {
+                        setBusy(true);
+                        try {
+                          await updateDoc(doc(db, COL_TEMPLATE, t.id), {
+                            aktif: t.aktif === false,
+                            updatedAt: serverTimestamp(),
+                          });
+                          await muat();
+                        } catch (e) {
+                          setPesan('❌ ' + e.message);
+                        } finally {
+                          setBusy(false);
+                        }
+                      }}
+                      title={t.aktif === false ? 'Aktifkan template kembali' : 'Tidurkan template sementara'}
+                    >
+                      {t.aktif === false ? '✅ Bangunkan' : '💤 Tidurkan'}
+                    </button>
+                    <button
+                      type="button"
+                      style={st.iconDanger}
+                      onClick={async () => {
+                        if (window.confirm(`Hapus template ${t.nama}?`)) {
+                          await deleteDoc(doc(db, COL_TEMPLATE, t.id));
+                          await muat();
+                        }
+                      }}
+                      title="Hapus template"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}
