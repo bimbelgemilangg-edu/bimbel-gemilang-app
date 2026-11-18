@@ -20,8 +20,10 @@
 //    - Bank soal selalu terjaga, tidak boleh ada unit terbuka dengan soal kosong.
 // ============================================================
 
-import { collection, query, where, getDocs, doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { layakUntukTryOut } from './layakTryOut.js';
+import { SOAL_TKA_2026_SMP_MTK_PAKET_B, SOAL_TKA_2026_SMP_BINDO_PAKET_A } from '../data/tka2026DiyData.js';
+import { SOAL_PRESET_UTBK } from '../data/utbk2026KatkielData.js';
+import { SOAL_TKA_2026_SD_MTK, SOAL_TKA_2026_SD_BINDO } from '../data/tka2026SdData.js';
 
 /**
  * Deteksi apakah siswa berada di jenjang akhir yang wajib ujian seleksi.
@@ -496,22 +498,26 @@ export function getDaftarUnitJalurUjian(jenjang = 'SMP') {
  * - Siswa tidak akan pernah terhalang deadline tanggal; progres tersimpan permanen.
  */
 export function hitungProgresiJalur(daftarUnit = [], sesiList = []) {
-  // Map dari id paket atau unitId ke sesi yang selesai
+  // Map dari id paket atau unitId atau unitNomor ke sesi yang selesai
   const sesiSelesaiMap = new Map();
   sesiList.forEach((s) => {
     if (s.status === 'selesai') {
       if (s.paketId) sesiSelesaiMap.set(s.paketId, s);
       if (s.tryoutId) sesiSelesaiMap.set(s.tryoutId, s);
       if (s.unitId) sesiSelesaiMap.set(s.unitId, s);
+      if (s.id) sesiSelesaiMap.set(s.id, s);
+      if (s.unitNomor != null) sesiSelesaiMap.set(`unitNomor_${s.unitNomor}`, s);
     }
   });
 
   let ditemukanAktif = false;
   let unitSelesaiCount = 0;
 
-  const unitWithStatus = daftarUnit.map((unit, idx) => {
+  const unitWithStatus = daftarUnit.map((unit) => {
     // Cek apakah unit ini sudah selesai
-    const sesi = sesiSelesaiMap.get(unit.id) || (unit.paketIdAsli ? sesiSelesaiMap.get(unit.paketIdAsli) : null);
+    const sesi = sesiSelesaiMap.get(unit.id)
+      || (unit.paketIdAsli ? sesiSelesaiMap.get(unit.paketIdAsli) : null)
+      || (unit.unitNomor ? sesiSelesaiMap.get(`unitNomor_${unit.unitNomor}`) : null);
     const sudahSelesai = Boolean(sesi);
 
     if (sudahSelesai) {
@@ -553,29 +559,117 @@ export function hitungProgresiJalur(daftarUnit = [], sesiList = []) {
 }
 
 /**
+ * Mengambil paket soal preset master terverifikasi per unit jika stok di Firestore belum mencukupi.
+ * Perlindungan Anti-Zonk: Menjamin siswa tidak pernah mengalami try out kosong/error.
+ */
+export function getSoalPresetUnitRoadmap(jenjang = 'SMP', unitNomor = 1, targetJumlah = 12) {
+  const j = String(jenjang).toUpperCase();
+
+  // 1. TKA SD (Kelas 6)
+  if (j === 'SD') {
+    const mtk = Array.isArray(SOAL_TKA_2026_SD_MTK) ? SOAL_TKA_2026_SD_MTK : [];
+    const indo = Array.isArray(SOAL_TKA_2026_SD_BINDO) ? SOAL_TKA_2026_SD_BINDO : [];
+    if (unitNomor === 5) {
+      return [...mtk.slice(22, 30), ...indo.slice(23, 30)].slice(0, targetJumlah);
+    }
+    const step = 6;
+    const startIdx = ((unitNomor - 1) * step) % Math.max(1, mtk.length - step);
+    const mtkPart = mtk.slice(startIdx, startIdx + step);
+    const indoPart = indo.slice(startIdx, startIdx + step);
+    const gabungan = [...mtkPart, ...indoPart];
+    return gabungan.length >= targetJumlah ? gabungan.slice(0, targetJumlah) : gabungan;
+  }
+
+  // 2. UTBK-SNBT SMA (Kelas 12)
+  if (j === 'SMA') {
+    const allUtbk = Array.isArray(SOAL_PRESET_UTBK) ? SOAL_PRESET_UTBK : [];
+    // Pemetaan indeks 7 subtes UTBK
+    // PU (0..29), PPU (30..49), PBM (50..69), PK (70..89), LBI (90..119), LBE (120..139), PM (140..159)
+    if (unitNomor === 1) return allUtbk.slice(0, targetJumlah); // PU
+    if (unitNomor === 2) return allUtbk.slice(70, 70 + targetJumlah); // PK
+    if (unitNomor === 3) return allUtbk.slice(90, 90 + targetJumlah); // LBI
+    if (unitNomor === 4) return allUtbk.slice(120, 120 + targetJumlah); // LBE
+    if (unitNomor === 5) return allUtbk.slice(140, 140 + targetJumlah); // PM
+    if (unitNomor === 6) {
+      // 15 Soal Terpadu 7 Subtes (2 PU, 2 PPU, 2 PBM, 2 PK, 2 LBI, 2 LBE, 3 PM)
+      return [
+        ...allUtbk.slice(12, 14), // PU
+        ...allUtbk.slice(30, 32), // PPU
+        ...allUtbk.slice(50, 52), // PBM
+        ...allUtbk.slice(82, 84), // PK
+        ...allUtbk.slice(102, 104), // LBI
+        ...allUtbk.slice(132, 134), // LBE
+        ...allUtbk.slice(152, 155), // PM
+      ].slice(0, targetJumlah);
+    }
+    return allUtbk.slice(0, targetJumlah);
+  }
+
+  // 3. TKA SMP (Kelas 9)
+  const mtkSmp = Array.isArray(SOAL_TKA_2026_SMP_MTK_PAKET_B) ? SOAL_TKA_2026_SMP_MTK_PAKET_B : [];
+  const indoSmp = Array.isArray(SOAL_TKA_2026_SMP_BINDO_PAKET_A) ? SOAL_TKA_2026_SMP_BINDO_PAKET_A : [];
+
+  if (unitNomor === 1) {
+    // Bilangan Real & Fakta Tersurat
+    return [...mtkSmp.slice(0, 6), ...indoSmp.slice(0, 6)].slice(0, targetJumlah);
+  }
+  if (unitNomor === 2) {
+    // Aljabar & Distraktor Negasi
+    return [...mtkSmp.slice(6, 12), ...indoSmp.slice(6, 12)].slice(0, targetJumlah);
+  }
+  if (unitNomor === 3) {
+    // Geometri Pythagoras & Makna Tersirat
+    return [...mtkSmp.slice(12, 18), ...indoSmp.slice(12, 18)].slice(0, targetJumlah);
+  }
+  if (unitNomor === 4) {
+    // SPLDV Kontekstual & Opini vs Fakta
+    return [...mtkSmp.slice(18, 24), ...indoSmp.slice(18, 24)].slice(0, targetJumlah);
+  }
+  if (unitNomor === 5) {
+    // Data Peluang & Refleksi Teks
+    return [...mtkSmp.slice(24, 30), ...indoSmp.slice(24, 30)].slice(0, targetJumlah);
+  }
+  if (unitNomor === 6) {
+    // Pengayaan Naskah Asli Standar Daerah (15 Soal)
+    return [...mtkSmp.slice(0, 8), ...indoSmp.slice(0, 7)].slice(0, targetJumlah);
+  }
+
+  return [...mtkSmp.slice(0, 6), ...indoSmp.slice(0, 6)].slice(0, targetJumlah);
+}
+
+/**
  * Memastikan dokumen paket di tryout_paket ada dan valid sebelum siswa mulai mengerjakan.
  * Mencegah problem "bank soal kosong saat kuis dibuka".
+ * Perlindungan Berlapis: Firestore Bank Soal -> Master Preset -> Normalisasi Urut.
  */
 export async function pastikanPaketUnitTersedia(db, unit, jenjang = 'SMP') {
   if (!db || !unit || unit.tipe === 'review') return null;
 
   try {
+    const { doc, getDoc, setDoc, getDocs, collection, query, where, serverTimestamp } = await import('firebase/firestore');
     const paketRef = doc(db, 'tryout_paket', unit.id);
-    const { getDoc } = await import('firebase/firestore');
     const snap = await getDoc(paketRef);
 
-    if (snap.exists() && snap.data().daftarSoal?.length > 0) {
-      return { id: snap.id, ...snap.data() };
+    // Jika dokumen sudah ada dan berisi soal sesuai target micro-learning (tepat unit.jumlahSoal)
+    if (snap.exists()) {
+      const dataAda = snap.data();
+      if (Array.isArray(dataAda.daftarSoal) && dataAda.daftarSoal.length === unit.jumlahSoal && dataAda.daftarSoal.length > 0) {
+        return { id: snap.id, ...dataAda };
+      }
     }
 
-    // Jika paket belum ada, kita ambil dari bank_soal sesuai jenjang
-    const snapBank = await getDocs(
-      query(collection(db, 'bank_soal'), where('status', '==', 'aktif'))
-    );
-
-    const bankSoal = snapBank.docs
-      .map((d) => ({ id: d.id, ...d.data() }))
-      .filter((s) => layakUntukTryOut(s));
+    // Jika belum ada atau jumlah soal lama tidak cocok (misal warisan template 40 butir lama)
+    let bankSoal = [];
+    try {
+      const snapBank = await getDocs(
+        query(collection(db, 'bank_soal'), where('status', '==', 'aktif'))
+      );
+      bankSoal = snapBank.docs
+        .map((d) => ({ id: d.id, ...d.data() }))
+        .filter((s) => layakUntukTryOut(s));
+    } catch (e) {
+      console.warn('Bank soal Firestore belum dapat dimuat, menggunakan preset master:', e);
+    }
 
     // Saring soal sesuai jenjang
     const jenjangCocok = bankSoal.filter((s) => {
@@ -583,9 +677,29 @@ export async function pastikanPaketUnitTersedia(db, unit, jenjang = 'SMP') {
       return sj.includes(jenjang.toUpperCase());
     });
 
-    // Ambil sejumlah soal unit (misal 30 soal)
-    const soalTerpilih = (jenjangCocok.length >= unit.jumlahSoal ? jenjangCocok : bankSoal)
-      .slice(0, unit.jumlahSoal);
+    // Ambil cadangan master preset terverifikasi (Anti-Zonk)
+    const targetCount = unit.jumlahSoal || 12;
+    const presetFallback = getSoalPresetUnitRoadmap(jenjang, unit.unitNomor, targetCount);
+
+    let soalTerpilih = [];
+    if (jenjangCocok.length >= targetCount) {
+      soalTerpilih = jenjangCocok.slice(0, targetCount);
+    } else {
+      // Gabungkan bank soal yang ada dengan master preset hingga pas unit.jumlahSoal
+      const existingIds = new Set(jenjangCocok.map((s) => s.id));
+      const sisaDibutuhkan = targetCount - jenjangCocok.length;
+      const pelengkap = presetFallback.filter((p) => !existingIds.has(p.id)).slice(0, sisaDibutuhkan);
+      soalTerpilih = [...jenjangCocok, ...pelengkap];
+      if (soalTerpilih.length < targetCount) {
+        soalTerpilih = presetFallback.slice(0, targetCount);
+      }
+    }
+
+    // Normalisasi nomor soal urut 1..N
+    const soalFinal = soalTerpilih.map((s, idx) => ({
+      ...s,
+      nomor: idx + 1,
+    }));
 
     const dataPaket = {
       nama: unit.judul,
@@ -593,23 +707,24 @@ export async function pastikanPaketUnitTersedia(db, unit, jenjang = 'SMP') {
       jenjang: jenjang.toUpperCase(),
       targetKelas: jenjang.toUpperCase() === 'SD' ? '6 SD' : jenjang.toUpperCase() === 'SMP' ? '9 SMP' : '12 SMA',
       targetKategori: 'Semua',
-      durasiMenit: unit.durasiMenit || 60,
+      durasiMenit: unit.durasiMenit || 20,
       status: 'aktif',
       otomatis: false,
       jalurUjianAi: true,
       unitId: unit.id,
       unitNomor: unit.unitNomor,
-      soalAcak: true,
+      polaFokus: unit.polaFokus || '',
+      soalAcak: false, // Pertahankan urutan pedagogis pola soal
       tampilkanPembahasan: true,
       antiCheatAktif: true,
       wajibKamera: false,
-      daftarSoal: soalTerpilih,
-      totalSoal: soalTerpilih.length,
+      daftarSoal: soalFinal,
+      totalSoal: soalFinal.length,
       subtes: [
         {
           nama: unit.mapel || 'Subtes Utama',
-          durasiMenit: unit.durasiMenit || 60,
-          jumlahSoal: soalTerpilih.length,
+          durasiMenit: unit.durasiMenit || 20,
+          jumlahSoal: soalFinal.length,
         },
       ],
       createdAt: serverTimestamp(),

@@ -101,41 +101,24 @@ export default function JalurUjianAiPage() {
     };
   }, [studentId, profil]);
 
-  // 2. Susun unit tahapan (jika ada di database, pakai paket otomatis asli dari admin; jika belum ada, pakai unit konfigurasi terverifikasi)
+  // 2. Susun unit tahapan berdasarkan kurikulum pola soal resmi micro-learning (SD, SMP, UTBK SMA)
   const daftarUnit = useMemo(() => {
-    if (paketOtomatisDb.length > 0) {
-      const units = paketOtomatisDb.map((p, idx) => {
-        const namaMapel = p.subtes?.[0]?.nama || (targetJenjang?.jenjang === 'SD' ? 'TKA SD' : targetJenjang?.jenjang === 'SMP' ? 'TKA SMP' : 'UTBK-SNBT');
+    const cetakBiru = getDaftarUnitJalurUjian(targetJenjang?.jenjang || 'SMP');
+
+    // Hubungkan dengan dokumen database jika sudah ada paket tersimpan untuk unit ini
+    return cetakBiru.map((unit) => {
+      const paketDb = (paketOtomatisDb || []).find((p) => p.id === unit.id || p.unitId === unit.id);
+      if (paketDb) {
         return {
-          id: p.id,
-          paketIdAsli: p.id,
-          unitNomor: idx + 1,
-          judul: p.judul || `Tahap ${idx + 1}: Try Out Pemahaman`,
-          subjudul: p.deskripsi || `${p.totalSoal || p.daftarSoal?.length || 30} Butir Soal Terstandar`,
-          tipe: idx === 0 ? 'start' : 'unit',
-          mapel: namaMapel,
-          durasiMenit: p.durasiTotalMenit || p.durasiMenit || 60,
-          jumlahSoal: p.totalSoal || p.daftarSoal?.length || 30,
-          passingGrade: 60 + Math.min(idx * 5, 20),
-          xpReward: 150 + idx * 50,
-          icon: idx === 0 ? 'Rocket' : idx % 2 === 1 ? 'BookOpen' : 'Sparkles',
-          deskripsi: p.deskripsi || 'Simulasi pemahaman bertahap untuk menguji dan mengasah penguasaan materimu secara real time.',
+          ...unit,
+          paketIdAsli: paketDb.id,
+          // Pertahankan batasan durasi micro-learning ramah siswa (15-25 menit, 10-15 butir)
+          durasiMenit: paketDb.durasiMenit && paketDb.durasiMenit <= 30 ? paketDb.durasiMenit : unit.durasiMenit,
+          jumlahSoal: paketDb.daftarSoal?.length && paketDb.daftarSoal.length <= 15 ? paketDb.daftarSoal.length : unit.jumlahSoal,
         };
-      });
-
-      // Tambahkan node puncak: Review & Analisis Kemampuan
-      units.push({
-        id: 'unit-review-ai',
-        unitNomor: units.length + 1,
-        judul: 'Puncak Roadmap: Analisis Kemampuan',
-        subjudul: 'Radar Penguasaan Materi, Kesiapan & Rekomendasi Belajar',
-        tipe: 'review',
-      });
-      return units;
-    }
-
-    // Fallback bila database baru kosong
-    return getDaftarUnitJalurUjian(targetJenjang?.jenjang || 'SMP');
+      }
+      return unit;
+    });
   }, [paketOtomatisDb, targetJenjang]);
 
   // 3. Hitung status progresi personal siswa (setiap siswa memiliki jalan berbeda)
@@ -940,7 +923,7 @@ function KomponenNodeStart({ unit, onKlik }) {
 
       <div style={st.labelNodeBawah}>
         <span style={{ fontWeight: 800, color: '#064e3b', fontSize: 11.5 }}>
-          {unit.judul.length > 24 ? unit.judul.slice(0, 24) + '...' : unit.judul}
+          {unit.polaFokus ? `Unit 1 • ${unit.polaFokus.split('&')[0].trim()}` : (unit.judul.length > 22 ? unit.judul.slice(0, 22) + '...' : unit.judul)}
         </span>
         {isCompleted && (
           <span style={{ fontSize: 11, fontWeight: 800, color: '#047857', marginLeft: 4 }}>
@@ -988,15 +971,15 @@ function KomponenNodeUnit({ unit, onKlik }) {
           ) : (
             <Lock size={22} color="#ffffff" strokeWidth={2.4} />
           )}
-          <span style={{ fontSize: 11, fontWeight: 900, color: '#ffffff', marginTop: 1 }}>
-            {unit.unitNomor - 1}
+          <span style={{ fontSize: 11.5, fontWeight: 900, color: '#ffffff', marginTop: 1 }}>
+            {unit.unitNomor}
           </span>
         </div>
       </button>
 
       <div style={st.labelNodeBawah}>
         <span style={{ fontWeight: 800, color: '#064e3b', fontSize: 11 }}>
-          {unit.mapel || (unit.judul.length > 20 ? unit.judul.slice(0, 20) + '...' : unit.judul)}
+          {unit.polaFokus ? `Unit ${unit.unitNomor} • ${unit.polaFokus.split('&')[0].trim()}` : (unit.mapel || `Unit ${unit.unitNomor}`)}
         </span>
         {isCompleted && (
           <span style={{ fontSize: 10.5, fontWeight: 800, color: '#047857', marginLeft: 3 }}>
