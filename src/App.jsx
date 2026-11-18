@@ -57,6 +57,7 @@ import TobkRuangTungguPage from './pages/public/tobk/TobkRuangTungguPage';
 import TobkCbtPage from './pages/public/tobk/TobkCbtPage';
 import TobkSelesaiPage from './pages/public/tobk/TobkSelesaiPage';
 import KelolaTobkPublikPage from './pages/admin/tobk/KelolaTobkPublikPage';
+import KelolaEventTryOutPage from './pages/admin/tryout/KelolaEventTryOutPage';
 
 // ============================================================
 // ADMIN - PENDAFTARAN
@@ -653,6 +654,7 @@ function App() {
             ==================================================== */}
 
         <Route path="/admin" element={<AdminRoute><Dashboard /></AdminRoute>} />
+        <Route path="/admin/event-tryout" element={<AdminRoute><KelolaEventTryOutPage /></AdminRoute>} />
         <Route path="/admin/tobk-publik" element={<AdminRoute><KelolaTobkPublikPage /></AdminRoute>} />
         <Route path="/admin/analisis" element={<AdminRoute><DashboardAnalisis /></AdminRoute>} />
         <Route path="/admin/students" element={<AdminRoute><StudentList /></AdminRoute>} />

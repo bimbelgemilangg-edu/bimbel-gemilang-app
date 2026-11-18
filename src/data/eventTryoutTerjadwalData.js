@@ -146,12 +146,62 @@ function susunEventRutinSma() {
 
 export const DAFTAR_EVENT_TRYOUT_SMA = susunEventRutinSma();
 
+export const KUNCI_OVERRIDE_EVENT_TRYOUT = 'gemilang_event_tryout_overrides';
+
+/**
+ * Mengambil map override event tryout yang telah diatur oleh admin (token kustom, status aktif, paket soal terhubung)
+ */
+export function ambilOverrideEventMap() {
+  if (typeof localStorage === 'undefined') return {};
+  try {
+    const raw = localStorage.getItem(KUNCI_OVERRIDE_EVENT_TRYOUT);
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
+  }
+}
+
+/**
+ * Menyimpan konfigurasi override event dari admin
+ */
+export function simpanOverrideEvent(eventId, partialData) {
+  if (typeof localStorage === 'undefined' || !eventId) return;
+  try {
+    const current = ambilOverrideEventMap();
+    current[eventId] = { ...(current[eventId] || {}), ...partialData, updatedAt: new Date().toISOString() };
+    localStorage.setItem(KUNCI_OVERRIDE_EVENT_TRYOUT, JSON.stringify(current));
+
+    // Sinkronkan juga ke gemilang_tobk_events_backup
+    const rawBackup = localStorage.getItem('gemilang_tobk_events_backup');
+    let eventsList = rawBackup ? JSON.parse(rawBackup) : [];
+    const idx = eventsList.findIndex((e) => e.id === eventId);
+    if (idx >= 0) {
+      eventsList[idx] = { ...eventsList[idx], ...partialData };
+      localStorage.setItem('gemilang_tobk_events_backup', JSON.stringify(eventsList));
+    }
+  } catch (err) {
+    console.warn('Gagal simpan override event:', err);
+  }
+}
+
+/**
+ * Terapkan data override admin pada suatu objek event
+ */
+export function terapkanOverrideEvent(event) {
+  if (!event || !event.id) return event;
+  const overrides = ambilOverrideEventMap();
+  const ov = overrides[event.id];
+  return ov ? { ...event, ...ov } : event;
+}
+
 /**
  * Mengambil seluruh event yang dijadwalkan pada tanggal tertentu (YYYY-MM-DD)
  */
 export function getEventByTanggal(tanggalIso) {
   if (!tanggalIso) return [];
-  return DAFTAR_EVENT_TRYOUT_SMA.filter((ev) => ev.tanggalIso === tanggalIso);
+  return DAFTAR_EVENT_TRYOUT_SMA
+    .filter((ev) => ev.tanggalIso === tanggalIso)
+    .map(terapkanOverrideEvent);
 }
 
 /**
@@ -159,7 +209,9 @@ export function getEventByTanggal(tanggalIso) {
  */
 export function getEventByBulan(tahun, bulanIndex) {
   const prefix = `${tahun}-${String(bulanIndex + 1).padStart(2, '0')}`;
-  return DAFTAR_EVENT_TRYOUT_SMA.filter((ev) => ev.tanggalIso.startsWith(prefix));
+  return DAFTAR_EVENT_TRYOUT_SMA
+    .filter((ev) => ev.tanggalIso.startsWith(prefix))
+    .map(terapkanOverrideEvent);
 }
 
 /**

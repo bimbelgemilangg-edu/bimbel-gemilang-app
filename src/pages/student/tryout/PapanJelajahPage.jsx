@@ -232,14 +232,15 @@ export default function PapanJelajahPage({ studentId: studentIdProp = '' }) {
     }),
   ), [sesiPerPaket, paketUntukAnalitik]);
 
-  // Handler Masuk Ruang Tunggu CBT Profesional dengan Token
+  // Handler Masuk Ruang Tunggu CBT Profesional (Token dirahasiakan & diinput siswa saat event diumumkan)
   const handleMasukCbtProfesional = (event) => {
     hubungkanSiswaKeTobkSession({
       event,
       profil: { ...profil, nama, kelas, studentId },
       targetKampus: targetKampusData,
     });
-    navigate(`/tobk/ruang-tunggu?event=${event.id}&token=${event.token}`);
+    // Jangan sertakan token di URL agar token tidak langsung bocor ke siswa sebelum diumumkan
+    navigate(`/tobk/ruang-tunggu?event=${event.id}`);
   };
 
   const inisial = String(nama || 'S').trim().split(/\s+/).map((x) => x[0]).slice(0, 2).join('').toUpperCase();
@@ -519,8 +520,9 @@ export default function PapanJelajahPage({ studentId: studentIdProp = '' }) {
 
                     {/* TOMBOL AKSI KE RUANG TUNGGU CBT PROFESIONAL */}
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10, marginTop: 14 }}>
-                      <div style={{ fontSize: 12, color: '#64748b' }}>
-                        Token Panitia: <strong style={{ color: '#0f172a', letterSpacing: 0.5 }}>{ev.token}</strong>
+                      <div style={{ fontSize: 12, color: '#64748b', display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <Lock size={14} color="#d97706" />
+                        <span>Token Ujian: <strong style={{ color: '#b45309', background: '#fef3c7', padding: '3px 8px', borderRadius: 6, fontSize: 11, fontWeight: 700 }}>Diumumkan panitia saat event</strong></span>
                       </div>
 
                       <button
