@@ -577,6 +577,42 @@ export default function JalurUjianAiPage() {
               </button>
             </div>
 
+            {/* Lencana Ramah: Micro-learning / Penguasaan Pola Kilat */}
+            <div style={{
+              background: '#f0fdfa',
+              border: '1px solid #99f6e4',
+              borderRadius: 10,
+              padding: '8px 12px',
+              fontSize: 12,
+              fontWeight: 700,
+              color: '#0f766e',
+              marginBottom: 10,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+            }}>
+              <Zap size={15} color="#0d9488" style={{ flexShrink: 0 }} />
+              <span>Latihan Kilat 15–20 Menit: Kuasai Pola Ini untuk Menaklukkan Ujian! ⚡</span>
+            </div>
+
+            {unitTerpilih.polaFokus && (
+              <div style={{
+                background: '#f8fafc',
+                border: '1px dashed #cbd5e1',
+                borderRadius: 8,
+                padding: '4px 10px',
+                fontSize: 11.5,
+                fontWeight: 700,
+                color: '#475569',
+                marginBottom: 12,
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 6,
+              }}>
+                🎯 Target Pola: <strong>{unitTerpilih.polaFokus}</strong>
+              </div>
+            )}
+
             <p style={{ fontSize: 13, color: '#475569', lineHeight: 1.5, margin: '0 0 16px' }}>
               {unitTerpilih.deskripsi}
             </p>

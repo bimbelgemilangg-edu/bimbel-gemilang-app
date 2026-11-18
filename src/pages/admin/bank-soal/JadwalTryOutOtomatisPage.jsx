@@ -34,13 +34,13 @@ const teksAiJejak = (h) => (h?.aiJejak && Object.keys(h.aiJejak).length
 
 const kosong = () => ({
   ...DEFAULT_TEMPLATE_SMA,
-  nama: 'Try Out Otomatis',
+  nama: 'Misi Roadmap Mandiri',
   komposisi: [
-    { mapel: 'Bahasa Inggris', jumlah: 30, durasiMenit: 35 },
-    { mapel: 'Bahasa Indonesia', jumlah: 20, durasiMenit: 25 },
-    { mapel: 'Matematika', jumlah: 15, durasiMenit: 20 },
+    { mapel: 'Matematika', jumlah: 7, durasiMenit: 12 },
+    { mapel: 'Bahasa Indonesia', jumlah: 5, durasiMenit: 8 },
   ],
   modeTimer: 'per-subtes',
+  durasiTotalMenit: 20,
   hariDalamMinggu: [1, 4],
   soalAcak: true,
   tampilkanPembahasan: true,

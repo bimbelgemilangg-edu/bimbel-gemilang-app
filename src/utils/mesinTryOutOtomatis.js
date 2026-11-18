@@ -666,20 +666,60 @@ export async function generatePaketDariTemplate(template, slot, rules) {
 }
 
 export const DEFAULT_TEMPLATE_SMA = {
-  nama: 'Try Out Otomatis SMA',
+  nama: 'Misi Roadmap UTBK SMA',
   jenjang: 'SMA',
   kelas: '12',
-  // STRING, bukan array -- lihat catatan impor bentukKanonikTarget di atas.
   targetKelas: 'Semua',
   targetKategori: 'Semua',
   komposisi: [
-    { mapel: 'Bahasa Inggris', jumlah: 30, durasiMenit: 35 },
-    { mapel: 'Bahasa Indonesia', jumlah: 20, durasiMenit: 25 },
-    { mapel: 'Matematika', jumlah: 15, durasiMenit: 20 },
+    { mapel: 'Pengetahuan Kuantitatif', jumlah: 7, durasiMenit: 10 },
+    { mapel: 'Literasi Bahasa Indonesia', jumlah: 5, durasiMenit: 10 },
   ],
   hariDalamMinggu: [1, 4],
   jamBuka: '07:00',
-  durasiTotalMenit: 90,
+  durasiTotalMenit: 20,
+  modeTimer: 'per-subtes',
+  antiCheatAktif: true,
+  wajibKamera: false,
+  soalAcak: true,
+  tampilkanPembahasan: true,
+  aktif: true,
+};
+
+export const DEFAULT_TEMPLATE_SMP = {
+  nama: 'Misi Roadmap TKA SMP',
+  jenjang: 'SMP',
+  kelas: '9',
+  targetKelas: 'Semua',
+  targetKategori: 'Semua',
+  komposisi: [
+    { mapel: 'Matematika', jumlah: 7, durasiMenit: 12 },
+    { mapel: 'Bahasa Indonesia', jumlah: 5, durasiMenit: 8 },
+  ],
+  hariDalamMinggu: [1, 4],
+  jamBuka: '07:00',
+  durasiTotalMenit: 20,
+  modeTimer: 'per-subtes',
+  antiCheatAktif: true,
+  wajibKamera: false,
+  soalAcak: true,
+  tampilkanPembahasan: true,
+  aktif: true,
+};
+
+export const DEFAULT_TEMPLATE_SD = {
+  nama: 'Misi Roadmap TKA SD',
+  jenjang: 'SD',
+  kelas: '6',
+  targetKelas: 'Semua',
+  targetKategori: 'Semua',
+  komposisi: [
+    { mapel: 'Matematika', jumlah: 6, durasiMenit: 10 },
+    { mapel: 'Bahasa Indonesia', jumlah: 6, durasiMenit: 10 },
+  ],
+  hariDalamMinggu: [1, 4],
+  jamBuka: '07:00',
+  durasiTotalMenit: 20,
   modeTimer: 'per-subtes',
   antiCheatAktif: true,
   wajibKamera: false,
