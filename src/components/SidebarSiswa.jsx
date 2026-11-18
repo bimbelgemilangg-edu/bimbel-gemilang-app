@@ -7,6 +7,7 @@ import {
 import { useProfilSiswa } from '../utils/profilSiswa';
 import { useDataTargetKampus } from '../services/dataTargetKampus';
 import { deteksiJenjangUjianAkhir } from '../utils/jalurUjianAiConfig';
+import { deteksiTingkatSiswa } from '../utils/tingkatSiswa';
 
 // Logo dari folder public
 const LogoBimbel = "/logo-gemilang.png";
@@ -50,10 +51,11 @@ const SidebarSiswa = ({ activeMenu, setActiveMenu, isOpen, setIsOpen }) => {
     { jenjang: profil.jenjang, kelasSekolah: profil.kelasSekolah || profil.kelas },
   );
 
-  // 🚀 Jalur Ujian AI: HANYA muncul untuk jenjang akhir (6 SD, 9 SMP, 12 SMA/UTBK)
+  // 🚀 Jalur Ujian AI & Deteksi Jenjang Paten
   const kelasCek = profil.kelas || profil.kelasSekolah || (typeof localStorage !== 'undefined' ? localStorage.getItem('studentGrade') || localStorage.getItem('studentKelas') : '');
   const jenjangCek = profil.jenjang || (typeof localStorage !== 'undefined' ? localStorage.getItem('studentGrade') : '');
   const targetUjianAi = deteksiJenjangUjianAkhir({ ...profil, kelas: kelasCek, jenjang: jenjangCek });
+  const infoTingkat = deteksiTingkatSiswa({ ...profil, kelas: kelasCek, kelasSekolah: kelasCek, jenjang: jenjangCek });
 
   const menuGroups = [
     {
@@ -62,7 +64,8 @@ const SidebarSiswa = ({ activeMenu, setActiveMenu, isOpen, setIsOpen }) => {
         { id: 'dashboard', label: 'Dashboard', icon: <Home size={18} />, path: '/siswa/dashboard', color: '#3b82f6' },
       ],
     },
-    ...(keadaanTarget.status === 'siap' || keadaanTarget.status === 'belum_pilih' || targetUjianAi?.jenjang === 'SMA' ? [{
+    // 🎯 TARGET PTN: HANYA untuk jenjang SMA (Kelas 10, 11, 12). SD & SMP TIDAK MELIHAT.
+    ...(infoTingkat.bisaAksesTargetKampus ? [{
       label: 'TARGET PTN 2027',
       items: [
         { id: 'target-kampus', label: 'Target Kampusku', icon: <Target size={18} />, path: '/siswa/target-kampus', color: '#0d9488', badge: 'SNBT' },
@@ -81,16 +84,21 @@ const SidebarSiswa = ({ activeMenu, setActiveMenu, isOpen, setIsOpen }) => {
           color: '#0d9488',
           badge: targetUjianAi.labelBadge,
         }] : []),
-        // 📅 Try Out Terjadwal: Try out manual ujian besar resmi dari tentor / admin
+        // 📅 Try Out Terjadwal: Try out resmi dari tentor / admin (konten disaring sesuai jenjang)
         { id: 'tryout', label: 'Try Out Terjadwal', icon: <Calendar size={18} />, path: '/siswa/tryout', color: '#f59e0b', badge: 'Jadwal' },
         { id: 'latihan-harian', label: 'Latihan Harian', icon: <Flame size={18} />, path: '/siswa/latihan-harian', color: '#dc2626' },
-        // 📚 Modul Belajar UTBK: Materi resmi 7 subtes UTBK-SNBT 2027 diadopsi dari AmbisPTN
-        { id: 'modul', label: 'Modul Belajar UTBK', icon: <BookOpen size={18} />, path: '/siswa/modul', color: '#0d9488', badge: '7 Subtes' },
+        // 📚 Modul Belajar UTBK: HANYA MUNCUL KHUSUS KELAS 12 SMA (Paten)
+        ...(infoTingkat.bisaAksesFitukUtbk || infoTingkat.isKelas12 ? [{
+          id: 'modul',
+          label: 'Modul Belajar UTBK',
+          icon: <BookOpen size={18} />,
+          path: '/siswa/modul',
+          color: '#0d9488',
+          badge: '7 Subtes',
+        }] : []),
         { id: 'jadwal', label: 'Jadwal', icon: <Calendar size={18} />, path: '/siswa/jadwal', color: '#ec4899' },
         // 📷 Scan Absensi: Pemindaian QR absensi tatap muka & foto kehadiran
         { id: 'scan-absensi', label: 'Scan Absensi', icon: <Camera size={18} />, path: '/siswa/scan-absensi', color: '#059669', badge: 'Kamera' },
-        // 🔥 Menu ini sebelumnya TIDAK PERNAH ADA sejak awal, padahal
-        // halaman & rutenya (/siswa/absensi) sudah lengkap dan berfungsi.
         { id: 'absensi', label: 'Kehadiran', icon: <ClipboardCheck size={18} />, path: '/siswa/absensi', color: '#14b8a6' },
       ],
     },

@@ -22,6 +22,7 @@ import {
   BookOpen,
   Target,
 } from 'lucide-react';
+import { deteksiTingkatSiswa } from '../../utils/tingkatSiswa';
 
 export default function PusatAmbisGemilang({
   studentProfile = {},
@@ -32,46 +33,48 @@ export default function PusatAmbisGemilang({
 }) {
   const navigate = useNavigate();
 
-  // 1. Deteksi Jenjang Siswa (SD, SMP, SMA/UTBK)
-  const jenjang = useMemo(() => {
-    const raw = String(
-      studentProfile.jenjang ||
-      studentProfile.tingkat ||
-      studentProfile.kelas ||
-      studentProfile.kelasSekolah ||
-      ''
-    ).toUpperCase();
-    if (raw.includes('SMA') || raw.includes('10') || raw.includes('11') || raw.includes('12') || raw.includes('UTBK')) {
-      return 'SMA';
-    }
-    if (raw.includes('SD') || raw.includes('1') || raw.includes('2') || raw.includes('3') || raw.includes('4') || raw.includes('5') || raw.includes('6')) {
-      return 'SD';
-    }
-    return 'SMP';
-  }, [studentProfile]);
+  // 1. Deteksi Tingkat & Jenjang Siswa Secara Presisi
+  const infoTingkat = useMemo(() => deteksiTingkatSiswa(studentProfile), [studentProfile]);
+  const jenjang = infoTingkat.jenjangBaku;
 
-  // 2. Hitung Countdown Ujian Resmi
+  // 2. Hitung Countdown Ujian Resmi Berdasarkan Tingkat
   const targetUjian = useMemo(() => {
     const sekarang = new Date();
     let tanggalTarget;
     let namaUjian;
     let targetLabel;
+    let badgeUjian;
 
-    if (jenjang === 'SMA') {
+    if (infoTingkat.isKelas12) {
       // UTBK-SNBT 2027 Gelombang 1 diperkirakan 21 April 2027
       tanggalTarget = new Date('2027-04-21T07:00:00+07:00');
       namaUjian = 'UTBK-SNBT 2027';
       targetLabel = 'PTN Impian';
-    } else if (jenjang === 'SMP') {
+      badgeUjian = 'SNPMB 2027';
+    } else if (infoTingkat.isSmaBawah) {
+      // Penilaian Akhir & Asesmen TKA SMA
+      tanggalTarget = new Date('2026-06-08T07:30:00+07:00');
+      namaUjian = 'Penilaian Akhir & TKA SMA';
+      targetLabel = 'Fondasi PTN Impian';
+      badgeUjian = 'SMA 2026';
+    } else if (infoTingkat.isSmp) {
       // Asesmen TKA SMP 2026 diperkirakan 11 Mei 2026
       tanggalTarget = new Date('2026-05-11T07:30:00+07:00');
       namaUjian = 'Asesmen TKA SMP 2026';
       targetLabel = 'SMA Unggulan Impian';
-    } else {
+      badgeUjian = 'TKA SMP 2026';
+    } else if (infoTingkat.isSd) {
       // Asesmen TKA SD 2026 diperkirakan 18 Mei 2026
       tanggalTarget = new Date('2026-05-18T07:30:00+07:00');
       namaUjian = 'Asesmen TKA SD 2026';
       targetLabel = 'SMP Favorit Impian';
+      badgeUjian = 'TKA SD 2026';
+    } else {
+      // Program Umum / Kursus
+      tanggalTarget = new Date('2026-06-20T07:30:00+07:00');
+      namaUjian = 'Evaluasi Kemampuan Akhir';
+      targetLabel = 'Standar Kompetensi';
+      badgeUjian = 'GEMILANG 2026';
     }
 
     const selisihMs = tanggalTarget.getTime() - sekarang.getTime();
@@ -81,6 +84,7 @@ export default function PusatAmbisGemilang({
     return {
       namaUjian,
       targetLabel,
+      badgeUjian,
       selisihHari,
       selisihMinggu,
       tanggalTargetStr: tanggalTarget.toLocaleDateString('id-ID', {
@@ -89,7 +93,7 @@ export default function PusatAmbisGemilang({
         year: 'numeric',
       }),
     };
-  }, [jenjang]);
+  }, [infoTingkat]);
 
   // 3. Format Hari & Tanggal Hari Ini (misal: "Rabu, 18 November 2026")
   const teksHariIni = useMemo(() => {
@@ -199,7 +203,7 @@ export default function PusatAmbisGemilang({
             </div>
           </div>
           <span style={styles.badgeCountdown}>
-            {jenjang === 'SMA' ? 'SNPMB 2027' : 'TKA 2026'}
+            {targetUjian.badgeUjian}
           </span>
         </div>
 
@@ -262,9 +266,9 @@ export default function PusatAmbisGemilang({
               </button>
               <div style={{ flex: 1 }}>
                 <div style={{ ...styles.teksMisiJudul, textDecoration: statusMisi.misi1 ? 'line-through' : 'none', color: statusMisi.misi1 ? '#64748b' : '#1e293b' }}>
-                  Latihan Kilat Harian (Roadmap 12 Soal)
+                  Latihan Kilat Harian (Roadmap)
                 </div>
-                <div style={styles.teksMisiSub}>Pola soal resmi mikro 15-20 menit</div>
+                <div style={styles.teksMisiSub}>Pola soal mikro 15-20 menit</div>
               </div>
               <button
                 type="button"
@@ -275,7 +279,7 @@ export default function PusatAmbisGemilang({
               </button>
             </div>
 
-            {/* Misi 2: Buka Modul */}
+            {/* Misi 2: Buka Modul (Kelas 12 UTBK vs Reguler) */}
             <div style={styles.itemMisi}>
               <button
                 type="button"
@@ -291,20 +295,22 @@ export default function PusatAmbisGemilang({
               </button>
               <div style={{ flex: 1 }}>
                 <div style={{ ...styles.teksMisiJudul, textDecoration: statusMisi.misi2 ? 'line-through' : 'none', color: statusMisi.misi2 ? '#64748b' : '#1e293b' }}>
-                  Pelajari 1 Modul Bab &amp; Ringkasan
+                  {infoTingkat.isKelas12 ? 'Pelajari 1 Modul Bab UTBK' : 'Pelajari Materi Pembelajaran'}
                 </div>
-                <div style={styles.teksMisiSub}>Penguatan konsep dan telaah materi</div>
+                <div style={styles.teksMisiSub}>
+                  {infoTingkat.isKelas12 ? 'Penguatan konsep 7 subtes resmi SNPMB' : 'Penguatan konsep dan telaah materi'}
+                </div>
               </div>
               <button
                 type="button"
-                onClick={() => navigate('/siswa/belajar')}
+                onClick={() => navigate(infoTingkat.isKelas12 ? '/siswa/modul' : '/siswa/latihan-harian')}
                 style={styles.btnAksiMisi}
               >
                 Buka 📖
               </button>
             </div>
 
-            {/* Misi 3: Cek Target & Peluang */}
+            {/* Misi 3: Cek Target & Peluang (SMA vs SMP/SD) */}
             <div style={styles.itemMisi}>
               <button
                 type="button"
@@ -320,16 +326,18 @@ export default function PusatAmbisGemilang({
               </button>
               <div style={{ flex: 1 }}>
                 <div style={{ ...styles.teksMisiJudul, textDecoration: statusMisi.misi3 ? 'line-through' : 'none', color: statusMisi.misi3 ? '#64748b' : '#1e293b' }}>
-                  Cek Target &amp; Ambis Meter
+                  {infoTingkat.bisaAksesTargetKampus ? 'Cek Target PTN & Ambis Meter' : 'Pantau Progres Belajar & Skor'}
                 </div>
-                <div style={styles.teksMisiSub}>Pantau GAP skor menuju impian</div>
+                <div style={styles.teksMisiSub}>
+                  {infoTingkat.bisaAksesTargetKampus ? 'Pantau GAP skor menuju kampus impian' : 'Evaluasi capaian skor & konsistensi'}
+                </div>
               </div>
               <button
                 type="button"
-                onClick={() => navigate('/siswa/target-kampus')}
+                onClick={() => navigate(infoTingkat.bisaAksesTargetKampus ? '/siswa/target-kampus' : '/siswa/progres')}
                 style={styles.btnAksiMisi}
               >
-                Cek 🎯
+                {infoTingkat.bisaAksesTargetKampus ? 'Cek 🎯' : 'Cek 📊'}
               </button>
             </div>
           </div>
@@ -403,86 +411,88 @@ export default function PusatAmbisGemilang({
       </div>
 
       {/* ============================================================ */}
-      {/* 3. CLIMB TO TARGET (MENDAKI PUNCAK IMPIAN)                   */}
+      {/* 3. CLIMB TO TARGET (MENDAKI PUNCAK IMPIAN PTN) — KHUSUS SMA */}
       {/* ============================================================ */}
-      <div style={styles.cardClimb}>
-        <div style={styles.climbHeader}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={styles.iconClimbCircle}>
-              <Mountain size={22} color="#059669" />
-            </div>
-            <div>
-              <div style={styles.climbBadge}>CLIMB TO TARGET • AMBIS METER</div>
-              <h4 style={styles.climbJudul}>
-                {pendakian.namaTarget} — <span style={{ color: '#0d9488' }}>{pendakian.prodiTarget}</span>
-              </h4>
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={() => navigate(jenjang === 'SMA' ? '/siswa/katalog-ptn' : '/siswa/target-kampus')}
-            style={styles.btnGantiTarget}
-          >
-            Ganti Target 🏛️
-          </button>
-        </div>
-
-        {/* Visual Jalur Pendakian Gunung */}
-        <div style={styles.climbPathWrap}>
-          <div style={styles.climbStatsRow}>
-            <div>
-              <span style={styles.climbStatLabel}>Posisi Elevasi Saat Ini:</span>
-              <div style={styles.climbStatVal}>
-                {pendakian.skorUser > 0 ? `${pendakian.skorUser} Poin` : 'Belum Ada Skor'}
-                <span style={styles.climbPosBadge}>{pendakian.posLabel}</span>
+      {infoTingkat.bisaAksesTargetKampus && (
+        <div style={styles.cardClimb}>
+          <div style={styles.climbHeader}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div style={styles.iconClimbCircle}>
+                <Mountain size={22} color="#059669" />
+              </div>
+              <div>
+                <div style={styles.climbBadge}>CLIMB TO TARGET • AMBIS METER</div>
+                <h4 style={styles.climbJudul}>
+                  {pendakian.namaTarget} — <span style={{ color: '#0d9488' }}>{pendakian.prodiTarget}</span>
+                </h4>
               </div>
             </div>
-            <div style={{ textAlign: 'right' }}>
-              <span style={styles.climbStatLabel}>Passing Grade Puncak:</span>
-              <div style={{ fontSize: 18, fontWeight: 900, color: '#0f766e' }}>
-                {pendakian.skorAcuan} Poin
+            <button
+              type="button"
+              onClick={() => navigate(jenjang === 'SMA' ? '/siswa/katalog-ptn' : '/siswa/target-kampus')}
+              style={styles.btnGantiTarget}
+            >
+              Ganti Target 🏛️
+            </button>
+          </div>
+
+          {/* Visual Jalur Pendakian Gunung */}
+          <div style={styles.climbPathWrap}>
+            <div style={styles.climbStatsRow}>
+              <div>
+                <span style={styles.climbStatLabel}>Posisi Elevasi Saat Ini:</span>
+                <div style={styles.climbStatVal}>
+                  {pendakian.skorUser > 0 ? `${pendakian.skorUser} Poin` : 'Belum Ada Skor'}
+                  <span style={styles.climbPosBadge}>{pendakian.posLabel}</span>
+                </div>
+              </div>
+              <div style={{ textAlign: 'right' }}>
+                <span style={styles.climbStatLabel}>Passing Grade Puncak:</span>
+                <div style={{ fontSize: 18, fontWeight: 900, color: '#0f766e' }}>
+                  {pendakian.skorAcuan} Poin
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* Progress Gunung */}
-          <div style={styles.gunungTrack}>
-            <div
-              style={{
-                ...styles.gunungFill,
-                width: `${Math.max(8, pendakian.persenPuncak)}%`,
-              }}
-            >
-              <span style={styles.markerPendaki}>🧗</span>
+            {/* Progress Gunung */}
+            <div style={styles.gunungTrack}>
+              <div
+                style={{
+                  ...styles.gunungFill,
+                  width: `${Math.max(8, pendakian.persenPuncak)}%`,
+                }}
+              >
+                <span style={styles.markerPendaki}>🧗</span>
+              </div>
+            </div>
+
+            <div style={styles.gunungPosLabels}>
+              <span>Basecamp (0)</span>
+              <span>Pos 1 (Pondasi)</span>
+              <span>Pos 2 (Subtes)</span>
+              <span>Pos 3 (Tryout)</span>
+              <span style={{ fontWeight: 800, color: '#0f766e' }}>Puncak Impian 🏆</span>
+            </div>
+
+            <div style={styles.gapStatusFooter}>
+              <span style={{ fontSize: 12, color: '#334155' }}>
+                Selisih ke Puncak Target:
+              </span>
+              <span
+                style={{
+                  fontSize: 12.5,
+                  fontWeight: 800,
+                  color: pendakian.gap >= 0 ? '#10b981' : '#d97706',
+                }}
+              >
+                {pendakian.gap >= 0
+                  ? `+${pendakian.gap} Poin (Zona Aman Lulus 🚀)`
+                  : `${pendakian.gap} Poin Menuju Standar Kelulusan`}
+              </span>
             </div>
           </div>
-
-          <div style={styles.gunungPosLabels}>
-            <span>Basecamp (0)</span>
-            <span>Pos 1 (Pondasi)</span>
-            <span>Pos 2 (Subtes)</span>
-            <span>Pos 3 (Tryout)</span>
-            <span style={{ fontWeight: 800, color: '#0f766e' }}>Puncak Impian 🏆</span>
-          </div>
-
-          <div style={styles.gapStatusFooter}>
-            <span style={{ fontSize: 12, color: '#334155' }}>
-              Selisih ke Puncak Target:
-            </span>
-            <span
-              style={{
-                fontSize: 12.5,
-                fontWeight: 800,
-                color: pendakian.gap >= 0 ? '#10b981' : '#d97706',
-              }}
-            >
-              {pendakian.gap >= 0
-                ? `+${pendakian.gap} Poin (Zona Aman Lulus 🚀)`
-                : `${pendakian.gap} Poin Menuju Standar Kelulusan`}
-            </span>
-          </div>
         </div>
-      </div>
+      )}
 
       {/* ============================================================ */}
       {/* 4. BANNER TES MINAT BAKAT (HOLLAND RIASEC ~7 MENIT)          */}

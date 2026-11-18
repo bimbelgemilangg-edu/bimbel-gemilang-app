@@ -4,7 +4,7 @@
 // (Admin Control Center — Benchmark AmbisPTN)
 //
 // Fitur:
-// 1. Pengelolaan jadwal event rutin 2x seminggu (Rabu & Sabtu).
+// 1. Pengelolaan jadwal event rutin 2x sebulan (November 2026 s.d. Maret 2027).
 // 2. Manajemen Token Panitia: Ubah token, saklar aktif/nonaktif, dan salin template
 //    pengumuman resmi untuk disiarkan saat event berlangsung (token dirahasiakan
 //    dari siswa sampai sesi dibuka).
@@ -215,7 +215,7 @@ export default function KelolaEventTryOutPage() {
                 </h1>
               </div>
               <p style={{ margin: '4px 0 0', fontSize: 12.5, color: '#64748b' }}>
-                Kendali jadwal tryout 2x seminggu, rahasia token ujian panitia, dan konfigurasi paket bank soal.
+                Kendali jadwal tryout resmi 2x sebulan, rahasia token ujian panitia, dan konfigurasi kesiapan paket bank soal.
               </p>
             </div>
 

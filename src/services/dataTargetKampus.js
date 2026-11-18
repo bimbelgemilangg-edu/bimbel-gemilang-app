@@ -10,6 +10,7 @@ import { fiturAktifUntuk } from './sakelarFiturService';
 import { susunPerbandingan } from '../utils/targetKampus';
 import { layakTampilTarget } from '../utils/bannerTargetSiswa';
 import { ambilTargetSiswa, ambilTargetLokal } from './targetKampusService';
+import { deteksiTingkatSiswa } from '../utils/tingkatSiswa';
 
 const cacheData = new Map();
 
@@ -129,9 +130,8 @@ export function useDataTargetKampus(studentId, profil) {
         return;
       }
 
-      const kelasStr = String(profil?.kelasSekolah || profil?.kelas || '').toUpperCase();
-      const jenjangStr = String(profil?.jenjang || '').toUpperCase();
-      const isSma = jenjangStr.includes('SMA') || kelasStr.includes('10') || kelasStr.includes('11') || kelasStr.includes('12') || kelasStr.includes('UTBK') || kelasStr.includes('ALUMNI');
+      const infoTingkat = deteksiTingkatSiswa(profil);
+      const isSma = infoTingkat.bisaAksesTargetKampus;
 
       const data = await muatDataTargetKampus(studentId);
       if (!hidup) return;
@@ -141,7 +141,7 @@ export function useDataTargetKampus(studentId, profil) {
         if (isSma) {
           setKeadaan({ status: 'belum_pilih', jenjang: 'SMA' });
         } else {
-          setKeadaan({ status: 'nol', jenjang: profil?.jenjang || 'SMP' });
+          setKeadaan({ status: 'nol', jenjang: infoTingkat.jenjangBaku || 'SMP' });
         }
         return;
       }

@@ -11,6 +11,7 @@ import { susunBannerTarget, teksChipTarget } from '../utils/bannerTargetSiswa';
 import { ZONA } from '../utils/zonaKesiapan';
 import LogoKampus from './LogoKampus';
 import { Target, ChevronRight, Sparkles } from 'lucide-react';
+import { deteksiTingkatSiswa } from '../utils/tingkatSiswa';
 
 const WARNA_ZONA = {
   [ZONA.HIJAU_AMAN]: '#16a34a',
@@ -22,6 +23,9 @@ const WARNA_ZONA = {
 
 /** Chip kecil untuk dipasang DI DEPAN nama & NIM siswa. */
 export function ChipTargetSiswa({ studentId, profil }) {
+  const infoTingkat = deteksiTingkatSiswa(profil);
+  if (!infoTingkat.bisaAksesTargetKampus) return null;
+
   const keadaan = useDataTargetKampus(studentId, profil);
   if (keadaan.status !== 'siap') return null;
   const chip = teksChipTarget(keadaan.target, keadaan.perbandingan);
@@ -52,6 +56,9 @@ export function ChipTargetSiswa({ studentId, profil }) {
 
 /** Kartu rincian target: dua pilihan, zona, selisih, dan pengingatnya. */
 export function KartuTargetSiswa({ studentId, profil }) {
+  const infoTingkat = deteksiTingkatSiswa(profil);
+  if (!infoTingkat.bisaAksesTargetKampus) return null;
+
   const navigate = useNavigate();
   const keadaan = useDataTargetKampus(studentId, profil);
 

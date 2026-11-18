@@ -33,6 +33,7 @@ import { bangunDokumenTryOut } from '../../../utils/dokumenTryOut.js';
 import { saringPaketUntukSiswa } from '../../../utils/cocokkanTargetPaket.js';
 import { hitungTotalSkor } from '../../../utils/skorSoalTryOut.js';
 import { isPaketManual, deteksiJenjangUjianAkhir } from '../../../utils/jalurUjianAiConfig.js';
+import { deteksiTingkatSiswa } from '../../../utils/tingkatSiswa.js';
 import {
   DAFTAR_EVENT_TRYOUT_SMA,
   getEventByTanggal,
@@ -168,13 +169,21 @@ export default function PapanJelajahPage({ studentId: studentIdProp = '' }) {
   const xp = useMemo(() => sesi.reduce((a, s) => a + (Number(s.xpFinal) || Number(s.xpMentah) || 0), 0), [sesi]);
   const level = 1 + Math.floor(xp / 100);
 
+  // Deteksi Tingkat & Hak Akses Jenjang Siswa
+  const kelasCek = kelas || profil.kelas || profil.kelasSekolah || (typeof localStorage !== 'undefined' ? localStorage.getItem('studentGrade') || localStorage.getItem('studentKelas') : '');
+  const jenjangCek = profil.jenjang || (typeof localStorage !== 'undefined' ? localStorage.getItem('studentGrade') : '');
+  const infoTingkat = useMemo(() => {
+    return deteksiTingkatSiswa({ ...profil, kelas: kelasCek, kelasSekolah: kelasCek, jenjang: jenjangCek });
+  }, [profil, kelasCek, jenjangCek]);
+
   // Strip Tanggal Kalender (Bisa melihat hingga bulan-bulan mendatang)
   const hariBulan = useMemo(() => {
     const jumlahHari = new Date(bulan.y, bulan.m + 1, 0).getDate();
     return Array.from({ length: jumlahHari }, (_, i) => {
       const key = `${bulan.y}-${String(bulan.m + 1).padStart(2, '0')}-${String(i + 1).padStart(2, '0')}`;
       const dokManual = dokumenPerTanggal.get(key) || [];
-      const eventSma = getEventByTanggal(key);
+      // 🔒 Event UTBK HANYA MUNCUL DI KALENDER UNTUK SISWA KELAS 12 SMA (Paten)
+      const eventSma = infoTingkat.isKelas12 ? getEventByTanggal(key) : [];
       const adaEvent = dokManual.length > 0 || eventSma.length > 0;
       return {
         key,
@@ -184,19 +193,21 @@ export default function PapanJelajahPage({ studentId: studentIdProp = '' }) {
         hariIni: key === kunciTanggal(kini),
       };
     });
-  }, [bulan, dokumenPerTanggal, kini]);
+  }, [bulan, dokumenPerTanggal, kini, infoTingkat]);
 
   // Event & Misi yang terjadwal di tanggal terpilih
   const eventHariIniSma = useMemo(() => {
+    if (!infoTingkat.isKelas12) return [];
     return getEventByTanggal(tanggal);
-  }, [tanggal]);
+  }, [tanggal, infoTingkat]);
 
   const misiManualHariIni = useMemo(() => {
     return dokumenPerTanggal.get(tanggal) || [];
   }, [dokumenPerTanggal, tanggal]);
 
-  // Daftar agenda event terjadwal SMA 2x seminggu
+  // Daftar agenda event terjadwal SMA 2x sebulan
   const agendaEventList = useMemo(() => {
+    if (!infoTingkat.isSma) return [];
     const bulanIniPrefix = `${bulan.y}-${String(bulan.m + 1).padStart(2, '0')}`;
     const hariIniIso = new Date(kini).toISOString().slice(0, 10);
 
@@ -206,7 +217,7 @@ export default function PapanJelajahPage({ studentId: studentIdProp = '' }) {
       return DAFTAR_EVENT_TRYOUT_SMA.filter((e) => e.tanggalIso >= hariIniIso);
     }
     return DAFTAR_EVENT_TRYOUT_SMA;
-  }, [bulan, filterAgenda, kini]);
+  }, [bulan, filterAgenda, kini, infoTingkat]);
 
   // Analitik Skor & Evaluasi
   const paketUntukAnalitik = useMemo(() => [...paket, ...paketRiwayat], [paket, paketRiwayat]);
@@ -234,6 +245,10 @@ export default function PapanJelajahPage({ studentId: studentIdProp = '' }) {
 
   // Handler Masuk Ruang Tunggu CBT Profesional (Token dirahasiakan & diinput siswa saat event diumumkan)
   const handleMasukCbtProfesional = (event) => {
+    if (!infoTingkat.isKelas12) {
+      alert('Mohon maaf, simulasi try out intensif UTBK-SNBT ini khusus untuk siswa Kelas 12 SMA & Alumni.');
+      return;
+    }
     hubungkanSiswaKeTobkSession({
       event,
       profil: { ...profil, nama, kelas, studentId },
@@ -331,7 +346,7 @@ export default function PapanJelajahPage({ studentId: studentIdProp = '' }) {
           }}
         >
           <Trophy size={16} />
-          <span>Agenda Event 2x Seminggu</span>
+          <span>Agenda Event 2x Sebulan</span>
         </button>
 
         <button
@@ -450,23 +465,38 @@ export default function PapanJelajahPage({ studentId: studentIdProp = '' }) {
                   Tidak ada try out terjadwal pada tanggal ini
                 </h4>
                 <p style={{ fontSize: 12.5, color: '#64748b', margin: '0 0 16px', lineHeight: 1.5 }}>
-                  Event rutin UTBK SMA diadakan 2 kali seminggu (setiap Rabu & Sabtu). Buka tab <strong>Agenda Event</strong> untuk melihat seluruh tanggal pelaksanaan.
+                  {infoTingkat.isKelas12
+                    ? 'Event try out resmi UTBK SMA diadakan 2 kali sebulan. Buka tab Agenda Event untuk melihat seluruh tanggal pelaksanaan.'
+                    : infoTingkat.isSmaBawah
+                    ? 'Simulasi maraton UTBK-SNBT dikhususkan bagi siswa Kelas 12 SMA. Untuk siswa Kelas 10 & 11, silakan fokus eksplorasi Target Kampus & Katalog PTN serta penguatan materi reguler.'
+                    : 'Jadwal try out dan asesmen berkala jenjang kamu akan diumumkan oleh pengajar & akademik sesuai kalender.'}
                 </p>
-                <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
-                  <button
-                    type="button"
-                    onClick={() => setTab('agenda')}
-                    style={st.btnLihatAgenda}
-                  >
-                    <Trophy size={15} />
-                    <span>Lihat Jadwal 2x Seminggu</span>
-                  </button>
+                <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
+                  {infoTingkat.isKelas12 && (
+                    <button
+                      type="button"
+                      onClick={() => setTab('agenda')}
+                      style={st.btnLihatAgenda}
+                    >
+                      <Trophy size={15} />
+                      <span>Lihat Jadwal 2x Sebulan</span>
+                    </button>
+                  )}
+                  {infoTingkat.isSmaBawah && (
+                    <Link
+                      to="/siswa/target-kampus"
+                      style={st.btnLihatAgenda}
+                    >
+                      <Target size={15} />
+                      <span>Eksplorasi Target Kampus</span>
+                    </Link>
+                  )}
                   <Link
-                    to="/siswa/roadmap"
+                    to={infoTingkat.isSma ? '/siswa/roadmap' : '/siswa/latihan-harian'}
                     style={st.btnLatihanRoadmap}
                   >
                     <Rocket size={15} />
-                    <span>Latihan Soal Subtes</span>
+                    <span>Latihan Soal Harian</span>
                   </Link>
                 </div>
               </div>
@@ -568,126 +598,173 @@ export default function PapanJelajahPage({ studentId: studentIdProp = '' }) {
       )}
 
       {/* ==================================================================== */}
-      {/* TAB 2: AGENDA EVENT 2X SEMINGGU KHUSUS SMA                           */}
+      {/* TAB 2: AGENDA EVENT 2X SEBULAN KHUSUS SMA                           */}
       {/* ==================================================================== */}
       {tab === 'agenda' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-          {/* BANNER MARKETING EVENT */}
-          <div style={st.bannerAgendaHeader}>
-            <div>
-              <div style={{ fontSize: 11.5, fontWeight: 800, color: '#0d9488', textTransform: 'uppercase', marginBottom: 4 }}>
-                ROADMAP SELEKSI UTBK-SNBT 2027
-              </div>
-              <h3 style={{ fontSize: 19, fontWeight: 900, color: '#0f172a', margin: '0 0 6px' }}>
-                Simulasi Try Out Terjadwal (2x Sepekan)
-              </h3>
-              <p style={{ fontSize: 13, color: '#475569', margin: 0, lineHeight: 1.5 }}>
-                Dilaksanakan serentak setiap <strong>Rabu & Sabtu</strong> dengan naskah 7 subtes resmi SNPMB, pengawasan anti-cheat online, dan evaluasi IRT skala 1000.
-              </p>
+        !infoTingkat.isSma ? (
+          <div style={st.kartuKosong}>
+            <div style={{ width: 48, height: 48, borderRadius: 24, background: '#f8fafc', border: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 10px' }}>
+              <Calendar size={22} color="#94a3b8" />
             </div>
-
-            {/* Filter Agenda */}
-            <div style={st.filterAgendaPills}>
-              {[
-                { id: 'bulan_ini', label: `Bulan ${BULAN[bulan.m]}` },
-                { id: 'mendatang', label: 'Mendatang' },
-                { id: 'semua', label: 'Semua Event' },
-              ].map((f) => (
-                <button
-                  key={f.id}
-                  type="button"
-                  onClick={() => setFilterAgenda(f.id)}
-                  style={{
-                    border: 'none',
-                    background: filterAgenda === f.id ? '#ffffff' : 'transparent',
-                    color: filterAgenda === f.id ? '#0f766e' : '#64748b',
-                    fontSize: 12,
-                    fontWeight: filterAgenda === f.id ? 800 : 600,
-                    padding: '6px 12px',
-                    borderRadius: 8,
-                    cursor: 'pointer',
-                    boxShadow: filterAgenda === f.id ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
-                  }}
-                >
-                  {f.label}
-                </button>
-              ))}
-            </div>
+            <h4 style={{ fontSize: 15, fontWeight: 800, color: '#0f172a', margin: '0 0 4px' }}>
+              Agenda Try Out Khusus Jenjang SMA (UTBK-SNBT)
+            </h4>
+            <p style={{ fontSize: 12.5, color: '#64748b', margin: '0 0 16px', lineHeight: 1.5 }}>
+              Jadwal try out maraton 2x sebulan ini dikhususkan bagi siswa jenjang SMA untuk persiapan seleksi nasional PTN. Jadwal try out dan evaluasi berkala untuk jenjangmu akan ditampilkan di kalender misi saat sesi dibuka.
+            </p>
+            <button
+              type="button"
+              onClick={() => setTab('misi')}
+              style={st.btnLihatAgenda}
+            >
+              <span>Kembali ke Kalender Misi</span>
+            </button>
           </div>
-
-          {/* LIST KARTU EVENT TERJADWAL */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            {agendaEventList.map((ev) => {
-              const statusWaktu = getStatusEventTerhadapWaktu(ev, kini);
-              const isHariIni = statusWaktu === 'sedang_berlangsung';
-
-              return (
-                <div
-                  key={ev.id}
-                  style={{
-                    ...st.kartuAgendaItem,
-                    border: isHariIni ? '2px solid #0d9488' : '1px solid #e2e8f0',
-                    background: isHariIni ? '#f0fdfa' : '#ffffff',
-                  }}
-                >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 10, marginBottom: 8 }}>
-                    <div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                        <span style={st.badgeEventMarketing}>
-                          {ev.badgeKategori}
-                        </span>
-                        <span style={{ fontSize: 12, fontWeight: 700, color: isHariIni ? '#0d9488' : '#64748b' }}>
-                          📅 {ev.hariFormatted} • {ev.jamMulai} - {ev.jamSelesai}
-                        </span>
-                        {isHariIni && (
-                          <span style={st.badgeLiveNow}>
-                            SEDANG BERLANGSUNG 🔴
-                          </span>
-                        )}
-                      </div>
-                      <h4 style={{ fontSize: 16, fontWeight: 900, color: '#0f172a', margin: '0 0 4px' }}>
-                        {ev.judul}
-                      </h4>
-                      <p style={{ fontSize: 12.5, color: '#64748b', margin: 0 }}>
-                        {ev.subjudul}
-                      </p>
-                    </div>
-
-                    <div style={{ textAlign: 'right' }}>
-                      <span style={{ fontSize: 11, color: '#64748b', fontWeight: 600 }}>Token CBT:</span>
-                      <div style={{ fontSize: 14, fontWeight: 900, color: '#0f172a', letterSpacing: 0.5 }}>
-                        {ev.token}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div style={st.wrapChipsInfo}>
-                    <span style={st.chipDetail}>⏱️ {ev.durasiMenit} Menit</span>
-                    <span style={st.chipDetail}>📑 {ev.totalSoal} Soal 7 Subtes</span>
-                    <span style={st.chipDetail}>📊 {ev.sistemSkor}</span>
-                    <span style={st.chipDetail}>🧑‍🏫 {ev.tentorPendamping}</span>
-                  </div>
-
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 12, paddingTop: 10, borderTop: '1px solid #f1f5f9' }}>
-                    <div style={{ fontSize: 11.5, color: '#059669', display: 'flex', alignItems: 'center', gap: 5, fontWeight: 600 }}>
-                      <Video size={13} />
-                      <span>{ev.liveReviewJadwal}</span>
-                    </div>
-
-                    <button
-                      type="button"
-                      onClick={() => handleMasukCbtProfesional(ev)}
-                      style={st.btnMasukCbt}
-                    >
-                      <ShieldCheck size={15} />
-                      <span>Masuk Ruang Tunggu CBT 🔒</span>
-                    </button>
-                  </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            {/* NOTIFIKASI EDUKATIF KELAS 10 & 11 SMA */}
+            {infoTingkat.isSmaBawah && (
+              <div style={{
+                background: '#fffbeb',
+                border: '1.5px solid #fde68a',
+                borderRadius: 14,
+                padding: '12px 16px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 10,
+              }}>
+                <span style={{ fontSize: 20 }}>ℹ️</span>
+                <div style={{ fontSize: 12.5, color: '#92400e', lineHeight: 1.5 }}>
+                  <strong>Informasi Kelas {kelas || '10/11 SMA'}:</strong> Jadwal event maraton di bawah adalah roadmap simulasi UTBK resmi untuk <strong>Kelas 12 SMA</strong>. Kamu dapat memantau jadwal untuk persiapan dini, sedangkan akses ruang ujian CBT aktif untuk siswa Kelas 12.
                 </div>
-              );
-            })}
+              </div>
+            )}
+
+            {/* BANNER MARKETING EVENT */}
+            <div style={st.bannerAgendaHeader}>
+              <div>
+                <div style={{ fontSize: 11.5, fontWeight: 800, color: '#0d9488', textTransform: 'uppercase', marginBottom: 4 }}>
+                  ROADMAP SELEKSI UTBK-SNBT 2027
+                </div>
+                <h3 style={{ fontSize: 19, fontWeight: 900, color: '#0f172a', margin: '0 0 6px' }}>
+                  Simulasi Try Out Terjadwal (2x Sebulan)
+                </h3>
+                <p style={{ fontSize: 13, color: '#475569', margin: 0, lineHeight: 1.5 }}>
+                  Dilaksanakan serentak <strong>2 kali dalam sebulan</strong> dengan naskah 7 subtes resmi SNPMB, pengawasan anti-cheat online, dan evaluasi IRT skala 1000.
+                </p>
+              </div>
+
+              {/* Filter Agenda */}
+              <div style={st.filterAgendaPills}>
+                {[
+                  { id: 'bulan_ini', label: `Bulan ${BULAN[bulan.m]}` },
+                  { id: 'mendatang', label: 'Mendatang' },
+                  { id: 'semua', label: 'Semua Event' },
+                ].map((f) => (
+                  <button
+                    key={f.id}
+                    type="button"
+                    onClick={() => setFilterAgenda(f.id)}
+                    style={{
+                      border: 'none',
+                      background: filterAgenda === f.id ? '#ffffff' : 'transparent',
+                      color: filterAgenda === f.id ? '#0f766e' : '#64748b',
+                      fontSize: 12,
+                      fontWeight: filterAgenda === f.id ? 800 : 600,
+                      padding: '6px 12px',
+                      borderRadius: 8,
+                      cursor: 'pointer',
+                      boxShadow: filterAgenda === f.id ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
+                    }}
+                  >
+                    {f.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* LIST KARTU EVENT TERJADWAL */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              {agendaEventList.map((ev) => {
+                const statusWaktu = getStatusEventTerhadapWaktu(ev, kini);
+                const isHariIni = statusWaktu === 'sedang_berlangsung';
+
+                return (
+                  <div
+                    key={ev.id}
+                    style={{
+                      ...st.kartuAgendaItem,
+                      border: isHariIni ? '2px solid #0d9488' : '1px solid #e2e8f0',
+                      background: isHariIni ? '#f0fdfa' : '#ffffff',
+                    }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 10, marginBottom: 8 }}>
+                      <div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                          <span style={st.badgeEventMarketing}>
+                            {ev.badgeKategori}
+                          </span>
+                          <span style={{ fontSize: 12, fontWeight: 700, color: isHariIni ? '#0d9488' : '#64748b' }}>
+                            📅 {ev.hariFormatted} • {ev.jamMulai} - {ev.jamSelesai}
+                          </span>
+                          {isHariIni && (
+                            <span style={st.badgeLiveNow}>
+                              SEDANG BERLANGSUNG 🔴
+                            </span>
+                          )}
+                        </div>
+                        <h4 style={{ fontSize: 16, fontWeight: 900, color: '#0f172a', margin: '0 0 4px' }}>
+                          {ev.judul}
+                        </h4>
+                        <p style={{ fontSize: 12.5, color: '#64748b', margin: 0 }}>
+                          {ev.subjudul}
+                        </p>
+                      </div>
+
+                      <div style={{ textAlign: 'right' }}>
+                        <span style={{ fontSize: 11, color: '#64748b', fontWeight: 600 }}>Status Token:</span>
+                        <div style={{ marginTop: 2 }}>
+                          <span style={{ fontSize: 11, fontWeight: 800, color: '#b45309', background: '#fef3c7', padding: '3px 8px', borderRadius: 6 }}>
+                            🔒 Diumumkan Panitia
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div style={st.wrapChipsInfo}>
+                      <span style={st.chipDetail}>⏱️ {ev.durasiMenit} Menit</span>
+                      <span style={st.chipDetail}>📑 {ev.totalSoal} Soal 7 Subtes</span>
+                      <span style={st.chipDetail}>📊 {ev.sistemSkor}</span>
+                      <span style={st.chipDetail}>🧑‍🏫 {ev.tentorPendamping}</span>
+                    </div>
+
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 12, paddingTop: 10, borderTop: '1px solid #f1f5f9' }}>
+                      <div style={{ fontSize: 11.5, color: '#059669', display: 'flex', alignItems: 'center', gap: 5, fontWeight: 600 }}>
+                        <Video size={13} />
+                        <span>{ev.liveReviewJadwal}</span>
+                      </div>
+
+                      {infoTingkat.isKelas12 ? (
+                        <button
+                          type="button"
+                          onClick={() => handleMasukCbtProfesional(ev)}
+                          style={st.btnMasukCbt}
+                        >
+                          <ShieldCheck size={15} />
+                          <span>Masuk Ruang Tunggu CBT 🔒</span>
+                        </button>
+                      ) : (
+                        <span style={{ fontSize: 11.5, fontWeight: 700, color: '#92400e', background: '#fef3c7', padding: '6px 12px', borderRadius: 8 }}>
+                          🔒 Khusus Kelas 12
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
-        </div>
+        )
       )}
 
       {/* ==================================================================== */}

@@ -1,12 +1,13 @@
 // Hybrid: sistem pilih soal → draf → admin TERBITKAN (wajib).
 // Admin atur rules saja, tidak mengedit isi soal.
 import React, { useCallback, useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import SidebarAdmin from '../../../components/SidebarAdmin';
 import { db } from '../../../firebase';
 import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, serverTimestamp } from 'firebase/firestore';
 import {
   Calendar, Plus, Trash2, Save, Play, RefreshCw, Sparkles, Send, EyeOff, Settings2,
-  AlertCircle,
+  AlertCircle, Key, ArrowRight,
 } from 'lucide-react';
 import {
   COL_TEMPLATE, COL_PAKET, DEFAULT_TEMPLATE_SMA, siapkanDrafMingguIni, terbitkanDraf, nonaktifkanPaket,
@@ -364,6 +365,54 @@ export default function JadwalTryOutOtomatisPage() {
               </button>
             )}
           </div>
+        </div>
+
+        {/* 🎯 PINTASAN PENGELOLAAN EVENT RESMI 2X SEBULAN, KESIAPAN SOAL & TOKEN CBT */}
+        <div style={{
+          background: 'linear-gradient(135deg, #f0fdfa 0%, #e0f2fe 100%)',
+          border: '1.5px solid #99f6e4',
+          borderRadius: 14,
+          padding: '14px 18px',
+          marginBottom: 16,
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: 12,
+          boxShadow: '0 2px 8px rgba(13,148,136,0.08)',
+        }}>
+          <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+            <div style={{ width: 40, height: 40, borderRadius: 10, background: '#0d9488', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', flexShrink: 0 }}>
+              <Key size={20} />
+            </div>
+            <div>
+              <div style={{ fontSize: 14, fontWeight: 800, color: '#0f766e' }}>
+                Pengelolaan Jadwal Event 2x Sebulan, Kesiapan Soal &amp; Token Panitia
+              </div>
+              <div style={{ fontSize: 12, color: '#475569', marginTop: 2 }}>
+                Kelola jadwal ujian besar resmi (Fondasi, Ambis, Siap, Berjuang, Puncak UTBK), ganti token CBT rahasia, dan atur paket 160 butir 7 subtes.
+              </div>
+            </div>
+          </div>
+          <Link
+            to="/admin/event-tryout"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 6,
+              background: '#0d9488',
+              color: '#ffffff',
+              fontSize: 12.5,
+              fontWeight: 700,
+              padding: '8px 16px',
+              borderRadius: 8,
+              textDecoration: 'none',
+              boxShadow: '0 2px 6px rgba(13,148,136,0.25)',
+            }}
+          >
+            <span>Buka Jadwal &amp; Token Event</span>
+            <ArrowRight size={14} />
+          </Link>
         </div>
 
         {/* ⚠️ EARLY WARNING SYSTEM (EWS): STOK SOAL MENIPIS */}

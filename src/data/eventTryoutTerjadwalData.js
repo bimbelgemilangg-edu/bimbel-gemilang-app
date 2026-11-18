@@ -3,7 +3,7 @@
 // JADWAL EVENT TRYOUT TERJADWAL SMA (2 KALI SEMINGGU) — AMBISPTN BENCHMARK
 //
 // Karakteristik:
-// 1. Jadwal rutin 2x seminggu (setiap Rabu & Sabtu) khusus siswa SMA / UTBK.
+// 1. Jadwal rutin 2x sebulan khusus siswa SMA / UTBK.
 // 2. Bahasa marketing profesional:
 //    - Tryout Fundamental UTBK 1 & 2 (Awal bulan)
 //    - Ambis UTBK (Seri akselerasi tengah bulan)
@@ -30,118 +30,130 @@ function formatTanggalInd(tglStr) {
 }
 
 // ------------------------------------------------------------------------------
-// GENERATOR JADWAL EVENT 2 KALI SEMINGGU (RABU & SABTU)
-// Dimulai dari November 2026 hingga Maret 2027
+// GENERATOR JADWAL EVENT RESMI UTBK SMA (TEPAT 2 KALI SEBULAN)
+// Seri berganti setiap bulan:
+// - November 2026 : Fondasi UTBK 1 & 2
+// - Desember 2026 : Ambis UTBK 1 & 2
+// - Januari 2027  : Siap UTBK 1 & 2
+// - Februari 2027 : Berjuang UTBK 1 & 2
+// - Maret 2027    : Puncak UTBK 1 & 2 (Gladi Bersih)
 // ------------------------------------------------------------------------------
 function susunEventRutinSma() {
-  const events = [];
-  const start = new Date(2026, 10, 1); // 1 Nov 2026
-  const end = new Date(2027, 2, 31);   // 31 Mar 2027
+  const masterJadwalPerBulan = [
+    // NOVEMBER 2026: Fondasi UTBK
+    {
+      tglIso: '2026-11-18',
+      judul: 'Tryout Fondasi UTBK 1 — Seri November 2026',
+      subjudul: 'Pemetaan fondasi awal TPS & penguasaan logika penalaran analitis',
+      badgeKategori: 'Fondasi UTBK',
+      token: 'FONDASI-1',
+    },
+    {
+      tglIso: '2026-11-28',
+      judul: 'Tryout Fondasi UTBK 2 — Seri November 2026',
+      subjudul: 'Pemantapan literasi bahasa, pemahaman wacana kritis & penalaran matematika',
+      badgeKategori: 'Fondasi UTBK',
+      token: 'FONDASI-2',
+    },
 
-  let cur = new Date(start);
-  let counterRabu = 1;
-  let counterSabtu = 1;
-  let bulanLalu = -1;
-  let nomorBulanFunda = 1;
+    // DESEMBER 2026: Ambis UTBK
+    {
+      tglIso: '2026-12-09',
+      judul: 'Ambis UTBK 1 — Seri Desember 2026',
+      subjudul: 'Akselerasi kecepatan berhitung aljabar kuantitatif & penalaran deduktif',
+      badgeKategori: 'Ambis UTBK',
+      token: 'AMBIS-1',
+    },
+    {
+      tglIso: '2026-12-19',
+      judul: 'Ambis UTBK 2 — Seri Desember 2026',
+      subjudul: 'Simulasi akbar tengah tahun dan evaluasi ketahanan pengerjaan 195 menit',
+      badgeKategori: 'Ambis UTBK',
+      token: 'AMBIS-2',
+    },
 
-  while (cur <= end) {
-    const dayOfWeek = cur.getDay(); // 3 = Rabu, 6 = Sabtu
-    const y = cur.getFullYear();
-    const m = cur.getMonth();
-    const d = cur.getDate();
-    const tglIso = `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+    // JANUARI 2027: Siap UTBK
+    {
+      tglIso: '2027-01-13',
+      judul: 'Siap UTBK 1 — Seri Januari 2027',
+      subjudul: 'Uji ketahanan wacana analitis, problem solving & kekebalan distraktor',
+      badgeKategori: 'Siap UTBK',
+      token: 'SIAP-1',
+    },
+    {
+      tglIso: '2027-01-23',
+      judul: 'Siap UTBK 2 — Seri Januari 2027',
+      subjudul: 'Peringkat nasional antarcabang dan kalibrasi passing grade prodi impian',
+      badgeKategori: 'Siap UTBK',
+      token: 'SIAP-2',
+    },
 
-    if (m !== bulanLalu) {
-      bulanLalu = m;
-      nomorBulanFunda = 1;
-    }
+    // FEBRUARI 2027: Berjuang UTBK
+    {
+      tglIso: '2027-02-10',
+      judul: 'Berjuang UTBK 1 — Seri Februari 2027',
+      subjudul: 'Simulasi akbar penentuan passing grade dan pemetaan skor per subtes',
+      badgeKategori: 'Berjuang UTBK',
+      token: 'BERJUANG-1',
+    },
+    {
+      tglIso: '2027-02-27',
+      judul: 'Berjuang UTBK 2 — Seri Februari 2027',
+      subjudul: 'Uji kesiapan penuh 7 subtes dengan standar pembobotan IRT resmi SNPMB',
+      badgeKategori: 'Berjuang UTBK',
+      token: 'BERJUANG-2',
+    },
 
-    if (dayOfWeek === 3 || dayOfWeek === 6) {
-      let judul = '';
-      let subjudul = '';
-      let badgeKategori = '';
-      let token = '';
+    // MARET 2027: Puncak UTBK (Gladi Bersih)
+    {
+      tglIso: '2027-03-10',
+      judul: 'Puncak UTBK 1 — Seri Maret 2027',
+      subjudul: 'Gladi bersih pra-UTBK real CBT dan simulasi kondisi ujian sesungguhnya',
+      badgeKategori: 'Puncak UTBK',
+      token: 'PUNCAK-1',
+    },
+    {
+      tglIso: '2027-03-27',
+      judul: 'Puncak UTBK 2 — Seri Maret 2027',
+      subjudul: 'Final battle & evaluasi menyeluruh sebelum pelaksanaan resmi UTBK-SNBT',
+      badgeKategori: 'Puncak UTBK',
+      token: 'PUNCAK-2',
+    },
+  ];
 
-      if (dayOfWeek === 3) {
-        // HARI RABU:
-        if (nomorBulanFunda === 1) {
-          judul = `Tryout Fundamental UTBK 1 — Seri ${BULAN_IND[m]}`;
-          subjudul = 'Pemetaan fondasi awal TPS & penguasaan logika penalaran analitis';
-          badgeKategori = 'Fundamental';
-          token = `FUNDA-${m + 1}A`;
-          nomorBulanFunda++;
-        } else if (nomorBulanFunda === 2) {
-          judul = `Ambis UTBK #${counterRabu} — Akselerasi Kecepatan Soal`;
-          subjudul = 'Melatih ketepatan berhitung aljabar kuantitatif & penalaran deduktif';
-          badgeKategori = 'Ambis UTBK';
-          token = `AMBIS-${counterRabu}`;
-        } else {
-          judul = `Berjuang UTBK #${counterRabu} — Simulasi Akbar Tengah Pekan`;
-          subjudul = 'Uji kesiapan penuh 7 subtes dengan standar pembobotan IRT resmi';
-          badgeKategori = 'Berjuang UTBK';
-          token = `BERJUANG-${counterRabu}`;
-        }
-        counterRabu++;
-      } else if (dayOfWeek === 6) {
-        // HARI SABTU:
-        if (nomorBulanFunda === 2) {
-          judul = `Tryout Fundamental UTBK 2 — Seri ${BULAN_IND[m]}`;
-          subjudul = 'Pemantapan literasi bahasa, pemahaman wacana kritis & inferensi';
-          badgeKategori = 'Fundamental';
-          token = `FUNDA-${m + 1}B`;
-          nomorBulanFunda++;
-        } else if (counterSabtu % 2 === 0) {
-          judul = `Siap UTBK #${counterSabtu} — Tantangan Ketahanan 195 Menit`;
-          subjudul = 'Simulasi maraton mengasah reading stamina dan kekebalan distraktor';
-          badgeKategori = 'Siap UTBK';
-          token = `SIAP-${counterSabtu}`;
-        } else {
-          judul = `Ambis UTBK Akbar #${counterSabtu} — Peringkat Nasional Antarcabang`;
-          subjudul = 'Bersaing sehat di Leaderboard Nasional dan evaluasi target prodi impian';
-          badgeKategori = 'Ambis UTBK';
-          token = `AMBIS-${counterSabtu}`;
-        }
-        counterSabtu++;
-      }
-
-      const id = `event_utbk_${tglIso.replace(/-/g, '_')}`;
-
-      events.push({
-        id,
-        judul,
-        subjudul,
-        kategori: 'SMA',
-        jenjang: 'SMA',
-        badgeKategori,
-        tanggalIso: tglIso,
-        hariFormatted: formatTanggalInd(tglIso),
-        jamMulai: '08:00',
-        jamSelesai: '23:59 WIB',
-        durasiMenit: 195,
-        totalSoal: 160,
-        sistemSkor: 'Item Response Theory (IRT Skala 1000)',
-        token,
-        tokenAktif: true,
-        maksimalPelanggaran: 3,
-        wajibKamera: true,
-        daftarSubtes: [
-          { nama: 'Penalaran Umum (PU)', jumlahSoal: 30, durasiMenit: 30 },
-          { nama: 'Pengetahuan & Pemahaman Umum (PPU)', jumlahSoal: 20, durasiMenit: 15 },
-          { nama: 'Pemahaman Bacaan & Menulis (PBM)', jumlahSoal: 20, durasiMenit: 25 },
-          { nama: 'Pengetahuan Kuantitatif (PK)', jumlahSoal: 20, durasiMenit: 20 },
-          { nama: 'Literasi Bahasa Indonesia (LBIN)', jumlahSoal: 30, durasiMenit: 43 },
-          { nama: 'Literasi Bahasa Inggris (LBING)', jumlahSoal: 20, durasiMenit: 20 },
-          { nama: 'Penalaran Matematika (PM)', jumlahSoal: 20, durasiMenit: 43 },
-        ],
-        tentorPendamping: 'Tim Akademik Bimbel Gemilang & Tentor Master UTBK',
-        liveReviewJadwal: `${formatTanggalInd(tglIso)} • 19:30 - 21:00 WIB via Google Meet`,
-      });
-    }
-
-    cur.setDate(cur.getDate() + 1);
-  }
-
-  return events;
+  return masterJadwalPerBulan.map((item) => {
+    const id = `event_utbk_${item.tglIso.replace(/-/g, '_')}`;
+    return {
+      id,
+      judul: item.judul,
+      subjudul: item.subjudul,
+      kategori: 'SMA',
+      jenjang: 'SMA',
+      badgeKategori: item.badgeKategori,
+      tanggalIso: item.tglIso,
+      hariFormatted: formatTanggalInd(item.tglIso),
+      jamMulai: '08:00',
+      jamSelesai: '23:59 WIB',
+      durasiMenit: 195,
+      totalSoal: 160,
+      sistemSkor: 'Item Response Theory (IRT Skala 1000)',
+      token: item.token,
+      tokenAktif: true,
+      maksimalPelanggaran: 3,
+      wajibKamera: true,
+      daftarSubtes: [
+        { nama: 'Penalaran Umum (PU)', jumlahSoal: 30, durasiMenit: 30 },
+        { nama: 'Pengetahuan & Pemahaman Umum (PPU)', jumlahSoal: 20, durasiMenit: 15 },
+        { nama: 'Pemahaman Bacaan & Menulis (PBM)', jumlahSoal: 20, durasiMenit: 25 },
+        { nama: 'Pengetahuan Kuantitatif (PK)', jumlahSoal: 20, durasiMenit: 20 },
+        { nama: 'Literasi Bahasa Indonesia (LBIN)', jumlahSoal: 30, durasiMenit: 43 },
+        { nama: 'Literasi Bahasa Inggris (LBING)', jumlahSoal: 20, durasiMenit: 20 },
+        { nama: 'Penalaran Matematika (PM)', jumlahSoal: 20, durasiMenit: 43 },
+      ],
+      tentorPendamping: 'Tim Akademik Bimbel Gemilang & Tentor Master UTBK',
+      liveReviewJadwal: `${formatTanggalInd(item.tglIso)} • 19:30 - 21:00 WIB via Google Meet`,
+    };
+  });
 }
 
 export const DAFTAR_EVENT_TRYOUT_SMA = susunEventRutinSma();

@@ -25,9 +25,18 @@ import {
   hitungStatistikModulSiswa,
   getTerakhirDibaca,
 } from '../../../data/ambisModulUtbkData.js';
+import { useProfilSiswa } from '../../../utils/profilSiswa';
+import { deteksiTingkatSiswa } from '../../../utils/tingkatSiswa';
 
 export default function ModulBelajarUtbkPage() {
   const navigate = useNavigate();
+  const profil = useProfilSiswa();
+  const kelasCek = profil.kelas || profil.kelasSekolah || (typeof localStorage !== 'undefined' ? localStorage.getItem('studentGrade') || localStorage.getItem('studentKelas') : '');
+  const jenjangCek = profil.jenjang || (typeof localStorage !== 'undefined' ? localStorage.getItem('studentGrade') : '');
+  const infoTingkat = useMemo(() => {
+    return deteksiTingkatSiswa({ ...profil, kelas: kelasCek, kelasSekolah: kelasCek, jenjang: jenjangCek });
+  }, [profil, kelasCek, jenjangCek]);
+
   const [selectedSubtes, setSelectedSubtes] = useState('ALL');
   const [searchQuery, setSearchQuery] = useState('');
   const [studentId, setStudentId] = useState('');
@@ -68,6 +77,48 @@ export default function ModulBelajarUtbkPage() {
       return matchSubtes && matchSearch;
     });
   }, [selectedSubtes, searchQuery]);
+
+  if (!infoTingkat.isKelas12) {
+    return (
+      <div style={{ maxWidth: 640, margin: '60px auto', padding: '24px 20px', textAlign: 'center', fontFamily: 'system-ui, sans-serif' }}>
+        <div style={{ width: 64, height: 64, borderRadius: 32, background: '#fef3c7', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+          <BookOpen size={30} color="#d97706" />
+        </div>
+        <h2 style={{ fontSize: 20, fontWeight: 900, color: '#0f172a', marginBottom: 8 }}>
+          Fitur Modul Belajar UTBK Khusus Kelas 12 SMA
+        </h2>
+        <p style={{ fontSize: 14, color: '#64748b', lineHeight: 1.6, marginBottom: 20 }}>
+          {infoTingkat.isSmaBawah
+            ? 'Mohon maaf, kurikulum 7 subtes UTBK-SNBT 2027 ini disusun khusus untuk siswa Kelas 12 SMA & Alumni yang bersiap menghadapi seleksi PTN tahun ini. Untuk siswa Kelas 10 & 11, silakan fokus eksplorasi Target Kampus & Katalog 173 PTN serta pendalaman materi sekolah.'
+            : 'Mohon maaf, materi modul 7 subtes UTBK-SNBT ini diperuntukkan khusus bagi jenjang Kelas 12 SMA. Silakan akses menu belajar dan latihan harian sesuai jenjangmu di Dashboard.'}
+        </p>
+        <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
+          {infoTingkat.bisaAksesTargetKampus && (
+            <button
+              type="button"
+              onClick={() => navigate('/siswa/target-kampus')}
+              style={{
+                background: '#0d9488', color: '#fff', border: 'none', borderRadius: 10,
+                padding: '10px 20px', fontWeight: 700, fontSize: 13, cursor: 'pointer',
+              }}
+            >
+              Eksplorasi Target Kampus 🎯
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => navigate('/siswa/dashboard')}
+            style={{
+              background: '#f1f5f9', color: '#334155', border: '1px solid #cbd5e1', borderRadius: 10,
+              padding: '10px 20px', fontWeight: 700, fontSize: 13, cursor: 'pointer',
+            }}
+          >
+            Kembali ke Dashboard
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ maxWidth: 1100, margin: '0 auto', padding: '16px 14px 40px', fontFamily: 'system-ui, -apple-system, sans-serif' }}>

@@ -29,11 +29,18 @@ import {
 } from '../../services/targetKampusService';
 import LogoKampus from '../../components/LogoKampus';
 import { useProfilSiswa } from '../../utils/profilSiswa';
+import { deteksiTingkatSiswa } from '../../utils/tingkatSiswa';
 
 export default function KatalogKampusPage() {
   const navigate = useNavigate();
   const profil = useProfilSiswa();
   const studentId = localStorage.getItem('studentId') || localStorage.getItem('studentNim') || '';
+
+  const kelasCek = profil.kelas || profil.kelasSekolah || (typeof localStorage !== 'undefined' ? localStorage.getItem('studentGrade') || localStorage.getItem('studentKelas') : '');
+  const jenjangCek = profil.jenjang || (typeof localStorage !== 'undefined' ? localStorage.getItem('studentGrade') : '');
+  const infoTingkat = useMemo(() => {
+    return deteksiTingkatSiswa({ ...profil, kelas: kelasCek, kelasSekolah: kelasCek, jenjang: jenjangCek });
+  }, [profil, kelasCek, jenjangCek]);
 
   const { target: targetSiswa } = useTargetKampusSiswa(studentId);
 
@@ -113,6 +120,32 @@ export default function KatalogKampusPage() {
 
   const p1 = targetSiswa?.pilihan1;
   const p2 = targetSiswa?.pilihan2;
+
+  if (!infoTingkat.bisaAksesTargetKampus) {
+    return (
+      <div style={{ maxWidth: 640, margin: '60px auto', padding: '24px 20px', textAlign: 'center', fontFamily: 'system-ui, sans-serif' }}>
+        <div style={{ width: 64, height: 64, borderRadius: 32, background: '#f0fdfa', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+          <Building2 size={30} color="#0d9488" />
+        </div>
+        <h2 style={{ fontSize: 20, fontWeight: 900, color: '#0f172a', marginBottom: 8 }}>
+          Fitur Katalog PTN Khusus Jenjang SMA
+        </h2>
+        <p style={{ fontSize: 14, color: '#64748b', lineHeight: 1.6, marginBottom: 20 }}>
+          Katalog 173 Perguruan Tinggi Negeri dan 4.594 Program Studi Nasional diperuntukkan bagi jenjang SMA (Kelas 10, 11, dan 12) dalam persiapan seleksi perguruan tinggi negeri. Untuk jenjang kamu, silakan fokus pada pembelajaran dan latihan di Dashboard.
+        </p>
+        <button
+          type="button"
+          onClick={() => navigate('/siswa/dashboard')}
+          style={{
+            background: '#0d9488', color: '#fff', border: 'none', borderRadius: 10,
+            padding: '10px 20px', fontWeight: 700, fontSize: 13, cursor: 'pointer',
+          }}
+        >
+          Kembali ke Dashboard
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div style={st.wrap}>

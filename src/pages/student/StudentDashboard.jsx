@@ -16,6 +16,7 @@ import PusatAmbisGemilang from '../../components/dashboard/PusatAmbisGemilang';
 import StudentDigitalCard from '../../components/StudentDigitalCard';
 import MaskotAstronot from '../../components/MaskotAstronot';
 import { deteksiJenjangUjianAkhir } from '../../utils/jalurUjianAiConfig';
+import { deteksiTingkatSiswa } from '../../utils/tingkatSiswa';
 import {
   BookOpen, Calendar, ClipboardList, X, Camera, User, MapPin,
   Trophy, ArrowRight, AlertCircle, Award, Bell, Download,
@@ -321,6 +322,12 @@ const StudentDashboard = () => {
 
   const isMobile = windowWidth <= 768;
   const greeting = getGreeting();
+
+  const infoTingkatSiswa = useMemo(() => {
+    const kJenjang = studentProfile?.kelas || studentProfile?.kelasSekolah || studentKelas || (typeof localStorage !== 'undefined' ? localStorage.getItem('studentGrade') || localStorage.getItem('studentKelas') : '');
+    const jJenjang = studentProfile?.jenjang || (typeof localStorage !== 'undefined' ? localStorage.getItem('studentGrade') : '');
+    return deteksiTingkatSiswa({ ...studentProfile, kelas: kJenjang, kelasSekolah: kJenjang, jenjang: jJenjang });
+  }, [studentProfile, studentKelas]);
 
   useEffect(() => {
     const storedId = localStorage.getItem('studentId');
@@ -915,12 +922,14 @@ const StudentDashboard = () => {
           const kJenjang = studentProfile?.kelas || studentProfile?.kelasSekolah || studentKelas || (typeof localStorage !== 'undefined' ? localStorage.getItem('studentGrade') || localStorage.getItem('studentKelas') : '');
           const jJenjang = studentProfile?.jenjang || (typeof localStorage !== 'undefined' ? localStorage.getItem('studentGrade') : '');
           const cekAi = deteksiJenjangUjianAkhir({ ...studentProfile, kelas: kJenjang, jenjang: jJenjang });
+          const infoTingkat = deteksiTingkatSiswa({ ...studentProfile, kelas: kJenjang, kelasSekolah: kJenjang, jenjang: jJenjang });
 
           const menuBaru = [
             ...(cekAi ? [{ key: 'roadmap', label: 'Roadmap', emoji: '🗺️', warna: '#ccfbf1', warnaTeks: '#0f766e', segeraHadir: false }] : []),
             { key: 'latihan', label: 'Latihan Harian', emoji: '📝', warna: '#ecfeff', warnaTeks: '#155e75', segeraHadir: false },
             { key: 'tryout', label: 'TryOut Terjadwal', emoji: '📅', warna: '#fef3c7', warnaTeks: '#92400e', segeraHadir: false },
-            { key: 'modul', label: 'Modul Belajar UTBK', emoji: '📚', warna: '#ccfbf1', warnaTeks: '#0f766e', segeraHadir: false },
+            // 📚 Modul Belajar UTBK: HANYA untuk kelas 12 SMA (Paten)
+            ...(infoTingkat.isKelas12 ? [{ key: 'modul', label: 'Modul Belajar UTBK', emoji: '📚', warna: '#ccfbf1', warnaTeks: '#0f766e', segeraHadir: false }] : []),
             { key: 'progres', label: 'Progres Saya', emoji: '📊', warna: '#dcfce7', warnaTeks: '#166534', segeraHadir: true },
             { key: 'leaderboard', label: 'Leaderboard', emoji: '🏆', warna: '#fce7f3', warnaTeks: '#9d174d', segeraHadir: false },
             { key: 'kehadiran', label: 'Kehadiran', emoji: '🗓️', warna: '#dbeafe', warnaTeks: '#1e40af', segeraHadir: false },
@@ -1634,9 +1643,11 @@ const StudentDashboard = () => {
               <div style={{ fontSize: 11, color: '#64748b' }}>{studentProfile?.kelasSekolah || studentKelas || '-'} • {studentProfile?.kategori || studentProgram || 'Reguler'}</div>
               {studentNim && <div style={{ fontSize: 9, color: '#94a3b8', fontFamily: 'monospace' }}>ID: {studentNim}</div>}
             </div>
-            <button onClick={() => navigate('/siswa/modul')} style={{ padding: '9px 16px', background: '#0d9488', color: 'white', border: 'none', borderRadius: 12, fontWeight: 700, fontSize: 11, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5 }}>
-              <BookOpen size={14} /> Modul Belajar
-            </button>
+            {infoTingkatSiswa.isKelas12 && (
+              <button onClick={() => navigate('/siswa/modul')} style={{ padding: '9px 16px', background: '#0d9488', color: 'white', border: 'none', borderRadius: 12, fontWeight: 700, fontSize: 11, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5 }}>
+                <BookOpen size={14} /> Modul Belajar UTBK
+              </button>
+            )}
           </div>
         </div>
 
