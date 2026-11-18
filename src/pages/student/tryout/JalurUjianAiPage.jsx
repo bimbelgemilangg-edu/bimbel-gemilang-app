@@ -44,6 +44,9 @@ export default function JalurUjianAiPage() {
   const studentId = typeof localStorage !== 'undefined'
     ? localStorage.getItem('studentId') || localStorage.getItem('studentNim') || ''
     : '';
+  const studentDocId = typeof localStorage !== 'undefined'
+    ? localStorage.getItem('studentDocId') || ''
+    : '';
 
   // Deteksi jenjang ujian akhir siswa (Kelas 6 SD, 9 SMP, 12 SMA/UTBK)
   const targetJenjang = useMemo(() => {
@@ -60,14 +63,27 @@ export default function JalurUjianAiPage() {
   const [sedangMenyiapkan, setSedangMenyiapkan] = useState(false);
   const [pesanError, setPesanError] = useState('');
 
-  // 1. Tarik paket otomatis Firestore & sesi siswa
+  // 1. Tarik paket otomatis Firestore & sesi KHUSUS siswa yang aktif login
   useEffect(() => {
     let aktif = true;
     async function muatData() {
+      if (!studentId && !studentDocId) {
+        setSesiList([]);
+        setLoading(false);
+        return;
+      }
       try {
-        const [snapPaket, snapSesi] = await Promise.all([
+        const querySesi1 = studentId
+          ? getDocs(query(collection(db, 'tryout_sesi'), where('studentId', '==', studentId)))
+          : Promise.resolve({ docs: [] });
+        const querySesi2 = (studentDocId && studentDocId !== studentId)
+          ? getDocs(query(collection(db, 'tryout_sesi'), where('studentId', '==', studentDocId)))
+          : Promise.resolve({ docs: [] });
+
+        const [snapPaket, snapSesi1, snapSesi2] = await Promise.all([
           getDocs(query(collection(db, 'tryout_paket'), where('status', '==', 'aktif'))),
-          studentId ? getDocs(query(collection(db, 'tryout_sesi'), where('studentId', '==', studentId))) : { docs: [] },
+          querySesi1,
+          querySesi2,
         ]);
 
         if (!aktif) return;
@@ -87,8 +103,13 @@ export default function JalurUjianAiPage() {
           return ta - tb;
         });
 
+        // Gabungkan dan dedup sesi khusus siswa yang login aktif (mencegah data antar siswa tercampur)
+        const mapSesi = new Map();
+        (snapSesi1.docs || []).forEach((d) => mapSesi.set(d.id, { id: d.id, ...d.data() }));
+        (snapSesi2.docs || []).forEach((d) => mapSesi.set(d.id, { id: d.id, ...d.data() }));
+
         setPaketOtomatisDb(paketAi);
-        setSesiList(snapSesi.docs.map((d) => ({ id: d.id, ...d.data() })));
+        setSesiList(Array.from(mapSesi.values()));
       } catch (err) {
         console.error('Gagal memuat paket jalur AI:', err);
       } finally {
@@ -99,7 +120,7 @@ export default function JalurUjianAiPage() {
     return () => {
       aktif = false;
     };
-  }, [studentId, profil]);
+  }, [studentId, studentDocId, profil]);
 
   // 2. Susun unit tahapan berdasarkan kurikulum pola soal resmi micro-learning (SD, SMP, UTBK SMA)
   const daftarUnit = useMemo(() => {
@@ -145,73 +166,113 @@ export default function JalurUjianAiPage() {
     };
   }, [keadaanTarget]);
 
-  // 5. Analisis Perilaku & Kognitif oleh Asisten Belajar Gemilang (Bukan Sekadar "Butuh Drill")
+  // 5. Analisis Perilaku & Kognitif oleh Asisten Belajar Gemilang (HANYA sesi Roadmap siswa yang aktif)
   const analisisBelajar = useMemo(() => {
-    const sesiSelesai = (sesiList || [])
-      .filter((s) => s.status === 'selesai')
+    // Kumpulan ID unit sah milik Roadmap ini
+    const validRoadmapIds = new Set();
+    daftarUnit.forEach((u) => {
+      if (u.id) validRoadmapIds.add(u.id);
+      if (u.paketIdAsli) validRoadmapIds.add(u.paketIdAsli);
+      if (u.unitId) validRoadmapIds.add(u.unitId);
+    });
+
+    // Saring sesi yang HANYA milik siswa yang login DAN KHUSUS paket/unit di Roadmap ini
+    const sesiRoadmapSelesai = (sesiList || [])
+      .filter((s) => {
+        if (s.status !== 'selesai') return false;
+        // Pagar isolasi siswa ketat
+        const cocokSiswa = s.studentId === studentId || (studentDocId && s.studentId === studentDocId);
+        if (!cocokSiswa) return false;
+        // Pagar isolasi unit roadmap (tidak boleh mencampur aduk try out reguler atau latihan luar)
+        const cocokRoadmap = validRoadmapIds.has(s.paketId)
+          || validRoadmapIds.has(s.tryoutId)
+          || validRoadmapIds.has(s.unitId)
+          || Boolean(s.jalurUjianAi && s.unitNomor);
+        return Boolean(cocokRoadmap);
+      })
       .sort((a, b) => {
         const ta = a.waktuSelesai?.toMillis ? a.waktuSelesai.toMillis() : (a.waktuSelesaiMs || 0);
         const tb = b.waktuSelesai?.toMillis ? b.waktuSelesai.toMillis() : (b.waktuSelesaiMs || 0);
         return ta - tb;
       });
 
-    const totalSesi = sesiSelesai.length;
-    if (totalSesi === 0) {
+    const totalSesi = sesiRoadmapSelesai.length;
+
+    // 🔒 JIKA BELUM ADA UNIT ROADMAP YANG SELESAI (Misal Siswa Baru / Belum Mengerjakan)
+    if (totalSesi === 0 || selesaiCount === 0) {
+      const namaPanggilan = profil.nama ? profil.nama.split(' ')[0] : 'Sahabat Gemilang';
       return {
         sudahAdaData: false,
         skorTerakhir: null,
         skorRata: null,
         tempoDetik: null,
-        kategoriTempo: 'Misi Baru Dimulai',
-        evaluasiWaktu: 'Selesaikan misi Tahap 1 untuk merekam ritme pengerjaan dan efisiensi manajemen waktumu.',
-        evaluasiWacana: 'Asisten Belajar akan membaca daya tahanmu dalam membedah wacana panjang dan kekebalan terhadap distraktor.',
-        evaluasiHitung: 'Sistem akan mendeteksi apakah kekeliruan berasal dari rumus atau blunder hitungan di langkah akhir.',
-        pesanTanggungJawab: 'Setiap langkah di roadmap ini adalah sarana evaluasi mandiri menuju target kelulusan impianmu.',
+        kategoriTempo: 'Misi Belum Dimulai',
+        evaluasiWaktu: `Halo ${namaPanggilan}! Ritme pengerjaan dan efisiensi waktumu per butir soal akan otomatis dianalisis setelah kamu menyelesaikan simulasi Unit 1.`,
+        evaluasiWacana: 'Asisten Belajar Gemilang akan menganalisis daya tahan membacamu dalam membedah wacana panjang dan kekebalan terhadap distraktor setelah kamu menuntaskan Unit 1.',
+        evaluasiHitung: 'Ketelitian rumus dan pemodelan aljabarmu akan terpetakan secara presisi setelah kamu mengumpulkan jawaban simulasi pertama.',
+        pesanTanggungJawab: 'Setiap siswa memiliki potensi dan kurva belajar yang unik. Mulai dari Unit 1 (12 soal • 20 menit) untuk memetakan kekuatan belajarmu!',
         sesiSelesai: [],
       };
     }
 
-    const sesiTerakhir = sesiSelesai[sesiSelesai.length - 1];
+    const sesiTerakhir = sesiRoadmapSelesai[sesiRoadmapSelesai.length - 1];
     const skorTerakhir = Math.round(Number(sesiTerakhir.totalSkorPersen) || 0);
-    const skorRata = Math.round(sesiSelesai.reduce((acc, s) => acc + (Number(s.totalSkorPersen) || 0), 0) / totalSesi);
+    const skorRata = Math.round(sesiRoadmapSelesai.reduce((acc, s) => acc + (Number(s.totalSkorPersen) || 0), 0) / totalSesi);
 
-    // Hitung rata-rata detik per butir soal
-    const tempoArr = sesiSelesai.map((s) => {
+    // Hitung rata-rata detik per butir soal dari sesi Roadmap siswa ini
+    const tempoArr = sesiRoadmapSelesai.map((s) => {
       const start = s.waktuMulaiMs || (s.createdAt?.toMillis ? s.createdAt.toMillis() : null);
       const end = s.waktuSelesai?.toMillis ? s.waktuSelesai.toMillis() : (s.waktuSelesaiMs || null);
-      const n = s.totalSoal || (s.soalDinilaiIds || []).length || 30;
+      const n = s.totalSoal || (s.soalDinilaiIds || []).length || (s.daftarSoal || []).length || 12;
       if (start && end && end > start && n > 0) {
         return Math.round((end - start) / 1000 / n);
       }
       return null;
     }).filter(Boolean);
 
-    const avgTempo = tempoArr.length ? Math.round(tempoArr.reduce((a, b) => a + b, 0) / tempoArr.length) : 58;
+    const avgTempo = tempoArr.length ? Math.round(tempoArr.reduce((a, b) => a + b, 0) / tempoArr.length) : 60;
+    const namaSiswa = profil.nama ? profil.nama.split(' ')[0] : 'Kamu';
 
+    // Evaluasi Pacing Waktu
     let kategoriTempo = 'Taktis & Terukur';
     let evaluasiWaktu = '';
-    let evaluasiWacana = '';
-    let evaluasiHitung = '';
-    let pesanTanggungJawab = '';
-
     if (avgTempo < 45) {
       kategoriTempo = 'Tempo Cepat (Cenderung Terburu-buru)';
-      evaluasiWaktu = `Kamu menyelesaikan soal dengan tempo rata-rata ${avgTempo} detik/soal (sangat cepat). Daya tangkapmu sangat tangkas, namun tempo yang tergesa-gesa ini meningkatkan risiko blunder membaca instruksi terkecil.`;
-      evaluasiWacana = 'Pada soal literasi wacana panjang, kamu cenderung memilih opsi pertama yang terlihat mirip tanpa memverifikasi kata negasi seperti "kecuali" atau "pernyataan yang bertolak belakang".';
-      evaluasiHitung = 'Logika aljabarmu bekerja cepat, namun terjadi kekurangtelitian pada perpindahan tanda (+/-) di baris penyelesaian akhir karena terburu-buru mengunci opsi.';
-      pesanTanggungJawab = 'Kunci lonjakan nilaimu adalah ketenangan. Manfaatkan sisa waktu pengerjaan untuk melakukan pengecekan ulang 5 butir yang paling kamu ragukan.';
+      evaluasiWaktu = `${namaSiswa} menyelesaikan soal dengan tempo rata-rata ${avgTempo} detik/soal (sangat cepat). Daya tangkapmu sangat tangkas, namun tempo yang tergesa-gesa ini meningkatkan risiko blunder membaca instruksi terkecil.`;
     } else if (avgTempo <= 75) {
       kategoriTempo = 'Tempo Taktis & Terukur (Ideal)';
-      evaluasiWaktu = `Ritme pengerjaanmu sangat seimbang dan proporsional di angka ${avgTempo} detik/soal. Kamu mampu membagi waktu secara cerdas antara soal wacana dan penalaran hitungan.`;
-      evaluasiWacana = 'Daya tahan membacamu solid. Kamu mampu mengekstraksi inti paragraf dengan runtut dan tidak mudah terperangkap oleh opsi pengecoh yang memutarbalikkan fakta.';
-      evaluasiHitung = 'Struktur penurunan rumusmu teratur dan rapi. Kesalahan yang terjadi murni pada variasi soal tingkat tinggi (HOTS) yang mengombinasikan multi-konsep.';
-      pesanTanggungJawab = 'Pertahankan ritme disiplin ini. Gap skor menuju target impian sepenuhnya berada dalam kendalimu melalui konsistensi penuntasan unit misi.';
+      evaluasiWaktu = `Ritme pengerjaan ${namaSiswa} sangat seimbang dan proporsional di angka ${avgTempo} detik/soal. Kamu mampu membagi waktu secara cerdas antara soal wacana dan penalaran hitungan.`;
     } else {
       kategoriTempo = 'Tempo Sangat Hati-hati (Perlu Alokasi Taktis)';
-      evaluasiWaktu = `Kamu sangat cermat dengan tempo rata-rata ${avgTempo} detik/soal. Namun kebiasaan terjebak terlalu lama di 2-3 soal rumit di awal membuat energimu terkuras dan terburu-buru di nomor-nomor akhir.`;
-      evaluasiWacana = 'Pemahaman wacanamu mendalam, namun waktu membacamu bisa dihemat 20 detik jika kamu menerapkan teknik membaca pertanyaan terlebih dahulu sebelum membaca teks.';
-      evaluasiHitung = 'Ketelitian hitunganmu sangat tinggi dengan indeks kecerobohan yang minim. Kendalamu murni alokasi durasi yang melebihi batas waktu standar.';
-      pesanTanggungJawab = 'Terapkan strategi "Lewati 90 Detik": jika sebuah soal belum menemukan titik terang dalam 90 detik, tandai dan lanjutkan dulu untuk mengamankan nomor mudah.';
+      evaluasiWaktu = `${namaSiswa} sangat cermat dengan tempo rata-rata ${avgTempo} detik/soal. Namun kebiasaan terjebak terlalu lama di 2-3 soal rumit di awal membuat energimu terkuras dan terburu-buru di nomor-nomor akhir.`;
+    }
+
+    // Evaluasi Wacana & Literasi (Disesuaikan dengan Akurasi Nyata Siswa)
+    let evaluasiWacana = '';
+    if (skorRata >= 85) {
+      evaluasiWacana = `Daya tahan membacamu sangat solid (${skorRata}%). Kamu mampu menemukan ide pokok dan fakta tersirat tanpa mudah terperangkap oleh opsi distraktor kata negasi (seperti "kecuali" atau "pernyataan bertolak belakang").`;
+    } else if (skorRata >= 65) {
+      evaluasiWacana = `Pemahaman wacanamu cukup baik (${skorRata}%), namun kamu perlu menghemat waktu membaca dengan teknik membaca pertanyaan terlebih dahulu sebelum membaca seluruh wacana.`;
+    } else {
+      evaluasiWacana = `Akurasi wacanamu (${skorRata}%) menunjukkan indikasi kelelahan membaca. Kamu cenderung memilih opsi yang terlihat mirip di awal tanpa memverifikasi fakta di paragraf akhir.`;
+    }
+
+    // Evaluasi Ketelitian Matematis (Disesuaikan dengan Akurasi Nyata Siswa)
+    let evaluasiHitung = '';
+    if (skorRata >= 85) {
+      evaluasiHitung = 'Presisi komputasi matematis sangat tinggi dengan indeks kecerobohan yang minim. Struktur penalaran dan penurunan aljabarmu sudah terstandarisasi dengan sangat baik.';
+    } else if (skorRata >= 65) {
+      evaluasiHitung = 'Konsep dasar aljabar dan hitunganmu sudah terbentuk, namun masih terjadi kecerobohan kecil pada perpindahan tanda (+/-) atau penyederhanaan bentuk akhir.';
+    } else {
+      evaluasiHitung = 'Perlu penguatan fundamental pada operasi bilangan rasional dan aljabar dasar. Hindari terburu-buru mengunci jawaban sebelum menguji kembali hasil substitusi.';
+    }
+
+    // Tanggung Jawab Belajar Pribadi
+    let pesanTanggungJawab = '';
+    if (skorRata >= 85) {
+      pesanTanggungJawab = `Hebat, ${namaSiswa}! Capaianmu (${skorRata}%) sudah melampaui standar kelulusan (85.0%). Pertahankan konsistensi ini hingga seluruh unit terselesaikan!`;
+    } else {
+      pesanTanggungJawab = 'Terapkan strategi "Lewati 90 Detik": jika sebuah soal belum menemukan titik terang dalam 90 detik, tandai dan lanjutkan dulu untuk mengamankan nomor mudah. Kunci kelulusan berada di konsistensimu!';
     }
 
     return {
@@ -224,9 +285,9 @@ export default function JalurUjianAiPage() {
       evaluasiWacana,
       evaluasiHitung,
       pesanTanggungJawab,
-      sesiSelesai,
+      sesiSelesai: sesiRoadmapSelesai,
     };
-  }, [sesiList]);
+  }, [daftarUnit, sesiList, selesaiCount, studentId, studentDocId, profil]);
 
   // Handler klik node unit
   const handleKlikUnit = (unit) => {
@@ -778,14 +839,14 @@ export default function JalurUjianAiPage() {
                   </div>
                   <div style={{ marginTop: 8, paddingTop: 8, borderTop: '1px solid #ccfbf1', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span style={{ fontSize: 12, color: '#334155', fontWeight: 600 }}>
-                      Akurasi Rata-rata: <b>{analisisBelajar.skorRata != null ? `${analisisBelajar.skorRata}%` : 'Belum Ada'}</b>
+                      Akurasi Rata-rata: <b>{analisisBelajar.skorRata != null ? `${analisisBelajar.skorRata}%` : 'Belum Ada Data'}</b>
                     </span>
                     <span style={{
                       fontSize: 12,
                       fontWeight: 800,
                       color: analisisBelajar.skorRata != null ? (analisisBelajar.skorRata >= 85 ? '#16a34a' : '#d97706') : '#64748b',
                     }}>
-                      {analisisBelajar.skorRata != null ? (analisisBelajar.skorRata >= 85 ? 'Siap Lulus Unggulan 🚀' : 'Perlu Peningkatan Fokus') : 'Mulai Ujian Tahap 1'}
+                      {analisisBelajar.skorRata != null ? (analisisBelajar.skorRata >= 85 ? 'Siap Lulus Unggulan 🚀' : 'Perlu Peningkatan Fokus') : 'Belum Memulai Misi 🚀'}
                     </span>
                   </div>
                 </div>
@@ -800,7 +861,9 @@ export default function JalurUjianAiPage() {
                   <span style={{ fontSize: 12.5, fontWeight: 800, color: '#0f766e', display: 'flex', alignItems: 'center', gap: 6 }}>
                     <Timer size={16} color="#0d9488" /> 1. Ritme & Efisiensi Waktu (Pacing)
                   </span>
-                  <span style={st.badgeDimensiAi}>{analisisBelajar.kategoriTempo}</span>
+                  <span style={{ ...st.badgeDimensiAi, background: analisisBelajar.sudahAdaData ? '#ccfbf1' : '#f1f5f9', color: analisisBelajar.sudahAdaData ? '#0f766e' : '#64748b' }}>
+                    {analisisBelajar.kategoriTempo}
+                  </span>
                 </div>
                 <p style={st.teksDimensiAi}>{analisisBelajar.evaluasiWaktu}</p>
               </div>
@@ -811,7 +874,9 @@ export default function JalurUjianAiPage() {
                   <span style={{ fontSize: 12.5, fontWeight: 800, color: '#6d28d9', display: 'flex', alignItems: 'center', gap: 6 }}>
                     <Sparkles size={16} color="#8b5cf6" /> 2. Daya Tahan & Keakurasian Wacana
                   </span>
-                  <span style={{ ...st.badgeDimensiAi, background: '#ede9fe', color: '#6d28d9' }}>Reading Stamina</span>
+                  <span style={{ ...st.badgeDimensiAi, background: analisisBelajar.sudahAdaData ? '#ede9fe' : '#f1f5f9', color: analisisBelajar.sudahAdaData ? '#6d28d9' : '#64748b' }}>
+                    {analisisBelajar.sudahAdaData ? 'Reading Stamina' : 'Menunggu Pengerjaan'}
+                  </span>
                 </div>
                 <p style={st.teksDimensiAi}>{analisisBelajar.evaluasiWacana}</p>
               </div>
@@ -822,7 +887,9 @@ export default function JalurUjianAiPage() {
                   <span style={{ fontSize: 12.5, fontWeight: 800, color: '#b45309', display: 'flex', alignItems: 'center', gap: 6 }}>
                     <Award size={16} color="#f59e0b" /> 3. Fokus Ketelitian Matematis
                   </span>
-                  <span style={{ ...st.badgeDimensiAi, background: '#fef3c7', color: '#b45309' }}>Computational Precision</span>
+                  <span style={{ ...st.badgeDimensiAi, background: analisisBelajar.sudahAdaData ? '#fef3c7' : '#f1f5f9', color: analisisBelajar.sudahAdaData ? '#b45309' : '#64748b' }}>
+                    {analisisBelajar.sudahAdaData ? 'Computational Precision' : 'Menunggu Pengerjaan'}
+                  </span>
                 </div>
                 <p style={st.teksDimensiAi}>{analisisBelajar.evaluasiHitung}</p>
               </div>
@@ -840,6 +907,46 @@ export default function JalurUjianAiPage() {
                 </p>
               </div>
             </div>
+
+            {/* BANNER AJAKAN MULAI BILA BELUM ADA PENGERJAAN SAMA SEKALI */}
+            {!analisisBelajar.sudahAdaData && (
+              <div style={{
+                background: 'linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%)',
+                border: '1.5px dashed #86efac',
+                borderRadius: 14,
+                padding: '14px 16px',
+                marginBottom: 16,
+                textAlign: 'center',
+              }}>
+                <div style={{ fontSize: 13.5, fontWeight: 800, color: '#166534', marginBottom: 4 }}>
+                  🌱 Misi Roadmap Belum Dimulai
+                </div>
+                <p style={{ fontSize: 12, color: '#15803d', margin: '0 0 12px', lineHeight: 1.5 }}>
+                  Halo <strong>{profil.nama || 'Siswa'}</strong>! Selesaikan simulasi Unit 1 (12 soal • 20 menit) untuk mengaktifkan radar kemampuan kognitif, mengukur tempo pengerjaan, dan melihat evaluasi personal Asisten Belajar Gemilang.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setModalReviewTerbuka(false);
+                    const u1 = unitList.find((u) => u.unitNomor === 1) || unitList[0];
+                    if (u1) handleKlikUnit(u1);
+                  }}
+                  style={{
+                    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                    color: '#ffffff',
+                    border: 'none',
+                    borderRadius: 10,
+                    padding: '9px 18px',
+                    fontSize: 12.5,
+                    fontWeight: 800,
+                    cursor: 'pointer',
+                    boxShadow: '0 4px 12px rgba(16, 185, 129, 0.35)',
+                  }}
+                >
+                  🚀 Mulai Unit 1 Sekarang (20 Menit)
+                </button>
+              </div>
+            )}
 
             {/* HISTORI CAPAIAN MISI */}
             <div style={{ marginBottom: 16 }}>

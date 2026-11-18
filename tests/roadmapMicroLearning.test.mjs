@@ -85,6 +85,7 @@ test('hitungProgresiJalur: mekanisme gembok bertahap tanpa deadline', () => {
   // Kondisi B: Siswa menyelesaikan Unit 1
   const sesiU1 = {
     id: 'sesi-1',
+    studentId: 'STD-0926070002',
     paketId: units[0].id,
     unitNomor: 1,
     status: 'selesai',
@@ -97,4 +98,43 @@ test('hitungProgresiJalur: mekanisme gembok bertahap tanpa deadline', () => {
   assert.equal(progB.unitList[1].status, 'current', 'Unit 2 harus otomatis terbuka');
   assert.equal(progB.unitList[2].status, 'locked', 'Unit 3 tetap terkunci');
   assert.equal(progB.selesaiCount, 1);
+});
+
+test('isolasi ketat per siswa: sesi siswa lain dan tryout non-roadmap TIDAK BOLEH mencemari progres & analisis', () => {
+  const units = getDaftarUnitJalurUjian('SMP');
+
+  // Skenario 1: Siswa A belum mengerjakan apapun di Roadmap, tapi pernah mengerjakan try out reguler luar
+  const sesiLuarSiswaA = {
+    id: 'sesi-reguler-lama',
+    studentId: 'STD-0926070002',
+    paketId: 'tryout-reguler-mingguan-lama',
+    status: 'selesai',
+    totalSkorPersen: 50,
+    waktuMulaiMs: 1000000,
+    waktuSelesaiMs: 1000000 + (578 * 12 * 1000),
+  };
+
+  // Skenario 2: Siswa B (siswa lain) yang sudah menyelesaikan Unit 1 dengan skor 95
+  const sesiSiswaB = {
+    id: 'sesi-milik-siswa-lain',
+    studentId: 'STD-SISWA-LAIN-999',
+    paketId: units[0].id,
+    unitNomor: 1,
+    status: 'selesai',
+    totalSkorPersen: 95,
+  };
+
+  // Uji progres Siswa A
+  const progSiswaA = hitungProgresiJalur(units, [sesiLuarSiswaA]);
+  assert.equal(progSiswaA.selesaiCount, 0, 'Sesi di luar unit roadmap TIDAK BOLEH membuat unit roadmap selesai');
+  assert.equal(progSiswaA.unitList[0].status, 'current', 'Unit 1 Siswa A tetap current (belum selesai)');
+  assert.equal(progSiswaA.unitList[1].status, 'locked', 'Unit 2 Siswa A tetap locked');
+
+  // Saring sesi khusus siswa A dan unit roadmap
+  const validIds = new Set(units.map((u) => u.id));
+  const sesiRoadmapSiswaA = [sesiLuarSiswaA, sesiSiswaB].filter((s) => {
+    return s.studentId === 'STD-0926070002' && validIds.has(s.paketId) && s.status === 'selesai';
+  });
+
+  assert.equal(sesiRoadmapSiswaA.length, 0, 'Siswa A harus memiliki 0 sesi roadmap yang sah');
 });
