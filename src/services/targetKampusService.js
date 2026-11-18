@@ -21,6 +21,9 @@ export {
   hitungGapTarget,
 };
 
+const STORAGE_KEY = 'gemilang_target_ptn_siswa';
+const TARGET_EVENT = 'gemilang_target_ptn_changed';
+
 /**
  * Mengambil data target kampus siswa dari Firestore / LocalStorage
  */
