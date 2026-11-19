@@ -117,6 +117,82 @@ function VisualDiagramBox({ svgContent, judul = 'Diagram Analisis Visual', capti
   );
 }
 
+function VisualImageBox({ imageUrl, caption, judul = 'Ilustrasi Visual Edukatif 3D' }) {
+  if (!imageUrl) return null;
+  return (
+    <div
+      style={{
+        margin: '14px 0 18px',
+        background: '#ffffff',
+        borderRadius: 16,
+        border: '1.5px solid #cbd5e1',
+        padding: '16px',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.04)',
+        overflow: 'hidden',
+      }}
+    >
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          marginBottom: 12,
+          paddingBottom: 8,
+          borderBottom: '1px solid #f1f5f9',
+          flexWrap: 'wrap',
+          gap: 6,
+        }}
+      >
+        <span
+          style={{
+            fontSize: 11,
+            fontWeight: 800,
+            color: '#0f766e',
+            textTransform: 'uppercase',
+            letterSpacing: '0.05em',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6,
+          }}
+        >
+          ✨ {judul}
+        </span>
+        <span
+          style={{
+            fontSize: 10,
+            background: '#fff7ed',
+            color: '#c2410c',
+            padding: '2px 8px',
+            borderRadius: 6,
+            fontWeight: 800,
+            border: '1px solid #fed7aa',
+          }}
+        >
+          Visual 3D Resmi Bimbel Gemilang
+        </span>
+      </div>
+      <div style={{ width: '100%', display: 'flex', justifyContent: 'center', borderRadius: 12, overflow: 'hidden', background: '#0f172a' }}>
+        <img
+          src={imageUrl}
+          alt={caption || judul}
+          style={{
+            width: '100%',
+            maxHeight: 380,
+            objectFit: 'contain',
+            display: 'block',
+          }}
+          loading="lazy"
+        />
+      </div>
+      {caption && (
+        <div style={{ fontSize: 11.5, color: '#475569', textAlign: 'center', marginTop: 10, fontWeight: 600 }}>
+          {caption}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function ModulReaderUtbkPage() {
   const { subtestKode, babSlug } = useParams();
   const navigate = useNavigate();
@@ -467,12 +543,21 @@ export default function ModulReaderUtbkPage() {
         </div>
       )}
 
-      {/* 📐 DIAGRAM VISUAL & ANALISIS UTAMA (GEMILANG) */}
+      {/* ✨ VISUAL 3D EDUKATIF GEMILANG (HASIL GEMINI BESPOKE) */}
+      {bab.gambar3dUrl && (
+        <VisualImageBox
+          imageUrl={bab.gambar3dUrl}
+          judul={`Visualisasi 3D Konseptual: ${bab.judul}`}
+          caption={bab.gambar3dCaption || `Ilustrasi edukatif 3D konsep ${bab.judul} (Bebas Watermark & Kualitas Tinggi)`}
+        />
+      )}
+
+      {/* 📐 DIAGRAM LANGKAH & INFOGRAFIS PRESISI (GEMILANG) */}
       {bab.diagramSvg && (
         <VisualDiagramBox
           svgContent={bab.diagramSvg}
-          judul={`Diagram Konsep Inti: ${bab.judul}`}
-          caption="Ilustrasi geometri dan infografis resmi Bimbel Gemilang (Bebas Watermark & Resolusi Presisi Tinggi)"
+          judul={`Diagram Langkah & Kaidah Presisi: ${bab.judul}`}
+          caption="Diagram langkah presisi resmi Bimbel Gemilang (Bebas Watermark & Pergeseran Terukur)"
         />
       )}
 

@@ -48,33 +48,14 @@ export function normalisasiTeksMatematika(teks) {
   if (!teks || typeof teks !== 'string') return '';
   let hasil = teks;
 
-  // 0a. Satukan tanda minus/plus yang tercecer tepat sebelum math block:
-  // mis. "- $\frac{3}{5}$" -> "$-\frac{3}{5}$" atau "= - $\frac{5}{3}$" -> "=$-\frac{5}{3}$"
-  hasil = hasil.replace(/([=:\s(\[])\s*([+\-–—])\s*\$(\\frac\{[^{}]+\}\{[^{}]+\}|\d+)\$/g, '$1$$$2$3$');
-
-  // 0b. Rapikan spasi liar tepat setelah/sebelum delimiter dolar math:
-  // mis. "$ -5 $" -> "$-5$", "$ \frac{1}{2} $" -> "$\frac{1}{2}$", "$- 18$" -> "$-18$"
-  hasil = hasil.replace(/\$\s+([^\n$]+?)\s+\$/g, '$$$1$');
-  hasil = hasil.replace(/\$\s+([^\n$]+?)\$/g, '$$$1$');
-  hasil = hasil.replace(/\$([^\n$]+?)\s+\$/g, '$$$1$');
-
-  // 0c. Sembuhkan polinomial/aljabar yang terpotong keluar dari $:
-  // mis. "($15a^{2} - 3b^{2}$ +4 ab)" -> "($15a^{2} - 3b^{2} + 4ab$)"
-  // mis. "($30x^{2}$ +19x +5)" -> "($30x^{2} + 19x + 5$)"
-  // mis. "($2x^{2}$ - x)" -> "($2x^{2} - x$)"
-  // mis. "($28x^{2}$ + 18x- 5)" -> "($28x^{2} + 18x - 5$)"
-  hasil = hasil.replace(/\$([^\$]+)\$\s*([+\-–—]\s*[0-9a-zA-Z\s+\-–—^]+?)(?=\s*(?:\$|\)|<|;|\.|$))/g, (match, inside, tail) => {
-    let cleanTail = tail.trim().replace(/([a-zA-Z0-9])\s*([+\-–—])\s*([a-zA-Z0-9])/g, '$1 $2 $3');
-    cleanTail = cleanTail.replace(/^([+\-–—])\s*(\d+)\s*([a-zA-Z]+)/, '$1 $2$3');
-    return `$${inside.trim()} ${cleanTail}$`;
-  });
-
+  // 1. Amankan seluruh formula matematika resmi ($$...$$, \[...\], \(...\), $...$)
+  // ke dalam placeholder terlindungi agar tidak tersentuh regex teks biasa.
   const mathPlaceholders = [];
   hasil = hasil.replace(/(\$\$[\s\S]*?\$\$|\\\[[\s\S]*?\\\]|\$(?!\s*\$)[^\n$]+?\$|\\\([^\n]*?\\\))/g, (m) => {
     let inner = m;
     const isDolar = inner.startsWith('$') && inner.endsWith('$');
     const isDuaDolar = inner.startsWith('$$') && inner.endsWith('$$');
-    let raw = isDuaDolar ? inner.slice(2, -2) : (isDolar ? inner.slice(1, -1) : inner);
+    let raw = isDuaDolar ? inner.slice(2, -2).trim() : (isDolar ? inner.slice(1, -1).trim() : inner);
 
     // Ganti simbol unicode di dalam rumus LaTeX menjadi perintah KaTeX yang valid
     raw = raw
