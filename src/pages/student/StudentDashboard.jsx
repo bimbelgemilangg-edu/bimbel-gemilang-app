@@ -22,7 +22,7 @@ import {
   Trophy, ArrowRight, AlertCircle, Award, Bell, Download,
   Trash2, FileQuestion, FileText, DollarSign, Sparkles, Inbox,
   Megaphone, RefreshCw, IdCard, Search, CheckCircle2, Bookmark,
-  Lightbulb, MessageCircle, XCircle, Rocket,
+  Lightbulb, MessageCircle, XCircle, Rocket, Layers,
 } from 'lucide-react';
 import {
   daftarBabSilabus,
