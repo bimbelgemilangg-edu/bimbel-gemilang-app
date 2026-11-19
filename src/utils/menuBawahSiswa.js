@@ -51,6 +51,7 @@ export function menuAktifBawah(pathname = '') {
   if (p.startsWith('/siswa/akses-belajar')
     || p.startsWith('/siswa/buku')
     || p.startsWith('/siswa/materi')
+    || p.startsWith('/siswa/elearning')
     || p.startsWith('/siswa/belajar')
     || p.startsWith('/siswa/modul')
     || p.startsWith('/siswa/kuis')) return 'akses';

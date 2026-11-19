@@ -926,6 +926,7 @@ const StudentDashboard = () => {
 
           const menuBaru = [
             ...(cekAi ? [{ key: 'roadmap', label: 'Roadmap', emoji: '🗺️', warna: '#ccfbf1', warnaTeks: '#0f766e', segeraHadir: false }] : []),
+            { key: 'elearning', label: 'E-Learning', emoji: '📖', warna: '#f3e8ff', warnaTeks: '#652D90', segeraHadir: false },
             { key: 'latihan', label: 'Latihan Harian', emoji: '📝', warna: '#ecfeff', warnaTeks: '#155e75', segeraHadir: false },
             { key: 'tryout', label: 'TryOut Terjadwal', emoji: '📅', warna: '#fef3c7', warnaTeks: '#92400e', segeraHadir: false },
             // 📚 Modul Belajar: UTBK untuk kelas 12 SMA, TKA untuk SMP
@@ -1009,6 +1010,8 @@ const StudentDashboard = () => {
                         attendanceRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
                       } else if (m.key === 'roadmap' || m.key === 'jalur-ai') {
                         navigate('/siswa/roadmap');
+                      } else if (m.key === 'elearning') {
+                        navigate('/siswa/elearning');
                       } else if (m.key === 'latihan') {
                         navigate('/siswa/latihan-harian');
                       } else if (m.key === 'tryout') {
@@ -1650,11 +1653,16 @@ const StudentDashboard = () => {
               <div style={{ fontSize: 11, color: '#64748b' }}>{studentProfile?.kelasSekolah || studentKelas || '-'} • {studentProfile?.kategori || studentProgram || 'Reguler'}</div>
               {studentNim && <div style={{ fontSize: 9, color: '#94a3b8', fontFamily: 'monospace' }}>ID: {studentNim}</div>}
             </div>
-            {infoTingkatSiswa.isKelas12 && (
-              <button onClick={() => navigate('/siswa/modul')} style={{ padding: '9px 16px', background: '#0d9488', color: 'white', border: 'none', borderRadius: 12, fontWeight: 700, fontSize: 11, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5 }}>
-                <BookOpen size={14} /> Modul Belajar UTBK
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              <button onClick={() => navigate('/siswa/elearning')} style={{ padding: '9px 16px', background: '#652D90', color: 'white', border: 'none', borderRadius: 12, fontWeight: 700, fontSize: 11, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5 }}>
+                <BookOpen size={14} /> E-Learning Guru
               </button>
-            )}
+              {(infoTingkatSiswa.isKelas12 || infoTingkatSiswa.isSmp) && (
+                <button onClick={() => navigate('/siswa/modul')} style={{ padding: '9px 16px', background: '#0d9488', color: 'white', border: 'none', borderRadius: 12, fontWeight: 700, fontSize: 11, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5 }}>
+                  <Layers size={14} /> {infoTingkatSiswa.isKelas12 ? 'Modul Belajar UTBK' : 'Modul Belajar TKA'}
+                </button>
+              )}
+            </div>
           </div>
         </div>
 

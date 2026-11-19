@@ -1,6 +1,6 @@
 // src/pages/student/StudentElearning.jsx
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router-dom';
 import { db } from '../../firebase';
 import { cocokkanAksesModul } from '../../utils/aksesKontenSiswa';
 import { 
@@ -66,13 +66,25 @@ const hasSubjectAccess = cocokkanAksesModul;
 // ============================================================
 const StudentElearning = () => {
   const location = useLocation();
+  const { modulId } = useParams();
 
   // ===== STATES =====
   const [modules, setModules] = useState([]);
   // v1.5.5: filteredModules kini useMemo (lihat bagian FILTER MODULES) —
   // state + setter lama dihapus.
-  const [selectedModuleId, setSelectedModuleId] = useState(null);
+  const [selectedModuleId, setSelectedModuleId] = useState(() => {
+    const params = new URLSearchParams(location.search);
+    return modulId || params.get('modulId') || params.get('id') || null;
+  });
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const targetId = modulId || params.get('modulId') || params.get('id');
+    if (targetId) {
+      setSelectedModuleId(targetId);
+    }
+  }, [modulId, location.search]);
   // 🔥 BARU: kalau halaman ini dibuka lewat link yang punya
   // ?cari=... (mis. dari kotak "Mau latihan apa hari ini?" di
   // Dashboard), langsung isi kotak pencarian di sini otomatis --

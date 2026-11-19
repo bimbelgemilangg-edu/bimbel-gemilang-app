@@ -87,6 +87,8 @@ const SidebarSiswa = ({ activeMenu, setActiveMenu, isOpen, setIsOpen }) => {
         // 📅 Try Out Terjadwal: Try out resmi dari tentor / admin (konten disaring sesuai jenjang)
         { id: 'tryout', label: 'Try Out Terjadwal', icon: <Calendar size={18} />, path: '/siswa/tryout', color: '#f59e0b', badge: 'Jadwal' },
         { id: 'latihan-harian', label: 'Latihan Harian', icon: <Flame size={18} />, path: '/siswa/latihan-harian', color: '#dc2626' },
+        // 📖 E-Learning: Materi, kuis mandiri, dan tugas interaktif unggahan tentor/guru
+        { id: 'elearning', label: 'E-Learning (Modul & Kuis)', icon: <BookOpen size={18} />, path: '/siswa/elearning', color: '#652D90', badge: 'Guru' },
         // 📚 Modul Belajar: UTBK untuk Kelas 12 SMA, TKA untuk SMP
         ...((infoTingkat.isKelas12 || infoTingkat.isSmp) ? [{
           id: 'modul',
@@ -238,6 +240,7 @@ const SidebarSiswa = ({ activeMenu, setActiveMenu, isOpen, setIsOpen }) => {
               {group.items.map((item) => {
                 const isActive = activeMenu === item.id ||
                   location.pathname === item.path ||
+                  (item.id === 'elearning' && (location.pathname === '/siswa/elearning' || location.pathname.startsWith('/siswa/materi'))) ||
                   (item.id === 'roadmap' && (location.pathname === '/siswa/roadmap' || location.pathname === '/siswa/jalur-ai'));
                 return (
                   <div

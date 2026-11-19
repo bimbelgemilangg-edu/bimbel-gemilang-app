@@ -1050,9 +1050,14 @@ function App() {
         <Route path="/siswa/modul" element={<SiswaPageBelajar fitur="Materi Modul"><ModulBelajarUtbkPage /></SiswaPageBelajar>} />
         <Route path="/siswa/modul/:subtestKode/:babSlug" element={<SiswaFiturBelajar fitur="Materi Modul"><ModulReaderUtbkPage /></SiswaFiturBelajar>} />
 
-        {/* 🔄 REDIRECT PERMANEN FITUR LAMA (Materi Belajar, E-Learning, Buku PDF Gemilang) KE MODUL UTBK BARU */}
-        <Route path="/siswa/materi" element={<Navigate to="/siswa/modul" replace />} />
-        <Route path="/siswa/akses-belajar" element={<Navigate to="/siswa/modul" replace />} />
+        {/* 📖 E-LEARNING GURU (Modul Materi, Tugas, dan Kuis Interaktif Unggahan Tentor) */}
+        <Route path="/siswa/elearning" element={<SiswaPageBelajar fitur="E-Learning"><StudentElearning /></SiswaPageBelajar>} />
+        <Route path="/siswa/materi" element={<SiswaPageBelajar fitur="E-Learning"><StudentElearning /></SiswaPageBelajar>} />
+        <Route path="/siswa/materi/:modulId" element={<SiswaFiturBelajar fitur="E-Learning"><StudentElearning /></SiswaFiturBelajar>} />
+        {/* 📱 20 Okt: hub akses belajar mudah */}
+        <Route path="/siswa/akses-belajar" element={<SiswaPageBelajar fitur="E-Learning"><AksesBelajarPage /></SiswaPageBelajar>} />
+
+        {/* 🔄 REDIRECT PERMANEN FITUR LAMA (Buku Digital / Belajar v2) KE MODUL UTBK / E-LEARNING */}
         <Route path="/siswa/buku-pdf" element={<Navigate to="/siswa/modul" replace />} />
         <Route path="/siswa/buku-pdf/:bukuId" element={<Navigate to="/siswa/modul" replace />} />
         <Route path="/guru/buku-pdf" element={<GuruPage><BukuPdfPage mode="guru" /></GuruPage>} />
