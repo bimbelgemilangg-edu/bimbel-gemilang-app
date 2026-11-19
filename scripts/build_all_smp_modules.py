@@ -1,4 +1,5 @@
 import pypdf
+import fitz
 import re
 import json
 import os
@@ -6,12 +7,14 @@ import os
 BASE_DIR = "/Users/macbook/.gemini/antigravity/scratch/bimbel-gemilang-app"
 PDF_DIR = os.path.join(BASE_DIR, "public/modul-pdf")
 OUT_DIR = os.path.join(BASE_DIR, "src/data/modul-smp")
+ILLUST_DIR = os.path.join(BASE_DIR, "public/modul-assets/illustrations")
 
 os.makedirs(OUT_DIR, exist_ok=True)
 
 CONFIGS = [
     {
         "code": "MTK_SMP",
+        "short": "mtk",
         "nama": "Matematika (Numerasi TKA)",
         "singkatan": "MTK",
         "badgeWarna": "#ea580c",
@@ -90,6 +93,7 @@ CONFIGS = [
     },
     {
         "code": "BIN_SMP",
+        "short": "bin",
         "nama": "Bahasa Indonesia (Literasi TKA)",
         "singkatan": "BIN",
         "badgeWarna": "#0284c7",
@@ -168,6 +172,7 @@ CONFIGS = [
     },
     {
         "code": "IPA_SMP",
+        "short": "ipa",
         "nama": "Ilmu Pengetahuan Alam (IPA CP Fase D)",
         "singkatan": "IPA",
         "badgeWarna": "#059669",
@@ -246,6 +251,7 @@ CONFIGS = [
     },
     {
         "code": "BIG_SMP",
+        "short": "big",
         "nama": "Bahasa Inggris (English CP Fase D)",
         "singkatan": "BIG",
         "badgeWarna": "#7c3aed",
@@ -327,7 +333,23 @@ CONFIGS = [
 def clean_lines(text):
     return [l.strip() for l in text.split("\n") if l.strip() and "@bimbel" not in l and "#Bangga" not in l]
 
-def parse_unit(txt, p_no):
+def find_caption_from_blocks(fitz_page):
+    blocks = fitz_page.get_text("blocks")
+    for b in blocks:
+        t = b[4].strip().replace("\n", " ")
+        if not t or len(t) < 5:
+            continue
+        if "·" in t and ("Bab " in t or "Unit " in t or "@bimbel" in t):
+            continue
+        if any(t.startswith(h) for h in ["Pondasi", "Yuk Bahas", "Jebakan", "Trik Cepat", "Soal:", "Opsi:", "Jawaban:"]):
+            continue
+        if any(t.startswith(k) for k in ["Termometer", "Kiri:", "Kanan:", "Sudut Jarum", "Teorema Pythagoras", "Gambar", "Bagan", "Diagram", "Model", "Analogi"]):
+            return t
+        elif ":" in t and any(w in t.lower() for w in ["contoh", "nyata", "kiri", "kanan", "ketelitian", "tahap", "alat", "bahan", "struktur", "skala"]):
+            return t
+    return ""
+
+def parse_unit(txt, p_no, short_code, fitz_page):
     lines = clean_lines(txt)
     u_title = ""
     u_num = ""
@@ -414,6 +436,18 @@ def parse_unit(txt, p_no):
             "jawaban": jawaban_text,
             "solusi": soal_full
         }
+
+    # Illustration check
+    illust_img = None
+    illust_cap = ""
+    for ext in ["jpeg", "jpg", "png"]:
+        c_path = os.path.join(ILLUST_DIR, f"{short_code}_p{p_no}.{ext}")
+        if os.path.exists(c_path):
+            illust_img = f"/modul-assets/illustrations/{short_code}_p{p_no}.{ext}"
+            illust_cap = find_caption_from_blocks(fitz_page)
+            break
+            
+    slide_img = f"/modul-assets/pages/{short_code}_p{p_no}.png"
             
     return {
         "unitNumber": u_num or f"{p_no}",
@@ -424,7 +458,10 @@ def parse_unit(txt, p_no):
         "jebakanTka": " ".join(jebakan_lines),
         "contohSoal": contoh_soal_obj,
         "trikCepat": " ".join(trik_lines),
-        "pageNumber": p_no
+        "pageNumber": p_no,
+        "illustrationImg": illust_img,
+        "illustrationCaption": illust_cap,
+        "slideImg": slide_img
     }
 
 def parse_exercises(reader, q_pages, key_page, subtest_code, bab_num):
@@ -511,8 +548,10 @@ def parse_exercises(reader, q_pages, key_page, subtest_code, bab_num):
 def run():
     for cfg in CONFIGS:
         pdf_path = os.path.join(PDF_DIR, cfg["pdfFile"])
+        short = cfg["short"]
         print(f"\nProcessing {cfg['code']} from {cfg['pdfFile']}...")
         reader = pypdf.PdfReader(pdf_path)
+        doc = fitz.open(pdf_path)
         
         bab_objects = []
         
@@ -524,7 +563,8 @@ def run():
             units = []
             for p in ch["unitPages"]:
                 txt = reader.pages[p - 1].extract_text()
-                u_obj = parse_unit(txt, p)
+                fitz_p = doc[p - 1]
+                u_obj = parse_unit(txt, p, short, fitz_p)
                 units.append(u_obj)
                 
             # 2. Parse exercises
@@ -532,17 +572,23 @@ def run():
             
             # 3. Cheat sheet if any
             cheat_sheet_text = ""
+            cheat_sheet_img = None
             if "cheatPage" in ch:
                 c_txt = reader.pages[ch["cheatPage"] - 1].extract_text()
                 cheat_sheet_text = "\n".join(clean_lines(c_txt))
+                cheat_sheet_img = f"/modul-assets/cheatsheet/cheatsheet_{short}.png"
                 
             # 4. Tryout if any
             tryout_text = ""
+            tryout_img = None
+            peta_belajar_img = None
             if "tryoutPages" in ch:
                 t_parts = []
                 for tp in ch["tryoutPages"]:
                     t_parts.append(reader.pages[tp - 1].extract_text())
                 tryout_text = "\n\n".join(["\n".join(clean_lines(tp)) for tp in t_parts])
+                tryout_img = f"/modul-assets/tryout/tryout_{short}_p51.png"
+                peta_belajar_img = f"/modul-assets/tryout/tryout_{short}_p52.png"
 
             # 5. Build backward-compatible konsepTeori from units
             konsep_teori = []
@@ -603,7 +649,10 @@ def run():
                 "isUtama": cfg["isUtama"],
                 "units": units,
                 "cheatSheet": cheat_sheet_text,
+                "cheatSheetImg": cheat_sheet_img,
                 "miniTryout": tryout_text,
+                "tryoutImg": tryout_img,
+                "petaBelajarImg": peta_belajar_img,
                 "konsepTeori": konsep_teori,
                 "trikCepat": first_trik,
                 "jebakanUmum": first_jebakan,
@@ -618,6 +667,7 @@ def run():
 // MODUL MASTER 52 HALAMAN RESMI TKA SMP 2027 - BIMBEL GEMILANG
 // Subtes: {cfg['nama']} ({cfg['code']})
 // 4 Bab, {sum(len(b['units']) for b in bab_objects)} Unit Lengkap, Latihan Soal, Kuis Interaktif & PDF Master
+// DILENGKAPI ASET VISUAL: Slide Asli, Ilustrasi Khusus, Cheat Sheet Master & Mini Tryout
 // ==============================================================================
 
 export const {cfg['varName']} = {json.dumps(bab_objects, ensure_ascii=False, indent=2)};

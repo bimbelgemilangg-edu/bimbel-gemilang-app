@@ -28,6 +28,10 @@ import {
   Download,
   Layers,
   FileText,
+  Image as ImageIcon,
+  Maximize2,
+  ExternalLink,
+  X,
 } from 'lucide-react';
 import {
   getSubtestByKode,
@@ -149,6 +153,14 @@ export default function ModulReaderUtbkPage() {
   const [sudahDiperiksa, setSudahDiperiksa] = useState(false);
   const [hasilKuis, setHasilKuis] = useState(null);
   const [isSelesai, setIsSelesai] = useState(false);
+  const [bukaSlideUnit, setBukaSlideUnit] = useState({});
+  const [bukaTeksCheatSheet, setBukaTeksCheatSheet] = useState(false);
+  const [bukaTeksTryout, setBukaTeksTryout] = useState(false);
+  const [modalImage, setModalImage] = useState(null);
+
+  const toggleSlideUnit = (unitKey) => {
+    setBukaSlideUnit((prev) => ({ ...prev, [unitKey]: !prev[unitKey] }));
+  };
 
   // Ambil data bab dan subtes (mendukung SMP dan UTBK SMA)
   const subtest = useMemo(() => {
@@ -592,6 +604,81 @@ export default function ModulReaderUtbkPage() {
                     </div>
                   )}
 
+                  {/* 🖼️ Ilustrasi Konten Unit (Visual Asli Modul Master) */}
+                  {u.illustrationImg && (
+                    <div
+                      style={{
+                        margin: '0 0 16px',
+                        background: '#f8fafc',
+                        border: '1.5px solid #e2e8f0',
+                        borderRadius: 14,
+                        padding: '14px',
+                        textAlign: 'center',
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: 'inline-block',
+                          position: 'relative',
+                          maxWidth: '100%',
+                          borderRadius: 10,
+                          overflow: 'hidden',
+                          background: '#ffffff',
+                          boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+                          cursor: 'zoom-in',
+                        }}
+                        onClick={() =>
+                          setModalImage({
+                            url: u.illustrationImg,
+                            title: u.illustrationCaption || `Ilustrasi Unit ${u.unitNumber} - ${u.judul}`,
+                          })
+                        }
+                      >
+                        <img
+                          src={u.illustrationImg}
+                          alt={u.illustrationCaption || u.judul}
+                          style={{
+                            maxWidth: '100%',
+                            maxHeight: 320,
+                            objectFit: 'contain',
+                            display: 'block',
+                          }}
+                          loading="lazy"
+                        />
+                        <div
+                          style={{
+                            position: 'absolute',
+                            bottom: 6,
+                            right: 6,
+                            background: 'rgba(15, 23, 42, 0.75)',
+                            color: '#ffffff',
+                            padding: '3px 6px',
+                            borderRadius: 6,
+                            fontSize: 10,
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 4,
+                          }}
+                        >
+                          <Maximize2 size={11} /> Perbesar
+                        </div>
+                      </div>
+                      {u.illustrationCaption && (
+                        <div
+                          style={{
+                            marginTop: 8,
+                            fontSize: 11.5,
+                            color: '#475569',
+                            fontWeight: 600,
+                            fontStyle: 'italic',
+                          }}
+                        >
+                          📷 {u.illustrationCaption}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
                   {/* Pondasi Konsep Inti */}
                   {u.pondasi && (
                     <div
@@ -711,52 +798,528 @@ export default function ModulReaderUtbkPage() {
                       </div>
                     </div>
                   )}
+
+                  {/* 📄 LIHAT SLIDE CETAK ASLI MODUL MASTER */}
+                  {u.slideImg && (
+                    <div style={{ marginTop: 14, paddingTop: 12, borderTop: '1px dashed #e2e8f0' }}>
+                      <button
+                        type="button"
+                        onClick={() => toggleSlideUnit(unitKey)}
+                        style={{
+                          background: bukaSlideUnit[unitKey] ? '#f1f5f9' : '#ffffff',
+                          color: '#334155',
+                          border: '1px solid #cbd5e1',
+                          borderRadius: 8,
+                          padding: '7px 12px',
+                          fontSize: 11.5,
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 6,
+                          transition: 'all 0.15s ease',
+                        }}
+                      >
+                        <ImageIcon size={14} style={{ color: '#0d9488' }} />
+                        {bukaSlideUnit[unitKey]
+                          ? 'Tutup Slide Cetak Asli'
+                          : `Lihat Slide Cetak Asli (Hal. ${u.pageNumber || uIdx + 1})`}
+                      </button>
+
+                      {bukaSlideUnit[unitKey] && (
+                        <div
+                          style={{
+                            marginTop: 10,
+                            borderRadius: 14,
+                            overflow: 'hidden',
+                            border: '1.5px solid #cbd5e1',
+                            background: '#0f172a',
+                            boxShadow: '0 4px 14px rgba(0,0,0,0.12)',
+                          }}
+                        >
+                          <img
+                            src={u.slideImg}
+                            alt={`Slide Asli Hal ${u.pageNumber} - ${u.judul}`}
+                            style={{
+                              width: '100%',
+                              height: 'auto',
+                              display: 'block',
+                              cursor: 'zoom-in',
+                            }}
+                            onClick={() =>
+                              setModalImage({
+                                url: u.slideImg,
+                                title: `Slide Modul Asli: Unit ${u.unitNumber} - ${u.judul} (Hal. ${u.pageNumber})`,
+                              })
+                            }
+                            loading="lazy"
+                          />
+                          <div
+                            style={{
+                              padding: '8px 14px',
+                              background: '#1e293b',
+                              color: '#94a3b8',
+                              fontSize: 11,
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'space-between',
+                              flexWrap: 'wrap',
+                              gap: 6,
+                            }}
+                          >
+                            <span>📖 Tampilan Desain Canva Modul Master (Hal. {u.pageNumber})</span>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                              <span
+                                style={{ cursor: 'pointer', color: '#38bdf8', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4 }}
+                                onClick={() =>
+                                  setModalImage({
+                                    url: u.slideImg,
+                                    title: `Slide Modul Asli: Unit ${u.unitNumber} - ${u.judul} (Hal. ${u.pageNumber})`,
+                                  })
+                                }
+                              >
+                                <Maximize2 size={12} /> Perbesar
+                              </span>
+                              <a
+                                href={u.slideImg}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                style={{ color: '#cbd5e1', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 4 }}
+                              >
+                                <ExternalLink size={12} /> Tab Baru ↗
+                              </a>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               );
             })}
           </div>
 
           {/* 📋 CHEAT SHEET MASTER (KHUSUS BAB 3) */}
-          {bab.cheatSheet && (
+          {(bab.cheatSheetImg || bab.cheatSheet) && (
             <div
               style={{
                 marginTop: 24,
                 background: 'linear-gradient(135deg, #fefce8 0%, #fffbeb 100%)',
                 border: '2px solid #fef08a',
-                borderRadius: 18,
-                padding: '20px 22px',
-                boxShadow: '0 4px 12px rgba(234, 179, 8, 0.1)',
+                borderRadius: 20,
+                padding: '22px 24px',
+                boxShadow: '0 4px 16px rgba(234, 179, 8, 0.15)',
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#854d0e', fontWeight: 800, fontSize: 15, marginBottom: 12 }}>
-                <FileText size={18} />
-                Cheat Sheet Master 1 Halaman — Bimbel Gemilang
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  marginBottom: 16,
+                  flexWrap: 'wrap',
+                  gap: 10,
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <div
+                    style={{
+                      background: '#fef08a',
+                      color: '#854d0e',
+                      width: 38,
+                      height: 38,
+                      borderRadius: 10,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontWeight: 900,
+                    }}
+                  >
+                    <FileText size={20} />
+                  </div>
+                  <div>
+                    <h3 style={{ margin: 0, fontSize: 16, fontWeight: 900, color: '#854d0e' }}>
+                      Cheat Sheet Master 1 Halaman — Bimbel Gemilang
+                    </h3>
+                    <p style={{ margin: '2px 0 0', fontSize: 11.5, color: '#a16207', fontWeight: 600 }}>
+                      Infografis Rumus Cepat & Peta Hafalan Satu Pandangan (Hal. 43)
+                    </p>
+                  </div>
+                </div>
+                <span
+                  style={{
+                    background: '#fde047',
+                    color: '#713f12',
+                    padding: '4px 10px',
+                    borderRadius: 8,
+                    fontSize: 11,
+                    fontWeight: 800,
+                  }}
+                >
+                  Poster Visual HD
+                </span>
               </div>
-              <div style={{ fontSize: 12.5, color: '#713f12', lineHeight: 1.65, whiteSpace: 'pre-wrap', fontFamily: 'system-ui, sans-serif' }}>
-                <RenderMath text={bab.cheatSheet} />
-              </div>
+
+              {/* POSTER VISUAL UTAMA */}
+              {bab.cheatSheetImg && (
+                <div
+                  style={{
+                    borderRadius: 14,
+                    overflow: 'hidden',
+                    border: '1.5px solid #fde047',
+                    background: '#ffffff',
+                    boxShadow: '0 4px 14px rgba(234, 179, 8, 0.12)',
+                    marginBottom: 14,
+                  }}
+                >
+                  <img
+                    src={bab.cheatSheetImg}
+                    alt="Cheat Sheet Master Bimbel Gemilang"
+                    style={{
+                      width: '100%',
+                      height: 'auto',
+                      display: 'block',
+                      cursor: 'zoom-in',
+                    }}
+                    onClick={() =>
+                      setModalImage({
+                        url: bab.cheatSheetImg,
+                        title: `Cheat Sheet Master 1 Halaman: ${bab.judul}`,
+                      })
+                    }
+                    loading="lazy"
+                  />
+                  <div
+                    style={{
+                      padding: '8px 14px',
+                      background: '#fef9c3',
+                      borderTop: '1px solid #fef08a',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      flexWrap: 'wrap',
+                      gap: 8,
+                      fontSize: 11,
+                      color: '#854d0e',
+                    }}
+                  >
+                    <span
+                      style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5, fontWeight: 700 }}
+                      onClick={() =>
+                        setModalImage({
+                          url: bab.cheatSheetImg,
+                          title: `Cheat Sheet Master 1 Halaman: ${bab.judul}`,
+                        })
+                      }
+                    >
+                      <Maximize2 size={13} /> Klik gambar untuk memperbesar resolusi tinggi
+                    </span>
+                    <a
+                      href={bab.cheatSheetImg}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        color: '#b45309',
+                        fontWeight: 700,
+                        textDecoration: 'none',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 4,
+                      }}
+                    >
+                      <ExternalLink size={13} /> Buka Gambar Asli ↗
+                    </a>
+                  </div>
+                </div>
+              )}
+
+              {/* TOGGLE RANGKUMAN TEKS FORMULA */}
+              {bab.cheatSheet && (
+                <div>
+                  <button
+                    type="button"
+                    onClick={() => setBukaTeksCheatSheet(!bukaTeksCheatSheet)}
+                    style={{
+                      background: bukaTeksCheatSheet ? '#fef08a' : '#ffffff',
+                      color: '#854d0e',
+                      border: '1.5px solid #fde047',
+                      borderRadius: 10,
+                      padding: '8px 14px',
+                      fontSize: 12,
+                      fontWeight: 800,
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 6,
+                    }}
+                  >
+                    {bukaTeksCheatSheet ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                    {bukaTeksCheatSheet ? 'Tutup Rangkuman Teks Formula' : 'Buka Rangkuman Teks Formula (KaTeX)'}
+                  </button>
+
+                  {bukaTeksCheatSheet && (
+                    <div
+                      style={{
+                        marginTop: 12,
+                        padding: '16px 18px',
+                        background: '#ffffff',
+                        borderRadius: 12,
+                        border: '1px solid #fef08a',
+                        fontSize: 12.5,
+                        color: '#713f12',
+                        lineHeight: 1.65,
+                      }}
+                    >
+                      <RenderMath text={bab.cheatSheet} />
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           )}
 
-          {/* ⏱️ SIMULASI MINI TRYOUT (KHUSUS BAB 4) */}
-          {bab.miniTryout && (
+          {/* ⏱️ SIMULASI MINI TRYOUT & PETA BELAJAR (KHUSUS BAB 4) */}
+          {(bab.tryoutImg || bab.miniTryout) && (
             <div
               style={{
                 marginTop: 24,
                 background: 'linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%)',
                 border: '2px solid #a7f3d0',
-                borderRadius: 18,
-                padding: '20px 22px',
-                boxShadow: '0 4px 12px rgba(16, 185, 129, 0.1)',
+                borderRadius: 20,
+                padding: '22px 24px',
+                boxShadow: '0 4px 16px rgba(16, 185, 129, 0.15)',
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#065f46', fontWeight: 800, fontSize: 15, marginBottom: 12 }}>
-                <Award size={18} />
-                Simulasi Mini Tryout & Peta Belajar Menuju Ujian
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  marginBottom: 16,
+                  flexWrap: 'wrap',
+                  gap: 10,
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <div
+                    style={{
+                      background: '#a7f3d0',
+                      color: '#065f46',
+                      width: 38,
+                      height: 38,
+                      borderRadius: 10,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontWeight: 900,
+                    }}
+                  >
+                    <Award size={20} />
+                  </div>
+                  <div>
+                    <h3 style={{ margin: 0, fontSize: 16, fontWeight: 900, color: '#065f46' }}>
+                      Simulasi Mini Tryout & Peta Belajar Menuju Ujian
+                    </h3>
+                    <p style={{ margin: '2px 0 0', fontSize: 11.5, color: '#047857', fontWeight: 600 }}>
+                      Poster Simulasi Soal (Hal. 51) & Roadmap Belajar H-30 (Hal. 52)
+                    </p>
+                  </div>
+                </div>
+                <span
+                  style={{
+                    background: '#6ee7b7',
+                    color: '#064e3b',
+                    padding: '4px 10px',
+                    borderRadius: 8,
+                    fontSize: 11,
+                    fontWeight: 800,
+                  }}
+                >
+                  Poster Visual HD
+                </span>
               </div>
-              <div style={{ fontSize: 12.5, color: '#064e3b', lineHeight: 1.65, whiteSpace: 'pre-wrap', fontFamily: 'system-ui, sans-serif' }}>
-                <RenderMath text={bab.miniTryout} />
-              </div>
+
+              {/* POSTER MINI TRYOUT & PETA BELAJAR */}
+              {(bab.tryoutImg || bab.petaBelajarImg) && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 14 }}>
+                  {bab.tryoutImg && (
+                    <div
+                      style={{
+                        borderRadius: 14,
+                        overflow: 'hidden',
+                        border: '1.5px solid #a7f3d0',
+                        background: '#ffffff',
+                        boxShadow: '0 4px 14px rgba(16, 185, 129, 0.1)',
+                      }}
+                    >
+                      <div
+                        style={{
+                          padding: '8px 14px',
+                          background: '#d1fae5',
+                          borderBottom: '1px solid #a7f3d0',
+                          fontSize: 12,
+                          fontWeight: 800,
+                          color: '#065f46',
+                        }}
+                      >
+                        📝 Lembar Simulasi Soal Mini Tryout (Hal. 51)
+                      </div>
+                      <img
+                        src={bab.tryoutImg}
+                        alt="Simulasi Soal Mini Tryout"
+                        style={{ width: '100%', height: 'auto', display: 'block', cursor: 'zoom-in' }}
+                        onClick={() =>
+                          setModalImage({
+                            url: bab.tryoutImg,
+                            title: `Simulasi Mini Tryout: ${bab.judul} (Hal. 51)`,
+                          })
+                        }
+                        loading="lazy"
+                      />
+                      <div
+                        style={{
+                          padding: '6px 14px',
+                          background: '#ecfdf5',
+                          fontSize: 11,
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          color: '#047857',
+                        }}
+                      >
+                        <span
+                          style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontWeight: 700 }}
+                          onClick={() =>
+                            setModalImage({
+                              url: bab.tryoutImg,
+                              title: `Simulasi Mini Tryout: ${bab.judul} (Hal. 51)`,
+                            })
+                          }
+                        >
+                          <Maximize2 size={12} /> Klik untuk memperbesar
+                        </span>
+                        <a
+                          href={bab.tryoutImg}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{ color: '#047857', textDecoration: 'none', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4 }}
+                        >
+                          <ExternalLink size={12} /> Buka Gambar Asli ↗
+                        </a>
+                      </div>
+                    </div>
+                  )}
+
+                  {bab.petaBelajarImg && (
+                    <div
+                      style={{
+                        borderRadius: 14,
+                        overflow: 'hidden',
+                        border: '1.5px solid #a7f3d0',
+                        background: '#ffffff',
+                        boxShadow: '0 4px 14px rgba(16, 185, 129, 0.1)',
+                      }}
+                    >
+                      <div
+                        style={{
+                          padding: '8px 14px',
+                          background: '#d1fae5',
+                          borderBottom: '1px solid #a7f3d0',
+                          fontSize: 12,
+                          fontWeight: 800,
+                          color: '#065f46',
+                        }}
+                      >
+                        🗺️ Roadmap Peta Belajar & Strategi Ujian (Hal. 52)
+                      </div>
+                      <img
+                        src={bab.petaBelajarImg}
+                        alt="Peta Belajar Menuju Ujian"
+                        style={{ width: '100%', height: 'auto', display: 'block', cursor: 'zoom-in' }}
+                        onClick={() =>
+                          setModalImage({
+                            url: bab.petaBelajarImg,
+                            title: `Peta Belajar Menuju Ujian: ${bab.judul} (Hal. 52)`,
+                          })
+                        }
+                        loading="lazy"
+                      />
+                      <div
+                        style={{
+                          padding: '6px 14px',
+                          background: '#ecfdf5',
+                          fontSize: 11,
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          color: '#047857',
+                        }}
+                      >
+                        <span
+                          style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontWeight: 700 }}
+                          onClick={() =>
+                            setModalImage({
+                              url: bab.petaBelajarImg,
+                              title: `Peta Belajar Menuju Ujian: ${bab.judul} (Hal. 52)`,
+                            })
+                          }
+                        >
+                          <Maximize2 size={12} /> Klik untuk memperbesar
+                        </span>
+                        <a
+                          href={bab.petaBelajarImg}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{ color: '#047857', textDecoration: 'none', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4 }}
+                        >
+                          <ExternalLink size={12} /> Buka Gambar Asli ↗
+                        </a>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* TOGGLE TEKS MINI TRYOUT */}
+              {bab.miniTryout && (
+                <div>
+                  <button
+                    type="button"
+                    onClick={() => setBukaTeksTryout(!bukaTeksTryout)}
+                    style={{
+                      background: bukaTeksTryout ? '#a7f3d0' : '#ffffff',
+                      color: '#065f46',
+                      border: '1.5px solid #6ee7b7',
+                      borderRadius: 10,
+                      padding: '8px 14px',
+                      fontSize: 12,
+                      fontWeight: 800,
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 6,
+                    }}
+                  >
+                    {bukaTeksTryout ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                    {bukaTeksTryout ? 'Tutup Teks Soal & Pembahasan' : 'Buka Teks Soal & Pembahasan (KaTeX)'}
+                  </button>
+
+                  {bukaTeksTryout && (
+                    <div
+                      style={{
+                        marginTop: 12,
+                        padding: '16px 18px',
+                        background: '#ffffff',
+                        borderRadius: 12,
+                        border: '1px solid #a7f3d0',
+                        fontSize: 12.5,
+                        color: '#064e3b',
+                        lineHeight: 1.65,
+                      }}
+                    >
+                      <RenderMath text={bab.miniTryout} />
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -1303,6 +1866,135 @@ export default function ModulReaderUtbkPage() {
           <Flame size={16} /> Buka Roadmap Latihan
         </button>
       </div>
+
+      {/* 🔍 LIGHTBOX MODAL UNTUK PERBESAR GAMBAR & SLIDE RESMI */}
+      {modalImage && (
+        <div
+          onClick={() => setModalImage(null)}
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(15, 23, 42, 0.92)',
+            zIndex: 99999,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '16px',
+            backdropFilter: 'blur(4px)',
+            cursor: 'zoom-out',
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              position: 'relative',
+              maxWidth: '96vw',
+              maxHeight: '94vh',
+              display: 'flex',
+              flexDirection: 'column',
+              background: '#0f172a',
+              borderRadius: 16,
+              overflow: 'hidden',
+              boxShadow: '0 20px 48px rgba(0,0,0,0.6)',
+              border: '1px solid #334155',
+            }}
+          >
+            {/* Modal Header */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '12px 18px',
+                background: '#1e293b',
+                borderBottom: '1px solid #334155',
+                color: '#f8fafc',
+                gap: 12,
+              }}
+            >
+              <span
+                style={{
+                  fontSize: 13,
+                  fontWeight: 700,
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                  maxWidth: '75%',
+                }}
+              >
+                {modalImage.title || 'Pratinjau Visual HD'}
+              </span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <a
+                  href={modalImage.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    color: '#38bdf8',
+                    textDecoration: 'none',
+                    fontSize: 12,
+                    fontWeight: 700,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 4,
+                  }}
+                >
+                  <ExternalLink size={14} /> Tab Baru
+                </a>
+                <button
+                  type="button"
+                  onClick={() => setModalImage(null)}
+                  style={{
+                    background: '#334155',
+                    color: '#f8fafc',
+                    border: 'none',
+                    borderRadius: 8,
+                    width: 28,
+                    height: 28,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                  }}
+                >
+                  <X size={16} />
+                </button>
+              </div>
+            </div>
+
+            {/* Modal Body */}
+            <div
+              style={{
+                flex: 1,
+                overflow: 'auto',
+                padding: '12px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: '#020617',
+              }}
+            >
+              <img
+                src={modalImage.url}
+                alt={modalImage.title || 'Visual'}
+                style={{
+                  maxWidth: '100%',
+                  maxHeight: '80vh',
+                  objectFit: 'contain',
+                  borderRadius: 8,
+                }}
+              />
+            </div>
+            <div style={{ padding: '8px 16px', background: '#1e293b', color: '#94a3b8', fontSize: 11, textAlign: 'center' }}>
+              Klik tombol silang atau area luar untuk menutup
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

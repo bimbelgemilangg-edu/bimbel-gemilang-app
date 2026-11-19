@@ -3,6 +3,7 @@
 // MODUL MASTER 52 HALAMAN RESMI TKA SMP 2027 - BIMBEL GEMILANG
 // Subtes: Bahasa Inggris (English CP Fase D) (BIG_SMP)
 // 4 Bab, 39 Unit Lengkap, Latihan Soal, Kuis Interaktif & PDF Master
+// DILENGKAPI ASET VISUAL: Slide Asli, Ilustrasi Khusus, Cheat Sheet Master & Mini Tryout
 // ==============================================================================
 
 export const BIG_SMP_MODUL = [
@@ -44,7 +45,10 @@ export const BIG_SMP_MODUL = [
           "solusi": "Yuk Bahas · Melengkapi Dialog Apologizing Dialog: Rani: “Oh no, I accidentally spilled water on your notebook. I'm really sorry, Bagas!” Bagas: “____. It's only the cover, I can dry it with tissue.” Pembahasan: Rani meminta maaf (I'm really sorry), dan Bagas menenangkan bahwa tidak masalah. Respons yang tepat: Never mind / That's alright / Don't worry about it. Jawaban: Never mind / That's okay."
         },
         "trikCepat": "",
-        "pageNumber": 4
+        "pageNumber": 4,
+        "illustrationImg": null,
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/big_p4.png"
       },
       {
         "unitNumber": "1.2",
@@ -61,7 +65,10 @@ export const BIG_SMP_MODUL = [
           "solusi": "Yuk Bahas · Memilih Pronoun yang Tepat Soal: “Sinta forgot to bring ____ dictionary, so I lent ____ to ____.” A. she – my – her    B. her – mine – her    C. hers – mine – she    D. her – my – hers Pembahasan: (1) Sebelum kata benda dictionary → Poss. Adjective (her). (2) Berdiri sendiri tanpa kata benda → Poss. Pronoun (mine). (3) Setelah preposisi to → Object (her). Jawaban: B (her – mine – her)."
         },
         "trikCepat": "Trik Cepat · Ada Kata Benda? Pakai Kolom 3! Cek kata tepat setelah titik-titik: kalau ada kata benda (book, bag), pakai my/your/her/their; kalau langsung titik/kata kerja, pakai mine/yours/hers/theirs!",
-        "pageNumber": 5
+        "pageNumber": 5,
+        "illustrationImg": null,
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/big_p5.png"
       },
       {
         "unitNumber": "1.3",
@@ -78,7 +85,10 @@ export const BIG_SMP_MODUL = [
           "solusi": "Yuk Bahas · Preposisi Waktu Lengkap Soal: “The TKA exam will start ____ 07.30 a.m. ____ Monday, ____ March 2027.” Pembahasan: Jam spesifik → at 07.30 a.m.; Nama hari → on Monday; Bulan + tahun tanpa tanggal → in March 2027. Jawaban: at – on – in."
         },
         "trikCepat": "",
-        "pageNumber": 6
+        "pageNumber": 6,
+        "illustrationImg": null,
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/big_p6.png"
       },
       {
         "unitNumber": "1.4",
@@ -95,7 +105,10 @@ export const BIG_SMP_MODUL = [
           "solusi": "Yuk Bahas · Menafsirkan Notice Sekolah Notice: “SWITCH OFF THE LIGHTS AND FANS BEFORE LEAVING THE CLASSROOM.” Soal: What is the purpose of the notice? A. To ask students to buy new fans    B. To remind students to save electricity C. To forbid students from entering the room    D. To inform that the lights are broken Pembahasan: Mematikan lampu & kipas sebelum keluar kelas bertujuan mengingatkan siswa menghemat listrik (save electricity). Jawaban: B (To remind students to save electricity)."
         },
         "trikCepat": "",
-        "pageNumber": 7
+        "pageNumber": 7,
+        "illustrationImg": "/modul-assets/illustrations/big_p7.jpeg",
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/big_p7.png"
       },
       {
         "unitNumber": "1.5",
@@ -112,7 +125,10 @@ export const BIG_SMP_MODUL = [
           "solusi": "Yuk Bahas · Membaca Announcement Sekolah Text: “ANNOUNCEMENT · To all 9th graders: English Speech Audition will be held on Friday, Feb 12, at 2 p.m. in the School Hall. Register with Ms. Maya before Feb 10.” Soal: When is the deadline for registration? Pembahasan: Hati-hati jangan jawab Feb 12 (itu hari audisi!). Kata kunci before Feb 10 menunjukkan batas akhir pendaftaran = February 9 / before February 10. Jawaban: Before February 10 (Feb 12 adalah hari pelaksanaan)."
         },
         "trikCepat": "",
-        "pageNumber": 8
+        "pageNumber": 8,
+        "illustrationImg": "/modul-assets/illustrations/big_p8.jpeg",
+        "illustrationCaption": "Kiri: Greeting Card (Ucapan selamat & doa)  |  Kanan: School Announcement",
+        "slideImg": "/modul-assets/pages/big_p8.png"
       },
       {
         "unitNumber": "1.6",
@@ -129,7 +145,10 @@ export const BIG_SMP_MODUL = [
           "solusi": "Yuk Bahas · Menghitung Nilai Gizi pada Label Label: “Serving size: 1 glass (200 ml) · Servings per pack: 5 · Sugar per serving: 12 g.” Soal: If Rani drinks the whole pack, how much sugar does she consume? Pembahasan: 1 takaran saji = 12 g gula. Karena 1 kemasan berisi 5 servings, maka total gula seluruh kemasan = 5 × 12 g = 60 grams! Jawaban: 60 grams of sugar."
         },
         "trikCepat": "",
-        "pageNumber": 9
+        "pageNumber": 9,
+        "illustrationImg": "/modul-assets/illustrations/big_p9.jpeg",
+        "illustrationCaption": "Kiri: Food/Drink Label (Nutrition Facts, Net Weight, EXP)  |  Kanan: Medicine",
+        "slideImg": "/modul-assets/pages/big_p9.png"
       },
       {
         "unitNumber": "1.7",
@@ -146,7 +165,10 @@ export const BIG_SMP_MODUL = [
           "solusi": "Yuk Bahas · Menolak Ajakan Secara Santun Dialog: Budi: “Would you like to play futsal this afternoon?” Aldi: “____. I have to take my little sister to the dentist.” Pembahasan: Karena Aldi punya janji ke dokter gigi, ia menolak ajakan secara sopan → “I'd love to, but I can't” atau “I'm sorry, I can't”. Jawaban: I'd love to, but I can't."
         },
         "trikCepat": "",
-        "pageNumber": 10
+        "pageNumber": 10,
+        "illustrationImg": null,
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/big_p10.png"
       },
       {
         "unitNumber": "1.8",
@@ -163,7 +185,10 @@ export const BIG_SMP_MODUL = [
           "solusi": "Yuk Bahas · Memilih Modal Sesuai Situasi Soal: “The sky is very dark and cloudy. It ____ rain soon, so you ____ bring an umbrella.” A. must – mustn't    B. might – should    C. can't – may    D. should – can't Pembahasan: Langit mendung → kemungkinan hujan (might), lalu memberi saran baik bawa payung (should). Jawaban: B (might – should)."
         },
         "trikCepat": "",
-        "pageNumber": 11
+        "pageNumber": 11,
+        "illustrationImg": null,
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/big_p11.png"
       },
       {
         "unitNumber": "1.9",
@@ -180,7 +205,10 @@ export const BIG_SMP_MODUL = [
           "solusi": "Yuk Bahas · Soal Tabel Perbandingan Nilai Data: Nilai Matematika: Andi 85, Bima 92, Citra 85. Soal: Based on the data, which statement is TRUE? A. Andi is smarter than Bima.    B. Citra's score is as high as Andi's. C. Bima has the lowest score.    D. Andi is the highest of all. Pembahasan: Andi = 85 dan Citra = 85 (sama persis!) → as high as! Bima tertinggi (the highest). Jawaban: B (Citra's score is as high as Andi's)."
         },
         "trikCepat": "",
-        "pageNumber": 12
+        "pageNumber": 12,
+        "illustrationImg": null,
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/big_p12.png"
       },
       {
         "unitNumber": "1.10",
@@ -197,11 +225,17 @@ export const BIG_SMP_MODUL = [
           "solusi": "Yuk Bahas · Memilih Quantifier yang Tepat Soal: “We don't have ____ milk left in the fridge, and there are only ____ eggs.” A. some – a little    B. any – a few    C. many – a little    D. any – much Pembahasan: (1) Kalimat negatif (don't have) → any. (2) Eggs bisa dihitung (jamak) → sedikit = a few. Jawaban: B (any – a few)."
         },
         "trikCepat": "",
-        "pageNumber": 13
+        "pageNumber": 13,
+        "illustrationImg": null,
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/big_p13.png"
       }
     ],
     "cheatSheet": "",
+    "cheatSheetImg": null,
     "miniTryout": "",
+    "tryoutImg": null,
+    "petaBelajarImg": null,
     "konsepTeori": [
       {
         "subjudul": "Unit 1.1: Greeting, Thanking & Apologizing",
@@ -427,7 +461,10 @@ export const BIG_SMP_MODUL = [
           "solusi": "Yuk Bahas · Menentukan Bentuk Verb yang Benar Soal: “My father usually ____ coffee in the morning, but he ____ drink tea.” A. drink – don't    B. drinks – doesn't    C. drinks – don't    D. drinking – doesn't Pembahasan: My father = tunggal (He) + usually (Simple Present) → (+) pakai drinks, (−) pakai doesn't + V1 (drink). Jawaban: B (drinks – doesn't)."
         },
         "trikCepat": "",
-        "pageNumber": 16
+        "pageNumber": 16,
+        "illustrationImg": null,
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/big_p16.png"
       },
       {
         "unitNumber": "2.2",
@@ -444,7 +481,10 @@ export const BIG_SMP_MODUL = [
           "solusi": "Yuk Bahas · Sinyal “Listen!” & “Right Now” Soal: “Be quiet, please! The baby ____ in the bedroom right now.” A. sleeps    B. slept    C. is sleeping    D. was sleeping Pembahasan: Sinyal Be quiet! dan right now = sedang terjadi saat ini juga. The baby (tunggal) → is sleeping. Jawaban: C (is sleeping)."
         },
         "trikCepat": "",
-        "pageNumber": 17
+        "pageNumber": 17,
+        "illustrationImg": "/modul-assets/illustrations/big_p17.jpeg",
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/big_p17.png"
       },
       {
         "unitNumber": "2.3",
@@ -461,7 +501,10 @@ export const BIG_SMP_MODUL = [
           "solusi": "Yuk Bahas · Kalimat Lampau Positif & Negatif Soal: “Last holiday, we ____ Borobudur Temple and ____ many photos, but we ____ buy souvenirs.” A. visit – take – don't    B. visited – took – didn't C. visited – taked – didn't    D. visiting – took – weren't Pembahasan: Last holiday = lampau → visit (regular: visited), take (irregular: took), negatif sebelum V1 buy → didn't. Jawaban: B (visited – took – didn't)."
         },
         "trikCepat": "",
-        "pageNumber": 18
+        "pageNumber": 18,
+        "illustrationImg": "/modul-assets/illustrations/big_p18.jpeg",
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/big_p18.png"
       },
       {
         "unitNumber": "2.4",
@@ -478,7 +521,10 @@ export const BIG_SMP_MODUL = [
           "solusi": "Yuk Bahas · Soal When vs While Soal: “While the students ____ the experiment, the bell suddenly ____.” A. did – rang    B. were doing – rang    C. were doing – was ringing    D. do – rings Pembahasan: Setelah While → Past Continuous (the students jamak → were doing). Aksi menyela tiba-tiba (suddenly) → Simple Past (rang). Jawaban: B (were doing – rang)."
         },
         "trikCepat": "",
-        "pageNumber": 19
+        "pageNumber": 19,
+        "illustrationImg": null,
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/big_p19.png"
       },
       {
         "unitNumber": "2.5",
@@ -495,7 +541,10 @@ export const BIG_SMP_MODUL = [
           "solusi": "Yuk Bahas · Has + V3 & Since vs For Soal: “Mr. Hasan ____ English at our school ____ ten years.” A. taught – since    B. has taught – for    C. have taught – for    D. has teach – since Pembahasan: Ten years adalah durasi → pakai for. Mr. Hasan (tunggal) → has + V3 (taught). Jawaban: B (has taught – for)."
         },
         "trikCepat": "",
-        "pageNumber": 20
+        "pageNumber": 20,
+        "illustrationImg": null,
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/big_p20.png"
       },
       {
         "unitNumber": "2.6",
@@ -512,7 +561,10 @@ export const BIG_SMP_MODUL = [
           "solusi": "Yuk Bahas · Rencana Terjadwal vs Spontan Dialog: A: “Why did you buy paint and brushes?” B: “Because I ____ my bedroom wall this weekend.” Pembahasan: B sudah membeli cat dan kuas sebelumnya → artinya sudah direncanakan matang! Maka paling tepat pakai am going to paint. Jawaban: am going to paint."
         },
         "trikCepat": "",
-        "pageNumber": 21
+        "pageNumber": 21,
+        "illustrationImg": null,
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/big_p21.png"
       },
       {
         "unitNumber": "2.7",
@@ -529,7 +581,10 @@ export const BIG_SMP_MODUL = [
           "solusi": "Yuk Bahas · Mengubah Aktif ke Pasif (Past) Aktif: “A famous Indonesian artist painted this mural in 2023.” Pasif: Karena painted (V2, lampau) dan this mural (tunggal) → was painted. Jawaban: This mural was painted by a famous Indonesian artist in 2023."
         },
         "trikCepat": "",
-        "pageNumber": 22
+        "pageNumber": 22,
+        "illustrationImg": "/modul-assets/illustrations/big_p22.jpeg",
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/big_p22.png"
       },
       {
         "unitNumber": "2.8",
@@ -546,7 +601,10 @@ export const BIG_SMP_MODUL = [
           "solusi": "Yuk Bahas · Memilih Connector Kelas 9 Soal: “Rina brings an umbrella ____ she won't get wet, ____ the heavy rain.” A. in order to – although    B. so that – because of C. so that – because    D. to – despite Pembahasan: (1) Ada subjek she won't → pakai so that. (2) the heavy rain adalah frasa benda (tanpa verb) → pakai because of. Jawaban: B (so that – because of)."
         },
         "trikCepat": "",
-        "pageNumber": 23
+        "pageNumber": 23,
+        "illustrationImg": null,
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/big_p23.png"
       },
       {
         "unitNumber": "2.9",
@@ -563,7 +621,10 @@ export const BIG_SMP_MODUL = [
           "solusi": "Yuk Bahas · Conditional Type 1 & Question Tag Soal 1: “If Dika ____ early, he ____ catch the morning bus.” → wakes up – will. Soal 2: “They visited Yogyakarta last month, ____?” → Lampau positif (V2) → tag negatif lampau: didn't they? Jawaban: (1) wakes up – will; (2) didn't they?"
         },
         "trikCepat": "",
-        "pageNumber": 24
+        "pageNumber": 24,
+        "illustrationImg": null,
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/big_p24.png"
       },
       {
         "unitNumber": "2.10",
@@ -580,11 +641,17 @@ export const BIG_SMP_MODUL = [
           "solusi": "Yuk Bahas · Menebak Arti Kata Lewat Konteks Kalimat: “Although the mountain trail was very exhausting, we felt proud when we finally reached the summit.” The underlined word is closest in meaning to... A. exciting    B. tiring    C. short    D. peaceful Pembahasan: Kata Although (meskipun) mengontraskan rasa bangga (positif) dengan jalur gunung yang sangat melelahkan (tiring)! Jawaban: B (tiring)."
         },
         "trikCepat": "",
-        "pageNumber": 25
+        "pageNumber": 25,
+        "illustrationImg": null,
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/big_p25.png"
       }
     ],
     "cheatSheet": "",
+    "cheatSheetImg": null,
     "miniTryout": "",
+    "tryoutImg": null,
+    "petaBelajarImg": null,
     "konsepTeori": [
       {
         "subjudul": "Unit 2.1: Simple Present Tense",
@@ -810,7 +877,10 @@ export const BIG_SMP_MODUL = [
           "solusi": "Yuk Bahas · Menemukan Detail Descriptive Text Text: “I have a pet cat named Milo. He has soft orange-and-white fur and bright green eyes. Every afternoon, Milo loves chasing his colorful yarn ball in the living room.” Soal: What is Milo's favorite afternoon activity? Pembahasan: Scan kata afternoon → loves chasing his colorful yarn ball. Jawaban: Chasing his colorful yarn ball."
         },
         "trikCepat": "",
-        "pageNumber": 28
+        "pageNumber": 28,
+        "illustrationImg": "/modul-assets/illustrations/big_p28.jpeg",
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/big_p28.png"
       },
       {
         "unitNumber": "3.2",
@@ -827,7 +897,10 @@ export const BIG_SMP_MODUL = [
           "solusi": "Yuk Bahas · Main Idea Paragraf Deskripsi Text: “Raja Ampat is an archipelago located in Southwest Papua. It is famous for its breathtaking limestone islands and rich marine biodiversity. Visitors can enjoy snorkeling, island-hopping, and watching rare birds of paradise.” Soal: What is the text mainly about? Pembahasan: Fokus seluruh paragraf adalah keindahan dan daya tarik wisata Raja Ampat. Jawaban: The beauty and attractions of Raja Ampat."
         },
         "trikCepat": "",
-        "pageNumber": 29
+        "pageNumber": 29,
+        "illustrationImg": "/modul-assets/illustrations/big_p29.jpeg",
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/big_p29.png"
       },
       {
         "unitNumber": "3.3",
@@ -844,7 +917,10 @@ export const BIG_SMP_MODUL = [
           "solusi": "Yuk Bahas · Menemukan Kesan Penulis Text: “Yesterday our class joined a beach clean-up. First, we collected plastic bottles along the shore. Then, we sorted them into bags. Even though the sun was hot, we felt proud seeing the clean beach.” Soal: How did the students feel after the activity? Pembahasan: Lihat kalimat penutup: we felt proud (bangga). Jawaban: They felt proud."
         },
         "trikCepat": "",
-        "pageNumber": 30
+        "pageNumber": 30,
+        "illustrationImg": null,
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/big_p30.png"
       },
       {
         "unitNumber": "3.4",
@@ -861,7 +937,10 @@ export const BIG_SMP_MODUL = [
           "solusi": "Yuk Bahas · Menyimpulkan Karakter dari Biografi Text: “R.A. Kartini was born in Jepara in 1879. Even though women at that time had limited access to school, she kept reading books and opened a school for girls.” Soal: From the text, we know that R.A. Kartini was a ____ woman. Pembahasan: Tetap belajar & mendirikan sekolah meski banyak hambatan → determined / visionary / inspiring. Jawaban: Determined and inspiring (gigih & menginspirasi)."
         },
         "trikCepat": "",
-        "pageNumber": 31
+        "pageNumber": 31,
+        "illustrationImg": null,
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/big_p31.png"
       },
       {
         "unitNumber": "3.5",
@@ -878,7 +957,10 @@ export const BIG_SMP_MODUL = [
           "solusi": "Yuk Bahas · Memahami Langkah Resep Steps: 1. Chop garlic and shallots. 2. Heat oil and sauté spices until fragrant. 3. Add rice and sweet soy sauce, then stir-fry well. 4. Serve warm with fried egg. Soal: Why should we sauté the spices first? Pembahasan: Cek kalimat langkah 2: until fragrant → to make them smell good / fragrant. Jawaban: To make the spices fragrant (harum)."
         },
         "trikCepat": "",
-        "pageNumber": 32
+        "pageNumber": 32,
+        "illustrationImg": "/modul-assets/illustrations/big_p32.jpeg",
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/big_p32.png"
       },
       {
         "unitNumber": "3.6",
@@ -895,7 +977,10 @@ export const BIG_SMP_MODUL = [
           "solusi": "Yuk Bahas · Manual Blender Aman Text: “Make sure the lid is closed tightly before pressing the ON button. Never put metal spoons inside while the blades are spinning.” Soal: Why must the lid be closed tightly? Pembahasan: Tutup blender harus rapat agar isi buah/air tidak tumpah atau muncrat keluar (to prevent the liquid from spilling out). Jawaban: To prevent the mixture from spilling out."
         },
         "trikCepat": "",
-        "pageNumber": 33
+        "pageNumber": 33,
+        "illustrationImg": null,
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/big_p33.png"
       },
       {
         "unitNumber": "3.7",
@@ -912,7 +997,10 @@ export const BIG_SMP_MODUL = [
           "solusi": "Yuk Bahas · Menemukan Solusi Konflik Fabel Story: “Kancil wanted to cross the river to reach the sweet cucumbers, but hungry crocodiles blocked his way. Kancil cleverly asked them to line up so he could count them for the King's feast, then hopped across their backs!” Soal: How did Kancil solve his problem? Pembahasan: Ia menggunakan kecerdikannya menyuruh buaya berbaris (by tricking the crocodiles into lining up across the river). Jawaban: By using his intelligence to trick the crocodiles into lining up."
         },
         "trikCepat": "",
-        "pageNumber": 34
+        "pageNumber": 34,
+        "illustrationImg": "/modul-assets/illustrations/big_p34.jpeg",
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/big_p34.png"
       },
       {
         "unitNumber": "3.8",
@@ -929,7 +1017,10 @@ export const BIG_SMP_MODUL = [
           "solusi": "Yuk Bahas · Menarik Moral Lesson Ringkasan: Seorang petani punya angsa bertelur emas 1 butir sehari. Karena serakah ingin kaya seketika, ia membelah perut angsa, tapi tak ada emas di dalamnya dan angsanya mati. Soal: What is the moral value of the story? Pembahasan: Keserakahan menghancurkan apa yang sudah kita miliki → Don't be greedy; be grateful for what you have. Jawaban: Greediness can destroy everything we have."
         },
         "trikCepat": "",
-        "pageNumber": 35
+        "pageNumber": 35,
+        "illustrationImg": null,
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/big_p35.png"
       },
       {
         "unitNumber": "3.9",
@@ -946,7 +1037,10 @@ export const BIG_SMP_MODUL = [
           "solusi": "Yuk Bahas · Menggali Fakta Report Text Text: “The Komodo dragon (Varanus komodoensis) is the largest living lizard on Earth. Native to several Indonesian islands, this carnivorous reptile uses its forked tongue to detect prey from kilometers away.” Soal: How does a Komodo dragon detect its prey? Pembahasan: Scan kata detect prey → by using its forked tongue (lidah bercabang). Jawaban: By using its forked tongue."
         },
         "trikCepat": "",
-        "pageNumber": 36
+        "pageNumber": 36,
+        "illustrationImg": "/modul-assets/illustrations/big_p36.jpeg",
+        "illustrationCaption": "Purpose: To describe / present factual information about something in general (as a result of observation). Generic Structure: (1) General Classification (klasifikasi ilmiah & definisi umum) dan (2) Description (habitat, makanan, ciri fisik, perilaku). Tense: Simple Present & Passive Voice!",
+        "slideImg": "/modul-assets/pages/big_p36.png"
       },
       {
         "unitNumber": "3.10",
@@ -963,7 +1057,10 @@ export const BIG_SMP_MODUL = [
           "solusi": "Yuk Bahas · Uji Cepat Membedakan 2 Teks Teks A: “Owls are nocturnal birds that hunt mostly at night. They can rotate their heads up to 270 degrees.” Teks B: “My classroom is clean and spacious. There are thirty desks and a big map of Indonesia on the wall.” Pembahasan: Teks A membahas burung hantu secara umum & ilmiah → Report Text. Teks B membahas kelas milik penulis sendiri → Descriptive Text. Jawaban: Teks A = Report; Teks B = Descriptive."
         },
         "trikCepat": "",
-        "pageNumber": 37
+        "pageNumber": 37,
+        "illustrationImg": null,
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/big_p37.png"
       },
       {
         "unitNumber": "3.11",
@@ -980,7 +1077,10 @@ export const BIG_SMP_MODUL = [
           "solusi": "Yuk Bahas · Pesan Utama Penggalan Lagu Lyrics: “You can count on me like one, two, three / I'll be there / And I know when I need it, I can count on you like four, three, two.” Soal: What is the main theme of the song? Pembahasan: Ungkapan saling mengandalkan (count on me / count on you) menggambarkan true friendship (persahabatan sejati). Jawaban: True friendship and loyalty."
         },
         "trikCepat": "",
-        "pageNumber": 38
+        "pageNumber": 38,
+        "illustrationImg": null,
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/big_p38.png"
       },
       {
         "unitNumber": "3.12",
@@ -997,7 +1097,10 @@ export const BIG_SMP_MODUL = [
           "solusi": "Yuk Bahas · Menemukan Rujukan “Them” Text: “Mangrove forests protect coastal villages from big waves. Many marine animals also use them as safe nurseries for their babies.” Soal: The word “them” refers to... Pembahasan: Them jamak. Substitusi ke kalimat: hewan laut memakai mangrove forests sebagai tempat berlindung bayi-bayinya (bukan big waves!). Jawaban: Mangrove forests."
         },
         "trikCepat": "",
-        "pageNumber": 39
+        "pageNumber": 39,
+        "illustrationImg": null,
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/big_p39.png"
       },
       {
         "unitNumber": "3.13",
@@ -1014,11 +1117,17 @@ export const BIG_SMP_MODUL = [
           "solusi": "Yuk Bahas · Menarik Inferensi Akurat Text: “Last year, SMP Gemilang replaced all single-use plastic cups in the canteen with reusable tumblers. Now, plastic waste at school has dropped by 70%.” Soal: What can we infer from the text? Pembahasan: Penurunan sampah plastik 70% membuktikan program tumbler tersebut berhasil/efektif mengurangi sampah plastik (effective in reducing plastic waste). Jawaban: The reusable tumbler program effectively reduced school plastic waste."
         },
         "trikCepat": "",
-        "pageNumber": 40
+        "pageNumber": 40,
+        "illustrationImg": null,
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/big_p40.png"
       }
     ],
     "cheatSheet": "Cheat Sheet 1 Halaman · 6 Tenses, 5 Genres & Irregular Verbs\nCHEAT SHEET MASTER · 1 Halaman\n6 Essential Tenses + Passive Voice\nCukup pegang rumus & sinyal waktunya, 90% soal grammar aman!\nTense Rumus Utama Time Signal\nSimple Present S + V1 (s/es) | do/does every day, always,\nusually\nPres. Continuous S + am/is/are + V-ing now, right now, Look!\nSimple Past S + V2 | did + V1 yesterday, last...,\n...ago\nPast Continuous S + was/were + V-ing while + V-ing, when +\nV2\nPresent Perfect S + have/has + V3 since, for, already, yet\nFuture will + V1 | be going to +\nV1\ntomorrow, next week\nPassive Voice is/are/was/were + V3 by + pelaku (di-/ter-)\nTop Irregular Verbs (V1–V2–V3): go–went–gone · see–saw–seen · eat–ate–\neaten · take–took–taken · write–wrote–written · buy–bought–bought · bring–\nbrought–brought · give–gave–given · make–made–made · build–built–built.\n5 Core Reading Genres (Sekali Lihat!)\nLangsung bedakan Purpose, Generic Structure & Tense-nya!\nGenre Generic Structure Purpose & Tense\nDescriptive Identification → Description Describe specific · V1\nReport General Class. → Description Facts in general · V1\nRecount Orientation → Events → Reor. Retell real past · V2\nNarrative Orient. → Complication → Resol. Entertain + moral · V2\nProcedure Goal → Materials → Steps How to make/use · V1\nPreposisi & Connector Kilat\nIN (tahun/bulan/kota) · ON (hari/tanggal/jalan) · AT (jam/alamat lengkap).\nBecause/Although + S+V · Because of/Despite + Noun · In order to + V1 ·\nSo that + S+can/will.",
+    "cheatSheetImg": "/modul-assets/cheatsheet/cheatsheet_big.png",
     "miniTryout": "",
+    "tryoutImg": null,
+    "petaBelajarImg": null,
     "konsepTeori": [
       {
         "subjudul": "Unit 3.1: Descriptive Text (People & Pets)",
@@ -1268,7 +1377,10 @@ export const BIG_SMP_MODUL = [
           "solusi": "Yuk Bahas · Membaca Jadwal Kereta Schedule: Train Sri Tanjung (Banyuwangi–Yogyakarta) · Departs: 07.00 a.m. · Arrives: 07.30 p.m. · Ticket: Rp94.000. Soal: How long does the journey take? Pembahasan: 07.00 a.m. ke 07.00 p.m. = 12 hours, ditambah 30 menit → 12 hours and 30 minutes. Jawaban: 12 hours and 30 minutes."
         },
         "trikCepat": "",
-        "pageNumber": 44
+        "pageNumber": 44,
+        "illustrationImg": "/modul-assets/illustrations/big_p44.jpeg",
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/big_p44.png"
       },
       {
         "unitNumber": "4.2",
@@ -1285,7 +1397,10 @@ export const BIG_SMP_MODUL = [
           "solusi": "Yuk Bahas · Menafsirkan Data Survei Sekolah Chart Data (100 Students' Hobbies): Reading 40%, Sports 35%, Music 15%, Drawing 10%. Soal: Which statement matches the chart? A. Drawing is the most popular hobby.    B. Reading is twice as popular as Music. C. More than a third of students love Sports.    D. Half of the students like Reading. Pembahasan: 1/3 = 33,3%. Karena Sports = 35% (> 33,3%), opsi C benar! (Reading 40% ≠ 2×15%). Jawaban: C (More than a third of students love Sports)."
         },
         "trikCepat": "",
-        "pageNumber": 45
+        "pageNumber": 45,
+        "illustrationImg": null,
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/big_p45.png"
       },
       {
         "unitNumber": "4.3",
@@ -1302,7 +1417,10 @@ export const BIG_SMP_MODUL = [
           "solusi": "Yuk Bahas · Menebak Pertanyaan yang Hilang Dialog: Sari: “____?” Deni: “I went to Baluran National Park with my cousins. It was awesome!” Pembahasan: Deni menjawab tempat wisata di masa lampau (went V2) → pertanyaan yang paling tepat: “Where did you go last holiday?” Jawaban: Where did you go last holiday?"
         },
         "trikCepat": "",
-        "pageNumber": 46
+        "pageNumber": 46,
+        "illustrationImg": null,
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/big_p46.png"
       },
       {
         "unitNumber": "4.4",
@@ -1319,7 +1437,10 @@ export const BIG_SMP_MODUL = [
           "solusi": "Yuk Bahas · Menyusun Kalimat Acak (Recount) Kalimat: (1) Then, we took photos near the waterfall. (2) Last Sunday, my family visited a waterfall. (3) Finally, we went home happily. (4) First, we walked through a green forest trail. Pembahasan: Kepala = (2) Last Sunday...; Urutan = (4) First → (1) Then; Ekor = (3) Finally. Jawaban: 2 – 4 – 1 – 3."
         },
         "trikCepat": "",
-        "pageNumber": 47
+        "pageNumber": 47,
+        "illustrationImg": null,
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/big_p47.png"
       },
       {
         "unitNumber": "4.5",
@@ -1336,7 +1457,10 @@ export const BIG_SMP_MODUL = [
           "solusi": "Yuk Bahas · Membandingkan 2 Ekskul Sekolah Text 1 (English Club): Every Wednesday 3 p.m. · Free · Focus: Debate & Storytelling. Text 2 (Robotics Club): Every Wednesday 3 p.m. · Kit fee Rp50.000 · Focus: Coding & Sensors. Soal: What is the similarity between the two clubs? Pembahasan: Keduanya dilaksanakan pada hari dan jam yang sama → Both clubs are held on Wednesday at 3 p.m. Jawaban: Both are held every Wednesday at 3 p.m."
         },
         "trikCepat": "",
-        "pageNumber": 48
+        "pageNumber": 48,
+        "illustrationImg": null,
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/big_p48.png"
       },
       {
         "unitNumber": "4.6",
@@ -1353,11 +1477,17 @@ export const BIG_SMP_MODUL = [
           "solusi": "Yuk Bahas · Menentukan Tujuan Email Email: “Dear Mr. Andi, I apologize for being absent today because I have a high fever. I will catch up on the notes tomorrow. Sincerely, Tiara.” Soal: Why did Tiara send the email? Pembahasan: Tiara memberi tahu guru bahwa ia tidak bisa masuk sekolah karena sakit demam. Jawaban: To inform her teacher that she is absent due to illness."
         },
         "trikCepat": "",
-        "pageNumber": 49
+        "pageNumber": 49,
+        "illustrationImg": null,
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/big_p49.png"
       }
     ],
     "cheatSheet": "",
+    "cheatSheetImg": null,
     "miniTryout": "Simulasi Mini Tryout · Bahasa Inggris SMP 2027 (Lintas 4 Bab)\nSimulasi Mini Tryout · 15 Menit\nSimulasi Tryout Inggris (No. 1–3)\nPasang timer 15 menit! Menguji Functional Text, Tenses & Passive.\nTO 1 · Notice (Bab 1)“CAUTION: SLIPPERY FLOOR”. What should visitors do\nafter reading the sign?\nA. Run faster across the hall    B. Walk carefully so they won't fall\nC. Wash the floor again    D. Sit down on the floor\nTO 2 · Tenses (Bab 2)“While Mira ____ her bike to school, she ____ an old\nfriend.”\nA. rode – was meeting    B. was riding – met\nC. rides – meets    D. is riding – met\nTO 3 · Passive & Conjunction (Bab 2)“Batik ____ around the world ____ its\nunique artistic patterns.”\nA. is known – because of    B. knows – because\nC. is known – because    D. was knowing – despite\nSimulasi Tryout Inggris (No. 4–6)\nMenguji Reading Genres, Reference & PGK Kategori!\nTO 4 · Report Text (Bab 3)“Sea turtles are marine reptiles that live in warm\noceans. They return to the same beaches to lay eggs.” What is the purpose\nof the text & what does “They” refer to?\nA. To entertain – warm oceans    B. To present facts in general – sea turtles\nC. To retell past trip – beaches    D. To show how to swim – eggs\nTO 5 · Comparison (Bab 1)“Raka's English score is 95, Dika's is 88, and Sari's\nis 90.” Based on the data, Raka got ____ score of all.\nA. higher    B. the highest    C. the most high    D. as high as\nTO 6 · PGK Kategori (Bab 1–4)Tentukan TRUE (T) atau FALSE (F):\n(1) “You mustn't litter” means littering is strictly forbidden.\n(2) Narrative Text always uses Simple Present Tense for its story events.\n(3) “I have lived in Banyuwangi since 2020” uses Present Perfect Tense.\n\nKunci Tryout & Peta Belajar Bahasa Inggris SMP 2027\nKunci Tryout & Jadwal Belajar\nKunci & Pembahasan Mini Tryout\nHitung skormu! Tiap soal bernilai ~16,7 poin (maksimal 100).\nPembahasan Cepat TO 1 – TO 6\nTO 1 · B: Slippery floor (lantai licin) → berjalan hati-hati agar tidak jatuh.\nTO 2 · B (was riding – met): While + Past Continuous (aksi panjang),\ndisela Simple Past V2 (met).\nTO 3 · A (is known – because of): Pasif (dikenal = is known) + frasa\nbenda tanpa verb (because of).\nTO 4 · B: Report Text (fakta umum penyu laut); They = Sea turtles.\nTO 5 · B (the highest): Paling tinggi dari 3 orang → Superlative the\nhighest.\nTO 6 · T – F – T: (1) True; (2) False (Narrative pakai Simple Past V2!); (3)\nTrue.\nPeta Belajar 8 Minggu English SMP 2027\nCukup 20 menit/hari, seluruh 39 Unit + 5 Genres tuntas!\nMinggu Target Unit & Aktivitas\nMinggu 1–2 Tuntaskan Bab 1 (Unit 1.1–1.10) + hafalkan 10 vocab/hari\nMinggu 3–4 Tuntaskan Bab 2 (Unit 2.1–2.10) + drill 6 Tenses & Passive\nMinggu 5–6 Tuntaskan Bab 3 (Unit 3.1–3.13) + tempel Cheat Sheet Hal\n43\nMinggu 7 Tuntaskan Bab 4 (Unit 4.1–4.6) + latihan Paired Texts\nMinggu 8 Ulang Simulasi Tryout Hal 51 & biasakan Skimming–\nScanning!\nPesan Mentor Bimbel Gemilang\nBahasa Inggris itu bukan soal menghafal kamus tebal, melainkan kebiasaan\nmembaca pola! Kamu sudah menamatkan 52 Halaman (4 Bab · 39 Unit)\nBahasa Inggris SMP Fase D. Keep practicing, you've got this!",
+    "tryoutImg": "/modul-assets/tryout/tryout_big_p51.png",
+    "petaBelajarImg": "/modul-assets/tryout/tryout_big_p52.png",
     "konsepTeori": [
       {
         "subjudul": "Unit 4.1: Schedules, Tickets & Timetables",

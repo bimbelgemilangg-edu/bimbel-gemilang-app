@@ -3,6 +3,7 @@
 // MODUL MASTER 52 HALAMAN RESMI TKA SMP 2027 - BIMBEL GEMILANG
 // Subtes: Ilmu Pengetahuan Alam (IPA CP Fase D) (IPA_SMP)
 // 4 Bab, 39 Unit Lengkap, Latihan Soal, Kuis Interaktif & PDF Master
+// DILENGKAPI ASET VISUAL: Slide Asli, Ilustrasi Khusus, Cheat Sheet Master & Mini Tryout
 // ==============================================================================
 
 export const IPA_SMP_MODUL = [
@@ -44,7 +45,10 @@ export const IPA_SMP_MODUL = [
           "solusi": "Yuk Bahas · Menentukan Variabel Eksperimen Soal: Dina menanam 3 pot kacang hijau dengan ukuran pot, jenis tanah, dan volume air yang sama. Pot A diletakkan di tempat terang, Pot B di tempat redup, Pot C di lemari gelap. Setelah 7 hari, Dina mengukur tinggi batang tiap pot. Tentukan variabel bebas, terikat, dan kontrolnya! Pembahasan: Yang sengaja dibedakan Dina adalah intensitas cahaya (terang/redup/gelap) → Variabel Bebas. Yang diukur sebagai hasilnya adalah tinggi batang → Variabel Terikat. Yang dijaga tetap sama (pot, tanah, air, jenis biji) → Variabel Kontrol. Jawaban: Bebas = intensitas cahaya; Terikat = tinggi batang; Kontrol = pot, tanah, air."
         },
         "trikCepat": "Trik Cepat · Rumus B-T-K Ingat akronim B-T-K: Bebas = di-Bedakan, Terikat = di-Teliti/diukur hasilnya, Kontrol = di-Kembarang/disamakan!",
-        "pageNumber": 4
+        "pageNumber": 4,
+        "illustrationImg": null,
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/ipa_p4.png"
       },
       {
         "unitNumber": "1.2",
@@ -61,7 +65,10 @@ export const IPA_SMP_MODUL = [
           "solusi": "Yuk Bahas · Membaca Neraca Ohaus & Konversi Soal: Tiga lengan neraca Ohaus menunjukkan beban masing-masing 200 g, 40 g, dan 5,5 g. Berapa massa benda dalam satuan SI (kg)? Pembahasan: Jumlahkan ketiga lengan: 200 + 40 + 5,5 = 245,5 gram. Karena satuan SI massa adalah kilogram (kg), bagi dengan 1.000 → 245,5 / 1.000 = 0,2455 kg. Jawaban: 245,5 gram atau 0,2455 kg."
         },
         "trikCepat": "Trik Cepat · Satuan Jangka vs Mikrometer Jangka Sorong = cm (2 angka di belakang koma, misal 2,36 cm). Mikrometer = mm (2 angka di belakang koma, misal 4,78 mm). Jangan tertukar satuannya!",
-        "pageNumber": 5
+        "pageNumber": 5,
+        "illustrationImg": "/modul-assets/illustrations/ipa_p5.jpeg",
+        "illustrationCaption": "Kiri: Jangka Sorong (ketelitian 0,01 cm · SU + SN)  |  Kanan: Mikrometer",
+        "slideImg": "/modul-assets/pages/ipa_p5.png"
       },
       {
         "unitNumber": "1.3",
@@ -78,7 +85,10 @@ export const IPA_SMP_MODUL = [
           "solusi": "Yuk Bahas · Mengukur Massa Jenis Batu Tak Beraturan Soal: Sebuah batu ditimbang massanya 150 g. Saat dicelupkan ke gelas ukur berisi air 40 mL, permukaan air naik menjadi 90 mL. Berapa massa jenis batu dalam SI (kg/m³)? Pembahasan: Volume batu = selisih permukaan air = 90 - 40 = 50 mL = 50 cm³. Maka ρ = m / V = 150 g / 50 cm³ = 3 g/cm³. Ubah ke SI (kali 1.000) → 3 × 1.000 = 3.000 kg/m³. Jawaban: 3 g/cm³ atau 3.000 kg/m³."
         },
         "trikCepat": "Trik Cepat · 1 mL = 1 cm³ Ingat kesetaraan sakti ini: 1 mL = 1 cm³ dan 1 Liter = 1 dm³. Jadi pembacaan gelas ukur (mL) bisa langsung dipakai buat membagi gram!",
-        "pageNumber": 6
+        "pageNumber": 6,
+        "illustrationImg": "/modul-assets/illustrations/ipa_p6.jpeg",
+        "illustrationCaption": "Kiri: Gelas ukur ukur volume batu (V = V₂ − V₁)  |  Kanan: Susunan partikel",
+        "slideImg": "/modul-assets/pages/ipa_p6.png"
       },
       {
         "unitNumber": "1.4",
@@ -95,7 +105,10 @@ export const IPA_SMP_MODUL = [
           "solusi": "Yuk Bahas · Memilih Metode Pemisahan Tepat Soal (PGK): Di laboratorium, seorang siswa ingin memisahkan: (1) air murni dari campuran air + alkohol, dan (2) zat warna pada tinta hitam. Metode yang paling tepat secara berurutan adalah... Pembahasan: (1) Air (titik didih 100°C) dan alkohol (78°C) berbeda titik didihnya → pakai Destilasi. (2) Memisahkan pigmen warna pada tinta → pakai Kromatografi kertas. Jawaban: (1) Destilasi dan (2) Kromatografi."
         },
         "trikCepat": "",
-        "pageNumber": 7
+        "pageNumber": 7,
+        "illustrationImg": "/modul-assets/illustrations/ipa_p7.jpeg",
+        "illustrationCaption": "Perubahan Fisika tidak menghasilkan zat baru dan bisa kembali (es mencair, kayu jadi meja, gula larut). Perubahan Kimia menghasilkan zat baru, cirinya ada 4: perubahan warna, suhu berubah, timbul gas, atau terbentuk endapan (besi berkarat, nasi basi, kayu dibakar, fermentasi tapai).",
+        "slideImg": "/modul-assets/pages/ipa_p7.png"
       },
       {
         "unitNumber": "1.5",
@@ -112,7 +125,10 @@ export const IPA_SMP_MODUL = [
           "solusi": "Yuk Bahas · Tabel Uji Kertas Lakmus Soal: Data uji 4 larutan: Larutan P (lakmus merah→merah, biru→merah); Q (merah→biru, biru→biru); R (merah→merah, biru→biru); S (merah→merah, biru→merah). Manakah pasangan larutan bersifat Asam dan Netral? Pembahasan: Yang bikin semua lakmus jadi merah adalah Asam (P dan S). Yang bikin semua jadi biru adalah Basa (Q). Yang tidak mengubah warna lakmus adalah Netral (R). Jawaban: Asam = P & S; Netral = R (Basa = Q)."
         },
         "trikCepat": "Trik Cepat · B-B & A-M Hafal 2 huruf saja: Basa → Biru (B-B), Asam → Merah (A-M)! Kalau kedua kertas lakmus warnanya tidak berubah, pasti Netral (Garam/Air).",
-        "pageNumber": 8
+        "pageNumber": 8,
+        "illustrationImg": "/modul-assets/illustrations/ipa_p8.jpeg",
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/ipa_p8.png"
       },
       {
         "unitNumber": "1.6",
@@ -129,7 +145,10 @@ export const IPA_SMP_MODUL = [
           "solusi": "Yuk Bahas · Termometer Tak Berskala (Termometer X) Soal: Termometer X memiliki titik beku -10°X dan titik didih 110°X. Jika air bersuhu 25°C diukur dengan termometer X, berapakah angka yang ditunjukkan? Pembahasan: Rentang termometer X = 110 - (-10) = 120. Pakai perbandingan: (X - (-10)) / 120 = 25 / 100 → (X + 10) / 120 = 1/4 → X + 10 = 30 → X = 20°X. Jawaban: 20°X."
         },
         "trikCepat": "Trik Cepat · Ditanya di Atas, Diketahui di Bawah Untuk konversi C ↔ R ↔ F, selalu taruh rasio yang ditanya di atas dan rasio yang diketahui di bawah. Untuk Kelvin tidak pakai tanda derajat (°), cukup tulis 313 K.",
-        "pageNumber": 9
+        "pageNumber": 9,
+        "illustrationImg": null,
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/ipa_p9.png"
       },
       {
         "unitNumber": "1.7",
@@ -146,7 +165,10 @@ export const IPA_SMP_MODUL = [
           "solusi": "Yuk Bahas · Menghitung Kalor Total Grafik A–B–C–D Soal: Es bermassa 500 g bersuhu -10°C dipanaskan hingga menjadi air bersuhu 20°C. Jika c_es = 2.100 J/kg°C, L = 336.000 J/kg, dan c_air = 4.200 J/kg°C, berapa kalor totalnya? Pembahasan: Ubah massa ke kg: m = 500 g = 0,5 kg. Ada 3 tahap: Q₁ (es -10°→0°): 0,5 × 2.100 × 10 = 10.500 J Q₂ (es melebur): 0,5 × 336.000 = 168.000 J Q₃ (air 0°→20°): 0,5 × 4.200 × 20 = 42.000 J Total = 10.500 + 168.000 + 42.000 = 220.500 J = 220,5 kJ. Jawaban: 220.500 J atau 220,5 kJ."
         },
         "trikCepat": "",
-        "pageNumber": 10
+        "pageNumber": 10,
+        "illustrationImg": null,
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/ipa_p10.png"
       },
       {
         "unitNumber": "1.8",
@@ -163,7 +185,10 @@ export const IPA_SMP_MODUL = [
           "solusi": "Yuk Bahas · Mengapa Baju Hitam Lebih Gerah? Soal: Di siang terik, siswa yang memakai kaus hitam merasa jauh lebih panas dibanding yang memakai kaus putih. Fenomena ini berkaitan dengan perpindahan kalor secara... Pembahasan: Panas matahari sampai ke bumi melewati ruang hampa secara Radiasi. Permukaan berwarna hitam/kusam adalah penyerap sekaligus pemancar kalor radiasi terbaik, sedangkan putih mengilap memantulkannya. Jawaban: Radiasi (warna gelap menyerap kalor radiasi paling besar)."
         },
         "trikCepat": "Trik Cepat · Nama Angin = Asalnya! Ingat aturan geografi-fisika ini: Angin DARAT berarti datang DARI Darat (malam hari). Angin LAUT berarti datang DARI Laut (siang hari)!",
-        "pageNumber": 11
+        "pageNumber": 11,
+        "illustrationImg": "/modul-assets/illustrations/ipa_p11.jpeg",
+        "illustrationCaption": "Kiri: Konduksi (gagang), Konveksi (aliran air), Radiasi (pancaran)  |  Kanan:",
+        "slideImg": "/modul-assets/pages/ipa_p11.png"
       },
       {
         "unitNumber": "1.9",
@@ -180,7 +205,10 @@ export const IPA_SMP_MODUL = [
           "solusi": "Yuk Bahas · Analisis Label Minuman Kemasan Soal: Label minuman mencantumkan: Air, Gula, Asam Sitrat, Natrium Benzoat, Aspartam, Tartrazin CI 19140. Zat manakah yang berfungsi sebagai pengawet dan pemanis buatan? Pembahasan: Natrium benzoat berfungsi sebagai pengawet sintetis agar minuman tidak cepat berjamur, sedangkan Aspartam adalah pemanis buatan (rendah kalori). Tartrazin = pewarna kuning; Asam sitrat = pengatur keasaman. Jawaban: Pengawet = Natrium benzoat; Pemanis buatan = Aspartam."
         },
         "trikCepat": "",
-        "pageNumber": 12
+        "pageNumber": 12,
+        "illustrationImg": null,
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/ipa_p12.png"
       },
       {
         "unitNumber": "1.10",
@@ -197,11 +225,17 @@ export const IPA_SMP_MODUL = [
           "solusi": "Yuk Bahas · Buah Mangga Jatuh Bebas Soal: Buah mangga bermassa 2 kg jatuh dari dahan setinggi 10 m (g = 10 m/s²). Berapakah energi kinetik mangga tepat saat berada pada ketinggian 4 m dari tanah? Pembahasan: Di puncak (h = 10 m): Em = Ep₁ = m·g·h₁ = 2 × 10 × 10 = 200 J. Di ketinggian 4 m: Ep₂ = 2 × 10 × 4 = 80 J. Karena Em kekal, maka Ek₂ = Em − Ep₂ = 200 − 80 = 120 J! Jawaban: 120 Joule."
         },
         "trikCepat": "Trik Cepat · Langsung Pakai Selisih Tinggi! Untuk benda jatuh bebas dari diam, Ek di ketinggian h₂ sama dengan m·g·(h₁ − h₂)! Cek: 2 × 10 × (10 − 4) = 120 J. Selesai dalam 5 detik!",
-        "pageNumber": 13
+        "pageNumber": 13,
+        "illustrationImg": null,
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/ipa_p13.png"
       }
     ],
     "cheatSheet": "",
+    "cheatSheetImg": null,
     "miniTryout": "",
+    "tryoutImg": null,
+    "petaBelajarImg": null,
     "konsepTeori": [
       {
         "subjudul": "Unit 1.1: Metode Ilmiah & Variabel",
@@ -427,7 +461,10 @@ export const IPA_SMP_MODUL = [
           "solusi": "Yuk Bahas · Percepatan & Jarak dari Grafik v–t Soal: Sebuah mobil bergerak dengan kecepatan awal 10 m/s lalu dipercepat beraturan hingga menjadi 22 m/s dalam waktu 4 sekon. Hitung percepatan dan jarak tempuhnya! Pembahasan: Percepatan a = (22 − 10) / 4 = 12 / 4 = 3 m/s². Untuk jarak, pakai trik Luas Trapesium di bawah grafik v–t: s = ½ × (v₀ + v_t) × t = ½ × (10 + 22) × 4 = 16 × 4 = 64 m! Jawaban: a = 3 m/s² dan jarak s = 64 meter."
         },
         "trikCepat": "Trik Cepat · Jarak = Luas Grafik v–t Ketemu grafik v–t? Tak perlu hafal rumus v₀t + ½at²! Cukup hitung luas bangun di bawah garis grafik (persegi panjang / segitiga / trapesium)!",
-        "pageNumber": 16
+        "pageNumber": 16,
+        "illustrationImg": null,
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/ipa_p16.png"
       },
       {
         "unitNumber": "2.2",
@@ -444,7 +481,10 @@ export const IPA_SMP_MODUL = [
           "solusi": "Yuk Bahas · Resultan Gaya & Percepatan Balok Soal: Sebuah balok bermassa 4 kg di lantai licin ditarik ke kanan oleh dua anak dengan gaya 30 N dan 10 N, sementara satu anak menarik ke kiri dengan gaya 16 N. Hitung percepatan balok dan arahnya! Pembahasan: Resultan gaya: ΣF = (30 + 10) − 16 = 40 − 16 = 24 N ke kanan. Pakai Hukum Newton II: a = ΣF / m = 24 / 4 = 6 m/s² ke kanan. Jawaban: 6 m/s² ke arah kanan."
         },
         "trikCepat": "Trik Cepat · 3 Kata Kunci Newton Newton I = kaget/malas (rem mendadak, gas mendadak). Newton II = hitungan F = m·a. Newton III = dorong ke belakang, melaju ke depan (roket, renang, dayung)!",
-        "pageNumber": 17
+        "pageNumber": 17,
+        "illustrationImg": null,
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/ipa_p17.png"
       },
       {
         "unitNumber": "2.3",
@@ -461,7 +501,10 @@ export const IPA_SMP_MODUL = [
           "solusi": "Yuk Bahas · Menghitung Gaya Kuasa Tuas Soal: Sebuah batu seberat 600 N diungkit memakai linggis. Jarak beban ke titik tumpu (Lb) adalah 0,5 m, sedangkan jarak kuasa ke titik tumpu (Lk) adalah 2 m. Berapa gaya minimal untuk mengangkat batu tersebut? Pembahasan: Hitung Keuntungan Mekanis: KM = Lk / Lb = 2 / 0,5 = 4. Maka gaya kuasa F = w / KM = 600 / 4 = 150 N. (Bisa juga langsung: 600 × 0,5 = F × 2 → 300 = 2F → F = 150 N.) Jawaban: KM = 4 dan gaya minimal F = 150 Newton."
         },
         "trikCepat": "Trik Cepat · Tuas = “Tu-Be-Ku” Jenis 1-2-3 cukup ingat urutan yang di tengah: Tu (Tumpu = 1), Be (Beban = 2), Ku (Kuasa = 3). Pada bidang miring, s selalu panjang papan miring, bukan alas datarnya!",
-        "pageNumber": 18
+        "pageNumber": 18,
+        "illustrationImg": "/modul-assets/illustrations/ipa_p18.jpeg",
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/ipa_p18.png"
       },
       {
         "unitNumber": "2.4",
@@ -478,7 +521,10 @@ export const IPA_SMP_MODUL = [
           "solusi": "Yuk Bahas · Dongkrak Hidrolik (Hukum Pascal) Soal: Sebuah dongkrak hidrolik memiliki luas penampang kecil A₁ = 5 cm² dan penampang besar A₂ = 200 cm². Berapa gaya F₁ yang diperlukan untuk mengangkat mobil seberat 8.000 N? Pembahasan: Karena perbandingan A₁/A₂ satuannya sama-sama cm², tak perlu diubah ke m²! F₁ / 5 = 8.000 / 200 → F₁ / 5 = 40 → F₁ = 40 × 5 = 200 N. Jawaban: 200 Newton."
         },
         "trikCepat": "Trik Cepat · Cek Luas Alas Terkecil Kalau soal menampilkan 4 balok bermassa sama dan menanya “mana tekanan terbesar?”, langsung pilih balok yang luas alas bawahnya paling kecil!",
-        "pageNumber": 19
+        "pageNumber": 19,
+        "illustrationImg": "/modul-assets/illustrations/ipa_p19.jpeg",
+        "illustrationCaption": "Tekanan Zat Padat: P = F / A (Pascal atau N/m²). Makin kecil luas bidang tekan (A), makin besar tekanannya (pisau tajam, paku runcing). Sebaliknya kaki bebek berselaput (A besar) → tekanan kecil → tidak ambles!",
+        "slideImg": "/modul-assets/pages/ipa_p19.png"
       },
       {
         "unitNumber": "2.5",
@@ -495,7 +541,10 @@ export const IPA_SMP_MODUL = [
           "solusi": "Yuk Bahas · Gelombang Tali & Kedalaman Laut Soal 1: Pada grafik di samping, panjang total 2 gelombang adalah 12 m dan ditempuh dalam 4 s. Berapa cepat rambat gelombangnya? Pembahasan: λ = 12 / 2 = 6 m; f = n / t = 2 / 4 = 0,5 Hz. Maka v = λ × f = 6 × 0,5 = 3 m/s. (Atau langsung v = jarak / waktu = 12 / 4 = 3 m/s!) Soal 2: Sonar kapal kembali setelah 2 s (v = 1.500 m/s). Kedalaman laut = (1.500 × 2) / 2 = 1.500 m. Jawaban: (1) v = 3 m/s; (2) Kedalaman = 1.500 m."
         },
         "trikCepat": "",
-        "pageNumber": 20
+        "pageNumber": 20,
+        "illustrationImg": null,
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/ipa_p20.png"
       },
       {
         "unitNumber": "2.6",
@@ -512,7 +561,10 @@ export const IPA_SMP_MODUL = [
           "solusi": "Yuk Bahas · Bayangan Cermin Cekung & Kacamata Soal 1: Benda diletakkan 15 cm di depan cermin cekung berfokus 10 cm. Tentukan letak dan sifat bayangan! Pembahasan: 1/s' = 1/f − 1/s = 1/10 − 1/15 = (3 − 2)/30 = 1/30 → s' = +30 cm. Perbesaran M = 30/15 = 2×. Karena s' (+) dan M > 1, sifatnya: Nyata, Terbalik, Diperbesar. Soal 2: Penderita miopi hanya jelas melihat maksimal 200 cm. Kekuatan kacamata: P = −100 / 200 = −0,5 Dioptri. Jawaban: (1) s' = 30 cm (Nyata, Terbalik, Diperbesar); (2) −0,5 D."
         },
         "trikCepat": "Trik Cepat · Rumus Langsung s' Malas menyamakan penyebut? Pakai rumus kilat: s' = (s × f) / (s − f)! Cek: (15 × 10) / (15 − 10) = 150 / 5 = 30 cm!",
-        "pageNumber": 21
+        "pageNumber": 21,
+        "illustrationImg": "/modul-assets/illustrations/ipa_p21.jpeg",
+        "illustrationCaption": "Kiri: Cermin Cekung & Lensa Cembung (kumpulkan sinar)  |  Kanan: Miopi",
+        "slideImg": "/modul-assets/pages/ipa_p21.png"
       },
       {
         "unitNumber": "2.7",
@@ -529,7 +581,10 @@ export const IPA_SMP_MODUL = [
           "solusi": "Yuk Bahas · Perbandingan Gaya Coulomb Soal: Dua muatan listrik terpisah pada jarak r mengalami gaya tolak- menolak sebesar 40 N. Jika jarak kedua muatan diperbesar menjadi 2r (muatan tetap), berapakah gaya Coulombnya sekarang? Pembahasan: Karena F berbanding terbalik dengan kuadrat jarak (r²), saat jarak dikali 2, gaya dibagi 2² = 4! Jadi F₂ = 40 / 4 = 10 N. Jawaban: 10 Newton."
         },
         "trikCepat": "Trik Cepat · “Pla-Min” & “Ka-Plus” Hafal 2 kata lucu: Pla-Min (Plastik jadi Minus) dan Ka-Plus (Kaca jadi Plus). Dijamin tak pernah ketukar lagi saat ujian!",
-        "pageNumber": 22
+        "pageNumber": 22,
+        "illustrationImg": null,
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/ipa_p22.png"
       },
       {
         "unitNumber": "2.8",
@@ -546,7 +601,10 @@ export const IPA_SMP_MODUL = [
           "solusi": "Yuk Bahas · Rangkaian Campuran + Hukum Ohm Soal: Resistor R₂ = 6 Ω dan R₃ = 3 Ω disusun paralel, lalu diserikan dengan R₁ = 4 Ω dan dihubungkan ke baterai 12 V. Berapa kuat arus total rangkaian? Pembahasan: Bereskan paralel dulu dengan trik kali per tambah: R_p = (6 × 3) / (6 + 3) = 18 / 9 = 2 Ω. Lalu serikan dengan R₁: R_total = 4 + 2 = 6 Ω. Terakhir pakai Hukum Ohm: I = V / R_total = 12 / 6 = 2 Ampere. Jawaban: R_total = 6 Ω dan I = 2 Ampere."
         },
         "trikCepat": "Trik Cepat · Paralel 2 Resistor = Kali / Tambah Untuk 2 resistor paralel, langsung pakai R_p = (R₁ × R₂) / (R₁ + R₂)! Kalau 2 resistornya sama besar (misal 8 Ω & 8 Ω), tinggal bagi 2 → 4 Ω!",
-        "pageNumber": 23
+        "pageNumber": 23,
+        "illustrationImg": "/modul-assets/illustrations/ipa_p23.jpeg",
+        "illustrationCaption": "Kiri: Rangkaian Seri (1 jalur, arus sama, 1 putus padam semua)  |  Kanan:",
+        "slideImg": "/modul-assets/pages/ipa_p23.png"
       },
       {
         "unitNumber": "2.9",
@@ -563,7 +621,10 @@ export const IPA_SMP_MODUL = [
           "solusi": "Yuk Bahas · Menghitung Tagihan Listrik Rumah Soal: Sebuah rumah memakai 4 lampu 10 W (5 jam/hari), 1 TV 100 W (4 jam/hari), dan 1 kulkas 100 W (24 jam/hari). Jika tarif Rp1.500/kWh, berapa tagihan 1 bulan (30 hari)? Pembahasan: Lampu: 4 × 10 × 5 = 200 Wh · TV: 1 × 100 × 4 = 400 Wh · Kulkas: 1 × 100 × 24 = 2.400 Wh. Total harian = 200 + 400 + 2.400 = 3.000 Wh = 3 kWh. 30 hari = 3 × 30 = 90 kWh → Biaya = 90 × Rp1.500 = Rp135.000! Jawaban: Rp135.000,00."
         },
         "trikCepat": "",
-        "pageNumber": 24
+        "pageNumber": 24,
+        "illustrationImg": null,
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/ipa_p24.png"
       },
       {
         "unitNumber": "2.10",
@@ -580,11 +641,17 @@ export const IPA_SMP_MODUL = [
           "solusi": "Yuk Bahas · Menghitung Tegangan Trafo Soal: Sebuah transformator ideal memiliki lilitan primer 1.000 dan lilitan sekunder 200. Jika dihubungkan ke sumber AC 220 V, berapakah tegangan sekundernya dan jenis trafonya? Pembahasan: Vp / Vs = Np / Ns → 220 / Vs = 1.000 / 200 = 5 → Vs = 220 / 5 = 44 Volt. Karena tegangan turun (220 V → 44 V) dan Ns < Np, maka ini Trafo Step-Down. Jawaban: Vs = 44 Volt (Trafo Step-Down)."
         },
         "trikCepat": "Trik Cepat · Cek Rasio Lilitan! Lilitan turun 5× (1.000 → 200), maka tegangan otomatis ikut turun 5× (220 ÷ 5 = 44 V), sedangkan arusnya malah naik 5×!",
-        "pageNumber": 25
+        "pageNumber": 25,
+        "illustrationImg": "/modul-assets/illustrations/ipa_p25.jpeg",
+        "illustrationCaption": "Magnet punya kutub Utara (U/N) dan Selatan (S); sejenis tolak-menolak, tak sejenis tarik-menarik. 3 cara membuat magnet: (1) Menggosok searah (ujung terakhir digosok jadi kutub berlawanan), (2) Induksi (didekatkan, ujung terdekat jadi kutub berlawanan), dan (3) Elektromagnet (dililit kawat berarus DC → pakai kaidah genggaman tangan kanan: 4 jari = arah arus, jempol = kutub Utara!).",
+        "slideImg": "/modul-assets/pages/ipa_p25.png"
       }
     ],
     "cheatSheet": "",
+    "cheatSheetImg": null,
     "miniTryout": "",
+    "tryoutImg": null,
+    "petaBelajarImg": null,
     "konsepTeori": [
       {
         "subjudul": "Unit 2.1: Gerak Lurus (GLB, GLBB & Grafik v–t)",
@@ -810,7 +877,10 @@ export const IPA_SMP_MODUL = [
           "solusi": "Yuk Bahas · Membaca Kunci Determinasi (Dikotomi) Soal: 1a. Bertulang belakang → 2 | 1b. Tak bertulang belakang → Invertebrata. 2a. Menyusui → Mamalia | 2b. Tidak menyusui → 3. 3a. Tubuh berbulu → Aves | 3b. Bersisik → 4. Urutan kunci determinasi untuk Burung Elang adalah... Pembahasan: Ikuti panahnya: Elang bertulang belakang (1a → ke 2) → tidak menyusui (2b → ke 3) → tubuh berbulu (3a → Aves). Jawaban: 1a – 2b – 3a."
         },
         "trikCepat": "Trik Cepat · Jembatan Keledai Takson Hafal: “Ki-Fi-Ke-O-Fa-Ge-S” (Kingdom, Filum, Kelas, Ordo, Famili, Genus, Spesies). Makin dekat tingkatannya, makin dekat kekerabatannya!",
-        "pageNumber": 28
+        "pageNumber": 28,
+        "illustrationImg": "/modul-assets/illustrations/ipa_p28.jpeg",
+        "illustrationCaption": "Kata 1 = Genus (huruf pertama KAPITAL); Kata 2 = Spesies (huruf kecil semua); dicetak miring atau digarisbawahi terpisah. Contoh benar: Oryza sativa (padi), Panthera tigris (harimau).",
+        "slideImg": "/modul-assets/pages/ipa_p28.png"
       },
       {
         "unitNumber": "3.2",
@@ -827,7 +897,10 @@ export const IPA_SMP_MODUL = [
           "solusi": "Yuk Bahas · Mengatasi Bayangan Mikroskop Buram Soal: Saat mengamati sel bawang merah dengan lensa okuler 10× dan objektif 40×, bayangan sudah terlihat tapi masih kurang tajam (sedikit buram). Bagian mikroskop mana yang harus diputar dan berapa perbesaran totalnya? Pembahasan: Karena bayangan sudah muncul dan tinggal dipertajam, putar mikrometer (pemutar halus). Perbesaran total = 10 × 40 = 400×. Jawaban: Putar mikrometer; perbesaran total 400 kali."
         },
         "trikCepat": "",
-        "pageNumber": 29
+        "pageNumber": 29,
+        "illustrationImg": "/modul-assets/illustrations/ipa_p29.jpeg",
+        "illustrationCaption": "Kiri: Sel Tumbuhan (Dinding sel kaku, Kloroplas hijau, Vakuola besar)  |",
+        "slideImg": "/modul-assets/pages/ipa_p29.png"
       },
       {
         "unitNumber": "3.3",
@@ -844,7 +917,10 @@ export const IPA_SMP_MODUL = [
           "solusi": "Yuk Bahas · Mengidentifikasi Sendi & Otot Soal: Saat seorang atlet bulu tangkis melakukan smash, bahunya berputar bebas ke segala arah, lalu sikunya menekuk tajam. Sendi apa saja yang berperan pada bahu dan siku secara berurutan? Pembahasan: Bahu menghubungkan tulang lengan atas dan gelang bahu (gerak segala arah) → Sendi Peluru. Siku hanya bisa menekuk ke satu arah seperti pintu → Sendi Engsel. Jawaban: Bahu = Sendi Peluru; Siku = Sendi Engsel."
         },
         "trikCepat": "Trik Cepat · “S-K-L” Tulang Belakang Skoliosis = bentuk S (samping); Kifosis = Kakek bungkuk; Lordosis = Lebih maju perutnya!",
-        "pageNumber": 30
+        "pageNumber": 30,
+        "illustrationImg": "/modul-assets/illustrations/ipa_p30.jpeg",
+        "illustrationCaption": "Kiri: Otot Antagonis (Bisep kontraksi, Trisep relaksasi saat menekuk)  |",
+        "slideImg": "/modul-assets/pages/ipa_p30.png"
       },
       {
         "unitNumber": "3.4",
@@ -861,7 +937,10 @@ export const IPA_SMP_MODUL = [
           "solusi": "Yuk Bahas · Analisis Tabel Uji Nutrisi Soal: Bahan makanan X ditetesi Lugol menjadi biru kehitaman, ditetesi Biuret menjadi ungu, dan ditetesi Benedict tetap biru. Nutrisi apa yang terkandung pada makanan X? Pembahasan: Lugol → biru kehitaman = positif Amilum. Biuret → ungu = positif Protein. Benedict tetap biru = negatif glukosa. Jawaban: Mengandung Amilum dan Protein."
         },
         "trikCepat": "Trik Cepat · “Lu-Bi-Be” Lugol (Amilum → Biru tua), Biuret (Protein → Ungu), Benedict (Glukosa → Merah Bata). Enzim lambung = Pe-Re-H; Pankreas = A-L-T!",
-        "pageNumber": 31
+        "pageNumber": 31,
+        "illustrationImg": "/modul-assets/illustrations/ipa_p31.jpeg",
+        "illustrationCaption": "Urutan saluran pencernaan: Mulut → Kerongkongan (gerak peristaltik) → Lambung → Usus Halus (pencernaan tuntas & penyerapan sari makanan oleh vili) → Usus Besar (penyerapan air & pembusukan oleh E. coli) → Anus.",
+        "slideImg": "/modul-assets/pages/ipa_p31.png"
       },
       {
         "unitNumber": "3.5",
@@ -878,7 +957,10 @@ export const IPA_SMP_MODUL = [
           "solusi": "Yuk Bahas · Mengurutkan Peredaran Darah Besar Soal: Urutan aliran darah pada peredaran darah besar yang tepat dimulai dari jantung adalah... Pembahasan: Peredaran darah besar memompa darah bersih dari Bilik Kiri → Aorta → Seluruh Tubuh → Vena Kava → Serambi Kanan. Jawaban: Bilik Kiri → Aorta → Seluruh Tubuh → Vena Kava → Serambi Kanan."
         },
         "trikCepat": "",
-        "pageNumber": 32
+        "pageNumber": 32,
+        "illustrationImg": "/modul-assets/illustrations/ipa_p32.jpeg",
+        "illustrationCaption": "Ingat: Jantung bagian KIRI kaya Oksigen (O₂), bagian KANAN kaya CO₂!",
+        "slideImg": "/modul-assets/pages/ipa_p32.png"
       },
       {
         "unitNumber": "3.6",
@@ -895,7 +977,10 @@ export const IPA_SMP_MODUL = [
           "solusi": "Yuk Bahas · Percobaan Model Paru-Paru di Botol Soal: Pada alat peraga botol plastik dengan 2 balon di dalam dan membran karet di bawah: ketika membran karet bawah ditarik ke bawah, kedua balon di dalam botol mengembang. Proses ini memodelkan... Pembahasan: Membran karet = diafragma. Ditarik ke bawah = diafragma kontraksi/mendatar → volume botol besar → tekanan mengecil → udara masuk → Inspirasi pernapasan perut. Jawaban: Inspirasi pada pernapasan perut."
         },
         "trikCepat": "",
-        "pageNumber": 33
+        "pageNumber": 33,
+        "illustrationImg": "/modul-assets/illustrations/ipa_p33.jpeg",
+        "illustrationCaption": "Kiri: Paru-paru, Trakea, Bronkus & Diafragma  |  Kanan: Alveolus dibungkus",
+        "slideImg": "/modul-assets/pages/ipa_p33.png"
       },
       {
         "unitNumber": "3.7",
@@ -912,7 +997,10 @@ export const IPA_SMP_MODUL = [
           "solusi": "Yuk Bahas · Diagnosis Lab Urine Pasien Soal: Hasil tes urine Pak Budi menunjukkan perubahan warna menjadi merah bata saat dipanaskan dengan larutan Benedict. Bagian nefron manakah yang kemungkinan terganggu dan penyakit apa yang dialaminya? Pembahasan: Benedict merah bata = urine mengandung glukosa. Seharusnya glukosa diserap kembali (reabsorpsi) seluruhnya di Tubulus Kontortus Proksimal (TKP). Kondisi ini disebut Diabetes Melitus. Jawaban: Tubulus Kontortus Proksimal (TKP); Diabetes Melitus."
         },
         "trikCepat": "Trik Cepat · “Fi-Re-Au” → “Glo-Pro-Dis” Pasangkan langsung: Filtrasi = Glomerulus (Primer); Reabsorpsi = Proksimal (Sekunder); Augmentasi = Distal (Sesungguhnya)!",
-        "pageNumber": 34
+        "pageNumber": 34,
+        "illustrationImg": "/modul-assets/illustrations/ipa_p34.jpeg",
+        "illustrationCaption": "Ada 4 organ ekskresi utama: (1) Ginjal (urine), (2) Kulit (keringat lewat kelenjar sudorifera), (3) Paru-paru (CO₂ & uap air), dan (4) Hati (cairan empedu dari perombakan eritrosit tua + urea). Proses utama pembentukan urine di Nefron Ginjal terjadi dalam 3 tahap wajib hafal:",
+        "slideImg": "/modul-assets/pages/ipa_p34.png"
       },
       {
         "unitNumber": "3.8",
@@ -929,7 +1017,10 @@ export const IPA_SMP_MODUL = [
           "solusi": "Yuk Bahas · Jalur Refleks Saat Injak Duri Soal: Tanpa sengaja kaki Raka menginjak paku payung dan seketika ia langsung mengangkat kakinya sebelum sempat berpikir. Pusat pengendali gerak tersebut adalah... Pembahasan: Gerak mendadak tanpa dipikir lebih dulu untuk melindungi tubuh adalah gerak refleks, yang pusatnya berada di Sumsum Tulang Belakang (medula spinalis), bukan otak besar! Jawaban: Sumsum tulang belakang."
         },
         "trikCepat": "",
-        "pageNumber": 35
+        "pageNumber": 35,
+        "illustrationImg": "/modul-assets/illustrations/ipa_p35.jpeg",
+        "illustrationCaption": "Kiri: Sel Saraf (Neuron) (Dendrit, Badan Sel, Akson Bermielin)  |  Kanan:",
+        "slideImg": "/modul-assets/pages/ipa_p35.png"
       },
       {
         "unitNumber": "3.9",
@@ -946,7 +1037,10 @@ export const IPA_SMP_MODUL = [
           "solusi": "Yuk Bahas · Fase Pembelahan Sel (P-M-A-T) Soal: Pada pengamatan ujung akar bawang, tampak kromosom berjajar rapi tepat di bidang ekuator (tengah) sel. Fase pembelahan mitosis apakah itu? Pembahasan: Ingat urutan P-M-A-T: Profase (kromosom menebal), Metafase (berjajar di Middle/tengah), Anafase (menarik ke kutub berlawanan), Telofase (terbentuk 2 sel anak). Jawaban: Metafase."
         },
         "trikCepat": "",
-        "pageNumber": 36
+        "pageNumber": 36,
+        "illustrationImg": "/modul-assets/illustrations/ipa_p36.jpeg",
+        "illustrationCaption": "Kiri: Bunga Sempurna (Mahkota, Benang Sari, Putik & Bakal Biji)  |  Kanan:",
+        "slideImg": "/modul-assets/pages/ipa_p36.png"
       },
       {
         "unitNumber": "3.10",
@@ -963,7 +1057,10 @@ export const IPA_SMP_MODUL = [
           "solusi": "Yuk Bahas · Eksperimen Hydrilla + NaHCO₃ Soal: Tiga gelas berisi Hydrilla: (1) di tempat teduh, (2) di bawah sinar matahari, (3) di bawah sinar matahari + tambahan soda kue (NaHCO₃). Gelas mana menghasilkan gelembung O₂ terbanyak? Pembahasan: NaHCO₃ dalam air melepas CO₂ sebagai bahan baku fotosintesis. Ditambah cahaya matahari penuh, laju fotosintesis di gelas (3) paling cepat → gelembung O₂ terbanyak! Jawaban: Gelas (3) — cahaya matahari + tambahan NaHCO₃."
         },
         "trikCepat": "",
-        "pageNumber": 37
+        "pageNumber": 37,
+        "illustrationImg": "/modul-assets/illustrations/ipa_p37.jpeg",
+        "illustrationCaption": "Kiri: Penampang Daun (Epidermis, Palisade berkloroplas, Xilem–Floem,",
+        "slideImg": "/modul-assets/pages/ipa_p37.png"
       },
       {
         "unitNumber": "3.11",
@@ -980,7 +1077,10 @@ export const IPA_SMP_MODUL = [
           "solusi": "Yuk Bahas · Menghitung Jumlah Tanaman Dihibrid F2 Soal: Kacang ercis Bulat–Kuning (BBKK) disilangkan dengan Kisut–Hijau (bbkk) menghasilkan F1 BbKk. Jika sesama F1 disilangkan menghasilkan 320 tanaman F2, berapa banyak yang berfenotipe Bulat–Hijau? Pembahasan: Dari rasio emas 9 : 3 : 3 : 1 (total 16 bagian), fenotipe Bulat–Hijau (B_kk) porsinya adalah 3/16. Maka jumlahnya = (3/16) × 320 = 3 × 20 = 60 tanaman! Jawaban: 60 tanaman Bulat–Hijau."
         },
         "trikCepat": "Trik Cepat · Jumlah Gamet = 2ⁿ n = jumlah pasangan huruf heterozigot! Contoh BbKk punya n = 2 → 2² = 4 gamet (BK, Bk, bK, bk). BBKk punya n = 1 → 2¹ = 2 gamet!",
-        "pageNumber": 38
+        "pageNumber": 38,
+        "illustrationImg": null,
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/ipa_p38.png"
       },
       {
         "unitNumber": "3.12",
@@ -997,7 +1097,10 @@ export const IPA_SMP_MODUL = [
           "solusi": "Yuk Bahas · Manfaat Rekayasa Insulin Soal: Penderita diabetes kini terbantu oleh hormon insulin yang diproduksi massal menggunakan bakteri Escherichia coli yang disisipi gen manusia. Teknik ini disebut... Pembahasan: Menyisipkan gen penghasil insulin manusia ke plasmid bakteri E. coli disebut teknik DNA Rekombinan / Rekayasa Genetika (bioteknologi modern). Jawaban: Rekayasa genetika (teknik DNA rekombinan)."
         },
         "trikCepat": "",
-        "pageNumber": 39
+        "pageNumber": 39,
+        "illustrationImg": null,
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/ipa_p39.png"
       },
       {
         "unitNumber": "3.13",
@@ -1014,11 +1117,17 @@ export const IPA_SMP_MODUL = [
           "solusi": "Yuk Bahas · Prediksi Ekosistem Sawah Soal: Di suatu sawah terdapat rantai makanan: Padi → Belalang → Katak → Ular → Elang. Jika petani menyemprot pestisida berlebih hingga Katak mati massal, dampak langsung yang terjadi adalah... Pembahasan: Pemangsa belalang hilang → populasi belalang meningkat drastis (hama), sedangkan ular kehilangan mangsanya → populasi ular menurun. Jawaban: Populasi belalang meningkat, populasi ular menurun."
         },
         "trikCepat": "",
-        "pageNumber": 40
+        "pageNumber": 40,
+        "illustrationImg": "/modul-assets/illustrations/ipa_p40.jpeg",
+        "illustrationCaption": "Ekosistem terdiri dari komponen Biotik (makhluk hidup: produsen, konsumen, dekomposer) dan Abiotik (cahaya, air, tanah, suhu). Interaksi antar-organisme meliputi Predasi (singa–rusa), Kompetisi (rebutan makanan), dan 3 Simbiosis: Mutualisme (+/+), Komensalisme (+/0), Parasitisme (+/−).",
+        "slideImg": "/modul-assets/pages/ipa_p40.png"
       }
     ],
     "cheatSheet": "Cheat Sheet 1 Halaman · Rumus Fisika–Kimia & Skema Biologi SMP\nCHEAT SHEET MASTER · 1 Halaman\nCheat Sheet Fisika & Kimia (Bab 1–2)\nSemua rumus hitungan paling sering keluar dalam 1 tabel padat!\nTopik Rumus Utama Kunci Satuan\nMassa Jenis ρ = m / V 1 g/cm³ = 1.000\nkg/m³\nSuhu C : R : (F−32) = 5 : 4 : 9 K = C + 273\nKalor Q = m·c·ΔT | Q = m·L m (kg), 1 kJ = 1.000\nJ\nEnergi Ep = m·g·h | Ek = ½mv² Em = Ep + Ek\n(kekal)\nGerak & Gaya a = (vt−v₀)/t | ΣF = m·a Jarak = Luas grafik\nv–t\nPesawat Sed. w·Lb = F·Lk | KM = s/h Tuas: Tu-Be-Ku (1-\n2-3)\nTekanan P = F/A | Ph = ρ·g·h F₁/A₁ = F₂/A₂\nGelombang v = λ·f | Sonar: s = v·t/2 f = n/t, T = 1/f\nOptik 1/f = 1/s + 1/s' | M =\n|s'/s|\nMiopi: P =\n−100/PR\nListrik & Trafo V = I·R | W = P·t (kWh) Vp/Vs = Np/Ns =\nIs/Ip\nCheat Sheet Biologi & Kimia (Bab 1 & 3)\nJembatan keledai super cepat untuk soal hafalan & identifikasi!\nMateri Kata Kunci & Jembatan Keledai\nAsam–Basa A-M (Asam→Merah, pH<7) · B-B (Basa→Biru, pH>7)\nUji Makanan Lugol (Amilum→Biru tua) · Biuret (Protein→Ungu) ·\nBenedict (Glukosa→Merah bata)\nEnzim Mulut: Ptialin · Lambung: Pe-Re-H · Pankreas: A-L-T\nJantung Kiri = O₂ (Bilik kiri pompa ke tubuh) · Kanan = CO₂\nNefron Fi-Re-Au → Glomerulus (Primer) · Proksimal (Sekunder)\n· Distal (Sesungguhnya)\nFotosintesis Sachs = Amilum (alkohol larutkan klorofil) · Ingenhousz\n= O₂\nMendel F2 Monohibrid: 3 : 1 (Intermediet 1:2:1) · Dihibrid: 9 : 3 : 3 : 1\nBioteknologi Tempe (Rhizopus) · Tapai/Roti (Saccharomyces) ·\nYoghurt (Lactobacillus)",
+    "cheatSheetImg": "/modul-assets/cheatsheet/cheatsheet_ipa.png",
     "miniTryout": "",
+    "tryoutImg": null,
+    "petaBelajarImg": null,
     "konsepTeori": [
       {
         "subjudul": "Unit 3.1: Klasifikasi & Kunci Dikotomi",
@@ -1268,7 +1377,10 @@ export const IPA_SMP_MODUL = [
           "solusi": "Yuk Bahas · Fenomena Ikan Mati di Danau Dekat Sawah Soal: Limbah pupuk urea dari sawah mengalir ke danau hingga permukaan air tertutup rapat oleh eceng gondok dan alga hijau. Tak lama kemudian banyak ikan mati. Mengapa hal itu terjadi? Pembahasan: Pupuk berlebih memicu eutrofikasi (ledakan populasi alga/eceng gondok). Permukaan tertutup → cahaya tak masuk → tumbuhan air mati & membusuk → bakteri pengurai menghabiskan Oksigen terlarut (O₂) sehingga ikan mati lemas! Jawaban: Terjadi eutrofikasi yang menurunkan kadar oksigen terlarut di air."
         },
         "trikCepat": "",
-        "pageNumber": 44
+        "pageNumber": 44,
+        "illustrationImg": "/modul-assets/illustrations/ipa_p44.jpeg",
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/ipa_p44.png"
       },
       {
         "unitNumber": "4.2",
@@ -1285,7 +1397,10 @@ export const IPA_SMP_MODUL = [
           "solusi": "Yuk Bahas · Mengapa Cacing Tanah Tanda Tanah Subur? Soal: Di lahan pertanian organik banyak ditemukan cacing tanah, sedangkan di lahan yang sering disemprot pestisida kimia jumlah cacing sangat sedikit. Apa dampak hilangnya cacing tanah bagi tanaman? Pembahasan: Cacing tanah menggemburkan tanah dan membuat rongga udara/air (aerasi) serta membantu penguraian bahan organik. Tanpa cacing, tanah menjadi padat, miskin udara, dan kurang subur. Jawaban: Tanah menjadi padat, kurang oksigen, dan kesuburannya menurun."
         },
         "trikCepat": "",
-        "pageNumber": 45
+        "pageNumber": 45,
+        "illustrationImg": "/modul-assets/illustrations/ipa_p45.jpeg",
+        "illustrationCaption": "Pembahasan: Cacing tanah menggemburkan tanah dan membuat rongga udara/air (aerasi) serta membantu penguraian bahan organik. Tanpa cacing, tanah menjadi padat, miskin udara, dan kurang subur.",
+        "slideImg": "/modul-assets/pages/ipa_p45.png"
       },
       {
         "unitNumber": "4.3",
@@ -1302,7 +1417,10 @@ export const IPA_SMP_MODUL = [
           "solusi": "Yuk Bahas · Lapisan Pelindung Bumi dari Meteor Soal: Jutaan batuan luar angkasa mengarah ke Bumi setiap hari, namun sebagian besar habis terbakar sebelum menyentuh tanah. Lapisan atmosfer manakah yang membakar meteor tersebut? Pembahasan: Ingat jembatan keledai “Tro-Stra-Me-Ter-Ek”: Mesosfer = membakar Meteor! (Stratosfer = Ozon; Troposfer = cuaca.) Jawaban: Mesosfer."
         },
         "trikCepat": "",
-        "pageNumber": 46
+        "pageNumber": 46,
+        "illustrationImg": "/modul-assets/illustrations/ipa_p46.jpeg",
+        "illustrationCaption": "Kiri: Lapisan Bumi (Kerak, Mantel konveksi, Inti Luar & Dalam)  |  Kanan:",
+        "slideImg": "/modul-assets/pages/ipa_p46.png"
       },
       {
         "unitNumber": "4.4",
@@ -1319,7 +1437,10 @@ export const IPA_SMP_MODUL = [
           "solusi": "Yuk Bahas · Ciri Planet Berdasarkan Deskripsi Soal: Sebuah planet memiliki ciri: (1) termasuk planet luar/Jovian, (2) memiliki cincin paling tebal dan jelas dari es/batuan, dan (3) merupakan planet terbesar kedua. Planet apakah itu? Pembahasan: Planet terbesar pertama = Jupiter; terbesar kedua sekaligus pemilik cincin es paling mencolok adalah Saturnus. Jawaban: Saturnus."
         },
         "trikCepat": "Trik Cepat · “Me-Ve-Bu-Ma Ju-Sa-U-Ne” Hafal urutan 8 planet: Me-Ve-Bu-Ma (dalam) | Asteroid | Ju-Sa-U-Ne (luar). Pluto sejak 2006 dikategorikan planet kerdil (dwarf planet).",
-        "pageNumber": 47
+        "pageNumber": 47,
+        "illustrationImg": "/modul-assets/illustrations/ipa_p47.jpeg",
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/ipa_p47.png"
       },
       {
         "unitNumber": "4.5",
@@ -1336,7 +1457,10 @@ export const IPA_SMP_MODUL = [
           "solusi": "Yuk Bahas · Zona Waktu Indonesia (15° = 1 Jam) Soal: Pertandingan sepak bola di Banyuwangi (WIB) dimulai pukul 19.00 WIB. Pukul berapakah siaran langsung tersebut disaksikan di Makassar (WITA) dan Jayapura (WIT)? Pembahasan: Bumi berotasi 360° dalam 24 jam → tiap 15° bujur = selisih 1 jam, makin ke Timur makin cepat. WITA (+1 jam) = 20.00 WITA; WIT (+2 jam) = 21.00 WIT. Jawaban: 20.00 WITA dan 21.00 WIT."
         },
         "trikCepat": "",
-        "pageNumber": 48
+        "pageNumber": 48,
+        "illustrationImg": null,
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/ipa_p48.png"
       },
       {
         "unitNumber": "4.6",
@@ -1353,11 +1477,17 @@ export const IPA_SMP_MODUL = [
           "solusi": "Yuk Bahas · Menentukan Gerhana & Pasang Laut Soal: Saat malam Bulan Purnama, Bulan masuk seluruhnya ke dalam bayangan inti (umbra) Bumi sehingga tampak kemerahan. Peristiwa apakah ini dan bagaimana kondisi pasang air laut saat itu? Pembahasan: Bumi di tengah & Bulan masuk penuh ke umbra → Gerhana Bulan Total. Karena posisi Matahari–Bumi–Bulan segaris lurus, air laut mengalami Pasang Purnama (maksimum)! Jawaban: Gerhana Bulan Total dan Pasang Purnama (tertinggi)."
         },
         "trikCepat": "Trik Cepat · “Ma-Bu-B” vs “Ma-B-Bu” Yang ditutupi selalu yang disebut namanya! Matahari ketutupan Bulan → Gerhana Matahari. Bulan ketutupan Bumi → Gerhana Bulan!",
-        "pageNumber": 49
+        "pageNumber": 49,
+        "illustrationImg": "/modul-assets/illustrations/ipa_p49.jpeg",
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/ipa_p49.png"
       }
     ],
     "cheatSheet": "",
+    "cheatSheetImg": null,
     "miniTryout": "Simulasi Mini Tryout · IPA SMP 2027 (Lintas 4 Bab)\nSimulasi Mini Tryout · 15 Menit\nSimulasi Tryout IPA SMP (No. 1–3)\nPasang timer 15 menit! Soal menguji penalaran lintas Bab 1 & Bab 2.\nTO 1 · Kalor (Bab 1)Sebanyak 0,5 kg air bersuhu 20°C dipanaskan hingga\n80°C (c_air = 4.200 J/kg°C). Kalor yang diserap air tersebut adalah...\nA. 42 kJ    B. 84 kJ    C. 126 kJ    D. 252 kJ\nTO 2 · Pesawat Sederhana (Bab 2)Sebuah peti 800 N diangkat memakai\ntuas dengan lengan beban 0,4 m dan lengan kuasa 1,6 m. Gaya kuasa\nminimal yang dibutuhkan adalah...\nA. 100 N    B. 200 N    C. 320 N    D. 400 N\nTO 3 · Listrik kWh (Bab 2)Sebuah AC berdaya 500 W dinyalakan 6\njam/hari. Jika tarif listrik Rp1.500/kWh, biaya listrik khusus AC tersebut\nselama 30 hari adalah...\nA. Rp45.000    B. Rp90.000    C. Rp135.000    D. Rp180.000\nSimulasi Tryout IPA SMP (No. 4–6)\nSoal Biologi, Genetika Mendel & Kebumian–Tata Surya (Bab 3–4).\nTO 4 · Sistem Organ (Bab 3)Urutan jalannya darah pada peredaran darah\nkecil yang benar adalah...\nA. Bilik kiri → seluruh tubuh → serambi kanan\nB. Bilik kanan → paru-paru → serambi kiri\nC. Serambi kanan → paru-paru → bilik kiri\nD. Bilik kanan → seluruh tubuh → serambi kiri\nTO 5 · Hukum Mendel (Bab 3)Persilangan bunga mawar Merah dominan (MM)\ndengan Putih (mm) menghasilkan F1 Mm. Jika sesama F1 disilangkan\nmenghasilkan 40 tanaman F2, berapa banyak yang berwarna Putih (mm)?\nA. 10 tanaman    B. 20 tanaman    C. 30 tanaman    D. 40 tanaman\nTO 6 · PGK Kategori (Bab 1–4)Tentukan BENAR (B) atau SALAH (S):\n(1) Larutan obat maag bersifat basa untuk menetralkan asam lambung.\n(2) Cermin cekung selalu menghasilkan bayangan maya & diperkecil.\n(3) Pada 21 Juni, belahan Bumi Utara mengalami musim panas.\n\nKunci Tryout & Peta Belajar IPA SMP 2027\nKunci Tryout & Jadwal Belajar\nKunci & Pembahasan Mini Tryout\nHitung skormu! Tiap soal bernilai ~16,7 poin (maksimal 100).\nPembahasan Cepat TO 1 – TO 6\nTO 1 · C (126 kJ): Q = 0,5 × 4.200 × (80 − 20) = 2.100 × 60 =\n126.000 J = 126 kJ.\nTO 2 · B (200 N): KM = 1,6 / 0,4 = 4 → F = 800 / 4 = 200 N.\nTO 3 · C (Rp135.000): Harian = 500 × 6 = 3.000 Wh = 3 kWh. 30 hari\n= 90 kWh × Rp1.500 = Rp135.000.\nTO 4 · B: Peredaran kecil: Bilik kanan → Paru-paru → Serambi kiri.\nTO 5 · A (10 tanaman): Rasio Mm × Mm = 3 Merah : 1 Putih → (1/4)\n× 40 = 10 tanaman putih.\nTO 6 · B – S – B: (1) Benar; (2) Salah (itu ciri cermin cembung); (3) Benar.\nPeta Belajar 8 Minggu IPA SMP 2027\nCukup 25 menit/hari, seluruh 39 Unit tuntas sebelum Ujian!\nMinggu Target Unit & Aktivitas\nMinggu 1–2 Tuntaskan Bab 1 (Unit 1.1–1.10) + Latihan Bab 1\nMinggu 3–4 Tuntaskan Bab 2 (Unit 2.1–2.10) + Latihan Bab 2\nMinggu 5–6 Tuntaskan Bab 3 (Unit 3.1–3.13) + Kuasai Cheat Sheet Hal\n43\nMinggu 7 Tuntaskan Bab 4 (Unit 4.1–4.6) + Latihan Bab 4\nMinggu 8 Ulang Simulasi Tryout Hal 51 & drill soal grafik/eksperimen\nPesan Mentor Bimbel Gemilang\nSains bukan tentang menghafal rumus mati, melainkan mengerti bagaimana\nalam bekerja. Kamu sudah menamatkan 52 Halaman (4 Bab · 39 Unit) IPA\nSMP Fase D. Gaspol terus, kamu pasti bisa tembus nilai terbaik 2027!",
+    "tryoutImg": "/modul-assets/tryout/tryout_ipa_p51.png",
+    "petaBelajarImg": "/modul-assets/tryout/tryout_ipa_p52.png",
     "konsepTeori": [
       {
         "subjudul": "Unit 4.1: Pencemaran & Pemanasan Global",

@@ -3,6 +3,7 @@
 // MODUL MASTER 52 HALAMAN RESMI TKA SMP 2027 - BIMBEL GEMILANG
 // Subtes: Matematika (Numerasi TKA) (MTK_SMP)
 // 4 Bab, 39 Unit Lengkap, Latihan Soal, Kuis Interaktif & PDF Master
+// DILENGKAPI ASET VISUAL: Slide Asli, Ilustrasi Khusus, Cheat Sheet Master & Mini Tryout
 // ==============================================================================
 
 export const MTK_SMP_MODUL = [
@@ -44,7 +45,10 @@ export const MTK_SMP_MODUL = [
           "solusi": "Yuk Bahas · Suhu Ruang Pendingin (PG Aplikasi) Soal: Suhu daging di dalam freezer mula-mula −6°C. Saat dikeluarkan dan dimasak, suhunya naik 4°C setiap 3 menit. Berapa suhu daging setelah 15 menit? Opsi: A. 10°C · B. 14°C · C. 20°C · D. 26°C Hitung dulu berapa kali suhunya naik: dalam 15 menit ada 15 ÷ 3 = 5 kali kenaikan. Total kenaikan suhu = 5 × 4°C = +20°C. Nah, tambahkan ke suhu awal: −6 + 20 = 14°C! (Hati-hati: opsi C adalah jebakan kalau lupa suhu awal −6.) Jawaban: B. 14°C"
         },
         "trikCepat": "Trik Cepat · Skor Ujian Benar–Salah Untuk soal skor olimpiade (Benar +4, Salah −2, Kosong −1): selalu hitung jumlah soal kosong dulu (Total − Dijawab), baru kalikan tiap kategori!",
-        "pageNumber": 4
+        "pageNumber": 4,
+        "illustrationImg": "/modul-assets/illustrations/mtk_p4.jpeg",
+        "illustrationCaption": "Termometer Suhu: Contoh nyata bilangan bulat positif (+), nol (0), dan",
+        "slideImg": "/modul-assets/pages/mtk_p4.png"
       },
       {
         "unitNumber": "1.2",
@@ -61,7 +65,10 @@ export const MTK_SMP_MODUL = [
           "solusi": "Yuk Bahas · Sisa Lahan Kebun (PG Aplikasi) Soal: Pak Budi punya lahan 600 m². Sebanyak ⅓ bagian ditanami jagung, 25% bagian ditanami cabai, dan sisanya dibuat kolam ikan. Berapa luas kolam ikan Pak Budi? Opsi: A. 200 m² · B. 250 m² · C. 300 m² · D. 350 m² Hitung satu per satu atau gabung pecahannya! Jagung = ⅓ × 600 = 200 m². Cabai = 25% × 600 = ¼ × 600 = 150 m². Total yang sudah dipakai = 200 + 150 = 350 m². Maka sisa untuk kolam = 600 − 350 = 250 m²! Jawaban: B. 250 m²"
         },
         "trikCepat": "Trik Cepat · Bandingkan 2 Pecahan (Kali Silang) Mana lebih besar: 5/7 atau 7/10? Kali silang ke atas: kiri 5×10 = 50, kanan 7×7 = 49. Karena 50 > 49, maka 5/7 > 7/10!",
-        "pageNumber": 5
+        "pageNumber": 5,
+        "illustrationImg": "/modul-assets/illustrations/mtk_p5.jpeg",
+        "illustrationCaption": "Mana lebih besar: 5/7 atau 7/10? Kali silang ke atas: kiri 5×10 = 50, kanan 7×7 = 49. Karena 50 > 49, maka 5/7 > 7/10!",
+        "slideImg": "/modul-assets/pages/mtk_p5.png"
       },
       {
         "unitNumber": "1.3",
@@ -78,7 +85,10 @@ export const MTK_SMP_MODUL = [
           "solusi": "Yuk Bahas · Operasi Pangkat Campuran (PG) Soal: Hasil dari (4³ × 8²) ÷ 16² adalah … Opsi: A. 4 · B. 8 · C. 16 · D. 32 Jangan dihitung manual! Ubah semua ke basis 2: 4³ = (2²)³ = 2⁶, 8² = (2³)² = 2⁶, dan 16² = (2⁴)² = 2⁸. Sekarang gabungkan pangkatnya: 2⁶⁺⁶⁻⁸ = 2⁴ = 16! Super bersih dan cepat! Jawaban: C. 16"
         },
         "trikCepat": "Trik Cepat · Penjumlahan Pangkat Sama Kalau ketemu 2⁵ + 2⁵, itu bukan 2¹⁰! Artinya ada 2 buah 2⁵ → 2 × 2⁵ = 2⁶. Sama halnya 3⁴ + 3⁴ + 3⁴ = 3 × 3⁴ = 3⁵!",
-        "pageNumber": 6
+        "pageNumber": 6,
+        "illustrationImg": null,
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/mtk_p6.png"
       },
       {
         "unitNumber": "1.4",
@@ -95,7 +105,10 @@ export const MTK_SMP_MODUL = [
           "solusi": "Yuk Bahas · Operasi Akar & Jarak Planet (PG) Soal 1: Hasil dari √50 + √32 − √18 adalah … Pecah semua ke √2! √50 = 5√2, √32 = 4√2, √18 = 3√2. Tinggal operasikan depannya: (5 + 4 − 3)√2 = 6√2! Soal 2: Jarak Bumi–Matahari sekitar 150.000.000 km. Bentuk notasi ilmiahnya adalah … Geser koma dari paling kanan ke belakang angka 1 → pindah 8 langkah ke kiri → 1,5 × 10⁸ km. Jawaban: 6√2 dan 1,5 × 10⁸ km"
         },
         "trikCepat": "Trik Cepat · Cek Angka Depan Notasi Ilmiah Begitu lihat soal notasi ilmiah, langsung coret opsi yang angka depannya ≥ 10 atau < 1 (seperti 15 × 10⁷ atau 0,15 × 10⁹)!",
-        "pageNumber": 7
+        "pageNumber": 7,
+        "illustrationImg": null,
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/mtk_p7.png"
       },
       {
         "unitNumber": "1.5",
@@ -112,7 +125,10 @@ export const MTK_SMP_MODUL = [
           "solusi": "Yuk Bahas · Estimasi Harga Beras (PGK MCMA) Soal: Harga 1 kg beras Rp12.750. Jika membeli 19,6 kg beras, pilih semua perkiraan total harga yang benar! (1) Kurang dari Rp260.000. (2) Lebih besar dari Rp240.000. (3) Dapat diperkirakan dengan 20 × Rp12.500. (4) Mendekati Rp230.000. Batas atas: 20 × 13.000 = 260.000 → harga asli pasti < 260.000 (1 Benar). Cek 240rb: 20 × 12.000 = 240.000, sedangkan 19,6 sangat dekat 20 dan 12.750 jauh di atas 12.000 → pasti > 240.000 (2 Benar). Seimbang: 20 × 12.500 = 250.000 (3 Benar, 4 Salah). Jawaban: Pernyataan (1), (2), dan (3)"
         },
         "trikCepat": "Trik Cepat · Cek Uang Cukup/Tidak Untuk soal “apakah uang Rp100.000 cukup membeli 5 barang?”, bulatkan semua harga ke atas ke ribuan terdekat. Kalau taksiran atasnya ≤ Rp100.000, uangmu 100% pasti cukup!",
-        "pageNumber": 8
+        "pageNumber": 8,
+        "illustrationImg": null,
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/mtk_p8.png"
       },
       {
         "unitNumber": "1.6",
@@ -129,7 +145,10 @@ export const MTK_SMP_MODUL = [
           "solusi": "Yuk Bahas · Bandingkan Diskon 2 Toko (PGK Kategori) Soal: Toko A menjual buku Rp24.000 diskon 25%. Toko B menjual buku sama Rp20.000 diskon 10%. Tentukan Benar atau Salah! A. Potongan harga di Toko A adalah Rp6.000. B. Harga bayar di Toko A lebih murah daripada Toko B. C. Diskon beruntun 20% + 10% sama dengan diskon tunggal 30%. Toko A: potongan ¼ × 24.000 = Rp6.000 (A Benar), bayar Rp18.000. Toko B: bayar 90% × 20.000 = Rp18.000—ternyata sama murah (B Salah)! Diskon 20%+10% = 28% (C Salah). Jawaban: A. Benar · B. Salah · C. Salah"
         },
         "trikCepat": "Trik Cepat · Rumus Diskon Ganda Untuk diskon a% + b%, diskon tunggalnya = a + b − (a × b / 100). Contoh: 20% + 10% = 30 − 2 = 28%!",
-        "pageNumber": 9
+        "pageNumber": 9,
+        "illustrationImg": "/modul-assets/illustrations/mtk_p9.jpeg",
+        "illustrationCaption": "Toko A: potongan ¼ × 24.000 = Rp6.000 (A Benar), bayar Rp18.000. Toko B: bayar 90% × 20.000 = Rp18.000—ternyata sama murah (B Salah)! Diskon 20%+10% = 28% (C Salah).",
+        "slideImg": "/modul-assets/pages/mtk_p9.png"
       },
       {
         "unitNumber": "1.7",
@@ -146,7 +165,10 @@ export const MTK_SMP_MODUL = [
           "solusi": "Yuk Bahas · Tabungan & Pedagang Buah (Aplikasi) Soal 1: Rina menabung Rp2.000.000 di bank dengan bunga tunggal 6% per tahun. Berapa total tabungan Rina setelah 8 bulan? Hitung bunganya dulu: (8/12) × (6/100) × 2.000.000. Coret 6 dengan 12 (sisa 2 di bawah), lalu 8 ÷ 2 = 4 → 4% × 2.000.000 = Rp80.000. Total tabungan = Rp2.080.000! Soal 2: Pedagang menjual sepatu Rp240.000 dan mendapat untung 20%. Berapa harga belinya? Jual = 120% → Harga Beli = (100/120) × 240.000 = Rp200.000! Jawaban: Rp2.080.000 dan Rp200.000"
         },
         "trikCepat": "Trik Cepat · Bunga per Bulan Bunga 6% per tahun artinya 0,5% per bulan (6 ÷ 12). Untuk 8 bulan tinggal kalikan: 8 × 0,5% = 4%!",
-        "pageNumber": 10
+        "pageNumber": 10,
+        "illustrationImg": null,
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/mtk_p10.png"
       },
       {
         "unitNumber": "1.8",
@@ -163,7 +185,10 @@ export const MTK_SMP_MODUL = [
           "solusi": "Yuk Bahas · Faktor Persekutuan (PGK MCMA Resmi) Soal: Tiga bilangan dinyatakan sebagai (33² − 3²), (8² + 296), dan (36 × 35). Pilih semua faktor persekutuan ketiga bilangan itu! (1) 2³ × 3³ × 7    (2) 2² × 3² × 7 (3) 2² × 3² × 5    (4) 2 × 3² × 5 Hitung dulu ketiganya! Bilangan 1: (33+3)(33−3) = 36 × 30 = 1.080 = 2³ × 3³ × 5. Bilangan 2: 64 + 296 = 360 = 2³ × 3² × 5. Bilangan 3: 36 × 35 = (2²×3²)(5×7) = 2² × 3² × 5 × 7. Maka FPB = 2² × 3² × 5 (tidak ada faktor 7!). Jadi yang membagi FPB adalah (3) dan (4). Jawaban: Pernyataan (3) dan (4)"
         },
         "trikCepat": "Trik Cepat · Selisih Kuadrat di Faktorisasi Ketemu 33² − 3²? Jangan dikuadratkan! Pakai (33+3)(33−3) = 36 × 30, langsung gampang difaktorkan!",
-        "pageNumber": 11
+        "pageNumber": 11,
+        "illustrationImg": null,
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/mtk_p11.png"
       },
       {
         "unitNumber": "1.9",
@@ -180,7 +205,10 @@ export const MTK_SMP_MODUL = [
           "solusi": "Yuk Bahas · Larutan Desinfektan (PG Resmi) Soal: Untuk membuat larutan desinfektan dibutuhkan cairan A dan B dengan rasio A : B = 3 : 5. Jika tersedia 2,5 liter cairan B, berapa volume maksimum larutan yang dapat dibuat? Opsi: A. 3,6 liter · B. 4,0 liter · C. 4,8 liter · D. 6,4 liter Cairan B punya 5 bagian = 2,5 liter, jadi 1 bagian = 2,5 ÷ 5 = 0,5 liter. Karena ditanya total larutan (3 + 5 = 8 bagian), langsung kalikan: 8 × 0,5 = 4,0 liter! Jawaban: B. 4,0 liter"
         },
         "trikCepat": "Trik Cepat · Rumus Rasio Anti-Ketukar Ditanya = (Rasio Ditanya ÷ Rasio Diketahui) × Nilai Diketahui = (8 ÷ 5) × 2,5 = 4,0 liter!",
-        "pageNumber": 12
+        "pageNumber": 12,
+        "illustrationImg": "/modul-assets/illustrations/mtk_p12.jpeg",
+        "illustrationCaption": "Pada Rasio & Proporsi (misal cairan A : B = 3 : 5), bayangkan 3 kotak A dan 5 kotak B—total ada 8 kotak sama besar. Sementara Skala Peta (1 : 200.000) artinya 1 cm di peta = 200.000 cm = 2 km di dunia nyata!",
+        "slideImg": "/modul-assets/pages/mtk_p12.png"
       },
       {
         "unitNumber": "1.10",
@@ -197,11 +225,17 @@ export const MTK_SMP_MODUL = [
           "solusi": "Yuk Bahas · Proyek Renovasi (PGK MCMA) Soal: Renovasi sekolah ditarget 60 hari oleh 20 pekerja. Setelah jalan 24 hari, berhenti total 12 hari. Pilih pernyataan benar! Timeline 60 Hari: Jalan 24h Stop 12 Sisa 24h Total = 20 × 60 = 1.200 HO Sisa = 1.200 − 480 = 720 HO (1) Sisa waktu = 24 hari. (2) Sisa beban = 1.200 HO. (3) Butuh total 30 pekerja. (4) Cukup tambah 5 pekerja. Sisa waktu = 60 − 24 − 12 = 24 hari (1 Benar). Beban sisa = 720 HO (2 Salah). Pekerja = 720 ÷ 24 = 30 orang (3 Benar), artinya tambah 10 orang (4 Salah). Jawaban: Pernyataan (1) dan (3)"
         },
         "trikCepat": "Trik Cepat · Tambahan Pekerja Tambahan = (Pekerja awal × Hari libur) ÷ Sisa hari = (20 × 12) ÷ 24 = 10 orang!",
-        "pageNumber": 13
+        "pageNumber": 13,
+        "illustrationImg": null,
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/mtk_p13.png"
       }
     ],
     "cheatSheet": "",
+    "cheatSheetImg": null,
     "miniTryout": "",
+    "tryoutImg": null,
+    "petaBelajarImg": null,
     "konsepTeori": [
       {
         "subjudul": "Unit 1.1: Bilangan Bulat & Operasi Campuran",
@@ -427,7 +461,10 @@ export const MTK_SMP_MODUL = [
           "solusi": "Yuk Bahas · Keliling Kebun Aljabar (PG) Soal: Sebuah kebun persegi panjang memiliki panjang (3x + 4) m dan lebar (2x − 1) m. Nyatakan keliling kebun dalam bentuk aljabar paling sederhana! Opsi: A. 5x + 3 · B. 10x + 6 · C. 10x + 3 · D. 6x + 6 Keliling persegi panjang = 2 × (p + l). Jumlahkan dulu p + l: (3x + 2x) + (4 − 1) = 5x + 3. Jangan lupa dikali 2! Hasilnya 2(5x + 3) = 10x + 6 meter. Jawaban: B. 10x + 6"
         },
         "trikCepat": "Trik Cepat · Tanda Selalu Ikut Angka di Belakangnya Saat memindahkan suku 6x − 12y − 2x + 10y, bawa selalu tanda di depannya: −12y dan −2x!",
-        "pageNumber": 16
+        "pageNumber": 16,
+        "illustrationImg": null,
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/mtk_p16.png"
       },
       {
         "unitNumber": "2.2",
@@ -444,7 +481,10 @@ export const MTK_SMP_MODUL = [
           "solusi": "Yuk Bahas · Sederhanakan Aljabar (PG Resmi) Soal: Bentuk paling sederhana dari 3(2x − 4y) − 2(x − 5y) adalah … Opsi: A. 4x − 2y · B. 4x − 22y · C. 8x − 2y · D. 4x + 2y Buka kurung pertama: 6x − 12y. Buka kurung kedua (awas minus ketemu minus!): −2x + 10y. Gabungkan suku sejenis: (6x − 2x) + (−12y + 10y) = 4x − 2y! Jawaban: A. 4x − 2y"
         },
         "trikCepat": "Trik Cepat · Cek Pakai x = 1, y = 1 Masukkan x=1, y=1 ke soal: 3(2−4) − 2(1−5) = −6 + 8 = 2. Cek opsi A: 4(1) − 2(1) = 2. Pasti benar!",
-        "pageNumber": 17
+        "pageNumber": 17,
+        "illustrationImg": null,
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/mtk_p17.png"
       },
       {
         "unitNumber": "2.3",
@@ -461,7 +501,10 @@ export const MTK_SMP_MODUL = [
           "solusi": "Yuk Bahas · Pecahan Aljabar (PG Aplikasi) Soal: Bentuk sederhana dari (x² − 9) / (x² + 5x + 6) adalah … Opsi: A. (x−3)/(x+2) · B. (x+3)/(x+2) · C. (x−3)/(x−2) · D. (x−9)/(x+6) Faktorkan atas dan bawah! Atas pakai selisih kuadrat: x² − 9 = (x + 3)(x − 3). Bawah cari 2 angka dikali 6 ditambah 5 → 3 dan 2, jadi (x + 3)(x + 2). Coret (x + 3) atas dan bawah → sisa (x − 3) / (x + 2)! Jawaban: A. (x − 3) / (x + 2)"
         },
         "trikCepat": "Trik Cepat · Jangan Coret Bagian Tambah! Pada (x + 3)/(x + 2), huruf x tidak boleh dicoret karena masih terikat tanda tambah. Hanya faktor perkalian utuh yang boleh dicoret!",
-        "pageNumber": 18
+        "pageNumber": 18,
+        "illustrationImg": null,
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/mtk_p18.png"
       },
       {
         "unitNumber": "2.4",
@@ -478,7 +521,10 @@ export const MTK_SMP_MODUL = [
           "solusi": "Yuk Bahas · Soal Cerita Umur (PG Aplikasi) Soal: Umur Kakak 4 tahun lebih tua dari umur Adik. Jika jumlah umur mereka berdua adalah 28 tahun, berapakah umur Kakak? Opsi: A. 12 tahun · B. 14 tahun · C. 16 tahun · D. 18 tahun Misalkan umur Adik = x, maka umur Kakak = x + 4. Tulis persamaannya: x + (x + 4) = 28 → 2x + 4 = 28 → 2x = 24 → x = 12 (umur Adik). Awas, yang ditanya umur Kakak: 12 + 4 = 16 tahun! Jawaban: C. 16 tahun"
         },
         "trikCepat": "Trik Cepat · Jumlah & Selisih 2 Bilangan Diketahui jumlah = 28, selisih = 4. Yang besar = (28 + 4) ÷ 2 = 16; yang kecil = (28 − 4) ÷ 2 = 12!",
-        "pageNumber": 19
+        "pageNumber": 19,
+        "illustrationImg": "/modul-assets/illustrations/mtk_p19.jpeg",
+        "illustrationCaption": "Analogi PLSV: Ruas kiri dan ruas kanan selalu seimbang seperti neraca —",
+        "slideImg": "/modul-assets/pages/mtk_p19.png"
       },
       {
         "unitNumber": "2.5",
@@ -495,7 +541,10 @@ export const MTK_SMP_MODUL = [
           "solusi": "Yuk Bahas · Jasa Pengantaran (PGK MCMA Resmi) Soal: Jasa kurir memasang biaya tetap Rp12.000 plus Rp4.000/km. Pelanggan punya anggaran tidak lebih dari Rp40.000. Pilih semua pernyataan benar! (1) Jika jarak = x km, modelnya 4.000x + 12.000 ≤ 40.000. (2) Jarak pengantaran maksimum adalah 7 km. (3) Jika jarak 8 km, total biaya melebihi anggaran. (4) Tambah 1 km menambah biaya Rp16.000. Model (1) Benar. Kurangi 12.000: 4.000x ≤ 28.000 → x ≤ 7 km (2 Benar). Kalau 8 km: 32.000 + 12.000 = 44.000 > 40.000 (3 Benar). Tambah 1 km cuma tambah Rp4.000 (4 Salah). Jawaban: Pernyataan (1), (2), dan (3)"
         },
         "trikCepat": "Trik Cepat · Jarak Maksimum Jarak Maks = (Anggaran − Biaya Tetap) ÷ Tarif/km = (40.000 − 12.000) ÷ 4.000 = 7 km!",
-        "pageNumber": 20
+        "pageNumber": 20,
+        "illustrationImg": null,
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/mtk_p20.png"
       },
       {
         "unitNumber": "2.6",
@@ -512,7 +561,10 @@ export const MTK_SMP_MODUL = [
           "solusi": "Yuk Bahas · Tiket Museum (PG Aplikasi) Soal: Tiket museum untuk 2 dewasa & 3 anak = Rp95.000. Tiket untuk 1 dewasa & 2 anak = Rp55.000. Berapa harga tiket 1 anak? Opsi: A. Rp10.000 · B. Rp15.000 · C. Rp20.000 · D. Rp25.000 Hilangkan dewasa (d)! Kalikan persamaan kedua dengan 2 → 2d + 4a = 110.000. Kurangkan dengan 2d + 3a = 95.000 → langsung dapat a = Rp15.000! (Opsi D adalah jebakan harga tiket dewasa.) Jawaban: B. Rp15.000"
         },
         "trikCepat": "Trik Cepat · Cek Sekaligus! Kalau ditanya nilai x + y dari 3x + 2y = 14 dan 2x + 3y = 11, langsung jumlahkan keduanya: 5x + 5y = 25 → x + y = 5!",
-        "pageNumber": 21
+        "pageNumber": 21,
+        "illustrationImg": null,
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/mtk_p21.png"
       },
       {
         "unitNumber": "2.7",
@@ -529,7 +581,10 @@ export const MTK_SMP_MODUL = [
           "solusi": "Yuk Bahas · Parameter SPLDV (PGK Kategori) Soal: Sistem persamaan ax + by = 13 dan ax − by = 17 mempunyai solusi (x, y) = (5, −2). Tentukan Benar/Salah! A. a merupakan bilangan prima. B. b merupakan bilangan ganjil. C. Nilai 10a + b = 35. Masukkan x=5, y=−2: 5a − 2b = 13 dan 5a + 2b = 17. Jumlahkan langsung: 10a = 30 → a = 3 (prima → A Benar!). Masukkan a=3: 15 + 2b = 17 → b = 1 (ganjil → B Benar!). Cek C: 10(3) + 1 = 31 ≠ 35 (C Salah). Jawaban: A. Benar · B. Benar · C. Salah"
         },
         "trikCepat": "Trik Cepat · Soal Parkir 3 Detik Jumlah Mobil = (Total Roda − 2 × Total Kendaraan) ÷ 2 = (110 − 80) ÷ 2 = 15 mobil!",
-        "pageNumber": 22
+        "pageNumber": 22,
+        "illustrationImg": null,
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/mtk_p22.png"
       },
       {
         "unitNumber": "2.8",
@@ -546,7 +601,10 @@ export const MTK_SMP_MODUL = [
           "solusi": "Yuk Bahas · Domain & Range (PGK MCMA) Soal: Fungsi f(x) = 3x + 5 memiliki Domain {1, 2, 3, 4} dan Kodomain {6, 8, 10, 11, 14, 17, 20}. Pilih semua pernyataan benar! (1) Nilai f(3) = 14. (2) Daerah hasil (Range) adalah {8, 11, 14, 17}. (3) Jika f(a) = 26, maka nilai a = 7. (4) Angka 10 termasuk anggota Range. Hitung bayangan: f(1)=8, f(2)=11, f(3)=14, f(4)=17 → (1) & (2) Benar! Cek (3): 3a + 5 = 26 → a = 7 (Benar). Angka 10 tidak kena panah (4 Salah). Jawaban: Pernyataan (1), (2), dan (3)"
         },
         "trikCepat": "Trik Cepat · Uji Garis Vertikal Tarik garis lurus vertikal di grafik: jika hanya memotong kurva di 1 titik, berarti itu Fungsi!",
-        "pageNumber": 23
+        "pageNumber": 23,
+        "illustrationImg": null,
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/mtk_p23.png"
       },
       {
         "unitNumber": "2.9",
@@ -563,7 +621,10 @@ export const MTK_SMP_MODUL = [
           "solusi": "Yuk Bahas · Tarif Parkir Linear (PG Aplikasi) Soal: Tarif parkir mengikuti rumus linear f(t) = at + b (t = jam). Parkir 2 jam bayar Rp9.000, sedangkan 5 jam bayar Rp18.000. Berapa tarif parkir selama 8 jam? Opsi: A. Rp24.000 · B. Rp27.000 · C. Rp30.000 · D. Rp33.000 Cari kenaikan per jam (a): dari 2 ke 5 jam naik 3 jam, biaya naik Rp9.000 → a = Rp3.000/jam! Dari 5 jam ke 8 jam juga naik 3 jam, jadi langsung tambah Rp9.000 → 18.000 + 9.000 = Rp27.000! Jawaban: B. Rp27.000"
         },
         "trikCepat": "Trik Cepat · Loncatan Linear Karena fungsinya linear, loncatan input sama → loncatan output sama! 2 → 5 → 8 (sama-sama +3), maka 9rb → 18rb → 27rb!",
-        "pageNumber": 24
+        "pageNumber": 24,
+        "illustrationImg": null,
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/mtk_p24.png"
       },
       {
         "unitNumber": "2.10",
@@ -580,11 +641,17 @@ export const MTK_SMP_MODUL = [
           "solusi": "Yuk Bahas · Potongan Kayu (PGK Kategori Resmi) Soal: Tukang memotong 9 papan kayu. Potongan pertama 240 cm, tiap potongan berikutnya lebih pendek 12 cm. Tentukan Benar/Salah! A. Panjang potongan ke-5 adalah 190 cm. B. Panjang potongan terakhir (ke-9) adalah 144 cm. C. Selisih potongan ke-2 dan ke-8 adalah 72 cm. a = 240, b = −12. Cek A: U₅ = 240 + 4(−12) = 192 cm (Salah). Cek B: U₉ = 240 + 8(−12) = 144 cm (Benar). Cek C: (8 − 2) × 12 = 72 cm (Benar). Jawaban: A. Salah · B. Benar · C. Benar"
         },
         "trikCepat": "Trik Cepat · Selisih Dua Suku Langsung pakai |Uₘ − Uₙ| = |m − n| × |b|. Selisih ke-2 dan ke-8 = 6 × 12 = 72 cm!",
-        "pageNumber": 25
+        "pageNumber": 25,
+        "illustrationImg": "/modul-assets/illustrations/mtk_p25.jpeg",
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/mtk_p25.png"
       }
     ],
     "cheatSheet": "",
+    "cheatSheetImg": null,
     "miniTryout": "",
+    "tryoutImg": null,
+    "petaBelajarImg": null,
     "konsepTeori": [
       {
         "subjudul": "Unit 2.1: Bentuk Aljabar & Suku Sejenis",
@@ -810,7 +877,10 @@ export const MTK_SMP_MODUL = [
           "solusi": "Yuk Bahas · Sudut Jarum Jam Soal: Berapa sudut terkecil antara jarum jam dan jarum menit pada pukul 02.30? 12 3 6 9 Pukul 02.30: 1 angka = 30°. Menit di angka 6. Jam di tengah 2 & 3 (2,5). Jarak = 3,5 × 30° = 105° Banyak yang menjawab jarum jam di angka 2. Salah! Pukul 02.30 itu sudah setengah jalan ke jam 3 (di 2,5). Jarak dari 2,5 ke 6 = 3,5 angka → 3,5 × 30° = 105°! Jawaban: 105°"
         },
         "trikCepat": "Trik Cepat · Rumus Sudut Jam |30 × jam − 5,5 × menit|. Pukul 02.30: |30(2) − 5,5(30)| = |60 − 165| = 105°. Jika > 180°, kurangkan dari 360°!",
-        "pageNumber": 28
+        "pageNumber": 28,
+        "illustrationImg": "/modul-assets/illustrations/mtk_p28.jpeg",
+        "illustrationCaption": "Sudut Jarum Jam (02.30): Jarum jam di tengah angka 2 & 3, jarum menit di",
+        "slideImg": "/modul-assets/pages/mtk_p28.png"
       },
       {
         "unitNumber": "3.2",
@@ -827,7 +897,10 @@ export const MTK_SMP_MODUL = [
           "solusi": "Yuk Bahas · Sudut Berpelurus Pakai x (PG) Soal: Dua sudut saling berpelurus dengan besar (3x + 15)° dan (2x + 10) °. Berapa besar sudut yang lebih kecil? Opsi: A. 31° · B. 72° · C. 108° · D. 118° Karena berpelurus, jumlahnya 180°! Tulis: (3x + 15) + (2x + 10) = 180 → 5x + 25 = 180 → 5x = 155 → x = 31°. Awas! Opsi A (31°) itu baru nilai x! Sudut yang kecil = 2(31) + 10 = 72°! Jawaban: B. 72°"
         },
         "trikCepat": "Trik Cepat · Rasio Pelurus / Penyiku Dua sudut berpelurus berbanding 2 : 3 → total 5 bagian = 180° → 1 bagian = 36°. Jadi sudutnya 72° dan 108°!",
-        "pageNumber": 29
+        "pageNumber": 29,
+        "illustrationImg": null,
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/mtk_p29.png"
       },
       {
         "unitNumber": "3.3",
@@ -844,7 +917,10 @@ export const MTK_SMP_MODUL = [
           "solusi": "Yuk Bahas · Rangka Jembatan (PGK Kategori Resmi) Soal: Rangka jembatan membentuk L₁ // L₂ dipotong transversal. Diketahui sudut lancip A = 50°. Tentukan Benar/Salah! L₁ L₂ A=50°B C DE A. Sudut D = 50°. B. Sudut C berpelurus dgn A jadi C = 50°. C. B dan E sama besar = 130°. D sehadap A → 50° (A Benar). C berpelurus A → 180°−50° = 130° (B Salah). B & E tumpul → 130° (C Benar). Jawaban: A. Benar · B. Salah · C. Benar"
         },
         "trikCepat": "Trik Cepat · Garis Bantu di Sudut Patah (Zig-Zag) Ketemu garis sejajar lalu di tengah ada sudut patah? Tarik 1 garis bantu sejajar tepat di titik patahnya, langsung terbentuk dua huruf Z!",
-        "pageNumber": 30
+        "pageNumber": 30,
+        "illustrationImg": null,
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/mtk_p30.png"
       },
       {
         "unitNumber": "3.4",
@@ -861,7 +937,10 @@ export const MTK_SMP_MODUL = [
           "solusi": "Yuk Bahas · Kapal Berlayar (PG Aplikasi) Soal: Sebuah kapal berlayar dari pelabuhan ke arah Utara sejauh 16 km, lalu berbelok ke arah Timur sejauh 30 km. Berapa jarak terpendek kapal dari pelabuhan asal? Opsi: A. 32 km · B. 34 km · C. 36 km · D. 46 km Utara dan Timur tegak lurus (90°)! Lihat angkanya: 16 dan 30. Bagi 2 dulu jadi 8 dan 15—langsung ketemu Triple (8, 15, 17)! Kalikan kembali dengan 2 → 17 × 2 = 34 km! Tanpa hitung kuadrat ratusan! Jawaban: B. 34 km"
         },
         "trikCepat": "Trik Cepat · Jarak 2 Titik di Kartesius Jarak A(x₁, y₁) ke B(x₂, y₂) = √((Δx)² + (Δy)²). Sama persis dengan Pythagoras!",
-        "pageNumber": 31
+        "pageNumber": 31,
+        "illustrationImg": "/modul-assets/illustrations/mtk_p31.jpeg",
+        "illustrationCaption": "Teorema Pythagoras: Tangga bersandar di tembok membentuk segitiga",
+        "slideImg": "/modul-assets/pages/mtk_p31.png"
       },
       {
         "unitNumber": "3.5",
@@ -878,7 +957,10 @@ export const MTK_SMP_MODUL = [
           "solusi": "Yuk Bahas · Segitiga Siku-Siku Sebangun (PGK) Soal: Pada segitiga siku-siku ABC (gambar kiri), diketahui BD = 4 cm dan CD = 9 cm. Tentukan Benar atau Salah! A. Segitiga ABD dan segitiga CAD saling sebangun. B. Panjang garis tinggi AD adalah 6 cm. C. Panjang sisi AB adalah 10 cm. Cek A: ketiga sudut segitiga ABD dan CAD sama besar → sebangun (Benar). Cek B: AD² = 4 × 9 = 36 → AD = 6 cm (Benar). Cek C: BC = 4 + 9 = 13, maka AB² = 4 × 13 = 52 → AB = √52 ≠ 10 (Salah). Jawaban: A. Benar · B. Benar · C. Salah"
         },
         "trikCepat": "Trik Cepat · Soal Bayangan Pohon Tinggi Pohon / Bayangan Pohon = Tinggi Tongkat / Bayangan Tongkat. Langsung kali silang!",
-        "pageNumber": 32
+        "pageNumber": 32,
+        "illustrationImg": "/modul-assets/illustrations/mtk_p32.jpeg",
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/mtk_p32.png"
       },
       {
         "unitNumber": "3.6",
@@ -895,7 +977,10 @@ export const MTK_SMP_MODUL = [
           "solusi": "Yuk Bahas · Dinding Samping Rumah (PG Aplikasi) Soal: Dinding samping rumah terdiri dari persegi panjang 8 m × 4 m dan atap segitiga alas 8 m tinggi 3 m. Jika 1 kg cat dapat mengecat 10 m², berapa minimal kg cat yang dibutuhkan? Opsi: A. 4 kg · B. 5 kg · C. 6 kg · D. 7 kg Pecah jadi 2 bagian: Luas dinding bawah = 8 × 4 = 32 m². Luas atap segitiga = ½ × 8 × 3 = 12 m². Total luas = 32 + 12 = 44 m². Kebutuhan cat = 44 ÷ 10 = 4,4 kg → wajib dibulatkan ke atas jadi 5 kg! Jawaban: B. 5 kg"
         },
         "trikCepat": "Trik Cepat · Keliling Bangun Tangga Pada bangun datar berbentuk tangga/L siku-siku, dorong semua sisi cekung ke luar—kelilingnya persis sama dengan keliling persegi panjang utuh!",
-        "pageNumber": 33
+        "pageNumber": 33,
+        "illustrationImg": null,
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/mtk_p33.png"
       },
       {
         "unitNumber": "3.7",
@@ -912,7 +997,10 @@ export const MTK_SMP_MODUL = [
           "solusi": "Yuk Bahas · Roda Sepeda & Pagar Taman (PG) Soal: Roda sepeda berjari-jari 35 cm berputar sebanyak 200 kali di jalan lurus. Berapa meter jarak yang ditempuh sepeda tersebut? (π = 22/7) Opsi: A. 220 m · B. 440 m · C. 660 m · D. 880 m Cari keliling 1 putaran: d = 2 × 35 = 70 cm, maka K = (22/7) × 70 = 220 cm. Untuk 200 putaran: 220 × 200 = 44.000 cm. Awas satuan! Ubah cm ke meter (bagi 100) → 440 meter! Jawaban: B. 440 m"
         },
         "trikCepat": "Trik Cepat · Lingkaran Kelipatan 7 Wajib Hafal r = 7 → K = 44, L = 154 · r = 14 → K = 88, L = 616 · r = 3,5 → K = 22, L = 38,5!",
-        "pageNumber": 34
+        "pageNumber": 34,
+        "illustrationImg": "/modul-assets/illustrations/mtk_p34.jpeg",
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/mtk_p34.png"
       },
       {
         "unitNumber": "3.8",
@@ -929,7 +1017,10 @@ export const MTK_SMP_MODUL = [
           "solusi": "Yuk Bahas · Taman Kota & Kolam (PGK Kategori Resmi) Soal: Taman persegi panjang 20 m × 16 m memiliki kolam lingkaran diameter 7 m di tengahnya. Sisa taman ditanami rumput (π = 22/7). Tentukan Benar/Salah! A. Luas area rumput lebih dari 280 m². B. Jika diameter kolam jadi 14 m, luas kolam jadi 4 kali lipat. C. Keliling kolam awal adalah 44 m. Luas taman = 320 m². Jari-jari r = 3,5 m → Luas kolam = 38,5 m². Rumput = 320 − 38,5 = 281,5 m² (A Benar). Diameter 2× → luas 2² = 4× (B Benar). Keliling = πd = 22 m (C Salah). Jawaban: A. Benar · B. Benar · C. Salah"
         },
         "trikCepat": "Trik Cepat · Luas Cincin / Jalan Melingkar Untuk jalan setapak melingkari kolam: L = π(R² − r²) = π(R + r)(R − r)! Jauh lebih cepat!",
-        "pageNumber": 35
+        "pageNumber": 35,
+        "illustrationImg": null,
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/mtk_p35.png"
       },
       {
         "unitNumber": "3.9",
@@ -946,7 +1037,10 @@ export const MTK_SMP_MODUL = [
           "solusi": "Yuk Bahas · Kemasan Karton Prisma (PG Resmi) Soal: Usaha rumahan membuat kemasan prisma segitiga dari karton 50 cm × 100 cm. Setiap 1 jaring-jaring utuh membutuhkan bidang persegi panjang ukuran 25 cm × 25 cm tanpa disambung. Berapa kemasan maksimum yang bisa dibuat? Opsi: A. 4 kemasan · B. 8 kemasan · C. 9 kemasan · D. 14 kemasan Cek tata letaknya di karton 50 × 100 cm! Sisi lebar 50 ÷ 25 = 2 baris. Sisi panjang 100 ÷ 25 = 4 kolom. Kalikan langsung: 2 × 4 = 8 kemasan utuh tanpa sisa potongan! Jawaban: B. 8 kemasan"
         },
         "trikCepat": "Trik Cepat · Soal Potong Karton Jangan hanya membagi Luas Karton ÷ Luas Jaring! Selalu cek pembagian panjang ÷ p dan lebar ÷ l karena potongan tidak boleh disambung- sambung!",
-        "pageNumber": 36
+        "pageNumber": 36,
+        "illustrationImg": null,
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/mtk_p36.png"
       },
       {
         "unitNumber": "3.10",
@@ -963,7 +1057,10 @@ export const MTK_SMP_MODUL = [
           "solusi": "Yuk Bahas · Monumen Bata Ringan (PG Resmi) Soal: Kontraktor membangun monumen berbentuk balok ukuran 180 cm × 60 cm × 50 cm dari bata ringan berukuran 60 cm × 20 cm × 10 cm tersusun rapat tanpa celah. Berapa minimal bata yang diperlukan? Opsi: A. 35 bata · B. 45 bata · C. 55 bata · D. 60 bata Jangan dikalikan sampai ratusan ribu dulu! Langsung bagi tiap dimensinya: (180 ÷ 60) × (60 ÷ 20) × (50 ÷ 10) = 3 × 3 × 5 = 45 bata! Jauh lebih cepat dan anti-salah hitung nol! Jawaban: B. 45 bata"
         },
         "trikCepat": "Trik Cepat · Coret Sebelum Kali! Untuk soal Banyak Barang = Volume Besar ÷ Volume Kecil, tulis dalam bentuk pecahan lalu coret atas–bawah sebelum mengalikan!",
-        "pageNumber": 37
+        "pageNumber": 37,
+        "illustrationImg": "/modul-assets/illustrations/mtk_p37.jpeg",
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/mtk_p37.png"
       },
       {
         "unitNumber": "3.11",
@@ -980,7 +1077,10 @@ export const MTK_SMP_MODUL = [
           "solusi": "Yuk Bahas · Limas Persegi & Bola (Aplikasi) Soal 1: Limas persegi alas 10 cm × 10 cm memiliki tinggi 12 cm. Berapa volumenya? Langsung masukkan rumus: V = ⅓ × (10 × 10) × 12. Coret 12 ÷ 3 = 4 → 100 × 4 = 400 cm³! Soal 2: Jika jari-jari sebuah bola diperbesar 2 kali lipat, menjadi berapa kali lipat volumenya? Karena volume bola bergantung pada r³, maka 2³ = 8 kali lipat! Jawaban: 400 cm³ dan 8 kali lipat"
         },
         "trikCepat": "Trik Cepat · Skala Panjang–Luas–Volume Jika ukuran diperbesar k kali: Panjang × k · Luas × k² · Volume × k³!",
-        "pageNumber": 38
+        "pageNumber": 38,
+        "illustrationImg": null,
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/mtk_p38.png"
       },
       {
         "unitNumber": "3.12",
@@ -997,7 +1097,10 @@ export const MTK_SMP_MODUL = [
           "solusi": "Yuk Bahas · Robot Pembersih (PG Resmi) Soal: Robot pembersih berada di posisi P(−1, 4) lalu bergerak mengikuti translasi T(4, −2). Di koordinat mana posisi akhirnya? Lalu jika titik R(3, −5) dicerminkan terhadap Sumbu-X, jadi apa? Robot: tinggal jumlahkan koordinatnya! x' = −1 + 4 = 3, y' = 4 + (−2) = 2 → P'(3, 2). Cermin Sumbu-X: x tetap, y dibalik tandanya → R'(3, 5)! Jawaban: P'(3, 2) dan R'(3, 5)"
         },
         "trikCepat": "Trik Cepat · Cek Cermin x = h Bayangkan jarak titik ke cermin! Titik x = 2 dicerminkan ke x = 5 → jaraknya 3 ke kanan, lompat 3 lagi ke kanan → x' = 8!",
-        "pageNumber": 39
+        "pageNumber": 39,
+        "illustrationImg": null,
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/mtk_p39.png"
       },
       {
         "unitNumber": "3.13",
@@ -1014,11 +1117,17 @@ export const MTK_SMP_MODUL = [
           "solusi": "Yuk Bahas · Rotasi Segitiga ABC (PG Resmi) Soal: Titik sudut segitiga A(2, 1), B(5, 1), C(2, 4) berubah menjadi A'(−1, 2), B'(−1, 5), C'(−4, 2). Transformasi tunggal apa yang terjadi? Opsi: A. Translasi (−3, 1) · B. Refleksi Sb-Y · C. Rotasi +90° pusat O · D. Dilatasi k = −1 Cukup uji 1 titik saja! Ambil B(5, 1) → B'(−1, 5). Lihat polanya: (x, y) berubah menjadi (−y, x)! Itu persis rumus Rotasi +90° berlawanan arah jarum jam pusat O! Jawaban: C. Rotasi +90° berlawanan arah jarum jam pusat O"
         },
         "trikCepat": "Trik Cepat · Luas Setelah Dilatasi Segitiga luasnya 12 cm² didilatasi faktor skala k = 3 → luas bayangan = 3² × 12 = 9 × 12 = 108 cm²!",
-        "pageNumber": 40
+        "pageNumber": 40,
+        "illustrationImg": null,
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/mtk_p40.png"
       }
     ],
     "cheatSheet": "Bab 3 · Geometri & Pengukuran — Cheat Sheet 1 Halaman\nRangkuman Rumus Geometri & Pengukuran\nCheat Sheet · Geometri Datar & Lingkaran\nSemua rumus inti Bab 3 dirangkum dalam satu pandangan!\nTopik Rumus & Kunci Cepat\nSudut & Jam Penyiku = 90°, Pelurus = 180°, Segitiga = 180°. Jam:\n|30j − 5,5m|. Garis sejajar: F = sama, Z = sama, U\n= 180°.\nPythagoras c² = a² + b². Triple: (3,4,5) · (5,12,13) · (7,24,25) ·\n(8,15,17).\nKesebangunan Rasio sisi bersesuaian sama. Siku-siku berhimpit:\nAD² = BD×CD.\nSegi Banyak Segitiga ½at · Trapesium ½(a+b)t · Layang/Belah\nketupat ½d₁d₂.\nLingkaran K = πd = 2πr · L = πr² · Busur = (α/360)K ·\nJuring = (α/360)L.\nCheat Sheet · Bangun Ruang & Transformasi\nHafal keluarga rumusnya—tidak usah menghafal terpisah!\nTopik Rumus & Kunci Cepat\nPrisma (Kubus/Balok) V = L.alas × t · Lp = 2L.alas + K.alas × t.\nLimas (Lancip) V = ⅓ × L.alas × t · Lp = L.alas + Σ\nL.segitiga tegak.\nBola V = ⁴⁄₃ πr³ · Lp = 4πr² · ½ Bola Pejal: 3πr².\nTranslasi & Refleksi T(a,b): (x+a, y+b) · Sb-X: (x, −y) · Sb-Y: (−x,\ny).\nRotasi & Dilatasi +90°: (−y, x) · −90°: (y, −x) · 180°: (−x, −y)\n· k: (kx, ky).\nIngat Skala\nSisi dikali k → Keliling × k, Luas × k², Volume × k³. Konversi: 1 L = 1 dm³\n= 1.000 cm³.",
+    "cheatSheetImg": "/modul-assets/cheatsheet/cheatsheet_mtk.png",
     "miniTryout": "",
+    "tryoutImg": null,
+    "petaBelajarImg": null,
     "konsepTeori": [
       {
         "subjudul": "Unit 3.1: Mengenal Sudut & Sudut Jarum Jam",
@@ -1268,7 +1377,10 @@ export const MTK_SMP_MODUL = [
           "solusi": "Yuk Bahas · Tren Penjualan Buku (PGK Kategori) Soal: Berdasarkan diagram garis di kiri, tentukan Benar atau Salah untuk setiap pernyataan berikut! A. Kenaikan penjualan terbesar terjadi pada Februari ke Maret. B. Penjualan bulan April mengalami penurunan sebesar 20% dari Maret. C. Rata-rata penjualan selama 5 bulan lebih dari 40 buku. Cek A: Feb→Mar naik 50 − 28 = +22 (terbesar → Benar). Cek B: turun 50 − 40 = 10 dari 50 → (10/50) × 100% = 20% (Benar). Cek C: total = 20+28+50+40+56 = 194 → rata-rata = 194 ÷ 5 = 38,8 (kurang dari 40 → Salah). Jawaban: A. Benar · B. Benar · C. Salah"
         },
         "trikCepat": "Trik Cepat · Cek Rata-Rata Tanpa Membagi Mau cek apakah rata-rata 5 bulan > 40? Langsung kalikan 5 × 40 = 200. Karena totalnya 194 < 200, rata-ratanya pasti < 40!",
-        "pageNumber": 44
+        "pageNumber": 44,
+        "illustrationImg": null,
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/mtk_p44.png"
       },
       {
         "unitNumber": "4.2",
@@ -1285,7 +1397,10 @@ export const MTK_SMP_MODUL = [
           "solusi": "Yuk Bahas · Hobi Siswa (PG Aplikasi) Soal: Pada diagram lingkaran ekskul di kiri, diketahui siswa yang ikut Basket (120°) adalah 40 anak. Berapa selisih siswa Musik (150°) dan Futsal (90°)? Opsi: A. 10 anak · B. 15 anak · C. 20 anak · D. 25 anak Tidak perlu hitung total seluruh siswa dulu! Langsung pakai selisih sudutnya: Musik − Futsal = 150° − 90° = 60°. Bandingkan dengan Basket (120° = 40 anak): karena 60° itu tepat setengahnya 120°, maka selisihnya = ½ × 40 = 20 anak! Jawaban: C. 20 anak"
         },
         "trikCepat": "Trik Cepat · Konversi Derajat ↔ Persen Ingat: 36° = 10%, 72° = 20%, 90° = 25%, 108° = 30%, 180° = 50%!",
-        "pageNumber": 45
+        "pageNumber": 45,
+        "illustrationImg": null,
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/mtk_p45.png"
       },
       {
         "unitNumber": "4.3",
@@ -1302,7 +1417,10 @@ export const MTK_SMP_MODUL = [
           "solusi": "Yuk Bahas · Nilai Ulangan Susulan (PG Aplikasi) Soal: Rata-rata nilai matematika 19 siswa adalah 78. Setelah Budi ikut ulangan susulan, rata-rata kelas naik menjadi 79. Berapa nilai Budi? Opsi: A. 88 · B. 92 · C. 98 · D. 99 Cara konsep: Total lama = 19 × 78 = 1.482. Total baru (20 siswa) = 20 × 79 = 1.580. Nilai Budi = 1.580 − 1.482 = 98! Atau pakai Trik Cepat di bawah: cuma 3 detik! Jawaban: C. 98"
         },
         "trikCepat": "Trik Cepat · Nilai Susulan 3 Detik! Budi harus bawa nilai 79 (rata-rata baru) PLUS menyumbang +1 ke masing- masing 19 temannya → 79 + 19(1) = 98!",
-        "pageNumber": 46
+        "pageNumber": 46,
+        "illustrationImg": null,
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/mtk_p46.png"
       },
       {
         "unitNumber": "4.4",
@@ -1319,7 +1437,10 @@ export const MTK_SMP_MODUL = [
           "solusi": "Yuk Bahas · Pilih Pelari Terstabil (PGK Kategori) Soal: Waktu lari 5 latihan (detik): Andi (12, 13, 13, 14, 13) dan Bima (10, 12, 13, 14, 16). Tentukan Benar atau Salah! A. Rata-rata waktu lari Andi dan Bima sama, yaitu 13 detik. B. Jangkauan waktu Andi adalah 2 detik, sedangkan Bima 6 detik. C. Catatan waktu lari Bima lebih konsisten daripada Andi. Cek A: total Andi = 65 → mean 13; total Bima = 65 → mean 13 (Benar). Cek B: Range Andi = 14−12 = 2, Bima = 16−10 = 6 (Benar). Cek C: karena Range Andi jauh lebih kecil, Andi lebih konsisten (Salah). Jawaban: A. Benar · B. Benar · C. Salah"
         },
         "trikCepat": "Trik Cepat · Cek Perubahan Data Jika semua data ditambah 5, maka Mean/Median/Modus ikut +5, tapi Jangkauan TETAP (tidak berubah)!",
-        "pageNumber": 47
+        "pageNumber": 47,
+        "illustrationImg": null,
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/mtk_p47.png"
       },
       {
         "unitNumber": "4.5",
@@ -1336,7 +1457,10 @@ export const MTK_SMP_MODUL = [
           "solusi": "Yuk Bahas · Kantong Bola Warna (PGK Kategori) Soal: Kantong berisi 4 merah, 3 biru, 5 kuning. Diambil 1 bola secara acak. Tentukan Benar/Salah! A. Peluang terambil bola merah adalah ⅓. B. Peluang terambil bola bukan biru adalah ¾. C. Peluang terambil bola hijau adalah 1/12. Total n(S) = 12. Cek A: 4/12 = ⅓ (Benar). Cek B: 1 − 3/12 = 9/12 = ¾ (Benar). Cek C: tidak ada bola hijau di kantong, jadi P(hijau) = 0 (Salah). Jawaban: A. Benar · B. Benar · C. Salah"
         },
         "trikCepat": "Trik Cepat · Sederhanakan Pecahan! Di opsi PG, peluang selalu ditulis dalam bentuk pecahan paling sederhana (misal 4/12 → ⅓) atau desimal/persen!",
-        "pageNumber": 48
+        "pageNumber": 48,
+        "illustrationImg": "/modul-assets/illustrations/mtk_p48.jpeg",
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/mtk_p48.png"
       },
       {
         "unitNumber": "4.6",
@@ -1353,11 +1477,17 @@ export const MTK_SMP_MODUL = [
           "solusi": "Yuk Bahas · Percobaan Roda Putar (PG Aplikasi) Soal: Sebuah roda putar memiliki 4 warna. Dalam 80 kali putaran, panah berhenti di Merah 24 kali, Biru 16 kali, Hijau 20 kali, dan Kuning 20 kali. Berapa frekuensi relatif munculnya warna Merah? Opsi: A. 0,20 · B. 0,25 · C. 0,30 · D. 0,35 Langsung bagi munculnya Merah dengan total putaran: fᵣ = 24 ÷ 80. Sederhanakan (bagi 8 atas & bawah) → 3/10 = 0,30! Jawaban: C. 0,30"
         },
         "trikCepat": "Trik Cepat · Cek Total Frekuensi Relatif Jumlah seluruh frekuensi relatif semua kejadian dalam satu percobaan selalu tepat = 1 (0,30 + 0,20 + 0,25 + 0,25 = 1,00)!",
-        "pageNumber": 49
+        "pageNumber": 49,
+        "illustrationImg": null,
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/mtk_p49.png"
       }
     ],
     "cheatSheet": "",
+    "cheatSheetImg": null,
     "miniTryout": "Simulasi Mini Tryout · Matematika TKA SMP 2027\nSimulasi Mini Tryout Campuran 4 Bab (15 Menit)\nSimulasi Mini Tryout · Nomor 1–3\nPasang timer 15 menit (2,5 menit/soal), kerjakan tanpa buka halaman 52!\nNomor 1 & 2 · Pilihan Ganda (PG)\n [Bab 1 · Diskon Ganda] Sepatu berlabel Rp400.000 mendapat diskon\n20% + 10%. Harga yang harus dibayar adalah … (A. Rp280.000 · B.\nRp288.000 · C. Rp300.000 · D. Rp320.000)\n [Bab 2 · SPLDV] Harga 3 buku & 2 pena Rp34.000. Harga 1 buku & 2 pena\nRp18.000. Harga 1 buku adalah … (A. Rp6.000 · B. Rp8.000 · C. Rp10.000 ·\nD. Rp12.000)\nNomor 3 · PGK MCMA (Lebih dari 1 Benar)\n [Bab 3 · Lingkaran] Kolam lingkaran berdiameter 14 m (π = 22/7). Pilih\nsemua pernyataan benar: (1) Jari-jarinya 7 m · (2) Kelilingnya 44 m · (3)\nLuasnya 154 m² · (4) Luasnya 616 m².\nSimulasi Mini Tryout · Nomor 4–6\nCampuran Bangun Ruang, Transformasi, dan Statistika–Peluang!\nNomor 4 · PGK MCMA (Lebih dari 1 Benar)\n [Bab 3 · Bangun Ruang] Limas persegi alas 6 cm × 6 cm dan tinggi 10\ncm. Pilih pernyataan benar: (1) Luas alas 36 cm² · (2) Volume = 120 cm³ ·\n(3) Volume = 360 cm³ · (4) Memiliki 5 titik sudut.\nNomor 5 & 6 · PGK Kategori (Benar/Salah)\n [Bab 3 · Transformasi] Titik K(2, −5): (A) Translasi T(3, 5) → (5, 0) · (B)\nRefleksi Sb-Y → (−2, −5) · (C) Rotasi 180° → (2, 5).\n [Bab 4 · Data & Peluang] Kantong berisi 3 merah & 7 putih (diambil 1\nbola): (A) P(merah) = 0,3 · (B) P(bukan merah) = 0,7 · (C) Dalam 50 kali\npengambilan (dikembalikan), Fₕ merah = 20 kali.\n\nMatematika TKA SMP 2027\nKunci Tryout & Peta Belajar 2027 — Bimbel Gemilang\nKunci Simulasi Mini Tryout (Hal 51)\nHitung skormu—kalau benar 5–6 nomor, kamu sudah siap tempur!\nKunci & Pembahasan Kilat\nNo 1 → B (Rp288.000): Bayar = 0,8 × 0,9 × 400.000 = 0,72 ×\n400.000 = Rp288.000.\nNo 2 → B (Rp8.000): Kurangkan langsung: 2 buku = 34rb − 18rb =\n16rb → 1 buku = Rp8.000.\nNo 3 → (1), (2), dan (3): r = 7 m → K = 44 m, L = 154 m² (616 itu\nkalau pakai d=14 sebagai r!).\nNo 4 → (1), (2), dan (4): V = ⅓ × 36 × 10 = 120 cm³. Limas\nsegiempat punya 5 titik sudut.\nNo 5 → A. Benar · B. Benar · C. Salah: Rotasi 180° dari (2, −5) adalah\n(−2, 5)!\nNo 6 → A. Benar · B. Benar · C. Salah: Fₕ = 0,3 × 50 = 15 kali (bukan\n20).\nPeta Belajar Menuju 29 Maret 2027\nCicil santai per bulan bersama tutor Bimbel Gemilang!\nBulan Target Fokus Modul\nNov – Des 2026 Tuntaskan Bab 1 (Bilangan, Unit 1.1–1.10) & mulai Bab 2\n(Aljabar, Unit 2.1–2.5).\nJanuari 2027 Daftar TKA (6 Jan–7 Feb) · Selesaikan Unit 2.6–2.10 &\nBab 3 (Geometri, Unit 3.1–3.8).\nFebruari 2027 Gladi Bersih (15–18 Feb) · Tuntaskan Bangun Ruang,\nTransformasi (3.9–3.13) & Bab 4.\nMaret 2027 Drill Tryout 30 soal / 75 menit + review Cheat Sheet\nHal 43 → Ujian 29 Mar–1 Apr 2027!\nPesan Penutup · Bimbel Gemilang\nSelamat telah memiliki panduan lengkap 52 halaman ini! Ingat kunci sukses\nTKA SMP: paham konsep lewat visual, rajin latihan 5 soal cerita tiap hari,\ndan teliti di PG Kompleks. Sampai jumpa di kelas Bimbel Gemilang—\nsemangat raih nilai terbaik!",
+    "tryoutImg": "/modul-assets/tryout/tryout_mtk_p51.png",
+    "petaBelajarImg": "/modul-assets/tryout/tryout_mtk_p52.png",
     "konsepTeori": [
       {
         "subjudul": "Unit 4.1: Penyajian Data (Tabel, Batang & Garis)",

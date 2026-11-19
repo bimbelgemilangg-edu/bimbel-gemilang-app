@@ -3,6 +3,7 @@
 // MODUL MASTER 52 HALAMAN RESMI TKA SMP 2027 - BIMBEL GEMILANG
 // Subtes: Bahasa Indonesia (Literasi TKA) (BIN_SMP)
 // 4 Bab, 39 Unit Lengkap, Latihan Soal, Kuis Interaktif & PDF Master
+// DILENGKAPI ASET VISUAL: Slide Asli, Ilustrasi Khusus, Cheat Sheet Master & Mini Tryout
 // ==============================================================================
 
 export const BIN_SMP_MODUL = [
@@ -44,7 +45,10 @@ export const BIN_SMP_MODUL = [
           "solusi": "Yuk Bahas · Laporan Desa Baduy (PG Resmi Pusmendik) Kutipan Teks: “Pembangunan pesat mulai mengancam kelestarian alam sekitar. Selain itu, eksploitasi sumber daya alam di sekitar wilayah Baduy semakin meningkat... Hal ini berisiko merusak keseimbangan budaya dan lingkungan mereka.” Soal: Istilah eksploitasi pada kutipan tersebut bermakna … A. pemanfaatan berlebihan yang dapat merusak lingkungan · B. perlindungan budaya Baduy · C. pengelolaan alam yang baik · D. penggunaan terbatas namun berisiko Lihat petunjuk konteksnya: ada kata mengancam dan berisiko merusak (nuansa negatif!). Jadi maknanya pasti pemanfaatan berlebihan yang merusak! Jawaban: A. pemanfaatan berlebihan yang dapat merusak lingkungan"
         },
         "trikCepat": "Trik Cepat · Tes Ganti Kata (Substitusi) Masukkan opsi A–D menggantikan istilah di kalimat asli. Opsi yang paling nyambung dan tidak bertentangan dengan kalimat sesudahnya adalah jawabannya!",
-        "pageNumber": 4
+        "pageNumber": 4,
+        "illustrationImg": null,
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/bin_p4.png"
       },
       {
         "unitNumber": "1.2",
@@ -61,7 +65,10 @@ export const BIN_SMP_MODUL = [
           "solusi": "Yuk Bahas · Limbah Kain Perca (PGK MCMA Resmi) Kutipan: “Kain perca sering dianggap sampah. Padahal, kain sisa jahitan ini sangat bermanfaat dan bernilai ekonomi jika diolah menjadi tas atau dompet cantik.” Soal: Kata/frasa manakah yang menunjukkan bahwa kain perca masih bisa diolah? Pilih lebih dari satu! (1) Bermanfaat          (2) Siap digunakan (3) Bernilai ekonomi    (4) Lebih menarik Lihat teksnya! Kain perca belum “siap digunakan” karena harus dijahit dulu (2 Salah). Yang jelas menunjukkan potensi pengolahan bernilai guna adalah bermanfaat dan bernilai ekonomi! Jawaban: Pernyataan (1) dan (3)"
         },
         "trikCepat": "Trik Cepat · Cek Kata Dasar Kalau ketemu kata panjang berimbuhan seperti keberlanjutan, kupas dulu kata dasarnya (lanjut) → berarti “keadaan terus berlanjut”!",
-        "pageNumber": 5
+        "pageNumber": 5,
+        "illustrationImg": null,
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/bin_p5.png"
       },
       {
         "unitNumber": "1.3",
@@ -78,7 +85,10 @@ export const BIN_SMP_MODUL = [
           "solusi": "Yuk Bahas · Teks Ulasan Pantai (PG Resmi Pusmendik) Kutipan: “Pantai ini menjadi alternatif wisata baru. Langit senja tampak seperti kanvas alam dan panggung cahaya, sementara debur ombak dan angin menciptakan harmoni alam yang menenangkan.” Soal: Kosakata yang menggambarkan keserasian suara deburan alam ditunjukkan pada frasa … A. alternatif wisata · B. kanvas alam · C. panggung cahaya · D. harmoni alam Cek kata kuncinya: “keserasian suara”! Kanvas dan cahaya berkaitan dengan visual (mata), sedangkan harmoni berarti keselarasan/keserasian bunyi! Jawaban: D. harmoni alam"
         },
         "trikCepat": "Trik Cepat · Cocokkan Kata Kunci Soal Garis bawahi 2 kata kunci di soal (keserasian + suara) → langsung cocokkan ke sinonimnya di opsi (harmoni)!",
-        "pageNumber": 6
+        "pageNumber": 6,
+        "illustrationImg": null,
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/bin_p6.png"
       },
       {
         "unitNumber": "1.4",
@@ -95,7 +105,10 @@ export const BIN_SMP_MODUL = [
           "solusi": "Yuk Bahas · Pelari Terakhir (PG Resmi Pusmendik) Kutipan: “Sorak-sorai penonton sudah tidak terdengar lagi. Namun, seorang pria berdiri sendirian dengan bangga menunggu kedatangan pelari terakhir. Ia memegang salah satu ujung pita kertas yang terikat pada tiang.” Soal: Seorang pria berdiri di garis finis saat pelari terakhir melintas. Apa yang dilakukan pria itu? A. Menunggu ambulans · B. Menyaksikan para pelari · C. Mengikuti dari belakang · D. Memegang ujung pita kertas yang diikat ke tiang Kalimat bukti tertulis persis kata per kata: “Ia memegang salah satu ujung pita kertas yang terikat pada tiang.” Jawaban: D. Memegang ujung pita kertas yang diikat ke tiang"
         },
         "trikCepat": "Trik Cepat · Parafrase = Benar! Kadang jawaban benar tidak persis kata demi kata, tapi memakai sinonim (misal terikat pada ditulis diikat ke). Tetap cocokkan maknanya!",
-        "pageNumber": 7
+        "pageNumber": 7,
+        "illustrationImg": null,
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/bin_p7.png"
       },
       {
         "unitNumber": "1.5",
@@ -112,7 +125,10 @@ export const BIN_SMP_MODUL = [
           "solusi": "Yuk Bahas · Tas Kain Perca (PGK MCMA Resmi) Soal: Dalam teks cara membuat tas dari kain perca (menyiapkan kain perca, busa tipis, ritsleting, gunting, dan jarum jahit), benda apa saja yang digunakan sebagai alat? Pilih lebih dari satu! (1) Ritsleting      (2) Gunting (3) Jarum          (4) Busa tipis Tes satu per satu: ritsleting dan busa tipis dijahit menempel di dalam tas → itu bahan. Yang dipakai untuk memotong dan menjahit lalu disimpan kembali adalah gunting dan jarum! Jawaban: Pernyataan (2) dan (3)"
         },
         "trikCepat": "Trik Cepat · Tes “Ikut Dibawa Pulang Pembeli?” Kalau tasnya dijual, apakah benda itu ikut terbawa di tas? Jika Ya = Bahan; jika Tidak = Alat!",
-        "pageNumber": 8
+        "pageNumber": 8,
+        "illustrationImg": "/modul-assets/illustrations/bin_p8.jpeg",
+        "illustrationCaption": "Kiri: Alat (panci, talenan, pisau, gelas ukur — tidak habis dipakai)  |  Kanan:",
+        "slideImg": "/modul-assets/pages/bin_p8.png"
       },
       {
         "unitNumber": "1.6",
@@ -129,7 +145,10 @@ export const BIN_SMP_MODUL = [
           "solusi": "Yuk Bahas · Latar Waktu Puisi (PGK MCMA Resmi) Soal: Pilihan kata mana saja yang menunjukkan latar waktu pada puisi tentang perempuan pekerja di pagi hari? Pilih lebih dari satu! (1) Bukit-bukit desa (2) Sebelum hari bermula (3) Akar-akar yang melata (4) Berlomba dengan surya Pilahan cepat: (1) bukit desa = latar tempat; (3) akar melata = objek. Yang menunjuk waktu pagi/subuh adalah sebelum hari bermula (2) dan berlomba dengan surya (4, matahari terbit)! Jawaban: Pernyataan (2) dan (4)"
         },
         "trikCepat": "Trik Cepat · Tanya “Kapan atau Di Mana?” Uji setiap opsi dengan pertanyaan singkat: “Bukit desa itu jawaban dari kapan atau di mana?” → Di mana! Langsung coret kalau soal tanya waktu!",
-        "pageNumber": 9
+        "pageNumber": 9,
+        "illustrationImg": "/modul-assets/illustrations/bin_p9.jpeg",
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/bin_p9.png"
       },
       {
         "unitNumber": "1.7",
@@ -146,7 +165,10 @@ export const BIN_SMP_MODUL = [
           "solusi": "Yuk Bahas · Rujukan pada Teks Baduy (PG) Kutipan: “Mereka rutin melaksanakan upacara adat, seperti Sedekah Bumi. Upacara ini menjadi bentuk rasa syukur atas hasil pertanian. Hal ini juga dilakukan untuk menjaga hubungan harmonis antara manusia dan alam.” Soal: Frasa Hal ini pada kalimat terakhir merujuk pada … A. hasil pertanian · B. pelaksanaan upacara adat Sedekah Bumi · C. hubungan harmonis · D. masyarakat Baduy Luar Tarik mundur satu langkah: apa yang dilakukan sebagai bentuk syukur sekaligus menjaga harmoni alam? Pelaksanaan upacara adat Sedekah Bumi! Jawaban: B. pelaksanaan upacara adat Sedekah Bumi"
         },
         "trikCepat": "Trik Cepat · Ganti “Hal ini” dengan Opsi Bacakan ulang: “Pelaksanaan upacara adat Sedekah Bumi juga dilakukan untuk menjaga hubungan harmonis...” → 100% pas dan logis!",
-        "pageNumber": 10
+        "pageNumber": 10,
+        "illustrationImg": null,
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/bin_p10.png"
       },
       {
         "unitNumber": "1.8",
@@ -163,7 +185,10 @@ export const BIN_SMP_MODUL = [
           "solusi": "Yuk Bahas · Makna Tanda Petik (PG) Kutipan: “Kami sadar bahwa dia akan menjadi “pelari terakhir”. Rambutnya beruban, postur tubuhnya tidak lagi tegap, dan kakinya sedikit pincang.” Soal: Mengapa penulis memberi tanda petik pada frasa “pelari terakhir”? A. Karena ucapan langsung dari wanita tua · B. Menunjukkan sebutan khusus/julukan bagi wanita itu · C. Karena merupakan istilah bahasa asing · D. Menunjukkan bahwa kalimat itu tidak benar Di kalimat itu bukan dialog, melainkan narasi petugas medis yang memberi julukan khusus kepada wanita tua yang tertinggal paling belakang! Jawaban: B. Menunjukkan sebutan khusus/julukan bagi wanita itu"
         },
         "trikCepat": "Trik Cepat · Cek Inti Kalimat Kalau kalimat terasa panjang, cukup ambil Subjek + Predikatnya dulu (siapa melakukan apa)—inti pesannya langsung terang!",
-        "pageNumber": 11
+        "pageNumber": 11,
+        "illustrationImg": null,
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/bin_p11.png"
       },
       {
         "unitNumber": "1.9",
@@ -180,7 +205,10 @@ export const BIN_SMP_MODUL = [
           "solusi": "Yuk Bahas · Kerangka Teks Baduy (PG Resmi Pusmendik) Soal: Teks Desa Baduy membahas: (P1) lokasi di Banten & pembagian 2 kelompok, (P2) aturan ketat Baduy Dalam, (P3) keterbukaan Baduy Luar & Sedekah Bumi, (P4) ancaman pembangunan & eksploitasi alam. Kerangka yang paling tepat adalah … A. Lokasi → Wisata Baduy → Pakaian Adat · B. Gambaran Umum → Baduy Dalam → Baduy Luar → Tantangan Pelestarian · C. Sejarah Baduy → Pertanian → Pembangunan · D. Baduy Luar → Baduy Dalam → Upacara Adat Opsi A menambah “wisata” (tidak ada); C menambah “sejarah”; D terbalik urutannya. Hanya B yang runtut dan lengkap 4 paragraf! Jawaban: B. Gambaran Umum → Baduy Dalam → Baduy Luar → Tantangan Pelestarian"
         },
         "trikCepat": "Trik Cepat · Cek Cabang Terakhir! Cara tercepat mengeliminasi opsi bagan adalah mengecek kotak terakhir (paragraf penutup)—biasanya langsung membuang 2–3 opsi salah!",
-        "pageNumber": 12
+        "pageNumber": 12,
+        "illustrationImg": null,
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/bin_p12.png"
       },
       {
         "unitNumber": "1.10",
@@ -197,11 +225,17 @@ export const BIN_SMP_MODUL = [
           "solusi": "Yuk Bahas · Makanan Babirusa (PGK MCMA Resmi) Kutipan: “Babirusa Sulawesi termasuk omnivora. Selain memakan serangga dan ulat, hewan langka ini menyukai jenis umbi-umbian dan tumbuhan hutan seperti kilo, rebung, serta tunas globa.” Soal: Apa saja jenis umbi-umbian / tumbuhan yang menjadi makanan babirusa? Pilih lebih dari satu! (1) Kilo         (2) Rebung (3) Ulat         (4) Tunas globa Teliti kata kunci soal! Ulat memang dimakan babirusa, tapi ulat bukan umbi- umbian/tumbuhan (3 Salah). Yang tepat adalah kilo, rebung, dan tunas globa! Jawaban: Pernyataan (1), (2), dan (4)"
         },
         "trikCepat": "Trik Cepat · Cek Kategori Soal Garis bawahi kategori yang diminta (alat vs bahan, tumbuhan vs hewan, manfaat vs dampak) agar tidak terkecoh fakta yang benar tapi salah kategori!",
-        "pageNumber": 13
+        "pageNumber": 13,
+        "illustrationImg": null,
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/bin_p13.png"
       }
     ],
     "cheatSheet": "",
+    "cheatSheetImg": null,
     "miniTryout": "",
+    "tryoutImg": null,
+    "petaBelajarImg": null,
     "konsepTeori": [
       {
         "subjudul": "Unit 1.1: Istilah Teknis Berbagai Bidang",
@@ -427,7 +461,10 @@ export const BIN_SMP_MODUL = [
           "solusi": "Yuk Bahas · Ide Pokok Paragraf (PG) Kutipan: “Donor darah membawa banyak manfaat bagi kesehatan pendonor. Kegiatan ini membantu mendeteksi penyakit sejak dini. Selain itu, donor darah meningkatkan produksi sel darah baru dan menjaga kesehatan jantung.” Soal: Ide pokok paragraf tersebut adalah … A. Cara mendeteksi penyakit dini · B. Manfaat donor darah bagi kesehatan pendonor · C. Produksi sel darah baru · D. Ajakan donor darah ke PMI Kalimat 2 dan 3 hanyalah rincian contoh dari Kalimat 1! Jadi payung besarnya ada di Kalimat 1: manfaat donor darah bagi kesehatan pendonor. Jawaban: B. Manfaat donor darah bagi kesehatan pendonor"
         },
         "trikCepat": "Trik Cepat · Baca Kalimat 1 & Kalimat Terakhir Untuk soal ide pokok, langsung bandingkan Kalimat 1 dan Kalimat Terakhir! Jika kalimat terakhir punya kata jadi / maka / oleh karena itu, itu Induktif!",
-        "pageNumber": 16
+        "pageNumber": 16,
+        "illustrationImg": null,
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/bin_p16.png"
       },
       {
         "unitNumber": "2.2",
@@ -444,7 +481,10 @@ export const BIN_SMP_MODUL = [
           "solusi": "Yuk Bahas · Babirusa Sulawesi (PGK Kategori Resmi) Soal: “Babirusa adalah hewan unik yang ditemukan di Pulau Sulawesi.” Berdasarkan teks babirusa (hanya jantan bertaring melengkung, hidup di hutan hujan dataran rendah Sulawesi, bersuara khas), tentukan Benar/Salah pernyataan pendukung berikut! A. Babirusa betina di Sulawesi memiliki taring seperti jantan. B. Babirusa hidup di hutan hujan dataran rendah di Sulawesi. C. Babirusa di Sulawesi memiliki suara yang sangat khas. Cek satu per satu! A bertentangan dengan fakta (betina tidak bertaring panjang → Salah). B dan C sesuai teks dan menjelaskan keunikan habitat & ciri babirusa (Benar). Jawaban: A. Salah · B. Benar · C. Benar"
         },
         "trikCepat": "Trik Cepat · Cek Kata “Semua / Hanya / Selalu” Hati-hati bila opsi memakai kata mutlak (semua, selalu, tidak pernah) padahal teks memakai kata sebagian / umumnya—sering kali itu salah!",
-        "pageNumber": 17
+        "pageNumber": 17,
+        "illustrationImg": null,
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/bin_p17.png"
       },
       {
         "unitNumber": "2.3",
@@ -461,7 +501,10 @@ export const BIN_SMP_MODUL = [
           "solusi": "Yuk Bahas · Penyebaran Hoaks (PG) Kutipan: “Judul hoaks biasanya bersifat provokatif. Tujuannya agar pembaca emosi dan segera menyebarkannya tanpa memeriksa sumber. Akibatnya, informasi palsu menyebar cepat dan merugikan banyak orang.” Soal: Mengapa hoaks dapat menyebar dengan sangat cepat menurut teks? A. Karena internet gratis · B. Karena judulnya provokatif sehingga pembaca langsung menyebarkannya tanpa cek sumber · C. Karena berbentuk video pendek · D. Karena ditulis di koran Ikuti rantai dominonya: judul provokatif → pembaca emosi & langsung sebar tanpa cek sumber → menyebar cepat! Jawaban: B. Karena judulnya provokatif sehingga pembaca langsung menyebarkannya tanpa cek sumber"
         },
         "trikCepat": "Trik Cepat · Lingkari “Karena” & “Sehingga” Di belakang karena/sebab selalu ada Sebab; di belakang sehingga/akibatnya selalu ada Akibat!",
-        "pageNumber": 18
+        "pageNumber": 18,
+        "illustrationImg": null,
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/bin_p18.png"
       },
       {
         "unitNumber": "2.4",
@@ -478,7 +521,10 @@ export const BIN_SMP_MODUL = [
           "solusi": "Yuk Bahas · Hubungan Paragraf Baduy (PGK MCMA Resmi) Soal: Paragraf 2 & 3 membahas pelestarian adat & alam Baduy. Paragraf 4 membahas pembangunan pesat & eksploitasi SDA dari pihak luar. Bagaimana hubungannya? Pilih lebih dari satu! (1) Pembangunan pesat mengancam keberlanjutan alam & budaya. (2) Penggunaan SDA berlebihan bisa membahayakan. (3) Masyarakat Baduy berpotensi mengancam kelestarian alam. (4) Upaya pelestarian menghadapi tantangan dari faktor eksternal. Pernyataan (3) jelas salah karena masyarakat Baduy justru yang menjaga alam! Yang tepat adalah (1), (2), dan (4). Jawaban: Pernyataan (1), (2), dan (4)"
         },
         "trikCepat": "Trik Cepat · Coret Opsi yang Menyalahkan Subjek Salah Saat teks memuji pelestarian suatu kelompok lalu muncul ancaman, langsung coret opsi yang menuduh kelompok itu sebagai perusak!",
-        "pageNumber": 19
+        "pageNumber": 19,
+        "illustrationImg": null,
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/bin_p19.png"
       },
       {
         "unitNumber": "2.5",
@@ -495,7 +541,10 @@ export const BIN_SMP_MODUL = [
           "solusi": "Yuk Bahas · Dampak Ancaman Habitat (PGK MCMA Resmi) Soal: Jika habitat hutan hujan dataran rendah babirusa terus terancam aktivitas manusia, dampak apa yang mungkin terjadi? Pilih lebih dari satu! (1) Populasi babirusa akan berkurang akibat aktivitas manusia. (2) Babirusa pindah ke dataran tinggi yang lebih aman. (3) Flora makanan utama babirusa ikut terpengaruh. (4) Terjadi peningkatan konflik manusia dan babirusa. Cek kelogisannya: habitat rusak → populasi turun (1), rantai makanan flora terganggu (3), dan hewan masuk permukiman sehingga konflik naik (4). Babirusa habitatnya dataran rendah, teks tidak menyebut ia bisa pindah ke dataran tinggi (2 Salah). Jawaban: Pernyataan (1), (3), dan (4)"
         },
         "trikCepat": "Trik Cepat · Balikkan Fungsi Benda Kalau teks bilang “X berfungsi untuk Y”, maka jika X tidak ada, prediksinya pasti “Y tidak tercapai / berkurang”!",
-        "pageNumber": 20
+        "pageNumber": 20,
+        "illustrationImg": null,
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/bin_p20.png"
       },
       {
         "unitNumber": "2.6",
@@ -512,7 +561,10 @@ export const BIN_SMP_MODUL = [
           "solusi": "Yuk Bahas · Infografis Minat Baca (PGK Kategori) Soal: Berdasarkan mini-infografis di kiri (200 siswa disurvei), tentukan Benar atau Salah! A. Bacaan yang paling diminati siswa adalah Komik/Novel. B. Gabungan pembaca Artikel Digital & Ensiklopedia sama besar dengan Komik/Novel. C. Lebih dari separuh siswa memilih membaca Komik/Novel. Cek A: 45% tertinggi (Benar). Cek B: 30% + 15% = 45%, sama persis dengan Komik/Novel (Benar). Cek C: “lebih dari separuh” berarti > 50%, padahal cuma 45% (Salah)! Jawaban: A. Benar · B. Benar · C. Salah"
         },
         "trikCepat": "Trik Cepat · Cek Angka Sebelum Kalimat Kalau pernyataan memuat kata perbandingan (dua kali lipat, separuh, sepertiga), langsung hitung rasio persennya di pinggir kertas!",
-        "pageNumber": 21
+        "pageNumber": 21,
+        "illustrationImg": "/modul-assets/illustrations/bin_p21.jpeg",
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/bin_p21.png"
       },
       {
         "unitNumber": "2.7",
@@ -529,7 +581,10 @@ export const BIN_SMP_MODUL = [
           "solusi": "Yuk Bahas · Persamaan 2 Ulasan Pantai (PG) Ringkasan 2 Teks: Teks 1 (gaya formal) memuji keindahan senja keemasan dan menyebut fasilitas toilet & parkir memadai. Teks 2 (gaya santai) menyebut pantai ini hidden gem estetik saat golden hour serta akses jalan agak berbatu. Soal: Persamaan informasi yang dibahas pada kedua teks adalah … A. Akses jalan menuju pantai · B. Kelengkapan fasilitas parkir · C. Keindahan pemandangan saat senja · D. Gaya bahasa nonformal Teks 1 membahas “senja keemasan”, Teks 2 membahas “golden hour” (sinonim senja!). Keduanya sama-sama memuji keindahan senja! Jawaban: C. Keindahan pemandangan saat senja"
         },
         "trikCepat": "Trik Cepat · Waspadai Sinonim Antarteks! Teks 1 pakai kata Indonesia (senja), Teks 2 pakai istilah gaul (golden hour)— maknanya SAMA!",
-        "pageNumber": 22
+        "pageNumber": 22,
+        "illustrationImg": "/modul-assets/illustrations/bin_p22.jpeg",
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/bin_p22.png"
       },
       {
         "unitNumber": "2.8",
@@ -546,7 +601,10 @@ export const BIN_SMP_MODUL = [
           "solusi": "Yuk Bahas · Perbedaan 2 Ulasan (PGK MCMA Resmi) Soal: Berdasarkan tabel centang dari Teks Ulasan 1 & 2 di kiri (keduanya membahas fasilitas & senja, tapi berbeda soal akses jalan dan spot foto), apa saja perbedaan informasi kedua teks? Pilih lebih dari satu! (1) Kemudahan akses.          (2) Fasilitas yang tersedia. (3) Tempat untuk berfoto.    (4) Keindahan saat senja. Fasilitas (2) dan keindahan senja (4) sama-sama dibahas selaras di kedua teks. Yang berbeda jelas adalah kemudahan akses (1) dan tempat berfoto (3)! Jawaban: Pernyataan (1) dan (3)"
         },
         "trikCepat": "Trik Cepat · Skim per Opsi Ambil opsi (1) “akses”, pindai kata “jalan/akses” di Teks 1 lalu Teks 2 → kalau beda langsung centang! Ulangi untuk opsi (2)–(4).",
-        "pageNumber": 23
+        "pageNumber": 23,
+        "illustrationImg": null,
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/bin_p23.png"
       },
       {
         "unitNumber": "2.9",
@@ -563,7 +621,10 @@ export const BIN_SMP_MODUL = [
           "solusi": "Yuk Bahas · Pidato Pagi (PGK MCMA Resmi Pusmendik) Kutipan: “Sebagai kepala sekolah, saya mengingatkan kita semua perlu literasi informasi. Kita harus memeriksa sumber, membandingkan beberapa sumber terpercaya, dan tidak menyebarkan info yang belum jelas.” Soal: Sikap apa saja yang dianjurkan kepala sekolah? Pilih lebih dari satu! (1) Memeriksa sumber informasi sebelum percaya. (2) Membandingkan beberapa sumber terpercaya. (3) Berhenti menggunakan internet dan media sosial. (4) Langsung membagikan berita agar teman tahu lebih cepat. Pernyataan (3) ekstrem/tidak dianjurkan; (4) justru kebalikannya! Yang sesuai teks adalah (1) dan (2). Jawaban: Pernyataan (1) dan (2)"
         },
         "trikCepat": "Trik Cepat · Cari Kata “Harus / Perlu / Sebaiknya” Di pidato, pesan utama pembicara hampir selalu nongkrong di kalimat yang mengandung kata perlu, harus, sebaiknya, mari!",
-        "pageNumber": 24
+        "pageNumber": 24,
+        "illustrationImg": "/modul-assets/illustrations/bin_p24.jpeg",
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/bin_p24.png"
       },
       {
         "unitNumber": "2.10",
@@ -580,11 +641,17 @@ export const BIN_SMP_MODUL = [
           "solusi": "Yuk Bahas · Pilah Fakta vs Opini (PGK Kategori) Soal: Tentukan apakah kalimat berikut termasuk Fakta (Benar) atau Opini (Salah)! A. Masyarakat Baduy terbagi menjadi Baduy Dalam dan Baduy Luar. B. Informasi yang belum jelas sebaiknya tidak disebarkan. C. TKA SMP 2027 dilaksanakan pada 29 Maret–1 April 2027. A adalah klasifikasi nyata (Fakta). B memakai kata saran sebaiknya (Opini). C adalah jadwal resmi bertanggal jelas (Fakta)! Jawaban: A. Benar (Fakta) · B. Salah (Opini) · C. Benar (Fakta)"
         },
         "trikCepat": "Trik Cepat · Tes “Bisa Diperdebatkan?” Kalau dua orang bisa beda pendapat (misal “enak” vs “biasa saja”), itu Opini. Kalau bisa dibuktikan lewat peta/jam/data, itu Fakta!",
-        "pageNumber": 25
+        "pageNumber": 25,
+        "illustrationImg": "/modul-assets/illustrations/bin_p25.jpeg",
+        "illustrationCaption": "Kiri: Fakta (dapat diukur/dibuktikan angka, waktu, alat ukur)  |  Kanan: Opini",
+        "slideImg": "/modul-assets/pages/bin_p25.png"
       }
     ],
     "cheatSheet": "",
+    "cheatSheetImg": null,
     "miniTryout": "",
+    "tryoutImg": null,
+    "petaBelajarImg": null,
     "konsepTeori": [
       {
         "subjudul": "Unit 2.1: Ide Pokok & Kalimat Utama",
@@ -810,7 +877,10 @@ export const BIN_SMP_MODUL = [
           "solusi": "Yuk Bahas · Bola Bekel Dinda (PGK MCMA Resmi) Kutipan: “Dinda bersemangat mengajari Sarah. Saat Sarah gagal berkali- kali, Dinda bertepuk tangan menyemangati. ‘Nanti lama-lama juga bisa, Kak!’ kata Dinda tersenyum lebar.” Soal: Bagaimana sifat yang ditunjukkan Dinda? Pilih lebih dari satu! (1) Pantang menyerah    (2) Percaya diri (3) Suportif                  (4) Pemalu Dinda mengajari dengan semangat & tersenyum lebar → percaya diri (2). Dinda bertepuk tangan & menyemangati → suportif (3). Pantang menyerah itu sifat Sarah! Jawaban: Pernyataan (2) dan (3)"
         },
         "trikCepat": "Trik Cepat · Kunci Kalimat Bukti Setiap memilih 1 kata sifat, tanyakan: “Kalimat mana di teks yang membuktikan sifat ini?” Kalau tidak ada buktinya, langsung coret!",
-        "pageNumber": 28
+        "pageNumber": 28,
+        "illustrationImg": "/modul-assets/illustrations/bin_p28.jpeg",
+        "illustrationCaption": "Kerangka TKA SMP memakai tokoh berkarakter bulat (punya lebih dari satu sisi emosi/sifat, seperti manusia nyata—bisa sempat malu lalu bangkit penasaran). Penulis menampilkan sifat lewat 2 teknik: Analitik (disebut langsung) dan Dramatik (lewat dialog, tindakan, dan reaksi tokoh lain).",
+        "slideImg": "/modul-assets/pages/bin_p28.png"
       },
       {
         "unitNumber": "3.2",
@@ -827,7 +897,10 @@ export const BIN_SMP_MODUL = [
           "solusi": "Yuk Bahas · Sikap Tokoh Aku (PGK Kategori Resmi) Soal: Berdasarkan cerita Pelari Terakhir, tentukan Benar atau Salah tentang sikap tokoh Aku! A. Terharu melihat perjuangan wanita tua yang memiliki kondisi terbatas. B. Bangga menunggu kedatangan wanita tua melintasi garis finis. C. Terinspirasi oleh keteguhan wanita tua menghadapi tantangan. A benar (air mata mengalir karena terharu). B Salah—yang berdiri bangga di garis finis itu seorang pria, bukan tokoh Aku di ambulans! C benar (“saat kesulitan hidup melanda, aku teringat kepadanya”). Jawaban: A. Benar · B. Salah · C. Benar"
         },
         "trikCepat": "Trik Cepat · Cek Subjek di Setiap Baris PGK Di soal PGK Kategori tentang sikap tokoh, coret diam-diam pernyataan yang sebenarnya milik tokoh lain!",
-        "pageNumber": 29
+        "pageNumber": 29,
+        "illustrationImg": null,
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/bin_p29.png"
       },
       {
         "unitNumber": "3.3",
@@ -844,7 +917,10 @@ export const BIN_SMP_MODUL = [
           "solusi": "Yuk Bahas · Menyimpulkan Latar Suasana (PG) Kutipan: “Langit mendung menggantung rendah di atas dermaga. Hanya debur ombak pelan yang menemani Raka menatap kapal ayahnya yang perlahan menghilang di cakrawala.” Soal: Latar suasana yang tergambar pada kutipan tersebut adalah … A. riuh dan meriah · B. tegang dan mencekam · C. sepi dan mengharukan · D. ceria dan penuh tawa Kata kunci: mendung, hanya debur ombak pelan, kapal perlahan menghilang → membangun suasana sepi dan mengharukan! Jawaban: C. sepi dan mengharukan"
         },
         "trikCepat": "Trik Cepat · Rasakan Warna Kata Kelompokkan kata sifat di kutipan: apakah condong ke hangat/ceria, sunyi/haru, atau panik/tegang?",
-        "pageNumber": 30
+        "pageNumber": 30,
+        "illustrationImg": "/modul-assets/illustrations/bin_p30.jpeg",
+        "illustrationCaption": "Kontras Latar Suasana: Kiri = suasana ceria/hangat di halaman pagi  |  Kanan",
+        "slideImg": "/modul-assets/pages/bin_p30.png"
       },
       {
         "unitNumber": "3.4",
@@ -861,7 +937,10 @@ export const BIN_SMP_MODUL = [
           "solusi": "Yuk Bahas · Menentukan Tahap Alur (PG) Kutipan: “Keringat mengucur deras saat tali panggung tiba-tiba putus tepat lima menit sebelum pentas dimulai. Semua panitia panik saling berpandangan.” Soal: Kutipan tersebut merupakan bagian alur … A. Orientasi (pengenalan) · B. Klimaks (puncak ketegangan) · C. Resolusi (penyelesaian) · D. Koda (pesan akhir) Masalah memuncak di detik-detik paling genting (5 menit sebelum pentas, semua panik) → jelas bagian Klimaks! Jawaban: B. Klimaks (puncak ketegangan)"
         },
         "trikCepat": "Trik Cepat · Cek Posisi Masalah Belum ada masalah = Orientasi · Masalah memuncak = Klimaks · Masalah beres = Resolusi!",
-        "pageNumber": 31
+        "pageNumber": 31,
+        "illustrationImg": null,
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/bin_p31.png"
       },
       {
         "unitNumber": "3.5",
@@ -878,7 +957,10 @@ export const BIN_SMP_MODUL = [
           "solusi": "Yuk Bahas · Konflik Batin Petugas Medis (PG) Kutipan: “Aku ingin menghentikannya karena khawatir dengan kakinya yang pincang. Namun, pada saat yang sama, aku juga berdoa agar dia terus maju sampai finis.” Soal: Jenis konflik yang dialami tokoh Aku pada kutipan tersebut adalah … A. Konflik antartokoh dengan sopir · B. Konflik batin karena bimbang antara khawatir dan kagum · C. Konflik dengan penonton · D. Konflik fisik Pertentangan terjadi di dalam perasaan tokoh Aku sendiri (ingin menghentikan vs berdoa agar terus maju) → Konflik Batin! Jawaban: B. Konflik batin karena bimbang antara khawatir dan kagum"
         },
         "trikCepat": "Trik Cepat · Kata “Namun, di Sisi Lain” Kalau satu tokoh merasakan dua keinginan berlawanan di saat sama, 100% itu adalah konflik batin (internal)!",
-        "pageNumber": 32
+        "pageNumber": 32,
+        "illustrationImg": null,
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/bin_p32.png"
       },
       {
         "unitNumber": "3.6",
@@ -895,7 +977,10 @@ export const BIN_SMP_MODUL = [
           "solusi": "Yuk Bahas · Menentukan Sudut Pandang (PG) Kutipan: “Sarah baru pulang sekolah. Ia berniat menuju ke kamar... Deg! Sarah serasa ditampar. ‘Aku coba, ya!’ pinta Sarah menutupi rasa malunya.” Soal: Sudut pandang yang digunakan pengarang pada kutipan tersebut adalah … A. Orang pertama pelaku utama · B. Orang pertama pengamat · C. Orang ketiga serbatahu · D. Orang kedua Lihat narasi di luar tanda petik: memakai nama Sarah & ia, plus tahu isi hatinya (malu, berniat) → Orang ketiga serbatahu! Jawaban: C. Orang ketiga serbatahu"
         },
         "trikCepat": "Trik Cepat · Tutup Semua Dialog! Abaikan dulu kalimat di dalam tanda petik (“...”). Lihat kata ganti di narasinya: aku = Orang 1; dia/nama = Orang 3!",
-        "pageNumber": 33
+        "pageNumber": 33,
+        "illustrationImg": null,
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/bin_p33.png"
       },
       {
         "unitNumber": "3.7",
@@ -912,7 +997,10 @@ export const BIN_SMP_MODUL = [
           "solusi": "Yuk Bahas · Bola Bekel Dinda (PGK Kategori Resmi) Soal: Apa yang mungkin terjadi jika Dinda tidak mengajak Sarah bermain? Tentukan Benar atau Salah! A. Sarah tidak akan tahu cara bermain bola bekel. B. Sarah tetap akan sering bermain game online. C. Sarah akan mencari informasi tentang bola bekel. Cek kondisi awal: Sarah awalnya tidak tahu bekel dan sering main game online → A dan B Benar! Niat mencari info bekel baru muncul setelah ia gagal dan penasaran saat main bersama Dinda → C Salah! Jawaban: A. Benar · B. Benar · C. Salah"
         },
         "trikCepat": "Trik Cepat · Putar Ulang ke Paragraf 1 Kalau soal memakai kata “jika X tidak terjadi”, langsung tengok paragraf 1–2 untuk melihat kebiasaan awal tokoh!",
-        "pageNumber": 34
+        "pageNumber": 34,
+        "illustrationImg": null,
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/bin_p34.png"
       },
       {
         "unitNumber": "3.8",
@@ -929,7 +1017,10 @@ export const BIN_SMP_MODUL = [
           "solusi": "Yuk Bahas · Amanat Pelari Terakhir (PG) Kutipan Akhir: “Bagi wanita itu, maraton bukanlah tentang mengalahkan orang lain atau memenangkan piala. Ini tentang menyelesaikan apa yang sudah dimulainya.” Soal: Amanat utama yang paling tepat dari cerita tersebut adalah … A. Jangan ikut lomba jika sudah tua · B. Kemenangan piala adalah tujuan utama · C. Selesaikan setiap perjuangan yang telah dimulai dengan teguh meski terasa sulit · D. Selalu naik ambulans saat lelah Paragraf penutup langsung merangkum pesan intinya: keteguhan menyelesaikan apa yang sudah dimulai! Jawaban: C. Selesaikan setiap perjuangan yang telah dimulai dengan teguh"
         },
         "trikCepat": "Trik Cepat · Cek Paragraf Terakhir! Di cerpen realisme, penulis sering menyelipkan perenungan/amanat tepat di 1–2 kalimat terakhir cerita!",
-        "pageNumber": 35
+        "pageNumber": 35,
+        "illustrationImg": null,
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/bin_p35.png"
       },
       {
         "unitNumber": "3.9",
@@ -946,7 +1037,10 @@ export const BIN_SMP_MODUL = [
           "solusi": "Yuk Bahas · Makna Larik Puisi (PG Resmi Pusmendik) Soal: Apa makna larik “merebut hidup di pasar-pasar kota” pada puisi tentang perempuan desa yang berangkat sejak subuh? A. Kegigihan dan perjuangan perempuan dalam bekerja · B. Pencapaian karier di perkantoran · C. Sekadar aktivitas santai di pasar · D. Kewajiban belanja harian Kata merebut menunjukkan usaha keras penuh energi, dan hidup berarti penghidupan/nafkah → kegigihan dan perjuangan dalam bekerja! Jawaban: A. Kegigihan dan perjuangan perempuan dalam bekerja"
         },
         "trikCepat": "Trik Cepat · Baca Judul Puisi Dulu! Judul puisi adalah kompas utamanya—semua larik kiasan di dalam bait pasti mengarah kembali ke judulnya!",
-        "pageNumber": 36
+        "pageNumber": 36,
+        "illustrationImg": "/modul-assets/illustrations/bin_p36.jpeg",
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/bin_p36.png"
       },
       {
         "unitNumber": "3.10",
@@ -963,7 +1057,10 @@ export const BIN_SMP_MODUL = [
           "solusi": "Yuk Bahas · Menjelaskan Majas (PG Aplikasi) Kutipan: “Semangatnya tetap menyala meski badai rintangan datang silih berganti menghadang langkahnya.” Soal: Makna ungkapan “badai rintangan” pada kalimat tersebut adalah … A. Hujan lebat saat berangkat sekolah · B. Berbagai masalah dan ujian hidup yang berat · C. Angin kencang di laut · D. Jalan berlubang Badai di sini adalah metafora untuk masalah/ujian yang datang bertubi-tubi dan berat, bukan cuaca sungguhan! Jawaban: B. Berbagai masalah dan ujian hidup yang berat"
         },
         "trikCepat": "Trik Cepat · Cek Konteks Kalimat Lihat pasangan katanya: badai dipasangkan dengan rintangan → otomatis bermakna kias (ujian berat)!",
-        "pageNumber": 37
+        "pageNumber": 37,
+        "illustrationImg": null,
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/bin_p37.png"
       },
       {
         "unitNumber": "3.11",
@@ -980,7 +1077,10 @@ export const BIN_SMP_MODUL = [
           "solusi": "Yuk Bahas · Menentukan Citraan Puisi (PGK MCMA) Bait Puisi: “(1) Gemericik air sungai membelah sunyi / (2) Kabut putih menyelimuti lereng bukit / (3) Dingin pagi menyapa ujung jari / (4) Daun- daun basah bergetar pelan.” Soal: Pilih semua pasangan larik dan citraan yang benar! (1) Larik 1 menggunakan citraan pendengaran. (2) Larik 2 menggunakan citraan penglihatan. (3) Larik 3 menggunakan citraan perabaan. (4) Larik 4 menggunakan citraan penciuman. Gemericik = telinga (1 Benar); kabut putih = mata (2 Benar); dingin di jari = kulit/perabaan (3 Benar); daun bergetar = gerak, bukan penciuman (4 Salah)! Jawaban: Pernyataan (1), (2), dan (3)"
         },
         "trikCepat": "Trik Cepat · Tutup Mata 2 Detik Bayangkan kalimatnya: indra mana yang pertama bereaksi—mata, telinga, hidung, atau kulit? Langsung ketemu!",
-        "pageNumber": 38
+        "pageNumber": 38,
+        "illustrationImg": null,
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/bin_p38.png"
       },
       {
         "unitNumber": "3.12",
@@ -997,7 +1097,10 @@ export const BIN_SMP_MODUL = [
           "solusi": "Yuk Bahas · Keteladanan Tokoh (PG) Kutipan: “Meski sempat ditolak tiga penerbit karena keterbatasan dana cetak, Ibu Kartini tetap menuliskan gagasannya setiap malam demi kemajuan pendidikan perempuan.” Soal: Sikap yang paling patut diteladani dari kutipan tersebut adalah … A. Tinggal di kota besar · B. Kegigihan berkarya dan peduli pendidikan meski menghadapi penolakan · C. Memiliki banyak penerbit · D. Tidak pernah mengalami kesulitan Fokus pada sikap baik menghadapi penolakan: gigih berkarya dan peduli pendidikan! Jawaban: B. Kegigihan berkarya dan peduli pendidikan meski ditolak"
         },
         "trikCepat": "Trik Cepat · Tes “Bisa Ditiru Siswa SMP?” Keteladanan selalu bisa kamu praktikkan hari ini juga (tekun, jujur, disiplin, peduli)!",
-        "pageNumber": 39
+        "pageNumber": 39,
+        "illustrationImg": "/modul-assets/illustrations/bin_p39.jpeg",
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/bin_p39.png"
       },
       {
         "unitNumber": "3.13",
@@ -1014,11 +1117,17 @@ export const BIN_SMP_MODUL = [
           "solusi": "Yuk Bahas · Bandingkan 2 Cerpen (PGK MCMA) Soal: Berdasarkan tabel perbandingan Pelari Terakhir (Teks 1) dan Bola Bekel Dinda (Teks 2) di kiri, pilih pernyataan yang benar! (1) Kedua cerita menggunakan sudut pandang yang berbeda. (2) Kedua cerita sama-sama menonjolkan sikap pantang menyerah. (3) Teks 2 lebih banyak menggunakan dialog langsung dibanding Teks 1. (4) Kedua cerita berlatar di arena lomba olahraga. Cek 1–3: semua sesuai bukti (Orang ke-1 vs ke-3; sama-sama gigih; Teks 2 penuh dialog Sarah–Dinda). Hanya (4) salah karena Teks 2 berlatar di rumah! Jawaban: Pernyataan (1), (2), dan (3)"
         },
         "trikCepat": "Trik Cepat · Cek 3 Detik: Dialog vs Narasi Lihat sekilas banyaknya tanda petik (“...”) di Teks 1 vs Teks 2—langsung tahu mana yang bergaya dialog!",
-        "pageNumber": 40
+        "pageNumber": 40,
+        "illustrationImg": null,
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/bin_p40.png"
       }
     ],
     "cheatSheet": "Bab 3 · Teks Fiksi & Kebahasaan — Cheat Sheet 1 Halaman\nRangkuman Visual Literasi TKA SMP 2027\nCheat Sheet · Teks Informasi & Kebahasaan\nKunci cepat membaca teks informasi tunggal & jamak!\nTopik Kunci Cepat TKA SMP\nIstilah Teknis Cek petunjuk konteks: definisi (adalah), dampak, &\nnuansa (+/−).\nAlat vs Bahan Alat = dipakai ulang (gunting, jarum) · Bahan =\nmenyatu/habis (kain, busa).\nIde Pokok Cek Kalimat 1 (Deduktif) vs Kalimat Terakhir\n(Induktif: jadi, maka).\nTeks Jamak Pakai tabel centang ✓/✗: Sama = di keduanya;\nBeda = hanya 1 teks / berlawanan.\nFakta vs Opini Fakta = angka, tanggal, lokasi nyata · Opini =\nsangat, indah, sebaiknya, mungkin.\nCheat Sheet · Teks Fiksi, Majas & Citraan\nRingkasan unsur intrinsik & gaya bahasa siap pakai!\nTopik Kunci Cepat TKA SMP\nSudut Pandang Tutup dialog (“...”)! Narasi aku = Orang 1; ia/nama =\nOrang 3.\nKonflik Batin = bimbang di dalam hati · Luar = benturan\ntokoh lain/alam.\n4 Majas Inti Personifikasi (bak manusia) · Metafora (langsung) ·\nSimile (bagai) · Hiperbola (lebay).\n5 Citraan Visual (mata) · Auditif (telinga) · Taktil (kulit) ·\nOlfaktori (hidung) · Kinestetik (gerak).\nPrediksi Harus logis berdasar bukti teks—coret opsi\nekstrem/lebay!\nAturan Emas\nSelalu kembalikan jawabanmu ke kalimat bukti di teks—bukan asumsi\npribadi di luar teks!",
+    "cheatSheetImg": "/modul-assets/cheatsheet/cheatsheet_bin.png",
     "miniTryout": "",
+    "tryoutImg": null,
+    "petaBelajarImg": null,
     "konsepTeori": [
       {
         "subjudul": "Unit 3.1: Tokoh & Penokohan (Karakter Bulat)",
@@ -1268,7 +1377,10 @@ export const BIN_SMP_MODUL = [
           "solusi": "Yuk Bahas · Relevansi Teks Pidato Hoaks (PG) Soal: Tindakan sehari-hari pelajar SMP manakah yang paling relevan dengan pesan teks Pidato Pagi tentang literasi informasi? A. Langsung meneruskan pesan “libur sekolah besok” di grup kelas · B. Mengecek kebenaran info libur ke wali kelas atau situs resmi sekolah sebelum membagikan · C. Menghapus semua grup kelas · D. Membaca judulnya saja Pesan pidato adalah bersikap kritis dan memeriksa sumber terpercaya sebelum menyebarkan info → B paling tepat! Jawaban: B. Mengecek kebenaran info ke wali kelas/situs resmi dulu"
         },
         "trikCepat": "Trik Cepat · Pilih Tindakan Paling Bijak & Seimbang Di soal relevansi, opsi yang bijak, konkret, dan sesuai nilai positif teks hampir selalu menjadi kuncinya!",
-        "pageNumber": 44
+        "pageNumber": 44,
+        "illustrationImg": null,
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/bin_p44.png"
       },
       {
         "unitNumber": "4.2",
@@ -1285,7 +1397,10 @@ export const BIN_SMP_MODUL = [
           "solusi": "Yuk Bahas · Banu vs Komar (PGK Kategori Resmi) Konteks: Banu lebih suka Teks Ulasan 2 (gaya santai) karena terasa dekat. Kedua teks sama-sama memuat gambar dan kalimat ajakan di akhir. Mengapa pernyataan Banu tepat untuk keunggulan Teks 2 yang tidak ada di Teks 1? A. Gaya penyajian menggunakan bahasa nonformal sehingga lebih santai. B. Penyajian gambar pada teks yang membuat pembaca lebih tertarik. C. Akhir ulasan dilengkapi kalimat ajakan mengunjungi pantai. Karena gambar (B) dan kalimat ajakan (C) juga ada di Teks 1, keduanya bukan keunggulan khusus Teks 2 (Salah). Hanya bahasa nonformal santai (A) yang membedakan (Benar)! Jawaban: A. Benar · B. Salah · C. Salah"
         },
         "trikCepat": "Trik Cepat · Cek Keduanya! Setiap ketemu frase “keunggulan Teks 2 yang tidak ada di Teks 1”, wajib cek apakah fitur itu absen di Teks 1!",
-        "pageNumber": 45
+        "pageNumber": 45,
+        "illustrationImg": null,
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/bin_p45.png"
       },
       {
         "unitNumber": "4.3",
@@ -1302,7 +1417,10 @@ export const BIN_SMP_MODUL = [
           "solusi": "Yuk Bahas · Posisi Gambar Pelari Terakhir (PGK Resmi) Soal: Mengapa penulis meletakkan gambar momen garis finis tepat sebelum paragraf terakhir? Tentukan Benar atau Salah! A. Menunjukkan gambaran fisik awal wanita tua saat mulai lomba. B. Membantu pembaca membayangkan momen pelari terakhir melintasi garis finis. C. Memperkuat pesan bahwa menyelesaikan sesuatu yang telah dimulai adalah berharga. Fisik awal sudah di tengah cerita, bukan tujuan gambar akhir (A Salah). Gambar tepat memvisualkan momen finis (B Benar) dan menguatkan pesan paragraf akhir (C Benar)! Jawaban: A. Salah · B. Benar · C. Benar"
         },
         "trikCepat": "Trik Cepat · Cek Tetangga Gambar! Selalu baca 1 paragraf sebelum dan 1 paragraf sesudah gambar— jawabannya pasti menempel di situ!",
-        "pageNumber": 46
+        "pageNumber": 46,
+        "illustrationImg": "/modul-assets/illustrations/bin_p46.jpeg",
+        "illustrationCaption": "Gambar dalam bacaan TKA bukan pajangan—letaknya sengaja dipilih untuk memperkuat momen cerita!",
+        "slideImg": "/modul-assets/pages/bin_p46.png"
       },
       {
         "unitNumber": "4.4",
@@ -1319,7 +1437,10 @@ export const BIN_SMP_MODUL = [
           "solusi": "Yuk Bahas · Pendapat 3 Murid (PGK Kategori Resmi) Konteks: Setelah baca puisi perjuangan perempuan pekerja pagi hari, Dina kagum (“perempuan hebat penuh semangat”), Mira sepakat (“rela bangun pagi”), Tika merasa kasihan (“pasti lelah”). Tentukan Setuju / Tidak Setuju untuk pendapat yang tepat menggambarkan suasana haru-kagum puisi: A. Dina karena menunjukkan kekagumannya kepada para perempuan pekerja. B. Mira karena pendapatnya senada dengan pendapat Dina. C. Tika karena pendapatnya hanya menyoroti rasa kasihan/lelah. Dina & Mira menangkap semangat perjuangan yang mengharukan (A & B Setuju), sedangkan Tika bergeser ke rasa kasihan belaka (C Tidak Setuju). Jawaban: A. Setuju · B. Setuju · C. Tidak Setuju"
         },
         "trikCepat": "Trik Cepat · Cek Kata Kunci “Karena” Di soal Setuju/Tidak Setuju, periksa nama murid DAN alasannya—kalau alasannya melenceng dari teks, pilih Tidak Setuju!",
-        "pageNumber": 47
+        "pageNumber": 47,
+        "illustrationImg": null,
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/bin_p47.png"
       },
       {
         "unitNumber": "4.5",
@@ -1336,7 +1457,10 @@ export const BIN_SMP_MODUL = [
           "solusi": "Yuk Bahas · Evaluasi Pesan Berantai (PGK Kategori) Pesan WA: “DARURAT!! Besok semua sekolah diliburkan karena badai besar! SEBARKAN SEKARANG ke 10 grup sebelum terlambat!” Tentukan Benar/Salah: A. Kalimat bernada provokatif dan mendesak agar segera disebarkan. B. Informasi tersebut kredibel karena memakai kata “DARURAT”. C. Pembaca sebaiknya mengecek situs resmi BMKG atau pengumuman sekolah. Pesan jelas provokatif (A Benar), tidak punya sumber resmi sehingga tidak kredibel (B Salah), dan langkah tepat adalah cek sumber resmi (C Benar)! Jawaban: A. Benar · B. Salah · C. Benar"
         },
         "trikCepat": "Trik Cepat · Cek “Siapa yang Bicara?” Berita resmi selalu punya alamat/lembaga yang bisa dipertanggungjawabkan —kalau tanpa sumber jelas, langsung curiga!",
-        "pageNumber": 48
+        "pageNumber": 48,
+        "illustrationImg": "/modul-assets/illustrations/bin_p48.jpeg",
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/bin_p48.png"
       },
       {
         "unitNumber": "4.6",
@@ -1353,11 +1477,17 @@ export const BIN_SMP_MODUL = [
           "solusi": "Yuk Bahas · Latihan Membuang Pengecoh Situasi: Kamu ragu antara 2 opsi PG pada soal inferensi teks fiksi. Apa langkah terbaik dalam 20 detik? Bandingkan kata pembeda di kedua opsi itu saja (abaikan bagian kalimat yang sama). Lalu kembali ke 1 paragraf kunci di teks dan cek kata pembeda mana yang punya bukti eksplisit/implisit paling kuat. Biasanya 1 opsi ketahuan “mengada-ada”! Kunci: Bandingkan kata pembeda → cocokkan ke 1 kalimat bukti!"
         },
         "trikCepat": "Trik Cepat · Angka 2,5 Menit/Soal Untuk 1 teks grup berisi 4 soal, jatah waktumu 10 menit (3 menit baca & tandai teks + 7 menit jawab 4 soal). Pas dan tenang!",
-        "pageNumber": 49
+        "pageNumber": 49,
+        "illustrationImg": null,
+        "illustrationCaption": "",
+        "slideImg": "/modul-assets/pages/bin_p49.png"
       }
     ],
     "cheatSheet": "",
+    "cheatSheetImg": null,
     "miniTryout": "Simulasi Mini Tryout · Bahasa Indonesia TKA SMP 2027\nSimulasi Mini Tryout Campuran 4 Bab (15 Menit)\nStimulus & Soal Nomor 1–3\nPasang timer 15 menit, kerjakan semua 6 nomor tanpa mengintip halaman\n52!\nTeks 1 (Informasi): Taman Baca Keliling\n“Sejak 2024, komunitas pemuda Banyuwangi menggerakkan Taman Baca\nKeliling memakai motor boks setiap hari Minggu pagi di alun-alun. Lebih dari\n300 buku cerita dan sains dapat dipinjam gratis. Inisiatif ini berhasil\nmeningkatkan minat baca anak-anak sekitar, meski masih membutuhkan\ntambahan rak tahan hujan.”\nNomor 1–3 (Tekstual, Inferensial & Prediksi)\n [PG · Tekstual] Kapan layanan Taman Baca Keliling beroperasi? (A. Setiap\nhari · B. Sabtu malam · C. Minggu pagi · D. Akhir bulan)\n [PG · Inferensial] Ide pokok Teks 1 adalah … (A. Harga motor boks · B.\nGerakan Taman Baca Keliling pemuda Banyuwangi & dampaknya · C. Cara\nmembuat rak · D. Jumlah buku sains)\n [PGK MCMA · Prediksi] Apa yang mungkin terjadi jika hujan deras turun\nsaat kegiatan berlangsung tanpa rak tahan hujan? (1) Buku berisiko\nbasah/rusak · (2) Kegiatan dipindah ke tempat berteduh · (3) Komunitas\ndibubarkan selamanya.\nStimulus Fiksi & Soal Nomor 4–6\nCampuran Fiksi, Majas, Citraan, dan Evaluasi!\nTeks 2 (Fiksi): Lentera di Teras\n“Angin malam mengetuk pelan jendela kamar Nisa. Di luar, listrik padam\ntotal. Nisa segera menyalakan lentera kecil dan mengajak adiknya yang\nketakutan bermain tebak bayangan di dinding. Tawa kecil pun pecah\nmemecah gelap.”\nNomor 4–6 (Majas, Watak & Evaluasi)\n [PG · Majas] Kalimat “Angin malam mengetuk pelan jendela”\nmenggunakan majas … (A. Hiperbola · B. Personifikasi · C. Simile · D. Ironi)\n [PGK MCMA · Penokohan] Sifat Nisa yang tergambar dalam cerita: (1)\nKreatif · (2) Penyayang adik · (3) Egois · (4) Sigap menghadapi masalah.\n [PGK Kategori · Evaluasi] Tentukan Benar/Salah: (A) Latar waktu cerita\nadalah malam hari · (B) Sudut pandang cerita adalah orang pertama · (C)\nPesan cerita: tetap tenang dan kreatif saat menghadapi kendala.\n\nBahasa Indonesia TKA SMP 2027\nKunci Tryout & Peta Belajar 10 Minggu — Bimbel Gemilang\nKunci Simulasi Mini Tryout (Hal 51)\nCek skormu—kalau benar 5–6 nomor, literasimu sudah sangat siap!\nKunci & Pembahasan Kilat\nNo 1 → C (Minggu pagi): Informasi tersurat langsung di kalimat pertama.\nNo 2 → B: Merangkum keseluruhan gerakan Taman Baca Keliling beserta\ndampaknya.\nNo 3 → (1) dan (2): Opsi (3) “dibubarkan selamanya” adalah prediksi\nekstrem/lebay!\nNo 4 → B (Personifikasi): Angin diberi sifat manusia (mengetuk).\nNo 5 → (1), (2), dan (4): Nisa sigap menyalakan lentera & kreatif\nmenghibur adiknya dengan tebak bayangan.\nNo 6 → A. Benar · B. Salah · C. Benar: Narasi memakai nama Nisa (Orang\nKetiga, bukan Orang Pertama!).\nRencana 10 Minggu Menuju 29 Maret 2027\nTarget nilai Baik (76,67+) hingga Istimewa (95+) bersama Bimbel Gemilang!\nTahap Fokus Latihan Mingguan\nMinggu 1–3 Tuntaskan Bab 1 (Tekstual, Unit 1.1–1.10) + biasakan\nbaca 1 artikel/hari (15 menit).\nMinggu 4–6 Kuasai Bab 2 (Inferensial & Teks Jamak, Unit 2.1–2.10)\n+ latih tabel pembanding 2 teks.\nMinggu 7–8 Bedah Bab 3 (Fiksi, Puisi, Majas, Citraan) & Bab 4\n(Evaluasi–Apresiasi).\nMinggu 9–10 Drill Tryout 30 soal / 75 menit + review Cheat Sheet\nHal 43 → Ujian 29 Mar–1 Apr 2027!\nPesan Penutup · Bimbel Gemilang\nSelamat telah menuntaskan Modul Master 52 Halaman Bahasa Indonesia\nTKA SMP 2027! Ingat rumus literasi: baca soal dulu, kunci kalimat bukti di\nteks, dan waspadai opsi yang terdengar benar padahal di luar bacaan.\nSemangat raih predikat Istimewa bersama Bimbel Gemilang!",
+    "tryoutImg": "/modul-assets/tryout/tryout_bin_p51.png",
+    "petaBelajarImg": "/modul-assets/tryout/tryout_bin_p52.png",
     "konsepTeori": [
       {
         "subjudul": "Unit 4.1: Relevansi Teks dengan Kehidupan Sehari-Hari",
