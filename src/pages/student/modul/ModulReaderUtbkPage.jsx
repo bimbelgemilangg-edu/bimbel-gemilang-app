@@ -1,6 +1,8 @@
 // src/pages/student/modul/ModulReaderUtbkPage.jsx
 // ==============================================================================
-// PEMBACA MODUL INTERAKTIF UTBK-SNBT 2027 (AmbisPTN Standard 1:1)
+// PEMBACA MODUL INTERAKTIF BIMBEL GEMILANG (STANDAR AMBIS 1:1)
+// - SMA Kelas 12: Kurikulum UTBK-SNBT 2027
+// - SMP Kelas 9 : Kurikulum TKA SMP (MTK, BIN, IPA, BIG)
 // Micro-learning, Trik Cepat, Contoh Soal Terbimbing & Kuis Cek Pemahaman
 // ==============================================================================
 
@@ -34,6 +36,16 @@ import {
   getSkorKuisBab,
   simpanTerakhirDibaca,
 } from '../../../data/ambisModulUtbkData.js';
+import {
+  getSubtestSmpByKode,
+  getBabSmpBySlug,
+  getBabSmpTetangga,
+  tandaiBabSmpSelesai,
+  getDaftarBabSmpSelesai,
+  simpanSkorKuisSmpBab,
+  getSkorKuisSmpBab,
+  simpanTerakhirDibacaSmp,
+} from '../../../data/tkaSmpModulData.js';
 import { useProfilSiswa } from '../../../utils/profilSiswa';
 import { deteksiTingkatSiswa } from '../../../utils/tingkatSiswa';
 
@@ -47,6 +59,18 @@ export default function ModulReaderUtbkPage() {
     return deteksiTingkatSiswa({ ...profil, kelas: kelasCek, kelasSekolah: kelasCek, jenjang: jenjangCek });
   }, [profil, kelasCek, jenjangCek]);
 
+  // Deteksi apakah modul yang dibuka adalah subtes SMP
+  const isSmpSubtest = useMemo(() => {
+    const k = String(subtestKode || '').toUpperCase().trim();
+    return (
+      k.endsWith('_SMP') ||
+      k.includes('SMP') ||
+      ['MTK_SMP', 'BIN_SMP', 'IPA_SMP', 'BIG_SMP'].includes(k)
+    );
+  }, [subtestKode]);
+
+  const isSmp = isSmpSubtest || infoTingkat.isSmp;
+
   const [studentId, setStudentId] = useState('');
   const [bukaSolusi, setBukaSolusi] = useState({});
   const [jawabanUser, setJawabanUser] = useState({});
@@ -54,10 +78,27 @@ export default function ModulReaderUtbkPage() {
   const [hasilKuis, setHasilKuis] = useState(null);
   const [isSelesai, setIsSelesai] = useState(false);
 
-  // Ambil data bab dan subtes
-  const subtest = useMemo(() => getSubtestByKode(subtestKode), [subtestKode]);
-  const bab = useMemo(() => getBabBySlug(subtestKode, babSlug), [subtestKode, babSlug]);
-  const tetangga = useMemo(() => getBabTetangga(subtestKode, babSlug), [subtestKode, babSlug]);
+  // Ambil data bab dan subtes (mendukung SMP dan UTBK SMA)
+  const subtest = useMemo(() => {
+    if (isSmp) {
+      return getSubtestSmpByKode(subtestKode) || getSubtestByKode(subtestKode);
+    }
+    return getSubtestByKode(subtestKode) || getSubtestSmpByKode(subtestKode);
+  }, [subtestKode, isSmp]);
+
+  const bab = useMemo(() => {
+    if (isSmp) {
+      return getBabSmpBySlug(subtestKode, babSlug) || getBabBySlug(subtestKode, babSlug);
+    }
+    return getBabBySlug(subtestKode, babSlug) || getBabSmpBySlug(subtestKode, babSlug);
+  }, [subtestKode, babSlug, isSmp]);
+
+  const tetangga = useMemo(() => {
+    if (isSmp) {
+      return getBabSmpTetangga(subtestKode, babSlug) || getBabTetangga(subtestKode, babSlug);
+    }
+    return getBabTetangga(subtestKode, babSlug) || getBabSmpTetangga(subtestKode, babSlug);
+  }, [subtestKode, babSlug, isSmp]);
 
   useEffect(() => {
     const sid =
@@ -69,18 +110,26 @@ export default function ModulReaderUtbkPage() {
 
     if (bab) {
       // Simpan riwayat terakhir dibaca
-      simpanTerakhirDibaca(sid, {
-        subtestKode: bab.subtestKode,
-        babSlug: bab.slug,
-        judul: bab.judul,
-      });
+      if (isSmp) {
+        simpanTerakhirDibacaSmp(sid, {
+          subtestKode: bab.subtestKode,
+          babSlug: bab.slug,
+          judul: bab.judul,
+        });
+      } else {
+        simpanTerakhirDibaca(sid, {
+          subtestKode: bab.subtestKode,
+          babSlug: bab.slug,
+          judul: bab.judul,
+        });
+      }
 
       // Cek apakah sudah selesai sebelumnya
-      const selesaiList = getDaftarBabSelesai(sid);
+      const selesaiList = isSmp ? getDaftarBabSmpSelesai(sid) : getDaftarBabSelesai(sid);
       setIsSelesai(selesaiList.includes(bab.id));
 
       // Cek apakah sudah pernah mengerjakan kuis bab ini
-      const savedKuis = getSkorKuisBab(sid, bab.id);
+      const savedKuis = isSmp ? getSkorKuisSmpBab(sid, bab.id) : getSkorKuisBab(sid, bab.id);
       if (savedKuis) {
         setHasilKuis(savedKuis);
       } else {
@@ -93,21 +142,22 @@ export default function ModulReaderUtbkPage() {
       setBukaSolusi({});
       window.scrollTo(0, 0);
     }
-  }, [subtestKode, babSlug, bab]);
+  }, [subtestKode, babSlug, bab, isSmp]);
 
-  if (!infoTingkat.isKelas12) {
+  // Guard hak akses: Hanya Kelas 12 SMA & SMP yang diizinkan
+  if (!infoTingkat.isKelas12 && !infoTingkat.isSmp) {
     return (
       <div style={{ maxWidth: 640, margin: '60px auto', padding: '24px 20px', textAlign: 'center', fontFamily: 'system-ui, sans-serif' }}>
         <div style={{ width: 64, height: 64, borderRadius: 32, background: '#fef3c7', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
           <BookOpen size={30} color="#d97706" />
         </div>
         <h2 style={{ fontSize: 20, fontWeight: 900, color: '#0f172a', marginBottom: 8 }}>
-          Fitur Modul Belajar UTBK Khusus Kelas 12 SMA
+          Fitur Modul Belajar Berstandar Gemilang
         </h2>
         <p style={{ fontSize: 14, color: '#64748b', lineHeight: 1.6, marginBottom: 20 }}>
           {infoTingkat.isSmaBawah
-            ? 'Mohon maaf, kurikulum 7 subtes UTBK-SNBT 2027 ini disusun khusus untuk siswa Kelas 12 SMA & Alumni yang bersiap menghadapi seleksi PTN tahun ini. Untuk siswa Kelas 10 & 11, silakan fokus eksplorasi Target Kampus & Katalog 173 PTN serta pendalaman materi sekolah.'
-            : 'Mohon maaf, materi modul 7 subtes UTBK-SNBT ini diperuntukkan khusus bagi jenjang Kelas 12 SMA. Silakan akses menu belajar dan latihan harian sesuai jenjangmu di Dashboard.'}
+            ? 'Mohon maaf, materi modul UTBK-SNBT ini diperuntukkan bagi siswa Kelas 12 SMA & Alumni. Untuk siswa Kelas 10 & 11, silakan fokus eksplorasi Target Kampus & Katalog 173 PTN serta pendalaman materi sekolah.'
+            : 'Mohon maaf, modul belajar interaktif saat ini tersedia untuk jenjang TKA SMP Kelas 9 dan UTBK-SNBT Kelas 12 SMA. Silakan akses menu belajar dan latihan harian sesuai jenjangmu di Dashboard.'}
         </p>
         <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
           {infoTingkat.bisaAksesTargetKampus && (
@@ -156,7 +206,7 @@ export default function ModulReaderUtbkPage() {
             cursor: 'pointer',
           }}
         >
-          Kembali ke Modul Belajar
+          Kembali ke Daftar Modul
         </button>
       </div>
     );
@@ -184,10 +234,13 @@ export default function ModulReaderUtbkPage() {
       }
     });
 
-    const res = simpanSkorKuisBab(studentId, bab.id, benar, total);
+    const res = isSmp
+      ? simpanSkorKuisSmpBab(studentId, bab.id, benar, total)
+      : simpanSkorKuisBab(studentId, bab.id, benar, total);
+
     setHasilKuis(res);
     setSudahDiperiksa(true);
-    if (benar >= 3) {
+    if (benar >= Math.ceil(total * 0.6)) {
       setIsSelesai(true);
     }
   };
@@ -200,7 +253,11 @@ export default function ModulReaderUtbkPage() {
 
   // Handler tandai manual bab selesai
   const handleTandaiSelesai = () => {
-    tandaiBabSelesai(studentId, bab.id);
+    if (isSmp) {
+      tandaiBabSmpSelesai(studentId, bab.id);
+    } else {
+      tandaiBabSelesai(studentId, bab.id);
+    }
     setIsSelesai(true);
   };
 
@@ -233,7 +290,7 @@ export default function ModulReaderUtbkPage() {
             gap: 6,
           }}
         >
-          <ArrowLeft size={14} /> Daftar Modul
+          <ArrowLeft size={14} /> Daftar Modul {isSmp ? 'TKA' : 'UTBK'}
         </button>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -247,7 +304,7 @@ export default function ModulReaderUtbkPage() {
               fontWeight: 800,
             }}
           >
-            {subtest.emoji} {subtest.kode} • Bab {bab.babNumber}
+            {subtest.emoji} {subtest.singkatan || subtest.kode} • Bab {bab.babNumber}
           </span>
 
           {isSelesai ? (
@@ -297,7 +354,7 @@ export default function ModulReaderUtbkPage() {
           marginBottom: 20,
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#64748b', fontSize: 11.5, marginBottom: 8 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#64748b', fontSize: 11.5, marginBottom: 8, flexWrap: 'wrap' }}>
           <span style={{ fontWeight: 700, color: subtest.badgeWarna }}>{subtest.nama}</span>
           <span>•</span>
           <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
@@ -378,7 +435,7 @@ export default function ModulReaderUtbkPage() {
                   }}
                 >
                   <div style={{ fontSize: 11, fontWeight: 800, color: '#0f766e', textTransform: 'uppercase', marginBottom: 6 }}>
-                    Kaidah Penting UTBK:
+                    {isSmp ? 'Kaidah Penting TKA SMP:' : 'Kaidah Penting UTBK:'}
                   </div>
                   {kt.poinPenting.map((pt, pIdx) => (
                     <div key={pIdx} style={{ fontSize: 12, color: '#475569', lineHeight: 1.5, marginBottom: 4 }}>
@@ -391,7 +448,7 @@ export default function ModulReaderUtbkPage() {
           ))}
       </div>
 
-      {/* ⚡ TRIK CEPAT UTBK */}
+      {/* ⚡ TRIK CEPAT GEMILANG */}
       {bab.trikCepat && (
         <div
           style={{
@@ -405,7 +462,7 @@ export default function ModulReaderUtbkPage() {
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#b45309', fontWeight: 800, fontSize: 14, marginBottom: 8 }}>
             <Zap size={18} />
-            Trik Cepat UTBK (30 Detik)
+            {isSmp ? 'Trik Kilat Gemilang (30 Detik)' : 'Trik Cepat UTBK (30 Detik)'}
           </div>
           <p style={{ margin: 0, fontSize: 13, color: '#78350f', lineHeight: 1.6, fontWeight: 500 }}>
             {bab.trikCepat}
@@ -536,7 +593,7 @@ export default function ModulReaderUtbkPage() {
         </div>
       )}
 
-      {/* 🧠 CEK PEMAHAMAN: KUIS 5 BUTIR INTERAKTIF */}
+      {/* 🧠 CEK PEMAHAMAN: KUIS INTERAKTIF */}
       {bab.kuisPemahaman && bab.kuisPemahaman.length > 0 && (
         <div
           style={{
@@ -548,28 +605,23 @@ export default function ModulReaderUtbkPage() {
             boxShadow: '0 4px 15px rgba(13, 148, 136, 0.08)',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-            <div>
-              <div style={{ fontSize: 11, fontWeight: 800, color: '#0d9488', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                Latihan Mandiri
-              </div>
-              <h2 style={{ margin: '2px 0 0', fontSize: 18, fontWeight: 800, color: '#0f172a' }}>
-                🧠 Cek Pemahaman: 5 Soal Interaktif
-              </h2>
-            </div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6, flexWrap: 'wrap', gap: 10 }}>
+            <h2 style={{ margin: 0, fontSize: 17, fontWeight: 800, color: '#0f172a', display: 'flex', alignItems: 'center', gap: 8 }}>
+              <Zap size={18} style={{ color: '#0d9488' }} /> Cek Pemahaman Interaktif ({bab.kuisPemahaman.length} Butir)
+            </h2>
 
             {hasilKuis && (
               <div
                 style={{
-                  background: hasilKuis.skorBenar >= 3 ? '#dcfce7' : '#fee2e2',
-                  color: hasilKuis.skorBenar >= 3 ? '#15803d' : '#b91c1c',
+                  background: (hasilKuis.skorBenar || 0) >= Math.ceil(bab.kuisPemahaman.length * 0.6) ? '#dcfce7' : '#fee2e2',
+                  color: (hasilKuis.skorBenar || 0) >= Math.ceil(bab.kuisPemahaman.length * 0.6) ? '#15803d' : '#b91c1c',
                   padding: '6px 12px',
                   borderRadius: 12,
                   fontSize: 12,
                   fontWeight: 800,
                 }}
               >
-                Skor: {hasilKuis.skorBenar} / {hasilKuis.totalSoal} ({hasilKuis.persen}%)
+                Skor: {hasilKuis.skorBenar} / {hasilKuis.totalSoal} ({hasilKuis.nilai100 || hasilKuis.persen}%)
               </div>
             )}
           </div>
@@ -582,6 +634,11 @@ export default function ModulReaderUtbkPage() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
             {bab.kuisPemahaman.map((q, qIdx) => {
               const selectedOption = jawabanUser[q.id];
+              const opsiList = Array.isArray(q.opsi)
+                ? q.opsi
+                : Object.entries(q.opsi || {}).map(([label, text]) => ({ label, text }));
+              const soalTeks = q.soal || q.pertanyaan;
+
               return (
                 <div
                   key={q.id}
@@ -596,12 +653,12 @@ export default function ModulReaderUtbkPage() {
                     Soal #{qIdx + 1}
                   </div>
                   <div style={{ fontSize: 13.5, color: '#0f172a', fontWeight: 600, lineHeight: 1.6, marginBottom: 14 }}>
-                    {q.soal}
+                    {soalTeks}
                   </div>
 
-                  {/* Opsi Pilihan Ganda A - E */}
+                  {/* Opsi Pilihan Ganda */}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                    {q.opsi.map((op) => {
+                    {opsiList.map((op) => {
                       const isSelected = selectedOption === op.label;
                       const isCorrect = q.kunci === op.label;
 
@@ -749,10 +806,11 @@ export default function ModulReaderUtbkPage() {
           <div style={{ fontSize: 14, fontWeight: 800, color: '#0f172a', marginBottom: 10 }}>
             📌 Ringkasan Inti (Key Takeaways)
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            {bab.keyTakeaways.map((takeaway, i) => (
-              <div key={i} style={{ fontSize: 12.5, color: '#475569', lineHeight: 1.5 }}>
-                • {takeaway}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {bab.keyTakeaways.map((kt, i) => (
+              <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 12.5, color: '#334155' }}>
+                <span style={{ color: '#0d9488', fontWeight: 800 }}>•</span>
+                <span>{kt}</span>
               </div>
             ))}
           </div>
@@ -836,7 +894,9 @@ export default function ModulReaderUtbkPage() {
             Siap Menguji Pemahamanmu?
           </div>
           <div style={{ fontSize: 15, fontWeight: 800 }}>
-            Lanjut Latihan Soal Subtes {subtest.nama} di Roadmap
+            {isSmp
+              ? `Lanjut Latihan Soal ${subtest.nama} di Roadmap TKA SMP`
+              : `Lanjut Latihan Soal Subtes ${subtest.nama} di Roadmap`}
           </div>
           <div style={{ fontSize: 12, opacity: 0.85, marginTop: 2 }}>
             Terapkan trik cepat yang baru kamu pelajari ke latihan bertarget waktu.

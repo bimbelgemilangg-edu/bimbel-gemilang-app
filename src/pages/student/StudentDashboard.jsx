@@ -928,8 +928,15 @@ const StudentDashboard = () => {
             ...(cekAi ? [{ key: 'roadmap', label: 'Roadmap', emoji: '🗺️', warna: '#ccfbf1', warnaTeks: '#0f766e', segeraHadir: false }] : []),
             { key: 'latihan', label: 'Latihan Harian', emoji: '📝', warna: '#ecfeff', warnaTeks: '#155e75', segeraHadir: false },
             { key: 'tryout', label: 'TryOut Terjadwal', emoji: '📅', warna: '#fef3c7', warnaTeks: '#92400e', segeraHadir: false },
-            // 📚 Modul Belajar UTBK: HANYA untuk kelas 12 SMA (Paten)
-            ...(infoTingkat.isKelas12 ? [{ key: 'modul', label: 'Modul Belajar UTBK', emoji: '📚', warna: '#ccfbf1', warnaTeks: '#0f766e', segeraHadir: false }] : []),
+            // 📚 Modul Belajar: UTBK untuk kelas 12 SMA, TKA untuk SMP
+            ...((infoTingkat.isKelas12 || infoTingkat.isSmp) ? [{
+              key: 'modul',
+              label: infoTingkat.isKelas12 ? 'Modul Belajar UTBK' : 'Modul Belajar TKA',
+              emoji: '📚',
+              warna: '#ccfbf1',
+              warnaTeks: '#0f766e',
+              segeraHadir: false
+            }] : []),
             { key: 'progres', label: 'Progres Saya', emoji: '📊', warna: '#dcfce7', warnaTeks: '#166534', segeraHadir: true },
             { key: 'leaderboard', label: 'Leaderboard', emoji: '🏆', warna: '#fce7f3', warnaTeks: '#9d174d', segeraHadir: false },
             { key: 'kehadiran', label: 'Kehadiran', emoji: '🗓️', warna: '#dbeafe', warnaTeks: '#1e40af', segeraHadir: false },

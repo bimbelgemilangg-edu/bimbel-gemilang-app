@@ -87,14 +87,14 @@ const SidebarSiswa = ({ activeMenu, setActiveMenu, isOpen, setIsOpen }) => {
         // 📅 Try Out Terjadwal: Try out resmi dari tentor / admin (konten disaring sesuai jenjang)
         { id: 'tryout', label: 'Try Out Terjadwal', icon: <Calendar size={18} />, path: '/siswa/tryout', color: '#f59e0b', badge: 'Jadwal' },
         { id: 'latihan-harian', label: 'Latihan Harian', icon: <Flame size={18} />, path: '/siswa/latihan-harian', color: '#dc2626' },
-        // 📚 Modul Belajar UTBK: HANYA MUNCUL KHUSUS KELAS 12 SMA (Paten)
-        ...(infoTingkat.isKelas12 ? [{
+        // 📚 Modul Belajar: UTBK untuk Kelas 12 SMA, TKA untuk SMP
+        ...((infoTingkat.isKelas12 || infoTingkat.isSmp) ? [{
           id: 'modul',
-          label: 'Modul Belajar UTBK',
+          label: infoTingkat.isKelas12 ? 'Modul Belajar UTBK' : 'Modul Belajar TKA',
           icon: <BookOpen size={18} />,
           path: '/siswa/modul',
           color: '#0d9488',
-          badge: '7 Subtes',
+          badge: infoTingkat.isKelas12 ? '7 Subtes' : 'TKA SMP',
         }] : []),
         { id: 'jadwal', label: 'Jadwal', icon: <Calendar size={18} />, path: '/siswa/jadwal', color: '#ec4899' },
         // 📷 Scan Absensi: Pemindaian QR absensi tatap muka & foto kehadiran

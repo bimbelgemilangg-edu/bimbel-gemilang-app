@@ -295,15 +295,15 @@ export default function PusatAmbisGemilang({
               </button>
               <div style={{ flex: 1 }}>
                 <div style={{ ...styles.teksMisiJudul, textDecoration: statusMisi.misi2 ? 'line-through' : 'none', color: statusMisi.misi2 ? '#64748b' : '#1e293b' }}>
-                  {infoTingkat.isKelas12 ? 'Pelajari 1 Modul Bab UTBK' : 'Pelajari Materi Pembelajaran'}
+                  {infoTingkat.isKelas12 ? 'Pelajari 1 Modul Bab UTBK' : (infoTingkat.isSmp ? 'Pelajari 1 Modul Bab TKA SMP' : 'Pelajari Materi Pembelajaran')}
                 </div>
                 <div style={styles.teksMisiSub}>
-                  {infoTingkat.isKelas12 ? 'Penguatan konsep 7 subtes resmi SNPMB' : 'Penguatan konsep dan telaah materi'}
+                  {infoTingkat.isKelas12 ? 'Penguatan konsep 7 subtes resmi SNPMB' : (infoTingkat.isSmp ? 'Penguatan konsep Numerasi & Literasi TKA Kelas 9' : 'Penguatan konsep dan telaah materi')}
                 </div>
               </div>
               <button
                 type="button"
-                onClick={() => navigate(infoTingkat.isKelas12 ? '/siswa/modul' : '/siswa/latihan-harian')}
+                onClick={() => navigate((infoTingkat.isKelas12 || infoTingkat.isSmp) ? '/siswa/modul' : '/siswa/latihan-harian')}
                 style={styles.btnAksiMisi}
               >
                 Buka 📖

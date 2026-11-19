@@ -1,7 +1,9 @@
 // src/pages/student/modul/ModulBelajarUtbkPage.jsx
 // ==============================================================================
-// MODUL BELAJAR UTBK-SNBT 2027 (AmbisPTN Standard 1:1)
-// 7 Subtes • 46 Bab Terstruktur • 100% UNLOCKED untuk Siswa Gemilang
+// MODUL BELAJAR GEMILANG (STANDAR AMBIS 1:1)
+// - SMA Kelas 12: Kurikulum UTBK-SNBT 2027 (7 Subtes Resmi SNPMB)
+// - SMP Kelas 9 : Kurikulum TKA SMP (Subtes Utama: MTK & BIN, Subtes Tambahan: IPA & BIG)
+// 100% UNLOCKED & Terstruktur dengan Konsep Kunci, Trik Kilat & Kuis Interaktif
 // ==============================================================================
 
 import React, { useState, useEffect, useMemo } from 'react';
@@ -18,6 +20,8 @@ import {
   BookMarked,
   Filter,
   Check,
+  Eye,
+  EyeOff,
 } from 'lucide-react';
 import {
   DAFTAR_SUBTES_MODUL,
@@ -25,6 +29,12 @@ import {
   hitungStatistikModulSiswa,
   getTerakhirDibaca,
 } from '../../../data/ambisModulUtbkData.js';
+import {
+  DAFTAR_SUBTES_SMP,
+  SEMUA_BAB_SMP,
+  hitungStatistikModulSmpSiswa,
+  getTerakhirDibacaSmp,
+} from '../../../data/tkaSmpModulData.js';
 import { useProfilSiswa } from '../../../utils/profilSiswa';
 import { deteksiTingkatSiswa } from '../../../utils/tingkatSiswa';
 
@@ -37,17 +47,25 @@ export default function ModulBelajarUtbkPage() {
     return deteksiTingkatSiswa({ ...profil, kelas: kelasCek, kelasSekolah: kelasCek, jenjang: jenjangCek });
   }, [profil, kelasCek, jenjangCek]);
 
+  const isSmp = infoTingkat.isSmp;
+  const isKelas12 = infoTingkat.isKelas12;
+
   const [selectedSubtes, setSelectedSubtes] = useState('ALL');
   const [searchQuery, setSearchQuery] = useState('');
   const [studentId, setStudentId] = useState('');
+  const [tampilkanSubtesLain, setTampilkanSubtesLain] = useState(false);
   const [statistik, setStatistik] = useState({
-    totalBab: 46,
+    totalBab: isSmp ? 12 : 46,
     totalSelesai: 0,
     persenTotal: 0,
     perSubtes: {},
     babSelesaiIds: [],
   });
   const [terakhirDibaca, setTerakhirDibaca] = useState(null);
+
+  // Sumber data modul sesuai jenjang
+  const daftarSubtes = isSmp ? DAFTAR_SUBTES_SMP : DAFTAR_SUBTES_MODUL;
+  const semuaBab = isSmp ? SEMUA_BAB_SMP : SEMUA_BAB_MODUL;
 
   useEffect(() => {
     const sid =
@@ -56,41 +74,68 @@ export default function ModulBelajarUtbkPage() {
       localStorage.getItem('studentDocId') ||
       'siswa_gemilang_default';
     setStudentId(sid);
-    const stat = hitungStatistikModulSiswa(sid);
-    setStatistik(stat);
-    const last = getTerakhirDibaca(sid);
-    setTerakhirDibaca(last);
-  }, []);
+
+    if (isSmp) {
+      const stat = hitungStatistikModulSmpSiswa(sid);
+      setStatistik(stat);
+      const last = getTerakhirDibacaSmp(sid);
+      setTerakhirDibaca(last);
+    } else {
+      const stat = hitungStatistikModulSiswa(sid);
+      setStatistik(stat);
+      const last = getTerakhirDibaca(sid);
+      setTerakhirDibaca(last);
+    }
+  }, [isSmp]);
 
   // Filter bab berdasarkan subtes dan pencarian
   const filteredBab = useMemo(() => {
-    return SEMUA_BAB_MODUL.filter((bab) => {
-      const matchSubtes = selectedSubtes === 'ALL' || bab.subtestKode === selectedSubtes;
+    return semuaBab.filter((bab) => {
+      // Logika SMP: Subtes Utama (MTK & BIN) vs Subtes Tambahan (IPA & BIG)
+      if (isSmp) {
+        if (selectedSubtes === 'ALL') {
+          if (!tampilkanSubtesLain && !bab.isUtama) {
+            return false;
+          }
+        } else if (bab.subtestKode !== selectedSubtes) {
+          return false;
+        }
+      } else {
+        const matchSubtes = selectedSubtes === 'ALL' || bab.subtestKode === selectedSubtes;
+        if (!matchSubtes) return false;
+      }
+
       const q = searchQuery.toLowerCase().trim();
       const matchSearch =
         !q ||
         bab.judul.toLowerCase().includes(q) ||
-        bab.subtestNama.toLowerCase().includes(q) ||
-        bab.subtestKode.toLowerCase().includes(q) ||
-        bab.ringkasanSingkat.toLowerCase().includes(q) ||
+        (bab.subtestNama && bab.subtestNama.toLowerCase().includes(q)) ||
+        (bab.subtestKode && bab.subtestKode.toLowerCase().includes(q)) ||
+        (bab.ringkasanSingkat && bab.ringkasanSingkat.toLowerCase().includes(q)) ||
         (bab.learningObjectives && bab.learningObjectives.some((o) => o.toLowerCase().includes(q)));
-      return matchSubtes && matchSearch;
+      return matchSearch;
     });
-  }, [selectedSubtes, searchQuery]);
+  }, [semuaBab, isSmp, selectedSubtes, tampilkanSubtesLain, searchQuery]);
 
-  if (!infoTingkat.isKelas12) {
+  // Hitung jumlah bab utama vs tambahan SMP
+  const jumlahBabUtamaSmp = useMemo(() => {
+    return SEMUA_BAB_SMP.filter((b) => b.isUtama).length;
+  }, []);
+
+  // Proteksi Akses: Hanya Kelas 12 SMA & SMP yang mengakses fitur Modul Belajar ini
+  if (!isKelas12 && !isSmp) {
     return (
       <div style={{ maxWidth: 640, margin: '60px auto', padding: '24px 20px', textAlign: 'center', fontFamily: 'system-ui, sans-serif' }}>
         <div style={{ width: 64, height: 64, borderRadius: 32, background: '#fef3c7', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
           <BookOpen size={30} color="#d97706" />
         </div>
         <h2 style={{ fontSize: 20, fontWeight: 900, color: '#0f172a', marginBottom: 8 }}>
-          Fitur Modul Belajar UTBK Khusus Kelas 12 SMA
+          Fitur Modul Belajar Berstandar Gemilang
         </h2>
         <p style={{ fontSize: 14, color: '#64748b', lineHeight: 1.6, marginBottom: 20 }}>
           {infoTingkat.isSmaBawah
-            ? 'Mohon maaf, kurikulum 7 subtes UTBK-SNBT 2027 ini disusun khusus untuk siswa Kelas 12 SMA & Alumni yang bersiap menghadapi seleksi PTN tahun ini. Untuk siswa Kelas 10 & 11, silakan fokus eksplorasi Target Kampus & Katalog 173 PTN serta pendalaman materi sekolah.'
-            : 'Mohon maaf, materi modul 7 subtes UTBK-SNBT ini diperuntukkan khusus bagi jenjang Kelas 12 SMA. Silakan akses menu belajar dan latihan harian sesuai jenjangmu di Dashboard.'}
+            ? 'Mohon maaf, kurikulum 7 subtes UTBK-SNBT disusun khusus untuk siswa Kelas 12 SMA & Alumni. Untuk siswa Kelas 10 & 11, silakan fokus eksplorasi Target Kampus & Katalog 173 PTN serta pendalaman materi harian.'
+            : 'Mohon maaf, fitur Modul Belajar interaktif saat ini tersedia untuk jenjang TKA SMP Kelas 9 dan UTBK-SNBT Kelas 12 SMA. Silakan akses menu belajar dan latihan harian sesuai jenjangmu di Dashboard.'}
         </p>
         <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
           {infoTingkat.bisaAksesTargetKampus && (
@@ -148,7 +193,7 @@ export default function ModulBelajarUtbkPage() {
           }}
         />
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8, flexWrap: 'wrap' }}>
           <span
             style={{
               background: 'rgba(255,255,255,0.2)',
@@ -165,7 +210,7 @@ export default function ModulBelajarUtbkPage() {
             }}
           >
             <Sparkles size={13} />
-            Standar Kurikulum AmbisPTN 1:1
+            {isSmp ? 'Standar Kurikulum TKA SMP Kelas 9' : 'Standar Kurikulum AmbisPTN 1:1'}
           </span>
           <span
             style={{
@@ -182,10 +227,12 @@ export default function ModulBelajarUtbkPage() {
         </div>
 
         <h1 style={{ margin: '0 0 6px', fontSize: 24, fontWeight: 800, letterSpacing: '-0.02em' }}>
-          Modul Belajar UTBK-SNBT 2027
+          {isSmp ? 'Modul Belajar TKA SMP Kelas 9' : 'Modul Belajar UTBK-SNBT 2027'}
         </h1>
-        <p style={{ margin: '0 0 16px', fontSize: 13, opacity: 0.92, maxWidth: 640, lineHeight: 1.5 }}>
-          Pelajari konsep kunci, trik kilat 30 detik, jebakan umum, contoh soal bertahap, dan kuis cek pemahaman interaktif untuk 7 subtes resmi SNBT.
+        <p style={{ margin: '0 0 16px', fontSize: 13, opacity: 0.92, maxWidth: 660, lineHeight: 1.5 }}>
+          {isSmp
+            ? 'Pelajari konsep kunci, trik kilat 30 detik, jebakan umum, contoh soal bertahap, dan kuis cek pemahaman interaktif untuk persiapan TKA, Asesmen Nasional, & seleksi SMA Unggulan.'
+            : 'Pelajari konsep kunci, trik kilat 30 detik, jebakan umum, contoh soal bertahap, dan kuis cek pemahaman interaktif untuk 7 subtes resmi SNBT.'}
         </p>
 
         {/* Progress Bar Siswa */}
@@ -306,7 +353,11 @@ export default function ModulBelajarUtbkPage() {
           />
           <input
             type="text"
-            placeholder="Cari bab, topik, atau kata kunci (contoh: Silogisme, Vieta, EYD V, P vs Q)..."
+            placeholder={
+              isSmp
+                ? 'Cari bab, rumus, atau konsep TKA SMP (contoh: Bentuk Akar, Kuadrat, Pidato, Listrik)...'
+                : 'Cari bab, topik, atau kata kunci (contoh: Silogisme, Vieta, EYD V, P vs Q)...'
+            }
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             style={{
@@ -334,8 +385,10 @@ export default function ModulBelajarUtbkPage() {
             overflowX: 'auto',
             paddingBottom: 4,
             WebkitOverflowScrolling: 'touch',
+            alignItems: 'center',
           }}
         >
+          {/* Tombol Tab Semua */}
           <button
             onClick={() => setSelectedSubtes('ALL')}
             style={{
@@ -353,50 +406,131 @@ export default function ModulBelajarUtbkPage() {
               gap: 6,
             }}
           >
-            📚 Semua ({SEMUA_BAB_MODUL.length})
+            📚 {isSmp ? (tampilkanSubtesLain ? `Semua Subtes (${semuaBab.length})` : `Subtes Utama (${jumlahBabUtamaSmp})`) : `Semua (${semuaBab.length})`}
           </button>
 
-          {DAFTAR_SUBTES_MODUL.map((sub) => {
-            const isSelected = selectedSubtes === sub.kode;
-            const subStat = statistik.perSubtes[sub.kode];
-            return (
-              <button
-                key={sub.kode}
-                onClick={() => setSelectedSubtes(sub.kode)}
-                style={{
-                  padding: '8px 14px',
-                  borderRadius: 12,
-                  border: isSelected ? `2px solid ${sub.badgeWarna}` : '1px solid #e2e8f0',
-                  background: isSelected ? sub.bgLight : '#ffffff',
-                  color: isSelected ? sub.badgeWarna : '#475569',
-                  fontWeight: isSelected ? 800 : 600,
-                  fontSize: 12,
-                  cursor: 'pointer',
-                  whiteSpace: 'nowrap',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 6,
-                  transition: 'all 0.15s ease',
-                }}
-              >
-                <span>{sub.emoji}</span>
-                <span>{sub.kode}</span>
-                <span
+          {/* Tab Subtes List */}
+          {daftarSubtes
+            .filter((sub) => {
+              if (isSmp && !tampilkanSubtesLain && !sub.isUtama) {
+                return false;
+              }
+              return true;
+            })
+            .map((sub) => {
+              const isSelected = selectedSubtes === sub.kode;
+              const subStat = statistik.perSubtes[sub.kode];
+              return (
+                <button
+                  key={sub.kode}
+                  onClick={() => setSelectedSubtes(sub.kode)}
                   style={{
-                    background: isSelected ? sub.badgeWarna : '#f1f5f9',
-                    color: isSelected ? '#ffffff' : '#64748b',
-                    borderRadius: 999,
-                    padding: '1px 6px',
-                    fontSize: 10,
-                    fontWeight: 700,
+                    padding: '8px 14px',
+                    borderRadius: 12,
+                    border: isSelected ? `2px solid ${sub.badgeWarna}` : '1px solid #e2e8f0',
+                    background: isSelected ? sub.bgLight : '#ffffff',
+                    color: isSelected ? sub.badgeWarna : '#475569',
+                    fontWeight: isSelected ? 800 : 600,
+                    fontSize: 12,
+                    cursor: 'pointer',
+                    whiteSpace: 'nowrap',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 6,
+                    transition: 'all 0.15s ease',
                   }}
                 >
-                  {subStat ? `${subStat.selesai}/${sub.totalBab}` : sub.totalBab}
-                </span>
-              </button>
-            );
-          })}
+                  <span>{sub.emoji}</span>
+                  <span>{sub.singkatan || sub.kode}</span>
+                  <span
+                    style={{
+                      background: isSelected ? sub.badgeWarna : '#f1f5f9',
+                      color: isSelected ? '#ffffff' : '#64748b',
+                      borderRadius: 999,
+                      padding: '1px 6px',
+                      fontSize: 10,
+                      fontWeight: 700,
+                    }}
+                  >
+                    {subStat ? `${subStat.selesai}/${sub.totalBab}` : sub.totalBab}
+                  </span>
+                </button>
+              );
+            })}
+
+          {/* 🌟 TOGGLE SUBTES LAIN (KHUSUS SMP) */}
+          {isSmp && (
+            <button
+              type="button"
+              onClick={() => {
+                const next = !tampilkanSubtesLain;
+                setTampilkanSubtesLain(next);
+                if (!next && (selectedSubtes === 'IPA_SMP' || selectedSubtes === 'BIG_SMP')) {
+                  setSelectedSubtes('ALL');
+                }
+              }}
+              style={{
+                padding: '8px 14px',
+                borderRadius: 12,
+                border: tampilkanSubtesLain ? '2px solid #6366f1' : '1.5px dashed #94a3b8',
+                background: tampilkanSubtesLain ? '#eef2ff' : '#f8fafc',
+                color: tampilkanSubtesLain ? '#4338ca' : '#475569',
+                fontWeight: 700,
+                fontSize: 12,
+                cursor: 'pointer',
+                whiteSpace: 'nowrap',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+                transition: 'all 0.15s ease',
+              }}
+              title={tampilkanSubtesLain ? 'Sembunyikan Subtes Tambahan IPA & Inggris' : 'Tampilkan Subtes Tambahan IPA & Inggris'}
+            >
+              {tampilkanSubtesLain ? (
+                <>
+                  <EyeOff size={14} /> Sembunyikan Subtes Lain
+                </>
+              ) : (
+                <>
+                  <Eye size={14} /> + Lihat Subtes Lain (IPA & BIG)
+                </>
+              )}
+            </button>
+          )}
         </div>
+
+        {/* Info Banner Khusus SMP */}
+        {isSmp && (
+          <div
+            style={{
+              marginTop: 10,
+              padding: '8px 14px',
+              background: '#f0fdf4',
+              border: '1px solid #bbf7d0',
+              borderRadius: 10,
+              fontSize: 12,
+              color: '#166534',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: 10,
+              flexWrap: 'wrap',
+            }}
+          >
+            <span>
+              ✨ <strong>Fokus TKA SMP</strong>: Subtes utama wajib resmi adalah <strong>Matematika (Numerasi)</strong> dan <strong>Bahasa Indonesia (Literasi)</strong>.
+              {!tampilkanSubtesLain && ' Butuh persiapan seleksi SMA Unggulan? Klik tombol "+ Lihat Subtes Lain" untuk modul IPA & Bahasa Inggris.'}
+            </span>
+            {!tampilkanSubtesLain && (
+              <span
+                onClick={() => setTampilkanSubtesLain(true)}
+                style={{ fontWeight: 800, textDecoration: 'underline', cursor: 'pointer', color: '#15803d' }}
+              >
+                Tampilkan Sekarang ➔
+              </span>
+            )}
+          </div>
+        )}
       </div>
 
       {/* 📚 GRID BAB MODUL */}
@@ -466,11 +600,25 @@ export default function ModulBelajarUtbkPage() {
                           letterSpacing: '0.02em',
                         }}
                       >
-                        {bab.subtestEmoji} {bab.subtestKode}
+                        {bab.subtestEmoji} {bab.subtestSingkatan || bab.subtestKode}
                       </span>
                       <span style={{ fontSize: 10.5, color: '#94a3b8', fontWeight: 600 }}>
                         Bab {bab.babNumber}
                       </span>
+                      {isSmp && !bab.isUtama && (
+                        <span
+                          style={{
+                            background: '#eef2ff',
+                            color: '#4f46e5',
+                            padding: '2px 6px',
+                            borderRadius: 4,
+                            fontSize: 9.5,
+                            fontWeight: 700,
+                          }}
+                        >
+                          Pilihan
+                        </span>
+                      )}
                     </div>
 
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
