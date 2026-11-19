@@ -18,7 +18,8 @@ import {
   ClipboardCheck, RefreshCw, Download, CheckCircle2, Undo2, Search,
   CalendarDays, Camera, Users, Clock, AlertTriangle, Trash2,
   Eye, X, ExternalLink, Calendar, BookOpen, AlertCircle, Check,
-  ChevronRight, ArrowUpRight, GraduationCap, DollarSign,
+  ChevronRight, ArrowUpRight, GraduationCap, DollarSign, Edit3,
+  ChevronDown, ChevronUp, Wallet,
 } from 'lucide-react';
 import { db } from '../../../firebase';
 import { collection, getDocs, doc, updateDoc, deleteDoc } from 'firebase/firestore';
@@ -55,6 +56,8 @@ export default function SesiGuruPage() {
   const [error, setError] = useState('');
   const [prosesId, setProsesId] = useState('');
   const [modalDetail, setModalDetail] = useState(null);
+  const [modalKoreksi, setModalKoreksi] = useState(null); // { log, nominalBaru: '', catatan: '' }
+  const [showRekapTentor, setShowRekapTentor] = useState(false);
 
   // ============================================================
   // MUAT DATA SESI
@@ -170,6 +173,66 @@ export default function SesiGuruPage() {
     [logsDalamRentang, benderaOf],
   );
 
+  // Akumulasi Nominal Honor Rentang Terpilih
+  const totalNominalSemua = useMemo(
+    () => logsDalamRentang.reduce((acc, l) => acc + (Number(l.nominal) || 0), 0),
+    [logsDalamRentang],
+  );
+  const totalNominalValid = useMemo(
+    () =>
+      logsDalamRentang
+        .filter((l) => l.status === STATUS_VALID)
+        .reduce((acc, l) => acc + (Number(l.nominal) || 0), 0),
+    [logsDalamRentang],
+  );
+  const totalNominalMenunggu = useMemo(
+    () =>
+      logsDalamRentang
+        .filter((l) => l.status !== STATUS_VALID)
+        .reduce((acc, l) => acc + (Number(l.nominal) || 0), 0),
+    [logsDalamRentang],
+  );
+
+  // Rekapitulasi Akhir Bulan per Tentor
+  const rekapPerTentor = useMemo(() => {
+    const map = {};
+    logsDalamRentang.forEach((l) => {
+      const key = l.teacherId || l.namaGuru || 'UNKNOWN';
+      if (!map[key]) {
+        map[key] = {
+          teacherId: l.teacherId || '',
+          namaGuru: l.namaGuru || 'Tanpa Nama',
+          totalSesi: 0,
+          sesiValid: 0,
+          sesiMenunggu: 0,
+          totalJam: 0,
+          totalNominal: 0,
+          nominalValid: 0,
+          nominalMenunggu: 0,
+          sesiKoreksiManual: 0,
+        };
+      }
+      map[key].totalSesi += 1;
+      const nom = Number(l.nominal) || 0;
+      const dur = Number(l.durasiJam) || 0;
+      map[key].totalNominal += nom;
+      map[key].totalJam += dur;
+      if (l.status === STATUS_VALID) {
+        map[key].sesiValid += 1;
+        map[key].nominalValid += nom;
+      } else {
+        map[key].sesiMenunggu += 1;
+        map[key].nominalMenunggu += nom;
+      }
+      if (l.nominalDisesuaikan) {
+        map[key].sesiKoreksiManual += 1;
+      }
+    });
+    return Object.values(map).sort(
+      (a, b) => b.totalNominal - a.totalNominal || b.totalSesi - a.totalSesi,
+    );
+  }, [logsDalamRentang]);
+
   // ============================================================
   // SHORTCUT WAKTU CEPAT (1-KLIK)
   // ============================================================
@@ -201,11 +264,77 @@ export default function SesiGuruPage() {
   };
 
   // ============================================================
+  // AKSI OPERASIONAL: KOREKSI MANUAL NOMINAL HONOR
+  // ============================================================
+  const bukaModalKoreksi = (l) => {
+    setModalKoreksi({
+      log: l,
+      nominalBaru:
+        l.nominal !== undefined && l.nominal !== null ? String(l.nominal) : '0',
+      catatan: l.nominalCatatan || '',
+    });
+  };
+
+  const simpanKoreksiNominal = async () => {
+    if (!modalKoreksi || !modalKoreksi.log) return;
+    const { log, nominalBaru, catatan } = modalKoreksi;
+    const parsed = parseInt(nominalBaru, 10);
+    if (isNaN(parsed) || parsed < 0) {
+      alert('Masukkan nominal honor yang valid (angka non-negatif).');
+      return;
+    }
+
+    setProsesId(log.id);
+    const aktor = aktorSaatIni();
+    const lamaNominal = log.nominal ?? null;
+    const updatePayload = {
+      nominal: parsed,
+      nominalDisesuaikan: true,
+      nominalSebelumnya: lamaNominal,
+      nominalCatatan: catatan || 'Koreksi manual admin pada sesi mengajar',
+      nominalDisesuaikanOleh: aktor.aktorNama || aktor.aktor,
+      nominalDisesuaikanPada: new Date().toISOString(),
+    };
+
+    try {
+      await updateDoc(doc(db, 'teacher_logs', log.id), updatePayload);
+      catatAudit('guru.sesi.nominal_ubah', {
+        kategori: KATEGORI.GURU,
+        target: `Sesi ${log.namaGuru} · ${log.tanggal}`,
+        detail: {
+          logId: log.id,
+          namaGuru: log.namaGuru,
+          dari: lamaNominal,
+          menjadi: parsed,
+          catatan: catatan || 'Koreksi manual admin',
+        },
+      });
+
+      setLogs((prev) =>
+        prev.map((x) => (x.id === log.id ? { ...x, ...updatePayload } : x)),
+      );
+      if (modalDetail?.id === log.id) {
+        setModalDetail((prev) => ({ ...prev, ...updatePayload }));
+      }
+      setModalKoreksi(null);
+      alert(
+        `✅ Nominal sesi ${log.namaGuru || 'Tentor'} berhasil diperbarui menjadi Rp ${parsed.toLocaleString('id-ID')}`,
+      );
+    } catch (e) {
+      console.error(e);
+      alert(`Gagal menyimpan nominal: ${e?.message || e}`);
+    } finally {
+      setProsesId('');
+    }
+  };
+
+  // ============================================================
   // AKSI OPERASIONAL: SETUJUI VALIDASI
   // ============================================================
   const setujui = async (l) => {
     const b = benderaOf(l);
     const isDup = duplikatMap.has(l.id);
+    const nominalRp = Number(l.nominal || 0).toLocaleString('id-ID');
 
     let pesanPeringatan = '';
     if (isDup) {
@@ -214,15 +343,19 @@ export default function SesiGuruPage() {
     if (b.length > 0) {
       pesanPeringatan += `\n⚠ Bendera Kejanggalan:\n${b.map((k) => `   - ${LABEL_KEJANGGALAN[k] || k}`).join('\n')}\n`;
     }
+    if (!l.nominal || l.nominal === 0) {
+      pesanPeringatan += `\n⚠️ PERHATIAN: Nominal saat ini Rp 0. Jika sistem salah menghitung, Anda dapat mengoreksi nominal terlebih dahulu via tombol [Koreksi Nominal].\n`;
+    }
 
     const konfirmasi = window.confirm(
       `Setujui sesi mengajar ini sebagai VALID?\n\n` +
-      `Tentor : ${l.namaGuru || 'Tanpa Nama'}\n` +
-      `Tanggal: ${String(l.tanggal).split(' ')[0]} ${l.waktu || ''}\n` +
-      `Kelas  : ${l.kelasNama || l.program || 'Umum'}\n` +
+      `Tentor   : ${l.namaGuru || 'Tanpa Nama'}\n` +
+      `Tanggal  : ${String(l.tanggal).split(' ')[0]} ${l.waktu || ''}\n` +
+      `Kelas    : ${l.kelasNama || l.program || 'Umum'}\n` +
       `Kehadiran: ${l.siswaHadir ?? 0} siswa hadir\n` +
+      `Nominal  : Rp ${nominalRp}${l.nominalDisesuaikan ? ' (Disesuaikan manual)' : ''}\n` +
       pesanPeringatan +
-      `\nDengan menyetujui, Anda menyatakan sesi ini BENAR terjadi dan sah untuk pembayaran honor.`
+      `\nDengan menyetujui, Anda menyatakan sesi ini BENAR terjadi dan sah untuk pembayaran honor akhir bulan.`
     );
     if (!konfirmasi) return;
 
@@ -239,11 +372,26 @@ export default function SesiGuruPage() {
       catatAudit('guru.sesi.setujui', {
         kategori: KATEGORI.GURU,
         target: `Sesi ${l.namaGuru} · ${l.tanggal}`,
-        detail: { logId: l.id, program: l.program || '', kelas: l.kelasNama || '' },
+        detail: {
+          logId: l.id,
+          program: l.program || '',
+          kelas: l.kelasNama || '',
+          nominal: l.nominal || 0,
+        },
       });
-      setLogs((prev) => prev.map((x) => (x.id === l.id ? { ...x, status: STATUS_VALID, divalidasiOlehNama: aktor.aktorNama } : x)));
+      setLogs((prev) =>
+        prev.map((x) =>
+          x.id === l.id
+            ? { ...x, status: STATUS_VALID, divalidasiOlehNama: aktor.aktorNama }
+            : x,
+        ),
+      );
       if (modalDetail?.id === l.id) {
-        setModalDetail((prev) => ({ ...prev, status: STATUS_VALID, divalidasiOlehNama: aktor.aktorNama }));
+        setModalDetail((prev) => ({
+          ...prev,
+          status: STATUS_VALID,
+          divalidasiOlehNama: aktor.aktorNama,
+        }));
       }
     } catch (e) {
       alert(`Gagal menyetujui: ${e?.message || e}`);
@@ -346,7 +494,7 @@ export default function SesiGuruPage() {
     }
     const kepala = [
       'Tanggal', 'Waktu', 'Nama Guru', 'Program', 'Level', 'Kelas',
-      'Kegiatan', 'Siswa Hadir', 'Total Siswa', 'Durasi Jam', 'Status', 'Absen Ganda', 'Ada Foto Absensi',
+      'Kegiatan', 'Siswa Hadir', 'Total Siswa', 'Durasi Jam', 'Nominal Honor (Rp)', 'Status Nominal', 'Catatan Nominal', 'Status', 'Absen Ganda', 'Ada Foto Absensi',
     ];
     const baris = tampil.map((l) =>
       kepala
@@ -363,6 +511,9 @@ export default function SesiGuruPage() {
             case 'Siswa Hadir': v = l.siswaHadir ?? ''; break;
             case 'Total Siswa': v = l.siswaTotal ?? ''; break;
             case 'Durasi Jam': v = l.durasiJam ?? ''; break;
+            case 'Nominal Honor (Rp)': v = l.nominal ?? 0; break;
+            case 'Status Nominal': v = l.nominalDisesuaikan ? 'Disesuaikan Manual' : 'Otomatis Sistem'; break;
+            case 'Catatan Nominal': v = l.nominalCatatan || ''; break;
             case 'Status': v = l.status || ''; break;
             case 'Absen Ganda': v = duplikatMap.has(l.id) ? 'Ya (Duplikat)' : 'Tidak'; break;
             case 'Ada Foto Absensi': v = l.fotoAbsensiUrl ? 'Ya' : 'Tidak'; break;
@@ -516,7 +667,224 @@ export default function SesiGuruPage() {
             <div style={{ ...styles.metricVal, color: '#4f46e5' }}>{jumlahBerbendera}</div>
             <div style={styles.metricSub}>0 hadir, jam tak wajar, dll</div>
           </div>
+
+          {/* Card 6: Akumulasi Honor Rentang Ini */}
+          <div
+            onClick={() => setShowRekapTentor((prev) => !prev)}
+            style={{
+              ...styles.metricCard,
+              borderColor: showRekapTentor ? '#0d9488' : '#ccfbf1',
+              background: showRekapTentor ? '#f0fdfa' : '#ffffff',
+              borderLeft: '4px solid #0d9488',
+            }}
+            title="Klik untuk membuka / menutup Rekapitulasi Honor per Tentor"
+          >
+            <div
+              style={{
+                ...styles.metricLabel,
+                color: '#0f766e',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+              }}
+            >
+              <span>💰 Total Honor Sesi</span>
+              <span
+                style={{
+                  fontSize: 9.5,
+                  background: '#ccfbf1',
+                  color: '#0f766e',
+                  padding: '1px 6px',
+                  borderRadius: 4,
+                  fontWeight: 800,
+                }}
+              >
+                {showRekapTentor ? '▲ Tutup Rekap' : '▼ Buka Rekap'}
+              </span>
+            </div>
+            <div style={{ ...styles.metricVal, color: '#0f766e', fontSize: 20 }}>
+              Rp {totalNominalSemua.toLocaleString('id-ID')}
+            </div>
+            <div style={styles.metricSub}>
+              Valid: <b>Rp {totalNominalValid.toLocaleString('id-ID')}</b> · Pending: Rp{' '}
+              {totalNominalMenunggu.toLocaleString('id-ID')}
+            </div>
+          </div>
         </div>
+
+        {/* ===== TOMBOL TOGGLE REKAPITULASI HONOR PER TENTOR ===== */}
+        <div style={styles.rekapToggleBar}>
+          <button
+            onClick={() => setShowRekapTentor((prev) => !prev)}
+            style={{
+              ...styles.btnToggleRekap,
+              background: showRekapTentor ? '#0d9488' : '#ffffff',
+              color: showRekapTentor ? '#ffffff' : '#0f766e',
+              borderColor: '#0d9488',
+            }}
+            title="Buka / tutup tabel rekapitulasi honor per tentor untuk cross-check akhir bulan"
+          >
+            <Wallet size={15} />
+            <span>
+              {showRekapTentor
+                ? 'Sembunyikan Rekap Honor Akhir Bulan per Tentor'
+                : '📊 Tampilkan Rekapitulasi Honor Akhir Bulan per Tentor'}{' '}
+              ({rekapPerTentor.length} Tentor · Total Rp {totalNominalSemua.toLocaleString('id-ID')})
+            </span>
+            {showRekapTentor ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
+          </button>
+        </div>
+
+        {/* ===== PANEL REKAPITULASI HONOR AKHIR BULAN PER TENTOR ===== */}
+        {showRekapTentor && (
+          <div style={styles.rekapTentorCard}>
+            <div style={styles.rekapTentorHeader}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={styles.rekapIconBox}>
+                  <Wallet size={20} color="#0d9488" />
+                </div>
+                <div>
+                  <h3 style={styles.rekapTitle}>
+                    📊 Rekapitulasi Honor Mengajar Akhir Bulan per Tentor
+                  </h3>
+                  <div style={styles.rekapSub}>
+                    Akumulasi honor mengajar pada rentang <b>{mulai}</b> s/d <b>{sampai}</b> ({rekapPerTentor.length} tentor aktif). Jika ada nominal sesi yang salah hitung oleh sistem, klik <b>"🔍 Lihat &amp; Koreksi Sesi"</b> lalu ubah via tombol <b>"Koreksi Nominal"</b> di tabel bawah.
+                  </div>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowRekapTentor(false)}
+                style={styles.btnTutupRekap}
+                title="Tutup panel rekapitulasi honor"
+              >
+                ✕ Tutup Panel
+              </button>
+            </div>
+
+            {rekapPerTentor.length === 0 ? (
+              <div style={styles.rekapKosong}>
+                Tidak ada data sesi guru pada rentang tanggal terpilih.
+              </div>
+            ) : (
+              <div style={styles.rekapTableWrapper}>
+                <table style={styles.rekapTable}>
+                  <thead>
+                    <tr style={styles.rekapThRow}>
+                      <th style={styles.rekapTh}>No</th>
+                      <th style={styles.rekapTh}>Nama Tentor / Guru</th>
+                      <th style={{ ...styles.rekapTh, textAlign: 'center' }}>Total Sesi</th>
+                      <th style={{ ...styles.rekapTh, textAlign: 'center' }}>Status Sesi</th>
+                      <th style={{ ...styles.rekapTh, textAlign: 'center' }}>Total Jam</th>
+                      <th style={{ ...styles.rekapTh, textAlign: 'right' }}>Total Honor (Rp)</th>
+                      <th style={{ ...styles.rekapTh, textAlign: 'right' }}>Honor Valid (Rp)</th>
+                      <th style={{ ...styles.rekapTh, textAlign: 'center' }}>Penyesuaian Manual</th>
+                      <th style={{ ...styles.rekapTh, textAlign: 'center' }}>Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {rekapPerTentor.map((r, idx) => {
+                      const isSelected = guruId && (guruId === r.teacherId || guruId === r.namaGuru);
+                      return (
+                        <tr
+                          key={r.teacherId || r.namaGuru || idx}
+                          style={{
+                            ...styles.rekapTr,
+                            background: isSelected ? '#f0fdfa' : idx % 2 === 0 ? '#ffffff' : '#fafafa',
+                          }}
+                        >
+                          <td style={styles.rekapTd}>{idx + 1}</td>
+                          <td style={styles.rekapTd}>
+                            <div style={{ fontWeight: 800, color: '#0f172a', fontSize: 13 }}>
+                              {r.namaGuru}
+                            </div>
+                            {r.teacherId && (
+                              <div style={{ fontSize: 10.5, color: '#64748b' }}>
+                                ID: {r.teacherId}
+                              </div>
+                            )}
+                          </td>
+                          <td style={{ ...styles.rekapTd, textAlign: 'center' }}>
+                            <span style={styles.pillSesiTotal}>{r.totalSesi} Sesi</span>
+                          </td>
+                          <td style={{ ...styles.rekapTd, textAlign: 'center' }}>
+                            <div style={{ display: 'inline-flex', gap: 4 }}>
+                              <span style={styles.pillSesiValid} title="Sesi sudah disetujui valid">
+                                {r.sesiValid} Valid
+                              </span>
+                              {r.sesiMenunggu > 0 && (
+                                <span style={styles.pillSesiMenunggu} title="Sesi menunggu persetujuan admin">
+                                  {r.sesiMenunggu} Menunggu
+                                </span>
+                              )}
+                            </div>
+                          </td>
+                          <td style={{ ...styles.rekapTd, textAlign: 'center', fontWeight: 600 }}>
+                            {r.totalJam} Jam
+                          </td>
+                          <td style={{ ...styles.rekapTd, textAlign: 'right', fontWeight: 900, color: '#0f766e', fontSize: 13.5 }}>
+                            Rp {r.totalNominal.toLocaleString('id-ID')}
+                          </td>
+                          <td style={{ ...styles.rekapTd, textAlign: 'right', fontWeight: 700, color: '#15803d' }}>
+                            Rp {r.nominalValid.toLocaleString('id-ID')}
+                          </td>
+                          <td style={{ ...styles.rekapTd, textAlign: 'center' }}>
+                            {r.sesiKoreksiManual > 0 ? (
+                              <span style={styles.pillKoreksiAda}>
+                                ✎ {r.sesiKoreksiManual} Sesi Dikoreksi
+                              </span>
+                            ) : (
+                              <span style={styles.pillKoreksiNol}>Otomatis Sistem</span>
+                            )}
+                          </td>
+                          <td style={{ ...styles.rekapTd, textAlign: 'center' }}>
+                            <button
+                              onClick={() => {
+                                if (isSelected) {
+                                  setGuruId('');
+                                } else {
+                                  setGuruId(r.teacherId || r.namaGuru);
+                                }
+                              }}
+                              style={isSelected ? styles.btnFilterGuruAktif : styles.btnFilterGuru}
+                              title="Tampilkan daftar sesi guru ini di tabel bawah untuk dicek/koreksi nominalnya"
+                            >
+                              {isSelected ? '✕ Hapus Filter' : '🔍 Lihat & Koreksi Sesi'}
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                  <tfoot>
+                    <tr style={styles.rekapTfoot}>
+                      <td colSpan={2} style={{ ...styles.rekapTd, fontWeight: 900, color: '#0f172a' }}>
+                        GRAND TOTAL ({rekapPerTentor.length} GURU)
+                      </td>
+                      <td style={{ ...styles.rekapTd, textAlign: 'center', fontWeight: 900 }}>
+                        {jumlahTotal} Sesi
+                      </td>
+                      <td style={{ ...styles.rekapTd, textAlign: 'center', fontWeight: 800 }}>
+                        {jumlahValid} Valid · {jumlahMenunggu} Menunggu
+                      </td>
+                      <td style={{ ...styles.rekapTd, textAlign: 'center', fontWeight: 900 }}>
+                        {rekapPerTentor.reduce((a, b) => a + b.totalJam, 0)} Jam
+                      </td>
+                      <td style={{ ...styles.rekapTd, textAlign: 'right', fontWeight: 900, color: '#0f766e', fontSize: 14 }}>
+                        Rp {totalNominalSemua.toLocaleString('id-ID')}
+                      </td>
+                      <td style={{ ...styles.rekapTd, textAlign: 'right', fontWeight: 900, color: '#15803d', fontSize: 13 }}>
+                        Rp {totalNominalValid.toLocaleString('id-ID')}
+                      </td>
+                      <td colSpan={2} style={{ ...styles.rekapTd, textAlign: 'center', fontSize: 11, color: '#64748b' }}>
+                        Akumulasi siap sinkron ke menu Gaji Guru
+                      </td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* ===== BANNER PERINGATAN JIKA ADA ABSEN GANDA ===== */}
         {jumlahDuplikat > 0 && (
@@ -711,6 +1079,7 @@ export default function SesiGuruPage() {
                     <th style={styles.th}>Waktu &amp; Tanggal</th>
                     <th style={styles.th}>Tentor &amp; Kelas</th>
                     <th style={styles.th}>Kehadiran Siswa &amp; Materi</th>
+                    <th style={{ ...styles.th, minWidth: 155 }}>Honor / Nominal (Rp)</th>
                     <th style={styles.th}>Status &amp; Kejanggalan</th>
                     <th style={{ ...styles.th, textAlign: 'center', width: 140 }}>Aksi Kelola</th>
                   </tr>
@@ -820,7 +1189,49 @@ export default function SesiGuruPage() {
                           </div>
                         </td>
 
-                        {/* 4. Status & Kejanggalan */}
+                        {/* 4. Honor / Nominal (Rp) & Koreksi Manual */}
+                        <td style={styles.td}>
+                          <div style={styles.nominalText}>
+                            Rp {(Number(l.nominal) || 0).toLocaleString('id-ID')}
+                          </div>
+
+                          {/* Indikator apakah nominal dihitung sistem atau manual */}
+                          {l.nominalDisesuaikan ? (
+                            <div
+                              style={styles.badgeManualPill}
+                              title={
+                                l.nominalCatatan
+                                  ? `Catatan: ${l.nominalCatatan} (oleh ${l.nominalDisesuaikanOleh || 'Admin'})`
+                                  : `Disesuaikan manual oleh ${l.nominalDisesuaikanOleh || 'Admin'}`
+                              }
+                            >
+                              <Edit3 size={10} /> Disesuaikan Manual
+                            </div>
+                          ) : (
+                            <div style={styles.badgeOtomatisPill}>
+                              Otomatis Sistem
+                            </div>
+                          )}
+
+                          {l.nominalCatatan && (
+                            <div style={styles.nominalCatatanText} title={l.nominalCatatan}>
+                              "{l.nominalCatatan}"
+                            </div>
+                          )}
+
+                          {/* Tombol Cepat Koreksi Nominal */}
+                          <div style={{ marginTop: 6 }}>
+                            <button
+                              onClick={() => bukaModalKoreksi(l)}
+                              style={styles.btnKoreksiMini}
+                              title="Koreksi atau isi manual nominal honor sesi ini"
+                            >
+                              <Edit3 size={11} /> Koreksi Nominal
+                            </button>
+                          </div>
+                        </td>
+
+                        {/* 5. Status & Kejanggalan */}
                         <td style={styles.td}>
                           <div>
                             <span style={valid ? styles.statusBadgeValid : styles.statusBadgeMenunggu}>
@@ -965,6 +1376,44 @@ export default function SesiGuruPage() {
                 </div>
               </div>
 
+              {/* Honor Sesi Mengajar & Koreksi Manual */}
+              <div style={styles.modalSectionCard}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={styles.modalSectionLabel}>Honor Sesi Mengajar</div>
+                  <button
+                    onClick={() => bukaModalKoreksi(modalDetail)}
+                    style={styles.btnKoreksiMiniModal}
+                    title="Buka dialog koreksi manual nominal honor"
+                  >
+                    <Edit3 size={12} /> Koreksi / Isi Manual Nominal
+                  </button>
+                </div>
+                <div style={{ marginTop: 8, display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap' }}>
+                  <div style={{ fontSize: 22, fontWeight: 900, color: '#0f766e' }}>
+                    Rp {Number(modalDetail.nominal || 0).toLocaleString('id-ID')}
+                  </div>
+                  {modalDetail.nominalDisesuaikan ? (
+                    <span style={styles.badgeManualPill}>
+                      <Edit3 size={10} /> Disesuaikan Manual oleh {modalDetail.nominalDisesuaikanOleh || 'Admin'}
+                    </span>
+                  ) : (
+                    <span style={styles.badgeOtomatisPill}>
+                      Dihitung Otomatis Sistem
+                    </span>
+                  )}
+                </div>
+                {modalDetail.nominalCatatan && (
+                  <div style={{ fontSize: 12, color: '#64748b', marginTop: 4, fontStyle: 'italic' }}>
+                    Catatan: "{modalDetail.nominalCatatan}"
+                  </div>
+                )}
+                {modalDetail.nominalSebelumnya !== undefined && modalDetail.nominalSebelumnya !== null && (
+                  <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 2 }}>
+                    Nominal asli sistem sebelumnya: Rp {Number(modalDetail.nominalSebelumnya).toLocaleString('id-ID')}
+                  </div>
+                )}
+              </div>
+
               {/* Kelengkapan Siswa & Daftar Murid Hadir */}
               <div style={styles.modalSectionCard}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -1099,6 +1548,213 @@ export default function SesiGuruPage() {
                   Tutup
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ============================================================
+          MODAL KOREKSI MANUAL NOMINAL HONOR SESI
+          ============================================================ */}
+      {modalKoreksi && (
+        <div style={styles.modalOverlay} onClick={() => setModalKoreksi(null)}>
+          <div
+            style={{ ...styles.modalCard, maxWidth: 500 }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div style={styles.modalHeader}>
+              <div>
+                <div
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 800,
+                    color: '#0d9488',
+                    textTransform: 'uppercase',
+                  }}
+                >
+                  Penyesuaian Manual Honor
+                </div>
+                <h3 style={styles.modalTitle}>Koreksi Nominal Honor Sesi</h3>
+                <div style={styles.modalSubHeader}>
+                  {modalKoreksi.log?.namaGuru} ·{' '}
+                  {modalKoreksi.log?.kelasNama || modalKoreksi.log?.program} (
+                  {String(modalKoreksi.log?.tanggal).split(' ')[0]})
+                </div>
+              </div>
+              <button
+                onClick={() => setModalKoreksi(null)}
+                style={styles.btnModalClose}
+                title="Batal koreksi"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Body */}
+            <div style={styles.modalBody}>
+              <div style={styles.koreksiInfoBox}>
+                <AlertCircle size={18} color="#0d9488" style={{ flexShrink: 0 }} />
+                <div style={{ fontSize: 12, color: '#134e4a', lineHeight: 1.45 }}>
+                  Gunakan menu ini jika <b>sistem salah menghitung</b> nominal (misal durasi lebih lama, semi-privat, atau tarif khusus). Nominal yang Anda simpan akan langsung disinkronkan ke rekap akhir bulan dan audit log.
+                </div>
+              </div>
+
+              {/* Nominal Saat Ini vs Baru */}
+              <div>
+                <label style={styles.labelField}>
+                  <DollarSign size={13} color="#0d9488" /> Nominal Honor Baru (Rp)
+                </label>
+                <input
+                  type="number"
+                  step="1000"
+                  min="0"
+                  style={styles.inputNominalBig}
+                  placeholder="Contoh: 35000"
+                  value={modalKoreksi.nominalBaru}
+                  onChange={(e) =>
+                    setModalKoreksi((prev) => ({
+                      ...prev,
+                      nominalBaru: e.target.value,
+                    }))
+                  }
+                  autoFocus
+                />
+                <div style={styles.nominalPreviewText}>
+                  Terbaca:{' '}
+                  <b>
+                    Rp{' '}
+                    {Number(modalKoreksi.nominalBaru || 0).toLocaleString(
+                      'id-ID',
+                    )}
+                  </b>
+                  {modalKoreksi.log?.nominal !== undefined && (
+                    <span style={{ color: '#64748b', marginLeft: 8 }}>
+                      (Sebelumnya: Rp{' '}
+                      {Number(modalKoreksi.log.nominal || 0).toLocaleString(
+                        'id-ID',
+                      )}
+                      )
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Pilihan Cepat Nominal */}
+              <div>
+                <div
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 700,
+                    color: '#64748b',
+                    marginBottom: 6,
+                  }}
+                >
+                  Pilihan Cepat Nominal Standar Bimbel:
+                </div>
+                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                  {[25000, 30000, 35000, 40000, 50000, 60000, 70000, 80000, 100000].map(
+                    (nom) => (
+                      <button
+                        key={nom}
+                        type="button"
+                        onClick={() =>
+                          setModalKoreksi((prev) => ({
+                            ...prev,
+                            nominalBaru: String(nom),
+                          }))
+                        }
+                        style={{
+                          ...styles.btnChipPreset,
+                          background:
+                            String(nom) === String(modalKoreksi.nominalBaru)
+                              ? '#0d9488'
+                              : '#f1f5f9',
+                          color:
+                            String(nom) === String(modalKoreksi.nominalBaru)
+                              ? '#ffffff'
+                              : '#334155',
+                          borderColor:
+                            String(nom) === String(modalKoreksi.nominalBaru)
+                              ? '#0d9488'
+                              : '#cbd5e1',
+                        }}
+                      >
+                        Rp {nom.toLocaleString('id-ID')}
+                      </button>
+                    ),
+                  )}
+                </div>
+              </div>
+
+              {/* Alasan / Catatan Koreksi */}
+              <div>
+                <label style={styles.labelField}>
+                  <BookOpen size={13} color="#0d9488" /> Alasan / Catatan Koreksi
+                </label>
+                <textarea
+                  rows={2}
+                  style={styles.inputTextarea}
+                  placeholder="Contoh: Durasi 2 jam penuh, Kelas privat 2 siswa, Perbaikan sistem salah hitung"
+                  value={modalKoreksi.catatan}
+                  onChange={(e) =>
+                    setModalKoreksi((prev) => ({
+                      ...prev,
+                      catatan: e.target.value,
+                    }))
+                  }
+                />
+                <div
+                  style={{
+                    display: 'flex',
+                    gap: 6,
+                    flexWrap: 'wrap',
+                    marginTop: 4,
+                  }}
+                >
+                  {[
+                    'Sistem salah hitung tarif',
+                    'Durasi jam tambahan',
+                    'Kelas semi-privat',
+                    'Penyesuaian jenjang SMP/SMA',
+                  ].map((alasan) => (
+                    <button
+                      key={alasan}
+                      type="button"
+                      onClick={() =>
+                        setModalKoreksi((prev) => ({
+                          ...prev,
+                          catatan: alasan,
+                        }))
+                      }
+                      style={styles.btnAlasanPreset}
+                    >
+                      + {alasan}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div style={styles.modalFooter}>
+              <button
+                type="button"
+                onClick={() => setModalKoreksi(null)}
+                style={styles.btnModalTutup}
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                onClick={simpanKoreksiNominal}
+                disabled={prosesId === modalKoreksi.log?.id}
+                style={styles.btnSimpanNominal}
+              >
+                <Check size={14} strokeWidth={3} /> Simpan Koreksi (Rp{' '}
+                {Number(modalKoreksi.nominalBaru || 0).toLocaleString('id-ID')}
+                )
+              </button>
             </div>
           </div>
         </div>
@@ -1980,5 +2636,321 @@ const styles = {
     fontSize: 12,
     fontWeight: 700,
     cursor: 'pointer',
+  },
+
+  // Rekap Toggle Bar
+  rekapToggleBar: {
+    marginBottom: 16,
+    display: 'flex',
+    justifyContent: 'flex-start',
+  },
+  btnToggleRekap: {
+    border: '1.5px solid #0d9488',
+    borderRadius: 10,
+    padding: '8px 16px',
+    fontSize: 12.5,
+    fontWeight: 800,
+    cursor: 'pointer',
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: 8,
+    transition: 'all 0.15s ease',
+    boxShadow: '0 1px 3px rgba(13, 148, 136, 0.1)',
+  },
+
+  // Rekap Card & Table
+  rekapTentorCard: {
+    background: '#ffffff',
+    border: '1.5px solid #ccfbf1',
+    borderRadius: 16,
+    padding: '16px 20px',
+    marginBottom: 20,
+    boxShadow: '0 4px 12px rgba(13, 148, 136, 0.08)',
+  },
+  rekapTentorHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    gap: 12,
+    marginBottom: 14,
+    flexWrap: 'wrap',
+  },
+  rekapIconBox: {
+    width: 40,
+    height: 40,
+    borderRadius: 10,
+    background: '#f0fdfa',
+    border: '1px solid #ccfbf1',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+  },
+  rekapTitle: {
+    margin: 0,
+    fontSize: 16,
+    fontWeight: 900,
+    color: '#0f172a',
+  },
+  rekapSub: {
+    fontSize: 12,
+    color: '#64748b',
+    marginTop: 2,
+    lineHeight: 1.45,
+  },
+  btnTutupRekap: {
+    background: '#f1f5f9',
+    border: '1px solid #cbd5e1',
+    color: '#475569',
+    padding: '5px 12px',
+    borderRadius: 6,
+    fontSize: 11.5,
+    fontWeight: 700,
+    cursor: 'pointer',
+  },
+  rekapKosong: {
+    padding: '30px 16px',
+    textAlign: 'center',
+    color: '#94a3b8',
+    fontSize: 13,
+    background: '#f8fafc',
+    borderRadius: 10,
+  },
+  rekapTableWrapper: {
+    overflowX: 'auto',
+    borderRadius: 12,
+    border: '1px solid #e2e8f0',
+  },
+  rekapTable: {
+    width: '100%',
+    borderCollapse: 'collapse',
+    textAlign: 'left',
+    fontSize: 12,
+  },
+  rekapThRow: {
+    background: '#f0fdfa',
+    borderBottom: '1.5px solid #ccfbf1',
+  },
+  rekapTh: {
+    padding: '10px 14px',
+    fontSize: 11,
+    fontWeight: 800,
+    color: '#0f766e',
+    textTransform: 'uppercase',
+    letterSpacing: '0.04em',
+  },
+  rekapTr: {
+    borderBottom: '1px solid #f1f5f9',
+    transition: 'background 0.15s ease',
+  },
+  rekapTd: {
+    padding: '10px 14px',
+    verticalAlign: 'middle',
+  },
+  pillSesiTotal: {
+    background: '#f1f5f9',
+    color: '#334155',
+    padding: '2px 8px',
+    borderRadius: 6,
+    fontSize: 11,
+    fontWeight: 700,
+    display: 'inline-block',
+  },
+  pillSesiValid: {
+    background: '#dcfce7',
+    color: '#15803d',
+    padding: '2px 7px',
+    borderRadius: 4,
+    fontSize: 10.5,
+    fontWeight: 800,
+  },
+  pillSesiMenunggu: {
+    background: '#fef3c7',
+    color: '#b45309',
+    padding: '2px 7px',
+    borderRadius: 4,
+    fontSize: 10.5,
+    fontWeight: 800,
+  },
+  pillKoreksiAda: {
+    background: '#eff6ff',
+    color: '#1d4ed8',
+    border: '1px solid #bfdbfe',
+    padding: '2px 8px',
+    borderRadius: 6,
+    fontSize: 10.5,
+    fontWeight: 700,
+    display: 'inline-block',
+  },
+  pillKoreksiNol: {
+    fontSize: 11,
+    color: '#94a3b8',
+  },
+  btnFilterGuru: {
+    background: '#ffffff',
+    border: '1px solid #cbd5e1',
+    color: '#0f766e',
+    padding: '4px 10px',
+    borderRadius: 6,
+    fontSize: 11,
+    fontWeight: 700,
+    cursor: 'pointer',
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: 4,
+  },
+  btnFilterGuruAktif: {
+    background: '#0d9488',
+    border: '1px solid #0d9488',
+    color: '#ffffff',
+    padding: '4px 10px',
+    borderRadius: 6,
+    fontSize: 11,
+    fontWeight: 800,
+    cursor: 'pointer',
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: 4,
+  },
+  rekapTfoot: {
+    background: '#f8fafc',
+    borderTop: '2px solid #cbd5e1',
+  },
+
+  // Nominal Cell Elements
+  nominalText: {
+    fontWeight: 900,
+    color: '#0f766e',
+    fontSize: 14,
+  },
+  badgeManualPill: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: 3,
+    background: '#eff6ff',
+    color: '#1d4ed8',
+    border: '1px solid #bfdbfe',
+    padding: '1px 6px',
+    borderRadius: 4,
+    fontSize: 10,
+    fontWeight: 800,
+    marginTop: 3,
+  },
+  badgeOtomatisPill: {
+    display: 'inline-block',
+    fontSize: 10,
+    color: '#94a3b8',
+    marginTop: 2,
+  },
+  nominalCatatanText: {
+    fontSize: 10.5,
+    color: '#64748b',
+    fontStyle: 'italic',
+    marginTop: 2,
+    maxWidth: 180,
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+  },
+  btnKoreksiMini: {
+    background: '#f8fafc',
+    border: '1px solid #cbd5e1',
+    color: '#0f766e',
+    padding: '3px 8px',
+    borderRadius: 5,
+    fontSize: 10.5,
+    fontWeight: 700,
+    cursor: 'pointer',
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: 4,
+    transition: 'all 0.15s ease',
+  },
+  btnKoreksiMiniModal: {
+    background: '#0d9488',
+    border: 'none',
+    color: '#ffffff',
+    padding: '4px 10px',
+    borderRadius: 6,
+    fontSize: 11,
+    fontWeight: 800,
+    cursor: 'pointer',
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: 4,
+  },
+
+  // Modal Koreksi Elements
+  koreksiInfoBox: {
+    background: '#f0fdfa',
+    border: '1.5px solid #ccfbf1',
+    borderRadius: 10,
+    padding: '10px 12px',
+    display: 'flex',
+    gap: 8,
+    alignItems: 'flex-start',
+  },
+  inputNominalBig: {
+    width: '100%',
+    boxSizing: 'border-box',
+    border: '2px solid #0d9488',
+    borderRadius: 10,
+    padding: '10px 14px',
+    fontSize: 18,
+    fontWeight: 900,
+    color: '#0f766e',
+    outline: 'none',
+    background: '#ffffff',
+    marginTop: 4,
+  },
+  nominalPreviewText: {
+    fontSize: 12,
+    color: '#0f766e',
+    marginTop: 4,
+  },
+  btnChipPreset: {
+    border: '1px solid #cbd5e1',
+    borderRadius: 6,
+    padding: '5px 10px',
+    fontSize: 11,
+    fontWeight: 700,
+    cursor: 'pointer',
+    transition: 'all 0.12s ease',
+  },
+  inputTextarea: {
+    width: '100%',
+    boxSizing: 'border-box',
+    border: '1.5px solid #cbd5e1',
+    borderRadius: 8,
+    padding: '8px 12px',
+    fontSize: 12.5,
+    color: '#0f172a',
+    outline: 'none',
+    fontFamily: 'inherit',
+    marginTop: 4,
+    resize: 'vertical',
+  },
+  btnAlasanPreset: {
+    background: '#f8fafc',
+    border: '1px solid #e2e8f0',
+    color: '#475569',
+    padding: '2px 8px',
+    borderRadius: 4,
+    fontSize: 10.5,
+    cursor: 'pointer',
+    fontWeight: 600,
+  },
+  btnSimpanNominal: {
+    background: '#0d9488',
+    color: '#ffffff',
+    border: 'none',
+    padding: '8px 18px',
+    borderRadius: 8,
+    fontSize: 12,
+    fontWeight: 800,
+    cursor: 'pointer',
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: 6,
   },
 };
