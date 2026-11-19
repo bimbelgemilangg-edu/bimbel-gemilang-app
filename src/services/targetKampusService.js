@@ -7,19 +7,60 @@ import { useState, useEffect } from 'react';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { getLogoPtn } from '../utils/logoPtnHelper';
-import {
-  getDaftarPtnAmbis,
-  getDaftarProdiAmbis,
-  getPtnBySlug,
-  hitungGapTarget,
-} from '../utils/ambisPtnDataHelper';
 
-export {
-  getDaftarPtnAmbis,
-  getDaftarProdiAmbis,
-  getPtnBySlug,
-  hitungGapTarget,
-};
+/**
+ * Menghitung GAP dan Zona Kesiapan terhadap Passing Grade UTBK (Super Ringan)
+ */
+export function hitungGapTarget(passingScore, skorSiswa) {
+  const target = Number(passingScore) || 700;
+  if (skorSiswa == null || isNaN(Number(skorSiswa))) {
+    return {
+      gap: null,
+      zona: 'TANPA_DATA',
+      label: 'Belum Ada Skor Tryout',
+      warna: '#64748b',
+      bg: '#f1f5f9',
+    };
+  }
+
+  const s = Number(skorSiswa);
+  const gap = s - target;
+
+  if (gap >= 20) {
+    return {
+      gap,
+      zona: 'HIJAU_AMAN',
+      label: `Zona Aman (+${gap} poin)`,
+      warna: '#16a34a',
+      bg: '#dcfce7',
+    };
+  }
+  if (gap >= 0) {
+    return {
+      gap,
+      zona: 'HIJAU_KOMPETITIF',
+      label: `Zona Kompetitif (+${gap} poin)`,
+      warna: '#0d9488',
+      bg: '#ccfbf1',
+    };
+  }
+  if (gap >= -40) {
+    return {
+      gap,
+      zona: 'KUNING',
+      label: `Zona Pemantapan (${gap} poin)`,
+      warna: '#d97706',
+      bg: '#fef3c7',
+    };
+  }
+  return {
+    gap,
+    zona: 'MERAH',
+    label: `Zona Perjuangan (${gap} poin)`,
+    warna: '#dc2626',
+    bg: '#fee2e2',
+  };
+}
 
 const STORAGE_KEY = 'gemilang_target_ptn_siswa';
 const TARGET_EVENT = 'gemilang_target_ptn_changed';

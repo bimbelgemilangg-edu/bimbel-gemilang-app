@@ -5,12 +5,18 @@
 // ============================================================
 import ambisPtnData from '../data/ambisPtnData.js';
 
-// Cache map universitas untuk pencarian cepat O(1)
-const ptnMap = new Map();
-(ambisPtnData.universities || []).forEach((u) => {
-  ptnMap.set(u.slug, u);
-  if (u.id) ptnMap.set(String(u.id), u);
-});
+// Cache map universitas untuk pencarian cepat O(1) (Lazy Init)
+let ptnMap = null;
+function getPtnMap() {
+  if (!ptnMap) {
+    ptnMap = new Map();
+    (ambisPtnData.universities || []).forEach((u) => {
+      ptnMap.set(u.slug, u);
+      if (u.id) ptnMap.set(String(u.id), u);
+    });
+  }
+  return ptnMap;
+}
 
 // Cache array prodi terhidrasi (dengan nama & logo universitas)
 let cachedHydratedMajors = null;
@@ -49,9 +55,10 @@ export function getDaftarPtnAmbis() {
  */
 export function getDaftarProdiAmbis() {
   if (cachedHydratedMajors) return cachedHydratedMajors;
+  const mapUni = getPtnMap();
 
   cachedHydratedMajors = (ambisPtnData.majors || []).map((m) => {
-    const uni = ptnMap.get(m.uni_slug);
+    const uni = mapUni.get(m.uni_slug);
     return {
       ...m,
       uni_name: uni?.name || m.uni_slug,

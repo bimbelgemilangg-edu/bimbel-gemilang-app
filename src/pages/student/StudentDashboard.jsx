@@ -1,5 +1,5 @@
 // src/pages/student/StudentDashboard.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { db, auth } from '../../firebase';
 import { cocokkanAksesModul, ekstrakAngkaKelas } from '../../utils/aksesKontenSiswa';
 import { tanggalLokalStr } from '../../utils/waktuLokal';

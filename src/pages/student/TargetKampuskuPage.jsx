@@ -32,10 +32,12 @@ import {
   useTargetKampusSiswa,
   simpanPilihanTarget,
   hapusPilihanTarget,
-  getDaftarPtnAmbis,
-  getDaftarProdiAmbis,
   hitungGapTarget,
 } from '../../services/targetKampusService';
+import {
+  getDaftarPtnAmbis,
+  getDaftarProdiAmbis,
+} from '../../utils/ambisPtnDataHelper';
 import LogoKampus from '../../components/LogoKampus';
 import { useProfilSiswa } from '../../utils/profilSiswa';
 import { deteksiTingkatSiswa } from '../../utils/tingkatSiswa';
