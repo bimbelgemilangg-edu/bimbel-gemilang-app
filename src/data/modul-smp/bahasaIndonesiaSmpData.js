@@ -4,7 +4,7 @@
 // Bebas karakter PUA, pecahan tegak KaTeX, dan kuis pemahaman terstruktur rapi
 // ==============================================================================
 
-export const bahasaIndonesiaSmpData = [
+export const BIN_SMP_MODUL = [
   {
     "id": "bin_smp_bab_1",
     "subtestKode": "BIN_SMP",
@@ -1606,3 +1606,6 @@ export const bahasaIndonesiaSmpData = [
     ]
   }
 ];
+
+export const bahasaIndonesiaSmpData = BIN_SMP_MODUL;
+export default BIN_SMP_MODUL;

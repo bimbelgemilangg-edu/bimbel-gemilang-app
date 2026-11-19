@@ -4,7 +4,7 @@
 // Bebas karakter PUA, pecahan tegak KaTeX, dan kuis pemahaman terstruktur rapi
 // ==============================================================================
 
-export const ipaSmpData = [
+export const IPA_SMP_MODUL = [
   {
     "id": "ipa_smp_bab_1",
     "subtestKode": "IPA_SMP",
@@ -1618,3 +1618,6 @@ export const ipaSmpData = [
     ]
   }
 ];
+
+export const ipaSmpData = IPA_SMP_MODUL;
+export default IPA_SMP_MODUL;

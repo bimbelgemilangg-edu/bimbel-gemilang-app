@@ -71,7 +71,7 @@ def bersihkan_pua_dan_pecahan(obj):
         return {k: bersihkan_pua_dan_pecahan(v) for k, v in obj.items()}
     return obj
 
-def process_file(filename, var_name):
+def process_file(filename, export_name, alias_name):
     filepath = os.path.join(DATA_DIR, filename)
     with open(filepath, 'r') as f:
         content = f.read()
@@ -239,26 +239,27 @@ def process_file(filename, var_name):
     # Bersihkan seluruh dataset dari PUA dan konversi ke pecahan tegak
     cleaned_data = bersihkan_pua_dan_pecahan(data)
     
-    # Tulis kembali dengan header asli
-    header = f"// src/data/modul-smp/{filename}\n// ==============================================================================\n// MODUL MASTER 52 HALAMAN RESMI TKA SMP 2027 - BIMBEL GEMILANG\n// Bebas karakter PUA, pecahan tegak KaTeX, dan kuis pemahaman terstruktur rapi\n// ==============================================================================\n\nexport const {var_name} = "
+    # Tulis kembali dengan header asli dan export ganda (uppercase + camelCase) agar kompatibel 100%
+    header = f"// src/data/modul-smp/{filename}\n// ==============================================================================\n// MODUL MASTER 52 HALAMAN RESMI TKA SMP 2027 - BIMBEL GEMILANG\n// Bebas karakter PUA, pecahan tegak KaTeX, dan kuis pemahaman terstruktur rapi\n// ==============================================================================\n\nexport const {export_name} = "
     
     formatted_json = json.dumps(cleaned_data, ensure_ascii=False, indent=2)
-    new_content = header + formatted_json + ";\n"
+    footer = f";\n\nexport const {alias_name} = {export_name};\nexport default {export_name};\n"
+    new_content = header + formatted_json + footer
     
     with open(filepath, 'w') as f:
         f.write(new_content)
         
-    print(f'Selesai memproses {filename}')
+    print(f'Selesai memproses {filename} (Export: {export_name}, Alias: {alias_name})')
 
 def run():
     files = [
-        ('matematikaSmpData.js', 'matematikaSmpData'),
-        ('bahasaIndonesiaSmpData.js', 'bahasaIndonesiaSmpData'),
-        ('ipaSmpData.js', 'ipaSmpData'),
-        ('bahasaInggrisSmpData.js', 'bahasaInggrisSmpData'),
+        ('matematikaSmpData.js', 'MTK_SMP_MODUL', 'matematikaSmpData'),
+        ('bahasaIndonesiaSmpData.js', 'BIN_SMP_MODUL', 'bahasaIndonesiaSmpData'),
+        ('ipaSmpData.js', 'IPA_SMP_MODUL', 'ipaSmpData'),
+        ('bahasaInggrisSmpData.js', 'BIG_SMP_MODUL', 'bahasaInggrisSmpData'),
     ]
-    for fn, vn in files:
-        process_file(fn, vn)
+    for fn, en, an in files:
+        process_file(fn, en, an)
 
 if __name__ == '__main__':
     run()

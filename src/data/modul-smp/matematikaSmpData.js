@@ -4,7 +4,7 @@
 // Bebas karakter PUA, pecahan tegak KaTeX, dan kuis pemahaman terstruktur rapi
 // ==============================================================================
 
-export const matematikaSmpData = [
+export const MTK_SMP_MODUL = [
   {
     "id": "mtk_smp_bab_1",
     "subtestKode": "MTK_SMP",
@@ -1606,3 +1606,6 @@ export const matematikaSmpData = [
     ]
   }
 ];
+
+export const matematikaSmpData = MTK_SMP_MODUL;
+export default MTK_SMP_MODUL;

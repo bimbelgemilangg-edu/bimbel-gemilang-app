@@ -4,7 +4,7 @@
 // Bebas karakter PUA, pecahan tegak KaTeX, dan kuis pemahaman terstruktur rapi
 // ==============================================================================
 
-export const bahasaInggrisSmpData = [
+export const BIG_SMP_MODUL = [
   {
     "id": "big_smp_bab_1",
     "subtestKode": "BIG_SMP",
@@ -1618,3 +1618,6 @@ export const bahasaInggrisSmpData = [
     ]
   }
 ];
+
+export const bahasaInggrisSmpData = BIG_SMP_MODUL;
+export default BIG_SMP_MODUL;
