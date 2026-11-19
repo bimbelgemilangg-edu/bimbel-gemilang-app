@@ -37,6 +37,7 @@ import {
 } from '../../../data/tkaSmpModulData.js';
 import { useProfilSiswa } from '../../../utils/profilSiswa';
 import { deteksiTingkatSiswa } from '../../../utils/tingkatSiswa';
+import RenderMath from '../../../components/RenderMath';
 
 export default function ModulBelajarUtbkPage() {
   const navigate = useNavigate();
@@ -94,8 +95,9 @@ export default function ModulBelajarUtbkPage() {
     return semuaBab.filter((bab) => {
       // Logika SMP: Subtes Utama (MTK & BIN) vs Subtes Tambahan (IPA & BIG)
       if (isSmp) {
+        const isBabUtama = bab.isUtama ?? (bab.subtestKode === 'MTK_SMP' || bab.subtestKode === 'BIN_SMP');
         if (selectedSubtes === 'ALL') {
-          if (!tampilkanSubtesLain && !bab.isUtama) {
+          if (!tampilkanSubtesLain && !isBabUtama) {
             return false;
           }
         } else if (bab.subtestKode !== selectedSubtes) {
@@ -120,7 +122,7 @@ export default function ModulBelajarUtbkPage() {
 
   // Hitung jumlah bab utama vs tambahan SMP
   const jumlahBabUtamaSmp = useMemo(() => {
-    return SEMUA_BAB_SMP.filter((b) => b.isUtama).length;
+    return SEMUA_BAB_SMP.filter((b) => b.isUtama ?? (b.subtestKode === 'MTK_SMP' || b.subtestKode === 'BIN_SMP')).length;
   }, []);
 
   // Proteksi Akses: Hanya Kelas 12 SMA & SMP yang mengakses fitur Modul Belajar ini
@@ -312,7 +314,7 @@ export default function ModulBelajarUtbkPage() {
                   textOverflow: 'ellipsis',
                 }}
               >
-                [{terakhirDibaca.subtestKode}] {terakhirDibaca.judul}
+                [{terakhirDibaca.subtestKode}] <RenderMath text={terakhirDibaca.judul} />
               </div>
             </div>
           </div>
@@ -413,7 +415,8 @@ export default function ModulBelajarUtbkPage() {
           {/* Tab Subtes List */}
           {daftarSubtes
             .filter((sub) => {
-              if (isSmp && !tampilkanSubtesLain && !sub.isUtama) {
+              const isSubUtama = sub.isUtama ?? (sub.kode === 'MTK_SMP' || sub.kode === 'BIN_SMP');
+              if (isSmp && !tampilkanSubtesLain && !isSubUtama) {
                 return false;
               }
               return true;
@@ -606,7 +609,7 @@ export default function ModulBelajarUtbkPage() {
                       <span style={{ fontSize: 10.5, color: '#94a3b8', fontWeight: 600 }}>
                         Bab {bab.babNumber}
                       </span>
-                      {isSmp && !bab.isUtama && (
+                      {isSmp && !(bab.isUtama ?? (bab.subtestKode === 'MTK_SMP' || bab.subtestKode === 'BIN_SMP')) && (
                         <span
                           style={{
                             background: '#eef2ff',
@@ -679,11 +682,11 @@ export default function ModulBelajarUtbkPage() {
                       lineHeight: 1.35,
                     }}
                   >
-                    {bab.judul}
+                    <RenderMath text={bab.judul} />
                   </h3>
 
                   {/* Ringkasan Singkat */}
-                  <p
+                  <div
                     style={{
                       margin: '0 0 12px',
                       fontSize: 12,
@@ -691,8 +694,8 @@ export default function ModulBelajarUtbkPage() {
                       lineHeight: 1.45,
                     }}
                   >
-                    {bab.ringkasanSingkat}
-                  </p>
+                    <RenderMath text={bab.ringkasanSingkat} />
+                  </div>
 
                   {/* Learning Objectives Preview */}
                   {bab.learningObjectives && bab.learningObjectives.length > 0 && (
@@ -708,12 +711,14 @@ export default function ModulBelajarUtbkPage() {
                       <div style={{ fontSize: 10.5, fontWeight: 700, color: '#475569', marginBottom: 4 }}>
                         🎯 Sasaran Penguasaan:
                       </div>
-                      <div style={{ fontSize: 11, color: '#64748b', lineHeight: 1.4 }}>
-                        • {bab.learningObjectives[0]}
+                      <div style={{ fontSize: 11, color: '#64748b', lineHeight: 1.4, display: 'flex', gap: 4 }}>
+                        <span>•</span>
+                        <span><RenderMath text={bab.learningObjectives[0]} /></span>
                       </div>
                       {bab.learningObjectives[1] && (
-                        <div style={{ fontSize: 11, color: '#64748b', lineHeight: 1.4, marginTop: 2 }}>
-                          • {bab.learningObjectives[1]}
+                        <div style={{ fontSize: 11, color: '#64748b', lineHeight: 1.4, marginTop: 2, display: 'flex', gap: 4 }}>
+                          <span>•</span>
+                          <span><RenderMath text={bab.learningObjectives[1]} /></span>
                         </div>
                       )}
                     </div>
