@@ -1,12 +1,10 @@
 // src/data/modul-smp/bahasaIndonesiaSmpData.js
 // ==============================================================================
 // MODUL MASTER 52 HALAMAN RESMI TKA SMP 2027 - BIMBEL GEMILANG
-// Subtes: Bahasa Indonesia (Literasi TKA) (BIN_SMP)
-// 4 Bab, 39 Unit Lengkap, Latihan Soal, Kuis Interaktif & PDF Master
-// DILENGKAPI ASET VISUAL: Slide Asli, Ilustrasi Khusus, Cheat Sheet Master & Mini Tryout
+// Bebas karakter PUA, pecahan tegak KaTeX, dan kuis pemahaman terstruktur rapi
 // ==============================================================================
 
-export const BIN_SMP_MODUL = [
+export const bahasaIndonesiaSmpData = [
   {
     "id": "bin_smp_bab_1",
     "subtestKode": "BIN_SMP",
@@ -195,7 +193,7 @@ export const BIN_SMP_MODUL = [
         "judul": "Menyusun Kerangka & Bagan Teks",
         "hook": "Ubah 4 paragraf panjang jadi 1 pohon bagan—setiap cabang mewakili 1",
         "teori": "paragraf! Salah satu subkompetensi khas TKA SMP adalah menyusun kerangka atau bagan berdasarkan bagian-bagian penting teks. Caranya simpel: beri judul 2–3 kata untuk setiap paragraf, lalu cocokkan urutannya dengan bagan di opsi! Kehidupan Desa Baduy P1: Lokasi & 2 Kelompok P2: Baduy Dalam (Ketat) P3: Baduy Luar (Terbuka) P4: Tantangan & Ancaman",
-        "pondasi": "Pondasi · 3 Syarat Bagan/Kerangka Benar  Lengkap: semua paragraf utama terwakili.  Runtut: mengikuti alur teks dari awal sampai akhir.  Tidak ada tambahan: tidak memasukkan topik baru di luar teks.",
+        "pondasi": "Pondasi · 3 Syarat Bagan/Kerangka Benar 1.  Lengkap: semua paragraf utama terwakili. 2.  Runtut: mengikuti alur teks dari awal sampai akhir. 3.  Tidak ada tambahan: tidak memasukkan topik baru di luar teks.",
         "jebakanTka": "Waspadai bagan pengecoh yang menghilangkan 1 paragraf penting (misal lupa memasukkan “Tantangan” di P4) atau menukar urutan isi paragraf!",
         "contohSoal": {
           "judul": "Yuk Bahas Unit 1.9",
@@ -306,7 +304,7 @@ export const BIN_SMP_MODUL = [
         "isi": "paragraf! Salah satu subkompetensi khas TKA SMP adalah menyusun kerangka atau bagan berdasarkan bagian-bagian penting teks. Caranya simpel: beri judul 2–3 kata untuk setiap paragraf, lalu cocokkan urutannya dengan bagan di opsi! Kehidupan Desa Baduy P1: Lokasi & 2 Kelompok P2: Baduy Dalam (Ketat) P3: Baduy Luar (Terbuka) P4: Tantangan & Ancaman",
         "poinPenting": [
           "Ubah 4 paragraf panjang jadi 1 pohon bagan—setiap cabang mewakili 1",
-          "Pondasi · 3 Syarat Bagan/Kerangka Benar  Lengkap: semua paragraf utama terwakili.  Runtut: mengikuti alur teks dari awal sampai akhir.  Tidak ada tambahan: tidak memasukkan topik baru di luar teks."
+          "Pondasi · 3 Syarat Bagan/Kerangka Benar 1.  Lengkap: semua paragraf utama terwakili. 2.  Runtut: mengikuti alur teks dari awal sampai akhir. 3.  Tidak ada tambahan: tidak memasukkan topik baru di luar teks."
         ]
       },
       {
@@ -351,27 +349,27 @@ export const BIN_SMP_MODUL = [
     "kuisPemahaman": [
       {
         "id": "bin_smp_b1_q1",
-        "soal": "Soal 1 [PG · Unit 1.1] & Soal 2 [PG · Unit 1.7]  Makna istilah fermentasi sesuai konteks teks adalah … (A. pembakaran sampah · B. penguraian bahan organik oleh mikroba · C. penyiraman tanaman · D. penjemuran kulit buah)  Frasa Upaya ini pada kalimat terakhir merujuk pada … (A. membuang sampah · B. membeli pupuk · C. pengolahan sampah organik jadi kompos · D. menyiram pekarangan) Latihan Bab 1 · PGK MCMA Jawaban benar lebih dari satu—cek tiap pernyataan! Soal 3 [PGK MCMA · Unit 1.5 Prosedur] Berdasarkan teks Kompos di kiri, benda manakah yang termasuk ALAT (bukan bahan)? Pilih lebih dari satu! (1) Ember berlubang      (2) Sisa sayur (3) Sekop kecil              (4) Larutan EM4 Soal 4 [PGK MCMA · Unit 1.6 Latar Waktu] Perhatikan kutipan: “Di teras kayu yang basah, embun masih bergantung di ujung daun. Kokok ayam bersahutan menyambut semburat jingga di ufuk timur.” Frasa mana yang menunjukkan latar waktu? (1) Teras kayu yang basah    (2) Embun di ujung daun (3) Semburat jingga di ufuk timur    (4) Ujung daun Bab 1 · Pemahaman Tekstual — Latihan & Kunci Bab 1 Latihan Bab 1 · Level 3 & Kunci Pembahasan Latihan Bab 1 · Level 3 (PGK Kategori) Tentukan Benar atau Salah berdasarkan teks Kompos di Halaman 14! Soal 5 · Unit 1.9 & 1.10 (Kesesuaian Informasi) A. Proses penguraian kompos membutuhkan waktu sekitar 21 hari di wadah tertutup. B. Sisa plastik kemasan juga termasuk bahan utama kompos dalam teks. C. Kerangka teks yang tepat: Jenis Bahan → Proses Pembuatan → Alat & Bahan → Manfaat Kompos. Soal 6 · Unit 1.3 (Denotatif vs Konotatif) Tentukan apakah kalimat berikut bermakna Konotatif (Benar) atau Denotatif (Salah): A. Pemuda itu menjadi tulang punggung keluarganya sejak ayahnya wafat. B. Dokter memeriksa tulang punggung pasien yang terjatuh. C. Ia dikenal ringan tangan karena selalu membantu tetangga.",
+        "soal": "Berdasarkan teks stimulus \"Kompos dari Sampah Dapur\", makna istilah fermentasi sesuai konteks bacaan adalah …",
         "opsi": {
-          "A": "Pemuda itu menjadi tulang punggung keluarganya sejak ayahnya wafat.",
-          "B": "Sisa plastik kemasan juga termasuk bahan utama kompos dalam teks.",
-          "C": "Ia dikenal ringan tangan karena selalu membantu tetangga.",
-          "D": "Pernyataan / Opsi (4) Benar"
+          "A": "Pembakaran sampah secara bertahap",
+          "B": "Penguraian bahan organik oleh mikroba pengurai",
+          "C": "Penyiraman tanaman pekarangan",
+          "D": "Penjemuran kulit buah di bawah sinar matahari"
         },
         "kunci": "B",
-        "pembahasan": "Petunjuk konteks: “dibantu oleh bakteri pengurai”."
+        "pembahasan": "Petunjuk konteks kalimat: 'Proses fermentasi dibantu oleh bakteri pengurai'."
       },
       {
         "id": "bin_smp_b1_q2",
-        "soal": "",
+        "soal": "Frasa \"Upaya ini\" pada kalimat terakhir teks stimulus merujuk pada …",
         "opsi": {
-          "A": "Pernyataan / Opsi (1) Benar",
-          "B": "Pernyataan / Opsi (2) Benar",
-          "C": "Pernyataan / Opsi (3) Benar",
-          "D": "Pernyataan / Opsi (4) Benar"
+          "A": "Membuang sampah ke tempat penampungan akhir",
+          "B": "Membeli pupuk kimia di toko pertanian",
+          "C": "Pengolahan sampah organik rumah tangga menjadi kompos",
+          "D": "Menyiram pekarangan rumah secara teratur"
         },
         "kunci": "C",
-        "pembahasan": "Merujuk langsung pada pengolahan sampah organik jadi"
+        "pembahasan": "Frasa 'Upaya ini' merujuk langsung pada seluruh proses pembuatan kompos dari sampah organik yang dijelaskan pada kalimat sebelumnya."
       },
       {
         "id": "bin_smp_b1_q3",
@@ -551,7 +549,7 @@ export const BIN_SMP_MODUL = [
         "judul": "Membaca Infografis, Tabel & Data",
         "hook": "Teks multimodal menggabungkan tulisan + gambar/angka—baca judul dan",
         "teori": "satuannya dulu! Soal TKA Bahasa Indonesia tidak melulu paragraf penuh! Banyak stimulus berupa infografis, poster layanan, atau tabel data. Teknik bacanya: (1) Judul, (2) Satuan/Keterangan warna, (3) Angka terbesar & terkecil, baru (4) Simpulan. Membaca Infografis: Gabungkan ikon visual (organik, plastik, kertas) dengan data diagram lingkaran & batang secara utuh",
-        "pondasi": "Pondasi · 3 Pertanyaan Wajib pada Infografis  Kategori mana yang tertinggi dan terendah?  Berapa selisih atau gabungan dua kategori?  Apakah ada catatan kaki / sumber di pojok bawah?",
+        "pondasi": "Pondasi · 3 Pertanyaan Wajib pada Infografis 1.  Kategori mana yang tertinggi dan terendah? 2.  Berapa selisih atau gabungan dua kategori? 3.  Apakah ada catatan kaki / sumber di pojok bawah?",
         "jebakanTka": "Perhatikan beda kata “mayoritas” (> 50%) dengan “paling banyak” (tertinggi meski 45%)! Di grafik atas, Komik/Novel paling banyak, tapi bukan > 50%!",
         "contohSoal": {
           "judul": "Yuk Bahas Unit 2.6",
@@ -698,7 +696,7 @@ export const BIN_SMP_MODUL = [
         "isi": "satuannya dulu! Soal TKA Bahasa Indonesia tidak melulu paragraf penuh! Banyak stimulus berupa infografis, poster layanan, atau tabel data. Teknik bacanya: (1) Judul, (2) Satuan/Keterangan warna, (3) Angka terbesar & terkecil, baru (4) Simpulan. Membaca Infografis: Gabungkan ikon visual (organik, plastik, kertas) dengan data diagram lingkaran & batang secara utuh",
         "poinPenting": [
           "Teks multimodal menggabungkan tulisan + gambar/angka—baca judul dan",
-          "Pondasi · 3 Pertanyaan Wajib pada Infografis  Kategori mana yang tertinggi dan terendah?  Berapa selisih atau gabungan dua kategori?  Apakah ada catatan kaki / sumber di pojok bawah?"
+          "Pondasi · 3 Pertanyaan Wajib pada Infografis 1.  Kategori mana yang tertinggi dan terendah? 2.  Berapa selisih atau gabungan dua kategori? 3.  Apakah ada catatan kaki / sumber di pojok bawah?"
         ]
       },
       {
@@ -767,27 +765,27 @@ export const BIN_SMP_MODUL = [
     "kuisPemahaman": [
       {
         "id": "bin_smp_b2_q1",
-        "soal": "Soal 1 [PG · Unit 2.1] & Soal 2 [PG · Unit 2.7]  Ide pokok Teks A adalah … (A. Harga HP baru · B. Layanan peminjaman buku digital gratis Perpustakaan Kota · C. Koleksi novel remaja · D. Cara memperbaiki internet)  Persamaan informasi Teks A dan Teks B adalah … (A. Batas pinjam 7 hari · B. Layanan aplikasi perpustakaan bersifat gratis · C. Tampilan aplikasi lambat · D. Koleksi novel lengkap) Latihan Bab 2 · PGK MCMA Pilih semua pernyataan yang benar! Soal 3 [PGK MCMA · Unit 2.8 Perbedaan 2 Teks] Apa saja perbedaan antara Teks A dan Teks B? Pilih lebih dari satu! (1) Teks A memakai bahasa baku/formal, Teks B memakai bahasa santai. (2) Teks A menyebut batas waktu pinjam, Teks B tidak. (3) Teks B menyebut kendala di HP lama, Teks A menyebut syarat internet stabil. (4) Teks A memuji novel remaja, Teks B melarang peminjaman buku. Soal 4 [PGK MCMA · Unit 2.5 Prediksi] Apa yang mungkin terjadi jika siswa tinggal di daerah tanpa sinyal internet stabil saat ingin memakai aplikasi di Teks A? (1) Siswa kesulitan mengunduh buku digital. (2) Perpustakaan Kota akan langsung ditutup permanen. (3) Siswa perlu mencari akses WiFi dulu untuk mengunduh buku. Bab 2 · Pemahaman Inferensial — Latihan & Kunci Bab 2 Latihan Bab 2 · Level 3 & Kunci Pembahasan Latihan Bab 2 · Level 3 (PGK Kategori) Tentukan Benar atau Salah berdasarkan Teks A & B (Hal 26)! Soal 5 · Unit 2.10 (Fakta vs Opini pada Teks B) A. Kalimat “Asyik banget!” merupakan opini pribadi penulis Teks B. B. Batas peminjaman 3 buku selama 7 hari di Teks A adalah fakta. C. Kedua teks sepakat bahwa aplikasi perpustakaan tidak punya kekurangan sama sekali. Soal 6 · Unit 2.4 (Hubungan Kalimat) Pada Teks A, kalimat terakhir diawali kata “Namun”. Tentukan Benar/Salah: A. Kata “Namun” menunjukkan syarat/kendala di balik kemudahan aplikasi. B. Kata “Namun” berfungsi memberikan contoh judul buku. C. Teks A bertujuan menginformasikan layanan baru secara objektif.",
+        "soal": "Berdasarkan perbandingan dua teks, ide pokok Teks A adalah …",
         "opsi": {
-          "A": "Kata “Namun” menunjukkan syarat/kendala di balik kemudahan aplikasi.",
-          "B": "Kata “Namun” berfungsi memberikan contoh judul buku.",
-          "C": "Tampilan aplikasi lambat",
-          "D": "Pernyataan / Opsi (4) Benar"
+          "A": "Kenaikan harga gawai baru di pasaran",
+          "B": "Layanan peminjaman gawai untuk menunjang belajar siswa",
+          "C": "Keunggulan laptop dibandingkan ponsel pintar",
+          "D": "Larangan membawa gawai pribadi ke sekolah"
         },
         "kunci": "B",
-        "pembahasan": "Kalimat utama Teks A ada di awal (deduktif)."
+        "pembahasan": "Ide pokok Teks A mengulas program layanan peminjaman gawai sekolah untuk memfasilitasi kebutuhan belajar siswa."
       },
       {
         "id": "bin_smp_b2_q2",
-        "soal": "",
+        "soal": "Persamaan informasi utama yang disampaikan pada Teks A dan Teks B adalah …",
         "opsi": {
-          "A": "Pernyataan / Opsi (1) Benar",
-          "B": "Pernyataan / Opsi (2) Benar",
-          "C": "Pernyataan / Opsi (3) Benar",
-          "D": "Pernyataan / Opsi (4) Benar"
+          "A": "Batas waktu peminjaman gawai maksimal 7 hari",
+          "B": "Membantu siswa yang terkendala fasilitas belajar daring",
+          "C": "Pemberian paket kuota internet bulanan secara gratis",
+          "D": "Lokasi peminjaman gawai terpusat di laboratorium sekolah"
         },
         "kunci": "B",
-        "pembahasan": "Kedua teks sama-sama menyebut layanan aplikasi itu gratis."
+        "pembahasan": "Kedua teks memuat gagasan yang sama: memberikan solusi nyata bagi siswa yang mengalami kendala sarana belajar digital."
       },
       {
         "id": "bin_smp_b2_q3",
@@ -1267,27 +1265,27 @@ export const BIN_SMP_MODUL = [
     "kuisPemahaman": [
       {
         "id": "bin_smp_b3_q1",
-        "soal": "Soal 1 [PG · Unit 3.1] & Soal 2 [PG · Unit 3.6]  Sifat Raka yang paling menonjol adalah … (A. manja · B. mandiri dan peduli pada ibu · C. pemarah · D. ceroboh)  Sudut pandang kutipan tersebut adalah … (A. orang pertama utama · B. orang kedua · C. orang ketiga serbatahu · D. campuran) Latihan Bab 3 · PGK MCMA (Majas & Citraan) Pilih semua pernyataan yang benar! Soal 3 [PGK MCMA · Unit 3.10 Majas] Perhatikan kalimat berikut! Pilih semua kalimat yang menggunakan majas Personifikasi! (1) Angin malam berbisik lembut di telingaku. (2) Daun-daun kering menari tertiup angin sore. (3) Wajahnya bersinar bagai bulan purnama. (4) Suaranya menggelegar membelah langit. Soal 4 [PGK MCMA · Unit 3.11 Citraan] Kutipan: “Aroma roti hangat memenuhi dapur kecil itu, sementara denting sendok terdengar riang.” Citraan yang muncul adalah … (1) Penciuman · (2) Pendengaran · (3) Perabaan · (4) Pengecapan Bab 3 · Teks Fiksi & Puisi — Latihan & Kunci Bab 3 Latihan Bab 3 · Level 3 & Kunci Pembahasan Latihan Bab 3 · Level 3 (PGK Kategori) Tentukan Benar atau Salah berdasarkan kutipan Sepatu Raka (Hal 41)! Soal 5 · Unit 3.7 & 3.8 (Prediksi & Amanat) A. Jika Raka tidak peduli pada kondisi ibunya, ia mungkin akan memaksa dibelikan sepatu baru. B. Kutipan tersebut mengandung nilai moral kemandirian dan berbakti kepada orang tua. C. Raka merasa sangat malu sehingga memutuskan bolos sekolah. Soal 6 · Unit 3.9 (Makna Puisi) Larik: “Peluh ayah jatuh menjadi jembatan mimpiku.” Tentukan Benar/Salah: A. Kata peluh melambangkan kerja keras ayah. B. Frasa jembatan mimpiku bermakna jalan menuju cita-cita anak. C. Larik tersebut bercerita tentang ayah yang bekerja sebagai tukang jembatan sungai.",
+        "soal": "Berdasarkan kutipan cerpen, sifat tokoh Raka yang paling menonjol adalah …",
         "opsi": {
-          "A": "Kata peluh melambangkan kerja keras ayah.",
-          "B": "Frasa jembatan mimpiku bermakna jalan menuju cita-cita anak.",
-          "C": "Larik tersebut bercerita tentang ayah yang bekerja sebagai tukang jembatan sungai.",
-          "D": "Pernyataan / Opsi (4) Benar"
+          "A": "Manja dan mudah menyerah pada keadaan",
+          "B": "Mandiri dan peduli terhadap kondisi keluarga",
+          "C": "Suka membanggakan diri di depan teman",
+          "D": "Pendiam dan enggan berbicara dengan orang tua"
         },
         "kunci": "B",
-        "pembahasan": "Tidak ingin merepotkan ibu yang baru sembuh & menjahit"
+        "pembahasan": "Raka tidak ingin merepotkan ibunya yang baru pulih dan bertekad mandiri membantu menjahit pakaian."
       },
       {
         "id": "bin_smp_b3_q2",
-        "soal": "",
+        "soal": "Sudut pandang (Point of View) yang digunakan pengarang dalam kutipan cerpen tersebut adalah …",
         "opsi": {
-          "A": "Pernyataan / Opsi (1) Benar",
-          "B": "Pernyataan / Opsi (2) Benar",
-          "C": "Pernyataan / Opsi (3) Benar",
-          "D": "Pernyataan / Opsi (4) Benar"
+          "A": "Orang pertama tokoh utama (aku-an)",
+          "B": "Orang pertama tokoh sampingan",
+          "C": "Orang ketiga serbatahu (ia/dia-an serbatahu)",
+          "D": "Orang ketiga pengamat"
         },
         "kunci": "C",
-        "pembahasan": "Narasi memakai nama Raka / ia dan tahu isi hatinya (tidak"
+        "pembahasan": "Narator menyebut tokoh dengan nama Raka/ia dan mengetahui seluruh isi pikiran serta gejolak batinnya."
       },
       {
         "id": "bin_smp_b3_q3",
@@ -1485,7 +1483,7 @@ export const BIN_SMP_MODUL = [
     ],
     "cheatSheet": "",
     "cheatSheetImg": null,
-    "miniTryout": "Simulasi Mini Tryout · Bahasa Indonesia TKA SMP 2027\nSimulasi Mini Tryout Campuran 4 Bab (15 Menit)\nStimulus & Soal Nomor 1–3\nPasang timer 15 menit, kerjakan semua 6 nomor tanpa mengintip halaman\n52!\nTeks 1 (Informasi): Taman Baca Keliling\n“Sejak 2024, komunitas pemuda Banyuwangi menggerakkan Taman Baca\nKeliling memakai motor boks setiap hari Minggu pagi di alun-alun. Lebih dari\n300 buku cerita dan sains dapat dipinjam gratis. Inisiatif ini berhasil\nmeningkatkan minat baca anak-anak sekitar, meski masih membutuhkan\ntambahan rak tahan hujan.”\nNomor 1–3 (Tekstual, Inferensial & Prediksi)\n [PG · Tekstual] Kapan layanan Taman Baca Keliling beroperasi? (A. Setiap\nhari · B. Sabtu malam · C. Minggu pagi · D. Akhir bulan)\n [PG · Inferensial] Ide pokok Teks 1 adalah … (A. Harga motor boks · B.\nGerakan Taman Baca Keliling pemuda Banyuwangi & dampaknya · C. Cara\nmembuat rak · D. Jumlah buku sains)\n [PGK MCMA · Prediksi] Apa yang mungkin terjadi jika hujan deras turun\nsaat kegiatan berlangsung tanpa rak tahan hujan? (1) Buku berisiko\nbasah/rusak · (2) Kegiatan dipindah ke tempat berteduh · (3) Komunitas\ndibubarkan selamanya.\nStimulus Fiksi & Soal Nomor 4–6\nCampuran Fiksi, Majas, Citraan, dan Evaluasi!\nTeks 2 (Fiksi): Lentera di Teras\n“Angin malam mengetuk pelan jendela kamar Nisa. Di luar, listrik padam\ntotal. Nisa segera menyalakan lentera kecil dan mengajak adiknya yang\nketakutan bermain tebak bayangan di dinding. Tawa kecil pun pecah\nmemecah gelap.”\nNomor 4–6 (Majas, Watak & Evaluasi)\n [PG · Majas] Kalimat “Angin malam mengetuk pelan jendela”\nmenggunakan majas … (A. Hiperbola · B. Personifikasi · C. Simile · D. Ironi)\n [PGK MCMA · Penokohan] Sifat Nisa yang tergambar dalam cerita: (1)\nKreatif · (2) Penyayang adik · (3) Egois · (4) Sigap menghadapi masalah.\n [PGK Kategori · Evaluasi] Tentukan Benar/Salah: (A) Latar waktu cerita\nadalah malam hari · (B) Sudut pandang cerita adalah orang pertama · (C)\nPesan cerita: tetap tenang dan kreatif saat menghadapi kendala.\n\nBahasa Indonesia TKA SMP 2027\nKunci Tryout & Peta Belajar 10 Minggu — Bimbel Gemilang\nKunci Simulasi Mini Tryout (Hal 51)\nCek skormu—kalau benar 5–6 nomor, literasimu sudah sangat siap!\nKunci & Pembahasan Kilat\nNo 1 → C (Minggu pagi): Informasi tersurat langsung di kalimat pertama.\nNo 2 → B: Merangkum keseluruhan gerakan Taman Baca Keliling beserta\ndampaknya.\nNo 3 → (1) dan (2): Opsi (3) “dibubarkan selamanya” adalah prediksi\nekstrem/lebay!\nNo 4 → B (Personifikasi): Angin diberi sifat manusia (mengetuk).\nNo 5 → (1), (2), dan (4): Nisa sigap menyalakan lentera & kreatif\nmenghibur adiknya dengan tebak bayangan.\nNo 6 → A. Benar · B. Salah · C. Benar: Narasi memakai nama Nisa (Orang\nKetiga, bukan Orang Pertama!).\nRencana 10 Minggu Menuju 29 Maret 2027\nTarget nilai Baik (76,67+) hingga Istimewa (95+) bersama Bimbel Gemilang!\nTahap Fokus Latihan Mingguan\nMinggu 1–3 Tuntaskan Bab 1 (Tekstual, Unit 1.1–1.10) + biasakan\nbaca 1 artikel/hari (15 menit).\nMinggu 4–6 Kuasai Bab 2 (Inferensial & Teks Jamak, Unit 2.1–2.10)\n+ latih tabel pembanding 2 teks.\nMinggu 7–8 Bedah Bab 3 (Fiksi, Puisi, Majas, Citraan) & Bab 4\n(Evaluasi–Apresiasi).\nMinggu 9–10 Drill Tryout 30 soal / 75 menit + review Cheat Sheet\nHal 43 → Ujian 29 Mar–1 Apr 2027!\nPesan Penutup · Bimbel Gemilang\nSelamat telah menuntaskan Modul Master 52 Halaman Bahasa Indonesia\nTKA SMP 2027! Ingat rumus literasi: baca soal dulu, kunci kalimat bukti di\nteks, dan waspadai opsi yang terdengar benar padahal di luar bacaan.\nSemangat raih predikat Istimewa bersama Bimbel Gemilang!",
+    "miniTryout": "Simulasi Mini Tryout · Bahasa Indonesia TKA SMP 2027\nSimulasi Mini Tryout Campuran 4 Bab (15 Menit)\nStimulus & Soal Nomor 1–3\nPasang timer 15 menit, kerjakan semua 6 nomor tanpa mengintip halaman\n52!\nTeks 1 (Informasi): Taman Baca Keliling\n“Sejak 2024, komunitas pemuda Banyuwangi menggerakkan Taman Baca\nKeliling memakai motor boks setiap hari Minggu pagi di alun-alun. Lebih dari\n300 buku cerita dan sains dapat dipinjam gratis. Inisiatif ini berhasil\nmeningkatkan minat baca anak-anak sekitar, meski masih membutuhkan\ntambahan rak tahan hujan.”\nNomor 1–3 (Tekstual, Inferensial & Prediksi)\n1.  [PG · Tekstual] Kapan layanan Taman Baca Keliling beroperasi? (A. Setiap\nhari · B. Sabtu malam · C. Minggu pagi · D. Akhir bulan)\n2.  [PG · Inferensial] Ide pokok Teks 1 adalah … (A. Harga motor boks · B.\nGerakan Taman Baca Keliling pemuda Banyuwangi & dampaknya · C. Cara\nmembuat rak · D. Jumlah buku sains)\n3.  [PGK MCMA · Prediksi] Apa yang mungkin terjadi jika hujan deras turun\nsaat kegiatan berlangsung tanpa rak tahan hujan? (1) Buku berisiko\nbasah/rusak · (2) Kegiatan dipindah ke tempat berteduh · (3) Komunitas\ndibubarkan selamanya.\nStimulus Fiksi & Soal Nomor 4–6\nCampuran Fiksi, Majas, Citraan, dan Evaluasi!\nTeks 2 (Fiksi): Lentera di Teras\n“Angin malam mengetuk pelan jendela kamar Nisa. Di luar, listrik padam\ntotal. Nisa segera menyalakan lentera kecil dan mengajak adiknya yang\nketakutan bermain tebak bayangan di dinding. Tawa kecil pun pecah\nmemecah gelap.”\nNomor 4–6 (Majas, Watak & Evaluasi)\n4.  [PG · Majas] Kalimat “Angin malam mengetuk pelan jendela”\nmenggunakan majas … (A. Hiperbola · B. Personifikasi · C. Simile · D. Ironi)\n5.  [PGK MCMA · Penokohan] Sifat Nisa yang tergambar dalam cerita: (1)\nKreatif · (2) Penyayang adik · (3) Egois · (4) Sigap menghadapi masalah.\n6.  [PGK Kategori · Evaluasi] Tentukan Benar/Salah: (A) Latar waktu cerita\nadalah malam hari · (B) Sudut pandang cerita adalah orang pertama · (C)\nPesan cerita: tetap tenang dan kreatif saat menghadapi kendala.\n\nBahasa Indonesia TKA SMP 2027\nKunci Tryout & Peta Belajar 10 Minggu — Bimbel Gemilang\nKunci Simulasi Mini Tryout (Hal 51)\nCek skormu—kalau benar 5–6 nomor, literasimu sudah sangat siap!\nKunci & Pembahasan Kilat\nNo 1 → C (Minggu pagi): Informasi tersurat langsung di kalimat pertama.\nNo 2 → B: Merangkum keseluruhan gerakan Taman Baca Keliling beserta\ndampaknya.\nNo 3 → (1) dan (2): Opsi (3) “dibubarkan selamanya” adalah prediksi\nekstrem/lebay!\nNo 4 → B (Personifikasi): Angin diberi sifat manusia (mengetuk).\nNo 5 → (1), (2), dan (4): Nisa sigap menyalakan lentera & kreatif\nmenghibur adiknya dengan tebak bayangan.\nNo 6 → A. Benar · B. Salah · C. Benar: Narasi memakai nama Nisa (Orang\nKetiga, bukan Orang Pertama!).\nRencana 10 Minggu Menuju 29 Maret 2027\nTarget nilai Baik (76,67+) hingga Istimewa (95+) bersama Bimbel Gemilang!\nTahap Fokus Latihan Mingguan\nMinggu 1–3 Tuntaskan Bab 1 (Tekstual, Unit 1.1–1.10) + biasakan\nbaca 1 artikel/hari (15 menit).\nMinggu 4–6 Kuasai Bab 2 (Inferensial & Teks Jamak, Unit 2.1–2.10)\n+ latih tabel pembanding 2 teks.\nMinggu 7–8 Bedah Bab 3 (Fiksi, Puisi, Majas, Citraan) & Bab 4\n(Evaluasi–Apresiasi).\nMinggu 9–10 Drill Tryout 30 soal / 75 menit + review Cheat Sheet\nHal 43 → Ujian 29 Mar–1 Apr 2027!\nPesan Penutup · Bimbel Gemilang\nSelamat telah menuntaskan Modul Master 52 Halaman Bahasa Indonesia\nTKA SMP 2027! Ingat rumus literasi: baca soal dulu, kunci kalimat bukti di\nteks, dan waspadai opsi yang terdengar benar padahal di luar bacaan.\nSemangat raih predikat Istimewa bersama Bimbel Gemilang!",
     "tryoutImg": "/modul-assets/tryout/tryout_bin_p51.png",
     "petaBelajarImg": "/modul-assets/tryout/tryout_bin_p52.png",
     "konsepTeori": [
@@ -1571,27 +1569,27 @@ export const BIN_SMP_MODUL = [
     "kuisPemahaman": [
       {
         "id": "bin_smp_b4_q1",
-        "soal": "Soal 1 [PG · Unit 4.1 Relevansi] & Soal 2 [PGK MCMA · Unit 4.5]  Cerpen tentang siswa yang selalu menunda tugas hingga keteteran paling relevan untuk mengingatkan pelajar SMP agar … (A. berhenti sekolah · B. mengatur jadwal belajar dan mencicil tugas sejak awal · C. menyalin tugas teman · D. tidak ikut ekstrakurikuler)  Ciri informasi hoaks di media sosial yang wajib diwaspadai: (1) Judul provokatif memancing emosi · (2) Tanpa sumber lembaga jelas · (3) Meminta segera disebarkan ke banyak grup · (4) Dilengkapi data resmi dan tanggal verifikasi. Soal 3 [PGK Kategori · Unit 4.3 Fungsi Judul & Gambar] Artikel tentang cara menghemat listrik di rumah dilengkapi infografis 5 ikon peralatan elektronik. Tentukan Benar/Salah: A. Infografis membantu pembaca memahami langkah hemat listrik lebih cepat. B. Gambar ikon membuat pembaca lebih tertarik membaca artikel. C. Infografis tersebut menggantikan seluruh isi teks sehingga teks tidak perlu dibaca.",
+        "soal": "Cerpen tentang siswa yang selalu menunda tugas hingga keteteran paling relevan diajarkan untuk mengatasi masalah …",
         "opsi": {
-          "A": "Infografis membantu pembaca memahami langkah hemat listrik lebih cepat.",
-          "B": "Gambar ikon membuat pembaca lebih tertarik membaca artikel.",
-          "C": "Infografis tersebut menggantikan seluruh isi teks sehingga teks tidak perlu dibaca.",
-          "D": "Pernyataan / Opsi (4) Benar"
+          "A": "Rendahnya nilai kebugaran jasmani siswa",
+          "B": "Kebiasaan prokrastinasi (menunda-nunda) tugas belajar",
+          "C": "Kurangnya persediaan buku cerita di perpustakaan",
+          "D": "Konflik antarsiswa saat jam istirahat sekolah"
         },
         "kunci": "B",
-        "pembahasan": "Penerapan paling konkret, positif, dan relevan dengan konflik"
+        "pembahasan": "Cerita bertema menunda tugas relevan untuk refleksi siswa yang sering melakukan prokrastinasi dalam belajar."
       },
       {
         "id": "bin_smp_b4_q2",
-        "soal": "",
+        "soal": "Ciri-ciri informasi hoaks di media sosial yang wajib diwaspadai adalah:\n(1) Judul sensasional dan provokatif\n(2) Menggunakan huruf kapital berlebihan\n(3) Tidak mencantumkan sumber dan tanggal jelas\n(4) Memuat nama penulis dan lembaga riset kredibel",
         "opsi": {
-          "A": "Pernyataan / Opsi (1) Benar",
-          "B": "Pernyataan / Opsi (2) Benar",
-          "C": "Pernyataan / Opsi (3) Benar",
-          "D": "Pernyataan / Opsi (4) Benar"
+          "A": "(1), (2), dan (3)",
+          "B": "(1) dan (4)",
+          "C": "(2) dan (4)",
+          "D": "Semua nomor benar"
         },
         "kunci": "A",
-        "pembahasan": "Opsi (4) justru ciri berita kredibel!"
+        "pembahasan": "Ciri hoaks mencakup nomor (1), (2), dan (3). Nomor (4) justru ciri berita faktual dan terpercaya."
       },
       {
         "id": "bin_smp_b4_q3",

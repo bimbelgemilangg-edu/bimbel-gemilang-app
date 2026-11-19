@@ -1,12 +1,10 @@
 // src/data/modul-smp/matematikaSmpData.js
 // ==============================================================================
 // MODUL MASTER 52 HALAMAN RESMI TKA SMP 2027 - BIMBEL GEMILANG
-// Subtes: Matematika (Numerasi TKA) (MTK_SMP)
-// 4 Bab, 39 Unit Lengkap, Latihan Soal, Kuis Interaktif & PDF Master
-// DILENGKAPI ASET VISUAL: Slide Asli, Ilustrasi Khusus, Cheat Sheet Master & Mini Tryout
+// Bebas karakter PUA, pecahan tegak KaTeX, dan kuis pemahaman terstruktur rapi
 // ==============================================================================
 
-export const MTK_SMP_MODUL = [
+export const matematikaSmpData = [
   {
     "id": "mtk_smp_bab_1",
     "subtestKode": "MTK_SMP",
@@ -53,16 +51,16 @@ export const MTK_SMP_MODUL = [
       {
         "unitNumber": "1.2",
         "judul": "Pecahan, Desimal & Persen",
-        "hook": "Tiga baju berbeda untuk nilai yang sama persis: ½ = 0,5 = 50%!",
+        "hook": "Tiga baju berbeda untuk nilai yang sama persis: $\\frac{1}{2}$ = 0,5 = 50%!",
         "teori": "Bilangan Rasional adalah bilangan yang bisa ditulis dalam bentuk pecahan a/b (dengan b ≠ 0). Di TKA SMP, kemampuan mengubah pecahan ke desimal/persen secara refleks bikin hitungan 3 kali lebih cepat! Konsep Pecahan: 1 loyang pizza dibagi 8 potong sama besar — tiap potong bernilai 1/8 (12,5%) Untuk tambah/kurang pecahan, samakan penyebutnya (pakai KPK atau cara kupu-kupu). Untuk bagi pecahan, cukup ubah jadi kali lalu balik pecahan belakang (a/b ÷ c/d = a/b × d/c).",
-        "pondasi": "Pondasi · Pecahan Istimewa Wajib Hafal ½ = 0,5 · ¼ = 0,25 · ¾ = 0,75 · ⅕ = 0,2 · ⅖ = 0,4 · ⅛ = 0,125 · ⅓ ≈ 0,333 · ⅔ ≈ 0,667.",
-        "jebakanTka": "Saat mengurutkan pecahan seperti ⅗, 0,65, 58%, ubah semuanya ke persen dulu (60%, 65%, 58%)—jangan menebak dari besar angka penyebutnya!",
+        "pondasi": "Pondasi · Pecahan Istimewa Wajib Hafal $\\frac{1}{2}$ = 0,5 · $\\frac{1}{4}$ = 0,25 · $\\frac{3}{4}$ = 0,75 · $\\frac{1}{5}$ = 0,2 · $\\frac{2}{5}$ = 0,4 · $\\frac{1}{8}$ = 0,125 · $\\frac{1}{3}$ ≈ 0,333 · $\\frac{2}{3}$ ≈ 0,667.",
+        "jebakanTka": "Saat mengurutkan pecahan seperti $\\frac{3}{5}$, 0,65, 58%, ubah semuanya ke persen dulu (60%, 65%, 58%)—jangan menebak dari besar angka penyebutnya!",
         "contohSoal": {
           "judul": "Yuk Bahas Unit 1.2",
-          "soal": "Pak Budi punya lahan 600 m². Sebanyak ⅓ bagian ditanami jagung, 25% bagian ditanami cabai, dan sisanya dibuat kolam ikan. Berapa luas kolam ikan Pak Budi?",
+          "soal": "Pak Budi punya lahan 600 m². Sebanyak $\\frac{1}{3}$ bagian ditanami jagung, 25% bagian ditanami cabai, dan sisanya dibuat kolam ikan. Berapa luas kolam ikan Pak Budi?",
           "opsiString": "A. 200 m² · B. 250 m² · C. 300 m² · D. 350 m²",
           "jawaban": "B",
-          "solusi": "Yuk Bahas · Sisa Lahan Kebun (PG Aplikasi) Soal: Pak Budi punya lahan 600 m². Sebanyak ⅓ bagian ditanami jagung, 25% bagian ditanami cabai, dan sisanya dibuat kolam ikan. Berapa luas kolam ikan Pak Budi? Opsi: A. 200 m² · B. 250 m² · C. 300 m² · D. 350 m² Hitung satu per satu atau gabung pecahannya! Jagung = ⅓ × 600 = 200 m². Cabai = 25% × 600 = ¼ × 600 = 150 m². Total yang sudah dipakai = 200 + 150 = 350 m². Maka sisa untuk kolam = 600 − 350 = 250 m²! Jawaban: B. 250 m²"
+          "solusi": "Yuk Bahas · Sisa Lahan Kebun (PG Aplikasi) Soal: Pak Budi punya lahan 600 m². Sebanyak $\\frac{1}{3}$ bagian ditanami jagung, 25% bagian ditanami cabai, dan sisanya dibuat kolam ikan. Berapa luas kolam ikan Pak Budi? Opsi: A. 200 m² · B. 250 m² · C. 300 m² · D. 350 m² Hitung satu per satu atau gabung pecahannya! Jagung = $\\frac{1}{3}$ × 600 = 200 m². Cabai = 25% × 600 = $\\frac{1}{4}$ × 600 = 150 m². Total yang sudah dipakai = 200 + 150 = 350 m². Maka sisa untuk kolam = 600 − 350 = 250 m²! Jawaban: B. 250 m²"
         },
         "trikCepat": "Trik Cepat · Bandingkan 2 Pecahan (Kali Silang) Mana lebih besar: 5/7 atau 7/10? Kali silang ke atas: kiri 5×10 = 50, kanan 7×7 = 49. Karena 50 > 49, maka 5/7 > 7/10!",
         "pageNumber": 5,
@@ -139,15 +137,15 @@ export const MTK_SMP_MODUL = [
         "jebakanTka": "Diskon 50% + 20% bukan berarti diskon 70%! Harga bayarnya 0,5 × 0,8 = 0,40 (40%), jadi diskon totalnya 60%. Selalu cek apakah harga awal di dua toko sama atau beda!",
         "contohSoal": {
           "judul": "Yuk Bahas Unit 1.6",
-          "soal": "Toko A menjual buku Rp24.000 diskon 25%. Toko B menjual buku sama Rp20.000 diskon 10%. Tentukan Benar atau Salah! A. Potongan harga di Toko A adalah Rp6.000. B. Harga bayar di Toko A lebih murah daripada Toko B. C. Diskon beruntun 20% + 10% sama dengan diskon tunggal 30%. Toko A: potongan ¼ × 24.000 = Rp6.000 (A Benar), bayar Rp18.000. Toko B: bayar 90% × 20.000 = Rp18.000—ternyata sama murah (B Salah)! Diskon 20%+10% = 28% (C Salah). Jawaban: A. Benar · B. Salah · C. Salah",
+          "soal": "Toko A menjual buku Rp24.000 diskon 25%. Toko B menjual buku sama Rp20.000 diskon 10%. Tentukan Benar atau Salah! A. Potongan harga di Toko A adalah Rp6.000. B. Harga bayar di Toko A lebih murah daripada Toko B. C. Diskon beruntun 20% + 10% sama dengan diskon tunggal 30%. Toko A: potongan $\\frac{1}{4}$ × 24.000 = Rp6.000 (A Benar), bayar Rp18.000. Toko B: bayar 90% × 20.000 = Rp18.000—ternyata sama murah (B Salah)! Diskon 20%+10% = 28% (C Salah). Jawaban: A. Benar · B. Salah · C. Salah",
           "opsiString": "",
           "jawaban": "A",
-          "solusi": "Yuk Bahas · Bandingkan Diskon 2 Toko (PGK Kategori) Soal: Toko A menjual buku Rp24.000 diskon 25%. Toko B menjual buku sama Rp20.000 diskon 10%. Tentukan Benar atau Salah! A. Potongan harga di Toko A adalah Rp6.000. B. Harga bayar di Toko A lebih murah daripada Toko B. C. Diskon beruntun 20% + 10% sama dengan diskon tunggal 30%. Toko A: potongan ¼ × 24.000 = Rp6.000 (A Benar), bayar Rp18.000. Toko B: bayar 90% × 20.000 = Rp18.000—ternyata sama murah (B Salah)! Diskon 20%+10% = 28% (C Salah). Jawaban: A. Benar · B. Salah · C. Salah"
+          "solusi": "Yuk Bahas · Bandingkan Diskon 2 Toko (PGK Kategori) Soal: Toko A menjual buku Rp24.000 diskon 25%. Toko B menjual buku sama Rp20.000 diskon 10%. Tentukan Benar atau Salah! A. Potongan harga di Toko A adalah Rp6.000. B. Harga bayar di Toko A lebih murah daripada Toko B. C. Diskon beruntun 20% + 10% sama dengan diskon tunggal 30%. Toko A: potongan $\\frac{1}{4}$ × 24.000 = Rp6.000 (A Benar), bayar Rp18.000. Toko B: bayar 90% × 20.000 = Rp18.000—ternyata sama murah (B Salah)! Diskon 20%+10% = 28% (C Salah). Jawaban: A. Benar · B. Salah · C. Salah"
         },
         "trikCepat": "Trik Cepat · Rumus Diskon Ganda Untuk diskon a% + b%, diskon tunggalnya = a + b − (a × b / 100). Contoh: 20% + 10% = 30 − 2 = 28%!",
         "pageNumber": 9,
         "illustrationImg": "/modul-assets/illustrations/mtk_p9.jpeg",
-        "illustrationCaption": "Toko A: potongan ¼ × 24.000 = Rp6.000 (A Benar), bayar Rp18.000. Toko B: bayar 90% × 20.000 = Rp18.000—ternyata sama murah (B Salah)! Diskon 20%+10% = 28% (C Salah).",
+        "illustrationCaption": "Toko A: potongan $\\frac{1}{4}$ × 24.000 = Rp6.000 (A Benar), bayar Rp18.000. Toko B: bayar 90% × 20.000 = Rp18.000—ternyata sama murah (B Salah)! Diskon 20%+10% = 28% (C Salah).",
         "slideImg": "/modul-assets/pages/mtk_p9.png"
       },
       {
@@ -249,8 +247,8 @@ export const MTK_SMP_MODUL = [
         "subjudul": "Unit 1.2: Pecahan, Desimal & Persen",
         "isi": "Bilangan Rasional adalah bilangan yang bisa ditulis dalam bentuk pecahan a/b (dengan b ≠ 0). Di TKA SMP, kemampuan mengubah pecahan ke desimal/persen secara refleks bikin hitungan 3 kali lebih cepat! Konsep Pecahan: 1 loyang pizza dibagi 8 potong sama besar — tiap potong bernilai 1/8 (12,5%) Untuk tambah/kurang pecahan, samakan penyebutnya (pakai KPK atau cara kupu-kupu). Untuk bagi pecahan, cukup ubah jadi kali lalu balik pecahan belakang (a/b ÷ c/d = a/b × d/c).",
         "poinPenting": [
-          "Tiga baju berbeda untuk nilai yang sama persis: ½ = 0,5 = 50%!",
-          "Pondasi · Pecahan Istimewa Wajib Hafal ½ = 0,5 · ¼ = 0,25 · ¾ = 0,75 · ⅕ = 0,2 · ⅖ = 0,4 · ⅛ = 0,125 · ⅓ ≈ 0,333 · ⅔ ≈ 0,667."
+          "Tiga baju berbeda untuk nilai yang sama persis: $\\frac{1}{2}$ = 0,5 = 50%!",
+          "Pondasi · Pecahan Istimewa Wajib Hafal $\\frac{1}{2}$ = 0,5 · $\\frac{1}{4}$ = 0,25 · $\\frac{3}{4}$ = 0,75 · $\\frac{1}{5}$ = 0,2 · $\\frac{2}{5}$ = 0,4 · $\\frac{1}{8}$ = 0,125 · $\\frac{1}{3}$ ≈ 0,333 · $\\frac{2}{3}$ ≈ 0,667."
         ]
       },
       {
@@ -335,7 +333,7 @@ export const MTK_SMP_MODUL = [
         ]
       },
       {
-        "soal": "Pak Budi punya lahan 600 m². Sebanyak ⅓ bagian ditanami jagung, 25% bagian ditanami cabai, dan sisanya dibuat kolam ikan. Berapa luas kolam ikan Pak Budi?",
+        "soal": "Pak Budi punya lahan 600 m². Sebanyak $\\frac{1}{3}$ bagian ditanami jagung, 25% bagian ditanami cabai, dan sisanya dibuat kolam ikan. Berapa luas kolam ikan Pak Budi?",
         "opsi": {
           "A": "Opsi A",
           "B": "Opsi B",
@@ -344,7 +342,7 @@ export const MTK_SMP_MODUL = [
         },
         "kunci": "B",
         "pembahasanLangkah": [
-          "Yuk Bahas · Sisa Lahan Kebun (PG Aplikasi) Soal: Pak Budi punya lahan 600 m². Sebanyak ⅓ bagian ditanami jagung, 25% bagian ditanami cabai, dan sisanya dibuat kolam ikan. Berapa luas kolam ikan Pak Budi? Opsi: A. 200 m² · B. 250 m² · C. 300 m² · D. 350 m² Hitung satu per satu atau gabung pecahannya! Jagung = ⅓ × 600 = 200 m². Cabai = 25% × 600 = ¼ × 600 = 150 m². Total yang sudah dipakai = 200 + 150 = 350 m². Maka sisa untuk kolam = 600 − 350 = 250 m²! Jawaban: B. 250 m²"
+          "Yuk Bahas · Sisa Lahan Kebun (PG Aplikasi) Soal: Pak Budi punya lahan 600 m². Sebanyak $\\frac{1}{3}$ bagian ditanami jagung, 25% bagian ditanami cabai, dan sisanya dibuat kolam ikan. Berapa luas kolam ikan Pak Budi? Opsi: A. 200 m² · B. 250 m² · C. 300 m² · D. 350 m² Hitung satu per satu atau gabung pecahannya! Jagung = $\\frac{1}{3}$ × 600 = 200 m². Cabai = 25% × 600 = $\\frac{1}{4}$ × 600 = 150 m². Total yang sudah dipakai = 200 + 150 = 350 m². Maka sisa untuk kolam = 600 − 350 = 250 m²! Jawaban: B. 250 m²"
         ]
       }
     ],
@@ -363,15 +361,15 @@ export const MTK_SMP_MODUL = [
       },
       {
         "id": "mtk_smp_b1_q2",
-        "soal": "Soal 2 · Unit 1.3 (Bilangan Berpangkat) Nilai dari 2⁻³ + 2⁻² + 5⁰ adalah … A. 1⅛  ·  B. 1⅜  ·  C. 1½  ·  D. 2⅜ Latihan Bab 1 · Level 2 (PGK MCMA) Jawaban benar lebih dari satu—cek tiap pernyataan!",
+        "soal": "Soal 2 · Unit 1.3 (Bilangan Berpangkat) Nilai dari 2⁻³ + 2⁻² + 5⁰ adalah … A. 1$\\frac{1}{8}$  ·  B. 1$\\frac{3}{8}$  ·  C. 1$\\frac{1}{2}$  ·  D. 2$\\frac{3}{8}$ Latihan Bab 1 · Level 2 (PGK MCMA) Jawaban benar lebih dari satu—cek tiap pernyataan!",
         "opsi": {
-          "A": "1⅛",
-          "B": "1⅜",
-          "C": "1½",
+          "A": "1$\\frac{1}{8}$",
+          "B": "1$\\frac{3}{8}$",
+          "C": "1$\\frac{1}{2}$",
           "D": "Pernyataan / Opsi (4) Benar"
         },
         "kunci": "B",
-        "pembahasan": "⅛ + ¼ + 1 = ⅛ + 2/8 + 1 = 1⅜."
+        "pembahasan": "$\\frac{1}{8}$ + $\\frac{1}{4}$ + 1 = $\\frac{1}{8}$ + 2/8 + 1 = 1$\\frac{3}{8}$."
       },
       {
         "id": "mtk_smp_b1_q3",
@@ -511,8 +509,8 @@ export const MTK_SMP_MODUL = [
         "judul": "Persamaan Linear Satu Variabel (PLSV)",
         "hook": "Apa pun yang dilakukan di ruas kiri, wajib dilakukan juga di ruas kanan!",
         "teori": "Bayangkan PLSV (ax + b = c) seperti timbangan pasar yang sejajar. Tujuannya membuat kotak x berdiri sendirian di satu sisi agar kita tahu berat aslinya. Analogi PLSV: Ruas kiri dan ruas kanan selalu seimbang seperti neraca — tambah/kurangi angka yang sama di kedua sisi",
-        "pondasi": "Pondasi · 3 Langkah Pindah Ruas  Buka semua kurung (kalau ada) dan hilangkan pecahan dengan kali KPK.  Kumpulkan suku ber-x di kiri, angka biasa di kanan (pindah ruas = balik tanda).  Bagi angka kanan dengan koefisien x.",
-        "jebakanTka": "Jika ada pecahan seperti ½x + ⅓ = 2, jangan pusing samakan penyebut satu-satu—langsung kalikan seluruh persamaan dengan KPK penyebut (6) agar pecahannya langsung hilang!",
+        "pondasi": "Pondasi · 3 Langkah Pindah Ruas 1.  Buka semua kurung (kalau ada) dan hilangkan pecahan dengan kali KPK. 2.  Kumpulkan suku ber-x di kiri, angka biasa di kanan (pindah ruas = balik tanda). 3.  Bagi angka kanan dengan koefisien x.",
+        "jebakanTka": "Jika ada pecahan seperti $\\frac{1}{2}$x + $\\frac{1}{3}$ = 2, jangan pusing samakan penyebut satu-satu—langsung kalikan seluruh persamaan dengan KPK penyebut (6) agar pecahannya langsung hilang!",
         "contohSoal": {
           "judul": "Yuk Bahas Unit 2.4",
           "soal": "Umur Kakak 4 tahun lebih tua dari umur Adik. Jika jumlah umur mereka berdua adalah 28 tahun, berapakah umur Kakak?",
@@ -551,7 +549,7 @@ export const MTK_SMP_MODUL = [
         "judul": "SPLDV (Eliminasi & Substitusi)",
         "hook": "Samakan satu paket, kurangkan, langsung ketemu harga satuannya!",
         "teori": "SPLDV muncul saat ada dua variabel (x, y) dan dua persamaan. Metode paling cepat adalah Gabungan: samakan koefisien variabel yang ingin dibuang (Eliminasi), lalu masukkan hasilnya (Substitusi). Visual Eliminasi Struk Tiket Museum 2 D + 4 Anak = Rp110.000 (Struk 2 × 2) 2 D +3 Anak = Rp95.000 (Struk 1) − 2D habis! Sisa: 1 Anak = Rp110.000 − Rp95.000 = Rp15.000",
-        "pondasi": "Pondasi · 3 Langkah Anti-Salah SPLDV  Beri nama variabel jelas (d = dewasa, a = anak).  Eliminasi variabel yang tidak ditanyakan agar 1 langkah langsung dapat jawaban.  Substitusi ke persamaan berangka paling kecil jika ditanya keduanya.",
+        "pondasi": "Pondasi · 3 Langkah Anti-Salah SPLDV 1.  Beri nama variabel jelas (d = dewasa, a = anak). 2.  Eliminasi variabel yang tidak ditanyakan agar 1 langkah langsung dapat jawaban. 3.  Substitusi ke persamaan berangka paling kecil jika ditanya keduanya.",
         "jebakanTka": "Kalau tanda koefisien yang disamakan sama (+ dan +), pakai kurang (−). Kalau tandanya beda (+ dan −), pakai tambah (+) supaya nol!",
         "contohSoal": {
           "judul": "Yuk Bahas Unit 2.6",
@@ -682,7 +680,7 @@ export const MTK_SMP_MODUL = [
         "isi": "Bayangkan PLSV (ax + b = c) seperti timbangan pasar yang sejajar. Tujuannya membuat kotak x berdiri sendirian di satu sisi agar kita tahu berat aslinya. Analogi PLSV: Ruas kiri dan ruas kanan selalu seimbang seperti neraca — tambah/kurangi angka yang sama di kedua sisi",
         "poinPenting": [
           "Apa pun yang dilakukan di ruas kiri, wajib dilakukan juga di ruas kanan!",
-          "Pondasi · 3 Langkah Pindah Ruas  Buka semua kurung (kalau ada) dan hilangkan pecahan dengan kali KPK.  Kumpulkan suku ber-x di kiri, angka biasa di kanan (pindah ruas = balik tanda).  Bagi angka kanan dengan koefisien x."
+          "Pondasi · 3 Langkah Pindah Ruas 1.  Buka semua kurung (kalau ada) dan hilangkan pecahan dengan kali KPK. 2.  Kumpulkan suku ber-x di kiri, angka biasa di kanan (pindah ruas = balik tanda). 3.  Bagi angka kanan dengan koefisien x."
         ]
       },
       {
@@ -698,7 +696,7 @@ export const MTK_SMP_MODUL = [
         "isi": "SPLDV muncul saat ada dua variabel (x, y) dan dua persamaan. Metode paling cepat adalah Gabungan: samakan koefisien variabel yang ingin dibuang (Eliminasi), lalu masukkan hasilnya (Substitusi). Visual Eliminasi Struk Tiket Museum 2 D + 4 Anak = Rp110.000 (Struk 2 × 2) 2 D +3 Anak = Rp95.000 (Struk 1) − 2D habis! Sisa: 1 Anak = Rp110.000 − Rp95.000 = Rp15.000",
         "poinPenting": [
           "Samakan satu paket, kurangkan, langsung ketemu harga satuannya!",
-          "Pondasi · 3 Langkah Anti-Salah SPLDV  Beri nama variabel jelas (d = dewasa, a = anak).  Eliminasi variabel yang tidak ditanyakan agar 1 langkah langsung dapat jawaban.  Substitusi ke persamaan berangka paling kecil jika ditanya keduanya."
+          "Pondasi · 3 Langkah Anti-Salah SPLDV 1.  Beri nama variabel jelas (d = dewasa, a = anak). 2.  Eliminasi variabel yang tidak ditanyakan agar 1 langkah langsung dapat jawaban. 3.  Substitusi ke persamaan berangka paling kecil jika ditanya keduanya."
         ]
       },
       {
@@ -966,7 +964,7 @@ export const MTK_SMP_MODUL = [
         "unitNumber": "3.6",
         "judul": "Keliling & Luas Segi Banyak",
         "hook": "Keliling = jalan mengitari pagar luar; Luas = seluruh ubin yang menutupi",
-        "teori": "lantai! Pada bangun datar gabungan (seperti dinding samping rumah berbentuk persegi panjang + segitiga atap), pecah dulu jadi bangun dasar yang mudah dihitung luasnya. Ingat: untuk Keliling, hanya jumlahkan sisi tepi paling luar! Segitiga L = ½ × a × t Jajargenjang L = a × t Trapesium L = ½(a + b) × t Belah Ketupat & Layang-Layang L = ½ × d₁ × d₂ Persegi & Persegi Panjang L = s² & L = p × l",
+        "teori": "lantai! Pada bangun datar gabungan (seperti dinding samping rumah berbentuk persegi panjang + segitiga atap), pecah dulu jadi bangun dasar yang mudah dihitung luasnya. Ingat: untuk Keliling, hanya jumlahkan sisi tepi paling luar! Segitiga L = $\\frac{1}{2}$ × a × t Jajargenjang L = a × t Trapesium L = $\\frac{1}{2}$(a + b) × t Belah Ketupat & Layang-Layang L = $\\frac{1}{2}$ × d₁ × d₂ Persegi & Persegi Panjang L = s² & L = p × l",
         "pondasi": "Pondasi · Strategi Soal Cat Dinding / Keramik Hitung Luas Total Dinding dulu → bagi dengan daya sebar 1 kg cat (dibulatkan ke atas karena toko tidak jual cat eceran koma!) → pilih kombinasi kemasan agar sisa cat paling sedikit.",
         "jebakanTka": "Tinggi (t) pada segitiga, jajargenjang, dan trapesium wajib tegak lurus (90°) dengan alasnya—bukan sisi miringnya!",
         "contohSoal": {
@@ -974,7 +972,7 @@ export const MTK_SMP_MODUL = [
           "soal": "Dinding samping rumah terdiri dari persegi panjang 8 m × 4 m dan atap segitiga alas 8 m tinggi 3 m. Jika 1 kg cat dapat mengecat 10 m², berapa minimal kg cat yang dibutuhkan?",
           "opsiString": "A. 4 kg · B. 5 kg · C. 6 kg · D. 7 kg Pecah jadi 2",
           "jawaban": "B",
-          "solusi": "Yuk Bahas · Dinding Samping Rumah (PG Aplikasi) Soal: Dinding samping rumah terdiri dari persegi panjang 8 m × 4 m dan atap segitiga alas 8 m tinggi 3 m. Jika 1 kg cat dapat mengecat 10 m², berapa minimal kg cat yang dibutuhkan? Opsi: A. 4 kg · B. 5 kg · C. 6 kg · D. 7 kg Pecah jadi 2 bagian: Luas dinding bawah = 8 × 4 = 32 m². Luas atap segitiga = ½ × 8 × 3 = 12 m². Total luas = 32 + 12 = 44 m². Kebutuhan cat = 44 ÷ 10 = 4,4 kg → wajib dibulatkan ke atas jadi 5 kg! Jawaban: B. 5 kg"
+          "solusi": "Yuk Bahas · Dinding Samping Rumah (PG Aplikasi) Soal: Dinding samping rumah terdiri dari persegi panjang 8 m × 4 m dan atap segitiga alas 8 m tinggi 3 m. Jika 1 kg cat dapat mengecat 10 m², berapa minimal kg cat yang dibutuhkan? Opsi: A. 4 kg · B. 5 kg · C. 6 kg · D. 7 kg Pecah jadi 2 bagian: Luas dinding bawah = 8 × 4 = 32 m². Luas atap segitiga = $\\frac{1}{2}$ × 8 × 3 = 12 m². Total luas = 32 + 12 = 44 m². Kebutuhan cat = 44 ÷ 10 = 4,4 kg → wajib dibulatkan ke atas jadi 5 kg! Jawaban: B. 5 kg"
         },
         "trikCepat": "Trik Cepat · Keliling Bangun Tangga Pada bangun datar berbentuk tangga/L siku-siku, dorong semua sisi cekung ke luar—kelilingnya persis sama dengan keliling persegi panjang utuh!",
         "pageNumber": 33,
@@ -1006,9 +1004,9 @@ export const MTK_SMP_MODUL = [
         "unitNumber": "3.8",
         "judul": "Lingkaran: Busur, Juring & Gabungan",
         "hook": "Panjang busur dan luas juring itu cuma “sebagian potong” dari 360° lingkaran",
-        "teori": "utuh! Untuk menghitung Panjang Busur atau Luas Juring bersudut pusat α°, tinggal kalikan pecahannya (α° / 360°) dengan Keliling atau Luas lingkaran penuh! Contoh: sudut 90° = ¼ lingkaran, sudut 60° = ⅙  lingkaran. Busur & Juring (α / 360°) 60° Busur = (α/360) × K Juring = (α/360) × L Luas Gabungan Taman & Kolam d=7m 20 m × 16 m (Rumput = Taman − Kolam)",
+        "teori": "utuh! Untuk menghitung Panjang Busur atau Luas Juring bersudut pusat α°, tinggal kalikan pecahannya (α° / 360°) dengan Keliling atau Luas lingkaran penuh! Contoh: sudut 90° = $\\frac{1}{4}$ lingkaran, sudut 60° = $\\frac{1}{6}$  lingkaran. Busur & Juring (α / 360°) 60° Busur = (α/360) × K Juring = (α/360) × L Luas Gabungan Taman & Kolam d=7m 20 m × 16 m (Rumput = Taman − Kolam)",
         "pondasi": "Pondasi · Sudut Pusat vs Sudut Keliling Jika menghadap busur yang sama: Sudut Pusat = 2 × Sudut Keliling. Khusus sudut keliling yang menghadap diameter, besarnya selalu 90° (siku- siku)!",
-        "jebakanTka": "Saat menghitung keliling setengah lingkaran tertutup (seperti busur penggaris), jangan lupa tambahkan diameternya (½πd + d)!",
+        "jebakanTka": "Saat menghitung keliling setengah lingkaran tertutup (seperti busur penggaris), jangan lupa tambahkan diameternya ($\\frac{1}{2}$πd + d)!",
         "contohSoal": {
           "judul": "Yuk Bahas Unit 3.8",
           "soal": "Taman persegi panjang 20 m × 16 m memiliki kolam lingkaran diameter 7 m di tengahnya. Sisa taman ditanami rumput (π = 22/7). Tentukan Benar/Salah! A. Luas area rumput lebih dari 280 m². B. Jika diameter kolam jadi 14 m, luas kolam jadi 4 kali lipat. C. Keliling kolam awal adalah 44 m. Luas taman = 320 m². Jari-jari r = 3,5 m → Luas kolam = 38,5 m². Rumput = 320 − 38,5 = 281,5 m² (A Benar). Diameter 2× → luas 2² = 4× (B Benar). Keliling = πd = 22 m (C Salah). Jawaban: A. Benar · B. Benar · C. Salah",
@@ -1065,16 +1063,16 @@ export const MTK_SMP_MODUL = [
       {
         "unitNumber": "3.11",
         "judul": "Bangun Ruang: Limas & Bola",
-        "hook": "Puncak lancip selalu pakai ⅓; bola selalu pakai ⁴⁄₃ πr³!",
-        "teori": "Sesuai matriks resmi Pusmendik TKA SMP 2027, tiga volume bangun ruang yang diujikan adalah Prisma, Limas, dan Bola (catatan: volume tabung & kerucut tidak tercantum di matriks volume resmi, hanya jaring-jaringnya). Limas (Puncak Lancip) t V = ⅓ × L.alas × t Bola (Jari-Jari r) r V = ⁴⁄₃ πr³ · Lp = 4πr²",
-        "pondasi": "Pondasi · Setengah Bola & Kubah Volume ½ Bola = ⅔ πr³. Untuk Luas Permukaan ½ Bola Padat (Pejal) = 3πr² (2πr² lengkung + 1πr² alas lingkaran); kalau berongga/kubah cukup 2πr²!",
+        "hook": "Puncak lancip selalu pakai $\\frac{1}{3}$; bola selalu pakai ⁴⁄₃ πr³!",
+        "teori": "Sesuai matriks resmi Pusmendik TKA SMP 2027, tiga volume bangun ruang yang diujikan adalah Prisma, Limas, dan Bola (catatan: volume tabung & kerucut tidak tercantum di matriks volume resmi, hanya jaring-jaringnya). Limas (Puncak Lancip) t V = $\\frac{1}{3}$ × L.alas × t Bola (Jari-Jari r) r V = ⁴⁄₃ πr³ · Lp = 4πr²",
+        "pondasi": "Pondasi · Setengah Bola & Kubah Volume $\\frac{1}{2}$ Bola = $\\frac{2}{3}$ πr³. Untuk Luas Permukaan $\\frac{1}{2}$ Bola Padat (Pejal) = 3πr² (2πr² lengkung + 1πr² alas lingkaran); kalau berongga/kubah cukup 2πr²!",
         "jebakanTka": "Di soal Limas, jangan tertukar antara tinggi limas (t, tegak di dalam) untuk Volume, dengan tinggi segitiga sisi miring untuk Luas Permukaan! Keduanya dihubungkan oleh Pythagoras!",
         "contohSoal": {
           "judul": "Yuk Bahas Unit 3.11",
-          "soal": "Yuk Bahas · Limas Persegi & Bola (Aplikasi) Soal 1: Limas persegi alas 10 cm × 10 cm memiliki tinggi 12 cm. Berapa volumenya? Langsung masukkan rumus: V = ⅓ × (10 × 10) × 12. Coret 12 ÷ 3 = 4 → 100 × 4 = 400 cm³! Soal 2: Jika jari-jari sebuah bola diperbesar 2 kali lipat, menjadi berapa kali lipat volumenya? Karena volume bola bergantung pada r³, maka 2³ = 8 kali lipat! Jawaban: 400 cm³ dan 8 kali lipat",
+          "soal": "Yuk Bahas · Limas Persegi & Bola (Aplikasi) Soal 1: Limas persegi alas 10 cm × 10 cm memiliki tinggi 12 cm. Berapa volumenya? Langsung masukkan rumus: V = $\\frac{1}{3}$ × (10 × 10) × 12. Coret 12 ÷ 3 = 4 → 100 × 4 = 400 cm³! Soal 2: Jika jari-jari sebuah bola diperbesar 2 kali lipat, menjadi berapa kali lipat volumenya? Karena volume bola bergantung pada r³, maka 2³ = 8 kali lipat! Jawaban: 400 cm³ dan 8 kali lipat",
           "opsiString": "",
           "jawaban": "",
-          "solusi": "Yuk Bahas · Limas Persegi & Bola (Aplikasi) Soal 1: Limas persegi alas 10 cm × 10 cm memiliki tinggi 12 cm. Berapa volumenya? Langsung masukkan rumus: V = ⅓ × (10 × 10) × 12. Coret 12 ÷ 3 = 4 → 100 × 4 = 400 cm³! Soal 2: Jika jari-jari sebuah bola diperbesar 2 kali lipat, menjadi berapa kali lipat volumenya? Karena volume bola bergantung pada r³, maka 2³ = 8 kali lipat! Jawaban: 400 cm³ dan 8 kali lipat"
+          "solusi": "Yuk Bahas · Limas Persegi & Bola (Aplikasi) Soal 1: Limas persegi alas 10 cm × 10 cm memiliki tinggi 12 cm. Berapa volumenya? Langsung masukkan rumus: V = $\\frac{1}{3}$ × (10 × 10) × 12. Coret 12 ÷ 3 = 4 → 100 × 4 = 400 cm³! Soal 2: Jika jari-jari sebuah bola diperbesar 2 kali lipat, menjadi berapa kali lipat volumenya? Karena volume bola bergantung pada r³, maka 2³ = 8 kali lipat! Jawaban: 400 cm³ dan 8 kali lipat"
         },
         "trikCepat": "Trik Cepat · Skala Panjang–Luas–Volume Jika ukuran diperbesar k kali: Panjang × k · Luas × k² · Volume × k³!",
         "pageNumber": 38,
@@ -1123,7 +1121,7 @@ export const MTK_SMP_MODUL = [
         "slideImg": "/modul-assets/pages/mtk_p40.png"
       }
     ],
-    "cheatSheet": "Bab 3 · Geometri & Pengukuran — Cheat Sheet 1 Halaman\nRangkuman Rumus Geometri & Pengukuran\nCheat Sheet · Geometri Datar & Lingkaran\nSemua rumus inti Bab 3 dirangkum dalam satu pandangan!\nTopik Rumus & Kunci Cepat\nSudut & Jam Penyiku = 90°, Pelurus = 180°, Segitiga = 180°. Jam:\n|30j − 5,5m|. Garis sejajar: F = sama, Z = sama, U\n= 180°.\nPythagoras c² = a² + b². Triple: (3,4,5) · (5,12,13) · (7,24,25) ·\n(8,15,17).\nKesebangunan Rasio sisi bersesuaian sama. Siku-siku berhimpit:\nAD² = BD×CD.\nSegi Banyak Segitiga ½at · Trapesium ½(a+b)t · Layang/Belah\nketupat ½d₁d₂.\nLingkaran K = πd = 2πr · L = πr² · Busur = (α/360)K ·\nJuring = (α/360)L.\nCheat Sheet · Bangun Ruang & Transformasi\nHafal keluarga rumusnya—tidak usah menghafal terpisah!\nTopik Rumus & Kunci Cepat\nPrisma (Kubus/Balok) V = L.alas × t · Lp = 2L.alas + K.alas × t.\nLimas (Lancip) V = ⅓ × L.alas × t · Lp = L.alas + Σ\nL.segitiga tegak.\nBola V = ⁴⁄₃ πr³ · Lp = 4πr² · ½ Bola Pejal: 3πr².\nTranslasi & Refleksi T(a,b): (x+a, y+b) · Sb-X: (x, −y) · Sb-Y: (−x,\ny).\nRotasi & Dilatasi +90°: (−y, x) · −90°: (y, −x) · 180°: (−x, −y)\n· k: (kx, ky).\nIngat Skala\nSisi dikali k → Keliling × k, Luas × k², Volume × k³. Konversi: 1 L = 1 dm³\n= 1.000 cm³.",
+    "cheatSheet": "Bab 3 · Geometri & Pengukuran — Cheat Sheet 1 Halaman\nRangkuman Rumus Geometri & Pengukuran\nCheat Sheet · Geometri Datar & Lingkaran\nSemua rumus inti Bab 3 dirangkum dalam satu pandangan!\nTopik Rumus & Kunci Cepat\nSudut & Jam Penyiku = 90°, Pelurus = 180°, Segitiga = 180°. Jam:\n|30j − 5,5m|. Garis sejajar: F = sama, Z = sama, U\n= 180°.\nPythagoras c² = a² + b². Triple: (3,4,5) · (5,12,13) · (7,24,25) ·\n(8,15,17).\nKesebangunan Rasio sisi bersesuaian sama. Siku-siku berhimpit:\nAD² = BD×CD.\nSegi Banyak Segitiga $\\frac{1}{2}$at · Trapesium $\\frac{1}{2}$(a+b)t · Layang/Belah\nketupat $\\frac{1}{2}$d₁d₂.\nLingkaran K = πd = 2πr · L = πr² · Busur = (α/360)K ·\nJuring = (α/360)L.\nCheat Sheet · Bangun Ruang & Transformasi\nHafal keluarga rumusnya—tidak usah menghafal terpisah!\nTopik Rumus & Kunci Cepat\nPrisma (Kubus/Balok) V = L.alas × t · Lp = 2L.alas + K.alas × t.\nLimas (Lancip) V = $\\frac{1}{3}$ × L.alas × t · Lp = L.alas + Σ\nL.segitiga tegak.\nBola V = ⁴⁄₃ πr³ · Lp = 4πr² · $\\frac{1}{2}$ Bola Pejal: 3πr².\nTranslasi & Refleksi T(a,b): (x+a, y+b) · Sb-X: (x, −y) · Sb-Y: (−x,\ny).\nRotasi & Dilatasi +90°: (−y, x) · −90°: (y, −x) · 180°: (−x, −y)\n· k: (kx, ky).\nIngat Skala\nSisi dikali k → Keliling × k, Luas × k², Volume × k³. Konversi: 1 L = 1 dm³\n= 1.000 cm³.",
     "cheatSheetImg": "/modul-assets/cheatsheet/cheatsheet_mtk.png",
     "miniTryout": "",
     "tryoutImg": null,
@@ -1171,7 +1169,7 @@ export const MTK_SMP_MODUL = [
       },
       {
         "subjudul": "Unit 3.6: Keliling & Luas Segi Banyak",
-        "isi": "lantai! Pada bangun datar gabungan (seperti dinding samping rumah berbentuk persegi panjang + segitiga atap), pecah dulu jadi bangun dasar yang mudah dihitung luasnya. Ingat: untuk Keliling, hanya jumlahkan sisi tepi paling luar! Segitiga L = ½ × a × t Jajargenjang L = a × t Trapesium L = ½(a + b) × t Belah Ketupat & Layang-Layang L = ½ × d₁ × d₂ Persegi & Persegi Panjang L = s² & L = p × l",
+        "isi": "lantai! Pada bangun datar gabungan (seperti dinding samping rumah berbentuk persegi panjang + segitiga atap), pecah dulu jadi bangun dasar yang mudah dihitung luasnya. Ingat: untuk Keliling, hanya jumlahkan sisi tepi paling luar! Segitiga L = $\\frac{1}{2}$ × a × t Jajargenjang L = a × t Trapesium L = $\\frac{1}{2}$(a + b) × t Belah Ketupat & Layang-Layang L = $\\frac{1}{2}$ × d₁ × d₂ Persegi & Persegi Panjang L = s² & L = p × l",
         "poinPenting": [
           "Keliling = jalan mengitari pagar luar; Luas = seluruh ubin yang menutupi",
           "Pondasi · Strategi Soal Cat Dinding / Keramik Hitung Luas Total Dinding dulu → bagi dengan daya sebar 1 kg cat (dibulatkan ke atas karena toko tidak jual cat eceran koma!) → pilih kombinasi kemasan agar sisa cat paling sedikit."
@@ -1187,7 +1185,7 @@ export const MTK_SMP_MODUL = [
       },
       {
         "subjudul": "Unit 3.8: Lingkaran: Busur, Juring & Gabungan",
-        "isi": "utuh! Untuk menghitung Panjang Busur atau Luas Juring bersudut pusat α°, tinggal kalikan pecahannya (α° / 360°) dengan Keliling atau Luas lingkaran penuh! Contoh: sudut 90° = ¼ lingkaran, sudut 60° = ⅙  lingkaran. Busur & Juring (α / 360°) 60° Busur = (α/360) × K Juring = (α/360) × L Luas Gabungan Taman & Kolam d=7m 20 m × 16 m (Rumput = Taman − Kolam)",
+        "isi": "utuh! Untuk menghitung Panjang Busur atau Luas Juring bersudut pusat α°, tinggal kalikan pecahannya (α° / 360°) dengan Keliling atau Luas lingkaran penuh! Contoh: sudut 90° = $\\frac{1}{4}$ lingkaran, sudut 60° = $\\frac{1}{6}$  lingkaran. Busur & Juring (α / 360°) 60° Busur = (α/360) × K Juring = (α/360) × L Luas Gabungan Taman & Kolam d=7m 20 m × 16 m (Rumput = Taman − Kolam)",
         "poinPenting": [
           "Panjang busur dan luas juring itu cuma “sebagian potong” dari 360° lingkaran",
           "Pondasi · Sudut Pusat vs Sudut Keliling Jika menghadap busur yang sama: Sudut Pusat = 2 × Sudut Keliling. Khusus sudut keliling yang menghadap diameter, besarnya selalu 90° (siku- siku)!"
@@ -1211,10 +1209,10 @@ export const MTK_SMP_MODUL = [
       },
       {
         "subjudul": "Unit 3.11: Bangun Ruang: Limas & Bola",
-        "isi": "Sesuai matriks resmi Pusmendik TKA SMP 2027, tiga volume bangun ruang yang diujikan adalah Prisma, Limas, dan Bola (catatan: volume tabung & kerucut tidak tercantum di matriks volume resmi, hanya jaring-jaringnya). Limas (Puncak Lancip) t V = ⅓ × L.alas × t Bola (Jari-Jari r) r V = ⁴⁄₃ πr³ · Lp = 4πr²",
+        "isi": "Sesuai matriks resmi Pusmendik TKA SMP 2027, tiga volume bangun ruang yang diujikan adalah Prisma, Limas, dan Bola (catatan: volume tabung & kerucut tidak tercantum di matriks volume resmi, hanya jaring-jaringnya). Limas (Puncak Lancip) t V = $\\frac{1}{3}$ × L.alas × t Bola (Jari-Jari r) r V = ⁴⁄₃ πr³ · Lp = 4πr²",
         "poinPenting": [
-          "Puncak lancip selalu pakai ⅓; bola selalu pakai ⁴⁄₃ πr³!",
-          "Pondasi · Setengah Bola & Kubah Volume ½ Bola = ⅔ πr³. Untuk Luas Permukaan ½ Bola Padat (Pejal) = 3πr² (2πr² lengkung + 1πr² alas lingkaran); kalau berongga/kubah cukup 2πr²!"
+          "Puncak lancip selalu pakai $\\frac{1}{3}$; bola selalu pakai ⁴⁄₃ πr³!",
+          "Pondasi · Setengah Bola & Kubah Volume $\\frac{1}{2}$ Bola = $\\frac{2}{3}$ πr³. Untuk Luas Permukaan $\\frac{1}{2}$ Bola Padat (Pejal) = 3πr² (2πr² lengkung + 1πr² alas lingkaran); kalau berongga/kubah cukup 2πr²!"
         ]
       },
       {
@@ -1287,7 +1285,7 @@ export const MTK_SMP_MODUL = [
           "D": "Pernyataan / Opsi (4) Benar"
         },
         "kunci": "C",
-        "pembahasan": "K = (22/7) × 28 = 88 m → 88 ÷ 4 = 22 tiang."
+        "pembahasan": "K = $\\frac{22}{7} \\times 28$ = 88 m → 88 ÷ 4 = 22 tiang."
       },
       {
         "id": "mtk_smp_b3_q3",
@@ -1386,7 +1384,7 @@ export const MTK_SMP_MODUL = [
         "unitNumber": "4.2",
         "judul": "Diagram Lingkaran (Persen & Derajat)",
         "hook": "Satu lingkaran penuh selalu 100% atau 360°—tinggal pakai perbandingan",
-        "teori": "bagian! Diagram Lingkaran menampilkan proporsi tiap kategori terhadap keseluruhan. Perhatikan tandanya: jika memakai persen (%) totalnya 100%; jika memakai derajat (°) totalnya 360°. Tanda kotak siku-siku selalu berarti 90° = 25% = ¼ bagian! 90° 120° 150° Ekskul 120 Siswa SMP (Derajat): • Biru (Futsal): 90° (siku-siku) = ¼ × 120 = 30 siswa • Ungu (Basket): 120° = ⅓ × 120 = 40 siswa • Pink (Musik): 360° − 210° = 150° = 50 siswa",
+        "teori": "bagian! Diagram Lingkaran menampilkan proporsi tiap kategori terhadap keseluruhan. Perhatikan tandanya: jika memakai persen (%) totalnya 100%; jika memakai derajat (°) totalnya 360°. Tanda kotak siku-siku selalu berarti 90° = 25% = $\\frac{1}{4}$ bagian! 90° 120° 150° Ekskul 120 Siswa SMP (Derajat): • Biru (Futsal): 90° (siku-siku) = $\\frac{1}{4}$ × 120 = 30 siswa • Ungu (Basket): 120° = $\\frac{1}{3}$ × 120 = 40 siswa • Pink (Musik): 360° − 210° = 150° = 50 siswa",
         "pondasi": "Pondasi · Rumus Universal Diagram Lingkaran Banyak Ditanya = (Sudut atau % Ditanya ÷ Sudut atau % Diketahui) × Jumlah Diketahui. Berlaku untuk mencari total, satu bagian, maupun selisih dua bagian!",
         "jebakanTka": "Kalau salah satu bagian tidak ditulis angkanya tapi ada tanda siku-siku, langsung tahu itu 90° (atau 25%)! Jangan dikira soalnya kurang data!",
         "contohSoal": {
@@ -1394,7 +1392,7 @@ export const MTK_SMP_MODUL = [
           "soal": "Pada diagram lingkaran ekskul di kiri, diketahui siswa yang ikut Basket (120°) adalah 40 anak. Berapa selisih siswa Musik (150°) dan Futsal (90°)?",
           "opsiString": "A. 10 anak · B. 15 anak · C. 20 anak · D. 25 anak Tidak perlu hitung total seluruh siswa dulu! Langsung pakai selisih",
           "jawaban": "C",
-          "solusi": "Yuk Bahas · Hobi Siswa (PG Aplikasi) Soal: Pada diagram lingkaran ekskul di kiri, diketahui siswa yang ikut Basket (120°) adalah 40 anak. Berapa selisih siswa Musik (150°) dan Futsal (90°)? Opsi: A. 10 anak · B. 15 anak · C. 20 anak · D. 25 anak Tidak perlu hitung total seluruh siswa dulu! Langsung pakai selisih sudutnya: Musik − Futsal = 150° − 90° = 60°. Bandingkan dengan Basket (120° = 40 anak): karena 60° itu tepat setengahnya 120°, maka selisihnya = ½ × 40 = 20 anak! Jawaban: C. 20 anak"
+          "solusi": "Yuk Bahas · Hobi Siswa (PG Aplikasi) Soal: Pada diagram lingkaran ekskul di kiri, diketahui siswa yang ikut Basket (120°) adalah 40 anak. Berapa selisih siswa Musik (150°) dan Futsal (90°)? Opsi: A. 10 anak · B. 15 anak · C. 20 anak · D. 25 anak Tidak perlu hitung total seluruh siswa dulu! Langsung pakai selisih sudutnya: Musik − Futsal = 150° − 90° = 60°. Bandingkan dengan Basket (120° = 40 anak): karena 60° itu tepat setengahnya 120°, maka selisihnya = $\\frac{1}{2}$ × 40 = 20 anak! Jawaban: C. 20 anak"
         },
         "trikCepat": "Trik Cepat · Konversi Derajat ↔ Persen Ingat: 36° = 10%, 72° = 20%, 90° = 25%, 108° = 30%, 180° = 50%!",
         "pageNumber": 45,
@@ -1451,12 +1449,12 @@ export const MTK_SMP_MODUL = [
         "jebakanTka": "Nilai peluang selalu antara 0 sampai 1 (0 ≤ P ≤ 1). Jika P = 0 mustahil terjadi, P = 1 pasti terjadi!",
         "contohSoal": {
           "judul": "Yuk Bahas Unit 4.5",
-          "soal": "Kantong berisi 4 merah, 3 biru, 5 kuning. Diambil 1 bola secara acak. Tentukan Benar/Salah! A. Peluang terambil bola merah adalah ⅓. B. Peluang terambil bola bukan biru adalah ¾. C. Peluang terambil bola hijau adalah 1/12. Total n(S) = 12. Cek A: 4/12 = ⅓ (Benar). Cek B: 1 − 3/12 = 9/12 = ¾ (Benar). Cek C: tidak ada bola hijau di kantong, jadi P(hijau) = 0 (Salah). Jawaban: A. Benar · B. Benar · C. Salah",
+          "soal": "Kantong berisi 4 merah, 3 biru, 5 kuning. Diambil 1 bola secara acak. Tentukan Benar/Salah! A. Peluang terambil bola merah adalah $\\frac{1}{3}$. B. Peluang terambil bola bukan biru adalah $\\frac{3}{4}$. C. Peluang terambil bola hijau adalah 1/12. Total n(S) = 12. Cek A: 4/12 = $\\frac{1}{3}$ (Benar). Cek B: 1 − 3/12 = 9/12 = $\\frac{3}{4}$ (Benar). Cek C: tidak ada bola hijau di kantong, jadi P(hijau) = 0 (Salah). Jawaban: A. Benar · B. Benar · C. Salah",
           "opsiString": "",
           "jawaban": "A",
-          "solusi": "Yuk Bahas · Kantong Bola Warna (PGK Kategori) Soal: Kantong berisi 4 merah, 3 biru, 5 kuning. Diambil 1 bola secara acak. Tentukan Benar/Salah! A. Peluang terambil bola merah adalah ⅓. B. Peluang terambil bola bukan biru adalah ¾. C. Peluang terambil bola hijau adalah 1/12. Total n(S) = 12. Cek A: 4/12 = ⅓ (Benar). Cek B: 1 − 3/12 = 9/12 = ¾ (Benar). Cek C: tidak ada bola hijau di kantong, jadi P(hijau) = 0 (Salah). Jawaban: A. Benar · B. Benar · C. Salah"
+          "solusi": "Yuk Bahas · Kantong Bola Warna (PGK Kategori) Soal: Kantong berisi 4 merah, 3 biru, 5 kuning. Diambil 1 bola secara acak. Tentukan Benar/Salah! A. Peluang terambil bola merah adalah $\\frac{1}{3}$. B. Peluang terambil bola bukan biru adalah $\\frac{3}{4}$. C. Peluang terambil bola hijau adalah 1/12. Total n(S) = 12. Cek A: 4/12 = $\\frac{1}{3}$ (Benar). Cek B: 1 − 3/12 = 9/12 = $\\frac{3}{4}$ (Benar). Cek C: tidak ada bola hijau di kantong, jadi P(hijau) = 0 (Salah). Jawaban: A. Benar · B. Benar · C. Salah"
         },
-        "trikCepat": "Trik Cepat · Sederhanakan Pecahan! Di opsi PG, peluang selalu ditulis dalam bentuk pecahan paling sederhana (misal 4/12 → ⅓) atau desimal/persen!",
+        "trikCepat": "Trik Cepat · Sederhanakan Pecahan! Di opsi PG, peluang selalu ditulis dalam bentuk pecahan paling sederhana (misal 4/12 → $\\frac{1}{3}$) atau desimal/persen!",
         "pageNumber": 48,
         "illustrationImg": "/modul-assets/illustrations/mtk_p48.jpeg",
         "illustrationCaption": "",
@@ -1466,7 +1464,7 @@ export const MTK_SMP_MODUL = [
         "unitNumber": "4.6",
         "judul": "Frekuensi Relatif & Frekuensi Harapan",
         "hook": "Frekuensi relatif itu dari percobaan nyata; frekuensi harapan itu prediksi dari",
-        "teori": "peluang! Frekuensi Relatif (Peluang Empiris) didapat dari hasil percobaan sesungguhnya: fᵣ = banyak muncul ÷ total percobaan. Sedangkan Frekuensi Harapan adalah perkiraan berapa kali kejadian muncul dalam N kali percobaan: Fₕ = P(A) × N. Frekuensi Relatif (Nyata) fᵣ = f(A) ÷ N Lempar koin 50×, angka muncul 27× fᵣ = 27/50 = 0,54 Frekuensi Harapan (Prediksi) Fₕ = P(A) × N Dadu dilempar 120×, muncul prima Fₕ = ½ × 120 = 60 kali",
+        "teori": "peluang! Frekuensi Relatif (Peluang Empiris) didapat dari hasil percobaan sesungguhnya: fᵣ = banyak muncul ÷ total percobaan. Sedangkan Frekuensi Harapan adalah perkiraan berapa kali kejadian muncul dalam N kali percobaan: Fₕ = P(A) × N. Frekuensi Relatif (Nyata) fᵣ = f(A) ÷ N Lempar koin 50×, angka muncul 27× fᵣ = 27/50 = 0,54 Frekuensi Harapan (Prediksi) Fₕ = P(A) × N Dadu dilempar 120×, muncul prima Fₕ = $\\frac{1}{2}$ × 120 = 60 kali",
         "pondasi": "Pondasi · Hukum Bilangan Besar Semakin banyak percobaan dilakukan (misal 1.000× lempar dadu dibanding 10×), nilai Frekuensi Relatif akan semakin mendekati Peluang Teoretis!",
         "jebakanTka": "Jangan tertukar Frekuensi Relatif (hasilnya pecahan/desimal 0–1) dengan Frekuensi Harapan (hasilnya jumlah kali muncul, misal 25 kali)!",
         "contohSoal": {
@@ -1485,7 +1483,7 @@ export const MTK_SMP_MODUL = [
     ],
     "cheatSheet": "",
     "cheatSheetImg": null,
-    "miniTryout": "Simulasi Mini Tryout · Matematika TKA SMP 2027\nSimulasi Mini Tryout Campuran 4 Bab (15 Menit)\nSimulasi Mini Tryout · Nomor 1–3\nPasang timer 15 menit (2,5 menit/soal), kerjakan tanpa buka halaman 52!\nNomor 1 & 2 · Pilihan Ganda (PG)\n [Bab 1 · Diskon Ganda] Sepatu berlabel Rp400.000 mendapat diskon\n20% + 10%. Harga yang harus dibayar adalah … (A. Rp280.000 · B.\nRp288.000 · C. Rp300.000 · D. Rp320.000)\n [Bab 2 · SPLDV] Harga 3 buku & 2 pena Rp34.000. Harga 1 buku & 2 pena\nRp18.000. Harga 1 buku adalah … (A. Rp6.000 · B. Rp8.000 · C. Rp10.000 ·\nD. Rp12.000)\nNomor 3 · PGK MCMA (Lebih dari 1 Benar)\n [Bab 3 · Lingkaran] Kolam lingkaran berdiameter 14 m (π = 22/7). Pilih\nsemua pernyataan benar: (1) Jari-jarinya 7 m · (2) Kelilingnya 44 m · (3)\nLuasnya 154 m² · (4) Luasnya 616 m².\nSimulasi Mini Tryout · Nomor 4–6\nCampuran Bangun Ruang, Transformasi, dan Statistika–Peluang!\nNomor 4 · PGK MCMA (Lebih dari 1 Benar)\n [Bab 3 · Bangun Ruang] Limas persegi alas 6 cm × 6 cm dan tinggi 10\ncm. Pilih pernyataan benar: (1) Luas alas 36 cm² · (2) Volume = 120 cm³ ·\n(3) Volume = 360 cm³ · (4) Memiliki 5 titik sudut.\nNomor 5 & 6 · PGK Kategori (Benar/Salah)\n [Bab 3 · Transformasi] Titik K(2, −5): (A) Translasi T(3, 5) → (5, 0) · (B)\nRefleksi Sb-Y → (−2, −5) · (C) Rotasi 180° → (2, 5).\n [Bab 4 · Data & Peluang] Kantong berisi 3 merah & 7 putih (diambil 1\nbola): (A) P(merah) = 0,3 · (B) P(bukan merah) = 0,7 · (C) Dalam 50 kali\npengambilan (dikembalikan), Fₕ merah = 20 kali.\n\nMatematika TKA SMP 2027\nKunci Tryout & Peta Belajar 2027 — Bimbel Gemilang\nKunci Simulasi Mini Tryout (Hal 51)\nHitung skormu—kalau benar 5–6 nomor, kamu sudah siap tempur!\nKunci & Pembahasan Kilat\nNo 1 → B (Rp288.000): Bayar = 0,8 × 0,9 × 400.000 = 0,72 ×\n400.000 = Rp288.000.\nNo 2 → B (Rp8.000): Kurangkan langsung: 2 buku = 34rb − 18rb =\n16rb → 1 buku = Rp8.000.\nNo 3 → (1), (2), dan (3): r = 7 m → K = 44 m, L = 154 m² (616 itu\nkalau pakai d=14 sebagai r!).\nNo 4 → (1), (2), dan (4): V = ⅓ × 36 × 10 = 120 cm³. Limas\nsegiempat punya 5 titik sudut.\nNo 5 → A. Benar · B. Benar · C. Salah: Rotasi 180° dari (2, −5) adalah\n(−2, 5)!\nNo 6 → A. Benar · B. Benar · C. Salah: Fₕ = 0,3 × 50 = 15 kali (bukan\n20).\nPeta Belajar Menuju 29 Maret 2027\nCicil santai per bulan bersama tutor Bimbel Gemilang!\nBulan Target Fokus Modul\nNov – Des 2026 Tuntaskan Bab 1 (Bilangan, Unit 1.1–1.10) & mulai Bab 2\n(Aljabar, Unit 2.1–2.5).\nJanuari 2027 Daftar TKA (6 Jan–7 Feb) · Selesaikan Unit 2.6–2.10 &\nBab 3 (Geometri, Unit 3.1–3.8).\nFebruari 2027 Gladi Bersih (15–18 Feb) · Tuntaskan Bangun Ruang,\nTransformasi (3.9–3.13) & Bab 4.\nMaret 2027 Drill Tryout 30 soal / 75 menit + review Cheat Sheet\nHal 43 → Ujian 29 Mar–1 Apr 2027!\nPesan Penutup · Bimbel Gemilang\nSelamat telah memiliki panduan lengkap 52 halaman ini! Ingat kunci sukses\nTKA SMP: paham konsep lewat visual, rajin latihan 5 soal cerita tiap hari,\ndan teliti di PG Kompleks. Sampai jumpa di kelas Bimbel Gemilang—\nsemangat raih nilai terbaik!",
+    "miniTryout": "Simulasi Mini Tryout · Matematika TKA SMP 2027\nSimulasi Mini Tryout Campuran 4 Bab (15 Menit)\nSimulasi Mini Tryout · Nomor 1–3\nPasang timer 15 menit (2,5 menit/soal), kerjakan tanpa buka halaman 52!\nNomor 1 & 2 · Pilihan Ganda (PG)\n1.  [Bab 1 · Diskon Ganda] Sepatu berlabel Rp400.000 mendapat diskon\n20% + 10%. Harga yang harus dibayar adalah … (A. Rp280.000 · B.\nRp288.000 · C. Rp300.000 · D. Rp320.000)\n2.  [Bab 2 · SPLDV] Harga 3 buku & 2 pena Rp34.000. Harga 1 buku & 2 pena\nRp18.000. Harga 1 buku adalah … (A. Rp6.000 · B. Rp8.000 · C. Rp10.000 ·\nD. Rp12.000)\nNomor 3 · PGK MCMA (Lebih dari 1 Benar)\n3.  [Bab 3 · Lingkaran] Kolam lingkaran berdiameter 14 m (π = 22/7). Pilih\nsemua pernyataan benar: (1) Jari-jarinya 7 m · (2) Kelilingnya 44 m · (3)\nLuasnya 154 m² · (4) Luasnya 616 m².\nSimulasi Mini Tryout · Nomor 4–6\nCampuran Bangun Ruang, Transformasi, dan Statistika–Peluang!\nNomor 4 · PGK MCMA (Lebih dari 1 Benar)\n4.  [Bab 3 · Bangun Ruang] Limas persegi alas 6 cm × 6 cm dan tinggi 10\ncm. Pilih pernyataan benar: (1) Luas alas 36 cm² · (2) Volume = 120 cm³ ·\n(3) Volume = 360 cm³ · (4) Memiliki 5 titik sudut.\nNomor 5 & 6 · PGK Kategori (Benar/Salah)\n5.  [Bab 3 · Transformasi] Titik K(2, −5): (A) Translasi T(3, 5) → (5, 0) · (B)\nRefleksi Sb-Y → (−2, −5) · (C) Rotasi 180° → (2, 5).\n6.  [Bab 4 · Data & Peluang] Kantong berisi 3 merah & 7 putih (diambil 1\nbola): (A) P(merah) = 0,3 · (B) P(bukan merah) = 0,7 · (C) Dalam 50 kali\npengambilan (dikembalikan), Fₕ merah = 20 kali.\n\nMatematika TKA SMP 2027\nKunci Tryout & Peta Belajar 2027 — Bimbel Gemilang\nKunci Simulasi Mini Tryout (Hal 51)\nHitung skormu—kalau benar 5–6 nomor, kamu sudah siap tempur!\nKunci & Pembahasan Kilat\nNo 1 → B (Rp288.000): Bayar = 0,8 × 0,9 × 400.000 = 0,72 ×\n400.000 = Rp288.000.\nNo 2 → B (Rp8.000): Kurangkan langsung: 2 buku = 34rb − 18rb =\n16rb → 1 buku = Rp8.000.\nNo 3 → (1), (2), dan (3): r = 7 m → K = 44 m, L = 154 m² (616 itu\nkalau pakai d=14 sebagai r!).\nNo 4 → (1), (2), dan (4): V = $\\frac{1}{3}$ × 36 × 10 = 120 cm³. Limas\nsegiempat punya 5 titik sudut.\nNo 5 → A. Benar · B. Benar · C. Salah: Rotasi 180° dari (2, −5) adalah\n(−2, 5)!\nNo 6 → A. Benar · B. Benar · C. Salah: Fₕ = 0,3 × 50 = 15 kali (bukan\n20).\nPeta Belajar Menuju 29 Maret 2027\nCicil santai per bulan bersama tutor Bimbel Gemilang!\nBulan Target Fokus Modul\nNov – Des 2026 Tuntaskan Bab 1 (Bilangan, Unit 1.1–1.10) & mulai Bab 2\n(Aljabar, Unit 2.1–2.5).\nJanuari 2027 Daftar TKA (6 Jan–7 Feb) · Selesaikan Unit 2.6–2.10 &\nBab 3 (Geometri, Unit 3.1–3.8).\nFebruari 2027 Gladi Bersih (15–18 Feb) · Tuntaskan Bangun Ruang,\nTransformasi (3.9–3.13) & Bab 4.\nMaret 2027 Drill Tryout 30 soal / 75 menit + review Cheat Sheet\nHal 43 → Ujian 29 Mar–1 Apr 2027!\nPesan Penutup · Bimbel Gemilang\nSelamat telah memiliki panduan lengkap 52 halaman ini! Ingat kunci sukses\nTKA SMP: paham konsep lewat visual, rajin latihan 5 soal cerita tiap hari,\ndan teliti di PG Kompleks. Sampai jumpa di kelas Bimbel Gemilang—\nsemangat raih nilai terbaik!",
     "tryoutImg": "/modul-assets/tryout/tryout_mtk_p51.png",
     "petaBelajarImg": "/modul-assets/tryout/tryout_mtk_p52.png",
     "konsepTeori": [
@@ -1499,7 +1497,7 @@ export const MTK_SMP_MODUL = [
       },
       {
         "subjudul": "Unit 4.2: Diagram Lingkaran (Persen & Derajat)",
-        "isi": "bagian! Diagram Lingkaran menampilkan proporsi tiap kategori terhadap keseluruhan. Perhatikan tandanya: jika memakai persen (%) totalnya 100%; jika memakai derajat (°) totalnya 360°. Tanda kotak siku-siku selalu berarti 90° = 25% = ¼ bagian! 90° 120° 150° Ekskul 120 Siswa SMP (Derajat): • Biru (Futsal): 90° (siku-siku) = ¼ × 120 = 30 siswa • Ungu (Basket): 120° = ⅓ × 120 = 40 siswa • Pink (Musik): 360° − 210° = 150° = 50 siswa",
+        "isi": "bagian! Diagram Lingkaran menampilkan proporsi tiap kategori terhadap keseluruhan. Perhatikan tandanya: jika memakai persen (%) totalnya 100%; jika memakai derajat (°) totalnya 360°. Tanda kotak siku-siku selalu berarti 90° = 25% = $\\frac{1}{4}$ bagian! 90° 120° 150° Ekskul 120 Siswa SMP (Derajat): • Biru (Futsal): 90° (siku-siku) = $\\frac{1}{4}$ × 120 = 30 siswa • Ungu (Basket): 120° = $\\frac{1}{3}$ × 120 = 40 siswa • Pink (Musik): 360° − 210° = 150° = 50 siswa",
         "poinPenting": [
           "Satu lingkaran penuh selalu 100% atau 360°—tinggal pakai perbandingan",
           "Pondasi · Rumus Universal Diagram Lingkaran Banyak Ditanya = (Sudut atau % Ditanya ÷ Sudut atau % Diketahui) × Jumlah Diketahui. Berlaku untuk mencari total, satu bagian, maupun selisih dua bagian!"
@@ -1531,7 +1529,7 @@ export const MTK_SMP_MODUL = [
       },
       {
         "subjudul": "Unit 4.6: Frekuensi Relatif & Frekuensi Harapan",
-        "isi": "peluang! Frekuensi Relatif (Peluang Empiris) didapat dari hasil percobaan sesungguhnya: fᵣ = banyak muncul ÷ total percobaan. Sedangkan Frekuensi Harapan adalah perkiraan berapa kali kejadian muncul dalam N kali percobaan: Fₕ = P(A) × N. Frekuensi Relatif (Nyata) fᵣ = f(A) ÷ N Lempar koin 50×, angka muncul 27× fᵣ = 27/50 = 0,54 Frekuensi Harapan (Prediksi) Fₕ = P(A) × N Dadu dilempar 120×, muncul prima Fₕ = ½ × 120 = 60 kali",
+        "isi": "peluang! Frekuensi Relatif (Peluang Empiris) didapat dari hasil percobaan sesungguhnya: fᵣ = banyak muncul ÷ total percobaan. Sedangkan Frekuensi Harapan adalah perkiraan berapa kali kejadian muncul dalam N kali percobaan: Fₕ = P(A) × N. Frekuensi Relatif (Nyata) fᵣ = f(A) ÷ N Lempar koin 50×, angka muncul 27× fᵣ = 27/50 = 0,54 Frekuensi Harapan (Prediksi) Fₕ = P(A) × N Dadu dilempar 120×, muncul prima Fₕ = $\\frac{1}{2}$ × 120 = 60 kali",
         "poinPenting": [
           "Frekuensi relatif itu dari percobaan nyata; frekuensi harapan itu prediksi dari",
           "Pondasi · Hukum Bilangan Besar Semakin banyak percobaan dilakukan (misal 1.000× lempar dadu dibanding 10×), nilai Frekuensi Relatif akan semakin mendekati Peluang Teoretis!"
@@ -1564,46 +1562,46 @@ export const MTK_SMP_MODUL = [
         },
         "kunci": "C",
         "pembahasanLangkah": [
-          "Yuk Bahas · Hobi Siswa (PG Aplikasi) Soal: Pada diagram lingkaran ekskul di kiri, diketahui siswa yang ikut Basket (120°) adalah 40 anak. Berapa selisih siswa Musik (150°) dan Futsal (90°)? Opsi: A. 10 anak · B. 15 anak · C. 20 anak · D. 25 anak Tidak perlu hitung total seluruh siswa dulu! Langsung pakai selisih sudutnya: Musik − Futsal = 150° − 90° = 60°. Bandingkan dengan Basket (120° = 40 anak): karena 60° itu tepat setengahnya 120°, maka selisihnya = ½ × 40 = 20 anak! Jawaban: C. 20 anak"
+          "Yuk Bahas · Hobi Siswa (PG Aplikasi) Soal: Pada diagram lingkaran ekskul di kiri, diketahui siswa yang ikut Basket (120°) adalah 40 anak. Berapa selisih siswa Musik (150°) dan Futsal (90°)? Opsi: A. 10 anak · B. 15 anak · C. 20 anak · D. 25 anak Tidak perlu hitung total seluruh siswa dulu! Langsung pakai selisih sudutnya: Musik − Futsal = 150° − 90° = 60°. Bandingkan dengan Basket (120° = 40 anak): karena 60° itu tepat setengahnya 120°, maka selisihnya = $\\frac{1}{2}$ × 40 = 20 anak! Jawaban: C. 20 anak"
         ]
       }
     ],
     "kuisPemahaman": [
       {
         "id": "mtk_smp_b4_q1",
-        "soal": "Soal 1 [L1 · PG] & Soal 2 [L2 · PGK MCMA]  [Unit 4.2] Diagram lingkaran 200 siswa: IPA 90°, Matematika 108°, sisanya Bahasa. Banyak siswa Bahasa adalah … (A. 80 · B. 90 · C. 100 · D. 110)  [Unit 4.3] Data nilai: 6, 8, 7, 9, 7, 5, 7. Pilih pernyataan benar: (1) Modus = 7 · (2) Median = 7 · (3) Jangkauan = 3 · (4) Mean > 7. Soal 3 [L3 · PGK Kategori — Peluang & Harapan] Sebuah dadu 6 sisi dilempar 1 kali (dan untuk pernyataan C dilempar 90 kali). Tentukan Benar/Salah: A. Peluang muncul mata dadu prima adalah ½. B. Peluang muncul faktor dari 6 adalah ⅔ . C. Dalam 90 lemparan, frekuensi harapan mata dadu > 4 adalah 45 kali.",
+        "soal": "[Unit 4.2] Diagram lingkaran 200 siswa: IPA $90^\\circ$, Matematika $108^\\circ$, sisanya Bahasa. Banyak siswa Bahasa adalah …",
         "opsi": {
-          "A": "Peluang muncul mata dadu prima adalah ½.",
-          "B": "Peluang muncul faktor dari 6 adalah ⅔ .",
-          "C": "100",
-          "D": "Pernyataan / Opsi (4) Benar"
+          "A": "80 siswa",
+          "B": "90 siswa",
+          "C": "100 siswa",
+          "D": "110 siswa"
         },
         "kunci": "B",
-        "pembahasan": "Sudut Bahasa = 360° − (90° + 108°) = 162°."
+        "pembahasan": "Sudut Bahasa = $360^\\circ - (90^\\circ + 108^\\circ) = 162^\\circ$.\nBanyak siswa Bahasa = $\\frac{162}{360} \\times 200 = 90$ siswa!"
       },
       {
         "id": "mtk_smp_b4_q2",
-        "soal": "",
+        "soal": "[Unit 4.3] Data nilai: 6, 8, 7, 9, 7, 5, 7. Tentukan pernyataan yang BENAR:\n(1) Modus = 7\n(2) Median = 7\n(3) Jangkauan = 3\n(4) Mean > 7",
         "opsi": {
-          "A": "Pernyataan / Opsi (1) Benar",
-          "B": "Pernyataan / Opsi (2) Benar",
-          "C": "Pernyataan / Opsi (3) Benar",
-          "D": "Pernyataan / Opsi (4) Benar"
+          "A": "(1) dan (2)",
+          "B": "(1) dan (3)",
+          "C": "(2) dan (4)",
+          "D": "(3) dan (4)"
         },
         "kunci": "A",
-        "pembahasan": "Urut: 5, 6, 7, 7, 7, 8, 9. Modus = 7, Median = 7,"
+        "pembahasan": "Urutkan data: 5, 6, 7, 7, 7, 8, 9.\n• Modus = 7 (muncul paling sering)\n• Median = 7 (nilai tengah ke-4)\n• Jangkauan = $9 - 5 = 4$ (bukan 3)\n• Mean = $\\frac{49}{7} = 7$ (tepat 7, bukan > 7).\nJadi pernyataan yang benar adalah (1) dan (2)."
       },
       {
         "id": "mtk_smp_b4_q3",
-        "soal": "Soal 3 [L3 · PGK Kategori — Peluang & Harapan] Sebuah dadu 6 sisi dilempar 1 kali (dan untuk pernyataan C dilempar 90 kali). Tentukan Benar/Salah: A. Peluang muncul mata dadu prima adalah ½. B. Peluang muncul faktor dari 6 adalah ⅔ . C. Dalam 90 lemparan, frekuensi harapan mata dadu > 4 adalah 45 kali.",
+        "soal": "[Unit 4.4 & 4.5] Sebuah dadu 6 sisi dilempar 1 kali (dan untuk pernyataan C dilempar 90 kali). Manakah pernyataan berikut yang BENAR?",
         "opsi": {
-          "A": "Peluang muncul mata dadu prima adalah ½.",
-          "B": "Peluang muncul faktor dari 6 adalah ⅔ .",
-          "C": "Pernyataan / Opsi (3) Benar",
-          "D": "Pernyataan / Opsi (4) Benar"
+          "A": "Peluang muncul mata dadu prima adalah $\\frac{1}{2}$",
+          "B": "Peluang muncul faktor dari 6 adalah $\\frac{2}{3}$",
+          "C": "Dalam 90 lemparan, frekuensi harapan mata dadu > 4 adalah 45 kali",
+          "D": "Pernyataan A dan B benar"
         },
-        "kunci": "A",
-        "pembahasan": "Prima {2,3,5} = 3/6 = ½."
+        "kunci": "D",
+        "pembahasan": "Analisis butir:\n• Prima {2, 3, 5} $\\rightarrow P = \\frac{3}{6} = \\frac{1}{2}$ (Benar)\n• Faktor dari 6 {1, 2, 3, 6} $\\rightarrow P = \\frac{4}{6} = \\frac{2}{3}$ (Benar)\n• Mata dadu > 4 {5, 6} $\\rightarrow P = \\frac{2}{6} = \\frac{1}{3} \\rightarrow F_h = \\frac{1}{3} \\times 90 = 30$ kali (Salah, bukan 45).\nMaka pernyataan yang benar adalah A dan B."
       }
     ]
   }

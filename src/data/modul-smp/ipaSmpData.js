@@ -1,12 +1,10 @@
 // src/data/modul-smp/ipaSmpData.js
 // ==============================================================================
 // MODUL MASTER 52 HALAMAN RESMI TKA SMP 2027 - BIMBEL GEMILANG
-// Subtes: Ilmu Pengetahuan Alam (IPA CP Fase D) (IPA_SMP)
-// 4 Bab, 39 Unit Lengkap, Latihan Soal, Kuis Interaktif & PDF Master
-// DILENGKAPI ASET VISUAL: Slide Asli, Ilustrasi Khusus, Cheat Sheet Master & Mini Tryout
+// Bebas karakter PUA, pecahan tegak KaTeX, dan kuis pemahaman terstruktur rapi
 // ==============================================================================
 
-export const IPA_SMP_MODUL = [
+export const ipaSmpData = [
   {
     "id": "ipa_smp_bab_1",
     "subtestKode": "IPA_SMP",
@@ -214,7 +212,7 @@ export const IPA_SMP_MODUL = [
         "unitNumber": "1.10",
         "judul": "Energi Kinetik, Potensial & Mekanik",
         "hook": "Energi tak bisa diciptakan atau dimusnahkan—hanya berubah bentuk!",
-        "teori": "Dalam fisika SMP, ada dua energi mekanik utama: Energi Potensial (Ep) karena ketinggian benda (Ep = m·g·h) dan Energi Kinetik (Ek) karena gerak/kecepatan benda (Ek = ½·m·v²). Jumlah keduanya adalah Energi Mekanik (Em = Ep + Ek) yang nilainya selalu tetap jika gesekan diabaikan! 1Puncak (h=10m) Ep = 200 J (Maks) Ek = 0 J 2 Tengah (h=4m) Ep = 80 J · Ek = 120 J Em tetap = 200 J! 3 Tanah (h=0m) Ep = 0 J Ek = 200 J (Maks)",
+        "teori": "Dalam fisika SMP, ada dua energi mekanik utama: Energi Potensial (Ep) karena ketinggian benda (Ep = m·g·h) dan Energi Kinetik (Ek) karena gerak/kecepatan benda (Ek = $\\frac{1}{2}$·m·v²). Jumlah keduanya adalah Energi Mekanik (Em = Ep + Ek) yang nilainya selalu tetap jika gesekan diabaikan! 1Puncak (h=10m) Ep = 200 J (Maks) Ek = 0 J 2 Tengah (h=4m) Ep = 80 J · Ek = 120 J Em tetap = 200 J! 3 Tanah (h=0m) Ep = 0 J Ek = 200 J (Maks)",
         "pondasi": "Pondasi · Energi Terbarukan vs Tak Terbarukan Terbarukan (ramah lingkungan): Matahari (surya), angin (bayu), air (hidro), panas bumi (geotermal), biomassa/biogas. Tak Terbarukan (fosil, terbatas): Batu bara, minyak bumi, gas alam.",
         "jebakanTka": "Hati-hati pada PLTA: Air jatuh (Potensial → Kinetik) memutar turbin → generator (Listrik). Pada aki/baterai: Kimia → Listrik. Pada fotosintesis: Cahaya → Kimia.",
         "contohSoal": {
@@ -311,7 +309,7 @@ export const IPA_SMP_MODUL = [
       },
       {
         "subjudul": "Unit 1.10: Energi Kinetik, Potensial & Mekanik",
-        "isi": "Dalam fisika SMP, ada dua energi mekanik utama: Energi Potensial (Ep) karena ketinggian benda (Ep = m·g·h) dan Energi Kinetik (Ek) karena gerak/kecepatan benda (Ek = ½·m·v²). Jumlah keduanya adalah Energi Mekanik (Em = Ep + Ek) yang nilainya selalu tetap jika gesekan diabaikan! 1Puncak (h=10m) Ep = 200 J (Maks) Ek = 0 J 2 Tengah (h=4m) Ep = 80 J · Ek = 120 J Em tetap = 200 J! 3 Tanah (h=0m) Ep = 0 J Ek = 200 J (Maks)",
+        "isi": "Dalam fisika SMP, ada dua energi mekanik utama: Energi Potensial (Ep) karena ketinggian benda (Ep = m·g·h) dan Energi Kinetik (Ek) karena gerak/kecepatan benda (Ek = $\\frac{1}{2}$·m·v²). Jumlah keduanya adalah Energi Mekanik (Em = Ep + Ek) yang nilainya selalu tetap jika gesekan diabaikan! 1Puncak (h=10m) Ep = 200 J (Maks) Ek = 0 J 2 Tengah (h=4m) Ep = 80 J · Ek = 120 J Em tetap = 200 J! 3 Tanah (h=0m) Ep = 0 J Ek = 200 J (Maks)",
         "poinPenting": [
           "Energi tak bisa diciptakan atau dimusnahkan—hanya berubah bentuk!",
           "Pondasi · Energi Terbarukan vs Tak Terbarukan Terbarukan (ramah lingkungan): Matahari (surya), angin (bayu), air (hidro), panas bumi (geotermal), biomassa/biogas. Tak Terbarukan (fosil, terbatas): Batu bara, minyak bumi, gas alam."
@@ -455,12 +453,12 @@ export const IPA_SMP_MODUL = [
         "jebakanTka": "Tetesan Oli dibaca searah gerak mobil (jarak makin lebar = dipercepat). Sebaliknya, Pita Ticker Timer ditarik dari ujung depan, jadi dibaca dari arah yang ditarik (berlawanan panah)!",
         "contohSoal": {
           "judul": "Yuk Bahas Unit 2.1",
-          "soal": "Sebuah mobil bergerak dengan kecepatan awal 10 m/s lalu dipercepat beraturan hingga menjadi 22 m/s dalam waktu 4 sekon. Hitung percepatan dan jarak tempuhnya! Pembahasan: Percepatan a = (22 − 10) / 4 = 12 / 4 = 3 m/s². Untuk jarak, pakai trik Luas Trapesium di bawah grafik v–t: s = ½ × (v₀ + v_t) × t = ½ × (10 + 22) × 4 = 16 × 4 = 64 m! Jawaban: a = 3 m/s² dan jarak s = 64 meter.",
+          "soal": "Sebuah mobil bergerak dengan kecepatan awal 10 m/s lalu dipercepat beraturan hingga menjadi 22 m/s dalam waktu 4 sekon. Hitung percepatan dan jarak tempuhnya! Pembahasan: Percepatan a = (22 − 10) / 4 = 12 / 4 = 3 m/s². Untuk jarak, pakai trik Luas Trapesium di bawah grafik v–t: s = $\\frac{1}{2}$ × (v₀ + v_t) × t = $\\frac{1}{2}$ × (10 + 22) × 4 = 16 × 4 = 64 m! Jawaban: a = 3 m/s² dan jarak s = 64 meter.",
           "opsiString": "",
           "jawaban": "",
-          "solusi": "Yuk Bahas · Percepatan & Jarak dari Grafik v–t Soal: Sebuah mobil bergerak dengan kecepatan awal 10 m/s lalu dipercepat beraturan hingga menjadi 22 m/s dalam waktu 4 sekon. Hitung percepatan dan jarak tempuhnya! Pembahasan: Percepatan a = (22 − 10) / 4 = 12 / 4 = 3 m/s². Untuk jarak, pakai trik Luas Trapesium di bawah grafik v–t: s = ½ × (v₀ + v_t) × t = ½ × (10 + 22) × 4 = 16 × 4 = 64 m! Jawaban: a = 3 m/s² dan jarak s = 64 meter."
+          "solusi": "Yuk Bahas · Percepatan & Jarak dari Grafik v–t Soal: Sebuah mobil bergerak dengan kecepatan awal 10 m/s lalu dipercepat beraturan hingga menjadi 22 m/s dalam waktu 4 sekon. Hitung percepatan dan jarak tempuhnya! Pembahasan: Percepatan a = (22 − 10) / 4 = 12 / 4 = 3 m/s². Untuk jarak, pakai trik Luas Trapesium di bawah grafik v–t: s = $\\frac{1}{2}$ × (v₀ + v_t) × t = $\\frac{1}{2}$ × (10 + 22) × 4 = 16 × 4 = 64 m! Jawaban: a = 3 m/s² dan jarak s = 64 meter."
         },
-        "trikCepat": "Trik Cepat · Jarak = Luas Grafik v–t Ketemu grafik v–t? Tak perlu hafal rumus v₀t + ½at²! Cukup hitung luas bangun di bawah garis grafik (persegi panjang / segitiga / trapesium)!",
+        "trikCepat": "Trik Cepat · Jarak = Luas Grafik v–t Ketemu grafik v–t? Tak perlu hafal rumus v₀t + $\\frac{1}{2}$at²! Cukup hitung luas bangun di bawah garis grafik (persegi panjang / segitiga / trapesium)!",
         "pageNumber": 16,
         "illustrationImg": null,
         "illustrationCaption": "",
@@ -550,7 +548,7 @@ export const IPA_SMP_MODUL = [
         "unitNumber": "2.6",
         "judul": "Cahaya, Cermin, Lensa & Cacat Mata",
         "hook": "Cukup pegang 1 rumus optik dan aturan tanda (+) vs (−) biar anti-keliru!",
-        "teori": "Cahaya merambat lurus, dapat dipantulkan (cermin), dan dibiaskan (lensa). Untuk cermin lengkung maupun lensa tipis, rumusnya SAMA PERSIS: 1/f = 1/s + 1/s' dan perbesaran M = |s'/s| = h'/h, dengan f = ½ R. Kiri: Cermin Cekung & Lensa Cembung (kumpulkan sinar)  |  Kanan: Miopi (depan retina) & Hipermetropi (belakang retina)",
+        "teori": "Cahaya merambat lurus, dapat dipantulkan (cermin), dan dibiaskan (lensa). Untuk cermin lengkung maupun lensa tipis, rumusnya SAMA PERSIS: 1/f = 1/s + 1/s' dan perbesaran M = |s'/s| = h'/h, dengan f = $\\frac{1}{2}$ R. Kiri: Cermin Cekung & Lensa Cembung (kumpulkan sinar)  |  Kanan: Miopi (depan retina) & Hipermetropi (belakang retina)",
         "pondasi": "Pondasi · Cermin Datar & Jumlah Bayangan Bayangan cermin datar selalu maya, tegak, sama besar, terbalik kanan-kiri. Dua cermin datar membentuk sudut α menghasilkan n = (360° / α) − 1 bayangan (misal α = 60° → n = 6 − 1 = 5 bayangan).",
         "jebakanTka": "Miopi (rabun jauh): Bayangan jatuh di depan retina → ditolong lensa cekung (−), P = −100 / PR(cm). Hipermetropi (rabun dekat): Bayangan di belakang retina → lensa cembung (+), P = 4 − 100/PP(cm).",
         "contohSoal": {
@@ -592,7 +590,7 @@ export const IPA_SMP_MODUL = [
         "hook": "Pegang segitiga V–I–R (Hukum Ohm) dan cara bereskan rangkaian campuran!",
         "teori": "Arus listrik (I, Ampere) mengalir dari potensial tinggi (+) ke rendah (−), kebalikan arah elektron. Hukum Ohm: V = I × R (V = tegangan Volt, R = hambatan Ohm/Ω). Hukum I Kirchhoff: Jumlah arus masuk titik cabang = jumlah arus keluar (ΣI_masuk = ΣI_keluar). Kiri: Rangkaian Seri (1 jalur, arus sama, 1 putus padam semua)  |  Kanan: Rangkaian Paralel (bercabang, tegangan sama)",
         "pondasi": "Pondasi · Cara Pasang Amperemeter & Voltmeter Amperemeter (ukur arus I) dipasang secara SERI. Voltmeter (ukur tegangan V) dipasang secara PARALEL.",
-        "jebakanTka": "Setelah menghitung 1/R_p = 3/6, jangan langsung jawab 3/6 Ω! Wajib dibalik jadi R_p = 6/3 = 2 Ω! Atau pakai trik cepat di kanan.",
+        "jebakanTka": "Setelah menghitung 1/R_p = $\\frac{3}{6}$, jangan langsung jawab $\\frac{3}{6}$ Ω! Wajib dibalik jadi R_p = 6/3 = 2 Ω! Atau pakai trik cepat di kanan.",
         "contohSoal": {
           "judul": "Yuk Bahas Unit 2.8",
           "soal": "Resistor R₂ = 6 Ω dan R₃ = 3 Ω disusun paralel, lalu diserikan dengan R₁ = 4 Ω dan dihubungkan ke baterai 12 V. Berapa kuat arus total rangkaian? Pembahasan: Bereskan paralel dulu dengan trik kali per tambah: R_p = (6 × 3) / (6 + 3) = 18 / 9 = 2 Ω. Lalu serikan dengan R₁: R_total = 4 + 2 = 6 Ω. Terakhir pakai Hukum Ohm: I = V / R_total = 12 / 6 = 2 Ampere. Jawaban: R_total = 6 Ω dan I = 2 Ampere.",
@@ -695,7 +693,7 @@ export const IPA_SMP_MODUL = [
       },
       {
         "subjudul": "Unit 2.6: Cahaya, Cermin, Lensa & Cacat Mata",
-        "isi": "Cahaya merambat lurus, dapat dipantulkan (cermin), dan dibiaskan (lensa). Untuk cermin lengkung maupun lensa tipis, rumusnya SAMA PERSIS: 1/f = 1/s + 1/s' dan perbesaran M = |s'/s| = h'/h, dengan f = ½ R. Kiri: Cermin Cekung & Lensa Cembung (kumpulkan sinar)  |  Kanan: Miopi (depan retina) & Hipermetropi (belakang retina)",
+        "isi": "Cahaya merambat lurus, dapat dipantulkan (cermin), dan dibiaskan (lensa). Untuk cermin lengkung maupun lensa tipis, rumusnya SAMA PERSIS: 1/f = 1/s + 1/s' dan perbesaran M = |s'/s| = h'/h, dengan f = $\\frac{1}{2}$ R. Kiri: Cermin Cekung & Lensa Cembung (kumpulkan sinar)  |  Kanan: Miopi (depan retina) & Hipermetropi (belakang retina)",
         "poinPenting": [
           "Cukup pegang 1 rumus optik dan aturan tanda (+) vs (−) biar anti-keliru!",
           "Pondasi · Cermin Datar & Jumlah Bayangan Bayangan cermin datar selalu maya, tegak, sama besar, terbalik kanan-kiri. Dua cermin datar membentuk sudut α menghasilkan n = (360° / α) − 1 bayangan (misal α = 60° → n = 6 − 1 = 5 bayangan)."
@@ -734,11 +732,11 @@ export const IPA_SMP_MODUL = [
         ]
       }
     ],
-    "trikCepat": "Trik Cepat · Jarak = Luas Grafik v–t Ketemu grafik v–t? Tak perlu hafal rumus v₀t + ½at²! Cukup hitung luas bangun di bawah garis grafik (persegi panjang / segitiga / trapesium)!",
+    "trikCepat": "Trik Cepat · Jarak = Luas Grafik v–t Ketemu grafik v–t? Tak perlu hafal rumus v₀t + $\\frac{1}{2}$at²! Cukup hitung luas bangun di bawah garis grafik (persegi panjang / segitiga / trapesium)!",
     "jebakanUmum": "Tetesan Oli dibaca searah gerak mobil (jarak makin lebar = dipercepat). Sebaliknya, Pita Ticker Timer ditarik dari ujung depan, jadi dibaca dari arah yang ditarik (berlawanan panah)!",
     "contohSoal": [
       {
-        "soal": "Sebuah mobil bergerak dengan kecepatan awal 10 m/s lalu dipercepat beraturan hingga menjadi 22 m/s dalam waktu 4 sekon. Hitung percepatan dan jarak tempuhnya! Pembahasan: Percepatan a = (22 − 10) / 4 = 12 / 4 = 3 m/s². Untuk jarak, pakai trik Luas Trapesium di bawah grafik v–t: s = ½ × (v₀ + v_t) × t = ½ × (10 + 22) × 4 = 16 × 4 = 64 m! Jawaban: a = 3 m/s² dan jarak s = 64 meter.",
+        "soal": "Sebuah mobil bergerak dengan kecepatan awal 10 m/s lalu dipercepat beraturan hingga menjadi 22 m/s dalam waktu 4 sekon. Hitung percepatan dan jarak tempuhnya! Pembahasan: Percepatan a = (22 − 10) / 4 = 12 / 4 = 3 m/s². Untuk jarak, pakai trik Luas Trapesium di bawah grafik v–t: s = $\\frac{1}{2}$ × (v₀ + v_t) × t = $\\frac{1}{2}$ × (10 + 22) × 4 = 16 × 4 = 64 m! Jawaban: a = 3 m/s² dan jarak s = 64 meter.",
         "opsi": {
           "A": "Opsi A",
           "B": "Opsi B",
@@ -747,7 +745,7 @@ export const IPA_SMP_MODUL = [
         },
         "kunci": "C",
         "pembahasanLangkah": [
-          "Yuk Bahas · Percepatan & Jarak dari Grafik v–t Soal: Sebuah mobil bergerak dengan kecepatan awal 10 m/s lalu dipercepat beraturan hingga menjadi 22 m/s dalam waktu 4 sekon. Hitung percepatan dan jarak tempuhnya! Pembahasan: Percepatan a = (22 − 10) / 4 = 12 / 4 = 3 m/s². Untuk jarak, pakai trik Luas Trapesium di bawah grafik v–t: s = ½ × (v₀ + v_t) × t = ½ × (10 + 22) × 4 = 16 × 4 = 64 m! Jawaban: a = 3 m/s² dan jarak s = 64 meter."
+          "Yuk Bahas · Percepatan & Jarak dari Grafik v–t Soal: Sebuah mobil bergerak dengan kecepatan awal 10 m/s lalu dipercepat beraturan hingga menjadi 22 m/s dalam waktu 4 sekon. Hitung percepatan dan jarak tempuhnya! Pembahasan: Percepatan a = (22 − 10) / 4 = 12 / 4 = 3 m/s². Untuk jarak, pakai trik Luas Trapesium di bawah grafik v–t: s = $\\frac{1}{2}$ × (v₀ + v_t) × t = $\\frac{1}{2}$ × (10 + 22) × 4 = 16 × 4 = 64 m! Jawaban: a = 3 m/s² dan jarak s = 64 meter."
         ]
       },
       {
@@ -1123,7 +1121,7 @@ export const IPA_SMP_MODUL = [
         "slideImg": "/modul-assets/pages/ipa_p40.png"
       }
     ],
-    "cheatSheet": "Cheat Sheet 1 Halaman · Rumus Fisika–Kimia & Skema Biologi SMP\nCHEAT SHEET MASTER · 1 Halaman\nCheat Sheet Fisika & Kimia (Bab 1–2)\nSemua rumus hitungan paling sering keluar dalam 1 tabel padat!\nTopik Rumus Utama Kunci Satuan\nMassa Jenis ρ = m / V 1 g/cm³ = 1.000\nkg/m³\nSuhu C : R : (F−32) = 5 : 4 : 9 K = C + 273\nKalor Q = m·c·ΔT | Q = m·L m (kg), 1 kJ = 1.000\nJ\nEnergi Ep = m·g·h | Ek = ½mv² Em = Ep + Ek\n(kekal)\nGerak & Gaya a = (vt−v₀)/t | ΣF = m·a Jarak = Luas grafik\nv–t\nPesawat Sed. w·Lb = F·Lk | KM = s/h Tuas: Tu-Be-Ku (1-\n2-3)\nTekanan P = F/A | Ph = ρ·g·h F₁/A₁ = F₂/A₂\nGelombang v = λ·f | Sonar: s = v·t/2 f = n/t, T = 1/f\nOptik 1/f = 1/s + 1/s' | M =\n|s'/s|\nMiopi: P =\n−100/PR\nListrik & Trafo V = I·R | W = P·t (kWh) Vp/Vs = Np/Ns =\nIs/Ip\nCheat Sheet Biologi & Kimia (Bab 1 & 3)\nJembatan keledai super cepat untuk soal hafalan & identifikasi!\nMateri Kata Kunci & Jembatan Keledai\nAsam–Basa A-M (Asam→Merah, pH<7) · B-B (Basa→Biru, pH>7)\nUji Makanan Lugol (Amilum→Biru tua) · Biuret (Protein→Ungu) ·\nBenedict (Glukosa→Merah bata)\nEnzim Mulut: Ptialin · Lambung: Pe-Re-H · Pankreas: A-L-T\nJantung Kiri = O₂ (Bilik kiri pompa ke tubuh) · Kanan = CO₂\nNefron Fi-Re-Au → Glomerulus (Primer) · Proksimal (Sekunder)\n· Distal (Sesungguhnya)\nFotosintesis Sachs = Amilum (alkohol larutkan klorofil) · Ingenhousz\n= O₂\nMendel F2 Monohibrid: 3 : 1 (Intermediet 1:2:1) · Dihibrid: 9 : 3 : 3 : 1\nBioteknologi Tempe (Rhizopus) · Tapai/Roti (Saccharomyces) ·\nYoghurt (Lactobacillus)",
+    "cheatSheet": "Cheat Sheet 1 Halaman · Rumus Fisika–Kimia & Skema Biologi SMP\nCHEAT SHEET MASTER · 1 Halaman\nCheat Sheet Fisika & Kimia (Bab 1–2)\nSemua rumus hitungan paling sering keluar dalam 1 tabel padat!\nTopik Rumus Utama Kunci Satuan\nMassa Jenis ρ = m / V 1 g/cm³ = 1.000\nkg/m³\nSuhu C : R : (F−32) = 5 : 4 : 9 K = C + 273\nKalor Q = m·c·ΔT | Q = m·L m (kg), 1 kJ = 1.000\nJ\nEnergi Ep = m·g·h | Ek = $\\frac{1}{2}$mv² Em = Ep + Ek\n(kekal)\nGerak & Gaya a = (vt−v₀)/t | ΣF = m·a Jarak = Luas grafik\nv–t\nPesawat Sed. w·Lb = F·Lk | KM = s/h Tuas: Tu-Be-Ku (1-\n2-3)\nTekanan P = F/A | Ph = ρ·g·h F₁/A₁ = F₂/A₂\nGelombang v = λ·f | Sonar: s = v·t/2 f = n/t, T = 1/f\nOptik 1/f = 1/s + 1/s' | M =\n|s'/s|\nMiopi: P =\n−100/PR\nListrik & Trafo V = I·R | W = P·t (kWh) Vp/Vs = Np/Ns =\nIs/Ip\nCheat Sheet Biologi & Kimia (Bab 1 & 3)\nJembatan keledai super cepat untuk soal hafalan & identifikasi!\nMateri Kata Kunci & Jembatan Keledai\nAsam–Basa A-M (Asam→Merah, pH<7) · B-B (Basa→Biru, pH>7)\nUji Makanan Lugol (Amilum→Biru tua) · Biuret (Protein→Ungu) ·\nBenedict (Glukosa→Merah bata)\nEnzim Mulut: Ptialin · Lambung: Pe-Re-H · Pankreas: A-L-T\nJantung Kiri = O₂ (Bilik kiri pompa ke tubuh) · Kanan = CO₂\nNefron Fi-Re-Au → Glomerulus (Primer) · Proksimal (Sekunder)\n· Distal (Sesungguhnya)\nFotosintesis Sachs = Amilum (alkohol larutkan klorofil) · Ingenhousz\n= O₂\nMendel F2 Monohibrid: 3 : 1 (Intermediet 1:2:1) · Dihibrid: 9 : 3 : 3 : 1\nBioteknologi Tempe (Rhizopus) · Tapai/Roti (Saccharomyces) ·\nYoghurt (Lactobacillus)",
     "cheatSheetImg": "/modul-assets/cheatsheet/cheatsheet_ipa.png",
     "miniTryout": "",
     "tryoutImg": null,
@@ -1446,7 +1444,7 @@ export const IPA_SMP_MODUL = [
         "unitNumber": "4.5",
         "judul": "Rotasi, Revolusi & Fase Bulan",
         "hook": "Jangan sampai ketukar antara akibat Rotasi Bumi (24 jam) vs Revolusi Bumi",
-        "teori": "(365¼ hari)! Bumi berputar pada porosnya (Rotasi, 23 jam 56 menit, dari Barat ke Timur) sekaligus mengelilingi Matahari dengan sumbu miring 23,5° (Revolusi, 365¼ hari). Kemiringan poros 23,5° inilah biang kerok terjadinya 4 musim di belahan Utara & Selatan! Akibat ROTASI Bumi (24 Jam) 1. Pergantian siang dan malam 2. Gerak semu harian matahari 3. Perbedaan waktu (WIB, WITA, WIT) 4. Pembelokan arah angin & arus laut 5. Bumi pepat di kutub Akibat REVOLUSI Bumi (1 Tahun) 1. Pergantian 4 musim (Panas–Dingin) 2. Gerak semu tahunan matahari 3. Perbedaan lama siang & malam 4. Terlihatnya rasi bintang berbeda 5. Dasar Kalender Masehi (Syamsiah)",
+        "teori": "(365$\\frac{1}{4}$ hari)! Bumi berputar pada porosnya (Rotasi, 23 jam 56 menit, dari Barat ke Timur) sekaligus mengelilingi Matahari dengan sumbu miring 23,5° (Revolusi, 365$\\frac{1}{4}$ hari). Kemiringan poros 23,5° inilah biang kerok terjadinya 4 musim di belahan Utara & Selatan! Akibat ROTASI Bumi (24 Jam) 1. Pergantian siang dan malam 2. Gerak semu harian matahari 3. Perbedaan waktu (WIB, WITA, WIT) 4. Pembelokan arah angin & arus laut 5. Bumi pepat di kutub Akibat REVOLUSI Bumi (1 Tahun) 1. Pergantian 4 musim (Panas–Dingin) 2. Gerak semu tahunan matahari 3. Perbedaan lama siang & malam 4. Terlihatnya rasi bintang berbeda 5. Dasar Kalender Masehi (Syamsiah)",
         "pondasi": "Pondasi · Pergantian Musim & Kalender Hijriah 21 Juni: Matahari di Utara → Belahan Utara Musim Panas, Selatan Musim Dingin. 22 Desember: Kebalikannya (Utara Dingin, Selatan Panas)! Kalender Hijriah (Komariah): Berdasarkan revolusi Bulan (29,5 hari × 12 = 354 hari). Wajah Bulan yang menghadap Bumi selalu sama karena periode rotasi = periode revolusi Bulan!",
         "jebakanTka": "Perhatikan satu kata kecil: “Pergantian siang & malam” = Rotasi. Tapi “Perbedaan LAMA siang & malam” (siang di Eropa lebih lama saat Juni) = Revolusi!",
         "contohSoal": {
@@ -1523,7 +1521,7 @@ export const IPA_SMP_MODUL = [
       },
       {
         "subjudul": "Unit 4.5: Rotasi, Revolusi & Fase Bulan",
-        "isi": "(365¼ hari)! Bumi berputar pada porosnya (Rotasi, 23 jam 56 menit, dari Barat ke Timur) sekaligus mengelilingi Matahari dengan sumbu miring 23,5° (Revolusi, 365¼ hari). Kemiringan poros 23,5° inilah biang kerok terjadinya 4 musim di belahan Utara & Selatan! Akibat ROTASI Bumi (24 Jam) 1. Pergantian siang dan malam 2. Gerak semu harian matahari 3. Perbedaan waktu (WIB, WITA, WIT) 4. Pembelokan arah angin & arus laut 5. Bumi pepat di kutub Akibat REVOLUSI Bumi (1 Tahun) 1. Pergantian 4 musim (Panas–Dingin) 2. Gerak semu tahunan matahari 3. Perbedaan lama siang & malam 4. Terlihatnya rasi bintang berbeda 5. Dasar Kalender Masehi (Syamsiah)",
+        "isi": "(365$\\frac{1}{4}$ hari)! Bumi berputar pada porosnya (Rotasi, 23 jam 56 menit, dari Barat ke Timur) sekaligus mengelilingi Matahari dengan sumbu miring 23,5° (Revolusi, 365$\\frac{1}{4}$ hari). Kemiringan poros 23,5° inilah biang kerok terjadinya 4 musim di belahan Utara & Selatan! Akibat ROTASI Bumi (24 Jam) 1. Pergantian siang dan malam 2. Gerak semu harian matahari 3. Perbedaan waktu (WIB, WITA, WIT) 4. Pembelokan arah angin & arus laut 5. Bumi pepat di kutub Akibat REVOLUSI Bumi (1 Tahun) 1. Pergantian 4 musim (Panas–Dingin) 2. Gerak semu tahunan matahari 3. Perbedaan lama siang & malam 4. Terlihatnya rasi bintang berbeda 5. Dasar Kalender Masehi (Syamsiah)",
         "poinPenting": [
           "Jangan sampai ketukar antara akibat Rotasi Bumi (24 jam) vs Revolusi Bumi",
           "Pondasi · Pergantian Musim & Kalender Hijriah 21 Juni: Matahari di Utara → Belahan Utara Musim Panas, Selatan Musim Dingin. 22 Desember: Kebalikannya (Utara Dingin, Selatan Panas)! Kalender Hijriah (Komariah): Berdasarkan revolusi Bulan (29,5 hari × 12 = 354 hari). Wajah Bulan yang menghadap Bumi selalu sama karena periode rotasi = periode revolusi Bulan!"

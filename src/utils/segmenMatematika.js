@@ -48,6 +48,35 @@ export function normalisasiTeksMatematika(teks) {
   if (!teks || typeof teks !== 'string') return '';
   let hasil = teks;
 
+  // 0. Bersihkan karakter Private Use Area (PUA) font Canva/PDF (seperti \ue072, \ue073) yang memicu missing glyph (garis tiga)
+  hasil = hasil
+    .replace(/\ue072\ue094/g, '1. ')
+    .replace(/\ue073\ue094/g, '2. ')
+    .replace(/\ue074\ue094/g, '3. ')
+    .replace(/\ue075\ue094/g, '4. ')
+    .replace(/\ue076\ue094/g, '5. ')
+    .replace(/\ue077\ue094/g, '6. ')
+    .replace(/[\uE000-\uF8FF]/g, '');
+
+  // Peta pecahan vulgar unicode (miring) ke pecahan bertingkat tegak
+  const PETA_PECAHAN_VULGAR = {
+    '½': '1/2',
+    '⅓': '1/3',
+    '⅔': '2/3',
+    '¼': '1/4',
+    '¾': '3/4',
+    '⅕': '1/5',
+    '⅖': '2/5',
+    '⅗': '3/5',
+    '⅘': '4/5',
+    '⅙': '1/6',
+    '⅚': '5/6',
+    '⅛': '1/8',
+    '⅜': '3/8',
+    '⅝': '5/8',
+    '⅞': '7/8',
+  };
+
   // 1. Amankan seluruh formula matematika resmi ($$...$$, \[...\], \(...\), $...$)
   // ke dalam placeholder terlindungi agar tidak tersentuh regex teks biasa.
   const mathPlaceholders = [];
@@ -70,6 +99,15 @@ export function normalisasiTeksMatematika(teks) {
       .replace(/[°◦]/g, '^\\circ')
       .replace(/[−–]/g, '-');
 
+    // Ubah pecahan miring di dalam math mode menjadi pecahan bertingkat tegak \frac
+    for (const [vf, biasa] of Object.entries(PETA_PECAHAN_VULGAR)) {
+      if (raw.includes(vf)) {
+        const [a, b] = biasa.split('/');
+        raw = raw.split(vf).join(`\\frac{${a}}{${b}}`);
+      }
+    }
+    raw = raw.replace(/(?<![a-zA-Z\\{])(\d+)\s*\/\s*(\d+)(?![a-zA-Z}])/g, '\\frac{$1}{$2}');
+
     // Rapikan spasi setelah minus unari dalam math: "$- 18$" -> "$-18$", "$- 4$" -> "$-4$"
     raw = raw
       .replace(/^-\s+(\d+)/, '-$1')
@@ -80,6 +118,14 @@ export function normalisasiTeksMatematika(teks) {
     mathPlaceholders.push(inner);
     return ph;
   });
+
+  // Konversi pecahan unicode miring di luar math mode menjadi pecahan bertingkat tegak KaTeX ($\frac{a}{b}$)
+  for (const [vf, biasa] of Object.entries(PETA_PECAHAN_VULGAR)) {
+    if (hasil.includes(vf)) {
+      const [pem, peny] = biasa.split('/');
+      hasil = hasil.split(vf).join(`$\\frac{${pem}}{${peny}}$`);
+    }
+  }
 
   // Bungkus perintah LaTeX mentah yang tercecer di luar $...$ (mis. \times, \div, \cdot, \frac, \sqrt, dll)
   hasil = hasil.replace(/(\\(?:times|div|cdot|pm|mp|le|ge|ne|neq|approx|infty|degree|circ|alpha|beta|gamma|theta|pi|sqrt|frac|dfrac)\b(?:\{[^{}]*\}\{[^{}]*\}|\{[^{}]*\}|\[[^[\]]*\]\{[^{}]*\}|(?![a-zA-Z]))(?:\s*=\s*[^,\s\n]+)?)/g, (match) => {

@@ -1,12 +1,10 @@
 // src/data/modul-smp/bahasaInggrisSmpData.js
 // ==============================================================================
 // MODUL MASTER 52 HALAMAN RESMI TKA SMP 2027 - BIMBEL GEMILANG
-// Subtes: Bahasa Inggris (English CP Fase D) (BIG_SMP)
-// 4 Bab, 39 Unit Lengkap, Latihan Soal, Kuis Interaktif & PDF Master
-// DILENGKAPI ASET VISUAL: Slide Asli, Ilustrasi Khusus, Cheat Sheet Master & Mini Tryout
+// Bebas karakter PUA, pecahan tegak KaTeX, dan kuis pemahaman terstruktur rapi
 // ==============================================================================
 
-export const BIG_SMP_MODUL = [
+export const bahasaInggrisSmpData = [
   {
     "id": "big_smp_bab_1",
     "subtestKode": "BIG_SMP",
@@ -1391,10 +1389,10 @@ export const BIG_SMP_MODUL = [
         "jebakanTka": "Selalu ubah frasa ke angka! Jika pengguna sepeda 20% dan jalan kaki 55%, maka pejalan kaki = more than half, sedangkan pesepeda = less than a quarter (< 25%)!",
         "contohSoal": {
           "judul": "Yuk Bahas Unit 4.2",
-          "soal": "Which statement matches the chart? A. Drawing is the most popular hobby.    B. Reading is twice as popular as Music. C. More than a third of students love Sports.    D. Half of the students like Reading. Pembahasan: 1/3 = 33,3%. Karena Sports = 35% (> 33,3%), opsi C benar! (Reading 40% ≠ 2×15%). Jawaban: C (More than a third of students love Sports).",
+          "soal": "Which statement matches the chart? A. Drawing is the most popular hobby.    B. Reading is twice as popular as Music. C. More than a third of students love Sports.    D. Half of the students like Reading. Pembahasan: $\\frac{1}{3}$ = 33,3%. Karena Sports = 35% (> 33,3%), opsi C benar! (Reading 40% ≠ 2×15%). Jawaban: C (More than a third of students love Sports).",
           "opsiString": "",
           "jawaban": "C (More than a third of students love Sports)",
-          "solusi": "Yuk Bahas · Menafsirkan Data Survei Sekolah Chart Data (100 Students' Hobbies): Reading 40%, Sports 35%, Music 15%, Drawing 10%. Soal: Which statement matches the chart? A. Drawing is the most popular hobby.    B. Reading is twice as popular as Music. C. More than a third of students love Sports.    D. Half of the students like Reading. Pembahasan: 1/3 = 33,3%. Karena Sports = 35% (> 33,3%), opsi C benar! (Reading 40% ≠ 2×15%). Jawaban: C (More than a third of students love Sports)."
+          "solusi": "Yuk Bahas · Menafsirkan Data Survei Sekolah Chart Data (100 Students' Hobbies): Reading 40%, Sports 35%, Music 15%, Drawing 10%. Soal: Which statement matches the chart? A. Drawing is the most popular hobby.    B. Reading is twice as popular as Music. C. More than a third of students love Sports.    D. Half of the students like Reading. Pembahasan: $\\frac{1}{3}$ = 33,3%. Karena Sports = 35% (> 33,3%), opsi C benar! (Reading 40% ≠ 2×15%). Jawaban: C (More than a third of students love Sports)."
         },
         "trikCepat": "",
         "pageNumber": 45,
@@ -1555,7 +1553,7 @@ export const BIG_SMP_MODUL = [
         ]
       },
       {
-        "soal": "Which statement matches the chart? A. Drawing is the most popular hobby.    B. Reading is twice as popular as Music. C. More than a third of students love Sports.    D. Half of the students like Reading. Pembahasan: 1/3 = 33,3%. Karena Sports = 35% (> 33,3%), opsi C benar! (Reading 40% ≠ 2×15%). Jawaban: C (More than a third of students love Sports).",
+        "soal": "Which statement matches the chart? A. Drawing is the most popular hobby.    B. Reading is twice as popular as Music. C. More than a third of students love Sports.    D. Half of the students like Reading. Pembahasan: $\\frac{1}{3}$ = 33,3%. Karena Sports = 35% (> 33,3%), opsi C benar! (Reading 40% ≠ 2×15%). Jawaban: C (More than a third of students love Sports).",
         "opsi": {
           "A": "Opsi A",
           "B": "Opsi B",
@@ -1564,7 +1562,7 @@ export const BIG_SMP_MODUL = [
         },
         "kunci": "C",
         "pembahasanLangkah": [
-          "Yuk Bahas · Menafsirkan Data Survei Sekolah Chart Data (100 Students' Hobbies): Reading 40%, Sports 35%, Music 15%, Drawing 10%. Soal: Which statement matches the chart? A. Drawing is the most popular hobby.    B. Reading is twice as popular as Music. C. More than a third of students love Sports.    D. Half of the students like Reading. Pembahasan: 1/3 = 33,3%. Karena Sports = 35% (> 33,3%), opsi C benar! (Reading 40% ≠ 2×15%). Jawaban: C (More than a third of students love Sports)."
+          "Yuk Bahas · Menafsirkan Data Survei Sekolah Chart Data (100 Students' Hobbies): Reading 40%, Sports 35%, Music 15%, Drawing 10%. Soal: Which statement matches the chart? A. Drawing is the most popular hobby.    B. Reading is twice as popular as Music. C. More than a third of students love Sports.    D. Half of the students like Reading. Pembahasan: $\\frac{1}{3}$ = 33,3%. Karena Sports = 35% (> 33,3%), opsi C benar! (Reading 40% ≠ 2×15%). Jawaban: C (More than a third of students love Sports)."
         ]
       }
     ],

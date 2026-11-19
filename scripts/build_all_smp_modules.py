@@ -331,7 +331,15 @@ CONFIGS = [
 ]
 
 def clean_lines(text):
-    return [l.strip() for l in text.split("\n") if l.strip() and "@bimbel" not in l and "#Bangga" not in l]
+    t = text
+    # Bersihkan ligatur bullet Private Use Area (PUA) font Canva yang memicu missing glyph (garis tiga)
+    t = t.replace('\ue072\ue094', '\nSoal 1 · ').replace('\ue073\ue094', '\nSoal 2 · ')
+    t = t.replace('\ue074\ue094', '\nSoal 3 · ').replace('\ue075\ue094', '\nSoal 4 · ')
+    t = t.replace('\ue076\ue094', '\nSoal 5 · ').replace('\ue077\ue094', '\nSoal 6 · ')
+    t = re.sub(r'[\uE000-\uF8FF]', '', t)
+    # Hapus baris gabungan header seperti "Soal 1 [L1 · PG] & Soal 2 [L2 · PGK MCMA]"
+    t = re.sub(r'Soal\s*1\s*\[[^\]]+\]\s*&\s*Soal\s*2\s*\[[^\]]+\]', '', t)
+    return [l.strip() for l in t.split("\n") if l.strip() and "@bimbel" not in l and "#Bangga" not in l]
 
 def find_caption_from_blocks(fitz_page):
     blocks = fitz_page.get_text("blocks")
