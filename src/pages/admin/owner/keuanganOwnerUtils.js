@@ -238,6 +238,7 @@ export const normalisasiTeacherLog = (d) => {
 // ============================================================
 
 export const LABEL_KEJANGGALAN = {
+  DUPLIKAT_ABSEN: 'terindikasi absen ganda (2x absen)',
   NOL_HADIR: '0 siswa hadir',
   TANPA_JADWAL: 'tanpa rujukan jadwal',
   TANGGAL_DEPAN: 'tanggal di masa depan',
@@ -248,12 +249,18 @@ export const LABEL_KEJANGGALAN = {
 };
 
 // Waktu tersimpan sebagai hasil toLocaleTimeString() -- di id-ID bentuknya
-// "12.34.56" (titik), di lingkungan lain bisa "12:34:56". Terima keduanya.
+// "12.34.56" (titik), di lingkungan lain bisa "12:34:56" atau format AM/PM ("2:58:51 PM"). Terima semuanya.
 export const parseJamMenit = (waktuStr) => {
-  const m = String(waktuStr || '').match(/(\d{1,2})[.:](\d{2})/);
+  if (!waktuStr) return null;
+  const s = String(waktuStr).trim();
+  const isPM = /pm/i.test(s);
+  const isAM = /am/i.test(s);
+  const m = s.match(/(\d{1,2})[.:](\d{2})/);
   if (!m) return null;
-  const jam = parseInt(m[1], 10);
+  let jam = parseInt(m[1], 10);
   const menit = parseInt(m[2], 10);
+  if (isPM && jam < 12) jam += 12;
+  else if (isAM && jam === 12) jam = 0;
   if (jam > 23 || menit > 59) return null;
   return { jam, menit, totalMenit: jam * 60 + menit };
 };
@@ -312,6 +319,69 @@ export const deteksiTumpangTindih = (logs) => {
     perGuru.set(kunci, daftar);
   }
   return kena;
+};
+
+/**
+ * Deteksi Sesi Ganda / Duplikat (misal tentor salah absen 2 kali):
+ * - Rujukan jadwal yang sama (jadwalId sama) untuk guru & tanggal yang sama
+ * - Kelas & program yang sama untuk guru & tanggal yang sama dalam selang waktu <= 90 menit
+ * @returns {Map<string, string>} map id log -> alasan kejanggalan duplikat
+ */
+export const deteksiDuplikatSesi = (logs) => {
+  const duplikatMap = new Map();
+  const perJadwal = new Map();
+  const perGuruTgl = new Map();
+
+  for (const l of logs || []) {
+    if (!l || !l.id || !l.tanggal) continue;
+    const tgl = String(l.tanggal).split(' ')[0];
+    const guru = String(l.teacherId || l.namaGuru || '').trim().toLowerCase();
+
+    // 1. Cek jadwalId yang sama
+    if (l.jadwalId) {
+      const kJadwal = `${guru}|${tgl}|${l.jadwalId}`;
+      if (!perJadwal.has(kJadwal)) perJadwal.set(kJadwal, []);
+      perJadwal.get(kJadwal).push(l);
+    }
+
+    // 2. Cek kelas & guru & tanggal
+    const kls = String(l.kelasNama || l.tipeKelas || l.program || '').trim().toLowerCase();
+    const kGuru = `${guru}|${tgl}|${kls}`;
+    if (!perGuruTgl.has(kGuru)) perGuruTgl.set(kGuru, []);
+    perGuruTgl.get(kGuru).push(l);
+  }
+
+  // 1. Jadwal sama persis lebih dari 1 kali
+  for (const [, grup] of perJadwal.entries()) {
+    if (grup.length > 1) {
+      for (const log of grup) {
+        duplikatMap.set(log.id, `Absen Ganda: ${grup.length} sesi tercatat pada jadwal yang sama`);
+      }
+    }
+  }
+
+  // 2. Kelas yang sama dalam selang waktu <= 90 menit
+  for (const [, grup] of perGuruTgl.entries()) {
+    if (grup.length > 1) {
+      for (let i = 0; i < grup.length; i++) {
+        for (let j = i + 1; j < grup.length; j++) {
+          const l1 = grup[i];
+          const l2 = grup[j];
+          const jm1 = parseJamMenit(l1.waktu);
+          const jm2 = parseJamMenit(l2.waktu);
+          if (jm1 && jm2) {
+            const selisih = Math.abs(jm1.totalMenit - jm2.totalMenit);
+            if (selisih <= 90) {
+              duplikatMap.set(l1.id, `Absen Ganda: 2 sesi tercatat selang ${selisih} menit`);
+              duplikatMap.set(l2.id, `Absen Ganda: 2 sesi tercatat selang ${selisih} menit`);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return duplikatMap;
 };
 
 export const urutTanggalTerbaru = (a, b) =>

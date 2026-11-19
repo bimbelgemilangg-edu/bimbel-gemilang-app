@@ -1,75 +1,63 @@
 // src/pages/admin/teachers/SesiGuruPage.jsx
 // ============================================================
-// 🔥 BARU (pembagian kewenangan admin vs owner, 2026-10-01):
-// halaman KERJA ADMIN untuk absensi & riwayat sesi mengajar tentor.
-//
-// LATAR BELAKANG
-// Sebelumnya satu-satunya tempat melihat dan menyetujui sesi mengajar
-// adalah halaman Gaji Guru (/admin/teachers/salaries) yang TERKUNCI
-// OWNER. Akibatnya dua hal rusak sekaligus:
-//   1. Admin yang tugasnya memvalidasi "benarkah sesi ini terjadi"
-//      tidak punya tempat kerja -- validasi operasional malah harus
-//      masuk ke halaman uang.
-//   2. Tombol "Gaji" di halaman Kelola Guru menjanjikan akses yang
-//      ditolak rute-nya, jadi admin KLIK -> terpental ke /login-owner,
-//      dan kalau dia login owner di sana, sesi admin-nya MATI
-//      (sesi admin & owner saling meniadakan).
-//
-// PEMBAGIAN YANG DIPAKAI SEKARANG (sesuai keputusan owner):
-//   ADMIN  : melihat fakta sesi (siapa mengajar apa, kapan, berapa jam,
-//            berapa siswa hadir, bukti foto), MENYETUJUI / membatalkan
-//            validasi, dan MENGUNDUH riwayat sesi. TANPA ANGKA UANG.
-//   OWNER  : semua di atas PLUS nominal, tarif, bonus, dan pembayaran
-//            (tetap di halaman Gaji Guru & menu Bayar Tentor).
-//
-// Halaman ini SENGAJA tidak menampilkan field `nominal` teacher_logs
-// sama sekali, dan tidak punya aksi ubah-nominal/hapus-log. Kalau suatu
-// saat ada kebutuhan admin melihat uang, itu keputusan owner dan harus
-// diubah sadar-sadar, bukan lewat halaman ini.
+// TEMPAT KERJA ADMIN: SESI & VALIDASI GURU (BIMBEL GEMILANG)
+// ============================================================
+// Fitur Lengkap:
+// 1. Cross-check kehadiran mengajar tentor hari ini & riwayat sesi.
+// 2. Pemantauan kelengkapan siswa (lengkap vs parsial vs 0 hadir).
+// 3. Deteksi otomatis kejanggalan ABSEN GANDA / DUPLIKAT (2x absen).
+// 4. Penghapusan sesi keliru/duplikat secara permanen (Trash2 + Audit Log).
+// 5. Modal rincian siswa hadir, materi jurnal, dan foto absensi kelas.
+// 6. Shortcut 1-klik filter waktu: Hari Ini, Kemarin, 7 Hari, Bulan Ini.
+// 7. Navigasi cepat antar menu: Jadwal Harian, Presensi Siswa, Kelola Guru, Gaji Guru.
 // ============================================================
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   ClipboardCheck, RefreshCw, Download, CheckCircle2, Undo2, Search,
-  CalendarDays, Camera, Users, Clock, AlertTriangle, Lock,
+  CalendarDays, Camera, Users, Clock, AlertTriangle, Trash2,
+  Eye, X, ExternalLink, Calendar, BookOpen, AlertCircle, Check,
+  ChevronRight, ArrowUpRight, GraduationCap, DollarSign,
 } from 'lucide-react';
 import { db } from '../../../firebase';
-import { collection, getDocs, doc, updateDoc } from 'firebase/firestore';
+import { collection, getDocs, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import {
   keyTanggalDariDate,
   tanggalLokalHariIni,
   deteksiKejanggalanSesi,
   deteksiTumpangTindih,
+  deteksiDuplikatSesi,
   LABEL_KEJANGGALAN,
-} from '../owner/keuanganOwnerUtils';
-import { catatAudit, KATEGORI, aktorSaatIni } from '../../../utils/auditLog';
-
-// Status sesi diambil dari satu sumber (keuanganOwnerUtils) supaya halaman
-// admin dan panel bayar owner TIDAK pernah menulis string berbeda.
-import {
   STATUS_SESI_VALID as STATUS_VALID,
   STATUS_SESI_MENUNGGU as STATUS_MENUNGGU,
 } from '../owner/keuanganOwnerUtils';
+import { catatAudit, KATEGORI, aktorSaatIni } from '../../../utils/auditLog';
 
-const SesiGuruPage = () => {
+export default function SesiGuruPage() {
+  const navigate = useNavigate();
   const now = new Date();
+  const hariIni = tanggalLokalHariIni();
+
+  // Filter Tanggal & Waktu
   const [mulai, setMulai] = useState(keyTanggalDariDate(new Date(now.getFullYear(), now.getMonth(), 1)));
   const [sampai, setSampai] = useState(keyTanggalDariDate(now));
   const [cari, setCari] = useState('');
-  const [hanyaMenunggu, setHanyaMenunggu] = useState(false);
-  // Filter per guru -- dipakai tombol di halaman Kelola Guru
-  // (/admin/teachers/sesi?guru=<id>) supaya admin bisa langsung melihat
-  // riwayat satu tentor tanpa menyaring manual.
+  const [tabFilter, setTabFilter] = useState('SEMUA'); // 'SEMUA' | 'MENUNGGU' | 'VALID' | 'DUPLIKAT' | 'BERBENDERA'
+
+  // Filter per guru jika diarahkan dari Kelola Guru (/admin/teachers/sesi?guru=<id>)
   const [guruId, setGuruId] = useState(
     () => new URLSearchParams(window.location.search).get('guru') || '',
   );
+
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [prosesId, setProsesId] = useState('');
+  const [modalDetail, setModalDetail] = useState(null);
 
   // ============================================================
-  // MUAT DATA
+  // MUAT DATA SESI
   // ============================================================
   const muat = useCallback(async () => {
     setLoading(true);
@@ -85,31 +73,28 @@ const SesiGuruPage = () => {
     }
   }, []);
 
-  useEffect(() => { muat(); }, [muat]);
+  useEffect(() => {
+    muat();
+  }, [muat]);
 
-  // 🔥 PENGAWAL KECURANGAN: setiap sesi diperiksa polanya (0 hadir, tanpa
-  // jadwal, tanggal depan, jam tak wajar, nominal manual, validasi instan,
-  // tumpang tindih). Bendera TIDAK memblokir -- ia diterangkan ke admin
-  // SEBELUM menyetujui dan ikut terlihat oleh Manajemen di panel bayar.
-  // URUTAN DEKLARASI DIPERBAIKI (insiden 31 Okt 2026, /admin/teachers/sesi
-  // crash 'Cannot access before initialization'): `tampil` dulu merujuk
-  // `benderaOf` & `hanyaBerbendera` yang baru dideklarasikan DI BAWAHNYA
-  // (TDZ saat render pertama). Tumpang tindih kini dihitung dari log MENTAH,
-  // bukan hasil saringan: tumpang tindih adalah fakta sesi, bukan fakta filter.
-  const hariIni = tanggalLokalHariIni();
+  // ============================================================
+  // DETEKSI KEJANGGALAN & DUPLIKAT (SATU SUMBER KEBENARAN)
+  // ============================================================
   const tumpang = useMemo(() => deteksiTumpangTindih(logs), [logs]);
+  const duplikatMap = useMemo(() => deteksiDuplikatSesi(logs), [logs]);
+
   const benderaOf = useCallback(
     (l) => {
       const b = deteksiKejanggalanSesi(l, hariIni);
       if (tumpang.has(l.id)) b.push('TUMPANG_TINDIH');
+      if (duplikatMap.has(l.id)) b.push('DUPLIKAT_ABSEN');
       return b;
     },
-    [hariIni, tumpang],
+    [hariIni, tumpang, duplikatMap],
   );
-  const [hanyaBerbendera, setHanyaBerbendera] = useState(false);
 
   // ============================================================
-  // FILTER (sisi klien -- datanya sudah di tangan, murah)
+  // FILTER DATA SESI
   // ============================================================
   const tampil = useMemo(() => {
     const k = cari.trim().toLowerCase();
@@ -118,54 +103,134 @@ const SesiGuruPage = () => {
       const tanggal = String(l.tanggal).split(' ')[0];
       if (tanggal < mulai || tanggal > sampai) return false;
       if (guruId && l.teacherId !== guruId) return false;
-      if (hanyaMenunggu && l.status === STATUS_VALID) return false;
-      if (hanyaBerbendera && benderaOf(l).length === 0) return false;
+
+      // Filter Tab
+      if (tabFilter === 'MENUNGGU' && l.status === STATUS_VALID) return false;
+      if (tabFilter === 'VALID' && l.status !== STATUS_VALID) return false;
+      if (tabFilter === 'DUPLIKAT' && !duplikatMap.has(l.id)) return false;
+      if (tabFilter === 'BERBENDERA' && benderaOf(l).length === 0) return false;
+
+      // Filter Pencarian Teks
       if (k) {
-        const gab = [l.namaGuru, l.program, l.kegiatan, l.kelasNama, l.level, l.status]
-          .filter(Boolean).join(' ').toLowerCase();
+        const daftarNamaSiswa = Array.isArray(l.daftarSiswaHadir)
+          ? l.daftarSiswaHadir.map((s) => s?.nama || '').join(' ')
+          : '';
+        const gab = [
+          l.namaGuru,
+          l.program,
+          l.kegiatan,
+          l.kelasNama,
+          l.level,
+          l.status,
+          l.materiHariIni,
+          l.babJudul,
+          daftarNamaSiswa,
+        ]
+          .filter(Boolean)
+          .join(' ')
+          .toLowerCase();
+
         if (!gab.includes(k)) return false;
       }
       return true;
     });
-    rows.sort((a, b) => String(b.tanggal).localeCompare(String(a.tanggal))
-      || String(b.waktu || '').localeCompare(String(a.waktu || '')));
+
+    // Urutkan tanggal terbaru & waktu terbaru
+    rows.sort(
+      (a, b) =>
+        String(b.tanggal).localeCompare(String(a.tanggal)) ||
+        String(b.waktu || '').localeCompare(String(a.waktu || '')),
+    );
     return rows;
-  }, [logs, mulai, sampai, cari, hanyaMenunggu, hanyaBerbendera, guruId, benderaOf]);
+  }, [logs, mulai, sampai, cari, tabFilter, guruId, benderaOf, duplikatMap]);
 
+  // Statistik Ringkas pada Rentang Terpilih
+  const logsDalamRentang = useMemo(() => {
+    return logs.filter((l) => {
+      if (!l || !l.tanggal) return false;
+      const tanggal = String(l.tanggal).split(' ')[0];
+      if (tanggal < mulai || tanggal > sampai) return false;
+      if (guruId && l.teacherId !== guruId) return false;
+      return true;
+    });
+  }, [logs, mulai, sampai, guruId]);
+
+  const jumlahTotal = logsDalamRentang.length;
   const jumlahMenunggu = useMemo(
-    () => tampil.filter((l) => l.status !== STATUS_VALID).length,
-    [tampil],
+    () => logsDalamRentang.filter((l) => l.status !== STATUS_VALID).length,
+    [logsDalamRentang],
   );
-
+  const jumlahValid = jumlahTotal - jumlahMenunggu;
+  const jumlahDuplikat = useMemo(
+    () => logsDalamRentang.filter((l) => duplikatMap.has(l.id)).length,
+    [logsDalamRentang, duplikatMap],
+  );
   const jumlahBerbendera = useMemo(
-    () => tampil.filter((l) => benderaOf(l).length > 0).length,
-    [tampil, benderaOf],
+    () => logsDalamRentang.filter((l) => benderaOf(l).length > 0).length,
+    [logsDalamRentang, benderaOf],
   );
 
   // ============================================================
-  // AKSI VALIDASI (operasional, BUKAN uang)
+  // SHORTCUT WAKTU CEPAT (1-KLIK)
+  // ============================================================
+  const pasangFilterWaktu = (mode) => {
+    const tglSekarang = new Date();
+    const tglHariIniStr = keyTanggalDariDate(tglSekarang);
+
+    if (mode === 'HARI_INI') {
+      setMulai(tglHariIniStr);
+      setSampai(tglHariIniStr);
+    } else if (mode === 'KEMARIN') {
+      const kem = new Date(tglSekarang);
+      kem.setDate(kem.getDate() - 1);
+      const kemStr = keyTanggalDariDate(kem);
+      setMulai(kemStr);
+      setSampai(kemStr);
+    } else if (mode === '7_HARI') {
+      const sem = new Date(tglSekarang);
+      sem.setDate(sem.getDate() - 7);
+      setMulai(keyTanggalDariDate(sem));
+      setSampai(tglHariIniStr);
+    } else if (mode === 'BULAN_INI') {
+      setMulai(keyTanggalDariDate(new Date(tglSekarang.getFullYear(), tglSekarang.getMonth(), 1)));
+      setSampai(tglHariIniStr);
+    } else if (mode === 'SEMUA') {
+      setMulai('2025-01-01');
+      setSampai(tglHariIniStr);
+    }
+  };
+
+  // ============================================================
+  // AKSI OPERASIONAL: SETUJUI VALIDASI
   // ============================================================
   const setujui = async (l) => {
     const b = benderaOf(l);
-    const daftarBendera = b.length
-      ? `\n⚠ BENDERA KEJANGGALAN SESI INI:\n${b.map((k) => `   - ${LABEL_KEJANGGALAN[k] || k}`).join('\n')}\n`
-        + '\nAnda tetap boleh menyetujui kalau ada penjelasan sah '
-        + '(mis. kelas privat yang tidak lewat jadwal). Persetujuan sesi '
-        + 'berbendera tercatat atas nama Anda di jejak audit.\n'
-      : '';
-    if (!window.confirm(
-      `Setujui sesi ini sebagai valid?\n\n${l.namaGuru} · ${l.tanggal}\n${l.program || ''} ${l.kelasNama || ''}\n` +
-      daftarBendera +
-      '\nDengan menyetujui, Anda menyatakan sesi ini BENAR terjadi sesuai catatan. ' +
-      'Manajemen memakai status ini sebagai dasar pembayaran honor.',
-    )) return;
+    const isDup = duplikatMap.has(l.id);
+
+    let pesanPeringatan = '';
+    if (isDup) {
+      pesanPeringatan += `\n🚨 PERINGATAN: Sesi ini terindikasi ABSEN GANDA (duplikat)!\n   Alasan: ${duplikatMap.get(l.id)}\n`;
+    }
+    if (b.length > 0) {
+      pesanPeringatan += `\n⚠ Bendera Kejanggalan:\n${b.map((k) => `   - ${LABEL_KEJANGGALAN[k] || k}`).join('\n')}\n`;
+    }
+
+    const konfirmasi = window.confirm(
+      `Setujui sesi mengajar ini sebagai VALID?\n\n` +
+      `Tentor : ${l.namaGuru || 'Tanpa Nama'}\n` +
+      `Tanggal: ${String(l.tanggal).split(' ')[0]} ${l.waktu || ''}\n` +
+      `Kelas  : ${l.kelasNama || l.program || 'Umum'}\n` +
+      `Kehadiran: ${l.siswaHadir ?? 0} siswa hadir\n` +
+      pesanPeringatan +
+      `\nDengan menyetujui, Anda menyatakan sesi ini BENAR terjadi dan sah untuk pembayaran honor.`
+    );
+    if (!konfirmasi) return;
+
     setProsesId(l.id);
     const aktor = aktorSaatIni();
     try {
       await updateDoc(doc(db, 'teacher_logs', l.id), {
         status: STATUS_VALID,
-        // 🔥 Jejak SIAPA yang menyatakan sesi ini sah & kapan. Ini yang
-        // membuat persetujuan bisa dimintai pertanggungjawaban belakangan.
         divalidasiOleh: aktor.aktor,
         divalidasiOlehNama: aktor.aktorNama,
         divalidasiPeran: aktor.peran,
@@ -176,7 +241,10 @@ const SesiGuruPage = () => {
         target: `Sesi ${l.namaGuru} · ${l.tanggal}`,
         detail: { logId: l.id, program: l.program || '', kelas: l.kelasNama || '' },
       });
-      setLogs((prev) => prev.map((x) => (x.id === l.id ? { ...x, status: STATUS_VALID } : x)));
+      setLogs((prev) => prev.map((x) => (x.id === l.id ? { ...x, status: STATUS_VALID, divalidasiOlehNama: aktor.aktorNama } : x)));
+      if (modalDetail?.id === l.id) {
+        setModalDetail((prev) => ({ ...prev, status: STATUS_VALID, divalidasiOlehNama: aktor.aktorNama }));
+      }
     } catch (e) {
       alert(`Gagal menyetujui: ${e?.message || e}`);
     } finally {
@@ -184,18 +252,22 @@ const SesiGuruPage = () => {
     }
   };
 
+  // ============================================================
+  // AKSI OPERASIONAL: BATALKAN VALIDASI
+  // ============================================================
   const batalkan = async (l) => {
-    if (!window.confirm(
-      `Batalkan validasi sesi ini?\n\n${l.namaGuru} · ${l.tanggal}\n\n` +
-      'Sesi kembali berstatus "Menunggu Validasi" dan tidak akan ikut ' +
-      'sebagai dasar pembayaran sampai disetujui lagi.',
-    )) return;
+    if (
+      !window.confirm(
+        `Batalkan validasi sesi ini?\n\n${l.namaGuru} · ${l.tanggal}\n\n` +
+        'Status sesi akan kembali menjadi "Menunggu Validasi" dan tidak akan ikut di rekap honor sampai disetujui kembali.',
+      )
+    )
+      return;
+
     setProsesId(l.id);
     try {
       await updateDoc(doc(db, 'teacher_logs', l.id), {
         status: STATUS_MENUNGGU,
-        // Jejak validasi lama dibersihkan: sesi ini belum divalidasi
-        // siapa pun sampai disetujui lagi.
         divalidasiOleh: '',
         divalidasiOlehNama: '',
         divalidasiPeran: '',
@@ -206,7 +278,16 @@ const SesiGuruPage = () => {
         target: `Sesi ${l.namaGuru} · ${l.tanggal}`,
         detail: { logId: l.id, alasan: 'dibatalkan admin' },
       });
-      setLogs((prev) => prev.map((x) => (x.id === l.id ? { ...x, status: STATUS_MENUNGGU } : x)));
+      setLogs((prev) =>
+        prev.map((x) =>
+          x.id === l.id
+            ? { ...x, status: STATUS_MENUNGGU, divalidasiOlehNama: '' }
+            : x,
+        ),
+      );
+      if (modalDetail?.id === l.id) {
+        setModalDetail((prev) => ({ ...prev, status: STATUS_MENUNGGU, divalidasiOlehNama: '' }));
+      }
     } catch (e) {
       alert(`Gagal membatalkan: ${e?.message || e}`);
     } finally {
@@ -215,38 +296,88 @@ const SesiGuruPage = () => {
   };
 
   // ============================================================
-  // UNDUH RIWAYAT SESI (CSV, tanpa nominal)
+  // AKSI OPERASIONAL: HAPUS SESI (DUPLIKAT / KELIRU)
+  // ============================================================
+  const hapusSesi = async (l) => {
+    const isDup = duplikatMap.has(l.id);
+    const konfirmasi = window.confirm(
+      `⚠️ HAPUS SESI MENGAJAR?\n\n` +
+      `Tentor   : ${l.namaGuru || 'Tanpa Nama'}\n` +
+      `Tanggal  : ${String(l.tanggal).split(' ')[0]} ${l.waktu || ''}\n` +
+      `Kelas    : ${l.kelasNama || l.program || 'Umum'}\n` +
+      `Kehadiran: ${l.siswaHadir || 0} siswa hadir\n` +
+      (isDup ? `\n🚨 Sesi ini terindikasi ABSEN GANDA (${duplikatMap.get(l.id)}).\n` : '') +
+      `\nTindakan ini akan MENGHAPUS SESI SECARA PERMANEN dari Firestore dan riwayat guru.\n` +
+      `Apakah Anda yakin ingin menghapus sesi ini?`
+    );
+    if (!konfirmasi) return;
+
+    setProsesId(l.id);
+    try {
+      await deleteDoc(doc(db, 'teacher_logs', l.id));
+      catatAudit('guru.sesi.hapus', {
+        kategori: KATEGORI.GURU,
+        target: `Sesi ${l.namaGuru} · ${l.tanggal}`,
+        detail: {
+          logId: l.id,
+          namaGuru: l.namaGuru,
+          tanggal: l.tanggal,
+          kelas: l.kelasNama,
+          alasan: isDup ? 'hapus absen ganda / duplikat' : 'dihapus manual admin',
+        },
+      });
+      setLogs((prev) => prev.filter((x) => x.id !== l.id));
+      if (modalDetail?.id === l.id) setModalDetail(null);
+      alert(`✅ Sesi ${l.namaGuru} (${l.kelasNama || 'Kelas'}) berhasil dihapus.`);
+    } catch (e) {
+      alert(`❌ Gagal menghapus sesi: ${e?.message || e}`);
+    } finally {
+      setProsesId('');
+    }
+  };
+
+  // ============================================================
+  // UNDUH CSV RIWAYAT SESI
   // ============================================================
   const unduhCsv = () => {
-    if (tampil.length === 0) { alert('Tidak ada baris untuk diunduh pada rentang ini.'); return; }
+    if (tampil.length === 0) {
+      alert('Tidak ada baris sesi untuk diunduh pada saringan ini.');
+      return;
+    }
     const kepala = [
-      'tanggal', 'waktu', 'namaGuru', 'program', 'level', 'kelas',
-      'kegiatan', 'siswaHadir', 'durasiJam', 'status', 'adaFotoAbsensi',
+      'Tanggal', 'Waktu', 'Nama Guru', 'Program', 'Level', 'Kelas',
+      'Kegiatan', 'Siswa Hadir', 'Total Siswa', 'Durasi Jam', 'Status', 'Absen Ganda', 'Ada Foto Absensi',
     ];
-    const baris = tampil.map((l) => kepala.map((f) => {
-      let v;
-      switch (f) {
-        case 'tanggal': v = String(l.tanggal || '').split(' ')[0]; break;
-        case 'waktu': v = l.waktu || ''; break;
-        case 'namaGuru': v = l.namaGuru || ''; break;
-        case 'program': v = l.program || ''; break;
-        case 'level': v = l.level || ''; break;
-        case 'kelas': v = l.kelasNama || ''; break;
-        case 'kegiatan': v = l.kegiatan || ''; break;
-        case 'siswaHadir': v = l.siswaHadir ?? ''; break;
-        case 'durasiJam': v = l.durasiJam ?? ''; break;
-        case 'status': v = l.status || ''; break;
-        case 'adaFotoAbsensi': v = l.fotoAbsensiUrl ? 'ya' : 'tidak'; break;
-        default: v = '';
-      }
-      return `"${String(v).replace(/"/g, '""')}"`;
-    }).join(','));
+    const baris = tampil.map((l) =>
+      kepala
+        .map((f) => {
+          let v;
+          switch (f) {
+            case 'Tanggal': v = String(l.tanggal || '').split(' ')[0]; break;
+            case 'Waktu': v = l.waktu || ''; break;
+            case 'Nama Guru': v = l.namaGuru || ''; break;
+            case 'Program': v = l.program || ''; break;
+            case 'Level': v = l.level || ''; break;
+            case 'Kelas': v = l.kelasNama || ''; break;
+            case 'Kegiatan': v = l.kegiatan || ''; break;
+            case 'Siswa Hadir': v = l.siswaHadir ?? ''; break;
+            case 'Total Siswa': v = l.siswaTotal ?? ''; break;
+            case 'Durasi Jam': v = l.durasiJam ?? ''; break;
+            case 'Status': v = l.status || ''; break;
+            case 'Absen Ganda': v = duplikatMap.has(l.id) ? 'Ya (Duplikat)' : 'Tidak'; break;
+            case 'Ada Foto Absensi': v = l.fotoAbsensiUrl ? 'Ya' : 'Tidak'; break;
+            default: v = '';
+          }
+          return `"${String(v).replace(/"/g, '""')}"`;
+        })
+        .join(','),
+    );
     const csv = `\uFEFF${kepala.join(',')}\n${baris.join('\n')}`;
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `riwayat-sesi-guru_${mulai}_s/d_${sampai}.csv`.replace(/\//g, '-');
+    a.download = `sesi-guru-gemilang_${mulai}_sd_${sampai}.csv`.replace(/\//g, '-');
     a.click();
     URL.revokeObjectURL(url);
     catatAudit('guru.sesi.unduh', {
@@ -256,203 +387,509 @@ const SesiGuruPage = () => {
     });
   };
 
-  // ============================================================
-  // RENDER
-  // ============================================================
   return (
     <div style={styles.page}>
-      <div style={styles.wrap}>
+      <div style={styles.container}>
+        {/* ===== TOP NAVIGATION / BREADCRUMB MENU ===== */}
+        <div style={styles.quickNavRow}>
+          <div style={styles.quickNavTitle}>
+            <GraduationCap size={16} color="#0d9488" />
+            <span>Pusat Manajemen Guru &amp; Akademik</span>
+          </div>
+          <div style={styles.quickNavButtons}>
+            <button
+              onClick={() => navigate('/admin/schedule')}
+              style={styles.btnQuickNav}
+              title="Lihat Jadwal Harian Kelas"
+            >
+              <Calendar size={13} /> Jadwal Harian
+            </button>
+            <button
+              onClick={() => navigate('/admin/attendance')}
+              style={styles.btnQuickNav}
+              title="Lihat Presensi Siswa Harian"
+            >
+              <ClipboardCheck size={13} /> Presensi Siswa
+            </button>
+            <button
+              onClick={() => navigate('/admin/teachers')}
+              style={styles.btnQuickNav}
+              title="Kelola Data Profil Guru"
+            >
+              <Users size={13} /> Kelola Guru
+            </button>
+            <button
+              onClick={() => navigate('/admin/teachers/salaries')}
+              style={styles.btnQuickNavHonor}
+              title="Rekap Gaji & Pembayaran Honor Tentor"
+            >
+              <DollarSign size={13} /> Gaji Guru <ArrowUpRight size={12} />
+            </button>
+          </div>
+        </div>
+
+        {/* ===== HEADER UTAMA ===== */}
         <div style={styles.header}>
-          <div style={styles.headerIcon}><ClipboardCheck size={26} color="#60a5fa" /></div>
-          <div>
-            <h1 style={styles.h1}>Sesi & Validasi Guru</h1>
+          <div style={styles.headerIcon}>
+            <CheckCircle2 size={26} color="#0d9488" />
+          </div>
+          <div style={{ flex: 1 }}>
+            <h1 style={styles.h1}>Sesi &amp; Validasi Guru</h1>
             <p style={styles.sub}>
-              Tempat kerja admin untuk absensi tentor: periksa sesi mengajar setelah
-              kelas selesai, setujui yang sah, dan unduh riwayatnya.
+              Verifikasi kehadiran mengajar tentor, cross-check kelengkapan kehadiran siswa, dan hapus sesi duplikat/salah agar rekap honor akurat.
             </p>
           </div>
         </div>
 
-        {/* Batas kewenangan dijelaskan terang-terangan supaya tidak ada
-            admin yang mencari angka honor di sini, dan tidak ada owner
-            yang khawatir operasionalnya bocor ke halaman uang. */}
-        <div style={styles.batasBox}>
-          <Lock size={15} color="#93c5fd" style={{ flexShrink: 0, marginTop: 2 }} />
-          <div>
-            <b style={{ color: '#93c5fd' }}>Halaman ini sengaja tanpa angka uang.</b>
-            <p style={styles.batasText}>
-              Rekap nominal & tarif ada di menu <b>Gaji Guru</b> (wilayah admin operasional).
-              Yang bukan wilayah admin adalah <b>eksekusi pembayaran</b>: itu tombol Manajemen
-              di menu Bayar Tentor, dan hanya bisa menekan bayar untuk sesi yang sudah
-              Anda validasi di sini. Status "Valid" Anda adalah pintu pembuka pembayaran itu.
-            </p>
+        {/* ===== KARTU METRIK RINGKAS (INTERAKTIF SEBAGAI TAB) ===== */}
+        <div style={styles.metricGrid}>
+          {/* Card 1: Semua Sesi */}
+          <div
+            onClick={() => setTabFilter('SEMUA')}
+            style={{
+              ...styles.metricCard,
+              borderColor: tabFilter === 'SEMUA' ? '#0d9488' : '#e2e8f0',
+              background: tabFilter === 'SEMUA' ? '#f0fdfa' : '#ffffff',
+            }}
+          >
+            <div style={styles.metricLabel}>Total Sesi Rentang Ini</div>
+            <div style={{ ...styles.metricVal, color: '#0f172a' }}>{jumlahTotal}</div>
+            <div style={styles.metricSub}>Semua riwayat mengajar</div>
+          </div>
+
+          {/* Card 2: Menunggu Validasi */}
+          <div
+            onClick={() => setTabFilter('MENUNGGU')}
+            style={{
+              ...styles.metricCard,
+              borderColor: tabFilter === 'MENUNGGU' ? '#f59e0b' : '#fef3c7',
+              background: tabFilter === 'MENUNGGU' ? '#fffbeb' : '#ffffff',
+            }}
+          >
+            <div style={{ ...styles.metricLabel, color: '#b45309' }}>Menunggu Validasi</div>
+            <div style={{ ...styles.metricVal, color: '#d97706' }}>{jumlahMenunggu}</div>
+            <div style={styles.metricSub}>Perlu persetujuan admin</div>
+          </div>
+
+          {/* Card 3: Sudah Valid */}
+          <div
+            onClick={() => setTabFilter('VALID')}
+            style={{
+              ...styles.metricCard,
+              borderColor: tabFilter === 'VALID' ? '#10b981' : '#dcfce7',
+              background: tabFilter === 'VALID' ? '#f0fdf4' : '#ffffff',
+            }}
+          >
+            <div style={{ ...styles.metricLabel, color: '#15803d' }}>Sudah Valid</div>
+            <div style={{ ...styles.metricVal, color: '#16a34a' }}>{jumlahValid}</div>
+            <div style={styles.metricSub}>Siap dibayarkan</div>
+          </div>
+
+          {/* Card 4: Absen Ganda / Duplikat (PRIORITAS PENANGANAN) */}
+          <div
+            onClick={() => setTabFilter('DUPLIKAT')}
+            style={{
+              ...styles.metricCard,
+              borderColor: tabFilter === 'DUPLIKAT' ? '#ef4444' : (jumlahDuplikat > 0 ? '#fecaca' : '#e2e8f0'),
+              background: tabFilter === 'DUPLIKAT' ? '#fef2f2' : '#ffffff',
+            }}
+          >
+            <div style={{ ...styles.metricLabel, color: '#b91c1c' }}>🚨 Absen Ganda (2x Absen)</div>
+            <div style={{ ...styles.metricVal, color: jumlahDuplikat > 0 ? '#dc2626' : '#64748b' }}>
+              {jumlahDuplikat}
+            </div>
+            <div style={styles.metricSub}>
+              {jumlahDuplikat > 0 ? 'Hapus salah satu sesi duplikat' : 'Tidak ada duplikat'}
+            </div>
+          </div>
+
+          {/* Card 5: Kejanggalan Lainnya */}
+          <div
+            onClick={() => setTabFilter('BERBENDERA')}
+            style={{
+              ...styles.metricCard,
+              borderColor: tabFilter === 'BERBENDERA' ? '#6366f1' : '#e0e7ff',
+              background: tabFilter === 'BERBENDERA' ? '#eef2ff' : '#ffffff',
+            }}
+          >
+            <div style={{ ...styles.metricLabel, color: '#4338ca' }}>Kejanggalan Pola</div>
+            <div style={{ ...styles.metricVal, color: '#4f46e5' }}>{jumlahBerbendera}</div>
+            <div style={styles.metricSub}>0 hadir, jam tak wajar, dll</div>
           </div>
         </div>
 
-        <div style={styles.statusRow}>
-          <div style={styles.statCard}>
-            <div style={styles.statAngka}>{tampil.length}</div>
-            <div style={styles.statLabel}>Sesi pada rentang ini</div>
+        {/* ===== BANNER PERINGATAN JIKA ADA ABSEN GANDA ===== */}
+        {jumlahDuplikat > 0 && (
+          <div style={styles.alertDuplikatBox}>
+            <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+              <AlertCircle size={22} color="#dc2626" style={{ flexShrink: 0 }} />
+              <div>
+                <b style={{ color: '#991b1b', fontSize: 13.5 }}>
+                  Terdeteksi {jumlahDuplikat} Sesi Mengajar Absen Ganda (Tentor 2x Mengabsen)!
+                </b>
+                <div style={{ color: '#b91c1c', fontSize: 12, marginTop: 2 }}>
+                  Sistem mendeteksi jadwal/kelas yang sama diabsen dua kali oleh guru pada waktu yang sama. Silakan periksa daftar di bawah dan klik tombol <b>Hapus Sesi (🗑️)</b> pada sesi duplikat yang salah.
+                </div>
+              </div>
+            </div>
+            <button
+              onClick={() => setTabFilter('DUPLIKAT')}
+              style={styles.btnFilterDuplikatPill}
+            >
+              Lihat Hanya Sesi Duplikat
+            </button>
           </div>
-          <div style={{ ...styles.statCard, borderColor: jumlahMenunggu > 0 ? 'rgba(245,158,11,0.4)' : 'rgba(255,255,255,0.07)' }}>
-            <div style={{ ...styles.statAngka, color: jumlahMenunggu > 0 ? '#fbbf24' : '#fff' }}>{jumlahMenunggu}</div>
-            <div style={styles.statLabel}>Menunggu validasi Anda</div>
-          </div>
-          <div style={styles.statCard}>
-            <div style={styles.statAngka}>{tampil.length - jumlahMenunggu}</div>
-            <div style={styles.statLabel}>Sudah valid</div>
-          </div>
-          <div style={{ ...styles.statCard, borderColor: jumlahBerbendera > 0 ? 'rgba(239,68,68,0.4)' : 'rgba(255,255,255,0.07)' }}>
-            <div style={{ ...styles.statAngka, color: jumlahBerbendera > 0 ? '#f87171' : '#fff' }}>{jumlahBerbendera}</div>
-            <div style={styles.statLabel}>Berbendera kejanggalan</div>
-          </div>
-        </div>
+        )}
 
-        {error && <div style={styles.errorBar}><AlertTriangle size={14} /> {error}</div>}
+        {error && (
+          <div style={styles.errorBar}>
+            <AlertTriangle size={15} /> {error}
+          </div>
+        )}
 
-        {/* ===== FILTER ===== */}
+        {/* ===== FILTER CONTROL BOX ===== */}
         <div style={styles.filterCard}>
-          <div style={styles.filterRow}>
+          {/* Baris 1: Shortcut Waktu Cepat */}
+          <div style={styles.shortcutTimeRow}>
+            <span style={styles.shortcutLabel}>Filter Waktu Cepat:</span>
+            <button
+              onClick={() => pasangFilterWaktu('HARI_INI')}
+              style={{
+                ...styles.btnTimeShortcut,
+                background: mulai === hariIni && sampai === hariIni ? '#0d9488' : '#f1f5f9',
+                color: mulai === hariIni && sampai === hariIni ? '#ffffff' : '#334155',
+                fontWeight: 700,
+              }}
+            >
+              ⭐ Hari Ini ({new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })})
+            </button>
+            <button
+              onClick={() => pasangFilterWaktu('KEMARIN')}
+              style={styles.btnTimeShortcut}
+            >
+              Kemarin
+            </button>
+            <button
+              onClick={() => pasangFilterWaktu('7_HARI')}
+              style={styles.btnTimeShortcut}
+            >
+              7 Hari Terakhir
+            </button>
+            <button
+              onClick={() => pasangFilterWaktu('BULAN_INI')}
+              style={styles.btnTimeShortcut}
+            >
+              Bulan Ini
+            </button>
+            <button
+              onClick={() => pasangFilterWaktu('SEMUA')}
+              style={styles.btnTimeShortcut}
+            >
+              Semua Waktu
+            </button>
+          </div>
+
+          {/* Baris 2: Input Tanggal, Pencarian, & Filter */}
+          <div style={styles.filterInputsRow}>
             <div style={styles.filterField}>
-              <label style={styles.labelField}><CalendarDays size={11} /> Dari</label>
-              <input type="date" style={styles.select} value={mulai} onChange={(e) => setMulai(e.target.value)} />
-            </div>
-            <div style={styles.filterField}>
-              <label style={styles.labelField}><CalendarDays size={11} /> Sampai</label>
-              <input type="date" style={styles.select} value={sampai} onChange={(e) => setSampai(e.target.value)} />
-            </div>
-            <div style={{ ...styles.filterField, flex: 1 }}>
-              <label style={styles.labelField}><Search size={11} /> Cari</label>
+              <label style={styles.labelField}><CalendarDays size={12} /> Dari Tanggal</label>
               <input
-                style={styles.select}
-                placeholder="nama guru, program, kelas..."
+                type="date"
+                style={styles.inputDate}
+                value={mulai}
+                onChange={(e) => setMulai(e.target.value)}
+              />
+            </div>
+            <div style={styles.filterField}>
+              <label style={styles.labelField}><CalendarDays size={12} /> Sampai Tanggal</label>
+              <input
+                type="date"
+                style={styles.inputDate}
+                value={sampai}
+                onChange={(e) => setSampai(e.target.value)}
+              />
+            </div>
+            <div style={{ ...styles.filterField, flex: 2 }}>
+              <label style={styles.labelField}><Search size={12} /> Cari Sesi / Tentor / Siswa / Materi</label>
+              <input
+                style={styles.inputText}
+                placeholder="Cari nama guru, kelas, nama siswa hadir, atau materi..."
                 value={cari}
                 onChange={(e) => setCari(e.target.value)}
               />
             </div>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end' }}>
+              <button style={styles.btnRefresh} onClick={muat} disabled={loading} title="Muat ulang data sesi">
+                <RefreshCw size={14} className={loading ? 'spin' : ''} /> Segarkan
+              </button>
+              <button
+                style={styles.btnDownload}
+                onClick={unduhCsv}
+                disabled={tampil.length === 0}
+                title="Unduh riwayat sesi dalam format CSV Excel"
+              >
+                <Download size={14} /> Unduh CSV ({tampil.length})
+              </button>
+            </div>
           </div>
-          <div style={styles.filterRow2}>
+
+          {/* Baris 3: Filter Chips & Reset Guru */}
+          <div style={styles.tabNavRow}>
+            <div style={styles.tabNavGroup}>
+              <button
+                onClick={() => setTabFilter('SEMUA')}
+                style={tabFilter === 'SEMUA' ? styles.tabNavActive : styles.tabNav}
+              >
+                Semua Sesi ({logsDalamRentang.length})
+              </button>
+              <button
+                onClick={() => setTabFilter('MENUNGGU')}
+                style={tabFilter === 'MENUNGGU' ? styles.tabNavActiveAmber : styles.tabNav}
+              >
+                Menunggu Validasi ({jumlahMenunggu})
+              </button>
+              <button
+                onClick={() => setTabFilter('VALID')}
+                style={tabFilter === 'VALID' ? styles.tabNavActiveGreen : styles.tabNav}
+              >
+                Sudah Valid ({jumlahValid})
+              </button>
+              {jumlahDuplikat > 0 && (
+                <button
+                  onClick={() => setTabFilter('DUPLIKAT')}
+                  style={tabFilter === 'DUPLIKAT' ? styles.tabNavActiveRed : styles.tabNavRed}
+                >
+                  🚨 Absen Ganda ({jumlahDuplikat})
+                </button>
+              )}
+              {jumlahBerbendera > 0 && (
+                <button
+                  onClick={() => setTabFilter('BERBENDERA')}
+                  style={tabFilter === 'BERBENDERA' ? styles.tabNavActiveIndigo : styles.tabNav}
+                >
+                  Kejanggalan Pola ({jumlahBerbendera})
+                </button>
+              )}
+            </div>
+
             {guruId && (
               <button
-                style={styles.chipGuru}
+                style={styles.chipGuruReset}
                 onClick={() => setGuruId('')}
-                title="Hapus filter per guru"
+                title="Hapus filter guru dan tampilkan seluruh tentor"
               >
-                Hanya 1 guru terpilih ✕ tampilkan semua
+                Guru: ID {guruId} <span style={{ marginLeft: 4 }}>✕ Tampilkan Semua</span>
               </button>
             )}
-            <label style={styles.checkboxLabel}>
-              <input type="checkbox" checked={hanyaMenunggu} onChange={(e) => setHanyaMenunggu(e.target.checked)} />
-              Menunggu validasi saja
-            </label>
-            <label style={styles.checkboxLabel}>
-              <input type="checkbox" checked={hanyaBerbendera} onChange={(e) => setHanyaBerbendera(e.target.checked)} />
-              Berbendera kejanggalan saja
-            </label>
-            <div style={{ flex: 1 }} />
-            <button style={styles.btnSekunder} onClick={muat} disabled={loading}>
-              <RefreshCw size={14} className={loading ? 'spin' : ''} /> Muat Ulang
-            </button>
-            <button style={styles.btnUtama} onClick={unduhCsv} disabled={tampil.length === 0}>
-              <Download size={14} /> Unduh CSV ({tampil.length})
-            </button>
           </div>
         </div>
 
-        {/* ===== DAFTAR SESI ===== */}
-        <div style={styles.listCard}>
+        {/* ===== TABEL RIWAYAT SESI MENGAJAR ===== */}
+        <div style={styles.tableCard}>
           {loading ? (
-            <div style={styles.kosong}><RefreshCw size={22} className="spin" /> Memuat riwayat sesi...</div>
+            <div style={styles.emptyState}>
+              <RefreshCw size={26} className="spin" color="#0d9488" />
+              <div style={{ marginTop: 12, fontWeight: 700, color: '#334155' }}>
+                Memuat riwayat sesi mengajar...
+              </div>
+            </div>
           ) : tampil.length === 0 ? (
-            <div style={styles.kosong}>
-              <ClipboardCheck size={26} />
-              <div>Tidak ada sesi pada rentang & saringan ini.</div>
+            <div style={styles.emptyState}>
+              <ClipboardCheck size={36} color="#94a3b8" />
+              <div style={{ marginTop: 12, fontWeight: 800, fontSize: 16, color: '#0f172a' }}>
+                Tidak Ada Sesi Mengajar Ditemukan
+              </div>
+              <div style={{ fontSize: 13, color: '#64748b', marginTop: 4 }}>
+                Silakan ubah rentang tanggal atau kata kunci pencarian di atas.
+              </div>
             </div>
           ) : (
-            <div style={styles.tabelScroll}>
-              <table style={styles.tabel}>
+            <div style={styles.tableScroll}>
+              <table style={styles.table}>
                 <thead>
-                  <tr>
-                    <th style={styles.th}>Waktu</th>
-                    <th style={styles.th}>Guru</th>
-                    <th style={styles.th}>Kelas</th>
-                    <th style={styles.th}>Kehadiran</th>
-                    <th style={styles.th}>Status</th>
-                    <th style={{ ...styles.th, textAlign: 'right' }}>Aksi</th>
+                  <tr style={styles.thRow}>
+                    <th style={styles.th}>Waktu &amp; Tanggal</th>
+                    <th style={styles.th}>Tentor &amp; Kelas</th>
+                    <th style={styles.th}>Kehadiran Siswa &amp; Materi</th>
+                    <th style={styles.th}>Status &amp; Kejanggalan</th>
+                    <th style={{ ...styles.th, textAlign: 'center', width: 140 }}>Aksi Kelola</th>
                   </tr>
                 </thead>
                 <tbody>
                   {tampil.map((l) => {
                     const valid = l.status === STATUS_VALID;
                     const tanggal = String(l.tanggal || '').split(' ')[0];
+                    const isDup = duplikatMap.has(l.id);
+                    const b = benderaOf(l);
+
+                    const hadir = Number(l.siswaHadir) || 0;
+                    const total = Number(l.siswaTotal) || 0;
+                    const daftarSiswa = Array.isArray(l.daftarSiswaHadir) ? l.daftarSiswaHadir : [];
+
                     return (
-                      <tr key={l.id} style={styles.tr}>
+                      <tr
+                        key={l.id}
+                        style={{
+                          ...styles.tr,
+                          background: isDup ? '#fff5f5' : '#ffffff',
+                          borderLeft: isDup ? '4px solid #ef4444' : '4px solid transparent',
+                        }}
+                      >
+                        {/* 1. Waktu & Tanggal */}
                         <td style={styles.td}>
-                          <div style={styles.tanggal}>{tanggal}</div>
-                          <div style={styles.kecil}>{l.waktu || ''}</div>
-                        </td>
-                        <td style={styles.td}>
-                          <div style={styles.nama}>{l.namaGuru || 'Tanpa Nama'}</div>
-                          <div style={styles.kecil}>{[l.program, l.level].filter(Boolean).join(' · ') || '-'}</div>
-                          <div style={styles.kecil}>{l.kegiatan || ''}</div>
-                        </td>
-                        <td style={styles.td}>
-                          <div style={styles.kecil2}>{l.kelasNama || l.tipeKelas || '-'}</div>
-                          <div style={styles.kecil}>
-                            <Clock size={10} style={{ display: 'inline', marginRight: 3 }} />
-                            {typeof l.durasiJam === 'number' ? `${l.durasiJam} jam` : '-'}
+                          <div style={styles.tglText}>{tanggal}</div>
+                          <div style={styles.jamText}>{l.waktu || '-'}</div>
+                          <div style={styles.durasiChip}>
+                            <Clock size={11} /> {typeof l.durasiJam === 'number' ? `${l.durasiJam} jam` : '-'}
                           </div>
                         </td>
+
+                        {/* 2. Tentor & Kelas */}
                         <td style={styles.td}>
-                          <div style={styles.kecil2}>
-                            <Users size={11} style={{ display: 'inline', marginRight: 3 }} />
-                            {l.siswaHadir ?? 0} siswa hadir
+                          <div style={styles.guruNama}>{l.namaGuru || 'Tanpa Nama'}</div>
+                          <div style={styles.kelasPill}>
+                            {[l.program, l.kelasNama || l.tipeKelas].filter(Boolean).join(' · ')}
                           </div>
-                          {l.fotoAbsensiUrl ? (
-                            <a href={l.fotoAbsensiUrl} target="_blank" rel="noreferrer" style={styles.linkBukti}>
-                              <Camera size={11} /> bukti foto
-                            </a>
-                          ) : (
-                            <div style={styles.kecil}>tanpa foto</div>
-                          )}
-                        </td>
-                        <td style={styles.td}>
-                          <span style={valid ? styles.pillHijau : styles.pillKuning}>
-                            {valid ? 'Valid' : 'Menunggu'}
-                          </span>
-                          {!valid && <div style={styles.kecil}>perlu persetujuan admin</div>}
-                          {benderaOf(l).length > 0 && (
-                            <div
-                              style={styles.benderaBox}
-                              title={benderaOf(l).map((k) => LABEL_KEJANGGALAN[k] || k).join('; ')}
-                            >
-                              ⚑ {benderaOf(l).map((k) => LABEL_KEJANGGALAN[k] || k).join(' · ')}
+                          {l.materiHariIni && (
+                            <div style={styles.materiPreviewText} title={l.materiHariIni}>
+                              <BookOpen size={11} style={{ display: 'inline', marginRight: 4 }} />
+                              {l.materiHariIni}
                             </div>
                           )}
-                          {l.divalidasiOlehNama && (
-                            <div style={styles.kecil}>✓ divalidasi {l.divalidasiOlehNama}</div>
+                        </td>
+
+                        {/* 3. Kehadiran Siswa & Rincian */}
+                        <td style={styles.td}>
+                          {/* Indikator Kelengkapan Siswa */}
+                          <div style={{ marginBottom: 4 }}>
+                            {total > 0 ? (
+                              hadir >= total ? (
+                                <span style={styles.kehadiranBadgeLengkap}>
+                                  <Check size={11} strokeWidth={3} /> {hadir} / {total} Siswa (Lengkap 100%)
+                                </span>
+                              ) : hadir > 0 ? (
+                                <span style={styles.kehadiranBadgeSebagian}>
+                                  ⚠️ {hadir} / {total} Siswa ({total - hadir} Absen)
+                                </span>
+                              ) : (
+                                <span style={styles.kehadiranBadgeNol}>
+                                  ✕ 0 / {total} Siswa Hadir
+                                </span>
+                              )
+                            ) : (
+                              <span style={styles.kehadiranBadgeBiasa}>
+                                <Users size={11} /> {hadir} Siswa Hadir
+                              </span>
+                            )}
+                          </div>
+
+                          {/* Cuplikan Daftar Siswa */}
+                          {daftarSiswa.length > 0 ? (
+                            <div style={styles.siswaListPreview}>
+                              Murid:{' '}
+                              <b>
+                                {daftarSiswa.slice(0, 3).map((s) => s.nama || s.studentName).join(', ')}
+                                {daftarSiswa.length > 3 ? ` +${daftarSiswa.length - 3} lainnya` : ''}
+                              </b>
+                            </div>
+                          ) : (
+                            <div style={{ fontSize: 11, color: '#94a3b8' }}>Daftar siswa tidak tercatat</div>
+                          )}
+
+                          {/* Tombol Lihat Rincian & Foto */}
+                          <div style={{ display: 'flex', gap: 6, marginTop: 6, alignItems: 'center' }}>
+                            <button
+                              onClick={() => setModalDetail(l)}
+                              style={styles.btnLihatMurid}
+                              title="Buka rincian lengkap murid dan jurnal mengajar"
+                            >
+                              <Eye size={12} /> Cek Siswa &amp; Jurnal
+                            </button>
+
+                            {l.fotoAbsensiUrl && (
+                              <a
+                                href={l.fotoAbsensiUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                                style={styles.btnFotoMini}
+                                title="Lihat foto bukti absensi kelas di tab baru"
+                              >
+                                <Camera size={12} /> Foto Bukti
+                              </a>
+                            )}
+                          </div>
+                        </td>
+
+                        {/* 4. Status & Kejanggalan */}
+                        <td style={styles.td}>
+                          <div>
+                            <span style={valid ? styles.statusBadgeValid : styles.statusBadgeMenunggu}>
+                              {valid ? '✓ Sudah Valid' : '⏳ Menunggu Validasi'}
+                            </span>
+                          </div>
+
+                          {valid && l.divalidasiOlehNama && (
+                            <div style={styles.validatorText}>
+                              Oleh: <b>{l.divalidasiOlehNama}</b>
+                            </div>
+                          )}
+
+                          {/* Peringatan Absen Ganda (Duplikat) */}
+                          {isDup && (
+                            <div style={styles.duplikatWarningBox}>
+                              <div style={{ fontWeight: 800 }}>🚨 Absen Ganda Terdeteksi!</div>
+                              <div style={{ fontSize: 10.5, marginTop: 2 }}>{duplikatMap.get(l.id)}</div>
+                            </div>
+                          )}
+
+                          {/* Peringatan Kejanggalan Lainnya */}
+                          {b.filter((k) => k !== 'DUPLIKAT_ABSEN').length > 0 && (
+                            <div style={styles.kejanggalanPillBox}>
+                              {b
+                                .filter((k) => k !== 'DUPLIKAT_ABSEN')
+                                .map((k) => (
+                                  <span key={k} style={styles.kejanggalanChip}>
+                                    ⚑ {LABEL_KEJANGGALAN[k] || k}
+                                  </span>
+                                ))}
+                            </div>
                           )}
                         </td>
-                        <td style={{ ...styles.td, textAlign: 'right' }}>
-                          {valid ? (
+
+                        {/* 5. Kolom Aksi */}
+                        <td style={{ ...styles.td, textAlign: 'center' }}>
+                          <div style={styles.actionBtnGroup}>
+                            {/* Tombol Setujui / Batal */}
+                            {valid ? (
+                              <button
+                                style={styles.btnAksiUndo}
+                                title="Batalkan validasi sesi ini"
+                                onClick={() => batalkan(l)}
+                                disabled={prosesId === l.id}
+                              >
+                                <Undo2 size={14} /> Batal
+                              </button>
+                            ) : (
+                              <button
+                                style={styles.btnAksiSetuju}
+                                title="Setujui sesi ini sebagai sah & valid"
+                                onClick={() => setujui(l)}
+                                disabled={prosesId === l.id}
+                              >
+                                <CheckCircle2 size={14} /> Setujui
+                              </button>
+                            )}
+
+                            {/* Tombol HAPUS Sesi (PENTING untuk salah / duplikat) */}
                             <button
-                              style={styles.btnIkon}
-                              title="Batalkan validasi (mis. ada kekeliruan catatan)"
-                              onClick={() => batalkan(l)}
+                              style={styles.btnAksiHapus}
+                              title="Hapus sesi ini secara permanen (misal salah absen / absen ganda)"
+                              onClick={() => hapusSesi(l)}
                               disabled={prosesId === l.id}
                             >
-                              <Undo2 size={14} />
+                              <Trash2 size={14} /> Hapus
                             </button>
-                          ) : (
-                            <button
-                              style={{ ...styles.btnIkon, color: '#4ade80', borderColor: 'rgba(74,222,128,0.35)' }}
-                              title="Setujui sesi ini sebagai valid"
-                              onClick={() => setujui(l)}
-                              disabled={prosesId === l.id}
-                            >
-                              <CheckCircle2 size={14} />
-                            </button>
-                          )}
+                          </div>
                         </td>
                       </tr>
                     );
@@ -462,20 +899,210 @@ const SesiGuruPage = () => {
             </div>
           )}
         </div>
+      </div>
 
-        <div style={styles.catatan}>
-          <AlertTriangle size={15} color="#fbbf24" style={{ flexShrink: 0, marginTop: 2 }} />
-          <div>
-            <b style={{ color: '#fbbf24' }}>Tanggung jawab validasi</b>
-            <p style={styles.batasText}>
-              Status "Valid" yang Anda berikan dipakai Manajemen sebagai dasar membayar honor.
-              Kalau ada sesi yang janggal (durasi tidak masuk akal, siswa hadir nol padahal
-              kelas berjalan, bukti foto tidak ada), jangan disetujui dulu — konfirmasi ke
-              tentornya. Semua persetujuan & pembatalan Anda tercatat di Jejak Aktivitas.
-            </p>
+      {/* ============================================================
+          MODAL DETAIL SESI & CROSS-CHECK KEHADIRAN MURID LENGKAP
+          ============================================================ */}
+      {modalDetail && (
+        <div style={styles.modalOverlay} onClick={() => setModalDetail(null)}>
+          <div style={styles.modalCard} onClick={(e) => e.stopPropagation()}>
+            {/* Modal Header */}
+            <div style={styles.modalHeader}>
+              <div>
+                <div style={{ fontSize: 11, fontWeight: 800, color: '#0d9488', textTransform: 'uppercase' }}>
+                  Rincian Sesi Mengajar &amp; Kehadiran Siswa
+                </div>
+                <h3 style={styles.modalTitle}>
+                  {modalDetail.namaGuru || 'Tentor Bimbel'} · {modalDetail.kelasNama || modalDetail.program}
+                </h3>
+                <div style={styles.modalSubHeader}>
+                  📅 {String(modalDetail.tanggal).split(' ')[0]} jam {modalDetail.waktu || '-'} (Durasi: {modalDetail.durasiJam || '-'} jam)
+                </div>
+              </div>
+              <button
+                onClick={() => setModalDetail(null)}
+                style={styles.btnModalClose}
+                title="Tutup dialog rincian"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div style={styles.modalBody}>
+              {/* Peringatan jika Absen Ganda */}
+              {duplikatMap.has(modalDetail.id) && (
+                <div style={styles.modalAlertDuplikat}>
+                  <AlertCircle size={20} color="#dc2626" />
+                  <div>
+                    <b style={{ color: '#991b1b' }}>🚨 Sesi Ini Terindikasi Absen Ganda (2x Absen)!</b>
+                    <div style={{ color: '#b91c1c', fontSize: 12, marginTop: 2 }}>
+                      {duplikatMap.get(modalDetail.id)}. Jika sesi ini merupakan salah input atau duplikat dari sesi lainnya, Anda dapat langsung menghapusnya melalui tombol <b>"Hapus Sesi Duplikat Ini"</b> di bawah.
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Status Sesi & Validasi */}
+              <div style={styles.modalSectionCard}>
+                <div style={styles.modalSectionLabel}>Status Validasi Operasional</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 6 }}>
+                  <span
+                    style={
+                      modalDetail.status === STATUS_VALID
+                        ? styles.statusBadgeValid
+                        : styles.statusBadgeMenunggu
+                    }
+                  >
+                    {modalDetail.status === STATUS_VALID ? '✓ Sudah Valid' : '⏳ Menunggu Validasi'}
+                  </span>
+                  {modalDetail.divalidasiOlehNama && (
+                    <span style={{ fontSize: 12, color: '#475569' }}>
+                      Disetujui oleh: <b>{modalDetail.divalidasiOlehNama}</b>
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Kelengkapan Siswa & Daftar Murid Hadir */}
+              <div style={styles.modalSectionCard}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={styles.modalSectionLabel}>Kehadiran Siswa di Kelas</div>
+                  <div style={{ fontSize: 12, fontWeight: 800, color: '#0f172a' }}>
+                    {modalDetail.siswaHadir || 0} Hadir {modalDetail.siswaTotal ? `dari ${modalDetail.siswaTotal} Murid Terdaftar` : ''}
+                  </div>
+                </div>
+
+                {Array.isArray(modalDetail.daftarSiswaHadir) && modalDetail.daftarSiswaHadir.length > 0 ? (
+                  <div style={{ marginTop: 10 }}>
+                    <table style={styles.subTable}>
+                      <thead>
+                        <tr style={styles.subThRow}>
+                          <th style={styles.subTh}>No</th>
+                          <th style={styles.subTh}>Nama Siswa</th>
+                          <th style={styles.subTh}>Kelas / Sekolah</th>
+                          <th style={{ ...styles.subTh, textAlign: 'center' }}>Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {modalDetail.daftarSiswaHadir.map((s, idx) => (
+                          <tr key={s.id || idx} style={styles.subTr}>
+                            <td style={styles.subTd}>{idx + 1}</td>
+                            <td style={{ ...styles.subTd, fontWeight: 700, color: '#0f172a' }}>
+                              {s.nama || s.studentName || 'Siswa'}
+                            </td>
+                            <td style={styles.subTd}>{s.kelas || s.kelasSekolah || '-'}</td>
+                            <td style={{ ...styles.subTd, textAlign: 'center' }}>
+                              <span style={styles.badgeHadirMini}>✓ Hadir</span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <div style={styles.emptySiswaInfo}>
+                    Tidak ada rincian nama siswa pada dokumen sesi ini (hanya angka kehadiran: <b>{modalDetail.siswaHadir || 0} siswa</b>).
+                  </div>
+                )}
+              </div>
+
+              {/* Jurnal Pembelajaran & Materi */}
+              <div style={styles.modalSectionCard}>
+                <div style={styles.modalSectionLabel}>Materi &amp; Jurnal Mengajar</div>
+                <div style={{ marginTop: 8, fontSize: 13, color: '#1e293b', lineHeight: 1.6 }}>
+                  <div>
+                    Materi Pokok:{' '}
+                    <b>
+                      {modalDetail.materiHariIni ||
+                        modalDetail.sdTopik ||
+                        modalDetail.englishTopic ||
+                        modalDetail.babJudul ||
+                        '-'}
+                    </b>
+                  </div>
+                  {modalDetail.subBab && (
+                    <div style={{ fontSize: 12, color: '#64748b' }}>
+                      Sub-bab: {modalDetail.subBab}
+                    </div>
+                  )}
+                  {modalDetail.statusKetuntasanMateri && (
+                    <div style={{ fontSize: 12, color: '#0d9488', marginTop: 4 }}>
+                      Ketuntasan: <b>{modalDetail.statusKetuntasanMateri}</b> · Pemahaman: <b>{modalDetail.tingkatPemahaman || 'Baik'}</b>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Bukti Foto Absensi */}
+              <div style={styles.modalSectionCard}>
+                <div style={styles.modalSectionLabel}>Foto Bukti Kegiatan Kelas</div>
+                {modalDetail.fotoAbsensiUrl ? (
+                  <div style={{ marginTop: 10, textAlign: 'center' }}>
+                    <a
+                      href={modalDetail.fotoAbsensiUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      style={{ display: 'inline-block', position: 'relative' }}
+                    >
+                      <img
+                        src={modalDetail.fotoAbsensiUrl}
+                        alt="Foto Bukti Absensi"
+                        style={styles.modalFotoImg}
+                      />
+                      <div style={styles.modalFotoOverlayBtn}>
+                        <ExternalLink size={12} /> Buka Foto Penuh
+                      </div>
+                    </a>
+                  </div>
+                ) : (
+                  <div style={styles.emptyFotoInfo}>
+                    📷 Tentor tidak melampirkan foto bukti absensi pada sesi ini.
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Modal Footer Actions */}
+            <div style={styles.modalFooter}>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button
+                  onClick={() => hapusSesi(modalDetail)}
+                  style={styles.btnModalHapus}
+                  title="Hapus sesi ini secara permanen"
+                >
+                  <Trash2 size={14} /> Hapus Sesi (Salah / Duplikat)
+                </button>
+              </div>
+
+              <div style={{ display: 'flex', gap: 8 }}>
+                {modalDetail.status === STATUS_VALID ? (
+                  <button
+                    onClick={() => batalkan(modalDetail)}
+                    style={styles.btnModalUndo}
+                  >
+                    <Undo2 size={14} /> Batalkan Validasi
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => setujui(modalDetail)}
+                    style={styles.btnModalSetuju}
+                  >
+                    <CheckCircle2 size={14} /> Setujui Sesi Ini
+                  </button>
+                )}
+                <button
+                  onClick={() => setModalDetail(null)}
+                  style={styles.btnModalTutup}
+                >
+                  Tutup
+                </button>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       <style>{`
         @keyframes spin { to { transform: rotate(360deg); } }
@@ -483,131 +1110,875 @@ const SesiGuruPage = () => {
       `}</style>
     </div>
   );
-};
+}
 
 // ============================================================
-// STYLES
+// STYLES (MODERN, CLEAN LIGHT THEME GEMILANG)
 // ============================================================
 const styles = {
   page: {
     minHeight: '100vh',
-    background: 'linear-gradient(135deg, #060b18 0%, #0b1730 60%, #05080f 100%)',
-    padding: '26px 20px 60px',
-    fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+    background: '#f8fafc',
+    padding: '24px 20px 60px',
+    fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+    color: '#0f172a',
   },
-  wrap: { maxWidth: 1150, margin: '0 auto' },
-  header: { display: 'flex', gap: 14, alignItems: 'center', marginBottom: 18 },
+  container: {
+    maxWidth: 1200,
+    margin: '0 auto',
+  },
+
+  // Quick Nav Row
+  quickNavRow: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: 10,
+    marginBottom: 16,
+    paddingBottom: 12,
+    borderBottom: '1px solid #e2e8f0',
+  },
+  quickNavTitle: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 8,
+    fontSize: 12.5,
+    fontWeight: 700,
+    color: '#0d9488',
+  },
+  quickNavButtons: {
+    display: 'flex',
+    gap: 8,
+    flexWrap: 'wrap',
+  },
+  btnQuickNav: {
+    background: '#ffffff',
+    border: '1px solid #cbd5e1',
+    color: '#334155',
+    padding: '6px 12px',
+    borderRadius: 8,
+    fontSize: 11.5,
+    fontWeight: 600,
+    cursor: 'pointer',
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: 6,
+    transition: 'all 0.15s',
+  },
+  btnQuickNavHonor: {
+    background: '#ecfdf5',
+    border: '1px solid #a7f3d0',
+    color: '#047857',
+    padding: '6px 12px',
+    borderRadius: 8,
+    fontSize: 11.5,
+    fontWeight: 700,
+    cursor: 'pointer',
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: 6,
+  },
+
+  // Header Utama
+  header: {
+    display: 'flex',
+    gap: 16,
+    alignItems: 'center',
+    marginBottom: 20,
+  },
   headerIcon: {
-    width: 52, height: 52, borderRadius: 14, flexShrink: 0,
-    background: 'rgba(96,165,250,0.12)', border: '1px solid rgba(96,165,250,0.25)',
-    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    width: 52,
+    height: 52,
+    borderRadius: 14,
+    flexShrink: 0,
+    background: '#f0fdfa',
+    border: '1.5px solid #ccfbf1',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    boxShadow: '0 2px 6px rgba(13, 148, 136, 0.1)',
   },
-  h1: { color: '#fff', fontSize: 22, fontWeight: 800, margin: 0 },
-  sub: { color: 'rgba(255,255,255,0.45)', fontSize: 12.5, margin: '4px 0 0', lineHeight: 1.55, maxWidth: 660 },
+  h1: {
+    fontSize: 22,
+    fontWeight: 900,
+    color: '#0f172a',
+    margin: 0,
+    letterSpacing: '-0.02em',
+  },
+  sub: {
+    fontSize: 13,
+    color: '#64748b',
+    margin: '4px 0 0',
+    lineHeight: 1.5,
+  },
 
-  batasBox: {
-    display: 'flex', gap: 11, alignItems: 'flex-start',
-    background: 'rgba(96,165,250,0.06)', border: '1px solid rgba(96,165,250,0.2)',
-    borderRadius: 14, padding: '13px 15px', marginBottom: 14,
+  // Metric Grid
+  metricGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+    gap: 12,
+    marginBottom: 16,
   },
-  batasText: { color: 'rgba(255,255,255,0.55)', fontSize: 12, lineHeight: 1.6, margin: '5px 0 0' },
+  metricCard: {
+    borderRadius: 14,
+    border: '1.5px solid #e2e8f0',
+    padding: '14px 16px',
+    cursor: 'pointer',
+    transition: 'all 0.15s ease',
+    boxShadow: '0 1px 3px rgba(0,0,0,0.03)',
+  },
+  metricLabel: {
+    fontSize: 11,
+    fontWeight: 800,
+    color: '#64748b',
+    textTransform: 'uppercase',
+    letterSpacing: '0.04em',
+  },
+  metricVal: {
+    fontSize: 26,
+    fontWeight: 900,
+    lineHeight: 1.2,
+    marginTop: 4,
+  },
+  metricSub: {
+    fontSize: 11,
+    color: '#94a3b8',
+    marginTop: 2,
+  },
 
-  statusRow: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 10, marginBottom: 14 },
-  statCard: {
-    background: 'rgba(255,255,255,0.035)', border: '1px solid rgba(255,255,255,0.07)',
-    borderRadius: 14, padding: '13px 16px', textAlign: 'center',
+  // Alert Box Duplikat
+  alertDuplikatBox: {
+    background: '#fef2f2',
+    border: '1.5px solid #fecaca',
+    borderRadius: 14,
+    padding: '14px 18px',
+    marginBottom: 16,
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: 12,
   },
-  statAngka: { color: '#fff', fontSize: 23, fontWeight: 800, lineHeight: 1 },
-  statLabel: { color: 'rgba(255,255,255,0.4)', fontSize: 10.5, marginTop: 5, textTransform: 'uppercase', letterSpacing: 0.5 },
+  btnFilterDuplikatPill: {
+    background: '#dc2626',
+    color: '#ffffff',
+    border: 'none',
+    borderRadius: 8,
+    padding: '7px 14px',
+    fontSize: 11.5,
+    fontWeight: 800,
+    cursor: 'pointer',
+    flexShrink: 0,
+  },
 
   errorBar: {
-    display: 'flex', gap: 8, alignItems: 'flex-start',
-    background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)',
-    borderRadius: 10, padding: '10px 13px', color: '#fca5a5', fontSize: 12.5, marginBottom: 12,
+    background: '#fee2e2',
+    border: '1px solid #fca5a5',
+    color: '#991b1b',
+    borderRadius: 10,
+    padding: '10px 14px',
+    fontSize: 12.5,
+    marginBottom: 14,
+    display: 'flex',
+    alignItems: 'center',
+    gap: 8,
   },
 
+  // Filter Card
   filterCard: {
-    background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)',
-    borderRadius: 14, padding: 14, marginBottom: 14,
+    background: '#ffffff',
+    border: '1px solid #e2e8f0',
+    borderRadius: 16,
+    padding: '16px 18px',
+    marginBottom: 16,
+    boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
   },
-  filterRow: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: 12, alignItems: 'end' },
-  filterRow2: { display: 'flex', gap: 14, alignItems: 'center', flexWrap: 'wrap', marginTop: 12 },
-  filterField: { display: 'flex', flexDirection: 'column', gap: 5 },
+  shortcutTimeRow: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 8,
+    flexWrap: 'wrap',
+    marginBottom: 14,
+    paddingBottom: 12,
+    borderBottom: '1px solid #f1f5f9',
+  },
+  shortcutLabel: {
+    fontSize: 11.5,
+    fontWeight: 800,
+    color: '#64748b',
+    marginRight: 4,
+  },
+  btnTimeShortcut: {
+    background: '#f8fafc',
+    border: '1px solid #e2e8f0',
+    color: '#334155',
+    padding: '5px 12px',
+    borderRadius: 8,
+    fontSize: 11.5,
+    fontWeight: 600,
+    cursor: 'pointer',
+  },
+
+  filterInputsRow: {
+    display: 'flex',
+    gap: 12,
+    alignItems: 'flex-start',
+    flexWrap: 'wrap',
+    marginBottom: 14,
+  },
+  filterField: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 4,
+    minWidth: 160,
+  },
   labelField: {
-    color: 'rgba(255,255,255,0.45)', fontSize: 10, fontWeight: 700,
-    textTransform: 'uppercase', letterSpacing: 0.5,
-    display: 'flex', alignItems: 'center', gap: 4,
+    fontSize: 11,
+    fontWeight: 800,
+    color: '#475569',
+    display: 'flex',
+    alignItems: 'center',
+    gap: 5,
   },
-  select: {
-    padding: '9px 11px', borderRadius: 9, background: 'rgba(255,255,255,0.05)',
-    border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: 12.5,
-    outline: 'none', width: '100%', boxSizing: 'border-box',
-    colorScheme: 'dark',
+  inputDate: {
+    border: '1.5px solid #cbd5e1',
+    borderRadius: 8,
+    padding: '7px 10px',
+    fontSize: 12.5,
+    color: '#0f172a',
+    outline: 'none',
+    background: '#ffffff',
   },
-  chipGuru: {
-    background: 'rgba(96,165,250,0.15)', border: '1px solid rgba(96,165,250,0.4)',
-    borderRadius: 20, padding: '6px 12px', color: '#93c5fd',
-    fontSize: 11.5, fontWeight: 700, cursor: 'pointer',
+  inputText: {
+    border: '1.5px solid #cbd5e1',
+    borderRadius: 8,
+    padding: '7px 12px',
+    fontSize: 12.5,
+    color: '#0f172a',
+    outline: 'none',
+    background: '#ffffff',
+    width: '100%',
+    boxSizing: 'border-box',
   },
-  checkboxLabel: {
-    display: 'flex', alignItems: 'center', gap: 6, color: 'rgba(255,255,255,0.6)',
-    fontSize: 12, cursor: 'pointer',
+  btnRefresh: {
+    background: '#f1f5f9',
+    border: '1px solid #cbd5e1',
+    color: '#334155',
+    padding: '8px 14px',
+    borderRadius: 8,
+    fontSize: 12,
+    fontWeight: 700,
+    cursor: 'pointer',
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: 6,
+    height: 36,
   },
-  btnUtama: {
-    display: 'inline-flex', alignItems: 'center', gap: 7,
-    background: 'linear-gradient(135deg, #60a5fa, #2563eb)', color: '#06121f',
-    border: 'none', borderRadius: 10, padding: '9px 15px', fontSize: 12.5, fontWeight: 800, cursor: 'pointer',
-  },
-  btnSekunder: {
-    display: 'inline-flex', alignItems: 'center', gap: 7,
-    background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.7)',
-    border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, padding: '9px 14px',
-    fontSize: 12.5, fontWeight: 600, cursor: 'pointer',
+  btnDownload: {
+    background: '#0d9488',
+    color: '#ffffff',
+    border: 'none',
+    padding: '8px 16px',
+    borderRadius: 8,
+    fontSize: 12,
+    fontWeight: 700,
+    cursor: 'pointer',
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: 6,
+    height: 36,
   },
 
-  listCard: {
-    background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.07)',
-    borderRadius: 16, overflow: 'hidden',
+  // Tab Nav Row
+  tabNavRow: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: 10,
+    paddingTop: 10,
+    borderTop: '1px solid #f1f5f9',
   },
-  kosong: {
-    padding: '46px 20px', textAlign: 'center', color: 'rgba(255,255,255,0.35)', fontSize: 13,
-    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12,
+  tabNavGroup: {
+    display: 'flex',
+    gap: 6,
+    flexWrap: 'wrap',
   },
-  tabelScroll: { overflowX: 'auto' },
-  tabel: { width: '100%', borderCollapse: 'collapse', minWidth: 860 },
+  tabNav: {
+    background: '#f8fafc',
+    border: '1px solid #e2e8f0',
+    color: '#64748b',
+    padding: '5px 12px',
+    borderRadius: 8,
+    fontSize: 11.5,
+    fontWeight: 700,
+    cursor: 'pointer',
+  },
+  tabNavRed: {
+    background: '#fff1f2',
+    border: '1px solid #fecdd3',
+    color: '#e11d48',
+    padding: '5px 12px',
+    borderRadius: 8,
+    fontSize: 11.5,
+    fontWeight: 800,
+    cursor: 'pointer',
+  },
+  tabNavActive: {
+    background: '#0d9488',
+    border: '1px solid #0d9488',
+    color: '#ffffff',
+    padding: '5px 12px',
+    borderRadius: 8,
+    fontSize: 11.5,
+    fontWeight: 800,
+    cursor: 'pointer',
+  },
+  tabNavActiveAmber: {
+    background: '#d97706',
+    border: '1px solid #d97706',
+    color: '#ffffff',
+    padding: '5px 12px',
+    borderRadius: 8,
+    fontSize: 11.5,
+    fontWeight: 800,
+    cursor: 'pointer',
+  },
+  tabNavActiveGreen: {
+    background: '#16a34a',
+    border: '1px solid #16a34a',
+    color: '#ffffff',
+    padding: '5px 12px',
+    borderRadius: 8,
+    fontSize: 11.5,
+    fontWeight: 800,
+    cursor: 'pointer',
+  },
+  tabNavActiveRed: {
+    background: '#dc2626',
+    border: '1px solid #dc2626',
+    color: '#ffffff',
+    padding: '5px 12px',
+    borderRadius: 8,
+    fontSize: 11.5,
+    fontWeight: 800,
+    cursor: 'pointer',
+  },
+  tabNavActiveIndigo: {
+    background: '#4f46e5',
+    border: '1px solid #4f46e5',
+    color: '#ffffff',
+    padding: '5px 12px',
+    borderRadius: 8,
+    fontSize: 11.5,
+    fontWeight: 800,
+    cursor: 'pointer',
+  },
+  chipGuruReset: {
+    background: '#e0e7ff',
+    border: '1px solid #c7d2fe',
+    color: '#4338ca',
+    padding: '4px 10px',
+    borderRadius: 6,
+    fontSize: 11,
+    fontWeight: 700,
+    cursor: 'pointer',
+  },
+
+  // Table Card
+  tableCard: {
+    background: '#ffffff',
+    border: '1px solid #e2e8f0',
+    borderRadius: 16,
+    overflow: 'hidden',
+    boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
+  },
+  tableScroll: {
+    overflowX: 'auto',
+    width: '100%',
+  },
+  table: {
+    width: '100%',
+    borderCollapse: 'collapse',
+    textAlign: 'left',
+  },
+  thRow: {
+    background: '#f8fafc',
+    borderBottom: '1.5px solid #e2e8f0',
+  },
   th: {
-    textAlign: 'left', padding: '12px 14px', fontSize: 10.5, fontWeight: 700,
-    color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: 0.6,
-    borderBottom: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.02)',
+    padding: '12px 16px',
+    fontSize: 11.5,
+    fontWeight: 800,
+    color: '#475569',
+    textTransform: 'uppercase',
+    letterSpacing: '0.04em',
   },
-  tr: { borderBottom: '1px solid rgba(255,255,255,0.05)' },
-  td: { padding: '11px 14px', fontSize: 13, color: 'rgba(255,255,255,0.8)', verticalAlign: 'top' },
-  tanggal: { color: '#fff', fontWeight: 700, fontSize: 12.5 },
-  nama: { color: '#fff', fontWeight: 700, fontSize: 13 },
-  kecil: { color: 'rgba(255,255,255,0.38)', fontSize: 10.5, marginTop: 2 },
-  kecil2: { color: 'rgba(255,255,255,0.6)', fontSize: 11.5 },
-  linkBukti: {
-    color: '#93c5fd', fontSize: 10.5, textDecoration: 'none',
-    display: 'inline-flex', alignItems: 'center', gap: 4, marginTop: 3,
+  tr: {
+    borderBottom: '1px solid #f1f5f9',
+    transition: 'background 0.15s ease',
   },
-  benderaBox: {
-    marginTop: 5, background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.35)',
-    color: '#fca5a5', fontSize: 9.5, fontWeight: 700, borderRadius: 8,
-    padding: '3px 7px', lineHeight: 1.5,
-  },
-  pillHijau: { background: 'rgba(34,197,94,0.15)', color: '#4ade80', fontSize: 11, fontWeight: 700, padding: '4px 9px', borderRadius: 20 },
-  pillKuning: { background: 'rgba(245,158,11,0.15)', color: '#fbbf24', fontSize: 11, fontWeight: 700, padding: '4px 9px', borderRadius: 20 },
-  btnIkon: {
-    background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.12)',
-    borderRadius: 8, padding: 7, color: 'rgba(255,255,255,0.7)', cursor: 'pointer',
-    display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+  td: {
+    padding: '14px 16px',
+    fontSize: 12.5,
+    verticalAlign: 'top',
   },
 
-  catatan: {
-    display: 'flex', gap: 11, alignItems: 'flex-start', marginTop: 16,
-    background: 'rgba(251,191,36,0.05)', border: '1px solid rgba(251,191,36,0.18)',
-    borderRadius: 14, padding: '13px 15px',
+  // Cell elements
+  tglText: {
+    fontWeight: 800,
+    color: '#0f172a',
+    fontSize: 13,
+  },
+  jamText: {
+    fontSize: 11,
+    color: '#64748b',
+    marginTop: 2,
+  },
+  durasiChip: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: 3,
+    fontSize: 10.5,
+    color: '#0f766e',
+    background: '#f0fdfa',
+    padding: '1px 6px',
+    borderRadius: 4,
+    marginTop: 4,
+    fontWeight: 600,
+  },
+  guruNama: {
+    fontWeight: 800,
+    color: '#0f172a',
+    fontSize: 13.5,
+  },
+  kelasPill: {
+    display: 'inline-block',
+    background: '#f1f5f9',
+    color: '#334155',
+    padding: '2px 8px',
+    borderRadius: 6,
+    fontSize: 11,
+    fontWeight: 700,
+    marginTop: 3,
+  },
+  materiPreviewText: {
+    fontSize: 11,
+    color: '#475569',
+    marginTop: 4,
+    maxWidth: 220,
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+  },
+
+  // Kehadiran Siswa Badges
+  kehadiranBadgeLengkap: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: 4,
+    background: '#dcfce7',
+    color: '#15803d',
+    padding: '3px 8px',
+    borderRadius: 6,
+    fontSize: 11,
+    fontWeight: 800,
+  },
+  kehadiranBadgeSebagian: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: 4,
+    background: '#fef3c7',
+    color: '#b45309',
+    padding: '3px 8px',
+    borderRadius: 6,
+    fontSize: 11,
+    fontWeight: 800,
+  },
+  kehadiranBadgeNol: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: 4,
+    background: '#fee2e2',
+    color: '#b91c1c',
+    padding: '3px 8px',
+    borderRadius: 6,
+    fontSize: 11,
+    fontWeight: 800,
+  },
+  kehadiranBadgeBiasa: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: 4,
+    background: '#f1f5f9',
+    color: '#334155',
+    padding: '3px 8px',
+    borderRadius: 6,
+    fontSize: 11,
+    fontWeight: 700,
+  },
+  siswaListPreview: {
+    fontSize: 11,
+    color: '#64748b',
+    marginTop: 4,
+    maxWidth: 260,
+    lineHeight: 1.35,
+  },
+  btnLihatMurid: {
+    background: '#ffffff',
+    border: '1px solid #cbd5e1',
+    color: '#0f766e',
+    padding: '3px 8px',
+    borderRadius: 6,
+    fontSize: 10.5,
+    fontWeight: 700,
+    cursor: 'pointer',
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: 4,
+  },
+  btnFotoMini: {
+    background: '#ffffff',
+    border: '1px solid #cbd5e1',
+    color: '#2563eb',
+    padding: '3px 8px',
+    borderRadius: 6,
+    fontSize: 10.5,
+    fontWeight: 700,
+    cursor: 'pointer',
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: 4,
+    textDecoration: 'none',
+  },
+
+  // Status Badges
+  statusBadgeValid: {
+    display: 'inline-block',
+    background: '#dcfce7',
+    color: '#15803d',
+    padding: '3px 8px',
+    borderRadius: 6,
+    fontSize: 11,
+    fontWeight: 800,
+  },
+  statusBadgeMenunggu: {
+    display: 'inline-block',
+    background: '#fef3c7',
+    color: '#b45309',
+    padding: '3px 8px',
+    borderRadius: 6,
+    fontSize: 11,
+    fontWeight: 800,
+  },
+  validatorText: {
+    fontSize: 10.5,
+    color: '#64748b',
+    marginTop: 2,
+  },
+
+  // Kejanggalan Box
+  duplikatWarningBox: {
+    marginTop: 6,
+    background: '#fef2f2',
+    border: '1px solid #fca5a5',
+    color: '#991b1b',
+    borderRadius: 6,
+    padding: '4px 8px',
+    fontSize: 11,
+    lineHeight: 1.3,
+  },
+  kejanggalanPillBox: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 2,
+    marginTop: 4,
+  },
+  kejanggalanChip: {
+    fontSize: 10,
+    color: '#c2410c',
+    background: '#fff7ed',
+    border: '1px solid #ffedd5',
+    padding: '1px 6px',
+    borderRadius: 4,
+    display: 'inline-block',
+  },
+
+  // Action Buttons
+  actionBtnGroup: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 6,
+    alignItems: 'center',
+  },
+  btnAksiSetuju: {
+    width: '100%',
+    background: '#10b981',
+    color: '#ffffff',
+    border: 'none',
+    padding: '6px 12px',
+    borderRadius: 6,
+    fontSize: 11.5,
+    fontWeight: 800,
+    cursor: 'pointer',
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
+  },
+  btnAksiUndo: {
+    width: '100%',
+    background: '#f1f5f9',
+    color: '#475569',
+    border: '1px solid #cbd5e1',
+    padding: '6px 12px',
+    borderRadius: 6,
+    fontSize: 11.5,
+    fontWeight: 700,
+    cursor: 'pointer',
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
+  },
+  btnAksiHapus: {
+    width: '100%',
+    background: '#fee2e2',
+    color: '#dc2626',
+    border: '1px solid #fca5a5',
+    padding: '5px 12px',
+    borderRadius: 6,
+    fontSize: 11,
+    fontWeight: 800,
+    cursor: 'pointer',
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
+  },
+
+  emptyState: {
+    padding: '60px 20px',
+    textAlign: 'center',
+    color: '#64748b',
+  },
+
+  // Modal Styles
+  modalOverlay: {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    background: 'rgba(15, 23, 42, 0.6)',
+    backdropFilter: 'blur(3px)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 9999,
+    padding: 16,
+  },
+  modalCard: {
+    background: '#ffffff',
+    borderRadius: 18,
+    width: '100%',
+    maxWidth: 620,
+    maxHeight: '90vh',
+    display: 'flex',
+    flexDirection: 'column',
+    boxShadow: '0 20px 25px -5px rgba(0,0,0,0.2)',
+    overflow: 'hidden',
+  },
+  modalHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    padding: '16px 20px',
+    borderBottom: '1px solid #e2e8f0',
+    background: '#f8fafc',
+  },
+  modalTitle: {
+    margin: '2px 0 0',
+    fontSize: 17,
+    fontWeight: 900,
+    color: '#0f172a',
+  },
+  modalSubHeader: {
+    fontSize: 12,
+    color: '#64748b',
+    marginTop: 2,
+  },
+  btnModalClose: {
+    background: '#e2e8f0',
+    border: 'none',
+    color: '#475569',
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    cursor: 'pointer',
+  },
+  modalBody: {
+    padding: '16px 20px',
+    overflowY: 'auto',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 14,
+  },
+  modalAlertDuplikat: {
+    background: '#fef2f2',
+    border: '1.5px solid #fecaca',
+    borderRadius: 12,
+    padding: '12px 14px',
+    display: 'flex',
+    gap: 10,
+    alignItems: 'flex-start',
+  },
+  modalSectionCard: {
+    background: '#f8fafc',
+    border: '1px solid #e2e8f0',
+    borderRadius: 12,
+    padding: '12px 14px',
+  },
+  modalSectionLabel: {
+    fontSize: 11,
+    fontWeight: 800,
+    color: '#64748b',
+    textTransform: 'uppercase',
+    letterSpacing: '0.04em',
+  },
+  subTable: {
+    width: '100%',
+    borderCollapse: 'collapse',
+    background: '#ffffff',
+    borderRadius: 8,
+    overflow: 'hidden',
+    border: '1px solid #e2e8f0',
+  },
+  subThRow: {
+    background: '#f1f5f9',
+    borderBottom: '1px solid #e2e8f0',
+  },
+  subTh: {
+    padding: '6px 10px',
+    fontSize: 11,
+    fontWeight: 800,
+    color: '#475569',
+    textAlign: 'left',
+  },
+  subTr: {
+    borderBottom: '1px solid #f1f5f9',
+  },
+  subTd: {
+    padding: '8px 10px',
+    fontSize: 12,
+    color: '#334155',
+  },
+  badgeHadirMini: {
+    background: '#dcfce7',
+    color: '#15803d',
+    padding: '2px 6px',
+    borderRadius: 4,
+    fontSize: 10.5,
+    fontWeight: 800,
+  },
+  emptySiswaInfo: {
+    marginTop: 8,
+    fontSize: 12,
+    color: '#64748b',
+    background: '#ffffff',
+    padding: '8px 12px',
+    borderRadius: 6,
+    border: '1px dashed #cbd5e1',
+  },
+  emptyFotoInfo: {
+    marginTop: 8,
+    fontSize: 12,
+    color: '#64748b',
+    textAlign: 'center',
+    padding: '16px',
+    background: '#ffffff',
+    borderRadius: 8,
+    border: '1px dashed #cbd5e1',
+  },
+  modalFotoImg: {
+    maxWidth: '100%',
+    maxHeight: 240,
+    borderRadius: 10,
+    objectFit: 'contain',
+    border: '1px solid #cbd5e1',
+    boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+  },
+  modalFotoOverlayBtn: {
+    marginTop: 6,
+    fontSize: 11,
+    color: '#2563eb',
+    fontWeight: 700,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
+  },
+  modalFooter: {
+    padding: '12px 20px',
+    borderTop: '1px solid #e2e8f0',
+    background: '#f8fafc',
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  btnModalHapus: {
+    background: '#fee2e2',
+    color: '#dc2626',
+    border: '1px solid #fca5a5',
+    padding: '8px 14px',
+    borderRadius: 8,
+    fontSize: 12,
+    fontWeight: 800,
+    cursor: 'pointer',
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: 6,
+  },
+  btnModalSetuju: {
+    background: '#10b981',
+    color: '#ffffff',
+    border: 'none',
+    padding: '8px 16px',
+    borderRadius: 8,
+    fontSize: 12,
+    fontWeight: 800,
+    cursor: 'pointer',
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: 6,
+  },
+  btnModalUndo: {
+    background: '#f1f5f9',
+    color: '#475569',
+    border: '1px solid #cbd5e1',
+    padding: '8px 14px',
+    borderRadius: 8,
+    fontSize: 12,
+    fontWeight: 700,
+    cursor: 'pointer',
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: 6,
+  },
+  btnModalTutup: {
+    background: '#ffffff',
+    color: '#334155',
+    border: '1px solid #cbd5e1',
+    padding: '8px 16px',
+    borderRadius: 8,
+    fontSize: 12,
+    fontWeight: 700,
+    cursor: 'pointer',
   },
 };
-
-export default SesiGuruPage;
