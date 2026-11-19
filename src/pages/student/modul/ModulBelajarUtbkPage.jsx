@@ -59,6 +59,7 @@ export default function ModulBelajarUtbkPage() {
     totalSelesai: 0,
     persenTotal: 0,
     perSubtes: {},
+    perSubtest: {},
     babSelesaiIds: [],
   });
   const [terakhirDibaca, setTerakhirDibaca] = useState(null);
@@ -419,7 +420,7 @@ export default function ModulBelajarUtbkPage() {
             })
             .map((sub) => {
               const isSelected = selectedSubtes === sub.kode;
-              const subStat = statistik.perSubtes[sub.kode];
+              const subStat = (statistik?.perSubtes && statistik.perSubtes[sub.kode]) || (statistik?.perSubtest && statistik.perSubtest[sub.kode]);
               return (
                 <button
                   key={sub.kode}
@@ -560,7 +561,7 @@ export default function ModulBelajarUtbkPage() {
           }}
         >
           {filteredBab.map((bab) => {
-            const isSelesai = statistik.babSelesaiIds.includes(bab.id);
+            const isSelesai = Array.isArray(statistik?.babSelesaiIds) && statistik.babSelesaiIds.includes(bab.id);
             return (
               <div
                 key={bab.id}

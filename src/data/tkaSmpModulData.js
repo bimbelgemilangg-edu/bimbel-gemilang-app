@@ -3378,9 +3378,13 @@ export function hitungStatistikModulSmpSiswa(studentId) {
 
   return {
     totalBab,
+    totalSelesai: selesaiCount,
     selesaiCount,
+    persenTotal: persen,
     persen,
+    perSubtes: perSubtest,
     perSubtest,
+    babSelesaiIds: babSelesaiArr,
   };
 }
 
