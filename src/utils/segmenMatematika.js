@@ -106,19 +106,42 @@ export function normalisasiTeksMatematika(teks) {
   });
 
   // Derajat di luar math: 30°C -> $30^\circ\text{C}$, 45° -> $45^\circ$
-  hasil = hasil.replace(/(\d+)\s*[°◦]\s*C\b/g, '$$$1^\\circ\\text{C}$');
-  hasil = hasil.replace(/(\d+)\s*[°◦]\b/g, '$$$1^\\circ$');
+  hasil = hasil.replace(/(\d+)\s*[°◦]\s*C\b/g, (m, g1) => `$${g1}^\\circ\\text{C}$`);
+  hasil = hasil.replace(/(\d+)\s*[°◦]\b/g, (m, g1) => `$${g1}^\\circ$`);
 
   // Akar di luar math: √16 -> $\sqrt{16}$, √(x+1) -> $\sqrt{x+1}$
-  hasil = hasil.replace(/√\s*\(([^)]+)\)/g, '$\\sqrt{$1}$');
-  hasil = hasil.replace(/√\s*\{([^}]+)\}/g, '$\\sqrt{$1}$');
-  hasil = hasil.replace(/√\s*(\d+|[a-zA-Z])\b/g, '$\\sqrt{$1}$');
+  hasil = hasil.replace(/√\s*\(([^)]+)\)/g, (m, g1) => `$\\sqrt{${g1}}$`);
+  hasil = hasil.replace(/√\s*\{([^}]+)\}/g, (m, g1) => `$\\sqrt{${g1}}$`);
+  hasil = hasil.replace(/√\s*(\d+|[a-zA-Z])\b/g, (m, g1) => `$\\sqrt{${g1}}$`);
   hasil = hasil.replace(/√/g, '$\\sqrt{}$');
 
+  // Konversi unicode superscript (², ³, ⁴, ⁻⁵, dll) ke format caret sebelum normalisasi eksponen
+  const mapSup = {'⁰':'0','¹':'1','²':'2','³':'3','⁴':'4','⁵':'5','⁶':'6','⁷':'7','⁸':'8','⁹':'9','⁺':'+','⁻':'-'};
+  hasil = hasil.replace(/([0-9a-zA-Z\)])([⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻]+)/g, (m, base, exp) => {
+    const normExp = exp.split('').map(c => mapSup[c] || c).join('');
+    return `${base}^(${normExp})`;
+  });
+
+  // Notasi Ilmiah di luar math: mis. 7,25 × 10^-4 atau 7.25 x 10^-5
+  hasil = hasil.replace(/(\d+(?:[.,]\d+)?)\s*[×x]\s*10\^([0-9\-+]+)/g, (m, g1, g2) => {
+    const mantissa = g1.replace(',', '{,}');
+    return `$${mantissa} \\times 10^{${g2}}$`;
+  });
+
+  // Pangkat dengan tanda kurung: mis. 4^(-2), 2^(-3), (-2)^4, a^(m+n)
+  hasil = hasil.replace(/\((-?[0-9a-zA-Z]+)\)\^([0-9a-zA-Z\-+]+)/g, (m, g1, g2) => `$(${g1})^{${g2}}$`);
+  hasil = hasil.replace(/(?<![\w$])([a-zA-Z]|\d+|\([^\)]+\))\^\(([^\)]+)\)(?![\w$])/g, (m, g1, g2) => `$${g1}^{${g2}}$`);
+
+  // Pangkat sederhana di luar math: mis. x^2, x^3, 2^10, 10^-3
+  hasil = hasil.replace(/(?<![\w$])([a-zA-Z]|\d+)\^([0-9a-zA-Z\-+]+)(?![\w$])/g, (m, g1, g2) => `$${g1}^{${g2}}$`);
+
+  // Gabungkan perkalian di antara dua token math yang berdekatan: $a^m$ × $a^n$ -> $a^m \times a^n$
+  hasil = hasil.replace(/\$([^\$]+)\$\s*[×x]\s*\$([^\$]+)\$/g, (m, g1, g2) => `$${g1} \\times ${g2}$`);
+
   // Operasi matematika di luar math: 12 ÷ 3 -> $12 \div 3$, 4 × 5 -> $4 \times 5$, ± -> $\pm$
-  hasil = hasil.replace(/([0-9a-zA-Z\)\]\}]+)\s*÷\s*([0-9a-zA-Z\(\[\{]+)/g, '$$1 \\div $2$');
+  hasil = hasil.replace(/([0-9a-zA-Z,.\)\]\}]+)\s*÷\s*([0-9a-zA-Z,.\(\[\{]+)/g, (m, g1, g2) => `$${g1} \\div ${g2}$`);
   hasil = hasil.replace(/÷/g, '$\\div$');
-  hasil = hasil.replace(/([0-9a-zA-Z\)\]\}]+)\s*×\s*([0-9a-zA-Z\(\[\{]+)/g, '$$1 \\times $2$');
+  hasil = hasil.replace(/([0-9a-zA-Z,.\)\]\}]+)\s*×\s*([0-9a-zA-Z,.\(\[\{]+)/g, (m, g1, g2) => `$${g1} \\times ${g2}$`);
   hasil = hasil.replace(/×/g, '$\\times$');
   hasil = hasil.replace(/±/g, '$\\pm$');
   hasil = hasil.replace(/≤/g, '$\\le$');
@@ -129,9 +152,6 @@ export function normalisasiTeksMatematika(teks) {
   // Normalisasi tanda minus unicode di luar math:
   hasil = hasil.replace(/([0-9a-zA-Z\)\]\}]+)\s*[−–]\s*([0-9a-zA-Z\(\[\{]+)/g, '$1 - $2');
   hasil = hasil.replace(/(^|[\s(=:])\s*[−–]\s*(\d+)/g, '$1-$2');
-
-  // Pangkat sederhana di luar math: mis. x^2, x^3, 2^10, 10^-3
-  hasil = hasil.replace(/(?<![\w$])([a-zA-Z]|\d+)\^([0-9a-zA-Z\-+]+)(?![\w$])/g, '$$$1^{$2}$');
 
   // Konversi pecahan miring sederhana (1/2, 3/4) menjadi pecahan bertingkat atas-bawah (\frac{1}{2})
   // Mencegah konversi pada tanggal (mis. 16/11/2026) atau url atau tahun ajaran (2025/2026)

@@ -48,6 +48,74 @@ import {
 } from '../../../data/tkaSmpModulData.js';
 import { useProfilSiswa } from '../../../utils/profilSiswa';
 import { deteksiTingkatSiswa } from '../../../utils/tingkatSiswa';
+import RenderMath from '../../../components/RenderMath';
+
+function VisualDiagramBox({ svgContent, judul = 'Diagram Analisis Visual', caption }) {
+  if (!svgContent) return null;
+  return (
+    <div
+      style={{
+        margin: '14px 0 18px',
+        background: '#ffffff',
+        borderRadius: 14,
+        border: '1.5px solid #cbd5e1',
+        padding: '16px',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.03)',
+        overflow: 'hidden',
+      }}
+    >
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          marginBottom: 10,
+          paddingBottom: 8,
+          borderBottom: '1px solid #f1f5f9',
+          flexWrap: 'wrap',
+          gap: 6,
+        }}
+      >
+        <span
+          style={{
+            fontSize: 11,
+            fontWeight: 800,
+            color: '#0f766e',
+            textTransform: 'uppercase',
+            letterSpacing: '0.05em',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6,
+          }}
+        >
+          📐 {judul}
+        </span>
+        <span
+          style={{
+            fontSize: 10,
+            background: '#f0fdfa',
+            color: '#0d9488',
+            padding: '2px 8px',
+            borderRadius: 6,
+            fontWeight: 700,
+            border: '1px solid #ccfbf1',
+          }}
+        >
+          Visual Resmi Bimbel Gemilang
+        </span>
+      </div>
+      <div
+        style={{ width: '100%', display: 'flex', justifyContent: 'center' }}
+        dangerouslySetInnerHTML={{ __html: svgContent }}
+      />
+      {caption && (
+        <div style={{ fontSize: 11, color: '#64748b', textAlign: 'center', marginTop: 8, fontStyle: 'italic' }}>
+          {caption}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function ModulReaderUtbkPage() {
   const { subtestKode, babSlug } = useParams();
@@ -368,9 +436,9 @@ export default function ModulReaderUtbkPage() {
           {bab.judul}
         </h1>
 
-        <p style={{ margin: 0, fontSize: 13.5, color: '#475569', lineHeight: 1.6 }}>
-          {bab.ringkasanSingkat}
-        </p>
+        <div style={{ margin: 0, fontSize: 13.5, color: '#475569', lineHeight: 1.6 }}>
+          <RenderMath text={bab.ringkasanSingkat} />
+        </div>
       </div>
 
       {/* 🎯 SASARAN BELAJAR (LEARNING OBJECTIVES) */}
@@ -392,11 +460,20 @@ export default function ModulReaderUtbkPage() {
             {bab.learningObjectives.map((obj, i) => (
               <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 12.5, color: '#134e4a', lineHeight: 1.5 }}>
                 <CheckCircle2 size={15} style={{ color: '#0d9488', flexShrink: 0, marginTop: 2 }} />
-                <span>{obj}</span>
+                <span><RenderMath text={obj} /></span>
               </div>
             ))}
           </div>
         </div>
+      )}
+
+      {/* 📐 DIAGRAM VISUAL & ANALISIS UTAMA (GEMILANG) */}
+      {bab.diagramSvg && (
+        <VisualDiagramBox
+          svgContent={bab.diagramSvg}
+          judul={`Diagram Konsep Inti: ${bab.judul}`}
+          caption="Ilustrasi geometri dan infografis resmi Bimbel Gemilang (Bebas Watermark & Resolusi Presisi Tinggi)"
+        />
       )}
 
       {/* 📖 KONSEP & TEORI INTI */}
@@ -421,9 +498,13 @@ export default function ModulReaderUtbkPage() {
               <h3 style={{ margin: '0 0 10px', fontSize: 15, fontWeight: 800, color: '#0f172a' }}>
                 {kt.subjudul}
               </h3>
-              <p style={{ margin: '0 0 12px', fontSize: 13, color: '#334155', lineHeight: 1.65, whiteSpace: 'pre-line' }}>
-                {kt.isi}
-              </p>
+              <div style={{ margin: '0 0 12px', fontSize: 13, color: '#334155', lineHeight: 1.65 }}>
+                <RenderMath text={kt.isi} />
+              </div>
+
+              {kt.diagramSvg && (
+                <VisualDiagramBox svgContent={kt.diagramSvg} judul={`Visualisasi: ${kt.subjudul}`} />
+              )}
 
               {kt.poinPenting && kt.poinPenting.length > 0 && (
                 <div
@@ -439,7 +520,7 @@ export default function ModulReaderUtbkPage() {
                   </div>
                   {kt.poinPenting.map((pt, pIdx) => (
                     <div key={pIdx} style={{ fontSize: 12, color: '#475569', lineHeight: 1.5, marginBottom: 4 }}>
-                      • {pt}
+                      • <RenderMath text={pt} />
                     </div>
                   ))}
                 </div>
@@ -464,9 +545,9 @@ export default function ModulReaderUtbkPage() {
             <Zap size={18} />
             {isSmp ? 'Trik Kilat Gemilang (30 Detik)' : 'Trik Cepat UTBK (30 Detik)'}
           </div>
-          <p style={{ margin: 0, fontSize: 13, color: '#78350f', lineHeight: 1.6, fontWeight: 500 }}>
-            {bab.trikCepat}
-          </p>
+          <div style={{ margin: 0, fontSize: 13, color: '#78350f', lineHeight: 1.6, fontWeight: 500 }}>
+            <RenderMath text={bab.trikCepat} />
+          </div>
         </div>
       )}
 
@@ -485,9 +566,9 @@ export default function ModulReaderUtbkPage() {
             <AlertTriangle size={18} />
             Jebakan Umum (Distractor Trap)
           </div>
-          <p style={{ margin: 0, fontSize: 13, color: '#881337', lineHeight: 1.6, fontWeight: 500 }}>
-            {bab.jebakanUmum}
-          </p>
+          <div style={{ margin: 0, fontSize: 13, color: '#881337', lineHeight: 1.6, fontWeight: 500 }}>
+            <RenderMath text={bab.jebakanUmum} />
+          </div>
         </div>
       )}
 
@@ -512,9 +593,14 @@ export default function ModulReaderUtbkPage() {
               <div style={{ fontSize: 11, fontWeight: 800, color: '#2563eb', textTransform: 'uppercase', marginBottom: 8 }}>
                 Contoh Kasus #{i + 1}
               </div>
-              <div style={{ fontSize: 13.5, color: '#0f172a', lineHeight: 1.6, fontWeight: 600, marginBottom: 14, whiteSpace: 'pre-line' }}>
-                {cs.soal}
+              <div style={{ fontSize: 13.5, color: '#0f172a', lineHeight: 1.6, fontWeight: 600, marginBottom: 14 }}>
+                <RenderMath text={cs.soal} />
               </div>
+
+              {/* Diagram Visual Contoh Kasus jika ada */}
+              {cs.diagramSvg && (
+                <VisualDiagramBox svgContent={cs.diagramSvg} judul={`Visualisasi Geometri Kasus #${i + 1}`} />
+              )}
 
               {/* Opsi Jawaban */}
               {cs.opsi && (
@@ -531,7 +617,7 @@ export default function ModulReaderUtbkPage() {
                         color: '#334155',
                       }}
                     >
-                      <strong style={{ color: '#0f172a' }}>{label}.</strong> {text}
+                      <strong style={{ color: '#0f172a' }}>{label}.</strong> <RenderMath text={text} />
                     </div>
                   ))}
                 </div>
@@ -582,7 +668,7 @@ export default function ModulReaderUtbkPage() {
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                     {cs.pembahasanLangkah.map((langkah, lIdx) => (
                       <div key={lIdx} style={{ fontSize: 12.5, color: '#334155', lineHeight: 1.55 }}>
-                        <strong>Langkah {lIdx + 1}:</strong> {langkah}
+                        <strong>Langkah {lIdx + 1}:</strong> <RenderMath text={langkah} />
                       </div>
                     ))}
                   </div>
@@ -653,8 +739,13 @@ export default function ModulReaderUtbkPage() {
                     Soal #{qIdx + 1}
                   </div>
                   <div style={{ fontSize: 13.5, color: '#0f172a', fontWeight: 600, lineHeight: 1.6, marginBottom: 14 }}>
-                    {soalTeks}
+                    <RenderMath text={soalTeks} />
                   </div>
+
+                  {/* Diagram Visual Butir Kuis jika ada */}
+                  {q.diagramSvg && (
+                    <VisualDiagramBox svgContent={q.diagramSvg} judul={`Diagram Visual Soal #${qIdx + 1}`} />
+                  )}
 
                   {/* Opsi Pilihan Ganda */}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -720,7 +811,7 @@ export default function ModulReaderUtbkPage() {
                           >
                             {op.label}
                           </span>
-                          <span>{op.text}</span>
+                          <span><RenderMath text={op.text} /></span>
                         </button>
                       );
                     })}
@@ -740,7 +831,7 @@ export default function ModulReaderUtbkPage() {
                         lineHeight: 1.5,
                       }}
                     >
-                      <strong style={{ color: '#0d9488' }}>Kunci ({q.kunci}):</strong> {q.pembahasan}
+                      <strong style={{ color: '#0d9488' }}>Kunci ({q.kunci}):</strong> <RenderMath text={q.pembahasan} />
                     </div>
                   )}
                 </div>
@@ -810,7 +901,7 @@ export default function ModulReaderUtbkPage() {
             {bab.keyTakeaways.map((kt, i) => (
               <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 12.5, color: '#334155' }}>
                 <span style={{ color: '#0d9488', fontWeight: 800 }}>•</span>
-                <span>{kt}</span>
+                <span><RenderMath text={kt} /></span>
               </div>
             ))}
           </div>
