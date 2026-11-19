@@ -159,7 +159,9 @@ const SchedulePage = () => {
     teacherId: "",
     teacherName: "",
     selectedStudents: [],
-    repeat: "Once"
+    repeat: "Once",
+    modeBelajar: "Offline", // 'Offline' | 'Online'
+    linkOnline: "", // Link Zoom / Google Meet
   };
   const [formData, setFormData] = useState(defaultForm);
   
@@ -405,7 +407,9 @@ const SchedulePage = () => {
         teacherName: item.teacherName || "",
         teacherFotoUrl: item.teacherFotoUrl || "",
         selectedStudents: item.students || [],
-        repeat: "Once"
+        repeat: "Once",
+        modeBelajar: item.modeBelajar || (item.tipeKelas === 'online' ? 'Online' : 'Offline'),
+        linkOnline: item.linkOnline || "",
       });
     } else {
       setFormData({
@@ -413,7 +417,9 @@ const SchedulePage = () => {
         start: "14:00",
         end: "15:30",
         program: "Reguler",
-        level: "SD"
+        level: "SD",
+        modeBelajar: "Offline",
+        linkOnline: "",
       });
     }
     setStudentSearch("");
@@ -500,6 +506,9 @@ const SchedulePage = () => {
         dateStr: targetDateStr,
         status: scheduleMode === 'draft' ? 'draft' : 'scheduled',
         isDraft: scheduleMode === 'draft',
+        modeBelajar: formData.modeBelajar || 'Offline',
+        tipeKelas: formData.modeBelajar === 'Online' ? 'online' : 'reguler',
+        linkOnline: formData.linkOnline || '',
         updatedAt: serverTimestamp()
       };
 
@@ -592,6 +601,50 @@ const SchedulePage = () => {
     } catch (err) {
       console.error("Gagal hapus:", err);
       showAlert("❌ Gagal menghapus jadwal!");
+    }
+  };
+
+  // 1-Klik Toggle Mode Online / Offline Cepat (misal hari ini hujan deras dialihkan ke Zoom)
+  const handleToggleOnlineQuick = async (scheduleItem) => {
+    if (!scheduleItem) return;
+    const isCurrentlyOnline = scheduleItem.modeBelajar === 'Online' || scheduleItem.tipeKelas === 'online';
+    const targetMode = isCurrentlyOnline ? 'Offline' : 'Online';
+
+    let linkZoom = scheduleItem.linkOnline || '';
+    if (!isCurrentlyOnline) {
+      const inputLink = window.prompt(
+        "💻 ALIKHAN KELAS INI KE MODE ONLINE (ZOOM / GOOGLE MEET)\n\n" +
+        "Contoh alasan: Hari ini hujan deras, kelas diadakan online.\n\n" +
+        "Masukkan Link Zoom / Google Meet (opsional, bisa dikosongkan jika link dibagikan di WA):",
+        scheduleItem.linkOnline || ""
+      );
+      if (inputLink === null) return; // Batal
+      linkZoom = inputLink.trim();
+    } else {
+      const confirmOffline = window.confirm(
+        "🏫 Kembalikan kelas ini ke mode OFFLINE (Tatap Muka di Ruang " + scheduleItem.planet + ")?"
+      );
+      if (!confirmOffline) return;
+    }
+
+    try {
+      const targetCol = scheduleMode === 'draft' ? "jadwal_draft" : "jadwal_bimbel";
+      const updateData = {
+        modeBelajar: targetMode,
+        tipeKelas: targetMode === 'Online' ? 'online' : 'reguler',
+        linkOnline: linkZoom,
+        updatedAt: serverTimestamp(),
+      };
+
+      await updateDoc(doc(db, targetCol, scheduleItem.id), updateData);
+      showAlert(`✅ Kelas ${scheduleItem.title || scheduleItem.mapelName} berhasil diubah ke mode ${targetMode}!`);
+      
+      // Update local state
+      setDetailSchedule(prev => (prev && prev.id === scheduleItem.id ? { ...prev, ...updateData } : prev));
+      fetchData();
+    } catch (err) {
+      console.error("Gagal ganti mode online:", err);
+      showAlert("❌ Gagal mengubah mode kelas: " + err.message);
     }
   };
 
@@ -931,6 +984,31 @@ const SchedulePage = () => {
                         <div style={styles.scheduleTop}>
                           <span style={styles.timeBadge}>⏰ {item.start} - {item.end}</span>
                           <span style={styles.programBadge(item.program)}>{item.program}</span>
+                          {(item.modeBelajar === 'Online' || item.tipeKelas === 'online') ? (
+                            <span style={{
+                              background: isDarkMode ? '#1e3a8a' : '#eff6ff',
+                              color: isDarkMode ? '#93c5fd' : '#1d4ed8',
+                              border: isDarkMode ? '1px solid #3b82f6' : '1px solid #bfdbfe',
+                              padding: '2px 7px',
+                              borderRadius: 6,
+                              fontSize: 10,
+                              fontWeight: 800
+                            }}>
+                              💻 Online
+                            </span>
+                          ) : (
+                            <span style={{
+                              background: isDarkMode ? '#064e3b' : '#f0fdf4',
+                              color: isDarkMode ? '#6ee7b7' : '#15803d',
+                              border: isDarkMode ? '1px solid #059669' : '1px solid #bbf7d0',
+                              padding: '2px 7px',
+                              borderRadius: 6,
+                              fontSize: 10,
+                              fontWeight: 800
+                            }}>
+                              🏫 Offline
+                            </span>
+                          )}
                           {item.isDraft && (
                             <span style={styles.draftBadge}>🧪 Draft</span>
                           )}
@@ -1069,6 +1147,19 @@ const SchedulePage = () => {
                       }}>
                         <span style={styles.weeklyTime}>{item.start} - {item.end}</span>
                         <span style={styles.weeklyPlanet}>🪐 {item.planet}</span>
+                        {(item.modeBelajar === 'Online' || item.tipeKelas === 'online') ? (
+                          <span style={{
+                            background: isDarkMode ? '#1e3a8a' : '#eff6ff',
+                            color: isDarkMode ? '#93c5fd' : '#1d4ed8',
+                            border: isDarkMode ? '1px solid #3b82f6' : '1px solid #bfdbfe',
+                            padding: '1px 5px',
+                            borderRadius: 4,
+                            fontSize: 9.5,
+                            fontWeight: 800
+                          }}>
+                            💻 Online
+                          </span>
+                        ) : null}
                         <span style={{ fontWeight: 700, color: isDarkMode ? '#f8fafc' : '#0f172a' }}>
                           {item.title || item.mapelName}
                         </span>
@@ -1102,6 +1193,14 @@ const SchedulePage = () => {
                             title="Detail"
                           >
                             👁️
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteSchedule(item)}
+                            style={{ ...styles.btnMiniAction, color: '#ef4444' }}
+                            title="Hapus Jadwal"
+                          >
+                            🗑️
                           </button>
                         </div>
                       </div>
@@ -1173,6 +1272,53 @@ const SchedulePage = () => {
               <span>📘 Mata Pelajaran</span>
               <strong>{detailSchedule.mapelName || detailSchedule.title || '-'}</strong>
             </div>
+
+            {/* Mode Belajar: Offline vs Online */}
+            <div style={styles.detailRow}>
+              <span>🌐 Mode Belajar</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                {detailSchedule.modeBelajar === 'Online' || detailSchedule.tipeKelas === 'online' ? (
+                  <span style={{ background: '#eff6ff', color: '#1d4ed8', border: '1px solid #bfdbfe', padding: '3px 8px', borderRadius: 6, fontSize: 11, fontWeight: 800 }}>
+                    💻 KELAS ONLINE (Zoom / Meet)
+                  </span>
+                ) : (
+                  <span style={{ background: '#f0fdf4', color: '#15803d', border: '1px solid #bbf7d0', padding: '3px 8px', borderRadius: 6, fontSize: 11, fontWeight: 700 }}>
+                    🏫 KELAS OFFLINE (Tatap Muka)
+                  </span>
+                )}
+                <button
+                  type="button"
+                  onClick={() => handleToggleOnlineQuick(detailSchedule)}
+                  style={{
+                    background: detailSchedule.modeBelajar === 'Online' || detailSchedule.tipeKelas === 'online' ? '#f0fdf4' : '#eff6ff',
+                    color: detailSchedule.modeBelajar === 'Online' || detailSchedule.tipeKelas === 'online' ? '#15803d' : '#1d4ed8',
+                    border: '1px solid currentColor',
+                    padding: '3px 10px',
+                    borderRadius: 6,
+                    fontSize: 11,
+                    fontWeight: 800,
+                    cursor: 'pointer',
+                  }}
+                  title="Klik untuk ubah cepat offline/online (misal karena hujan deras)"
+                >
+                  {detailSchedule.modeBelajar === 'Online' || detailSchedule.tipeKelas === 'online' ? '🏫 Ubah ke Offline' : '💻 Alihkan ke Online (Zoom)'}
+                </button>
+              </div>
+            </div>
+
+            {detailSchedule.linkOnline && (
+              <div style={styles.detailRow}>
+                <span>🔗 Link Zoom / Meet</span>
+                <a
+                  href={detailSchedule.linkOnline}
+                  target="_blank"
+                  rel="noreferrer"
+                  style={{ color: '#2563eb', fontWeight: 700, fontSize: 12, wordBreak: 'break-all' }}
+                >
+                  {detailSchedule.linkOnline}
+                </a>
+              </div>
+            )}
             
             <div style={styles.detailDivider} />
             
@@ -1190,6 +1336,62 @@ const SchedulePage = () => {
             ) : (
               <p style={{color: '#94a3b8', fontSize: 12}}>Belum ada siswa</p>
             )}
+
+            {/* Tombol Aksi Detail: Edit Lengkap & Hapus Jadwal */}
+            <div style={{ display: 'flex', gap: 8, marginTop: 16, borderTop: isDarkMode ? '1px solid #334155' : '1px solid #e2e8f0', paddingTop: 14 }}>
+              <button
+                type="button"
+                onClick={() => {
+                  const item = detailSchedule;
+                  setDetailSchedule(null);
+                  handleDeleteSchedule(item);
+                }}
+                style={{
+                  flex: 1,
+                  background: '#fee2e2',
+                  color: '#dc2626',
+                  border: '1px solid #fca5a5',
+                  padding: '9px 14px',
+                  borderRadius: 8,
+                  fontSize: 12,
+                  fontWeight: 800,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 6,
+                }}
+                title="Hapus sesi jadwal kelas ini jika terjadi kesalahan"
+              >
+                <Trash2 size={13} /> Hapus Jadwal
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  const item = detailSchedule;
+                  setDetailSchedule(null);
+                  handleOpenModal(item.planet, true, item);
+                }}
+                style={{
+                  flex: 1,
+                  background: '#0d9488',
+                  color: '#ffffff',
+                  border: 'none',
+                  padding: '9px 14px',
+                  borderRadius: 8,
+                  fontSize: 12,
+                  fontWeight: 800,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 6,
+                }}
+              >
+                <Edit3 size={13} /> Edit Sesi Lengkap
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -1636,6 +1838,68 @@ const SchedulePage = () => {
                     </select>
                   </div>
                 </div>
+
+                {/* Pilihan Mode Belajar: Offline vs Online */}
+                <div style={styles.formGroup}>
+                  <label style={styles.formLabel}>🌐 Mode Belajar Kelas</label>
+                  <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
+                    <button
+                      type="button"
+                      onClick={() => setFormData({ ...formData, modeBelajar: 'Offline' })}
+                      style={{
+                        flex: 1,
+                        padding: '9px 12px',
+                        borderRadius: 8,
+                        border: formData.modeBelajar !== 'Online' ? '2px solid #0d9488' : (isDarkMode ? '1px solid #475569' : '1px solid #cbd5e1'),
+                        background: formData.modeBelajar !== 'Online' ? (isDarkMode ? '#134e4a' : '#f0fdfa') : (isDarkMode ? '#0f172a' : '#ffffff'),
+                        color: formData.modeBelajar !== 'Online' ? (isDarkMode ? '#5eead4' : '#0f766e') : (isDarkMode ? '#94a3b8' : '#64748b'),
+                        fontWeight: 800,
+                        fontSize: 12.5,
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: 6,
+                      }}
+                    >
+                      🏫 Offline (Tatap Muka)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setFormData({ ...formData, modeBelajar: 'Online' })}
+                      style={{
+                        flex: 1,
+                        padding: '9px 12px',
+                        borderRadius: 8,
+                        border: formData.modeBelajar === 'Online' ? '2px solid #2563eb' : (isDarkMode ? '1px solid #475569' : '1px solid #cbd5e1'),
+                        background: formData.modeBelajar === 'Online' ? (isDarkMode ? '#1e3a8a' : '#eff6ff') : (isDarkMode ? '#0f172a' : '#ffffff'),
+                        color: formData.modeBelajar === 'Online' ? (isDarkMode ? '#93c5fd' : '#1d4ed8') : (isDarkMode ? '#94a3b8' : '#64748b'),
+                        fontWeight: 800,
+                        fontSize: 12.5,
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: 6,
+                      }}
+                    >
+                      💻 Online (Zoom / Meet)
+                    </button>
+                  </div>
+                </div>
+
+                {formData.modeBelajar === 'Online' && (
+                  <div style={styles.formGroup}>
+                    <label style={styles.formLabel}>🔗 Link Zoom / Google Meet (Opsional)</label>
+                    <input
+                      type="url"
+                      value={formData.linkOnline || ''}
+                      onChange={e => setFormData({ ...formData, linkOnline: e.target.value })}
+                      style={styles.formInput}
+                      placeholder="https://zoom.us/j/... atau https://meet.google.com/..."
+                    />
+                  </div>
+                )}
 
                 <div style={styles.formGroup}>
                   <label style={styles.formLabel}>👨‍🏫 Guru / Tentor</label>

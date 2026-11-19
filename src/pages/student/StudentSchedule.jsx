@@ -98,11 +98,60 @@ const StudentSchedule = () => {
           {mySchedules.map(item => (
             <div key={item.id} style={styles.card}>
               <div style={styles.cardTop}>
-                <div style={styles.badgePlanet}>🪐 {item.planet}</div>
+                <div style={{
+                  ...styles.badgePlanet,
+                  background: (item.modeBelajar === 'Online' || item.tipeKelas === 'online') ? '#dbeafe' : '#e3f2fd',
+                  color: (item.modeBelajar === 'Online' || item.tipeKelas === 'online') ? '#1e40af' : '#1976d2',
+                  border: (item.modeBelajar === 'Online' || item.tipeKelas === 'online') ? '1px solid #93c5fd' : 'none',
+                }}>
+                  {(item.modeBelajar === 'Online' || item.tipeKelas === 'online') ? '💻 KELAS ONLINE' : `🪐 ${item.planet}`}
+                </div>
                 <div style={styles.badgeProgram}>{item.program}</div>
               </div>
 
               <h3 style={styles.title}>{item.title || "Sesi Belajar"}</h3>
+
+              {(item.modeBelajar === 'Online' || item.tipeKelas === 'online') && (
+                <div style={{
+                  background: '#eff6ff',
+                  border: '1px solid #bfdbfe',
+                  borderRadius: 10,
+                  padding: '10px 12px',
+                  marginBottom: 12,
+                  fontSize: 12.5,
+                  color: '#1e40af'
+                }}>
+                  <div style={{ fontWeight: 800, marginBottom: item.linkOnline ? 6 : 0, display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <span>🌧️</span> Kelas diselenggarakan secara Online
+                  </div>
+                  {item.linkOnline ? (
+                    <a
+                      href={item.linkOnline}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 6,
+                        background: '#2563eb',
+                        color: '#ffffff',
+                        padding: '6px 12px',
+                        borderRadius: 6,
+                        textDecoration: 'none',
+                        fontWeight: 700,
+                        fontSize: 12,
+                        marginTop: 4
+                      }}
+                    >
+                      📹 Masuk Ruang Zoom / Meet
+                    </a>
+                  ) : (
+                    <div style={{ fontSize: 11.5, color: '#3b82f6', marginTop: 2 }}>
+                      Link pertemuan akan dibagikan via grup WhatsApp atau oleh guru sebelum sesi dimulai.
+                    </div>
+                  )}
+                </div>
+              )}
 
               <div style={styles.infoRow}>
                 <span style={styles.icon}>⏰</span>

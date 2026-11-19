@@ -178,6 +178,9 @@ const ClassSession = () => {
         const data = { id: ds.id, ...ds.data() };
         setSchedule(data);
         setMateriAktual(data.title || '');
+        if (data.modeBelajar === 'Online' || data.tipeKelas === 'online') {
+          setTipeKelas('online');
+        }
         const stored = localStorage.getItem('teacherData');
         if (!stored) { alert('⚠️ Data guru tidak ditemukan!'); navigate('/guru/dashboard'); return; }
         setTeacher(JSON.parse(stored));

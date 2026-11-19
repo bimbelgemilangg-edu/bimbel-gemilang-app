@@ -437,6 +437,19 @@ const TeacherSchedule = () => {
                     <MapPin size={12} color="#64748b" />
                     <span>{s.planet || 'Ruang'}</span>
                   </div>
+                  {(s.modeBelajar === 'Online' || s.tipeKelas === 'online') && (
+                    <span style={{
+                      background: '#eff6ff',
+                      color: '#1d4ed8',
+                      border: '1px solid #bfdbfe',
+                      padding: '2px 6px',
+                      borderRadius: 4,
+                      fontSize: 10,
+                      fontWeight: 800
+                    }}>
+                      💻 Online
+                    </span>
+                  )}
                 </div>
 
                 <div style={styles.dailyScheduleBody}>
@@ -508,6 +521,20 @@ const TeacherSchedule = () => {
           </div>
 
           <div style={styles.detailContent}>
+            <div style={styles.detailRow}>
+              <span>🌐 Mode Belajar</span>
+              <strong>
+                {(selectedSchedule.modeBelajar === 'Online' || selectedSchedule.tipeKelas === 'online') ? '💻 Online (Zoom / Meet)' : '🏫 Offline (Tatap Muka)'}
+              </strong>
+            </div>
+            {selectedSchedule.linkOnline && (
+              <div style={styles.detailRow}>
+                <span>🔗 Link Online</span>
+                <a href={selectedSchedule.linkOnline} target="_blank" rel="noopener noreferrer" style={{ color: '#2563eb', fontWeight: 700, wordBreak: 'break-all', textDecoration: 'none' }}>
+                  📹 Buka Ruang Zoom / Meet
+                </a>
+              </div>
+            )}
             <div style={styles.detailRow}>
               <span>🪐 Ruang</span>
               <strong>{selectedSchedule.planet || '-'}</strong>
