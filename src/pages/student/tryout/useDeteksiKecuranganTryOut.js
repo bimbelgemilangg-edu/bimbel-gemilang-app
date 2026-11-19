@@ -38,13 +38,14 @@ function jedaAcak() {
  * @param {object} opsi
  *   - aktif: boolean -- true kalau try out sedang berjalan (belum submit)
  *   - wajibKamera: boolean -- kalau true, kamera WAJIB nyala; gagal/ditolak = 1 pelanggaran
+ *   - modeKelasOnline: boolean -- jika true (kelas online Zoom/Meet), anti-cheat dilonggarkan & kamera tidak bentrok
  *   - onFotoTersimpan: (url:string) => void -- opsional, dipanggil tiap foto berhasil upload
  *     (biar caller bisa langsung nyimpen url-nya ke Firestore, hook ini gak nyimpen sendiri)
  */
-export function useDeteksiKecuranganTryOut({ aktif, wajibKamera = true, onFotoTersimpan }) {
+export function useDeteksiKecuranganTryOut({ aktif, wajibKamera = true, modeKelasOnline = false, onFotoTersimpan }) {
   const [pelanggaran, setPelanggaran] = useState([]); // [{type, at}]
   const [showPeringatan, setShowPeringatan] = useState(false);
-  const [statusKamera, setStatusKamera] = useState('memuat'); // 'memuat' | 'aktif' | 'ditolak' | 'gagal'
+  const [statusKamera, setStatusKamera] = useState(modeKelasOnline ? 'aktif' : 'memuat'); // 'memuat' | 'aktif' | 'ditolak' | 'gagal'
   const [jumlahFotoTersimpan, setJumlahFotoTersimpan] = useState(0);
 
   const videoRef = useRef(null);
@@ -61,8 +62,9 @@ export function useDeteksiKecuranganTryOut({ aktif, wajibKamera = true, onFotoTe
   // ---------------- 1. PORTING: tab/jendela/fullscreen ----------------
   // Logika PERSIS SAMA dengan StudentQuizView.jsx -- lihat file itu
   // kalau perlu bandingkan/sinkronkan di kemudian hari.
+  // Jika Mode Kelas Online aktif, siswa bebas split-screen / beralih ke Zoom tanpa penalti pelanggaran.
   useEffect(() => {
-    if (!aktif) return;
+    if (!aktif || modeKelasOnline) return;
 
     const onVisibilityChange = () => {
       if (document.hidden) catatPelanggaran('pindah_tab_atau_aplikasi');
@@ -81,11 +83,11 @@ export function useDeteksiKecuranganTryOut({ aktif, wajibKamera = true, onFotoTe
       window.removeEventListener('blur', onBlur);
       document.removeEventListener('fullscreenchange', onFullscreenChange);
     };
-  }, [aktif, catatPelanggaran]);
+  }, [aktif, modeKelasOnline, catatPelanggaran]);
 
   // ---------------- 2. BARU: nyalakan kamera ----------------
   useEffect(() => {
-    if (!aktif || !wajibKamera) return;
+    if (!aktif || !wajibKamera || modeKelasOnline) return;
     let batal = false;
 
     navigator.mediaDevices?.getUserMedia({ video: { facingMode: 'user' }, audio: false })
@@ -109,7 +111,7 @@ export function useDeteksiKecuranganTryOut({ aktif, wajibKamera = true, onFotoTe
       streamRef.current?.getTracks().forEach((t) => t.stop());
       streamRef.current = null;
     };
-  }, [aktif, wajibKamera, catatPelanggaran]);
+  }, [aktif, wajibKamera, modeKelasOnline, catatPelanggaran]);
 
   // ---------------- 2b. DIROMBAK TOTAL: ambil foto dipicu AKSI SISWA ----------------
   // 🔥 BUG SERIUS yang KEMARIN kejadian: versi lama pakai setTimeout di
@@ -191,13 +193,13 @@ export function useDeteksiKecuranganTryOut({ aktif, wajibKamera = true, onFotoTe
   // Aman dipanggil sesering apapun -- kalau belum waktunya (masih
   // dalam jeda acak), fungsi ini cuma diam, gak ngapa-ngapain.
   const cobaAmbilFoto = useCallback(() => {
-    if (!aktif || !wajibKamera || statusKamera !== 'aktif') return;
+    if (!aktif || !wajibKamera || statusKamera !== 'aktif' || modeKelasOnline) return;
     const sekarang = Date.now();
     if (sekarang - waktuTerakhirFotoRef.current < jedaBerikutnyaRef.current) return;
     waktuTerakhirFotoRef.current = sekarang;
     jedaBerikutnyaRef.current = jedaAcak(); // acak ulang buat jeda berikutnya
     ambilSatuFoto();
-  }, [aktif, wajibKamera, statusKamera, ambilSatuFoto]);
+  }, [aktif, wajibKamera, statusKamera, modeKelasOnline, ambilSatuFoto]);
 
   return {
     pelanggaran,

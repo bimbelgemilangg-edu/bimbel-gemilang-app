@@ -238,6 +238,7 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
   // sistem web manapun yang bisa) mendeteksi HP kedua yang terpisah.
   const [cheatViolations, setCheatViolations] = useState([]);
   const [showCheatWarning, setShowCheatWarning] = useState(false);
+  const [modeKelasOnline, setModeKelasOnline] = useState(false);
 
   // 🔥 FIX BUG KRITIS (TDZ / ReferenceError): sebelumnya `quizDraftKey` dan
   // `useEffect` auto-save draft-nya diletakkan DI ATAS, sebelum baris
@@ -1401,7 +1402,7 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
   // tidak ada halaman web yang bisa mencegah siswa memakai perangkat lain.
   // ============================================================
   useEffect(() => {
-    if (!quizStarted || isSubmitted || !quizData?.antiCheatEnabled || hasExistingAnswer) return;
+    if (!quizStarted || isSubmitted || !quizData?.antiCheatEnabled || hasExistingAnswer || modeKelasOnline) return;
 
     const logViolation = (type) => {
       setCheatViolations(prev => [...prev, { type, at: new Date().toISOString() }]);
@@ -2006,17 +2007,31 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
                 Tetap di halaman ini sampai selesai mengerjakan.
               </p>
             )}
-            <button
-              onClick={() => {
-                setShowCheatWarning(false);
-                if (quizData?.antiCheatEnabled && document.documentElement.requestFullscreen && !document.fullscreenElement) {
-                  document.documentElement.requestFullscreen().catch(() => {});
-                }
-              }}
-              style={{ background: '#673ab7', color: 'white', border: 'none', padding: '10px 24px', borderRadius: 10, fontWeight: 700, fontSize: 13, cursor: 'pointer' }}
-            >
-              Mengerti, Lanjutkan
-            </button>
+            <div style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap', marginTop: 12 }}>
+              <button
+                onClick={() => {
+                  setShowCheatWarning(false);
+                  if (quizData?.antiCheatEnabled && document.documentElement.requestFullscreen && !document.fullscreenElement) {
+                    document.documentElement.requestFullscreen().catch(() => {});
+                  }
+                }}
+                style={{ background: '#673ab7', color: 'white', border: 'none', padding: '10px 20px', borderRadius: 10, fontWeight: 700, fontSize: 13, cursor: 'pointer' }}
+              >
+                Mengerti, Lanjutkan
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setModeKelasOnline(true);
+                  setShowCheatWarning(false);
+                  alert('🎓 Mode Kelas Online Aktif: Peringatan perpindahan jendela/Zoom dinonaktifkan untuk kuis ini.');
+                }}
+                style={{ background: '#f0fdf4', color: '#15803d', border: '1.5px solid #86efac', padding: '10px 16px', borderRadius: 10, fontWeight: 700, fontSize: 12, cursor: 'pointer' }}
+                title="Aktifkan jika Anda sedang mengikuti kelas online via Zoom / Meet"
+              >
+                📹 Sedang Kelas Zoom
+              </button>
+            </div>
           </div>
         </div>
         );

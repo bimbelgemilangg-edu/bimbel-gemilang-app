@@ -224,6 +224,8 @@ export default function TryOutView() {
   // 🔥 (2026-10-10, restyle UI): palet nomor kini tersembunyi di balik
   // tombol di header -- format menjawab mengikuti mockup owner: linear.
   const [lihatPalet, setLihatPalet] = useState(false);
+  // Mode Kelas Online (Zoom / Google Meet) -- mematikan proteksi bentrok kamera & pergerakan jendela
+  const [modeKelasOnline, setModeKelasOnline] = useState(false);
 
   // Pengaturan Ukuran Font
   const [ukuranFont, setUkuranFont] = useState(() => {
@@ -621,7 +623,8 @@ export default function TryOutView() {
     pelanggaran, showPeringatan, tutupPeringatan, statusKamera, videoRef, cobaAmbilFoto,
   } = useDeteksiKecuranganTryOut({
     aktif: tahap === 'mengerjakan' && !paket?.isPaused,
-    wajibKamera: !!paket?.wajibKamera,
+    wajibKamera: !modeKelasOnline && !!paket?.wajibKamera,
+    modeKelasOnline,
     onFotoTersimpan: handleFotoTersimpan,
   });
 
@@ -1009,16 +1012,36 @@ export default function TryOutView() {
             <input type="checkbox" checked={siapPeraturan} onChange={(e) => setSiapPeraturan(e.target.checked)} style={{ width: 18, height: 18, marginTop: 1 }} />
             <span>Saya telah membaca, memahami, dan bersedia mematuhi seluruh peraturan di atas.</span>
           </label>
+
+          {/* Opsi Mode Kelas Online (Zoom/Meet) */}
+          <div style={{ marginTop: 14, background: modeKelasOnline ? '#f0fdf4' : '#f8fafc', border: modeKelasOnline ? '1.5px solid #86efac' : '1px dashed #cbd5e1', borderRadius: 10, padding: '10px 14px', textAlign: 'left' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
+              <input
+                type="checkbox"
+                checked={modeKelasOnline}
+                onChange={(e) => setModeKelasOnline(e.target.checked)}
+                style={{ width: 16, height: 16, accentColor: '#0d9488', cursor: 'pointer' }}
+              />
+              <div>
+                <div style={{ fontSize: 12.5, fontWeight: 700, color: modeKelasOnline ? '#15803d' : '#1e293b' }}>
+                  Mode Kelas Online (Zoom / Google Meet)
+                </div>
+                <div style={{ fontSize: 11, color: '#64748b', marginTop: 1, lineHeight: 1.4 }}>
+                  Centang jika Anda sedang diawasi tentor via Zoom/Meet, agar kamera tidak bentrok dan perpindahan jendela tidak dianggap kecurangan.
+                </div>
+              </div>
+            </label>
+          </div>
         </div>
 
         <p style={{ textAlign: 'center', fontStyle: 'italic', fontSize: 11.5, color: '#94a3b8', margin: '10px 0 12px' }}>SELAMAT BERJUANG — KERJAKAN TERBAIKMU!</p>
         <button
           type="button"
           disabled={!siapPeraturan}
-          onClick={() => (paket.wajibKamera ? setTahap('cek-kamera') : mulaiTryOut())}
+          onClick={() => (paket.wajibKamera && !modeKelasOnline ? setTahap('cek-kamera') : mulaiTryOut())}
           style={{ ...st.tombolUtama, opacity: siapPeraturan ? 1 : 0.45, cursor: siapPeraturan ? 'pointer' : 'not-allowed' }}
         >
-          Mulai Try Out
+          {modeKelasOnline ? 'Mulai Try Out (Mode Kelas Online)' : 'Mulai Try Out'}
         </button>
       </div></div>
     );
@@ -1044,7 +1067,7 @@ export default function TryOutView() {
           {statusKameraPrep === 'ditolak' && (
             <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: 12, padding: 16, textAlign: 'center', gap: 4 }}>
               <span style={{ fontSize: 22 }}>🚫</span>
-              <span style={{ fontWeight: 700 }}>Kamera belum diizinkan</span>
+              <span style={{ fontWeight: 700 }}>Kamera belum diizinkan atau sedang dipakai aplikasi lain (Zoom/Meet)</span>
             </div>
           )}
         </div>
@@ -1055,12 +1078,6 @@ export default function TryOutView() {
           </div>
         )}
 
-        {/* 🔥 BARU: kalau kamera WAJIB (soal ini), TIDAK ADA jalan
-            pintas buat "lanjut tanpa kamera" -- try out beneran gak
-            bisa dimulai sampai kameranya nyala. Yang ada cuma tombol
-            resmi buat COBA LAGI (buat kasus siswa gak sengaja klik
-            "Block", atau baru aja benerin izinnya lewat setting
-            browser). */}
         {statusKameraPrep === 'ditolak' && (
           <div style={{ background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 10, padding: 12, marginBottom: 14, fontSize: 11.5, color: '#92400e', textAlign: 'left' }}>
             <b>Cara mengizinkan kamera:</b>
@@ -1072,8 +1089,8 @@ export default function TryOutView() {
           </div>
         )}
 
-        <button onClick={lanjutSetelahCekKamera} disabled={statusKameraPrep !== 'aktif'} style={{ ...st.tombolUtama, opacity: statusKameraPrep === 'aktif' ? 1 : 0.5 }}>
-          Saya Siap, Mulai Try Out
+        <button onClick={lanjutSetelahCekKamera} disabled={statusKameraPrep !== 'aktif' && !modeKelasOnline} style={{ ...st.tombolUtama, opacity: statusKameraPrep === 'aktif' || modeKelasOnline ? 1 : 0.5 }}>
+          {modeKelasOnline ? 'Mulai Try Out (Mode Kelas Online)' : 'Saya Siap, Mulai Try Out'}
         </button>
 
         {statusKameraPrep === 'ditolak' && (
@@ -1084,6 +1101,40 @@ export default function TryOutView() {
             🔄 Coba Izinkan Lagi
           </button>
         )}
+
+        {/* Opsi Penyelamat: Kamera Terkunci Zoom / Sedang Kelas Online */}
+        <div style={{ marginTop: 14, background: '#f0fdf4', border: '1.5px solid #86efac', borderRadius: 12, padding: 12, textAlign: 'left' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
+            <div>
+              <div style={{ fontSize: 12, fontWeight: 800, color: '#15803d' }}>
+                📹 Kamera Sedang Dipakai Zoom / Kelas Online?
+              </div>
+              <div style={{ fontSize: 11, color: '#166534', marginTop: 2, lineHeight: 1.4 }}>
+                Jika kamera laptop/HP terkunci oleh Zoom dengan tentor, aktifkan Mode Online agar try out bisa langsung dikerjakan.
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                setModeKelasOnline(true);
+                lanjutSetelahCekKamera();
+              }}
+              style={{
+                background: '#0d9488',
+                color: '#ffffff',
+                border: 'none',
+                borderRadius: 8,
+                padding: '8px 14px',
+                fontSize: 11.5,
+                fontWeight: 800,
+                cursor: 'pointer',
+                flexShrink: 0,
+              }}
+            >
+              Lanjut Mode Online
+            </button>
+          </div>
+        </div>
       </div></div>
     );
   }
