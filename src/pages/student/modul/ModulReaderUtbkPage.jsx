@@ -25,6 +25,9 @@ import {
   Flame,
   Award,
   Share2,
+  Download,
+  Layers,
+  FileText,
 } from 'lucide-react';
 import {
   getSubtestByKode,
@@ -141,6 +144,7 @@ export default function ModulReaderUtbkPage() {
 
   const [studentId, setStudentId] = useState('');
   const [bukaSolusi, setBukaSolusi] = useState({});
+  const [bukaSolusiUnit, setBukaSolusiUnit] = useState({});
   const [jawabanUser, setJawabanUser] = useState({});
   const [sudahDiperiksa, setSudahDiperiksa] = useState(false);
   const [hasilKuis, setHasilKuis] = useState(null);
@@ -208,6 +212,7 @@ export default function ModulReaderUtbkPage() {
       setJawabanUser({});
       setSudahDiperiksa(false);
       setBukaSolusi({});
+      setBukaSolusiUnit({});
       window.scrollTo(0, 0);
     }
   }, [subtestKode, babSlug, bab, isSmp]);
@@ -283,6 +288,10 @@ export default function ModulReaderUtbkPage() {
   // Handler toggle solusi contoh soal
   const toggleSolusi = (idx) => {
     setBukaSolusi((prev) => ({ ...prev, [idx]: !prev[idx] }));
+  };
+
+  const toggleSolusiUnit = (unitKey) => {
+    setBukaSolusiUnit((prev) => ({ ...prev, [unitKey]: !prev[unitKey] }));
   };
 
   // Handler memilih opsi jawaban kuis
@@ -361,7 +370,34 @@ export default function ModulReaderUtbkPage() {
           <ArrowLeft size={14} /> Daftar Modul {isSmp ? 'TKA' : 'UTBK'}
         </button>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+          {bab.pdfUrl && (
+            <a
+              href={bab.pdfUrl}
+              download={bab.pdfFilename || 'Modul_Gemilang.pdf'}
+              title="Unduh PDF Master 52 Halaman Lengkap"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                background: '#0284c7',
+                color: '#ffffff',
+                border: 'none',
+                padding: '5px 12px',
+                borderRadius: 8,
+                fontSize: 11.5,
+                fontWeight: 800,
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 5,
+                textDecoration: 'none',
+                boxShadow: '0 2px 4px rgba(2, 132, 199, 0.25)',
+              }}
+            >
+              <Download size={13} /> Unduh PDF ({bab.pdfTotalHalaman || 52} Hal)
+            </a>
+          )}
+
           <span
             style={{
               background: subtest.bgLight,
@@ -476,207 +512,459 @@ export default function ModulReaderUtbkPage() {
         />
       )}
 
-      {/* 📖 KONSEP & TEORI INTI */}
-      <div style={{ marginBottom: 24 }}>
-        <h2 style={{ fontSize: 17, fontWeight: 800, color: '#0f172a', marginBottom: 14, display: 'flex', alignItems: 'center', gap: 8 }}>
-          <BookOpen size={18} style={{ color: '#0d9488' }} /> Konsep Inti & Kaidah Teori
-        </h2>
+      {/* 📚 MATERI PEMBELAJARAN (UNIT TKA SMP / KONSEP UTBK SMA) */}
+      {bab.units && bab.units.length > 0 ? (
+        <div style={{ marginBottom: 28 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14, flexWrap: 'wrap', gap: 10 }}>
+            <h2 style={{ fontSize: 17, fontWeight: 800, color: '#0f172a', margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
+              <Layers size={18} style={{ color: subtest.badgeWarna || '#0d9488' }} />
+              Daftar Unit Pembelajaran ({bab.units.length} Unit Master)
+            </h2>
+            <span style={{ fontSize: 11, background: '#f1f5f9', color: '#475569', padding: '3px 8px', borderRadius: 6, fontWeight: 700 }}>
+              Kurikulum Resmi 2027
+            </span>
+          </div>
 
-        {bab.konsepTeori &&
-          bab.konsepTeori.map((kt, i) => (
-            <div
-              key={i}
-              style={{
-                background: '#ffffff',
-                border: '1px solid #e2e8f0',
-                borderRadius: 16,
-                padding: '18px 20px',
-                marginBottom: 16,
-                boxShadow: '0 1px 3px rgba(0,0,0,0.02)',
-              }}
-            >
-              <h3 style={{ margin: '0 0 10px', fontSize: 15, fontWeight: 800, color: '#0f172a' }}>
-                {kt.subjudul}
-              </h3>
-              <div style={{ margin: '0 0 12px', fontSize: 13, color: '#334155', lineHeight: 1.65 }}>
-                <RenderMath text={kt.isi} />
-              </div>
-
-              {kt.diagramSvg && (
-                <VisualDiagramBox svgContent={kt.diagramSvg} judul={`Visualisasi: ${kt.subjudul}`} />
-              )}
-
-              {kt.poinPenting && kt.poinPenting.length > 0 && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+            {bab.units.map((u, uIdx) => {
+              const unitKey = u.unitNumber || `u_${uIdx}`;
+              const isOpenSolusi = !!bukaSolusiUnit[unitKey];
+              return (
                 <div
+                  key={unitKey}
                   style={{
-                    background: '#f8fafc',
-                    borderRadius: 12,
-                    padding: '12px 14px',
-                    borderLeft: '4px solid #0d9488',
+                    background: '#ffffff',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: 18,
+                    padding: '20px 22px',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.03)',
                   }}
                 >
-                  <div style={{ fontSize: 11, fontWeight: 800, color: '#0f766e', textTransform: 'uppercase', marginBottom: 6 }}>
-                    {isSmp ? 'Kaidah Penting TKA SMP:' : 'Kaidah Penting UTBK:'}
-                  </div>
-                  {kt.poinPenting.map((pt, pIdx) => (
-                    <div key={pIdx} style={{ fontSize: 12, color: '#475569', lineHeight: 1.5, marginBottom: 4 }}>
-                      • <RenderMath text={pt} />
+                  {/* Top Bar Unit */}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10, flexWrap: 'wrap', gap: 6 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <span
+                        style={{
+                          background: subtest.bgLight || '#f0fdfa',
+                          color: subtest.badgeWarna || '#0d9488',
+                          padding: '3px 8px',
+                          borderRadius: 6,
+                          fontSize: 11,
+                          fontWeight: 800,
+                        }}
+                      >
+                        Unit {u.unitNumber}
+                      </span>
+                      <h3 style={{ margin: 0, fontSize: 15, fontWeight: 800, color: '#0f172a' }}>
+                        {u.judul}
+                      </h3>
                     </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          ))}
-      </div>
+                    {u.pageNumber && (
+                      <span style={{ fontSize: 10.5, color: '#94a3b8', fontWeight: 600 }}>
+                        Hal. {u.pageNumber}
+                      </span>
+                    )}
+                  </div>
 
-      {/* ⚡ TRIK CEPAT GEMILANG */}
-      {bab.trikCepat && (
-        <div
-          style={{
-            background: 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)',
-            border: '1.5px solid #fde68a',
-            borderRadius: 16,
-            padding: '18px 20px',
-            marginBottom: 20,
-            boxShadow: '0 2px 6px rgba(217, 119, 6, 0.08)',
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#b45309', fontWeight: 800, fontSize: 14, marginBottom: 8 }}>
-            <Zap size={18} />
-            {isSmp ? 'Trik Kilat Gemilang (30 Detik)' : 'Trik Cepat UTBK (30 Detik)'}
-          </div>
-          <div style={{ margin: 0, fontSize: 13, color: '#78350f', lineHeight: 1.6, fontWeight: 500 }}>
-            <RenderMath text={bab.trikCepat} />
-          </div>
-        </div>
-      )}
-
-      {/* ⚠️ JEBAKAN UMUM (DISTRACTOR TRAP) */}
-      {bab.jebakanUmum && (
-        <div
-          style={{
-            background: 'linear-gradient(135deg, #fff1f2 0%, #ffe4e6 100%)',
-            border: '1.5px solid #fecdd3',
-            borderRadius: 16,
-            padding: '18px 20px',
-            marginBottom: 24,
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#be123c', fontWeight: 800, fontSize: 14, marginBottom: 8 }}>
-            <AlertTriangle size={18} />
-            Jebakan Umum (Distractor Trap)
-          </div>
-          <div style={{ margin: 0, fontSize: 13, color: '#881337', lineHeight: 1.6, fontWeight: 500 }}>
-            <RenderMath text={bab.jebakanUmum} />
-          </div>
-        </div>
-      )}
-
-      {/* 📝 CONTOH SOAL TERBIMBING */}
-      {bab.contohSoal && bab.contohSoal.length > 0 && (
-        <div style={{ marginBottom: 28 }}>
-          <h2 style={{ fontSize: 17, fontWeight: 800, color: '#0f172a', marginBottom: 14, display: 'flex', alignItems: 'center', gap: 8 }}>
-            <HelpCircle size={18} style={{ color: '#2563eb' }} /> Contoh Soal Terbimbing
-          </h2>
-
-          {bab.contohSoal.map((cs, i) => (
-            <div
-              key={i}
-              style={{
-                background: '#ffffff',
-                border: '1px solid #e2e8f0',
-                borderRadius: 16,
-                padding: '20px',
-                marginBottom: 16,
-              }}
-            >
-              <div style={{ fontSize: 11, fontWeight: 800, color: '#2563eb', textTransform: 'uppercase', marginBottom: 8 }}>
-                Contoh Kasus #{i + 1}
-              </div>
-              <div style={{ fontSize: 13.5, color: '#0f172a', lineHeight: 1.6, fontWeight: 600, marginBottom: 14 }}>
-                <RenderMath text={cs.soal} />
-              </div>
-
-              {/* Diagram Visual Contoh Kasus jika ada */}
-              {cs.diagramSvg && (
-                <VisualDiagramBox svgContent={cs.diagramSvg} judul={`Visualisasi Geometri Kasus #${i + 1}`} />
-              )}
-
-              {/* Opsi Jawaban */}
-              {cs.opsi && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 16 }}>
-                  {Object.entries(cs.opsi).map(([label, text]) => (
+                  {/* Hook / Motivasi */}
+                  {u.hook && (
                     <div
-                      key={label}
                       style={{
-                        padding: '8px 12px',
-                        borderRadius: 8,
-                        background: '#f8fafc',
-                        border: '1px solid #e2e8f0',
+                        margin: '0 0 14px',
+                        padding: '10px 14px',
+                        borderRadius: 10,
+                        background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
+                        borderLeft: `4px solid ${subtest.badgeWarna || '#0d9488'}`,
                         fontSize: 12.5,
                         color: '#334155',
+                        fontWeight: 600,
+                        fontStyle: 'italic',
                       }}
                     >
-                      <strong style={{ color: '#0f172a' }}>{label}.</strong> <RenderMath text={text} />
+                      💡 {u.hook}
                     </div>
-                  ))}
+                  )}
+
+                  {/* Teori & Penjelasan */}
+                  {u.teori && (
+                    <div style={{ margin: '0 0 14px', fontSize: 13, color: '#334155', lineHeight: 1.65 }}>
+                      <RenderMath text={u.teori} />
+                    </div>
+                  )}
+
+                  {/* Pondasi Konsep Inti */}
+                  {u.pondasi && (
+                    <div
+                      style={{
+                        background: '#faf5ff',
+                        border: '1.5px solid #e9d5ff',
+                        borderRadius: 12,
+                        padding: '12px 14px',
+                        marginBottom: 12,
+                      }}
+                    >
+                      <div style={{ fontSize: 11, fontWeight: 800, color: '#7e22ce', textTransform: 'uppercase', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <Sparkles size={13} /> Pondasi Kaidah Pokok
+                      </div>
+                      <div style={{ fontSize: 12.5, color: '#581c87', lineHeight: 1.55 }}>
+                        <RenderMath text={u.pondasi} />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Jebakan TKA */}
+                  {u.jebakanTka && (
+                    <div
+                      style={{
+                        background: '#fff1f2',
+                        border: '1.5px solid #fecdd3',
+                        borderRadius: 12,
+                        padding: '12px 14px',
+                        marginBottom: 12,
+                      }}
+                    >
+                      <div style={{ fontSize: 11, fontWeight: 800, color: '#be123c', textTransform: 'uppercase', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <AlertTriangle size={13} /> Jebakan TKA / Hati-hati
+                      </div>
+                      <div style={{ fontSize: 12.5, color: '#881337', lineHeight: 1.55 }}>
+                        <RenderMath text={u.jebakanTka} />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Yuk Bahas Soal */}
+                  {u.contohSoal && u.contohSoal.soal && (
+                    <div
+                      style={{
+                        background: '#f0fdfa',
+                        border: '1.5px solid #99f6e4',
+                        borderRadius: 12,
+                        padding: '14px 16px',
+                        marginBottom: 12,
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8, flexWrap: 'wrap', gap: 6 }}>
+                        <span style={{ fontSize: 11, fontWeight: 800, color: '#0f766e', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: 5 }}>
+                          <HelpCircle size={13} /> {u.contohSoal.judul || 'Yuk Bahas Soal TKA'}
+                        </span>
+                        {u.contohSoal.jawaban && (
+                          <span style={{ fontSize: 10.5, background: '#ccfbf1', color: '#0f766e', padding: '2px 8px', borderRadius: 6, fontWeight: 700 }}>
+                            Kunci: {u.contohSoal.jawaban}
+                          </span>
+                        )}
+                      </div>
+
+                      <div style={{ fontSize: 13, color: '#0f172a', fontWeight: 600, lineHeight: 1.55, marginBottom: 8 }}>
+                        <RenderMath text={u.contohSoal.soal} />
+                      </div>
+
+                      {u.contohSoal.opsiString && (
+                        <div style={{ fontSize: 12, color: '#475569', marginBottom: 10, background: '#ffffff', padding: '8px 10px', borderRadius: 8, border: '1px solid #ccfbf1' }}>
+                          <RenderMath text={u.contohSoal.opsiString} />
+                        </div>
+                      )}
+
+                      <button
+                        type="button"
+                        onClick={() => toggleSolusiUnit(unitKey)}
+                        style={{
+                          background: isOpenSolusi ? '#ffffff' : '#ccfbf1',
+                          color: '#0f766e',
+                          border: '1px solid #5eead4',
+                          borderRadius: 8,
+                          padding: '6px 12px',
+                          fontSize: 11.5,
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 5,
+                        }}
+                      >
+                        {isOpenSolusi ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+                        {isOpenSolusi ? 'Tutup Solusi' : 'Lihat Solusi Bertahap'}
+                      </button>
+
+                      {isOpenSolusi && (
+                        <div style={{ marginTop: 10, padding: '10px 12px', background: '#ffffff', borderRadius: 8, border: '1px solid #99f6e4', fontSize: 12, color: '#334155', lineHeight: 1.55 }}>
+                          <RenderMath text={u.contohSoal.solusi} />
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Trik Cepat */}
+                  {u.trikCepat && (
+                    <div
+                      style={{
+                        background: '#fffbeb',
+                        border: '1.5px solid #fde68a',
+                        borderRadius: 12,
+                        padding: '12px 14px',
+                      }}
+                    >
+                      <div style={{ fontSize: 11, fontWeight: 800, color: '#b45309', textTransform: 'uppercase', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <Zap size={13} /> Trik Cepat Gemilang
+                      </div>
+                      <div style={{ fontSize: 12.5, color: '#78350f', lineHeight: 1.55 }}>
+                        <RenderMath text={u.trikCepat} />
+                      </div>
+                    </div>
+                  )}
                 </div>
-              )}
+              );
+            })}
+          </div>
 
-              {/* Toggle Solusi */}
-              <button
-                onClick={() => toggleSolusi(i)}
-                style={{
-                  background: bukaSolusi[i] ? '#f1f5f9' : '#eff6ff',
-                  color: '#2563eb',
-                  border: '1px solid #bfdbfe',
-                  borderRadius: 10,
-                  padding: '8px 14px',
-                  fontSize: 12,
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 6,
-                }}
-              >
-                {bukaSolusi[i] ? (
-                  <>
-                    <ChevronUp size={14} /> Tutup Langkah Pembahasan
-                  </>
-                ) : (
-                  <>
-                    <ChevronDown size={14} /> Buka Solusi Bertahap (Kunci: {cs.kunci})
-                  </>
-                )}
-              </button>
+          {/* 📋 CHEAT SHEET MASTER (KHUSUS BAB 3) */}
+          {bab.cheatSheet && (
+            <div
+              style={{
+                marginTop: 24,
+                background: 'linear-gradient(135deg, #fefce8 0%, #fffbeb 100%)',
+                border: '2px solid #fef08a',
+                borderRadius: 18,
+                padding: '20px 22px',
+                boxShadow: '0 4px 12px rgba(234, 179, 8, 0.1)',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#854d0e', fontWeight: 800, fontSize: 15, marginBottom: 12 }}>
+                <FileText size={18} />
+                Cheat Sheet Master 1 Halaman — Bimbel Gemilang
+              </div>
+              <div style={{ fontSize: 12.5, color: '#713f12', lineHeight: 1.65, whiteSpace: 'pre-wrap', fontFamily: 'system-ui, sans-serif' }}>
+                <RenderMath text={bab.cheatSheet} />
+              </div>
+            </div>
+          )}
 
-              {/* Box Langkah Solusi */}
-              {bukaSolusi[i] && (
+          {/* ⏱️ SIMULASI MINI TRYOUT (KHUSUS BAB 4) */}
+          {bab.miniTryout && (
+            <div
+              style={{
+                marginTop: 24,
+                background: 'linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%)',
+                border: '2px solid #a7f3d0',
+                borderRadius: 18,
+                padding: '20px 22px',
+                boxShadow: '0 4px 12px rgba(16, 185, 129, 0.1)',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#065f46', fontWeight: 800, fontSize: 15, marginBottom: 12 }}>
+                <Award size={18} />
+                Simulasi Mini Tryout & Peta Belajar Menuju Ujian
+              </div>
+              <div style={{ fontSize: 12.5, color: '#064e3b', lineHeight: 1.65, whiteSpace: 'pre-wrap', fontFamily: 'system-ui, sans-serif' }}>
+                <RenderMath text={bab.miniTryout} />
+              </div>
+            </div>
+          )}
+        </div>
+      ) : (
+        /* Fallback Konsep Teori untuk SMA UTBK */
+        <>
+          <div style={{ marginBottom: 24 }}>
+            <h2 style={{ fontSize: 17, fontWeight: 800, color: '#0f172a', marginBottom: 14, display: 'flex', alignItems: 'center', gap: 8 }}>
+              <BookOpen size={18} style={{ color: '#0d9488' }} /> Konsep Inti & Kaidah Teori
+            </h2>
+
+            {bab.konsepTeori &&
+              bab.konsepTeori.map((kt, i) => (
                 <div
+                  key={i}
                   style={{
-                    marginTop: 14,
-                    background: '#f8fafc',
+                    background: '#ffffff',
                     border: '1px solid #e2e8f0',
-                    borderRadius: 12,
-                    padding: '14px 16px',
+                    borderRadius: 16,
+                    padding: '18px 20px',
+                    marginBottom: 16,
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.02)',
                   }}
                 >
-                  <div style={{ fontSize: 11, fontWeight: 800, color: '#16a34a', marginBottom: 8 }}>
-                    ✅ KUNCI JAWABAN: {cs.kunci}
+                  <h3 style={{ margin: '0 0 10px', fontSize: 15, fontWeight: 800, color: '#0f172a' }}>
+                    {kt.subjudul}
+                  </h3>
+                  <div style={{ margin: '0 0 12px', fontSize: 13, color: '#334155', lineHeight: 1.65 }}>
+                    <RenderMath text={kt.isi} />
                   </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                    {cs.pembahasanLangkah.map((langkah, lIdx) => (
-                      <div key={lIdx} style={{ fontSize: 12.5, color: '#334155', lineHeight: 1.55 }}>
-                        <strong>Langkah {lIdx + 1}:</strong> <RenderMath text={langkah} />
+
+                  {kt.diagramSvg && (
+                    <VisualDiagramBox svgContent={kt.diagramSvg} judul={`Visualisasi: ${kt.subjudul}`} />
+                  )}
+
+                  {kt.poinPenting && kt.poinPenting.length > 0 && (
+                    <div
+                      style={{
+                        background: '#f8fafc',
+                        borderRadius: 12,
+                        padding: '12px 14px',
+                        borderLeft: '4px solid #0d9488',
+                      }}
+                    >
+                      <div style={{ fontSize: 11, fontWeight: 800, color: '#0f766e', textTransform: 'uppercase', marginBottom: 6 }}>
+                        {isSmp ? 'Kaidah Penting TKA SMP:' : 'Kaidah Penting UTBK:'}
                       </div>
-                    ))}
-                  </div>
+                      {kt.poinPenting.map((pt, pIdx) => (
+                        <div key={pIdx} style={{ fontSize: 12, color: '#475569', lineHeight: 1.5, marginBottom: 4 }}>
+                          • <RenderMath text={pt} />
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
-              )}
+              ))}
+          </div>
+
+          {/* ⚡ TRIK CEPAT GEMILANG */}
+          {bab.trikCepat && (
+            <div
+              style={{
+                background: 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)',
+                border: '1.5px solid #fde68a',
+                borderRadius: 16,
+                padding: '18px 20px',
+                marginBottom: 20,
+                boxShadow: '0 2px 6px rgba(217, 119, 6, 0.08)',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#b45309', fontWeight: 800, fontSize: 14, marginBottom: 8 }}>
+                <Zap size={18} />
+                {isSmp ? 'Trik Kilat Gemilang (30 Detik)' : 'Trik Cepat UTBK (30 Detik)'}
+              </div>
+              <div style={{ margin: 0, fontSize: 13, color: '#78350f', lineHeight: 1.6, fontWeight: 500 }}>
+                <RenderMath text={bab.trikCepat} />
+              </div>
             </div>
-          ))}
-        </div>
+          )}
+
+          {/* ⚠️ JEBAKAN UMUM (DISTRACTOR TRAP) */}
+          {bab.jebakanUmum && (
+            <div
+              style={{
+                background: 'linear-gradient(135deg, #fff1f2 0%, #ffe4e6 100%)',
+                border: '1.5px solid #fecdd3',
+                borderRadius: 16,
+                padding: '18px 20px',
+                marginBottom: 24,
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#be123c', fontWeight: 800, fontSize: 14, marginBottom: 8 }}>
+                <AlertTriangle size={18} />
+                Jebakan Umum (Distractor Trap)
+              </div>
+              <div style={{ margin: 0, fontSize: 13, color: '#881337', lineHeight: 1.6, fontWeight: 500 }}>
+                <RenderMath text={bab.jebakanUmum} />
+              </div>
+            </div>
+          )}
+
+          {/* 📝 CONTOH SOAL TERBIMBING */}
+          {bab.contohSoal && bab.contohSoal.length > 0 && (
+            <div style={{ marginBottom: 28 }}>
+              <h2 style={{ fontSize: 17, fontWeight: 800, color: '#0f172a', marginBottom: 14, display: 'flex', alignItems: 'center', gap: 8 }}>
+                <HelpCircle size={18} style={{ color: '#2563eb' }} /> Contoh Soal Terbimbing
+              </h2>
+
+              {bab.contohSoal.map((cs, i) => (
+                <div
+                  key={i}
+                  style={{
+                    background: '#ffffff',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: 16,
+                    padding: '20px',
+                    marginBottom: 16,
+                  }}
+                >
+                  <div style={{ fontSize: 11, fontWeight: 800, color: '#2563eb', textTransform: 'uppercase', marginBottom: 8 }}>
+                    Contoh Kasus #{i + 1}
+                  </div>
+                  <div style={{ fontSize: 13.5, color: '#0f172a', lineHeight: 1.6, fontWeight: 600, marginBottom: 14 }}>
+                    <RenderMath text={cs.soal} />
+                  </div>
+
+                  {/* Diagram Visual Contoh Kasus jika ada */}
+                  {cs.diagramSvg && (
+                    <VisualDiagramBox svgContent={cs.diagramSvg} judul={`Visualisasi Geometri Kasus #${i + 1}`} />
+                  )}
+
+                  {/* Opsi Jawaban */}
+                  {cs.opsi && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 16 }}>
+                      {Object.entries(cs.opsi).map(([label, text]) => (
+                        <div
+                          key={label}
+                          style={{
+                            padding: '8px 12px',
+                            borderRadius: 8,
+                            background: '#f8fafc',
+                            border: '1px solid #e2e8f0',
+                            fontSize: 12.5,
+                            color: '#334155',
+                          }}
+                        >
+                          <strong style={{ color: '#0f172a' }}>{label}.</strong> <RenderMath text={text} />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Toggle Solusi */}
+                  <button
+                    onClick={() => toggleSolusi(i)}
+                    style={{
+                      background: bukaSolusi[i] ? '#f1f5f9' : '#eff6ff',
+                      color: '#2563eb',
+                      border: '1px solid #bfdbfe',
+                      borderRadius: 10,
+                      padding: '8px 14px',
+                      fontSize: 12,
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 6,
+                    }}
+                  >
+                    {bukaSolusi[i] ? (
+                      <>
+                        <ChevronUp size={14} /> Tutup Langkah Pembahasan
+                      </>
+                    ) : (
+                      <>
+                        <ChevronDown size={14} /> Buka Solusi Bertahap (Kunci: {cs.kunci})
+                      </>
+                    )}
+                  </button>
+
+                  {/* Box Langkah Solusi */}
+                  {bukaSolusi[i] && (
+                    <div
+                      style={{
+                        marginTop: 14,
+                        background: '#f8fafc',
+                        border: '1px solid #e2e8f0',
+                        borderRadius: 12,
+                        padding: '14px 16px',
+                      }}
+                    >
+                      <div style={{ fontSize: 11, fontWeight: 800, color: '#16a34a', marginBottom: 8 }}>
+                        ✅ KUNCI JAWABAN: {cs.kunci}
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                        {cs.pembahasanLangkah.map((langkah, lIdx) => (
+                          <div key={lIdx} style={{ fontSize: 12.5, color: '#334155', lineHeight: 1.55 }}>
+                            <strong>Langkah {lIdx + 1}:</strong> <RenderMath text={langkah} />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </>
       )}
 
       {/* 🧠 CEK PEMAHAMAN: KUIS INTERAKTIF */}

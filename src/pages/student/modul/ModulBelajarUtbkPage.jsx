@@ -22,6 +22,7 @@ import {
   Check,
   Eye,
   EyeOff,
+  Download,
 } from 'lucide-react';
 import {
   DAFTAR_SUBTES_MODUL,
@@ -56,7 +57,7 @@ export default function ModulBelajarUtbkPage() {
   const [studentId, setStudentId] = useState('');
   const [tampilkanSubtesLain, setTampilkanSubtesLain] = useState(false);
   const [statistik, setStatistik] = useState({
-    totalBab: isSmp ? 12 : 46,
+    totalBab: isSmp ? 16 : 46,
     totalSelesai: 0,
     persenTotal: 0,
     perSubtes: {},
@@ -749,6 +750,32 @@ export default function ModulBelajarUtbkPage() {
                     <BookOpen size={14} />
                     {isSelesai ? 'Baca Ulang & Kuis' : 'Mulai Belajar'}
                   </button>
+
+                  {bab.pdfUrl && (
+                    <a
+                      href={bab.pdfUrl}
+                      download={bab.pdfFilename || 'Modul_Gemilang.pdf'}
+                      title="Unduh PDF Master 52 Halaman Lengkap"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        background: '#f0f9ff',
+                        color: '#0284c7',
+                        border: '1px solid #bae6fd',
+                        borderRadius: 10,
+                        padding: '9px 11px',
+                        fontSize: 12,
+                        fontWeight: 700,
+                        textDecoration: 'none',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: 4,
+                      }}
+                    >
+                      <Download size={14} /> PDF
+                    </a>
+                  )}
 
                   <button
                     onClick={() => navigate('/siswa/roadmap')}
