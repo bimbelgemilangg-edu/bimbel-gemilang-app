@@ -11,7 +11,7 @@ import {
   LayoutDashboard, User, BookOpen, BookMarked, Edit,
   History, Calendar, ClipboardCheck, LogOut, Menu, X,
   Database, GraduationCap, Projector, Presentation, Printer,
-  Library, Layers,
+  Library, Layers, FileText, FileQuestion,
 } from 'lucide-react';
 
 const SidebarGuru = () => {
@@ -30,28 +30,17 @@ const SidebarGuru = () => {
   }, []);
 
   const menu = [
-    { name: 'Perpustakaan', path: '/guru/perpustakaan', icon: <Library size={20} /> },
-    // 📙 20 Okt: pintu guru ke buku PDF (baca penuh + kunci materi siswa)
-    { name: 'Buku PDF Gemilang', path: '/guru/buku-pdf', icon: <BookMarked size={20} /> },
     { name: 'Dashboard', path: '/guru/dashboard', icon: <LayoutDashboard size={20} /> },
+    { name: 'E-Learning (Modul & Kuis)', path: '/guru/modul', icon: <BookOpen size={20} /> },
+    { name: 'Upload Modul Materi', path: '/guru/modul/materi', icon: <FileText size={20} /> },
+    { name: 'Buat Kuis Interaktif', path: '/guru/modul/quiz', icon: <FileQuestion size={20} /> },
     { name: 'Jadwal Mengajar', path: '/guru/schedule', icon: <Calendar size={20} /> },
-    { name: 'E-Learning', path: '/guru/modul', icon: <BookOpen size={20} /> },
+    { name: 'Perpustakaan', path: '/guru/perpustakaan', icon: <Library size={20} /> },
+    { name: 'Buku PDF Gemilang', path: '/guru/buku-pdf', icon: <BookMarked size={20} /> },
     { name: 'Persiapan Buku', path: '/guru/buku', icon: <GraduationCap size={20} /> },
-    // MATERI v2 (Fase 3): panggung presentasi sinkron guru-siswa.
-    // Turn 91 (koreksi owner): menu PRESENTASI & PPT-ku digabung jadi SATU;
-    // halaman dalamnya punya 2 tab + tombol Baca per bab (reader versi siswa).
-    // Ruang kerja PRIVAT guru: bank referensi buku paket + generate alat bantu
-    // belajar yang grounded ke buku yang diupload. Tidak tampil ke siswa.
     { name: 'Alat Bantu Guru', path: '/guru/alat-bantu', icon: <GraduationCap size={20} /> },
     { name: 'Pemeriksaan Tugas', path: '/guru/cek-tugas', icon: <ClipboardCheck size={20} /> },
-    // 🔥 BARU (Fase 3 skema buku-kliping): cetak paket latihan siap gunting
-    // + kunci tentor + lembar catatan buku progres.
     { name: 'Cetak Latihan', path: '/guru/cetak-latihan', icon: <Printer size={20} /> },
-    // 🔥 Fase 2 (2026-10-08): tentor merakit try out dari bank soal lalu
-    // mengirimnya untuk persetujuan admin. Sengaja ditaruh tepat di bawah
-    // Cetak Latihan karena keduanya berangkat dari tempat yang sama:
-    // memilih butir dari bank. Bedanya, yang satu jadi kertas, yang ini
-    // jadi paket yang dikerjakan siswa di layar.
     { name: 'Rakit Try Out', path: '/guru/rakit-tryout', icon: <Layers size={20} />, badge: null },
     { name: 'Input Nilai / Rapor', path: '/guru/grades/input', icon: <Edit size={20} /> },
     { name: 'Generate Raport', path: '/guru/generate-raport', icon: <Database size={20} /> },
@@ -163,7 +152,7 @@ const SidebarGuru = () => {
           {menu.map((item) => {
             const isActive =
               location.pathname === item.path ||
-              (item.path !== '/guru/dashboard' && location.pathname.startsWith(item.path));
+              (item.path !== '/guru/dashboard' && item.path !== '/guru/modul' && location.pathname.startsWith(item.path));
             return (
               <Link
                 key={item.path}

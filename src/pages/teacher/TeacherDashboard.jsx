@@ -18,7 +18,8 @@ import {
   Video, ExternalLink, Copy, Hash, Tag, Link2,
   CalendarDays, Clock4, User, GraduationCap,
   Briefcase, BarChart3, Activity, PieChart,
-  RefreshCw, Loader2, Eye, EyeOff, Radio, RotateCcw
+  RefreshCw, Loader2, Eye, EyeOff, Radio, RotateCcw,
+  Plus, FileQuestion, BookMarked
 } from 'lucide-react';
 import ModalBukuGuru from '../../components/buku/ModalBukuGuru';
 import ModalSiapkanLatihanSesi from '../../components/guru/ModalSiapkanLatihanSesi';
@@ -1081,6 +1082,105 @@ const TeacherDashboard = () => {
       <div style={styles.mainGrid(isMobile)}>
         {/* ===== LEFT: SCHEDULES ===== */}
         <div style={styles.section}>
+          {/* 🌟 PUSAT E-LEARNING (MODUL & KUIS) */}
+          <div style={{
+            background: 'linear-gradient(135deg, #eff6ff 0%, #f0fdf4 100%)',
+            border: '1px solid #bfdbfe',
+            borderRadius: 14,
+            padding: '14px 18px',
+            marginBottom: 20,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: 12
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div style={{
+                width: 42,
+                height: 42,
+                borderRadius: 10,
+                background: '#3b82f6',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'white',
+                boxShadow: '0 4px 10px rgba(59, 130, 246, 0.3)'
+              }}>
+                <BookOpen size={22} />
+              </div>
+              <div>
+                <div style={{ fontSize: 14, fontWeight: 800, color: '#1e3a8a' }}>
+                  E-Learning &amp; Bank Kuis Guru
+                </div>
+                <div style={{ fontSize: 11.5, color: '#475569' }}>
+                  Upload materi bacaan modul atau buat kuis interaktif untuk siswa Anda
+                </div>
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              <button
+                type="button"
+                onClick={() => navigate('/guru/modul/materi')}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  padding: '8px 14px',
+                  borderRadius: 8,
+                  border: 'none',
+                  background: '#2563eb',
+                  color: 'white',
+                  fontWeight: 700,
+                  fontSize: 12,
+                  cursor: 'pointer',
+                  boxShadow: '0 2px 6px rgba(37, 99, 235, 0.25)'
+                }}
+              >
+                <Plus size={14} /> Upload Modul
+              </button>
+              <button
+                type="button"
+                onClick={() => navigate('/guru/modul/quiz')}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  padding: '8px 14px',
+                  borderRadius: 8,
+                  border: 'none',
+                  background: '#d97706',
+                  color: 'white',
+                  fontWeight: 700,
+                  fontSize: 12,
+                  cursor: 'pointer',
+                  boxShadow: '0 2px 6px rgba(217, 119, 6, 0.25)'
+                }}
+              >
+                <FileQuestion size={14} /> Buat Kuis
+              </button>
+              <button
+                type="button"
+                onClick={() => navigate('/guru/modul')}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  padding: '8px 14px',
+                  borderRadius: 8,
+                  border: '1px solid #cbd5e1',
+                  background: 'white',
+                  color: '#334155',
+                  fontWeight: 600,
+                  fontSize: 12,
+                  cursor: 'pointer'
+                }}
+              >
+                <Layers size={14} /> Kelola E-Learning
+              </button>
+            </div>
+          </div>
+
           <div style={styles.sectionHeader}>
             <h3 style={styles.sectionTitle}>
               <Layout size={16} /> Jadwal Mengajar
@@ -1304,41 +1404,47 @@ const TeacherDashboard = () => {
           <div style={styles.quickActionsCard}>
             <h4 style={styles.quickActionsTitle}>⚡ Akses Cepat</h4>
             <div style={styles.quickActionsGrid}>
-              <button onClick={() => navigate('/guru/history')} style={styles.quickAction}>
-                <div style={{...styles.quickIcon, background: '#fef3c7', color: '#b45309'}}>
-                  <Clock4 size={18} />
+              <button onClick={() => navigate('/guru/modul/materi')} style={styles.quickAction}>
+                <div style={{...styles.quickIcon, background: '#dbeafe', color: '#2563eb'}}>
+                  <BookOpen size={18} />
                 </div>
-                <span style={styles.quickLabel}>Riwayat</span>
-                <span style={styles.quickDesc}>Lihat histori</span>
+                <span style={styles.quickLabel}>Upload Modul</span>
+                <span style={styles.quickDesc}>Materi & bahan</span>
+              </button>
+              <button onClick={() => navigate('/guru/modul/quiz')} style={styles.quickAction}>
+                <div style={{...styles.quickIcon, background: '#fef3c7', color: '#d97706'}}>
+                  <FileQuestion size={18} />
+                </div>
+                <span style={styles.quickLabel}>Buat Kuis</span>
+                <span style={styles.quickDesc}>Kuis interaktif</span>
               </button>
               <button onClick={() => navigate('/guru/modul')} style={styles.quickAction}>
                 <div style={{...styles.quickIcon, background: '#d1fae5', color: '#059669'}}>
                   <Layers size={18} />
                 </div>
                 <span style={styles.quickLabel}>E-Learning</span>
-                <span style={styles.quickDesc}>Materi & tugas</span>
+                <span style={styles.quickDesc}>Kelola modul</span>
+              </button>
+              <button onClick={() => navigate('/guru/history')} style={styles.quickAction}>
+                <div style={{...styles.quickIcon, background: '#f3e8ff', color: '#7e22ce'}}>
+                  <Clock4 size={18} />
+                </div>
+                <span style={styles.quickLabel}>Riwayat</span>
+                <span style={styles.quickDesc}>Lihat histori</span>
               </button>
               <button onClick={() => navigate('/guru/sesi-live')} style={styles.quickAction}>
                 <div style={{...styles.quickIcon, background: '#fee2e2', color: '#dc2626'}}>
                   <Radio size={18} />
                 </div>
-                <span style={styles.quickLabel}>Sesi Kelas Live</span>
-                <span style={styles.quickDesc}>Latihan bareng siswa</span>
+                <span style={styles.quickLabel}>Sesi Live</span>
+                <span style={styles.quickDesc}>Latihan bareng</span>
               </button>
-              {/* 🔥 BARU: Buku Digital - Mode Persiapan Guru */}
               <button onClick={() => setShowBuku(true)} style={styles.quickAction}>
-                <div style={{...styles.quickIcon, background: '#dbeafe', color: '#1d4ed8'}}>
-                  <BookOpen size={18} />
+                <div style={{...styles.quickIcon, background: '#e0e7ff', color: '#4338ca'}}>
+                  <BookMarked size={18} />
                 </div>
                 <span style={styles.quickLabel}>Buku Digital</span>
-                <span style={styles.quickDesc}>Baca materi & kunci</span>
-              </button>
-              <button onClick={() => navigate('/guru/profile')} style={styles.quickAction}>
-                <div style={{...styles.quickIcon, background: '#fce7f3', color: '#be185d'}}>
-                  <User size={18} />
-                </div>
-                <span style={styles.quickLabel}>Profil</span>
-                <span style={styles.quickDesc}>Data diri</span>
+                <span style={styles.quickDesc}>Baca materi</span>
               </button>
               <button onClick={() => navigate('/guru/grades/input')} style={styles.quickAction}>
                 <div style={{...styles.quickIcon, background: '#ede9fe', color: '#6d28d9'}}>
@@ -1347,12 +1453,12 @@ const TeacherDashboard = () => {
                 <span style={styles.quickLabel}>Nilai</span>
                 <span style={styles.quickDesc}>Input nilai</span>
               </button>
-              <button onClick={() => navigate('/guru/modul/tugas')} style={styles.quickAction}>
-                <div style={{...styles.quickIcon, background: '#fef2f2', color: '#dc2626'}}>
-                  <Send size={18} />
+              <button onClick={() => navigate('/guru/profile')} style={styles.quickAction}>
+                <div style={{...styles.quickIcon, background: '#fce7f3', color: '#be185d'}}>
+                  <User size={18} />
                 </div>
-                <span style={styles.quickLabel}>Tugas</span>
-                <span style={styles.quickDesc}>Kelola tugas</span>
+                <span style={styles.quickLabel}>Profil</span>
+                <span style={styles.quickDesc}>Data diri</span>
               </button>
             </div>
           </div>

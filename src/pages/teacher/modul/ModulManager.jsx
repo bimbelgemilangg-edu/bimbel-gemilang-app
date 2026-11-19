@@ -60,6 +60,9 @@ const ModulManager = () => {
   }, [guruData]);
 
   const canEditContent = (item) => {
+    // Admin dan Owner selalu memiliki wewenang penuh mengedit semua modul dan kuis
+    const isAdmin = localStorage.getItem('isLoggedIn') === 'true' || localStorage.getItem('isOwnerLoggedIn') === 'true';
+    if (isAdmin) return true;
     const kode = String(item.kodeMapel || '').trim().toLowerCase();
     if (!kode) return false; // konten gak punya kode mapel sama sekali -- gak ada dasar buat ngizinin siapa pun edit, lebih aman ditolak
     return myMapelCodes.includes(kode);
@@ -77,7 +80,11 @@ const ModulManager = () => {
   // tapi Hapus konten MILIK SENDIRI (guruId/createdBy cocok) tetap boleh
   // walau mapelnya udah invalid/orphan -- supaya kuis/modul rusak akibat
   // bug data lama tetap bisa dibersihin oleh pemiliknya sendiri.
-  const canDeleteContent = (item, isMine) => canEditContent(item) || isMine;
+  const canDeleteContent = (item, isMine) => {
+    const isAdmin = localStorage.getItem('isLoggedIn') === 'true' || localStorage.getItem('isOwnerLoggedIn') === 'true';
+    if (isAdmin) return true;
+    return canEditContent(item) || isMine;
+  };
   const [deletingId, setDeletingId] = useState(null);
   const [toast, setToast] = useState(null);
 
@@ -568,21 +575,26 @@ const ModulManager = () => {
           </div>
         </div>
         <div style={styles.headerActions}>
-          <button onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')} style={styles.viewToggle}>
+          <button onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')} style={styles.viewToggle} title="Ganti Tampilan">
             {viewMode === 'grid' ? <List size={16} /> : <Grid size={16} />}
           </button>
-          <button onClick={handleRefresh} style={styles.refreshBtn} disabled={refreshing}>
+          <button onClick={handleRefresh} style={styles.refreshBtn} disabled={refreshing} title="Muat Ulang">
             <RefreshCw size={16} className={refreshing ? 'spin' : ''} />
           </button>
-          {activeTab === 'kuis' ? (
-            <button onClick={() => navigate('/guru/modul/quiz')} style={{...styles.btnCreate, background: '#f59e0b'}}>
-              <FileQuestion size={16} /> Buat Kuis
-            </button>
-          ) : (
-            <button onClick={() => navigate('/guru/modul/materi')} style={styles.btnCreate}>
-              <Plus size={16} /> Buat Modul
-            </button>
-          )}
+          <button 
+            onClick={() => navigate('/guru/modul/materi')} 
+            style={styles.btnCreate}
+            title="Upload atau buat modul materi belajar baru"
+          >
+            <Plus size={16} /> Buat Modul
+          </button>
+          <button 
+            onClick={() => navigate('/guru/modul/quiz')} 
+            style={{...styles.btnCreate, background: '#f59e0b'}}
+            title="Buat kuis interaktif baru"
+          >
+            <FileQuestion size={16} /> Buat Kuis
+          </button>
         </div>
       </div>
 
@@ -707,9 +719,14 @@ const ModulManager = () => {
           <p style={styles.emptyDesc}>
             {searchTerm ? 'Coba ubah kata kunci pencarian.' : 'Buat modul pembelajaran baru untuk siswa.'}
           </p>
-          <button onClick={() => navigate('/guru/modul/materi')} style={styles.emptyBtn}>
-            <Plus size={16} /> Buat Modul Sekarang
-          </button>
+          <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap', marginTop: 12 }}>
+            <button onClick={() => navigate('/guru/modul/materi')} style={styles.emptyBtn}>
+              <Plus size={16} /> Buat Modul Materi
+            </button>
+            <button onClick={() => navigate('/guru/modul/quiz')} style={{...styles.emptyBtn, background: '#f59e0b', borderColor: '#f59e0b'}}>
+              <FileQuestion size={16} /> Buat Kuis Interaktif
+            </button>
+          </div>
         </div>
       ) : (
         <>

@@ -301,7 +301,13 @@ const GuruRoute = ({ children }) => {
   // (yang memakai hapusSesiGuru dari berkas yang sama) pasti menutup apa yang
   // diperiksa penjaga ini. Dulu logout menghapus kunci yang tidak diperiksa di
   // sini, sehingga /guru/* tetap terbuka sesudah keluar.
-  if (!masihDianggapMasuk(localStorage)) {
+  //
+  // UPGRADE: Admin dan Owner juga diizinkan mengakses rute guru (terutama konsol
+  // E-Learning, upload modul, dan kelola kuis) agar admin bisa ikut memantau & membuat konten.
+  const isAuthAdmin = localStorage.getItem('isLoggedIn') === 'true';
+  const role = localStorage.getItem('role');
+  const adminOk = (isAuthAdmin && role === 'admin') || (localStorage.getItem('isOwnerLoggedIn') === 'true' && role === 'owner');
+  if (!masihDianggapMasuk(localStorage) && !adminOk) {
     return <Navigate to="/login-guru" replace />;
   }
   return children;
