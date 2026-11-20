@@ -290,6 +290,27 @@ export default function AmbisPracticePlayer({
           {renderMath(soalSekarang.soal)}
         </div>
 
+        {/* Gambar / Visual Stimulus Soal (jika ada) */}
+        {Array.isArray(soalSekarang.gambar) && soalSekarang.gambar.length > 0 && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, margin: '12px 0 16px', alignItems: 'center' }}>
+            {soalSekarang.gambar.map((imgUrl, gIdx) => (
+              <img
+                key={gIdx}
+                src={imgUrl}
+                alt={`Visual Soal ${gIdx + 1}`}
+                style={{
+                  maxWidth: '100%',
+                  maxHeight: 360,
+                  objectFit: 'contain',
+                  borderRadius: 10,
+                  border: '1px solid #e2e8f0',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                }}
+              />
+            ))}
+          </div>
+        )}
+
         {/* DAFTAR OPSI JAWABAN */}
         <div style={st.listOpsi}>
           {(soalSekarang.opsi || []).map((opsi) => {

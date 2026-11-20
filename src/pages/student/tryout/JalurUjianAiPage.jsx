@@ -37,6 +37,9 @@ import {
 import MaskotAstronot from '../../../components/MaskotAstronot';
 import {
   DAFTAR_SUBTES_LATIHAN,
+  DAFTAR_SUBTES_LATIHAN_SMP,
+  DAFTAR_SUBTES_LATIHAN_SD,
+  getSubtesLatihanList,
   getBankSoalPerSubtes,
   getPaketLatihanPerSubtes,
   getSoalLatihanKilat,
@@ -115,27 +118,46 @@ export default function JalurUjianAiPage() {
     return deteksiJenjangUjianAkhir({ ...profil, kelas: k, jenjang: j });
   }, [profil]);
 
-  // Tab tampilan: 'ambis_practice' (Latihan 7 Subtes Gaya AmbisPTN) vs 'ekspedisi_jalur' (Peta Tahapan)
+  const isSmp = targetJenjang?.jenjang === 'SMP';
+  const isSd = targetJenjang?.jenjang === 'SD';
+  const isUtbk = !isSmp && !isSd;
+
+  // Daftar Subtes Dinamis (SMP: MTK, BIN, IPA, BIG; SD: MTK, BIN; SMA: 7 Subtes UTBK)
+  const daftarSubtes = useMemo(() => {
+    return getSubtesLatihanList(targetJenjang?.jenjang || 'SMA');
+  }, [targetJenjang]);
+
+  // Tab tampilan: 'ambis_practice' (Latihan Subtes Gaya Ambis) vs 'ekspedisi_jalur' (Peta Tahapan)
   const [tabTampilan, setTabTampilan] = useState('ambis_practice');
 
   const [loading, setLoading] = useState(true);
   const [paketOtomatisDb, setPaketOtomatisDb] = useState([]);
   const [sesiList, setSesiList] = useState([]);
+  const [bankSoalFirestore, setBankSoalFirestore] = useState([]);
   const [unitTerpilih, setUnitTerpilih] = useState(null);
   const [modalReviewTerbuka, setModalReviewTerbuka] = useState(false);
   const [sedangMenyiapkan, setSedangMenyiapkan] = useState(false);
   const [pesanError, setPesanError] = useState('');
 
   // State untuk AmbisPTN Practice
-  const [subtesKilatTerpilih, setSubtesKilatTerpilih] = useState('PU');
+  const [subtesKilatTerpilih, setSubtesKilatTerpilih] = useState(() => (targetJenjang?.jenjang === 'SMP' ? 'MTK' : targetJenjang?.jenjang === 'SD' ? 'MTK' : 'PU'));
   const [modeLatihan, setModeLatihan] = useState('Active Recall'); // 'Active Recall' | 'Basic'
   const [subtesDetailModal, setSubtesDetailModal] = useState(null); // Subtes yang sedang dibuka rincian paketnya
   const [sesiLatihanAktif, setSesiLatihanAktif] = useState(null); // Sesi player pengerjaan aktif
 
+  // Pastikan subtesKilatTerpilih sinkron dengan daftar subtes jenjang aktif
+  useEffect(() => {
+    if (daftarSubtes && daftarSubtes.length > 0) {
+      if (!daftarSubtes.some((s) => s.kode === subtesKilatTerpilih)) {
+        setSubtesKilatTerpilih(daftarSubtes[0].kode);
+      }
+    }
+  }, [daftarSubtes, subtesKilatTerpilih]);
+
   // State update counter latihan siswa
   const [refreshLatihanTick, setRefreshLatihanTick] = useState(0);
 
-  // 1. Tarik paket otomatis Firestore & sesi KHUSUS siswa yang aktif login
+  // 1. Tarik paket otomatis Firestore, sesi siswa, & bank_soal
   useEffect(() => {
     let aktif = true;
     async function muatData() {
@@ -151,11 +173,16 @@ export default function JalurUjianAiPage() {
         const querySesi2 = (studentDocId && studentDocId !== studentId)
           ? getDocs(query(collection(db, 'tryout_sesi'), where('studentId', '==', studentDocId)))
           : Promise.resolve({ docs: [] });
+        const queryBank = getDocs(collection(db, 'bank_soal')).catch((e) => {
+          console.warn('Gagal memuat bank_soal:', e);
+          return { docs: [] };
+        });
 
-        const [snapPaket, snapSesi1, snapSesi2] = await Promise.all([
+        const [snapPaket, snapSesi1, snapSesi2, snapBankSoal] = await Promise.all([
           getDocs(query(collection(db, 'tryout_paket'), where('status', '==', 'aktif'))),
           querySesi1,
           querySesi2,
+          queryBank,
         ]);
 
         if (!aktif) return;
@@ -175,10 +202,15 @@ export default function JalurUjianAiPage() {
         (snapSesi1.docs || []).forEach((d) => mapSesi.set(d.id, { id: d.id, ...d.data() }));
         (snapSesi2.docs || []).forEach((d) => mapSesi.set(d.id, { id: d.id, ...d.data() }));
 
+        const allBankSoal = (snapBankSoal.docs || [])
+          .map((d) => ({ id: d.id, ...d.data() }))
+          .filter((d) => d.status !== 'dihapus');
+
         setPaketOtomatisDb(paketAi);
         setSesiList(Array.from(mapSesi.values()));
+        setBankSoalFirestore(allBankSoal);
       } catch (err) {
-        console.error('Gagal memuat paket jalur AI:', err);
+        console.error('Gagal memuat paket jalur AI / bank_soal:', err);
       } finally {
         if (aktif) setLoading(false);
       }
@@ -229,10 +261,10 @@ export default function JalurUjianAiPage() {
     };
   }, [keadaanTarget]);
 
-  // 5. Statistik Latihan Siswa Gaya AmbisPTN (Diperbarui secara reaktif)
+  // 5. Statistik Latihan Siswa Gaya Ambis (Diperbarui secara reaktif & multi-jenjang)
   const statistikLatihan = useMemo(() => {
-    return hitungStatistikLatihanSiswa(studentId);
-  }, [studentId, refreshLatihanTick]);
+    return hitungStatistikLatihanSiswa(studentId, targetJenjang?.jenjang || 'SMA', bankSoalFirestore);
+  }, [studentId, targetJenjang?.jenjang, bankSoalFirestore, refreshLatihanTick]);
 
   // 6. Analisis Perilaku & Kognitif oleh Asisten Belajar Gemilang (HANYA sesi siswa yang aktif)
   const analisisBelajar = useMemo(() => {
@@ -347,8 +379,8 @@ export default function JalurUjianAiPage() {
 
   // Handler Memulai Latihan Kilat (Quick Play 10 Soal Acak)
   const handleMulaiLatihanKilat = () => {
-    const subtesObj = DAFTAR_SUBTES_LATIHAN.find((s) => s.kode === subtesKilatTerpilih) || DAFTAR_SUBTES_LATIHAN[0];
-    const soalKilat = getSoalLatihanKilat(subtesObj.kode, 10, 'campur');
+    const subtesObj = daftarSubtes.find((s) => s.kode === subtesKilatTerpilih) || daftarSubtes[0];
+    const soalKilat = getSoalLatihanKilat(subtesObj.kode, 10, 'campur', targetJenjang?.jenjang || 'SMA', bankSoalFirestore);
     if (!soalKilat || soalKilat.length === 0) {
       alert('Soal latihan untuk subtes ini sedang disiapkan.');
       return;
@@ -356,7 +388,7 @@ export default function JalurUjianAiPage() {
 
     setSesiLatihanAktif({
       subtes: subtesObj,
-      paket: { id: `kilat_${subtesObj.kode}_${Date.now()}`, judul: `Latihan Kilat 10 Soal` },
+      paket: { id: `kilat_${subtesObj.kode.toLowerCase()}_${Date.now()}`, judul: `Latihan Kilat 10 Soal` },
       daftarSoal: soalKilat,
       mode: modeLatihan,
     });
@@ -447,7 +479,7 @@ export default function JalurUjianAiPage() {
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               <span style={st.badgeJenjang}>{targetJenjang.labelBadge}</span>
               <span style={{ fontSize: 11, fontWeight: 700, color: '#115e59', background: '#ccfbf1', padding: '2px 8px', borderRadius: 99 }}>
-                7 Subtes Resmi SNPMB
+                {isSmp ? '4 Subtes Resmi TKA SMP' : isSd ? '2 Subtes Resmi TKA SD' : '7 Subtes Resmi SNPMB'}
               </span>
             </div>
             <h1 style={st.headerJudul}>Roadmap Belajar & Latihan Soal</h1>
@@ -553,7 +585,9 @@ export default function JalurUjianAiPage() {
           }}
         >
           <Layers size={16} />
-          <span>Latihan 7 Subtes (Gaya AmbisPTN)</span>
+          <span>
+            {isSmp ? 'Latihan Subtes TKA SMP (Gaya Ambis)' : isSd ? 'Latihan Subtes TKA SD' : 'Latihan 7 Subtes (Gaya AmbisPTN)'}
+          </span>
         </button>
 
         <button
@@ -581,17 +615,23 @@ export default function JalurUjianAiPage() {
           <div style={st.bannerLatihanUtama}>
             <div>
               <h2 style={{ fontSize: 20, fontWeight: 900, color: '#0f172a', margin: '0 0 6px' }}>
-                Latihan Soal UTBK SNBT
+                {isSmp ? 'Latihan Soal TKA SMP' : isSd ? 'Latihan Soal TKA SD' : 'Latihan Soal UTBK SNBT'}
               </h2>
               <p style={{ fontSize: 13.5, color: '#475569', margin: 0, lineHeight: 1.5 }}>
-                Latih tiap subtes secara adaptif. XP dari latihan menaikkan level pendakianmu menuju PTN impian.
+                {isSmp
+                  ? 'Latih tiap subtes TKA SMP secara adaptif dari Bank Soal & Modul Master. XP dari latihan menaikkan level penguasaanmu menuju SMA Unggulan impian.'
+                  : isSd
+                  ? 'Latih tiap subtes TKA SD secara adaptif. XP dari latihan menaikkan level penguasaanmu menuju SMP Favorit impian.'
+                  : 'Latih tiap subtes secara adaptif. XP dari latihan menaikkan level pendakianmu menuju PTN impian.'}
               </p>
             </div>
 
             <div style={st.miniLevelBox}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 <Flame size={18} color="#ea580c" />
-                <span style={{ fontSize: 13, fontWeight: 800, color: '#9a3412' }}>Pendaki Pemula (Lv. 1)</span>
+                <span style={{ fontSize: 13, fontWeight: 800, color: '#9a3412' }}>
+                  {isSmp ? 'Pejuang SMA Unggulan (Lv. 1)' : isSd ? 'Pejuang SMP Favorit (Lv. 1)' : 'Pendaki Pemula (Lv. 1)'}
+                </span>
               </div>
               <div style={{ fontSize: 11, color: '#c2410c', marginTop: 2 }}>
                 Total {statistikLatihan.totalSoalDikerjakanSemua} soal dilatih • Akurasi {statistikLatihan.akurasiGlobal}%
@@ -639,7 +679,7 @@ export default function JalurUjianAiPage() {
 
             {/* Pil Pilihan Subtes */}
             <div style={st.wrapPillsSubtes}>
-              {DAFTAR_SUBTES_LATIHAN.map((stItem) => {
+              {daftarSubtes.map((stItem) => {
                 const isDipilih = subtesKilatTerpilih === stItem.kode;
                 return (
                   <button
@@ -671,18 +711,22 @@ export default function JalurUjianAiPage() {
             </button>
           </div>
 
-          {/* 📚 DAFTAR 7 KARTU SUBTES UTAMA RESMI UTBK SNBT */}
+          {/* 📚 DAFTAR KARTU SUBTES UTAMA SESUAI JENJANG */}
           <div style={{ marginBottom: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <h3 style={{ fontSize: 16, fontWeight: 800, color: '#0f172a', margin: 0 }}>
-              Katalog Latihan 7 Subtes Mandiri
+              {isSmp ? 'Katalog Latihan 4 Subtes TKA SMP' : isSd ? 'Katalog Latihan 2 Subtes TKA SD' : 'Katalog Latihan 7 Subtes Mandiri'}
             </h3>
             <span style={{ fontSize: 12, color: '#64748b', fontWeight: 600 }}>
-              Dipisah murni per subtes (Anti-Bercampur)
+              {isSmp
+                ? 'Otomatis dihimpun dari Bank Soal & Modul Master TKA SMP'
+                : isSd
+                ? 'Otomatis dihimpun dari Bank Soal TKA SD'
+                : 'Dipisah murni per subtes (Anti-Bercampur)'}
             </span>
           </div>
 
           <div style={st.gridKartuSubtes}>
-            {DAFTAR_SUBTES_LATIHAN.map((stItem) => {
+            {daftarSubtes.map((stItem) => {
               const infoStat = statistikLatihan.rekapSubtes[stItem.kode] || {
                 totalBankSoal: 50,
                 soalDikerjakan: 0,
@@ -772,7 +816,11 @@ export default function JalurUjianAiPage() {
                 Sudah Cukup Berlatih? Ukur Hasil Nyata di Try Out!
               </div>
               <p style={{ fontSize: 12.5, color: '#64748b', margin: 0 }}>
-                Try Out terjadwal mensimulasikan waktu ketat dan pembobotan IRT SNPMB resmi untuk mengukur passing grade jurusan impianmu.
+                {isSmp
+                  ? 'Try Out terjadwal mensimulasikan waktu ketat dan pembobotan standar TKA SMP untuk seleksi SMA Unggulan.'
+                  : isSd
+                  ? 'Try Out terjadwal mensimulasikan waktu ketat dan pembobotan standar TKA SD untuk seleksi SMP Favorit.'
+                  : 'Try Out terjadwal mensimulasikan waktu ketat dan pembobotan IRT SNPMB resmi untuk mengukur passing grade jurusan impianmu.'}
               </p>
             </div>
             <button
@@ -916,28 +964,38 @@ export default function JalurUjianAiPage() {
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10, maxHeight: 360, overflowY: 'auto' }}>
-              {getPaketLatihanPerSubtes(subtesDetailModal.kode, 10).map((paket) => (
-                <div key={paket.id} style={st.kartuPaketModalItem}>
-                  <div>
-                    <div style={{ fontSize: 14, fontWeight: 800, color: '#0f172a' }}>
-                      {paket.judul}
+              {(() => {
+                const paketList = getPaketLatihanPerSubtes(subtesDetailModal.kode, 10, targetJenjang?.jenjang || 'SMA', bankSoalFirestore);
+                if (paketList.length === 0) {
+                  return (
+                    <div style={{ padding: '24px 16px', textAlign: 'center', color: '#64748b', fontSize: 13, background: '#f8fafc', borderRadius: 12, border: '1px dashed #cbd5e1' }}>
+                      Belum ada paket soal untuk subtes ini. Butir soal dari Bank Soal akan otomatis terbit di sini.
                     </div>
-                    <div style={{ fontSize: 12, color: '#64748b', marginTop: 2 }}>
-                      {paket.jumlahSoal} Butir Soal • Estimasi {paket.durasiMenit} Menit
+                  );
+                }
+                return paketList.map((paket) => (
+                  <div key={paket.id} style={st.kartuPaketModalItem}>
+                    <div>
+                      <div style={{ fontSize: 14, fontWeight: 800, color: '#0f172a' }}>
+                        {paket.judul}
+                      </div>
+                      <div style={{ fontSize: 12, color: '#64748b', marginTop: 2 }}>
+                        {paket.jumlahSoal} Butir Soal • Estimasi {paket.durasiMenit} Menit
+                      </div>
                     </div>
+                    <button
+                      type="button"
+                      onClick={() => handleMulaiPaketSpesifik(subtesDetailModal, paket)}
+                      style={{
+                        ...st.btnMulaiPaketModal,
+                        background: subtesDetailModal.badgeWarna,
+                      }}
+                    >
+                      <span>Latih →</span>
+                    </button>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => handleMulaiPaketSpesifik(subtesDetailModal, paket)}
-                    style={{
-                      ...st.btnMulaiPaketModal,
-                      background: subtesDetailModal.badgeWarna,
-                    }}
-                  >
-                    <span>Latih →</span>
-                  </button>
-                </div>
-              ))}
+                ));
+              })()}
             </div>
           </div>
         </div>
@@ -1109,16 +1167,16 @@ export default function JalurUjianAiPage() {
                 <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
                   <BarChart3 size={17} color="#0d9488" />
                   <span style={{ fontSize: 13.5, fontWeight: 800, color: '#0f766e' }}>
-                    Diagnosa Penguasaan 7 Subtes UTBK
+                    {isSmp ? 'Diagnosa Penguasaan 4 Subtes TKA SMP' : isSd ? 'Diagnosa Penguasaan 2 Subtes TKA SD' : 'Diagnosa Penguasaan 7 Subtes UTBK'}
                   </span>
                 </div>
                 <span style={{ fontSize: 11, fontWeight: 700, color: '#64748b' }}>
-                  Standar SNPMB Murni
+                  {isSmp ? 'Standar Seleksi SMA Unggulan' : isSd ? 'Standar Seleksi SMP Favorit' : 'Standar SNPMB Murni'}
                 </span>
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                {DAFTAR_SUBTES_LATIHAN.map((stItem) => {
+                {daftarSubtes.map((stItem) => {
                   const stat = statistikLatihan.rekapSubtes[stItem.kode] || {
                     soalDikerjakan: 0,
                     akurasiPersen: 0,
