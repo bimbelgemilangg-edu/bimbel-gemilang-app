@@ -1,7 +1,7 @@
 // src/data/modul-smp/bahasaIndonesiaSmpData.js
 // ==============================================================================
 // MODUL MASTER 52 HALAMAN RESMI TKA SMP 2027 - BIMBEL GEMILANG
-// Bebas karakter PUA, pecahan tegak KaTeX, dan kuis pemahaman terstruktur rapi
+// 100% Bebas Kuis Kunci Dummy, Bebas PUA, Pecahan Tegak KaTeX & Terstruktur Rapi
 // ==============================================================================
 
 export const BIN_SMP_MODUL = [
@@ -349,75 +349,75 @@ export const BIN_SMP_MODUL = [
     "kuisPemahaman": [
       {
         "id": "bin_smp_b1_q1",
-        "soal": "Berdasarkan teks stimulus \"Kompos dari Sampah Dapur\", makna istilah fermentasi sesuai konteks bacaan adalah …",
+        "soal": "Soal 1 [PG · Unit 1.1] Berdasarkan teks stimulus \"Kompos dari Sampah Dapur\", makna istilah teknis 'fermentasi' sesuai konteks bacaan adalah …",
         "opsi": {
-          "A": "Pembakaran sampah secara bertahap",
-          "B": "Penguraian bahan organik oleh mikroba pengurai",
-          "C": "Penyiraman tanaman pekarangan",
-          "D": "Penjemuran kulit buah di bawah sinar matahari"
+          "A": "Pembakaran sampah secara bertahap dalam suhu tinggi",
+          "B": "Penguraian bahan organik oleh mikroorganisme di wadah tertutup",
+          "C": "Penyiraman tanaman pekarangan secara berkala",
+          "D": "Penjemuran kulit buah di bawah terik sinar matahari"
         },
         "kunci": "B",
-        "pembahasan": "Petunjuk konteks kalimat: 'Proses fermentasi dibantu oleh bakteri pengurai'."
+        "pembahasan": "Konteks kalimat 'Proses fermentasi dibantu oleh bakteri pengurai selama tiga minggu di dalam wadah tertutup' mempertegas bahwa fermentasi bermakna penguraian zat organik oleh mikroorganisme."
       },
       {
         "id": "bin_smp_b1_q2",
-        "soal": "Frasa \"Upaya ini\" pada kalimat terakhir teks stimulus merujuk pada …",
+        "soal": "Soal 2 [PG · Unit 1.2] Frasa rujukan \"Upaya ini\" pada kalimat terakhir teks stimulus mengacu pada …",
         "opsi": {
-          "A": "Membuang sampah ke tempat penampungan akhir",
-          "B": "Membeli pupuk kimia di toko pertanian",
-          "C": "Pengolahan sampah organik rumah tangga menjadi kompos",
-          "D": "Menyiram pekarangan rumah secara teratur"
+          "A": "Membuang sampah rumah tangga ke tempat penampungan akhir",
+          "B": "Membeli pupuk kimia sintetis di toko pertanian",
+          "C": "Pengolahan sampah organik rumah tangga menjadi pupuk kompos",
+          "D": "Menanam berbagai sayuran di pekarangan rumah"
         },
         "kunci": "C",
-        "pembahasan": "Frasa 'Upaya ini' merujuk langsung pada seluruh proses pembuatan kompos dari sampah organik yang dijelaskan pada kalimat sebelumnya."
+        "pembahasan": "Frasa demonstratif 'Upaya ini' merujuk langsung pada seluruh proses pembuatan kompos dari sampah sisa dapur yang dipaparkan pada kalimat sebelumnya."
       },
       {
         "id": "bin_smp_b1_q3",
-        "soal": "Soal 3 [PGK MCMA · Unit 1.5 Prosedur] Berdasarkan teks Kompos di kiri, benda manakah yang termasuk ALAT (bukan bahan)? Pilih lebih dari satu! (1) Ember berlubang      (2) Sisa sayur (3) Sekop kecil              (4) Larutan EM4",
+        "soal": "Soal 3 [PGK MCMA · Unit 1.5 Prosedur] Berdasarkan teks Kompos di kiri, benda manakah yang tergolong ke dalam kategori Alat (sarana fisik), bukan Bahan?\n(1) Kulit buah dan sisa sayuran dapur\n(2) Wadah komposter tertutup\n(3) Sendok pengaduk kompos\n(4) Bakteri pengurai (starter kompos)",
         "opsi": {
-          "A": "Pernyataan / Opsi (1) Benar",
-          "B": "Pernyataan / Opsi (2) Benar",
-          "C": "Pernyataan / Opsi (3) Benar",
-          "D": "Pernyataan / Opsi (4) Benar"
+          "A": "(2) dan (3)",
+          "B": "(1) dan (4)",
+          "C": "(1) dan (2)",
+          "D": "(3) dan (4)"
         },
         "kunci": "A",
-        "pembahasan": "Ember berlubang & sekop kecil dipakai ulang (alat);"
+        "pembahasan": "Wadah komposter dan sendok pengaduk adalah Alat (instrumen pendukung). Sementara itu, sisa sayur, kulit buah, dan bakteri pengurai adalah Bahan yang diproses."
       },
       {
         "id": "bin_smp_b1_q4",
-        "soal": "Soal 4 [PGK MCMA · Unit 1.6 Latar Waktu] Perhatikan kutipan: “Di teras kayu yang basah, embun masih bergantung di ujung daun. Kokok ayam bersahutan menyambut semburat jingga di ufuk timur.” Frasa mana yang menunjukkan latar waktu? (1) Teras kayu yang basah    (2) Embun di ujung daun (3) Semburat jingga di ufuk timur    (4) Ujung daun Bab 1 · Pemahaman Tekstual — Latihan & Kunci Bab 1 Latihan Bab 1 · Level 3 & Kunci Pembahasan Latihan Bab 1 · Level 3 (PGK Kategori) Tentukan Benar atau Salah berdasarkan teks Kompos di Halaman 14!",
+        "soal": "Soal 4 [PGK MCMA · Unit 1.6 Latar Waktu] Perhatikan kutipan: “Di teras kayu yang basah, embun masih menggelayut di daun keladi. Pak Karta membelah sisa bambu sebelum kokok ayam kedua terdengar.” Frasa manakah yang membuktikan latar waktu subuh/pagi hari?\n(1) Di teras kayu yang basah\n(2) Embun masih menggelayut di daun keladi\n(3) Pak Karta membelah sisa bambu\n(4) Sebelum kokok ayam kedua terdengar",
         "opsi": {
-          "A": "Pernyataan / Opsi (1) Benar",
-          "B": "Pernyataan / Opsi (2) Benar",
-          "C": "Pernyataan / Opsi (3) Benar",
-          "D": "Pernyataan / Opsi (4) Benar"
+          "A": "(2) dan (4)",
+          "B": "(1) dan (3)",
+          "C": "(1) dan (2)",
+          "D": "(3) dan (4)"
         },
         "kunci": "A",
-        "pembahasan": "Embun pagi & semburat jingga di timur (matahari"
+        "pembahasan": "Petunjuk deskripsi alam 'embun masih menggelayut' dan pertanda auditori 'sebelum kokok ayam kedua terdengar' merupakan bukti kuat latar waktu fajar atau dini hari."
       },
       {
         "id": "bin_smp_b1_q5",
-        "soal": "Soal 5 · Unit 1.9 & 1.10 (Kesesuaian Informasi) A. Proses penguraian kompos membutuhkan waktu sekitar 21 hari di wadah tertutup. B. Sisa plastik kemasan juga termasuk bahan utama kompos dalam teks. C. Kerangka teks yang tepat: Jenis Bahan → Proses Pembuatan → Alat & Bahan → Manfaat Kompos.",
+        "soal": "Soal 5 · Unit 1.9 & 1.10 (Kesesuaian Informasi) Tentukan kebenaran dari pernyataan berikut berdasarkan teks stimulus Kompos:\n(1) Proses penguraian kompos membutuhkan waktu sekitar 21 hari di wadah tertutup.\n(2) Sisa kantong plastik kemasan juga termasuk bahan utama kompos ramah lingkungan.\n(3) Pengolahan sampah organik dapur menjadi kompos membantu mengurangi volume timbulan sampah rumah tangga.",
         "opsi": {
-          "A": "Proses penguraian kompos membutuhkan waktu sekitar 21 hari di wadah tertutup.",
-          "B": "Sisa plastik kemasan juga termasuk bahan utama kompos dalam teks.",
-          "C": "Pernyataan / Opsi (3) Benar",
-          "D": "Pernyataan / Opsi (4) Benar"
+          "A": "(1) Benar, (2) Salah, (3) Benar",
+          "B": "(1) Benar, (2) Benar, (3) Salah",
+          "C": "(1) Salah, (2) Benar, (3) Benar",
+          "D": "Semua pernyataan Benar"
         },
         "kunci": "A",
-        "pembahasan": "3 minggu = 21 hari. Plastik bukan"
+        "pembahasan": "(1) Tiga minggu = 21 hari (Benar). (2) Sampah plastik adalah anorganik non-degradable (Salah). (3) Kompos mereduksi sampah dapur (Benar)."
       },
       {
         "id": "bin_smp_b1_q6",
-        "soal": "Soal 6 · Unit 1.3 (Denotatif vs Konotatif) Tentukan apakah kalimat berikut bermakna Konotatif (Benar) atau Denotatif (Salah): A. Pemuda itu menjadi tulang punggung keluarganya sejak ayahnya wafat. B. Dokter memeriksa tulang punggung pasien yang terjatuh. C. Ia dikenal ringan tangan karena selalu membantu tetangga.",
+        "soal": "Soal 6 · Unit 1.3 (Denotatif vs Konotatif) Tentukan kebenaran pasangan makna denotatif (harfiah) dan konotatif (kiasan) berikut:\n(1) \"Ibu menyapu remah-remah sampah di lantai dapur.\" (Bermakna Denotatif)\n(2) \"Ia menganggap nasihat tulus pamannya hanya sebagai sampah.\" (Bermakna Konotatif)\n(3) \"Kamar kos yang berantakan itu terlihat kumuh seperti tumpukan sampah.\" (Bermakna Konotatif)",
         "opsi": {
-          "A": "Pemuda itu menjadi tulang punggung keluarganya sejak ayahnya wafat.",
-          "C": "Ia dikenal ringan tangan karena selalu membantu tetangga.",
-          "B": "Pernyataan / Opsi (2) Benar",
-          "D": "Pernyataan / Opsi (4) Benar"
+          "A": "Semua pernyataan Benar",
+          "B": "(1) dan (2) Benar, (3) Salah",
+          "C": "(1) Benar, (2) dan (3) Salah",
+          "D": "(1) Salah, (2) dan (3) Benar"
         },
         "kunci": "A",
-        "pembahasan": "Tulang punggung (penopang"
+        "pembahasan": "Seluruh pasangan tepat: nomor (1) bermakna sampah fisik sebenarnya (denotasi), nomor (2) bermakna sesuatu yang tak berharga/sia-sia (konotasi), nomor (3) majas asosiasi kondisi sangat berantakan (konotasi)."
       }
     ]
   },
@@ -765,75 +765,75 @@ export const BIN_SMP_MODUL = [
     "kuisPemahaman": [
       {
         "id": "bin_smp_b2_q1",
-        "soal": "Berdasarkan perbandingan dua teks, ide pokok Teks A adalah …",
+        "soal": "Soal 1 [PG · Unit 2.1 Ide Pokok] Berdasarkan perbandingan dua teks di Halaman 26, gagasan utama Teks A (Berita Perpustakaan) adalah …",
         "opsi": {
-          "A": "Kenaikan harga gawai baru di pasaran",
-          "B": "Layanan peminjaman gawai untuk menunjang belajar siswa",
-          "C": "Keunggulan laptop dibandingkan ponsel pintar",
-          "D": "Larangan membawa gawai pribadi ke sekolah"
+          "A": "Lonjakan harga buku cetak di pasaran",
+          "B": "Layanan peminjaman buku digital gratis oleh Perpustakaan Kota",
+          "C": "Kelebihan laptop dibanding smartphone dalam membaca",
+          "D": "Peraturan larangan membawa gawai pribadi ke perpustakaan"
         },
         "kunci": "B",
-        "pembahasan": "Ide pokok Teks A mengulas program layanan peminjaman gawai sekolah untuk memfasilitasi kebutuhan belajar siswa."
+        "pembahasan": "Kalimat utama Teks A menegaskan bahwa Perpustakaan Kota kini membuka fasilitas peminjaman buku digital secara gratis melalui aplikasi mobile."
       },
       {
         "id": "bin_smp_b2_q2",
-        "soal": "Persamaan informasi utama yang disampaikan pada Teks A dan Teks B adalah …",
+        "soal": "Soal 2 [PG · Unit 2.7 Simpulan] Persamaan informasi pokok yang dibahas secara serentak pada Teks A dan Teks B adalah …",
         "opsi": {
-          "A": "Batas waktu peminjaman gawai maksimal 7 hari",
-          "B": "Membantu siswa yang terkendala fasilitas belajar daring",
-          "C": "Pemberian paket kuota internet bulanan secara gratis",
-          "D": "Lokasi peminjaman gawai terpusat di laboratorium sekolah"
+          "A": "Ketentuan batas waktu pengembalian buku maksimal 7 hari",
+          "B": "Inovasi digital perpustakaan membantu akses literasi bagi pelajar",
+          "C": "Program pembagian kuota internet belajar gratis",
+          "D": "Rencana penutupan gedung perpustakaan konvensional"
         },
         "kunci": "B",
-        "pembahasan": "Kedua teks memuat gagasan yang sama: memberikan solusi nyata bagi siswa yang mengalami kendala sarana belajar digital."
+        "pembahasan": "Kedua teks sama-sama mengulas manfaat nyata inovasi digital perpustakaan dalam mempermudah siswa mengakses bahan bacaan berkualitas."
       },
       {
         "id": "bin_smp_b2_q3",
-        "soal": "Soal 3 [PGK MCMA · Unit 2.8 Perbedaan 2 Teks] Apa saja perbedaan antara Teks A dan Teks B? Pilih lebih dari satu! (1) Teks A memakai bahasa baku/formal, Teks B memakai bahasa santai. (2) Teks A menyebut batas waktu pinjam, Teks B tidak. (3) Teks B menyebut kendala di HP lama, Teks A menyebut syarat internet stabil. (4) Teks A memuji novel remaja, Teks B melarang peminjaman buku.",
+        "soal": "Soal 3 [PGK MCMA · Unit 2.8 Perbedaan 2 Teks] Manakah yang merupakan perbedaan objektif antara Teks A dan Teks B?\n(1) Teks A memuat data teknis batas waktu peminjaman dan kuota buku.\n(2) Teks B memuat ungkapan impresi emosional kepuasan siswa pengguna.\n(3) Teks A melarang keras pembaca membaca buku di rumah.\n(4) Teks B menyebutkan bahwa buku digital perpustakaan tidak bermanfaat.",
         "opsi": {
-          "A": "Pernyataan / Opsi (1) Benar",
-          "B": "Pernyataan / Opsi (2) Benar",
-          "C": "Pernyataan / Opsi (3) Benar",
-          "D": "Pernyataan / Opsi (4) Benar"
+          "A": "(1) dan (2)",
+          "B": "(1) dan (3)",
+          "C": "(2) dan (4)",
+          "D": "(3) dan (4)"
         },
         "kunci": "A",
-        "pembahasan": "Opsi (4) salah karena Teks A tidak menyebut"
+        "pembahasan": "Teks A adalah teks berita faktual dengan rincian 3 buku / 7 hari (1). Teks B adalah teks ulasan opini siswa yang memuat frasa emotif 'Asyik banget!' (2)."
       },
       {
         "id": "bin_smp_b2_q4",
-        "soal": "Soal 4 [PGK MCMA · Unit 2.5 Prediksi] Apa yang mungkin terjadi jika siswa tinggal di daerah tanpa sinyal internet stabil saat ingin memakai aplikasi di Teks A? (1) Siswa kesulitan mengunduh buku digital. (2) Perpustakaan Kota akan langsung ditutup permanen. (3) Siswa perlu mencari akses WiFi dulu untuk mengunduh buku. Bab 2 · Pemahaman Inferensial — Latihan & Kunci Bab 2 Latihan Bab 2 · Level 3 & Kunci Pembahasan Latihan Bab 2 · Level 3 (PGK Kategori) Tentukan Benar atau Salah berdasarkan Teks A & B (Hal 26)!",
+        "soal": "Soal 4 [PGK MCMA · Unit 2.5 Prediksi] Berdasarkan kedua teks, apa kendala logis yang dialami siswa bila tinggal di daerah tanpa konektivitas sinyal internet?\n(1) Siswa kesulitan melakukan pengunduhan file buku digital di aplikasi.\n(2) Siswa tetap dapat membaca langsung buku fisik yang tersedia di gedung perpustakaan.\n(3) Aplikasi perpustakaan akan langsung memblokir akun siswa selamanya.\n(4) Pihak perpustakaan akan mengantarkan buku fisik secara otomatis ke rumah siswa.",
         "opsi": {
-          "A": "Pernyataan / Opsi (1) Benar",
-          "B": "Pernyataan / Opsi (2) Benar",
-          "C": "Pernyataan / Opsi (3) Benar",
-          "D": "Pernyataan / Opsi (4) Benar"
+          "A": "(1) dan (2)",
+          "B": "(1) dan (3)",
+          "C": "(2) dan (4)",
+          "D": "(3) dan (4)"
         },
         "kunci": "A",
-        "pembahasan": "Opsi (2) adalah prediksi ekstrem/lebay!"
+        "pembahasan": "Teks A menyatakan koneksi stabil tetap diperlukan saat mengunduh buku (1), dan layanan peminjaman konvensional di gedung fisik tetap buka (2)."
       },
       {
         "id": "bin_smp_b2_q5",
-        "soal": "Soal 5 · Unit 2.10 (Fakta vs Opini pada Teks B) A. Kalimat “Asyik banget!” merupakan opini pribadi penulis Teks B. B. Batas peminjaman 3 buku selama 7 hari di Teks A adalah fakta. C. Kedua teks sepakat bahwa aplikasi perpustakaan tidak punya kekurangan sama sekali.",
+        "soal": "Soal 5 · Unit 2.10 (Fakta vs Opini pada Teks B) Tentukan kebenaran dari analisis fakta vs opini berikut:\n(1) Kalimat “Asyik banget!” merupakan opini subjektif dari penulis Teks B.\n(2) Ketentuan batas peminjaman maksimal 3 buku selama 7 hari di Teks A adalah fakta.\n(3) Kedua teks sepakat bahwa sistem aplikasi perpustakaan sama sekali tidak memiliki kelemahan.",
         "opsi": {
-          "A": "Pernyataan / Opsi (1) Benar",
-          "B": "Pernyataan / Opsi (2) Benar",
-          "C": "Pernyataan / Opsi (3) Benar",
-          "D": "Pernyataan / Opsi (4) Benar"
+          "A": "(1) Benar, (2) Benar, (3) Salah",
+          "B": "(1) Benar, (2) Salah, (3) Benar",
+          "C": "(1) Salah, (2) Benar, (3) Salah",
+          "D": "Semua pernyataan Benar"
         },
         "kunci": "A",
-        "pembahasan": "Keduanya justru menyebut"
+        "pembahasan": "(1) dan (2) Benar. (3) Salah karena Teks A secara jujur menyebutkan kelemahan: masih bergantung pada konektivitas internet yang stabil."
       },
       {
         "id": "bin_smp_b2_q6",
-        "soal": "Soal 6 · Unit 2.4 (Hubungan Kalimat) Pada Teks A, kalimat terakhir diawali kata “Namun”. Tentukan Benar/Salah: A. Kata “Namun” menunjukkan syarat/kendala di balik kemudahan aplikasi. B. Kata “Namun” berfungsi memberikan contoh judul buku. C. Teks A bertujuan menginformasikan layanan baru secara objektif.",
+        "soal": "Soal 6 · Unit 2.4 (Hubungan Kalimat) Pada Teks A, kalimat terakhir dibuka dengan konjungsi antarkalimat “Namun”. Makna dan fungsi konjungsi tersebut adalah …",
         "opsi": {
-          "A": "Kata “Namun” menunjukkan syarat/kendala di balik kemudahan aplikasi.",
-          "B": "Kata “Namun” berfungsi memberikan contoh judul buku.",
-          "C": "Pernyataan / Opsi (3) Benar",
-          "D": "Pernyataan / Opsi (4) Benar"
+          "A": "Menunjukkan pertentangan atau pembatasan terhadap kemudahan yang diuraikan sebelumnya",
+          "B": "Menjelaskan urutan langkah kronologis peminjaman buku",
+          "C": "Menyajikan contoh judul buku bacaan yang sedang populer",
+          "D": "Menegaskan kesimpulan umum seluruh artikel berita"
         },
         "kunci": "A",
-        "pembahasan": "“Namun” menandai"
+        "pembahasan": "Konjungsi pertentangan 'Namun' mengindikasikan syarat atau catatan pembatas (walaupun aplikasi gratis dan praktis, pengguna tetap membutuhkan internet stabil)."
       }
     ]
   },
@@ -1265,75 +1265,75 @@ export const BIN_SMP_MODUL = [
     "kuisPemahaman": [
       {
         "id": "bin_smp_b3_q1",
-        "soal": "Berdasarkan kutipan cerpen, sifat tokoh Raka yang paling menonjol adalah …",
+        "soal": "Soal 1 [PG · Unit 3.1 Penokohan] Berdasarkan kutipan cerpen \"Sepatu Raka\", karakter tokoh Raka yang paling menonjol tercermin dari perbuatannya adalah …",
         "opsi": {
-          "A": "Manja dan mudah menyerah pada keadaan",
-          "B": "Mandiri dan peduli terhadap kondisi keluarga",
-          "C": "Suka membanggakan diri di depan teman",
-          "D": "Pendiam dan enggan berbicara dengan orang tua"
+          "A": "Manja dan gemar menuntut kepada orang tua",
+          "B": "Mandiri, berbakti, dan berempati pada kondisi keluarga",
+          "C": "Mudah marah dan putus asa menghadapi keadaan",
+          "D": "Ceroboh dan tidak merawat perlengkapan sekolah"
         },
         "kunci": "B",
-        "pembahasan": "Raka tidak ingin merepotkan ibunya yang baru pulih dan bertekad mandiri membantu menjahit pakaian."
+        "pembahasan": "Raka tidak mau membebani ibunya yang baru pulih dan memilih menjahit sendiri sepatunya yang sobek sambil tetap bersemangat ke sekolah."
       },
       {
         "id": "bin_smp_b3_q2",
-        "soal": "Sudut pandang (Point of View) yang digunakan pengarang dalam kutipan cerpen tersebut adalah …",
+        "soal": "Soal 2 [PG · Unit 3.6 Sudut Pandang] Sudut pandang (Point of View) yang dipakai pengarang dalam kutipan cerpen \"Sepatu Raka\" adalah …",
         "opsi": {
-          "A": "Orang pertama tokoh utama (aku-an)",
-          "B": "Orang pertama tokoh sampingan",
-          "C": "Orang ketiga serbatahu (ia/dia-an serbatahu)",
-          "D": "Orang ketiga pengamat"
+          "A": "Orang pertama pelaku utama (aku-an)",
+          "B": "Orang kedua sebagai pengamat",
+          "C": "Orang ketiga serbatahu (dia-an / nama tokoh)",
+          "D": "Sudut pandang campuran berganti-ganti"
         },
         "kunci": "C",
-        "pembahasan": "Narator menyebut tokoh dengan nama Raka/ia dan mengetahui seluruh isi pikiran serta gejolak batinnya."
+        "pembahasan": "Narator menyebut tokoh dengan nama Raka/ia dan mengetahui pikiran batinnya ('Ia tidak ingin merepotkan ibunya...'). Ini adalah sudut pandang orang ketiga serbatahu."
       },
       {
         "id": "bin_smp_b3_q3",
-        "soal": "Soal 3 [PGK MCMA · Unit 3.10 Majas] Perhatikan kalimat berikut! Pilih semua kalimat yang menggunakan majas Personifikasi! (1) Angin malam berbisik lembut di telingaku. (2) Daun-daun kering menari tertiup angin sore. (3) Wajahnya bersinar bagai bulan purnama. (4) Suaranya menggelegar membelah langit.",
+        "soal": "Soal 3 [PGK MCMA · Unit 3.10 Majas] Perhatikan kalimat berikut! Manakah kalimat yang menggunakan majas Personifikasi?\n(1) Angin malam berbisik lembut di telingaku.\n(2) Daun-daun kering menari gembira tertiup angin sore.\n(3) Wajah gadis itu bersinar indah bagai bulan purnama.\n(4) Suara gelegar petir membelah angkasa raya.",
         "opsi": {
-          "A": "Pernyataan / Opsi (1) Benar",
-          "B": "Pernyataan / Opsi (2) Benar",
-          "C": "Pernyataan / Opsi (3) Benar",
-          "D": "Pernyataan / Opsi (4) Benar"
+          "A": "(1) dan (2)",
+          "B": "(1) dan (3)",
+          "C": "(2) dan (4)",
+          "D": "(3) dan (4)"
         },
         "kunci": "A",
-        "pembahasan": "Berbisik & menari adalah perilaku manusia"
+        "pembahasan": "Perilaku insan 'berbisik' dan 'menari' dilekatkan pada benda mati (angin dan daun) → Personifikasi. Nomor (3) adalah Simile ('bagai'); nomor (4) adalah Hiperbola ('membelah angkasa')."
       },
       {
         "id": "bin_smp_b3_q4",
-        "soal": "Soal 4 [PGK MCMA · Unit 3.11 Citraan] Kutipan: “Aroma roti hangat memenuhi dapur kecil itu, sementara denting sendok terdengar riang.” Citraan yang muncul adalah … (1) Penciuman · (2) Pendengaran · (3) Perabaan · (4) Pengecapan Bab 3 · Teks Fiksi & Puisi — Latihan & Kunci Bab 3 Latihan Bab 3 · Level 3 & Kunci Pembahasan Latihan Bab 3 · Level 3 (PGK Kategori) Tentukan Benar atau Salah berdasarkan kutipan Sepatu Raka (Hal 41)!",
+        "soal": "Soal 4 [PGK MCMA · Unit 3.11 Citraan] Kutipan: “Aroma roti hangat memenuhi dapur kecil itu, sementara denting sendok terdengar riang.” Citraan indra yang dominan hadir adalah …\n(1) Citraan penciuman (pembauan)\n(2) Citraan pendengaran (auditif)\n(3) Citraan perabaan (taktil)\n(4) Citraan pengecapan (gustatif)",
         "opsi": {
-          "A": "Pernyataan / Opsi (1) Benar",
-          "B": "Pernyataan / Opsi (2) Benar",
-          "C": "Pernyataan / Opsi (3) Benar",
-          "D": "Pernyataan / Opsi (4) Benar"
+          "A": "(1) dan (2)",
+          "B": "(1) dan (3)",
+          "C": "(2) dan (4)",
+          "D": "(3) dan (4)"
         },
         "kunci": "A",
-        "pembahasan": "Aroma roti (penciuman) & denting sendok"
+        "pembahasan": "Frasa 'aroma roti hangat' melibatkan indra penciuman, dan frasa 'denting sendok terdengar' melibatkan indra pendengaran."
       },
       {
         "id": "bin_smp_b3_q5",
-        "soal": "Soal 5 · Unit 3.7 & 3.8 (Prediksi & Amanat) A. Jika Raka tidak peduli pada kondisi ibunya, ia mungkin akan memaksa dibelikan sepatu baru. B. Kutipan tersebut mengandung nilai moral kemandirian dan berbakti kepada orang tua. C. Raka merasa sangat malu sehingga memutuskan bolos sekolah.",
+        "soal": "Soal 5 · Unit 3.7 & 3.8 (Prediksi & Amanat) Tentukan kebenaran dari analisis cerpen Sepatu Raka berikut:\n(1) Jika Raka tidak memiliki rasa peduli pada ibunya, ia mungkin akan merengek memaksa dibelikan sepatu baru.\n(2) Cerita tersebut menanamkan nilai moral kemandirian dan rasa bakti kepada orang tua.\n(3) Raka merasa sangat rendah diri dan malu sehingga memilih membolos dari sekolah.",
         "opsi": {
-          "A": "Jika Raka tidak peduli pada kondisi ibunya, ia mungkin akan memaksa dibelikan sepatu baru.",
-          "B": "Kutipan tersebut mengandung nilai moral kemandirian dan berbakti kepada orang tua.",
-          "C": "Raka merasa sangat malu sehingga memutuskan bolos sekolah.",
-          "D": "Pernyataan / Opsi (4) Benar"
+          "A": "(1) Benar, (2) Benar, (3) Salah",
+          "B": "(1) Benar, (2) Salah, (3) Benar",
+          "C": "(1) Salah, (2) Benar, (3) Salah",
+          "D": "Semua pernyataan Benar"
         },
         "kunci": "A",
-        "pembahasan": "Raka justru tersenyum dan tetap"
+        "pembahasan": "(1) dan (2) Benar. (3) Salah karena teks menegaskan Raka tersenyum dan berkata mantap 'Yang penting masih kuat untuk sekolah'."
       },
       {
         "id": "bin_smp_b3_q6",
-        "soal": "Soal 6 · Unit 3.9 (Makna Puisi) Larik: “Peluh ayah jatuh menjadi jembatan mimpiku.” Tentukan Benar/Salah: A. Kata peluh melambangkan kerja keras ayah. B. Frasa jembatan mimpiku bermakna jalan menuju cita-cita anak. C. Larik tersebut bercerita tentang ayah yang bekerja sebagai tukang jembatan sungai.",
+        "soal": "Soal 6 · Unit 3.9 (Makna Puisi) Perhatikan larik puisi: “Peluh ayah jatuh menjadi jembatan mimpiku.” Tentukan kebenaran dari pernyataan apresiasi berikut:\n(1) Kata peluh melambangkan cucuran keringat, jerih payah, dan perjuangan keras seorang ayah.\n(2) Frasa jembatan mimpiku bermakna sarana atau jalan pembuka bagi anak dalam menggapai cita-citanya.\n(3) Larik tersebut mengisahkan bahwa sang ayah berprofesi sebagai tukang pembuat jembatan di sungai.",
         "opsi": {
-          "A": "Kata peluh melambangkan kerja keras ayah.",
-          "B": "Frasa jembatan mimpiku bermakna jalan menuju cita-cita anak.",
-          "C": "Larik tersebut bercerita tentang ayah yang bekerja sebagai tukang jembatan sungai.",
-          "D": "Pernyataan / Opsi (4) Benar"
+          "A": "(1) Benar, (2) Benar, (3) Salah",
+          "B": "(1) Benar, (2) Salah, (3) Benar",
+          "C": "(1) Salah, (2) Benar, (3) Salah",
+          "D": "Semua pernyataan Benar"
         },
         "kunci": "A",
-        "pembahasan": "C menafsirkan kiasan secara"
+        "pembahasan": "(1) dan (2) Benar sebagai interpretasi puitis. (3) Salah karena menafsirkan metafora puisi secara harfiah."
       }
     ]
   },
@@ -1569,19 +1569,19 @@ export const BIN_SMP_MODUL = [
     "kuisPemahaman": [
       {
         "id": "bin_smp_b4_q1",
-        "soal": "Cerpen tentang siswa yang selalu menunda tugas hingga keteteran paling relevan diajarkan untuk mengatasi masalah …",
+        "soal": "Soal 1 [PG · Unit 4.1 Relevansi] Cerpen tentang siswa yang kerap menunda-nunda pengerjaan tugas hingga panik keteteran paling relevan digunakan untuk mengingatkan pelajar agar …",
         "opsi": {
-          "A": "Rendahnya nilai kebugaran jasmani siswa",
-          "B": "Kebiasaan prokrastinasi (menunda-nunda) tugas belajar",
-          "C": "Kurangnya persediaan buku cerita di perpustakaan",
-          "D": "Konflik antarsiswa saat jam istirahat sekolah"
+          "A": "Menolak tugas yang diberikan oleh guru sekolah",
+          "B": "Membiasakan menyusun jadwal belajar dan mencicil tugas sejak awal",
+          "C": "Menyalin tugas teman sekelas agar cepat beres",
+          "D": "Mengurangi interaksi belajar bersama teman"
         },
         "kunci": "B",
-        "pembahasan": "Cerita bertema menunda tugas relevan untuk refleksi siswa yang sering melakukan prokrastinasi dalam belajar."
+        "pembahasan": "Nilai relevansi cerita mengajarkan sikap disiplin manajemen waktu (proaktif mencicil tugas dan tidak melakukan prokrastinasi)."
       },
       {
         "id": "bin_smp_b4_q2",
-        "soal": "Ciri-ciri informasi hoaks di media sosial yang wajib diwaspadai adalah:\n(1) Judul sensasional dan provokatif\n(2) Menggunakan huruf kapital berlebihan\n(3) Tidak mencantumkan sumber dan tanggal jelas\n(4) Memuat nama penulis dan lembaga riset kredibel",
+        "soal": "Soal 2 [PGK MCMA · Unit 4.5 Evaluasi Kritis] Ciri-ciri informasi hoaks di media sosial yang patut diwaspadai oleh pelajar adalah …\n(1) Memakai judul provokatif yang memancing emosi dan kemarahan pembaca\n(2) Tidak mencantumkan sumber lembaga riset atau redaksi yang jelas\n(3) Memuat kalimat desakan panik seperti 'segera sebarkan ke semua grup'\n(4) Dilengkapi rujukan data resmi dari lembaga kementerian terkait",
         "opsi": {
           "A": "(1), (2), dan (3)",
           "B": "(1) dan (4)",
@@ -1589,19 +1589,19 @@ export const BIN_SMP_MODUL = [
           "D": "Semua nomor benar"
         },
         "kunci": "A",
-        "pembahasan": "Ciri hoaks mencakup nomor (1), (2), dan (3). Nomor (4) justru ciri berita faktual dan terpercaya."
+        "pembahasan": "Ciri khas hoaks mencakup nomor (1), (2), dan (3). Nomor (4) justru merupakan tanda berita kredibel dan terverifikasi."
       },
       {
         "id": "bin_smp_b4_q3",
-        "soal": "Soal 3 [PGK Kategori · Unit 4.3 Fungsi Judul & Gambar] Artikel tentang cara menghemat listrik di rumah dilengkapi infografis 5 ikon peralatan elektronik. Tentukan Benar/Salah: A. Infografis membantu pembaca memahami langkah hemat listrik lebih cepat. B. Gambar ikon membuat pembaca lebih tertarik membaca artikel. C. Infografis tersebut menggantikan seluruh isi teks sehingga teks tidak perlu dibaca.",
+        "soal": "Soal 3 [PGK Kategori · Unit 4.3 Fungsi Infografis] Sebuah artikel tentang langkah hemat listrik di rumah tangga dilengkapi dengan infografis visual. Tentukan kebenaran dari pernyataan berikut:\n(1) Infografis membantu pembaca mencerna langkah praktis hemat listrik secara lebih cepat dan ringkas.\n(2) Elemen visual infografis meningkatkan daya tarik minat baca terhadap topik artikel.\n(3) Keberadaan infografis membuat teks artikel menjadi tidak perlu dibaca sama sekali.",
         "opsi": {
-          "A": "Infografis membantu pembaca memahami langkah hemat listrik lebih cepat.",
-          "B": "Gambar ikon membuat pembaca lebih tertarik membaca artikel.",
-          "C": "Infografis tersebut menggantikan seluruh isi teks sehingga teks tidak perlu dibaca.",
-          "D": "Pernyataan / Opsi (4) Benar"
+          "A": "(1) Benar, (2) Benar, (3) Salah",
+          "B": "(1) Benar, (2) Salah, (3) Benar",
+          "C": "(1) Salah, (2) Benar, (3) Salah",
+          "D": "Semua pernyataan Benar"
         },
         "kunci": "A",
-        "pembahasan": "Infografis berfungsi melengkapi &"
+        "pembahasan": "Infografis berfungsi sebagai komplemen visual yang memperkuat pemahaman teks (1 dan 2 Benar). Nomor (3) Salah karena infografis bukan pengganti total teks penjelasan."
       }
     ]
   }

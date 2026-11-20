@@ -1,7 +1,7 @@
 // src/data/modul-smp/bahasaInggrisSmpData.js
 // ==============================================================================
 // MODUL MASTER 52 HALAMAN RESMI TKA SMP 2027 - BIMBEL GEMILANG
-// Bebas karakter PUA, pecahan tegak KaTeX, dan kuis pemahaman terstruktur rapi
+// 100% Bebas Kuis Kunci Dummy, Bebas PUA, Pecahan Tegak KaTeX & Terstruktur Rapi
 // ==============================================================================
 
 export const BIG_SMP_MODUL = [
@@ -349,75 +349,75 @@ export const BIG_SMP_MODUL = [
     "kuisPemahaman": [
       {
         "id": "big_smp_b1_q1",
-        "soal": "No. 1 · Jawaban: B (on – at) Ada tanggal lengkap (August 17th) → pakai on; jam spesifik (6 a.m.) → pakai at.",
+        "soal": "Level 1 · PG1. Prepositions: “My sister was born ____ August 17th, 2012, ____ 6 a.m.” The correct prepositions are …",
         "opsi": {
-          "A": "Pernyataan / Opsi (1) Benar",
-          "B": "Pernyataan / Opsi (2) Benar",
-          "C": "Pernyataan / Opsi (3) Benar",
-          "D": "Pernyataan / Opsi (4) Benar"
+          "A": "in – at",
+          "B": "on – at",
+          "C": "at – on",
+          "D": "on – in"
         },
         "kunci": "B",
-        "pembahasan": "at)"
+        "pembahasan": "Aturan pemakaian preposisi waktu: untuk tanggal spesifik yang lengkap (August 17th) gunakan 'on'; untuk jam atau waktu tertentu (6 a.m.) gunakan 'at'."
       },
       {
         "id": "big_smp_b1_q2",
-        "soal": "No. 2 · Jawaban: C (must not step on the grass) Keep off = menjauh/dilarang menginjak rumput taman.",
+        "soal": "Level 1 · PG2. Notice: A sign in a city park reads “KEEP OFF THE GRASS”. This warning means that visitors ____.",
         "opsi": {
-          "A": "Pernyataan / Opsi (1) Benar",
-          "B": "Pernyataan / Opsi (2) Benar",
-          "C": "Pernyataan / Opsi (3) Benar",
-          "D": "Pernyataan / Opsi (4) Benar"
+          "A": "must cut the grass regularly",
+          "B": "are allowed to sit and picnic on the grass",
+          "C": "must not step on or walk across the grass",
+          "D": "should water the grass every morning"
         },
-        "kunci": "A",
-        "pembahasan": "C (must not step on the grass)"
+        "kunci": "C",
+        "pembahasan": "Frasa peringatan 'Keep off' bermakna menjauh atau dilarang mendekati/menginjak rumput taman."
       },
       {
         "id": "big_smp_b1_q3",
-        "soal": "No. 3 · Jawaban: B (the highest – higher) In the world → Superlative (the highest); ada kata than → Comparative (higher).",
+        "soal": "Level 2 · PG3. Comparison: “Mount Everest is ____ mountain in the world, while Mount Rinjani is ____ than Mount Bromo.”",
         "opsi": {
-          "A": "Pernyataan / Opsi (1) Benar",
-          "B": "Pernyataan / Opsi (2) Benar",
-          "C": "Pernyataan / Opsi (3) Benar",
-          "D": "Pernyataan / Opsi (4) Benar"
+          "A": "higher – the highest",
+          "B": "the highest – higher",
+          "C": "the most high – more high",
+          "D": "highest – more higher"
         },
         "kunci": "B",
-        "pembahasan": "higher)"
+        "pembahasan": "Konteks 'in the world' membutuhkan bentuk Superlative ('the highest'); adanya kata perbandingan 'than' membutuhkan bentuk Comparative ('higher')."
       },
       {
         "id": "big_smp_b1_q4",
-        "soal": "No. 4 · Jawaban: C (mustn't) Strictly forbidden (dilarang keras) selalu berpasangan dengan mustn't (bukan don't have to).",
+        "soal": "Level 2 · PG4. Modals: “Students ____ bring dictionaries during the official English test. It's strictly forbidden.”",
         "opsi": {
-          "A": "Pernyataan / Opsi (1) Benar",
-          "B": "Pernyataan / Opsi (2) Benar",
-          "C": "Pernyataan / Opsi (3) Benar",
-          "D": "Pernyataan / Opsi (4) Benar"
+          "A": "don't have to",
+          "B": "should",
+          "C": "mustn't",
+          "D": "might"
         },
-        "kunci": "A",
-        "pembahasan": "C (mustn't)"
+        "kunci": "C",
+        "pembahasan": "Keterangan 'strictly forbidden' (dilarang keras) menandakan larangan mutlak yang wajib berpasangan dengan modal auxiliary 'mustn't' (must not)."
       },
       {
         "id": "big_smp_b1_q5",
-        "soal": "No. 5 · Jawaban: C (15 ml) Anak usia 10 tahun masuk kategori Children (6–12 yrs): 1 sendok teh (5 ml) × 3 kali sehari = 15 ml.",
+        "soal": "Level 3 · PG5. Medicine Label: “Cough Syrup · Adult: 2 teaspoons 3 times a day · Children (6–12 yrs): 1 teaspoon 3 times a day. Keep out of reach of children.” If 1 teaspoon = 5 ml, how much syrup does a 10-year-old child take in one day?",
         "opsi": {
-          "A": "Pernyataan / Opsi (1) Benar",
-          "B": "Pernyataan / Opsi (2) Benar",
-          "C": "Pernyataan / Opsi (3) Benar",
-          "D": "Pernyataan / Opsi (4) Benar"
+          "A": "5 ml",
+          "B": "10 ml",
+          "C": "15 ml",
+          "D": "30 ml"
         },
-        "kunci": "A",
-        "pembahasan": "C (15 ml)"
+        "kunci": "C",
+        "pembahasan": "Anak berusia 10 tahun masuk kategori Children (6–12 yrs): takaran 1 sendok teh (5 ml) dikonsumsi 3 kali sehari → $5\\text{ ml} \\times 3 = 15\\text{ ml}$ per hari."
       },
       {
         "id": "big_smp_b1_q6",
-        "soal": "No. 6 · Jawaban: A dan C (A) BENAR: Money = uncountable → pakai How much. (B) SALAH: Seharusnya its (tanpa apostrof), bukan it's. (C) BENAR: I couldn't agree more = sangat setuju. (D) SALAH: Setelah modal can wajib V1 murni (sing, tanpa -s).",
+        "soal": "Level 3 · PGK MCMA6. Grammar & Expressions: Choose TWO grammatically CORRECT sentences:\n(1) How much money do you need to buy that dictionary?\n(2) The cat is cleaning it's paws on the sofa.\n(3) “I couldn't agree more!” means the speaker strongly agrees with the opinion.\n(4) She can sings English pop songs very beautifully.",
         "opsi": {
-          "A": "Pernyataan / Opsi (1) Benar",
-          "B": "Pernyataan / Opsi (2) Benar",
-          "C": "Pernyataan / Opsi (3) Benar",
-          "D": "Pernyataan / Opsi (4) Benar"
+          "A": "(1) dan (3)",
+          "B": "(1) dan (2)",
+          "C": "(2) dan (3)",
+          "D": "(3) dan (4)"
         },
         "kunci": "A",
-        "pembahasan": "A dan C"
+        "pembahasan": "Analisis kalimat:\n• (1) BENAR: 'Money' adalah uncountable noun sehingga memakai quantifier 'How much'.\n• (2) SALAH: Kata ganti kepemilikan hewan adalah 'its' (tanpa apostrof), bukan 'it's' (singkatan it is).\n• (3) BENAR: Ungkapan idiomatik 'I couldn't agree more' menyatakan persetujuan mutlak (sangat setuju).\n• (4) SALAH: Setelah modal 'can' wajib diikuti bare infinitive / V1 murni tanpa akhiran -s ('can sing').\nJadi kalimat yang benar adalah (1) dan (3)."
       }
     ]
   },
@@ -765,75 +765,75 @@ export const BIG_SMP_MODUL = [
     "kuisPemahaman": [
       {
         "id": "big_smp_b2_q1",
-        "soal": "No. 1 · Jawaban: B (Does – go) Your brother = tunggal (He) → pakai Does, dan setelah Does wajib V1 murni (go).",
+        "soal": "Level 1 · PG1. Simple Present: “____ your brother ____ to school by bicycle every morning?”",
         "opsi": {
-          "A": "Pernyataan / Opsi (1) Benar",
-          "B": "Pernyataan / Opsi (2) Benar",
-          "C": "Pernyataan / Opsi (3) Benar",
-          "D": "Pernyataan / Opsi (4) Benar"
+          "A": "Do – goes",
+          "B": "Does – go",
+          "C": "Does – goes",
+          "D": "Is – go"
         },
         "kunci": "B",
-        "pembahasan": "go)"
+        "pembahasan": "Subjek 'your brother' adalah orang ketiga tunggal (he) → kata bantu tanya adalah 'Does'. Setelah kata bantu 'Does', kata kerja utama kembali ke bentuk dasar V1 ('go')."
       },
       {
         "id": "big_smp_b2_q2",
-        "soal": "No. 2 · Jawaban: C (was cooking) Setelah While (aksi panjang yang disela knocked V2) → Past Continuous (was cooking).",
+        "soal": "Level 1 · PG2. Past Continuous: “While I ____ dinner, my best friend knocked on the door.”",
         "opsi": {
-          "A": "Pernyataan / Opsi (1) Benar",
-          "B": "Pernyataan / Opsi (2) Benar",
-          "C": "Pernyataan / Opsi (3) Benar",
-          "D": "Pernyataan / Opsi (4) Benar"
+          "A": "cook",
+          "B": "cooked",
+          "C": "was cooking",
+          "D": "am cooking"
         },
-        "kunci": "A",
-        "pembahasan": "C (was cooking)"
+        "kunci": "C",
+        "pembahasan": "Klausa yang diawali kata penghubung 'While' menunjukkan kegiatan berdurasi panjang yang sedang berlangsung di masa lampau ketika disela peristiwa lain ('knocked') → gunakan Past Continuous ('was cooking')."
       },
       {
         "id": "big_smp_b2_q3",
-        "soal": "No. 3 · Jawaban: B (has lived – since) 2019 adalah titik awal → since; Nadia (tunggal) → has lived.",
+        "soal": "Level 2 · PG3. Present Perfect: “Nadia ____ in Banyuwangi ____ 2019.”",
         "opsi": {
-          "A": "Pernyataan / Opsi (1) Benar",
-          "B": "Pernyataan / Opsi (2) Benar",
-          "C": "Pernyataan / Opsi (3) Benar",
-          "D": "Pernyataan / Opsi (4) Benar"
+          "A": "lived – for",
+          "B": "has lived – since",
+          "C": "have lived – since",
+          "D": "has lived – for"
         },
         "kunci": "B",
-        "pembahasan": "since)"
+        "pembahasan": "Tahun spesifik '2019' menunjukkan titik awal waktu permulaan kejadian → gunakan 'since'. Subjek 'Nadia' adalah tunggal → gunakan bentuk 'has lived'."
       },
       {
         "id": "big_smp_b2_q4",
-        "soal": "No. 4 · Jawaban: C (was built) Candi dibangun (pasif), 9th century (lampau), dan tunggal → was built.",
+        "soal": "Level 2 · PG4. Passive Voice: “Prambanan Temple ____ in the 9th century during the Sanjaya Dynasty.”",
         "opsi": {
-          "A": "Pernyataan / Opsi (1) Benar",
-          "B": "Pernyataan / Opsi (2) Benar",
-          "C": "Pernyataan / Opsi (3) Benar",
-          "D": "Pernyataan / Opsi (4) Benar"
+          "A": "built",
+          "B": "is built",
+          "C": "was built",
+          "D": "were built"
         },
-        "kunci": "A",
-        "pembahasan": "C (was built)"
+        "kunci": "C",
+        "pembahasan": "Subjek candi berposisi pasif (dibangun) di masa lampau (9th century) dan berbentuk tunggal → pola pasif lampau adalah 'was + V3' ('was built')."
       },
       {
         "id": "big_smp_b2_q5",
-        "soal": "No. 5 · Jawaban: B (so that) Diikuti klausa lengkap bersubjek (we can stay) menyatakan tujuan → so that.",
+        "soal": "Level 3 · PG5. Conjunctions: “We must drink enough mineral water ____ we can stay well hydrated during sports activities.”",
         "opsi": {
-          "A": "Pernyataan / Opsi (1) Benar",
-          "B": "Pernyataan / Opsi (2) Benar",
-          "C": "Pernyataan / Opsi (3) Benar",
-          "D": "Pernyataan / Opsi (4) Benar"
+          "A": "in order to",
+          "B": "so that",
+          "C": "because of",
+          "D": "despite"
         },
-        "kunci": "A",
-        "pembahasan": "B (so that)"
+        "kunci": "B",
+        "pembahasan": "Konjungsi tujuan yang diikuti oleh anak kalimat lengkap bersubjek dan bermodal ('we can stay') adalah 'so that'. Pilihan 'in order to' harus langsung diikuti bare verb / V1."
       },
       {
         "id": "big_smp_b2_q6",
-        "soal": "No. 6 · Jawaban: A dan C (A) BENAR: Conditional Type 1 (If + V1, will + V1). (B) SALAH: Setelah Did harus V1 (see, bukan saw). (C) BENAR: Present Passive (is + V3 made). (D) SALAH: Tidak boleh dobel Although ... but!",
+        "soal": "Level 3 · PGK MCMA6. Grammar Audit: Choose TWO grammatically CORRECT sentences:\n(1) If you study regularly every day, you will achieve a great score in the national exam.\n(2) Did you saw the newly opened science museum yesterday afternoon?\n(3) This delicious traditional rendang is made from beef and thick coconut milk.\n(4) Although it was raining heavily outside, but they still continued playing football.",
         "opsi": {
-          "A": "Pernyataan / Opsi (1) Benar",
-          "B": "Pernyataan / Opsi (2) Benar",
-          "C": "Pernyataan / Opsi (3) Benar",
-          "D": "Pernyataan / Opsi (4) Benar"
+          "A": "(1) dan (3)",
+          "B": "(1) dan (2)",
+          "C": "(2) dan (3)",
+          "D": "(3) dan (4)"
         },
         "kunci": "A",
-        "pembahasan": "A dan C"
+        "pembahasan": "Analisis kalimat:\n• (1) BENAR: Sesuai kaidah Conditional Type 1 (If + Simple Present, Simple Future: will + V1).\n• (2) SALAH: Setelah auxiliary lampau 'Did', kata kerja wajib kembali ke bentuk V1 murni ('Did you see').\n• (3) BENAR: Kalimat pasif present yang tepat ('is made from').\n• (4) SALAH: Pantang menggabungkan dua konjungsi kontras 'Although' dan 'but' dalam satu kalimat majemuk.\nJadi kalimat yang benar adalah (1) dan (3)."
       }
     ]
   },
@@ -1265,75 +1265,75 @@ export const BIG_SMP_MODUL = [
     "kuisPemahaman": [
       {
         "id": "big_smp_b3_q1",
-        "soal": "No. 1 · Jawaban: C (Report) Membahas lumba-lumba secara umum dan objektif (habitat & makanan) → Report Text.",
+        "soal": "Level 1 · PG1. Genre Identification: A factual text titled “Dolphins: Intelligent Marine Mammals” explaining dolphins' habitat, classification, and diet objectively belongs to ____.",
         "opsi": {
-          "A": "Pernyataan / Opsi (1) Benar",
-          "B": "Pernyataan / Opsi (2) Benar",
-          "C": "Pernyataan / Opsi (3) Benar",
-          "D": "Pernyataan / Opsi (4) Benar"
+          "A": "Narrative Text",
+          "B": "Recount Text",
+          "C": "Report Text",
+          "D": "Procedure Text"
         },
-        "kunci": "A",
-        "pembahasan": "C (Report)"
+        "kunci": "C",
+        "pembahasan": "Teks yang menyajikan fakta ilmiah objektif mengenai suatu objek makhluk hidup secara umum masuk ke dalam genre Report Text."
       },
       {
         "id": "big_smp_b3_q2",
-        "soal": "No. 2 · Jawaban: B (tell how to make a cup of tea) Langkah berurutan First, Second, Third + kata kerja perintah → Procedure Text.",
+        "soal": "Level 1 · PG2. Procedure: “First, boil the water. Second, put the tea bag into a cup. Third, pour the hot water.” The text is written with the purpose to ____.",
         "opsi": {
-          "A": "Pernyataan / Opsi (1) Benar",
-          "B": "Pernyataan / Opsi (2) Benar",
-          "C": "Pernyataan / Opsi (3) Benar",
-          "D": "Pernyataan / Opsi (4) Benar"
+          "A": "entertain readers with a story about tea",
+          "B": "tell readers step-by-step how to make a cup of tea",
+          "C": "describe the physical features of a porcelain cup",
+          "D": "retell the history of tea ceremonies"
         },
-        "kunci": "A",
-        "pembahasan": "B (tell how to make a cup of tea)"
+        "kunci": "B",
+        "pembahasan": "Ciri khas kalimat perintah berurutan (First, Second, Third) menunjukkan teks prosedur yang bertujuan memandu pembaca membuat secangkir teh."
       },
       {
         "id": "big_smp_b3_q3",
-        "soal": "No. 3 · Jawaban: D (bees) Them jamak merujuk pada subjek kalimat sebelumnya: Bees (lebah).",
+        "soal": "Level 2 · PG3. Reference: “Honeybees play a vital role in nature. Without them, many fruit trees could not produce food.” The underlined pronoun “them” refers to ____.",
         "opsi": {
-          "A": "Pernyataan / Opsi (1) Benar",
-          "B": "Pernyataan / Opsi (2) Benar",
-          "C": "Pernyataan / Opsi (3) Benar",
-          "D": "Pernyataan / Opsi (4) Benar"
+          "A": "fruit trees",
+          "B": "nature",
+          "C": "food",
+          "D": "honeybees"
         },
-        "kunci": "A",
-        "pembahasan": "D (bees)"
+        "kunci": "D",
+        "pembahasan": "Kata ganti jamak 'them' merujuk langsung pada subjek jamak yang diperbincangkan pada kalimat sebelumnya, yaitu 'honeybees' (lebah madu)."
       },
       {
         "id": "big_smp_b3_q4",
-        "soal": "No. 4 · Jawaban: B (Complication) Munculnya masalah hingga klimaks pada Narrative disebut Complication.",
+        "soal": "Level 2 · PG4. Narrative: The structural section of a Narrative Text where the central problem arises, intensifies, and reaches its emotional climax is called ____.",
         "opsi": {
-          "A": "Pernyataan / Opsi (1) Benar",
-          "B": "Pernyataan / Opsi (2) Benar",
-          "C": "Pernyataan / Opsi (3) Benar",
-          "D": "Pernyataan / Opsi (4) Benar"
+          "A": "Orientation",
+          "B": "Complication",
+          "C": "Resolution",
+          "D": "Re-orientation"
         },
-        "kunci": "A",
-        "pembahasan": "B (Complication)"
+        "kunci": "B",
+        "pembahasan": "Tahapan timbulnya perselisihan atau masalah hingga titik puncak ketegangan cerita naratif disebut sebagai bagian Complication."
       },
       {
         "id": "big_smp_b3_q5",
-        "soal": "No. 5 · Jawaban: B (amazed and happy) Kalimat “made all our tiredness disappear” (rasa lelah langsung hilang melihat api biru) menyiratkan rasa kagum dan bahagia!",
+        "soal": "Level 3 · PG5. Recount Inference: “We finally reached the rim of Mount Ijen at 2 a.m. The mountain wind was freezing, so we put on thick coats. Seeing the mesmerizing natural blue fire made all our exhaustion disappear instantly.” From the excerpt, we can infer that the author felt ____.",
         "opsi": {
-          "A": "Pernyataan / Opsi (1) Benar",
-          "B": "Pernyataan / Opsi (2) Benar",
-          "C": "Pernyataan / Opsi (3) Benar",
-          "D": "Pernyataan / Opsi (4) Benar"
+          "A": "deeply disappointed and exhausted",
+          "B": "greatly amazed and joyful",
+          "C": "anxious and terrified",
+          "D": "bored and regretful"
         },
-        "kunci": "A",
-        "pembahasan": "B (amazed and happy)"
+        "kunci": "B",
+        "pembahasan": "Keterangan 'made all our exhaustion disappear instantly' (rasa letih seketika sirna menyaksikan indahnya fenomena api biru) menyiratkan rasa kagum dan bahagia luar biasa."
       },
       {
         "id": "big_smp_b3_q6",
-        "soal": "No. 6 · Jawaban: A dan C (A) BENAR: Recount & Narrative sama-sama bercerita lampau (V2). (B) SALAH: Procedure memakai Imperative V1 (Simple Present), bukan Past Continuous. (C) BENAR: Descriptive fokus pada satu objek spesifik. (D) SALAH: Lirik lagu kaya makna kiasan (figurative meaning).",
+        "soal": "Level 3 · PGK MCMA6. 5 Genres Check: Choose TWO statements that are ACCURATE according to English text genres:\n(1) Both Recount Text and Narrative Text predominantly use Simple Past Tense (V2).\n(2) Procedure Text predominantly relies on Past Continuous Tense to outline chronological steps.\n(3) Descriptive Text focuses primarily on detailing one specific person, place, or object.\n(4) Foreign song lyrics must always be translated word-for-word literally without considering poetic metaphors.",
         "opsi": {
-          "A": "Pernyataan / Opsi (1) Benar",
-          "B": "Pernyataan / Opsi (2) Benar",
-          "C": "Pernyataan / Opsi (3) Benar",
-          "D": "Pernyataan / Opsi (4) Benar"
+          "A": "(1) dan (3)",
+          "B": "(1) dan (2)",
+          "C": "(2) dan (3)",
+          "D": "(3) dan (4)"
         },
         "kunci": "A",
-        "pembahasan": "A dan C"
+        "pembahasan": "Analisis genre:\n• (1) BENAR: Baik Recount maupun Narrative berorientasi pada peristiwa lampau sehingga menggunakan Past Tense (V2).\n• (2) SALAH: Teks prosedur menggunakan kata kerja imperatif bentuk present (V1), bukan past continuous.\n• (3) BENAR: Descriptive text berfokus mendeskripsikan ciri khusus satu entitas spesifik.\n• (4) SALAH: Lirik lagu sarat majas kiasan (figurative language) yang tidak boleh diartikan secara harfiah kata per kata.\nJadi pernyataan yang tepat adalah (1) dan (3)."
       }
     ]
   },
@@ -1569,31 +1569,31 @@ export const BIG_SMP_MODUL = [
     "kuisPemahaman": [
       {
         "id": "big_smp_b4_q1",
-        "soal": "No. 1 · PGSchedule: A flight departs at 09.45 a.m. and arrives at 11.15 a.m. (same time zone). How long is the flight? A. 1 hour 15 min    B. 1 hour 30 min    C. 2 hours    D. 2 hours 30 min",
+        "soal": "No. 1 · PGSchedule: An express flight departs from Jakarta at 09.45 a.m. and safely touches down in Surabaya at 11.15 a.m. (within the same time zone). How long is the flight duration?",
         "opsi": {
-          "A": "1 hour 15 min",
-          "B": "1 hour 30 min",
+          "A": "1 hour 15 minutes",
+          "B": "1 hour 30 minutes",
           "C": "2 hours",
-          "D": "2 hours 30 min"
+          "D": "2 hours 30 minutes"
         },
-        "kunci": "A",
-        "pembahasan": "B (1 hour 30 min)"
+        "kunci": "B",
+        "pembahasan": "Selisih waktu penerbangan: dari pukul 09.45 ke 10.45 dihitung 1 jam, lalu dari 10.45 ke 11.15 bertambah 30 menit. Total durasi adalah 1 jam 30 menit."
       },
       {
         "id": "big_smp_b4_q2",
-        "soal": "No. 2 · PGDialogue: A: “Can I see the menu, please?” · B: “Certainly, here you are. Would you like to order drinks first?” Where does the dialogue take place? A. At a library    B. At a restaurant    C. At a hospital    D. At a station",
+        "soal": "No. 2 · PGDialogue: Customer: “Excuse me, can I see the menu, please?” · Waiter: “Certainly, here you are. Would you like to order cold beverages first?” Where does this dialogue most likely take place?",
         "opsi": {
-          "A": "Pernyataan / Opsi (1) Benar",
-          "B": "Pernyataan / Opsi (2) Benar",
-          "C": "Pernyataan / Opsi (3) Benar",
-          "D": "Pernyataan / Opsi (4) Benar"
+          "A": "At a school library",
+          "B": "At a restaurant",
+          "C": "At a public hospital",
+          "D": "At a train terminal"
         },
-        "kunci": "A",
-        "pembahasan": "B (At a restaurant)"
+        "kunci": "B",
+        "pembahasan": "Kata kunci percakapan seperti 'menu' dan 'order cold beverages' (memesan minuman) memastikan latar lokasi berada di sebuah restoran."
       },
       {
         "id": "big_smp_b4_q3",
-        "soal": "No. 3 · PGJumbled Words: yesterday (1) – bought (2) – a (3) – new (4) – bag (5) – she (6). The best arrangement is... A. 6–2–3–4–5–1    B. 6–2–3–5–4–1    C. 1–6–3–4–5–2    D. 6–1–2–3–4–5",
+        "soal": "No. 3 · PGJumbled Words: yesterday (1) – bought (2) – a (3) – new (4) – bag (5) – she (6). What is the most grammatically correct sentence arrangement?",
         "opsi": {
           "A": "6–2–3–4–5–1",
           "B": "6–2–3–5–4–1",
@@ -1601,19 +1601,19 @@ export const BIG_SMP_MODUL = [
           "D": "6–1–2–3–4–5"
         },
         "kunci": "A",
-        "pembahasan": "2–3–4–5–1)"
+        "pembahasan": "Susunan kalimat SPOK bahasa Inggris yang tepat: Subject [She (6)] + Verb [bought (2)] + Object [a (3) new (4) bag (5)] + Adverb of Time [yesterday (1)]. Menghasilkan pola: 6–2–3–4–5–1."
       },
       {
         "id": "big_smp_b4_q4",
-        "soal": "No. 4 · PGK MCMADigital English: Pilih DUA pernyataan BENAR: ☐  (A) Writing an email in ALL CAPS is considered shouting online. ☐  (B) “Sincerely” is suitable for closing a formal email to a teacher. ☐  (C) “More than half” on a pie chart means less than 40%. ☐  (D) A sentence starting with “Finally,” should be placed first in a paragraph.",
+        "soal": "No. 4 · PGK MCMADigital English: Identify TWO statements that are ACCURATE regarding digital English communication:\n(1) Writing an entire email using ALL CAPITAL LETTERS is regarded as shouting and impolite online.\n(2) The phrase “Sincerely yours” is polite and suitable for closing a formal email sent to a school teacher.\n(3) The phrase “more than half” on an infographic pie chart denotes a percentage less than 40%.\n(4) A transitional sentence beginning with “Finally,” should ideally be placed as the introductory opening of an essay.",
         "opsi": {
-          "A": "Pernyataan / Opsi (1) Benar",
-          "B": "Pernyataan / Opsi (2) Benar",
-          "C": "Pernyataan / Opsi (3) Benar",
-          "D": "Pernyataan / Opsi (4) Benar"
+          "A": "(1) dan (2)",
+          "B": "(1) dan (3)",
+          "C": "(2) dan (3)",
+          "D": "(3) dan (4)"
         },
         "kunci": "A",
-        "pembahasan": "A dan B"
+        "pembahasan": "Analisis etika komunikasi:\n• (1) & (2) BENAR: Huruf kapital penuh diartikan berteriak; 'Sincerely' adalah penutup surat resmi yang santun.\n• (3) SALAH: 'More than half' bernilai lebih dari 50%, bukan di bawah 40%.\n• (4) SALAH: 'Finally' digunakan untuk poin konklusi terakhir di penutup paragraf, bukan kalimat pembuka.\nJadi pernyataan yang tepat adalah (1) dan (2)."
       }
     ]
   }

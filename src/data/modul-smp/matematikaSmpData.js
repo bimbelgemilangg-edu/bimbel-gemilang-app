@@ -1,7 +1,7 @@
 // src/data/modul-smp/matematikaSmpData.js
 // ==============================================================================
 // MODUL MASTER 52 HALAMAN RESMI TKA SMP 2027 - BIMBEL GEMILANG
-// Bebas karakter PUA, pecahan tegak KaTeX, dan kuis pemahaman terstruktur rapi
+// 100% Bebas Kuis Kunci Dummy, Bebas PUA, Pecahan Tegak KaTeX & Terstruktur Rapi
 // ==============================================================================
 
 export const MTK_SMP_MODUL = [
@@ -349,7 +349,7 @@ export const MTK_SMP_MODUL = [
     "kuisPemahaman": [
       {
         "id": "mtk_smp_b1_q1",
-        "soal": "Soal 1 · Unit 1.6 (Promo Belanja) Ani membeli 2 pulpen (@Rp12.000) dan 2 pensil (@Rp8.000). Promo “Hemat Berempat”: setiap pembelian 4 barang (boleh campur) mendapat potongan harga sebesar 1 barang termurah. Total yang harus dibayar Ani adalah … A. Rp32.000  ·  B. Rp36.000  ·  C. Rp40.000  ·  D. Rp44.000",
+        "soal": "Soal 1 · Unit 1.6 (Promo Belanja) Ani membeli 2 pulpen (@Rp12.000) dan 2 pensil (@Rp8.000). Promo “Hemat Berempat”: setiap pembelian 4 barang (boleh campur) mendapat potongan harga sebesar 1 barang termurah. Total yang harus dibayar Ani adalah …",
         "opsi": {
           "A": "Rp32.000",
           "B": "Rp36.000",
@@ -357,67 +357,67 @@ export const MTK_SMP_MODUL = [
           "D": "Rp44.000"
         },
         "kunci": "A",
-        "pembahasan": "2(12rb) + 2(8rb) − 8rb = 40rb − 8rb ="
+        "pembahasan": "Total harga awal: $2(12.000) + 2(8.000) = 24.000 + 16.000 = \\text{Rp}40.000$. Barang termurah adalah pensil (Rp8.000). Total bayar setelah diskon: $40.000 - 8.000 = \\text{Rp}32.000$."
       },
       {
         "id": "mtk_smp_b1_q2",
-        "soal": "Soal 2 · Unit 1.3 (Bilangan Berpangkat) Nilai dari 2⁻³ + 2⁻² + 5⁰ adalah … A. 1$\\frac{1}{8}$  ·  B. 1$\\frac{3}{8}$  ·  C. 1$\\frac{1}{2}$  ·  D. 2$\\frac{3}{8}$ Latihan Bab 1 · Level 2 (PGK MCMA) Jawaban benar lebih dari satu—cek tiap pernyataan!",
+        "soal": "Soal 2 · Unit 1.3 (Bilangan Berpangkat) Nilai dari $2^{-3} + 2^{-2} + 5^0$ adalah …",
         "opsi": {
-          "A": "1$\\frac{1}{8}$",
-          "B": "1$\\frac{3}{8}$",
-          "C": "1$\\frac{1}{2}$",
-          "D": "Pernyataan / Opsi (4) Benar"
+          "A": "$1\\frac{1}{8}$",
+          "B": "$1\\frac{3}{8}$",
+          "C": "$1\\frac{1}{2}$",
+          "D": "$2\\frac{3}{8}$"
         },
         "kunci": "B",
-        "pembahasan": "$\\frac{1}{8}$ + $\\frac{1}{4}$ + 1 = $\\frac{1}{8}$ + 2/8 + 1 = 1$\\frac{3}{8}$."
+        "pembahasan": "$2^{-3} = \\frac{1}{8}$, $2^{-2} = \\frac{1}{4} = \\frac{2}{8}$, dan $5^0 = 1$. Jumlahkan: $\\frac{1}{8} + \\frac{2}{8} + 1 = 1\\frac{3}{8}$."
       },
       {
         "id": "mtk_smp_b1_q3",
-        "soal": "Soal 3 · Unit 1.8 (Faktorisasi Prima) Diketahui bilangan 36 dan 60. Pilih semua pernyataan yang merupakan faktor persekutuan keduanya! (1) 2² × 3     (2) 2 × 3 (3) 2² × 3²    (4) 2 × 5",
+        "soal": "Soal 3 · Unit 1.8 (Faktorisasi Prima) Diketahui bilangan 36 dan 60. Tentukan pasangan faktor persekutuan dari kedua bilangan tersebut:\n(1) $2^2 \\times 3$\n(2) $2 \\times 3$\n(3) $2^2 \\times 3^2$\n(4) $2 \\times 5$",
         "opsi": {
-          "A": "Pernyataan / Opsi (1) Benar",
-          "B": "Pernyataan / Opsi (2) Benar",
-          "C": "Pernyataan / Opsi (3) Benar",
-          "D": "Pernyataan / Opsi (4) Benar"
+          "A": "(1) dan (2)",
+          "B": "(1) dan (3)",
+          "C": "(2) dan (4)",
+          "D": "(3) dan (4)"
         },
         "kunci": "A",
-        "pembahasan": "36 = 2²×3², 60 = 2²×3×5 → FPB = 2²×3 = 12."
+        "pembahasan": "$36 = 2^2 \\times 3^2$ dan $60 = 2^2 \\times 3 \\times 5 \\rightarrow \\text{FPB} = 2^2 \\times 3 = 12$. Faktor dari 12 adalah 1, 2, 3, 4, 6, 12. Bentuk (1) bernilai 12 dan bentuk (2) bernilai 6. Keduanya adalah faktor persekutuan."
       },
       {
         "id": "mtk_smp_b1_q4",
-        "soal": "Soal 4 · Unit 1.7 (Aritmetika Sosial) Sebuah jaket berlabel Rp300.000 mendapat diskon 20%. Pilih semua pernyataan yang benar! (1) Besar potongan harga adalah Rp60.000. (2) Harga setelah diskon adalah Rp240.000. (3) Jika dikenakan PPN 10% dari harga diskon, total bayar menjadi Rp264.000. (4) Harga akhirnya sama dengan diskon tunggal 10%. Bab 1 · Bilangan — Latihan Soal TKA SMP 2027 Latihan Bab 1 · Level 3 & Kunci Pembahasan Latihan Bab 1 · Level 3 (Penalaran) Tentukan Benar atau Salah untuk setiap pernyataan!",
+        "soal": "Soal 4 · Unit 1.7 (Aritmetika Sosial) Sebuah jaket berlabel harga Rp300.000 mendapat diskon 20%. Tentukan pernyataan yang BENAR:\n(1) Besar potongan harga (diskon) adalah Rp60.000.\n(2) Harga setelah diskon adalah Rp240.000.\n(3) Jika dikenakan PPN 10% dari harga setelah diskon, total yang dibayar menjadi Rp264.000.\n(4) Harga akhirnya setara dengan diskon tunggal 10%.",
         "opsi": {
-          "A": "Pernyataan / Opsi (1) Benar",
-          "B": "Pernyataan / Opsi (2) Benar",
-          "C": "Pernyataan / Opsi (3) Benar",
-          "D": "Pernyataan / Opsi (4) Benar"
+          "A": "(1), (2), dan (3)",
+          "B": "(1) dan (3) saja",
+          "C": "(2) dan (4)",
+          "D": "Semua pernyataan benar"
         },
         "kunci": "A",
-        "pembahasan": "Diskon = 60rb → bayar 240rb. Plus PPN 10% ="
+        "pembahasan": "Diskon $= 20\\% \\times 300.000 = \\text{Rp}60.000$ (1 Benar). Harga diskon $= 300.000 - 60.000 = \\text{Rp}240.000$ (2 Benar). Plus PPN $10\\% = 240.000 + 24.000 = \\text{Rp}264.000$ (3 Benar). Diskon tunggal 10% adalah Rp270.000, sehingga (4) Salah."
       },
       {
         "id": "mtk_smp_b1_q5",
-        "soal": "Soal 5 · Unit 1.10 (PGK Kategori — Proyek) Renovasi ruang kelas direncanakan selesai 12 hari oleh 6 pekerja. Tentukan Benar/Salah: A. Total beban pekerjaan setara 72 hari-orang. B. Agar selesai dalam 8 hari, dibutuhkan total 9 pekerja. C. Jika pekerja dikurangi jadi 4 orang, proyek selesai dalam 8 hari.",
+        "soal": "Soal 5 · Unit 1.10 (PGK Kategori — Proyek) Renovasi ruang kelas direncanakan selesai dalam 12 hari oleh 6 pekerja. Tentukan kebenaran dari pernyataan berikut:\n(1) Total beban pekerjaan proyek setara 72 hari-orang.\n(2) Agar proyek selesai dalam 8 hari, dibutuhkan tambahan pekerja hingga total 9 orang.\n(3) Jika pekerja dikurangi menjadi 4 orang, proyek akan selesai dalam 8 hari.",
         "opsi": {
-          "A": "Total beban pekerjaan setara 72 hari-orang.",
-          "C": "Jika pekerja dikurangi jadi 4 orang, proyek selesai dalam 8 hari.",
-          "B": "Pernyataan / Opsi (2) Benar",
-          "D": "Pernyataan / Opsi (4) Benar"
+          "A": "(1) Benar, (2) Benar, (3) Salah",
+          "B": "(1) Benar, (2) Salah, (3) Benar",
+          "C": "(1) Salah, (2) Benar, (3) Salah",
+          "D": "Semua pernyataan Benar"
         },
         "kunci": "A",
-        "pembahasan": "Total = 6×12 = 72 HO. 8 hari →"
+        "pembahasan": "Beban proyek $= 6 \\times 12 = 72$ hari-orang (1 Benar). Selesai 8 hari butuh $\\frac{72}{8} = 9$ orang (2 Benar). Dengan 4 orang butuh $\\frac{72}{4} = 18$ hari, bukan 8 hari (3 Salah)."
       },
       {
         "id": "mtk_smp_b1_q6",
-        "soal": "Soal 6 · Unit 1.4 (PGK Kategori — Akar & Notasi) Tentukan Benar atau Salah untuk perhitungan berikut: A. √75 − √27 = 2√3. B. Bentuk notasi ilmiah dari 0,00048 adalah 4,8 × 10⁻⁴. C. Nilai √9 + √16 sama dengan √25.",
+        "soal": "Soal 6 · Unit 1.4 (PGK Kategori — Akar & Notasi) Tentukan kebenaran dari pernyataan operasi matematika berikut:\n(1) $\\sqrt{75} - \\sqrt{27} = 2\\sqrt{3}$.\n(2) Bentuk notasi ilmiah baku dari 0,00048 adalah $4,8 \\times 10^{-4}$.\n(3) Nilai dari $\\sqrt{9} + \\sqrt{16}$ tepat sama dengan $\\sqrt{25}$.",
         "opsi": {
-          "A": "√75 − √27 = 2√3.",
-          "C": "Nilai √9 + √16 sama dengan √25.",
-          "B": "Pernyataan / Opsi (2) Benar",
-          "D": "Pernyataan / Opsi (4) Benar"
+          "A": "(1) Benar, (2) Benar, (3) Salah",
+          "B": "(1) Benar, (2) Salah, (3) Benar",
+          "C": "(1) Salah, (2) Benar, (3) Salah",
+          "D": "Semua pernyataan Benar"
         },
         "kunci": "A",
-        "pembahasan": "5√3 − 3√3 = 2√3. Sedangkan 3"
+        "pembahasan": "(1) $5\\sqrt{3} - 3\\sqrt{3} = 2\\sqrt{3}$ (Benar).\n(2) $0,00048 = 4,8 \\times 10^{-4}$ (Benar).\n(3) $\\sqrt{9} + \\sqrt{16} = 3 + 4 = 7 \\neq \\sqrt{25} = 5$ (Salah)."
       }
     ]
   },
@@ -765,75 +765,75 @@ export const MTK_SMP_MODUL = [
     "kuisPemahaman": [
       {
         "id": "mtk_smp_b2_q1",
-        "soal": "Soal 1 · Unit 2.2 (Sifat Distributif) Hasil pengurangan 2(3x − 4) dari 5(2x + 1) adalah … A. 4x + 13  ·  B. 4x − 3  ·  C. 16x − 3  ·  D. 4x + 5",
+        "soal": "Soal 1 · Unit 2.2 (Sifat Distributif) Hasil pengurangan bentuk aljabar $2(3x - 4)$ dari $5(2x + 1)$ adalah …",
         "opsi": {
-          "A": "4x + 13",
-          "B": "4x − 3",
-          "C": "16x − 3",
-          "D": "4x + 5"
+          "A": "$4x + 13$",
+          "B": "$4x - 3$",
+          "C": "$16x - 3$",
+          "D": "$4x + 5$"
         },
         "kunci": "A",
-        "pembahasan": "“dari” artinya (10x+5) − (6x−8) = 4x + 13."
+        "pembahasan": "Ingat pola 'A dari B' berarti $B - A$: $5(2x + 1) - 2(3x - 4) = (10x + 5) - (6x - 8) = 10x - 6x + 5 + 8 = 4x + 13$."
       },
       {
         "id": "mtk_smp_b2_q2",
-        "soal": "Soal 2 · Unit 2.9 (Fungsi Linear) Diketahui fungsi f(x) = 4x − 7. Jika f(k) = 13, maka nilai k adalah … A. 3  ·  B. 4  ·  C. 5  ·  D. 6 Latihan Bab 2 · Level 2 (PGK MCMA) Pilih semua pernyataan yang benar!",
+        "soal": "Soal 2 · Unit 2.9 (Fungsi Linear) Diketahui fungsi linear $f(x) = 4x - 7$. Jika nilai $f(k) = 13$, maka nilai $k$ adalah …",
         "opsi": {
           "A": "3",
           "B": "4",
           "C": "5",
-          "D": "Pernyataan / Opsi (4) Benar"
+          "D": "6"
         },
         "kunci": "C",
-        "pembahasan": "4k − 7 = 13 → 4k = 20 → k = 5."
+        "pembahasan": "$4k - 7 = 13 \\rightarrow 4k = 20 \\rightarrow k = 5$."
       },
       {
         "id": "mtk_smp_b2_q3",
-        "soal": "Soal 3 · Unit 2.5 (PtLSV) Penyelesaian pertidaksamaan 2(x − 3) ≤ 4x + 2 adalah … Pilih pernyataan benar! (1) Hasil sederhananya adalah −2x ≤ 8. (2) Nilai x ≥ −4. (3) Bilangan bulat terkecil yang memenuhi adalah −4. (4) Nilai x = −5 memenuhi pertidaksamaan.",
+        "soal": "Soal 3 · Unit 2.5 (PtLSV) Penyelesaian pertidaksamaan $2(x - 3) \\le 4x + 2$ adalah … Tentukan pernyataan yang BENAR:\n(1) Hasil penyederhanaan ruas adalah $-2x \\le 8$.\n(2) Nilai himpunan penyelesaiannya adalah $x \\ge -4$.\n(3) Bilangan bulat terkecil yang memenuhi adalah $-4$.\n(4) Nilai $x = -5$ termasuk anggota himpunan penyelesaian.",
         "opsi": {
-          "A": "Pernyataan / Opsi (1) Benar",
-          "B": "Pernyataan / Opsi (2) Benar",
-          "C": "Pernyataan / Opsi (3) Benar",
-          "D": "Pernyataan / Opsi (4) Benar"
+          "A": "(1), (2), dan (3)",
+          "B": "(1) dan (3) saja",
+          "C": "(2) dan (4)",
+          "D": "Semua pernyataan benar"
         },
         "kunci": "A",
-        "pembahasan": "2x−6 ≤ 4x+2 → −2x ≤ 8 → x ≥ −4 (balik"
+        "pembahasan": "$2x - 6 \\le 4x + 2 \\rightarrow -2x \\le 8$. Saat dibagi bilangan negatif (-2), tanda pertidaksamaan berbalik arah menjadi $x \\ge -4$. Bilangan bulat terkecil adalah $-4$. Nilai $x = -5$ tidak memenuhi karena $-5 < -4$."
       },
       {
         "id": "mtk_smp_b2_q4",
-        "soal": "Soal 4 · Unit 2.10 (Barisan & Deret) Barisan aritmetika: 5, 9, 13, 17, … Pilih pernyataan benar! (1) Bedanya b = 4.    (2) Suku ke-10 adalah 41. (3) Jumlah 5 suku pertama = 65.    (4) Suku ke-6 adalah 24. Bab 2 · Aljabar — Latihan Soal TKA SMP 2027 Latihan Bab 2 · Level 3 & Kunci Pembahasan Latihan Bab 2 · Level 3 (Penalaran) Tentukan Benar atau Salah untuk setiap pernyataan!",
+        "soal": "Soal 4 · Unit 2.10 (Barisan & Deret) Barisan bilangan aritmetika: 5, 9, 13, 17, … Tentukan pernyataan yang BENAR:\n(1) Beda barisan adalah $b = 4$.\n(2) Nilai suku ke-10 ($U_{10}$) adalah 41.\n(3) Jumlah 5 suku pertama ($S_5$) adalah 65.\n(4) Nilai suku ke-6 ($U_6$) adalah 24.",
         "opsi": {
-          "A": "Pernyataan / Opsi (1) Benar",
-          "B": "Pernyataan / Opsi (2) Benar",
-          "C": "Pernyataan / Opsi (3) Benar",
-          "D": "Pernyataan / Opsi (4) Benar"
+          "A": "(1), (2), dan (3)",
+          "B": "(1) dan (2) saja",
+          "C": "(2) dan (4)",
+          "D": "Semua pernyataan benar"
         },
         "kunci": "A",
-        "pembahasan": "U₁₀ = 5 + 9(4) = 41. S₅ ="
+        "pembahasan": "$a = 5, b = 4$. $U_{10} = 5 + 9(4) = 41$ (Benar). $S_5 = \\frac{5}{2}(2(5) + 4(4)) = \\frac{5}{2}(26) = 65$ (Benar). $U_6 = 5 + 5(4) = 25$ (bukan 24, Salah)."
       },
       {
         "id": "mtk_smp_b2_q5",
-        "soal": "Soal 5 · Unit 2.6 (PGK Kategori — SPLDV Parkir) Di tempat parkir ada 30 kendaraan (mobil 4 roda & motor 2 roda) dengan total 84 roda. Tarif mobil Rp5.000, motor Rp2.000. Tentukan Benar/Salah: A. Banyak mobil di tempat parkir adalah 12 unit. B. Banyak motor adalah 18 unit. C. Total pendapatan parkir adalah Rp100.000.",
+        "soal": "Soal 5 · Unit 2.6 (PGK Kategori — SPLDV Parkir) Di sebuah tempat parkir terdapat 30 kendaraan (mobil roda 4 dan sepeda motor roda 2) dengan jumlah total 84 roda. Tarif parkir mobil Rp5.000 dan sepeda motor Rp2.000. Tentukan kebenaran pernyataan berikut:\n(1) Banyak mobil di tempat parkir adalah 12 unit.\n(2) Banyak motor di tempat parkir adalah 18 unit.\n(3) Total penerimaan retribusi parkir adalah Rp100.000.",
         "opsi": {
-          "A": "Pernyataan / Opsi (1) Benar",
-          "B": "Pernyataan / Opsi (2) Benar",
-          "C": "Pernyataan / Opsi (3) Benar",
-          "D": "Pernyataan / Opsi (4) Benar"
+          "A": "(1) Benar, (2) Benar, (3) Salah",
+          "B": "(1) Benar, (2) Salah, (3) Benar",
+          "C": "(1) Salah, (2) Benar, (3) Salah",
+          "D": "Semua pernyataan Benar"
         },
         "kunci": "A",
-        "pembahasan": "Mobil = (84−60)÷2 = 12, Motor"
+        "pembahasan": "Model SPLDV: $m + t = 30$ dan $4m + 2t = 84 \\rightarrow 2m + t = 42$. Kurangkan: $m = 12$ mobil, $t = 18$ motor. Penerimaan: $12(5.000) + 18(2.000) = 60.000 + 36.000 = \\text{Rp}96.000$ (bukan Rp100.000)."
       },
       {
         "id": "mtk_smp_b2_q6",
-        "soal": "Soal 6 · Unit 2.10 (PGK Kategori — Pola Kursi) Gedung pertunjukan punya 8 baris kursi: baris ke-1 berisi 20 kursi, baris berikutnya selalu bertambah 4 kursi. Tentukan Benar/Salah: A. Baris ke-8 berisi 48 kursi. B. Total seluruh kursi di gedung adalah 272 kursi. C. Selisih baris ke-3 dan ke-7 adalah 20 kursi.",
+        "soal": "Soal 6 · Unit 2.10 (PGK Kategori — Pola Kursi) Sebuah gedung pertunjukan memiliki 8 baris kursi. Baris pertama berisi 20 kursi, dan baris-baris berikutnya selalu bertambah 4 kursi dari baris di depannya. Tentukan kebenaran pernyataan berikut:\n(1) Baris paling belakang (baris ke-8) berisi 48 kursi.\n(2) Total kapasitas tempat duduk di gedung tersebut adalah 272 kursi.\n(3) Jika seluruh kursi terisi penonton dengan tiket Rp25.000 per orang, total hasil penjualan tiket adalah Rp6.800.000.",
         "opsi": {
-          "B": "Total seluruh kursi di gedung adalah 272 kursi.",
-          "C": "Selisih baris ke-3 dan ke-7 adalah 20 kursi.",
-          "A": "Pernyataan / Opsi (1) Benar",
-          "D": "Pernyataan / Opsi (4) Benar"
+          "A": "Semua pernyataan Benar",
+          "B": "(1) Benar, (2) Benar, (3) Salah",
+          "C": "(1) Benar, (2) Salah, (3) Benar",
+          "D": "(1) Salah, (2) Benar, (3) Benar"
         },
         "kunci": "A",
-        "pembahasan": "U₈ = 20+7(4) = 48. S₈ = (8/2)"
+        "pembahasan": "$U_8 = 20 + 7(4) = 48$ kursi (Benar). $S_8 = \\frac{8}{2}(20 + 48) = 4(68) = 272$ kursi (Benar). Hasil tiket: $272 \\times 25.000 = \\text{Rp}6.800.000$ (Benar)."
       }
     ]
   },
@@ -1265,7 +1265,7 @@ export const MTK_SMP_MODUL = [
     "kuisPemahaman": [
       {
         "id": "mtk_smp_b3_q1",
-        "soal": "Soal 1 · Unit 3.1 (Sudut Jarum Jam) Besar sudut terkecil yang dibentuk jarum jam dan jarum menit pada pukul 04.30 adalah … A. 30°  ·  B. 45°  ·  C. 60°  ·  D. 75°",
+        "soal": "Soal 1 · Unit 3.1 (Sudut Jarum Jam) Besar sudut terkecil yang dibentuk oleh jarum jam pendek dan jarum menit pada pukul 04.30 adalah …",
         "opsi": {
           "A": "30°",
           "B": "45°",
@@ -1273,67 +1273,67 @@ export const MTK_SMP_MODUL = [
           "D": "75°"
         },
         "kunci": "B",
-        "pembahasan": "|30(4) − 5,5(30)| = |120 − 165| = 45°."
+        "pembahasan": "Rumus sudut jarum jam: $|30j - 5,5m| = |30(4) - 5,5(30)| = |120 - 165| = |-45| = 45^\\circ$."
       },
       {
         "id": "mtk_smp_b3_q2",
-        "soal": "Soal 2 · Unit 3.7 (Lingkaran) Sebuah taman berbentuk lingkaran berjari-jari 14 m. Di sekeliling taman dipasang tiang lampu tiap jarak 4 m. Banyak tiang lampu yang diperlukan adalah … (π = 22/7) A. 18 tiang  ·  B. 20 tiang  ·  C. 22 tiang  ·  D. 24 tiang Latihan Bab 3 · Level 2 (PGK MCMA) Pilih semua pernyataan yang benar!",
+        "soal": "Soal 2 · Unit 3.7 (Lingkaran) Sebuah taman kota berbentuk lingkaran dengan jari-jari 14 m ($\\pi = \\frac{22}{7}$). Di sekeliling tepi taman akan ditanami pohon palem dengan jarak antar pohon 4 m. Banyak pohon palem yang dibutuhkan adalah …",
         "opsi": {
-          "A": "18 tiang",
-          "B": "20 tiang",
-          "C": "22 tiang",
-          "D": "Pernyataan / Opsi (4) Benar"
+          "A": "11 pohon",
+          "B": "22 pohon",
+          "C": "44 pohon",
+          "D": "88 pohon"
         },
-        "kunci": "C",
-        "pembahasan": "K = $\\frac{22}{7} \\times 28$ = 88 m → 88 ÷ 4 = 22 tiang."
+        "kunci": "B",
+        "pembahasan": "Keliling lingkaran $K = 2\\pi r = 2 \\times \\frac{22}{7} \\times 14 = 88\\text{ m}$. Banyak pohon yang dibutuhkan $= \\frac{88}{4} = 22$ pohon."
       },
       {
         "id": "mtk_smp_b3_q3",
-        "soal": "Soal 3 · Unit 3.4 (Pythagoras) Tangga sepanjang 5 m disandarkan ke tembok tegak dengan kaki tangga berjarak 3 m dari tembok. Pilih semua pernyataan benar! (1) Ujung atas tangga berada 4 m dari tanah. (2) Jika kaki digeser jadi 4 m, ujung atas jadi 3 m dari tanah. (3) Semakin jauh kaki tangga dari tembok, ujung atas semakin tinggi.",
+        "soal": "Soal 3 · Unit 3.4 (Pythagoras) Sebuah tangga sepanjang 5 m disandarkan ke dinding tegak, dengan jarak kaki tangga ke dasar tembok sejauh 3 m. Tentukan pernyataan yang BENAR:\n(1) Tinggi ujung tangga menyentuh tembok adalah 4 m.\n(2) Perbandingan sisi segitiga membentuk triple Pythagoras (3, 4, 5).\n(3) Luas daerah segitiga yang dibentuk tangga, lantai, dan tembok adalah 6 m².\n(4) Jika kaki tangga digeser mendekati tembok menjadi 1 m, tinggi ujung tangga naik tepat 2 m.",
         "opsi": {
-          "A": "Pernyataan / Opsi (1) Benar",
-          "B": "Pernyataan / Opsi (2) Benar",
-          "C": "Pernyataan / Opsi (3) Benar",
-          "D": "Pernyataan / Opsi (4) Benar"
+          "A": "(1), (2), dan (3)",
+          "B": "(1) dan (3) saja",
+          "C": "(2) dan (4)",
+          "D": "Semua pernyataan benar"
         },
         "kunci": "A",
-        "pembahasan": "Triple 3–4–5. Makin jauh kaki, ujung atas justru"
+        "pembahasan": "Tinggi tembok $t = \\sqrt{5^2 - 3^2} = \\sqrt{25 - 9} = 4\\text{ m}$. Luas segitiga $= \\frac{1}{2} \\times 3 \\times 4 = 6\\text{ m}^2$. Jika alas menjadi 1 m, tinggi menjadi $\\sqrt{25 - 1} = \\sqrt{24} \\approx 4,9\\text{ m}$ (hanya naik 0,9 m, bukan 2 m)."
       },
       {
         "id": "mtk_smp_b3_q4",
-        "soal": "Soal 4 · Unit 3.12 & 3.13 (Transformasi) Diketahui titik M(4, −3). Pilih semua bayangan yang benar! (1) Translasi T(−2, 5) menghasilkan (2, 2). (2) Refleksi terhadap Sumbu-X menghasilkan (4, 3). (3) Rotasi 180° pusat O menghasilkan (−4, 3). (4) Dilatasi pusat O skala 2 menghasilkan (8, 6). Bab 3 · Geometri & Pengukuran — Latihan Soal TKA SMP 2027 Latihan Bab 3 · Level 3 & Kunci Pembahasan Latihan Bab 3 · Level 3 (Penalaran) Tentukan Benar atau Salah untuk setiap pernyataan!",
+        "soal": "Soal 4 · Unit 3.12 & 3.13 (Transformasi) Diketahui koordinat titik $M(4, -3)$. Tentukan bayangan transformasi yang BENAR:\n(1) Refleksi terhadap sumbu-X menghasilkan koordinat bayangan $M'(4, 3)$.\n(2) Translasi oleh vektor $T(-2, 5)$ menghasilkan bayangan $M'(2, 2)$.\n(3) Rotasi $90^\\circ$ berlawanan arah jarum jam berpusat di $(0,0)$ menghasilkan bayangan $M'(3, 4)$.\n(4) Dilatasi faktor skala 2 dari pusat $(0,0)$ menghasilkan bayangan $M'(6, -5)$.",
         "opsi": {
-          "A": "Pernyataan / Opsi (1) Benar",
-          "B": "Pernyataan / Opsi (2) Benar",
-          "C": "Pernyataan / Opsi (3) Benar",
-          "D": "Pernyataan / Opsi (4) Benar"
+          "A": "(1), (2), dan (3)",
+          "B": "(1) dan (2) saja",
+          "C": "(2) dan (4)",
+          "D": "Semua pernyataan benar"
         },
         "kunci": "A",
-        "pembahasan": "Dilatasi skala 2 dari (4, −3) adalah (8, −6),"
+        "pembahasan": "Refleksi sb-X: $(x, -y) \\rightarrow (4, 3)$. Translasi: $(4-2, -3+5) = (2, 2)$. Rotasi $90^\\circ$: $(-y, x) \\rightarrow (-(-3), 4) = (3, 4)$. Dilatasi $\\times 2$: $(2(4), 2(-3)) = (8, -6)$ (bukan $(6, -5)$)."
       },
       {
         "id": "mtk_smp_b3_q5",
-        "soal": "Soal 5 · Unit 3.10 (PGK Kategori — Bangun Ruang) Kontraktor menyusun monumen balok 120 cm × 60 cm × 40 cm dari bata ringan 60 cm × 20 cm × 10 cm tanpa celah. Tentukan Benar/Salah: A. Volume 1 bata ringan adalah 12.000 cm³. B. Dibutuhkan minimal 24 bata ringan. C. Jika tinggi monumen digandakan, jumlah bata tetap 24 buah.",
+        "soal": "Soal 5 · Unit 3.10 (PGK Kategori — Bangun Ruang) Sebuah monumen berbentuk balok berukuran 120 cm × 60 cm × 40 cm disusun dari batu bata ringan berukuran 60 cm × 20 cm × 10 cm tanpa celah. Tentukan kebenaran dari pernyataan berikut:\n(1) Volume 1 buah bata ringan adalah 12.000 cm³.\n(2) Banyak bata ringan yang dibutuhkan untuk menyusun monumen adalah 24 buah.\n(3) Luas seluruh permukaan monumen balok tersebut adalah 28.800 cm².",
         "opsi": {
-          "A": "Volume 1 bata ringan adalah 12.000 cm³.",
-          "C": "Jika tinggi monumen digandakan, jumlah bata tetap 24 buah.",
-          "B": "Pernyataan / Opsi (2) Benar",
-          "D": "Pernyataan / Opsi (4) Benar"
+          "A": "Semua pernyataan Benar",
+          "B": "(1) Benar, (2) Benar, (3) Salah",
+          "C": "(1) Benar, (2) Salah, (3) Benar",
+          "D": "(1) Salah, (2) Benar, (3) Benar"
         },
         "kunci": "A",
-        "pembahasan": "Banyak bata ="
+        "pembahasan": "Volume bata $= 60 \\times 20 \\times 10 = 12.000\\text{ cm}^3$ (Benar). Volume monumen $= 120 \\times 60 \\times 40 = 288.000\\text{ cm}^3 \\rightarrow$ butuh $\\frac{288.000}{12.000} = 24$ buah (Benar). $L_p = 2(120(60) + 120(40) + 60(40)) = 2(7.200 + 4.800 + 2.400) = 28.800\\text{ cm}^2$ (Benar)."
       },
       {
         "id": "mtk_smp_b3_q6",
-        "soal": "Soal 6 · Unit 3.8 (PGK Kategori — Juring Lingkaran) Sebuah pizza bundar berjari-jari 14 cm dipotong menjadi 8 juring sama besar (π = 22/7). Tentukan Benar/Salah: A. Sudut pusat tiap potongan pizza adalah 45°. B. Luas 1 potongan pizza adalah 77 cm². C. Panjang busur pinggiran 1 potongan pizza adalah 22 cm.",
+        "soal": "Soal 6 · Unit 3.8 (PGK Kategori — Juring Lingkaran) Sebuah loyang pizza berbentuk lingkaran dengan jari-jari 14 cm dipotong merata menjadi 6 juring pizza sama besar ($\\pi = \\frac{22}{7}$). Tentukan kebenaran dari pernyataan berikut:\n(1) Sudut pusat dari setiap potongan pizza adalah $60^\\circ$.\n(2) Luas dari setiap potongan pizza adalah $102,67$ cm².\n(3) Panjang busur kerak tepi dari setiap satu potongan pizza adalah $\\frac{44}{3}$ cm.",
         "opsi": {
-          "A": "Sudut pusat tiap potongan pizza adalah 45°.",
-          "B": "Luas 1 potongan pizza adalah 77 cm².",
-          "C": "Panjang busur pinggiran 1 potongan pizza adalah 22 cm.",
-          "D": "Pernyataan / Opsi (4) Benar"
+          "A": "Semua pernyataan Benar",
+          "B": "(1) Benar, (2) Benar, (3) Salah",
+          "C": "(1) Benar, (2) Salah, (3) Benar",
+          "D": "(1) Salah, (2) Benar, (3) Benar"
         },
         "kunci": "A",
-        "pembahasan": "360°÷8 = 45°. L = 616÷8 ="
+        "pembahasan": "Sudut pusat $= \\frac{360^\\circ}{6} = 60^\\circ$ (Benar). Luas juring $= \\frac{1}{6} \\times \\frac{22}{7} \\times 14^2 = \\frac{616}{6} = 102,67\\text{ cm}^2$ (Benar). Panjang busur $= \\frac{1}{6} \\times 2 \\times \\frac{22}{7} \\times 14 = \\frac{44}{3}\\text{ cm}$ (Benar)."
       }
     ]
   },
@@ -1569,7 +1569,7 @@ export const MTK_SMP_MODUL = [
     "kuisPemahaman": [
       {
         "id": "mtk_smp_b4_q1",
-        "soal": "[Unit 4.2] Diagram lingkaran 200 siswa: IPA $90^\\circ$, Matematika $108^\\circ$, sisanya Bahasa. Banyak siswa Bahasa adalah …",
+        "soal": "[Unit 4.2] Diagram lingkaran data minat ekskul 200 siswa: IPA $90^\\circ$, Matematika $108^\\circ$, dan sisanya memilih Bahasa. Banyak siswa yang memilih ekskul Bahasa adalah …",
         "opsi": {
           "A": "80 siswa",
           "B": "90 siswa",
@@ -1577,11 +1577,11 @@ export const MTK_SMP_MODUL = [
           "D": "110 siswa"
         },
         "kunci": "B",
-        "pembahasan": "Sudut Bahasa = $360^\\circ - (90^\\circ + 108^\\circ) = 162^\\circ$.\nBanyak siswa Bahasa = $\\frac{162}{360} \\times 200 = 90$ siswa!"
+        "pembahasan": "Sudut Bahasa $= 360^\\circ - (90^\\circ + 108^\\circ) = 360^\\circ - 198^\\circ = 162^\\circ$. Banyak siswa $= \\frac{162}{360} \\times 200 = \\frac{9}{20} \\times 200 = 90$ siswa."
       },
       {
         "id": "mtk_smp_b4_q2",
-        "soal": "[Unit 4.3] Data nilai: 6, 8, 7, 9, 7, 5, 7. Tentukan pernyataan yang BENAR:\n(1) Modus = 7\n(2) Median = 7\n(3) Jangkauan = 3\n(4) Mean > 7",
+        "soal": "[Unit 4.3] Diketahui data ulangan harian: 6, 8, 7, 9, 7, 5, 7. Tentukan pernyataan yang BENAR:\n(1) Nilai Modus data adalah 7.\n(2) Nilai Median data adalah 7.\n(3) Jangkauan data adalah 3.\n(4) Nilai rata-rata (Mean) lebih besar dari 7.",
         "opsi": {
           "A": "(1) dan (2)",
           "B": "(1) dan (3)",
@@ -1589,19 +1589,19 @@ export const MTK_SMP_MODUL = [
           "D": "(3) dan (4)"
         },
         "kunci": "A",
-        "pembahasan": "Urutkan data: 5, 6, 7, 7, 7, 8, 9.\n• Modus = 7 (muncul paling sering)\n• Median = 7 (nilai tengah ke-4)\n• Jangkauan = $9 - 5 = 4$ (bukan 3)\n• Mean = $\\frac{49}{7} = 7$ (tepat 7, bukan > 7).\nJadi pernyataan yang benar adalah (1) dan (2)."
+        "pembahasan": "Urutkan data: 5, 6, 7, 7, 7, 8, 9.\n• Modus $= 7$ (muncul 3 kali, paling sering).\n• Median $= 7$ (data ke-4 tepat di tengah).\n• Jangkauan $= 9 - 5 = 4$ (bukan 3).\n• Mean $= \\frac{49}{7} = 7$ (tepat 7, bukan lebih besar dari 7).\nJadi pernyataan yang benar adalah (1) dan (2)."
       },
       {
         "id": "mtk_smp_b4_q3",
-        "soal": "[Unit 4.4 & 4.5] Sebuah dadu 6 sisi dilempar 1 kali (dan untuk pernyataan C dilempar 90 kali). Manakah pernyataan berikut yang BENAR?",
+        "soal": "[Unit 4.4 & 4.5] Sebuah dadu bermata 6 dilempar 1 kali secara acak (dan untuk pernyataan 3 dilempar 90 kali). Tentukan pernyataan yang BENAR:\n(1) Peluang muncul mata dadu bilangan prima adalah $\\frac{1}{2}$.\n(2) Peluang muncul mata dadu faktor dari 6 adalah $\\frac{2}{3}$.\n(3) Dalam 90 lemparan, frekuensi harapan muncul mata dadu > 4 adalah 45 kali.",
         "opsi": {
-          "A": "Peluang muncul mata dadu prima adalah $\\frac{1}{2}$",
-          "B": "Peluang muncul faktor dari 6 adalah $\\frac{2}{3}$",
-          "C": "Dalam 90 lemparan, frekuensi harapan mata dadu > 4 adalah 45 kali",
-          "D": "Pernyataan A dan B benar"
+          "A": "(1) dan (2)",
+          "B": "(1) dan (3)",
+          "C": "(2) dan (3)",
+          "D": "Semua pernyataan benar"
         },
-        "kunci": "D",
-        "pembahasan": "Analisis butir:\n• Prima {2, 3, 5} $\\rightarrow P = \\frac{3}{6} = \\frac{1}{2}$ (Benar)\n• Faktor dari 6 {1, 2, 3, 6} $\\rightarrow P = \\frac{4}{6} = \\frac{2}{3}$ (Benar)\n• Mata dadu > 4 {5, 6} $\\rightarrow P = \\frac{2}{6} = \\frac{1}{3} \\rightarrow F_h = \\frac{1}{3} \\times 90 = 30$ kali (Salah, bukan 45).\nMaka pernyataan yang benar adalah A dan B."
+        "kunci": "A",
+        "pembahasan": "Titik sampel:\n• Prima {2, 3, 5} $\\rightarrow P = \\frac{3}{6} = \\frac{1}{2}$ (Benar).\n• Faktor dari 6 {1, 2, 3, 6} $\\rightarrow P = \\frac{4}{6} = \\frac{2}{3}$ (Benar).\n• Mata dadu > 4 {5, 6} $\\rightarrow P = \\frac{2}{6} = \\frac{1}{3} \\rightarrow F_h = \\frac{1}{3} \\times 90 = 30$ kali (bukan 45 kali).\nJadi pernyataan yang benar adalah (1) dan (2)."
       }
     ]
   }

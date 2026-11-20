@@ -1,7 +1,7 @@
 // src/data/modul-smp/ipaSmpData.js
 // ==============================================================================
 // MODUL MASTER 52 HALAMAN RESMI TKA SMP 2027 - BIMBEL GEMILANG
-// Bebas karakter PUA, pecahan tegak KaTeX, dan kuis pemahaman terstruktur rapi
+// 100% Bebas Kuis Kunci Dummy, Bebas PUA, Pecahan Tegak KaTeX & Terstruktur Rapi
 // ==============================================================================
 
 export const IPA_SMP_MODUL = [
@@ -349,75 +349,75 @@ export const IPA_SMP_MODUL = [
     "kuisPemahaman": [
       {
         "id": "ipa_smp_b1_q1",
-        "soal": "No. 1 · Jawaban: C (3,64 mm) Skala utama = 3,5 mm, skala putar = 14 × 0,01 = 0,14 mm. Jumlahkan: 3,5 + 0,14 = 3,64 mm. (Jangan terkecoh 3,14 mm!)",
+        "soal": "Level 1 · PG1. Pengukuran: Skala utama mikrometer sekrup menunjukkan 3,5 mm dan skala putar segaris di angka 14. Hasil pengukuran tebal pelat logam tersebut adalah …",
         "opsi": {
-          "A": "Pernyataan / Opsi (1) Benar",
-          "B": "Pernyataan / Opsi (2) Benar",
-          "C": "Pernyataan / Opsi (3) Benar",
-          "D": "Pernyataan / Opsi (4) Benar"
+          "A": "3,14 mm",
+          "B": "3,54 mm",
+          "C": "3,64 mm",
+          "D": "4,90 mm"
         },
-        "kunci": "A",
-        "pembahasan": "C (3,64 mm)"
+        "kunci": "C",
+        "pembahasan": "Skala utama = 3,5 mm, skala putar = $14 \\times 0,01 = 0,14$ mm. Jumlahkan: $3,5 + 0,14 = 3,64$ mm. (Jangan terkecoh 3,14 mm!)."
       },
       {
         "id": "ipa_smp_b1_q2",
-        "soal": "No. 2 · Jawaban: C (Susu jadi yoghurt) Pembuatan yoghurt adalah fermentasi oleh bakteri yang menghasilkan asam laktat (zat baru) → perubahan kimia. A, B, dan D hanya perubahan wujud/pelarutan (fisika).",
+        "soal": "Level 1 · PG2. Perubahan Zat: Berikut yang termasuk contoh perubahan kimia dalam kehidupan sehari-hari adalah …",
         "opsi": {
-          "A": "Pernyataan / Opsi (1) Benar",
-          "B": "Pernyataan / Opsi (2) Benar",
-          "C": "Pernyataan / Opsi (3) Benar",
-          "D": "Pernyataan / Opsi (4) Benar"
+          "A": "Es batu mencair di dalam gelas",
+          "B": "Kapur barus menyublim di lemari pakaian",
+          "C": "Susu segar berubah menjadi yoghurt",
+          "D": "Garam dilarutkan ke dalam air hangat"
         },
-        "kunci": "A",
-        "pembahasan": "C (Susu jadi yoghurt)"
+        "kunci": "C",
+        "pembahasan": "Pembuatan yoghurt melibatkan fermentasi bakteri Lactobacillus yang menghasilkan asam laktat (zat baru) → perubahan kimia. Pilihan A, B, dan D hanya perubahan wujud atau pelarutan (perubahan fisika)."
       },
       {
         "id": "ipa_smp_b1_q3",
-        "soal": "No. 3 · Jawaban: C (8.000 kg/m³) Volume kubus = s³ = 2³ = 8 cm³. ρ = 64 / 8 = 8 g/cm³. Ubah ke SI (kali 1.000) → 8.000 kg/m³.",
+        "soal": "Level 2 · PG3. Massa Jenis: Kubus logam bersisi 2 cm memiliki massa 64 g. Massa jenis logam tersebut dalam satuan standar internasional (SI) adalah …",
         "opsi": {
-          "A": "Pernyataan / Opsi (1) Benar",
-          "B": "Pernyataan / Opsi (2) Benar",
-          "C": "Pernyataan / Opsi (3) Benar",
-          "D": "Pernyataan / Opsi (4) Benar"
+          "A": "8 kg/m³",
+          "B": "800 kg/m³",
+          "C": "8.000 kg/m³",
+          "D": "32.000 kg/m³"
         },
-        "kunci": "A",
-        "pembahasan": "C (8.000 kg/m³)"
+        "kunci": "C",
+        "pembahasan": "Volume kubus $V = s^3 = 2^3 = 8\\text{ cm}^3$. Massa jenis $\\rho = \\frac{m}{V} = \\frac{64}{8} = 8\\text{ g/cm}^3$. Konversi ke SI (dikalikan 1.000): $8 \\times 1.000 = 8.000\\text{ kg/m}^3$."
       },
       {
         "id": "ipa_smp_b1_q4",
-        "soal": "No. 4 · Jawaban: C (95°F) F = (9/5) × 35 + 32 = 9 × 7 + 32 = 63 + 32 = 95°F.",
+        "soal": "Level 2 · PG4. Suhu: Suhu sebuah ruangan laboratorium tercatat 35°C. Jika diukur menggunakan termometer Fahrenheit, suhu ruangan tersebut adalah …",
         "opsi": {
-          "A": "Pernyataan / Opsi (1) Benar",
-          "B": "Pernyataan / Opsi (2) Benar",
-          "C": "Pernyataan / Opsi (3) Benar",
-          "D": "Pernyataan / Opsi (4) Benar"
+          "A": "63°F",
+          "B": "85°F",
+          "C": "95°F",
+          "D": "105°F"
         },
-        "kunci": "A",
-        "pembahasan": "C (95°F)"
+        "kunci": "C",
+        "pembahasan": "Rumus konversi Celcius ke Fahrenheit: $F = (\\frac{9}{5} \\times C) + 32 = (\\frac{9}{5} \\times 35) + 32 = (9 \\times 7) + 32 = 63 + 32 = 95^\\circ\\text{F}$."
       },
       {
         "id": "ipa_smp_b1_q5",
-        "soal": "No. 5 · Jawaban: B (420 kJ) ΔT = 70 − 20 = 50°C. Maka Q = m·c·ΔT = 2 × 4.200 × 50 = 420.000 J = 420 kJ. Trik cepat: 2 × 50 = 100, lalu 100 × 4.200 = 420.000 J!",
+        "soal": "Level 3 · PG5. Kalor: Sebanyak 2 kg air bersuhu 20°C dipanaskan hingga 70°C ($c_{\\text{air}} = 4.200\\text{ J/kg}^\\circ\\text{C}$). Besar kalor yang dibutuhkan adalah …",
         "opsi": {
-          "A": "Pernyataan / Opsi (1) Benar",
-          "B": "Pernyataan / Opsi (2) Benar",
-          "C": "Pernyataan / Opsi (3) Benar",
-          "D": "Pernyataan / Opsi (4) Benar"
+          "A": "210 kJ",
+          "B": "420 kJ",
+          "C": "588 kJ",
+          "D": "840 kJ"
         },
-        "kunci": "A",
-        "pembahasan": "B (420 kJ)"
+        "kunci": "B",
+        "pembahasan": "Perubahan suhu $\\Delta T = 70 - 20 = 50^\\circ\\text{C}$. Kalor $Q = m \\cdot c \\cdot \\Delta T = 2 \\times 4.200 \\times 50 = 420.000\\text{ J} = 420\\text{ kJ}$. Trik cepat: $2 \\times 50 = 100$, lalu $100 \\times 4.200 = 420.000\\text{ J}$."
       },
       {
         "id": "ipa_smp_b1_q6",
-        "soal": "No. 6 · Jawaban: A dan C (A) BENAR: pH 3 = asam, mengubah lakmus biru jadi merah. (B) SALAH: Angin laut terjadi siang hari (malam hari = angin darat). (C) BENAR: Saat jatuh, ketinggian turun (Ep berkurang) dan kecepatan naik (Ek bertambah). (D) SALAH: Air + alkohol dipisahkan dengan destilasi (beda titik didih), bukan filtrasi. Checklist Siap Bab 2 Sudah lancar ubah satuan SI & pakai rumus kalor? Lanjut ke Bab 2 (Mekanika, Gelombang, Optik, Listrik & Magnet)—bab paling seru di Fisika SMP!",
+        "soal": "Level 3 · PGK MCMA6. Asam–Basa & Energi: Pilih dua pernyataan yang BENAR dari daftar berikut:\n(1) Larutan dengan pH 3 dapat mengubah lakmus biru menjadi merah.\n(2) Angin laut terjadi pada malam hari dan bertiup dari laut menuju darat.\n(3) Buah kelapa jatuh mengalami perubahan Energi Potensial menjadi Energi Kinetik.\n(4) Pemisahan campuran air dan alkohol paling tepat menggunakan metode filtrasi.",
         "opsi": {
-          "A": "Pernyataan / Opsi (1) Benar",
-          "B": "Pernyataan / Opsi (2) Benar",
-          "C": "Pernyataan / Opsi (3) Benar",
-          "D": "Pernyataan / Opsi (4) Benar"
+          "A": "(1) dan (3)",
+          "B": "(1) dan (2)",
+          "C": "(2) dan (4)",
+          "D": "(3) dan (4)"
         },
         "kunci": "A",
-        "pembahasan": "A dan C"
+        "pembahasan": "Analisis butir:\n• (1) BENAR: pH 3 bersifat asam, lakmus biru berubah menjadi merah.\n• (2) SALAH: Angin laut terjadi siang hari (malam hari adalah angin darat).\n• (3) BENAR: Saat jatuh, ketinggian berkurang ($E_p$ turun) dan kecepatan bertambah ($E_k$ naik).\n• (4) SALAH: Air dan alkohol dipisahkan dengan destilasi (titik didih berbeda), bukan filtrasi.\nJadi pernyataan yang benar adalah (1) dan (3)."
       }
     ]
   },
@@ -765,75 +765,75 @@ export const IPA_SMP_MODUL = [
     "kuisPemahaman": [
       {
         "id": "ipa_smp_b2_q1",
-        "soal": "No. 1 · Jawaban: C (Hukum Newton III) Dayung mendorong air ke belakang (aksi), air mendorong perahu ke depan (reaksi) → Hukum Newton III (F_aksi = −F_reaksi).",
+        "soal": "Level 1 · PG1. Hukum Newton: Ketika kita mendayung perahu dengan mendorong air ke belakang, perahu justru terdorong melaju ke depan. Peristiwa ini sesuai dengan prinsip …",
         "opsi": {
-          "A": "Pernyataan / Opsi (1) Benar",
-          "B": "Pernyataan / Opsi (2) Benar",
-          "C": "Pernyataan / Opsi (3) Benar",
-          "D": "Pernyataan / Opsi (4) Benar"
+          "A": "Hukum Newton I",
+          "B": "Hukum Newton II",
+          "C": "Hukum Newton III",
+          "D": "Hukum Pascal"
         },
-        "kunci": "A",
-        "pembahasan": "C (Hukum Newton III)"
+        "kunci": "C",
+        "pembahasan": "Dayung mendorong air ke belakang ($F_{\\text{aksi}}$), air membalas mendorong perahu ke depan ($F_{\\text{reaksi}}$). Sesuai Hukum Newton III ($F_{\\text{aksi}} = -F_{\\text{reaksi}}$)."
       },
       {
         "id": "ipa_smp_b2_q2",
-        "soal": "No. 2 · Jawaban: B (100 N) Keuntungan mekanis bidang miring KM = s / h = 4 / 1 = 4. Maka F = w / KM = 400 / 4 = 100 N.",
+        "soal": "Level 1 · PG2. Bidang Miring: Sebuah peti seberat 400 N dinaikkan ke atas truk setinggi 1 m menggunakan papan bidang miring sepanjang 4 m. Gaya dorong minimal yang diperlukan adalah …",
         "opsi": {
-          "A": "Pernyataan / Opsi (1) Benar",
-          "B": "Pernyataan / Opsi (2) Benar",
-          "C": "Pernyataan / Opsi (3) Benar",
-          "D": "Pernyataan / Opsi (4) Benar"
+          "A": "50 N",
+          "B": "100 N",
+          "C": "200 N",
+          "D": "1.600 N"
         },
-        "kunci": "A",
-        "pembahasan": "B (100 N)"
+        "kunci": "B",
+        "pembahasan": "Keuntungan mekanis bidang miring $KM = \\frac{s}{h} = \\frac{4}{1} = 4$. Maka gaya minimal $F = \\frac{w}{KM} = \\frac{400}{4} = 100\\text{ N}$."
       },
       {
         "id": "ipa_smp_b2_q3",
-        "soal": "No. 3 · Jawaban: C (20.000 Pa) P_h = ρ · g · h = 1.000 × 10 × 2 = 20.000 Pa (atau 20 kPa).",
+        "soal": "Level 2 · PG3. Tekanan Hidrostatis: Seekor ikan berenang pada kedalaman 2 m di bawah permukaan air danau ($\\rho = 1.000\\text{ kg/m}^3, g = 10\\text{ m/s}^2$). Tekanan hidrostatis yang dialami ikan tersebut adalah …",
         "opsi": {
-          "A": "Pernyataan / Opsi (1) Benar",
-          "B": "Pernyataan / Opsi (2) Benar",
-          "C": "Pernyataan / Opsi (3) Benar",
-          "D": "Pernyataan / Opsi (4) Benar"
+          "A": "2.000 Pa",
+          "B": "10.000 Pa",
+          "C": "20.000 Pa",
+          "D": "200.000 Pa"
         },
-        "kunci": "A",
-        "pembahasan": "C (20.000 Pa)"
+        "kunci": "C",
+        "pembahasan": "Tekanan hidrostatis $P_h = \\rho \\cdot g \\cdot h = 1.000 \\times 10 \\times 2 = 20.000\\text{ Pa}$ (atau setara $20\\text{ kPa}$)."
       },
       {
         "id": "ipa_smp_b2_q4",
-        "soal": "No. 4 · Jawaban: C (Cermin cembung) Cermin cembung selalu menghasilkan bayangan maya, tegak, diperkecil sehingga jangkauan pandang spion luas.",
+        "soal": "Level 2 · PG4. Cermin & Lensa: Cermin yang dipasang pada kaca spion kendaraan agar menghasilkan bayangan yang bersifat maya, tegak, dan diperkecil adalah …",
         "opsi": {
-          "A": "Pernyataan / Opsi (1) Benar",
-          "B": "Pernyataan / Opsi (2) Benar",
-          "C": "Pernyataan / Opsi (3) Benar",
-          "D": "Pernyataan / Opsi (4) Benar"
+          "A": "Cermin datar",
+          "B": "Cermin cekung",
+          "C": "Cermin cembung",
+          "D": "Lensa cembung"
         },
-        "kunci": "A",
-        "pembahasan": "C (Cermin cembung)"
+        "kunci": "C",
+        "pembahasan": "Cermin cembung selalu menghasilkan bayangan maya, tegak, dan diperkecil sehingga bidang pandang pengemudi di spion menjadi sangat luas."
       },
       {
         "id": "ipa_smp_b2_q5",
-        "soal": "No. 5 · Jawaban: C (3 A) Trik paralel kembar: 6 Ω || 6 Ω = 6 / 2 = 3 Ω. Serikan dengan 3 Ω → R_total = 3 + 3 = 6 Ω. Maka I = V / R = 18 / 6 = 3 A.",
+        "soal": "Level 3 · PG5. Rangkaian Listrik: Dua resistor identik $6\\ \\Omega$ dan $6\\ \\Omega$ dipasang secara paralel, kemudian diserikan dengan resistor $3\\ \\Omega$. Jika rangkaian dihubungkan ke sumber tegangan 18 V, kuat arus totalnya adalah …",
         "opsi": {
-          "A": "Pernyataan / Opsi (1) Benar",
-          "B": "Pernyataan / Opsi (2) Benar",
-          "C": "Pernyataan / Opsi (3) Benar",
-          "D": "Pernyataan / Opsi (4) Benar"
+          "A": "1,5 A",
+          "B": "2 A",
+          "C": "3 A",
+          "D": "6 A"
         },
-        "kunci": "A",
-        "pembahasan": "C (3 A)"
+        "kunci": "C",
+        "pembahasan": "Trik paralel kembar: $6\\ \\Omega \\parallel 6\\ \\Omega = \\frac{6}{2} = 3\\ \\Omega$. Serikan dengan $3\\ \\Omega \\rightarrow R_{\\text{total}} = 3 + 3 = 6\\ \\Omega$. Sesuai Hukum Ohm: $I = \\frac{V}{R} = \\frac{18}{6} = 3\\text{ A}$."
       },
       {
         "id": "ipa_smp_b2_q6",
-        "soal": "No. 6 · Jawaban: A dan C (A) BENAR: Trik “Pla-Min” — elektron pindah dari wol ke plastik → plastik (−). (B) SALAH: 25.000 Hz adalah ultrasonik (> 20.000 Hz), tak terdengar manusia. (C) BENAR: Step-up menaikkan tegangan sehingga Ns > Np. (D) SALAH: Jarak 2× justru bikin gaya Coulomb jadi 1/2² = 1/4 kali semula! Siap Masuk Bab 3! Fisika & Kimia sudah beres 20 Unit! Di halaman 28 kita masuk Bab 3 (Biologi Lengkap: 13 Unit + Cheat Sheet 1 Halaman) dengan diagram organ berwarna!",
+        "soal": "Level 3 · PGK MCMA6. Gelombang, Listrik & Magnet: Pilih dua pernyataan yang BENAR dari daftar berikut:\n(1) Penggaris plastik yang digosok dengan kain wol akan bermuatan negatif.\n(2) Bunyi dengan frekuensi 25.000 Hz dapat didengar dengan jelas oleh telinga manusia normal.\n(3) Transformator step-up memiliki jumlah lilitan sekunder ($N_s$) lebih banyak daripada lilitan primer ($N_p$).\n(4) Jika jarak antarmuatan diperbesar menjadi 2 kali lipat, gaya Coulomb bertambah 2 kali lebih besar.",
         "opsi": {
-          "A": "Pernyataan / Opsi (1) Benar",
-          "B": "Pernyataan / Opsi (2) Benar",
-          "C": "Pernyataan / Opsi (3) Benar",
-          "D": "Pernyataan / Opsi (4) Benar"
+          "A": "(1) dan (3)",
+          "B": "(1) dan (2)",
+          "C": "(2) dan (3)",
+          "D": "(3) dan (4)"
         },
         "kunci": "A",
-        "pembahasan": "A dan C"
+        "pembahasan": "Analisis butir:\n• (1) BENAR: Trik 'Pla-Min' — elektron berpindah dari wol ke plastik sehingga plastik bermuatan negatif (−).\n• (2) SALAH: 25.000 Hz adalah gelombang ultrasonik (> 20.000 Hz), di luar batas pendengaran manusia.\n• (3) BENAR: Trafo step-up berfungsi menaikkan tegangan, cirinya $N_s > N_p$.\n• (4) SALAH: Gaya Coulomb berbanding terbalik kuadrat jarak ($F \\propto \\frac{1}{r^2}$). Jarak $2\\times$ membuat gaya menjadi $\\frac{1}{4}$ kali semula.\nJadi pernyataan yang benar adalah (1) dan (3)."
       }
     ]
   },
@@ -1265,75 +1265,75 @@ export const IPA_SMP_MODUL = [
     "kuisPemahaman": [
       {
         "id": "ipa_smp_b3_q1",
-        "soal": "No. 1 · Jawaban: C (Mitokondria) Mitokondria = “pembangkit listrik” sel (respirasi sel/ATP) dan dimiliki sel hewan maupun tumbuhan. Kloroplas & dinding sel hanya tumbuhan; sentriol hanya hewan.",
+        "soal": "Level 1 · PG1. Organel Sel: Organel yang berfungsi sebagai tempat respirasi sel untuk menghasilkan energi (ATP) dan dimiliki oleh sel hewan maupun sel tumbuhan adalah …",
         "opsi": {
-          "A": "Pernyataan / Opsi (1) Benar",
-          "B": "Pernyataan / Opsi (2) Benar",
-          "C": "Pernyataan / Opsi (3) Benar",
-          "D": "Pernyataan / Opsi (4) Benar"
+          "A": "Kloroplas",
+          "B": "Dinding sel",
+          "C": "Mitokondria",
+          "D": "Sentriol"
         },
-        "kunci": "A",
-        "pembahasan": "C (Mitokondria)"
+        "kunci": "C",
+        "pembahasan": "Mitokondria adalah “the powerhouse of cell” (tempat respirasi sel dan pembentukan ATP) yang dimiliki baik sel hewan maupun tumbuhan. Kloroplas dan dinding sel hanya ada pada tumbuhan, sedangkan sentriol hanya ada pada hewan."
       },
       {
         "id": "ipa_smp_b3_q2",
-        "soal": "No. 2 · Jawaban: C (Lipase) Ingat enzim pankreas A-L-T: Amilase (pati), Lipase (lemak → asam lemak + gliserol), Tripsin (pepton → asam amino).",
+        "soal": "Level 1 · PG2. Pencernaan: Enzim pencernaan yang dihasilkan oleh kelenjar pankreas dan berfungsi mengubah lemak menjadi asam lemak serta gliserol adalah …",
         "opsi": {
-          "A": "Pernyataan / Opsi (1) Benar",
-          "B": "Pernyataan / Opsi (2) Benar",
-          "C": "Pernyataan / Opsi (3) Benar",
-          "D": "Pernyataan / Opsi (4) Benar"
+          "A": "Pepsin",
+          "B": "Ptialin",
+          "C": "Lipase",
+          "D": "Renin"
         },
-        "kunci": "A",
-        "pembahasan": "C (Lipase)"
+        "kunci": "C",
+        "pembahasan": "Jembatan keledai enzim getah pankreas A-L-T:\n• Amilase: mengubah zat tepung (amilum) menjadi glukosa\n• Lipase: mengubah lemak menjadi asam lemak + gliserol\n• Tripsin: mengubah pepton menjadi asam amino."
       },
       {
         "id": "ipa_smp_b3_q3",
-        "soal": "No. 3 · Jawaban: A (Glomerulus) Biuret ungu = positif protein di urine (Albuminuria). Artinya proses filtrasi di Glomerulus bocor!",
+        "soal": "Level 2 · PG3. Sistem Ekskresi: Hasil uji laboratorium menunjukkan sampel urine seorang pasien berwarna ungu saat ditetesi reagen Biuret. Bagian nefron ginjal yang mengalami kerusakan adalah …",
         "opsi": {
-          "A": "Pernyataan / Opsi (1) Benar",
-          "B": "Pernyataan / Opsi (2) Benar",
-          "C": "Pernyataan / Opsi (3) Benar",
-          "D": "Pernyataan / Opsi (4) Benar"
+          "A": "Glomerulus",
+          "B": "Tubulus proksimal",
+          "C": "Tubulus distal",
+          "D": "Ureter"
         },
         "kunci": "A",
-        "pembahasan": "A (Glomerulus)"
+        "pembahasan": "Uji Biuret menghasilkan warna ungu menandakan adanya protein dalam urine (Albuminuria). Hal ini membuktikan bahwa membran saringan pada tahap filtrasi di Glomerulus mengalami kebocoran."
       },
       {
         "id": "ipa_smp_b3_q4",
-        "soal": "No. 4 · Jawaban: B (Tuba Fallopi) Fertilisasi selalu berlangsung di Tuba Fallopi (Oviduk), baru embrio berkembang di uterus/rahim.",
+        "soal": "Level 2 · PG4. Reproduksi: Tempat terjadinya proses fertilisasi (peleburan sel sperma dan sel ovum) pada sistem reproduksi wanita adalah …",
         "opsi": {
-          "A": "Pernyataan / Opsi (1) Benar",
-          "B": "Pernyataan / Opsi (2) Benar",
-          "C": "Pernyataan / Opsi (3) Benar",
-          "D": "Pernyataan / Opsi (4) Benar"
+          "A": "Ovarium",
+          "B": "Tuba Fallopi",
+          "C": "Uterus",
+          "D": "Serviks"
         },
-        "kunci": "A",
-        "pembahasan": "B (Tuba Fallopi)"
+        "kunci": "B",
+        "pembahasan": "Fertilisasi selalu berlangsung di Tuba Fallopi (oviduk). Setelah terbentuk zigot dan berkembang menjadi embrio, barulah embrio menempel dan tumbuh di dinding uterus (rahim)."
       },
       {
         "id": "ipa_smp_b3_q5",
-        "soal": "No. 5 · Jawaban: C (90 pohon) Pada persilangan dihibrid BbMm × BbMm, rasio fenotipe F2 = 9 : 3 : 3 : 1. Porsi Besar–Manis (B_M_) adalah 9/16. Maka jumlahnya = (9/16) × 160 = 90 pohon!",
+        "soal": "Level 3 · PG5. Hukum Mendel: Tanaman mangga berbuah Besar–Manis (BBMM) disilangkan dengan Kecil–Masam (bbmm) menghasilkan keturunan F1 BbMm. Jika F1 disilangkan sesamanya dan menghasilkan 160 pohon keturunan F2, berapa banyak pohon yang berbuah Besar–Manis?",
         "opsi": {
-          "A": "Pernyataan / Opsi (1) Benar",
-          "B": "Pernyataan / Opsi (2) Benar",
-          "C": "Pernyataan / Opsi (3) Benar",
-          "D": "Pernyataan / Opsi (4) Benar"
+          "A": "10 pohon",
+          "B": "30 pohon",
+          "C": "90 pohon",
+          "D": "120 pohon"
         },
-        "kunci": "A",
-        "pembahasan": "C (90 pohon)"
+        "kunci": "C",
+        "pembahasan": "Pada persilangan dihibrid heterozigot $BbMm \\times BbMm$, rasio fenotipe F2 adalah $9 : 3 : 3 : 1$. Porsi fenotipe dominan ganda Besar–Manis ($B\\_M\\_$) adalah $\\frac{9}{16}$. Jumlah tanaman $= \\frac{9}{16} \\times 160 = 90$ pohon."
       },
       {
         "id": "ipa_smp_b3_q6",
-        "soal": "No. 6 · Jawaban: A dan C (A) BENAR: Bilik kiri berdinding tebal memompa darah kaya O₂ lewat aorta ke seluruh tubuh. (B) SALAH: Rhizopus oryzae untuk tempe; yoghurt pakai Lactobacillus bulgaricus. (C) BENAR: Percobaan Ingenhousz (Hydrilla) menghasilkan gelembung gas O₂. (D) SALAH: Gerak refleks dikendalikan sumsum tulang belakang, bukan otak besar.",
+        "soal": "Level 3 · PGK MCMA6. Biologi Terpadu: Pilih dua pernyataan yang BENAR dari pernyataan di bawah ini:\n(1) Bilik kiri jantung memiliki dinding otot paling tebal untuk memompa darah kaya O₂ ke seluruh tubuh.\n(2) Jamur Rhizopus oryzae berperan utama dalam proses fermentasi susu menjadi yoghurt.\n(3) Percobaan Ingenhousz menggunakan tanaman Hydrilla membuktikan fotosintesis menghasilkan gas O₂.\n(4) Gerak refleks menghindar dikendalikan langsung oleh pusat kesadaran otak besar.",
         "opsi": {
-          "A": "Pernyataan / Opsi (1) Benar",
-          "B": "Pernyataan / Opsi (2) Benar",
-          "C": "Pernyataan / Opsi (3) Benar",
-          "D": "Pernyataan / Opsi (4) Benar"
+          "A": "(1) dan (3)",
+          "B": "(1) dan (2)",
+          "C": "(2) dan (3)",
+          "D": "(3) dan (4)"
         },
         "kunci": "A",
-        "pembahasan": "A dan C"
+        "pembahasan": "Analisis butir:\n• (1) BENAR: Bilik kiri berdinding paling tebal karena harus memompa darah ke sirkulasi sistemik tubuh.\n• (2) SALAH: Rhizopus oryzae adalah jamur pembuat tempe; yoghurt menggunakan bakteri Lactobacillus bulgaricus.\n• (3) BENAR: Percobaan Ingenhousz membuktikan terbentuknya gelembung gas oksigen ($O_2$) saat terkena sinar matahari.\n• (4) SALAH: Gerak refleks berpangkal di sumsum tulang belakang (medula spinalis), bukan otak besar.\nJadi pernyataan yang benar adalah (1) dan (3)."
       }
     ]
   },
@@ -1569,51 +1569,51 @@ export const IPA_SMP_MODUL = [
     "kuisPemahaman": [
       {
         "id": "ipa_smp_b4_q1",
-        "soal": "No. 1 · PGPencemaran: Gas polutan dari kulkas/AC lama yang menyebabkan menipisnya lapisan Ozon (O₃) di stratosfer adalah... A. CO₂    B. CH₄    C. CFC    D. SO₂",
+        "soal": "No. 1 · PGPencemaran: Gas polutan sintetis dari kulkas dan pendingin ruangan (AC) generasi lama yang menyebabkan menipisnya lapisan Ozon ($O_3$) di lapisan stratosfer bumi adalah …",
         "opsi": {
-          "A": "Pernyataan / Opsi (1) Benar",
-          "B": "Pernyataan / Opsi (2) Benar",
-          "C": "Pernyataan / Opsi (3) Benar",
-          "D": "Pernyataan / Opsi (4) Benar"
+          "A": "$\\text{CO}_2$",
+          "B": "$\\text{CH}_4$",
+          "C": "CFC (Klorofluorokarbon)",
+          "D": "$\\text{SO}_2$"
         },
-        "kunci": "A",
-        "pembahasan": "C (CFC)"
+        "kunci": "C",
+        "pembahasan": "CFC (Chlorofluorocarbon) melepaskan radikal klorin yang memecah molekul ozon ($O_3$). $\\text{CO}_2$ dan $\\text{CH}_4$ adalah gas rumah kaca pemicu pemanasan global; $\\text{SO}_2$ pemicu hujan asam."
       },
       {
         "id": "ipa_smp_b4_q2",
-        "soal": "No. 2 · PGLempeng & Atmosfer: Tumbukan lempeng saling mendekat (konvergen) di dasar samudra berpotensi membentuk palung laut dan memicu tsunami. Lapisan atmosfer tempat meteor terbakar habis adalah... A. Troposfer    B. Stratosfer    C. Mesosfer    D. Termosfer",
+        "soal": "No. 2 · PGLempeng & Atmosfer: Tumbukan lempeng saling mendekat (konvergen) di dasar samudra berpotensi membentuk palung laut dalam dan tsunami. Lapisan atmosfer bumi tempat meteoroid terbakar habis adalah …",
         "opsi": {
           "A": "Troposfer",
           "B": "Stratosfer",
           "C": "Mesosfer",
           "D": "Termosfer"
         },
-        "kunci": "A",
-        "pembahasan": "C (Mesosfer)"
+        "kunci": "C",
+        "pembahasan": "Lapisan Mesosfer berfungsi membakar dan menghancurkan meteoroid yang masuk ke atmosfer bumi karena kepadatan dan gesekan udara yang intens."
       },
       {
         "id": "ipa_smp_b4_q3",
-        "soal": "No. 3 · PGTata Surya: Planet terpanas di Tata Surya yang berotasi dari Timur ke Barat akibat atmosfer CO₂ yang sangat tebal adalah... A. Merkurius    B. Venus    C. Mars    D. Jupiter",
+        "soal": "No. 3 · PGTata Surya: Planet terpanas di Tata Surya kita yang berotasi terbalik dari Timur ke Barat akibat selimut atmosfer gas $\\text{CO}_2$ yang sangat tebal adalah …",
         "opsi": {
           "A": "Merkurius",
           "B": "Venus",
           "C": "Mars",
           "D": "Jupiter"
         },
-        "kunci": "A",
-        "pembahasan": "B (Venus)"
+        "kunci": "B",
+        "pembahasan": "Venus adalah planet terpanas (suhu permukaan $\\approx 460^\\circ\\text{C}$), lebih panas dari Merkurius, karena mengalami efek rumah kaca ekstrem dari atmosfer $\\text{CO}_2$ yang sangat tebal."
       },
       {
         "id": "ipa_smp_b4_q4",
-        "soal": "No. 4 · PGK MCMABumi–Bulan: Pilih DUA pernyataan BENAR: ☐  (A) Pergantian 4 musim disebabkan oleh revolusi Bumi & kemiringan poros 23,5°. ☐  (B) Perbedaan waktu WIB–WITA–WIT disebabkan oleh revolusi Bumi. ☐  (C) Pasang purnama (tertinggi) terjadi saat Matahari–Bumi–Bulan segaris lurus. ☐  (D) Gerhana Matahari terjadi pada fase Bulan Purnama.",
+        "soal": "No. 4 · PGK MCMABumi–Bulan: Tentukan dua pernyataan yang BENAR terkait fenomena kebumian dan antariksa:\n(1) Pergantian 4 musim di belahan bumi utara dan selatan disebabkan oleh revolusi Bumi dan kemiringan poros $23,5^\\circ$.\n(2) Perbedaan zona waktu WIB, WITA, dan WIT disebabkan oleh revolusi tahunan Bumi.\n(3) Pasang purnama (pasang air laut tertinggi) terjadi saat posisi Matahari, Bumi, dan Bulan membentuk garis lurus.\n(4) Gerhana Matahari total terjadi pada saat fase Bulan berada dalam kondisi Bulan Purnama.",
         "opsi": {
-          "A": "Pernyataan / Opsi (1) Benar",
-          "B": "Pernyataan / Opsi (2) Benar",
-          "C": "Pernyataan / Opsi (3) Benar",
-          "D": "Pernyataan / Opsi (4) Benar"
+          "A": "(1) dan (3)",
+          "B": "(1) dan (2)",
+          "C": "(2) dan (3)",
+          "D": "(3) dan (4)"
         },
         "kunci": "A",
-        "pembahasan": "A dan C"
+        "pembahasan": "Analisis butir:\n• (1) & (3) BENAR: Revolusi bumi menyebabkan musim; pasang purnama terjadi saat syzygy (garis lurus).\n• (2) SALAH: Pembagian zona waktu disebabkan oleh rotasi Bumi pada porosnya.\n• (4) SALAH: Gerhana Matahari terjadi pada fase Bulan Baru (Bulan Mati), bukan Bulan Purnama.\nJadi pernyataan yang benar adalah (1) dan (3)."
       }
     ]
   }
