@@ -12,6 +12,8 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { CheckCircle2, XCircle, ArrowRight, RotateCcw, Award, ChevronLeft, Sparkles, Brain, Flame } from 'lucide-react';
 import 'katex/dist/katex.min.css';
 import { InlineMath, BlockMath } from 'react-katex';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { db } from '../../firebase';
 import { simpanHasilSesiLatihan } from '../../data/ambisLatihanBankSoal.js';
 
 // Renderer rumus KaTeX matematika & fisika
@@ -113,6 +115,32 @@ export default function AmbisPracticePlayer({
         benarCount,
         durasiDetik,
       });
+
+      // 🔥 Catat otomatis ke Firestore tryout_sesi agar langsung terhubung ke Statistik Belajar & Kalender Heatmap
+      if (studentId) {
+        try {
+          addDoc(collection(db, 'tryout_sesi'), {
+            studentId,
+            paketId: paket?.id || `jalur_${(subtes?.kode || 'latihan').toLowerCase()}`,
+            paketJudul: `${subtes?.singkatan || subtes?.kode || 'Subtes'} • ${paket?.judul || 'Latihan Subtes'}`,
+            subtesKode: subtes?.kode || 'MTK',
+            status: 'selesai',
+            sumber: 'menu_jalur',
+            modeLatihan: mode,
+            totalSoal: totalSoalAwal,
+            benarCount,
+            totalSkorPersen: Math.round((benarCount / Math.max(1, totalSoalAwal)) * 100),
+            durasiMenit: Math.max(1, Math.round(durasiDetik / 60)),
+            durasiDetik,
+            xpFinal: benarCount * 10,
+            waktuSelesaiMs: Date.now(),
+            waktuSelesai: serverTimestamp(),
+            createdAt: serverTimestamp(),
+          }).catch((err) => console.warn('[AmbisPracticePlayer] Gagal simpan sesi ke Firestore:', err));
+        } catch (e) {
+          console.warn('[AmbisPracticePlayer] Error inisiasi simpan sesi Firestore:', e);
+        }
+      }
 
       setHasilFinal({
         totalSoal: totalSoalAwal,

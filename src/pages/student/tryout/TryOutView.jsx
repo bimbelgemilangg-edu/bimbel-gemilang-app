@@ -772,6 +772,8 @@ export default function TryOutView() {
             status: 'selesai',
             jawaban,
             totalSkorPersen,
+            paketJudul: paket?.judul || 'Simulasi Ujian',
+            totalSoal: (paket?.daftarSoal || []).length,
             xpMentah,
             xpFinal,
             pelanggaran,

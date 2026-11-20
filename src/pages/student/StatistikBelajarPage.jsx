@@ -1,11 +1,11 @@
 // src/pages/student/StatistikBelajarPage.jsx
 // ============================================================
-// Halaman Statistik Belajar Siswa (Benchmark AmbisPTN 1:1)
-// - Perkembangan Skor Tryout (Grafik Garis Tren Nilai)
+// Halaman Statistik Belajar Siswa (Terintegrasi Otomatis dengan Menu Jalur)
+// - Perkembangan Skor Tryout & Latihan Menu Jalur (Grafik Garis Tren Nilai)
 // - Skor per Subtes Terakhir + Indikator Panah Fluktuasi
 // - Kalender Latihan (Heatmap 12 Minggu ala GitHub)
 // - Analisis Minggu Ini vs Minggu Lalu (4 Metrik Kunci)
-// - Penguasaan & Latihan per Subtes Murni
+// - Penguasaan & Latihan per Subtes Murni (Real-Time dari Bank Soal & Menu Jalur)
 // ============================================================
 import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -26,12 +26,21 @@ import {
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { useProfilSiswa } from '../../utils/profilSiswa';
+import {
+  getSubtesLatihanList,
+  hitungStatistikLatihanSiswa,
+  bacaProgresLatihanSiswa,
+} from '../../data/ambisLatihanBankSoal';
 
 export default function StatistikBelajarPage() {
   const navigate = useNavigate();
   const profil = useProfilSiswa();
-  const studentId = localStorage.getItem('studentId') || localStorage.getItem('studentNim') || '';
-  const studentDocId = profil.id || profil.docId || '';
+  const studentId = typeof localStorage !== 'undefined'
+    ? localStorage.getItem('studentId') || localStorage.getItem('studentNim') || ''
+    : '';
+  const studentDocId = typeof localStorage !== 'undefined'
+    ? localStorage.getItem('studentDocId') || profil.docId || profil.id || ''
+    : (profil.docId || profil.id || '');
 
   const [loading, setLoading] = useState(true);
   const [sesiList, setSesiList] = useState([]);
@@ -48,7 +57,7 @@ export default function StatistikBelajarPage() {
     return 'SMP';
   }, [profil]);
 
-  // Muat riwayat sesi pengerjaan siswa
+  // Muat riwayat sesi pengerjaan siswa (Try Out & Latihan Menu Jalur)
   useEffect(() => {
     let aktif = true;
     async function muatSesi() {
@@ -65,6 +74,30 @@ export default function StatistikBelajarPage() {
         const mapSesi = new Map();
         [...snap1.docs, ...snap2.docs].forEach((d) => {
           mapSesi.set(d.id, { id: d.id, ...d.data() });
+        });
+
+        // 🔗 Integrasi Otomatis dengan Menu Jalur: Baca riwayat sesi latihan dari localStorage
+        const progresLatihan = bacaProgresLatihanSiswa(studentId);
+        Object.entries(progresLatihan || {}).forEach(([kodeSt, stData]) => {
+          (stData.riwayatSesi || []).forEach((sesiLog) => {
+            const sid = sesiLog.sesiId || `jalur_${kodeSt}_${sesiLog.waktuSelesaiMs}`;
+            if (!mapSesi.has(sid)) {
+              mapSesi.set(sid, {
+                id: sid,
+                studentId,
+                paketId: sesiLog.paketId,
+                paketJudul: `${sesiLog.subtesKode || kodeSt} • ${sesiLog.mode || 'Latihan Jalur'}`,
+                subtesKode: sesiLog.subtesKode || kodeSt,
+                status: 'selesai',
+                sumber: 'menu_jalur',
+                totalSoal: sesiLog.totalSoal || 10,
+                benarCount: sesiLog.benarCount || 0,
+                totalSkorPersen: sesiLog.skorPersen || 0,
+                durasiMenit: Math.max(1, Math.round((sesiLog.durasiDetik || 60) / 60)),
+                waktuSelesaiMs: sesiLog.waktuSelesaiMs || Date.now(),
+              });
+            }
+          });
         });
 
         const sesiSelesai = Array.from(mapSesi.values())
@@ -86,20 +119,23 @@ export default function StatistikBelajarPage() {
     return () => { aktif = false; };
   }, [studentId, studentDocId]);
 
-  // 1. Data Tren Skor Tryout (Grafik Garis)
+  // 1. Data Tren Skor Tryout & Menu Jalur (Grafik Garis)
   const dataTrenSkor = useMemo(() => {
-    if (!sesiList.length) {
-      return [
-        { label: 'Ujian 1', skor: 65 },
-        { label: 'Ujian 2', skor: 72 },
-        { label: 'Ujian 3', skor: 78 },
-        { label: 'Ujian 4', skor: 84 },
-      ];
+    if (!sesiList || sesiList.length === 0) {
+      return [];
     }
-    return sesiList.slice(-6).map((s, idx) => ({
-      label: s.paketJudul ? (s.paketJudul.length > 12 ? s.paketJudul.slice(0, 10) + '...' : s.paketJudul) : `Sesi ${idx + 1}`,
-      skor: Math.round(Number(s.totalSkorPersen) || 0),
-    }));
+    return sesiList.slice(-8).map((s, idx) => {
+      let judul = s.paketJudul || s.judul || '';
+      if (!judul) {
+        judul = s.subtesKode ? `Latihan ${s.subtesKode}` : `Simulasi ${idx + 1}`;
+      }
+      return {
+        label: judul.length > 14 ? judul.slice(0, 12) + '...' : judul,
+        judulLengkap: judul,
+        skor: Math.round(Number(s.totalSkorPersen) || 0),
+        tanggal: s.waktuSelesaiMs ? new Date(s.waktuSelesaiMs).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }) : '',
+      };
+    });
   }, [sesiList]);
 
   // 2. Heatmap 12 Minggu Terakhir (12 kolom x 7 baris)
@@ -188,35 +224,39 @@ export default function StatistikBelajarPage() {
     };
   }, [sesiList]);
 
-  // 4. Daftar Subtes Murni Berdasarkan Jenjang
+  // 4. Penguasaan per Subtes Murni (Dihitung Real-time dari Menu Jalur Sesuai Jenjang)
+  const statistikSubtes = useMemo(() => {
+    return hitungStatistikLatihanSiswa(studentId, jenjang);
+  }, [studentId, jenjang, sesiList]);
+
   const daftarSubtes = useMemo(() => {
-    if (jenjang === 'SMA') {
-      return [
-        { kode: 'PU', nama: 'Penalaran Umum (PU)', pool: 120, selesai: 24, akurasi: 82, trend: '+4%' },
-        { kode: 'PK', nama: 'Pengetahuan Kuantitatif (PK)', pool: 120, selesai: 18, akurasi: 74, trend: '+2%' },
-        { kode: 'PBM', nama: 'Pemahaman Bacaan & Menulis (PBM)', pool: 120, selesai: 30, akurasi: 86, trend: '+6%' },
-        { kode: 'PPU', nama: 'Pengetahuan & Pemahaman Umum (PPU)', pool: 120, selesai: 20, akurasi: 80, trend: '-1%' },
-        { kode: 'LBI', nama: 'Literasi Bahasa Indonesia', pool: 120, selesai: 26, akurasi: 88, trend: '+5%' },
-        { kode: 'LBE', nama: 'Literasi Bahasa Inggris', pool: 120, selesai: 16, akurasi: 70, trend: '+3%' },
-        { kode: 'PM', nama: 'Penalaran Matematika (PM)', pool: 120, selesai: 14, akurasi: 68, trend: '+7%' },
-      ];
-    }
-    if (jenjang === 'SMP') {
-      return [
-        { kode: 'MTK-BIL', nama: 'TKA Matematika — Bilangan & Pecahan', pool: 80, selesai: 24, akurasi: 85, trend: '+8%' },
-        { kode: 'MTK-ALJ', nama: 'TKA Matematika — Aljabar & SPLDV', pool: 80, selesai: 20, akurasi: 78, trend: '+5%' },
-        { kode: 'MTK-GEO', nama: 'TKA Matematika — Geometri Pythagoras', pool: 80, selesai: 16, akurasi: 72, trend: '+3%' },
-        { kode: 'MTK-DAT', nama: 'TKA Matematika — Statistika & Peluang', pool: 80, selesai: 18, akurasi: 80, trend: '+4%' },
-        { kode: 'IND-INF', nama: 'TKA Bahasa Indonesia — Teks Informasi', pool: 80, selesai: 26, akurasi: 88, trend: '+6%' },
-        { kode: 'IND-SAS', nama: 'TKA Bahasa Indonesia — Teks Sastra', pool: 80, selesai: 22, akurasi: 84, trend: '+5%' },
-        { kode: 'IND-OPN', nama: 'TKA Bahasa Indonesia — Opini & Tanggapan', pool: 80, selesai: 18, akurasi: 76, trend: '+2%' },
-      ];
-    }
-    return [
-      { kode: 'SD-MTK', nama: 'TKA Matematika SD — Bilangan & Geometri', pool: 60, selesai: 20, akurasi: 84, trend: '+6%' },
-      { kode: 'SD-IND', nama: 'TKA Bahasa Indonesia SD — Ide Pokok & Kosakata', pool: 60, selesai: 22, akurasi: 88, trend: '+7%' },
-    ];
-  }, [jenjang]);
+    const list = getSubtesLatihanList(jenjang);
+    return list.map((st) => {
+      const info = (statistikSubtes.rekapSubtes && statistikSubtes.rekapSubtes[st.kode]) || {
+        totalBankSoal: 50,
+        soalDikerjakan: 0,
+        benarCount: 0,
+        akurasiPersen: 0,
+        levelPenguasaan: 'Perlu Pemantapan',
+      };
+
+      return {
+        kode: st.kode,
+        nama: st.nama,
+        singkatan: st.singkatan,
+        rumpun: st.rumpun || (jenjang === 'SMP' ? 'TKA SMP' : jenjang === 'SD' ? 'TKA SD' : 'SNPMB'),
+        badgeWarna: st.badgeWarna || '#0d9488',
+        borderWarna: st.borderWarna || '#ccfbf1',
+        bgLight: st.bgLight || '#f0fdfa',
+        emoji: st.emoji || '🎯',
+        pool: Math.max(info.totalBankSoal, 10),
+        selesai: info.soalDikerjakan,
+        akurasi: info.akurasiPersen,
+        levelPenguasaan: info.levelPenguasaan,
+        trend: info.dilatihHariIni ? 'Dilatih Hari Ini ✨' : (info.soalDikerjakan > 0 ? `${info.soalDikerjakan} Soal Selesai` : 'Belum Mulai'),
+      };
+    });
+  }, [jenjang, statistikSubtes]);
 
   return (
     <div style={S.container}>
@@ -231,12 +271,69 @@ export default function StatistikBelajarPage() {
           <span>Kembali ke Beranda</span>
         </button>
         <div style={S.headerInfo}>
-          <div style={S.badgeJenjang}>STATISTIK BELAJAR • {jenjang}</div>
+          <div style={S.badgeJenjang}>STATISTIK BELAJAR • {jenjang === 'SMP' ? 'TKA SMP (KELAS 9)' : jenjang === 'SD' ? 'TKA SD (KELAS 6)' : 'UTBK SNBT (SMA)'}</div>
           <h1 style={S.judulUtama}>Progres &amp; Analisis Belajar Personal</h1>
           <p style={S.subJudul}>
             Pantau pertumbuhan skor tryout, konsistensi kalender latihan, dan pemetaan kelemahan per subtes secara real-time.
           </p>
         </div>
+      </div>
+
+      {/* 🌟 BANNER INTEGRASI OTOMATIS DENGAN MENU JALUR */}
+      <div style={{
+        background: '#f0fdfa',
+        border: '1.5px solid #99f6e4',
+        borderRadius: 16,
+        padding: '14px 18px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        flexWrap: 'wrap',
+        gap: 12,
+        boxShadow: '0 2px 6px rgba(13,148,136,0.04)',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div style={{
+            width: 38,
+            height: 38,
+            borderRadius: 10,
+            background: '#ccfbf1',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: 20,
+          }}>
+            🧭
+          </div>
+          <div>
+            <div style={{ fontSize: 13.5, fontWeight: 800, color: '#0f766e' }}>
+              Statistik Personal Terhubung Otomatis ke Menu Jalur
+            </div>
+            <div style={{ fontSize: 12, color: '#134e4a', marginTop: 2 }}>
+              Setiap kali kamu menyelesaikan simulasi atau latihan di <b>Menu Jalur (Roadmap Belajar)</b>, skor, kalender, dan radar subtes di halaman ini akan bertambah secara real-time.
+            </div>
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={() => navigate('/siswa/roadmap')}
+          style={{
+            background: '#0d9488',
+            color: '#ffffff',
+            border: 'none',
+            padding: '8px 16px',
+            borderRadius: 10,
+            fontSize: 12.5,
+            fontWeight: 800,
+            cursor: 'pointer',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 6,
+          }}
+        >
+          <span>Buka Menu Jalur</span>
+          <ArrowRight size={15} />
+        </button>
       </div>
 
       {/* ============================================================ */}
@@ -247,75 +344,107 @@ export default function StatistikBelajarPage() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <div style={S.iconBoxTeal}><TrendingUp size={20} color="#0d9488" /></div>
             <div>
-              <h3 style={S.cardJudul}>Perkembangan Skor Tryout</h3>
+              <h3 style={S.cardJudul}>Perkembangan Skor Tryout &amp; Menu Jalur</h3>
               <span style={S.cardSub}>Grafik tren peningkatan nilai kumulatif</span>
             </div>
           </div>
           <span style={S.badgeSkorAkhir}>
-            Skor Terakhir: {dataTrenSkor[dataTrenSkor.length - 1]?.skor || 0}%
+            {dataTrenSkor.length > 0 ? `Skor Terakhir: ${dataTrenSkor[dataTrenSkor.length - 1]?.skor || 0}%` : 'Belum Ada Skor'}
           </span>
         </div>
 
         {/* Visual Line Chart SVG Mini */}
-        <div style={S.chartWrap}>
-          <svg viewBox="0 0 500 140" style={{ width: '100%', height: 140, overflow: 'visible' }}>
-            <defs>
-              <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#0d9488" stopOpacity="0.3" />
-                <stop offset="100%" stopColor="#0d9488" stopOpacity="0.0" />
-              </linearGradient>
-            </defs>
-            {/* Garis Grid Horizontal */}
-            <line x1="20" y1="20" x2="480" y2="20" stroke="#f1f5f9" strokeWidth="1" />
-            <line x1="20" y1="60" x2="480" y2="60" stroke="#f1f5f9" strokeWidth="1" />
-            <line x1="20" y1="100" x2="480" y2="100" stroke="#f1f5f9" strokeWidth="1" />
+        {dataTrenSkor.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '36px 16px', background: '#f8fafc', borderRadius: 14, border: '1.5px dashed #cbd5e1' }}>
+            <div style={{ fontSize: 32, marginBottom: 8 }}>🎯</div>
+            <div style={{ fontSize: 15, fontWeight: 800, color: '#0f172a', marginBottom: 4 }}>
+              Belum Ada Riwayat Pengerjaan
+            </div>
+            <p style={{ fontSize: 13, color: '#64748b', maxWidth: 420, margin: '0 auto 16px', lineHeight: 1.5 }}>
+              Grafik perkembangan skor ini otomatis merekam setiap kamu menyelesaikan simulasi atau latihan di <strong>Menu Jalur (Roadmap)</strong>.
+            </p>
+            <button
+              type="button"
+              onClick={() => navigate('/siswa/roadmap')}
+              style={{
+                background: '#0d9488',
+                color: '#ffffff',
+                border: 'none',
+                padding: '9px 18px',
+                borderRadius: 10,
+                fontSize: 13,
+                fontWeight: 800,
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 6,
+              }}
+            >
+              <span>Mulai Latihan di Menu Jalur</span>
+              <ArrowRight size={15} />
+            </button>
+          </div>
+        ) : (
+          <div style={S.chartWrap}>
+            <svg viewBox="0 0 500 140" style={{ width: '100%', height: 140, overflow: 'visible' }}>
+              <defs>
+                <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#0d9488" stopOpacity="0.3" />
+                  <stop offset="100%" stopColor="#0d9488" stopOpacity="0.0" />
+                </linearGradient>
+              </defs>
+              {/* Garis Grid Horizontal */}
+              <line x1="20" y1="20" x2="480" y2="20" stroke="#f1f5f9" strokeWidth="1" />
+              <line x1="20" y1="60" x2="480" y2="60" stroke="#f1f5f9" strokeWidth="1" />
+              <line x1="20" y1="100" x2="480" y2="100" stroke="#f1f5f9" strokeWidth="1" />
 
-            {/* Path Area */}
-            {dataTrenSkor.length > 1 && (
-              <path
-                d={dataTrenSkor.reduce((acc, pt, i) => {
-                  const x = 40 + (i * (420 / (dataTrenSkor.length - 1)));
-                  const y = 120 - ((pt.skor / 100) * 90);
-                  return `${acc} ${i === 0 ? 'M' : 'L'} ${x} ${y}`;
-                }, '') + ` L ${40 + ((dataTrenSkor.length - 1) * (420 / (dataTrenSkor.length - 1)))} 130 L 40 130 Z`}
-                fill="url(#chartGradient)"
-              />
-            )}
+              {/* Path Area */}
+              {dataTrenSkor.length > 1 && (
+                <path
+                  d={dataTrenSkor.reduce((acc, pt, i) => {
+                    const x = 40 + (i * (420 / (dataTrenSkor.length - 1)));
+                    const y = 120 - ((pt.skor / 100) * 90);
+                    return `${acc} ${i === 0 ? 'M' : 'L'} ${x} ${y}`;
+                  }, '') + ` L ${40 + ((dataTrenSkor.length - 1) * (420 / (dataTrenSkor.length - 1)))} 130 L 40 130 Z`}
+                  fill="url(#chartGradient)"
+                />
+              )}
 
-            {/* Garis Utama */}
-            {dataTrenSkor.length > 1 && (
-              <path
-                d={dataTrenSkor.reduce((acc, pt, i) => {
-                  const x = 40 + (i * (420 / (dataTrenSkor.length - 1)));
-                  const y = 120 - ((pt.skor / 100) * 90);
-                  return `${acc} ${i === 0 ? 'M' : 'L'} ${x} ${y}`;
-                }, '')}
-                fill="none"
-                stroke="#0d9488"
-                strokeWidth="3.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            )}
+              {/* Garis Utama */}
+              {dataTrenSkor.length > 1 && (
+                <path
+                  d={dataTrenSkor.reduce((acc, pt, i) => {
+                    const x = 40 + (i * (420 / (dataTrenSkor.length - 1)));
+                    const y = 120 - ((pt.skor / 100) * 90);
+                    return `${acc} ${i === 0 ? 'M' : 'L'} ${x} ${y}`;
+                  }, '')}
+                  fill="none"
+                  stroke="#0d9488"
+                  strokeWidth="3.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              )}
 
-            {/* Titik Lingkaran & Label Angka */}
-            {dataTrenSkor.map((pt, i) => {
-              const x = 40 + (i * (420 / Math.max(1, dataTrenSkor.length - 1)));
-              const y = 120 - ((pt.skor / 100) * 90);
-              return (
-                <g key={i}>
-                  <circle cx={x} cy={y} r="5.5" fill="#ffffff" stroke="#0d9488" strokeWidth="3" />
-                  <text x={x} y={y - 12} textAnchor="middle" fontSize="11" fontWeight="800" fill="#0f766e">
-                    {pt.skor}%
-                  </text>
-                  <text x={x} y="138" textAnchor="middle" fontSize="10" fill="#64748b">
-                    {pt.label}
-                  </text>
-                </g>
-              );
-            })}
-          </svg>
-        </div>
+              {/* Titik Lingkaran & Label Angka */}
+              {dataTrenSkor.map((pt, i) => {
+                const x = dataTrenSkor.length === 1 ? 250 : 40 + (i * (420 / Math.max(1, dataTrenSkor.length - 1)));
+                const y = 120 - ((pt.skor / 100) * 90);
+                return (
+                  <g key={i}>
+                    <circle cx={x} cy={y} r="5.5" fill="#ffffff" stroke="#0d9488" strokeWidth="3" />
+                    <text x={x} y={y - 12} textAnchor="middle" fontSize="11" fontWeight="800" fill="#0f766e">
+                      {pt.skor}%
+                    </text>
+                    <text x={x} y="138" textAnchor="middle" fontSize="10" fill="#64748b">
+                      {pt.label}
+                    </text>
+                  </g>
+                );
+              })}
+            </svg>
+          </div>
+        )}
       </div>
 
       {/* ============================================================ */}
@@ -443,15 +572,34 @@ export default function StatistikBelajarPage() {
         <div style={S.listSubtesGrid}>
           {daftarSubtes.map((st) => (
             <div key={st.kode} style={S.cardSubtesItem}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
-                <div>
-                  <span style={S.badgeKodeSubtes}>{st.kode}</span>
-                  <h4 style={S.namaSubtesTeks}>{st.nama}</h4>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <div style={{
+                    width: 38,
+                    height: 38,
+                    borderRadius: 10,
+                    background: st.bgLight,
+                    border: `1.5px solid ${st.borderWarna}`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: 18,
+                  }}>
+                    {st.emoji}
+                  </div>
+                  <div>
+                    <span style={{ fontSize: 10.5, fontWeight: 800, color: st.badgeWarna }}>{st.rumpun} • {st.singkatan}</span>
+                    <h4 style={S.namaSubtesTeks}>{st.nama}</h4>
+                  </div>
                 </div>
                 <div style={{ textAlign: 'right' }}>
-                  <div style={S.skorSubtesTeks}>{st.akurasi}%</div>
-                  <span style={{ fontSize: 10.5, fontWeight: 700, color: '#16a34a' }}>
-                    {st.trend}
+                  <div style={{ ...S.skorSubtesTeks, color: st.badgeWarna }}>{st.akurasi}%</div>
+                  <span style={{
+                    fontSize: 10.5,
+                    fontWeight: 800,
+                    color: st.levelPenguasaan === 'Tinggi' ? '#16a34a' : st.levelPenguasaan === 'Sedang' ? '#d97706' : '#64748b',
+                  }}>
+                    {st.levelPenguasaan}
                   </span>
                 </div>
               </div>
@@ -461,21 +609,27 @@ export default function StatistikBelajarPage() {
                 <div
                   style={{
                     ...S.progressSubtesFill,
-                    width: `${Math.round((st.selesai / st.pool) * 100)}%`,
+                    background: st.badgeWarna,
+                    width: `${Math.min(100, Math.round((st.selesai / Math.max(1, st.pool)) * 100))}%`,
                   }}
                 />
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 10 }}>
-                <span style={{ fontSize: 11, color: '#64748b' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 12 }}>
+                <span style={{ fontSize: 11.5, color: '#64748b', fontWeight: 600 }}>
                   {st.selesai} dari {st.pool} butir terlatih
                 </span>
                 <button
                   type="button"
                   onClick={() => navigate('/siswa/roadmap')}
-                  style={S.btnLatihSubtesAksi}
+                  style={{
+                    ...S.btnLatihSubtesAksi,
+                    color: st.badgeWarna,
+                    borderColor: st.borderWarna,
+                    background: st.bgLight,
+                  }}
                 >
-                  Latih Subtes ⚡
+                  Latih di Menu Jalur ⚡
                 </button>
               </div>
             </div>
