@@ -303,7 +303,9 @@ export function isButirLayakTampil(soal) {
 export function cleanStatementText(text) {
   if (!text) return '';
   let s = bersihkanHtmlDanArtefak(String(text).trim());
-  s = s.replace(/^\s*([0-9]+|[a-eA-E])[.)\s-]+\s*/, '');
+  // Hapus nomor urut di awal, misal "1.", "1)", "1 -", "A.", "A)", "B -", atau "2 Luas" (tetapi jangan memotong kata utuh)
+  s = s.replace(/^\s*(?:[0-9]+[.)\s-]|[a-eA-E][.):-])\s*/, '');
+  // Perbaiki kata bersambung akibat pemisahan suku kata pemindai
   s = s.replace(/(\b[a-zA-Z]+)-\s+([a-zA-Z]+\b)/g, '$1$2');
   return s.trim();
 }
@@ -333,41 +335,58 @@ export function uraiKunciBenarSalah(rawKunci, pembahasan, jumlahBaris = 0) {
   }
   return tokens;
 }
+
 export function normalisasiButir(item, fallbackSubtes = 'PU', fallbackTopik = 'Umum', idx = 1) {
   if (!item) return null;
   const subtesKasar = item.subtesKode || item.mataPelajaran || item.mapel || item.subtes || fallbackSubtes;
   const kodeSubtes = PETA_KODE_SUBTES[subtesKasar] || fallbackSubtes;
   const topik = item.bab || item.materi || item.subkategori || item.topik || fallbackTopik || 'Latihan Subtes';
-  const teksPertanyaan = cleanStatementText(item.teksSoal || item.teks_soal || item.soal || item.pertanyaan || '');
+  const teksPertanyaan = cleanStatementText(item.teksSoal || item.teks_soal || item.soal || item.pertanyaan || item.question || '');
   const pembahasan = bersihkanHtmlDanArtefak(item.pembahasan || 'Pembahasan terperinci mengacu pada kaidah dan konsep inti materi.');
+
+  // Ekstraksi wacana / stimulus / bacaan komprehensif dari segala dialek penyimpanan
+  let teksWacana = '';
+  if (typeof item.wacana === 'string') teksWacana = item.wacana.trim();
+  else if (item.wacana?.teks) teksWacana = String(item.wacana.teks).trim();
+
+  if (!teksWacana) {
+    if (typeof item.bacaan === 'string') teksWacana = item.bacaan.trim();
+    else if (item.bacaan?.teks) teksWacana = String(item.bacaan.teks).trim();
+  }
+  if (!teksWacana) {
+    if (typeof item.stimulus === 'string') teksWacana = item.stimulus.trim();
+    else if (item.stimulus?.teks) teksWacana = String(item.stimulus.teks).trim();
+  }
+  if (!teksWacana && typeof item.cerita === 'string') teksWacana = item.cerita.trim();
+  if (!teksWacana && typeof item.deskripsi === 'string') teksWacana = item.deskripsi.trim();
 
   // 1. Ekstraksi opsi jawaban mentah
   let opsiArray = [];
   if (Array.isArray(item.opsiJawaban) && item.opsiJawaban.length > 0) {
     opsiArray = item.opsiJawaban.map((o, oIdx) => ({
       label: String(o.key || o.label || ['A', 'B', 'C', 'D', 'E'][oIdx] || 'A').toUpperCase(),
-      text: bersihkanHtmlDanArtefak(String(o.teks || o.text || '')),
+      text: cleanStatementText(String(o.teks || o.text || '')),
     }));
   } else if (Array.isArray(item.pilihan) && item.pilihan.length > 0) {
     opsiArray = item.pilihan.map((o, oIdx) => {
       if (typeof o === 'string') {
         const huruf = ['A', 'B', 'C', 'D', 'E'][oIdx] || 'A';
-        return { label: huruf, text: o };
+        return { label: huruf, text: cleanStatementText(o) };
       }
       return {
         label: String(o.key || o.label || ['A', 'B', 'C', 'D', 'E'][oIdx] || 'A').toUpperCase(),
-        text: bersihkanHtmlDanArtefak(String(o.teks || o.text || '')),
+        text: cleanStatementText(String(o.teks || o.text || '')),
       };
     });
   } else if (item.opsi && typeof item.opsi === 'object' && !Array.isArray(item.opsi)) {
     opsiArray = Object.entries(item.opsi).map(([k, v]) => ({
       label: String(k).toUpperCase(),
-      text: String(v || ''),
+      text: cleanStatementText(String(v || '')),
     })).sort((a, b) => a.label.localeCompare(b.label));
   } else if (Array.isArray(item.opsi) && item.opsi.length > 0) {
     opsiArray = item.opsi.map((o, oIdx) => ({
       label: String(o.label || o.key || ['A', 'B', 'C', 'D', 'E'][oIdx] || 'A').toUpperCase(),
-      text: String(o.text || o.teks || ''),
+      text: cleanStatementText(String(o.text || o.teks || '')),
     }));
   }
 
@@ -401,6 +420,38 @@ export function normalisasiButir(item, fallbackSubtes = 'PU', fallbackTopik = 'U
     (Array.isArray(item.kunciJawaban) && item.kunciJawaban.length > 1) ||
     /^[A-E]\s*[,;\s]\s*[A-E]/i.test(rawKunci)
   );
+
+  // Rekonstruksi teks pertanyaan yang terpotong / hilang dari hasil scan/impor OCR
+  let finalSoal = teksPertanyaan;
+  const lowerSoal = finalSoal.toLowerCase().trim();
+  if (
+    lowerSoal === 'setiap pernyataan berikut!' ||
+    lowerSoal === 'setiap pernyataan berikut:' ||
+    lowerSoal === 'setiap pernyataan berikut' ||
+    lowerSoal.startsWith('setiap pernyataan') ||
+    lowerSoal.startsWith('pada setiap pernyataan') ||
+    lowerSoal.startsWith('untuk setiap pernyataan') ||
+    lowerSoal.startsWith('pernyataan berikut')
+  ) {
+    if (isBenarSalahFormat) {
+      finalSoal = `Berdasarkan informasi atau stimulus gambar berikut, tentukan Benar atau Salah pada ${finalSoal.replace(/^[!,.\s:]+/, '')}`;
+      if (!finalSoal.endsWith(':') && !finalSoal.endsWith('!') && !finalSoal.endsWith('.')) {
+        finalSoal += '!';
+      }
+    } else if (isPgKompleksFormat) {
+      finalSoal = `Berdasarkan informasi atau stimulus gambar berikut, tentukan semua pernyataan yang benar untuk ${finalSoal.replace(/^[!,.\s:]+/, '')}`;
+    } else {
+      finalSoal = `Berdasarkan informasi atau stimulus gambar berikut, perhatikan ${finalSoal.replace(/^[!,.\s:]+/, '')}`;
+    }
+  } else if (!finalSoal || finalSoal.length < 15) {
+    if (isBenarSalahFormat) {
+      finalSoal = 'Berdasarkan stimulus atau informasi pada gambar di atas, tentukan Benar atau Salah untuk setiap pernyataan berikut!';
+    } else if (isPgKompleksFormat) {
+      finalSoal = 'Berdasarkan stimulus atau informasi pada gambar di atas, pilihlah semua pernyataan yang bernilai benar!';
+    } else {
+      finalSoal = 'Berdasarkan stimulus atau informasi pada gambar di atas, pilihlah satu jawaban yang paling tepat!';
+    }
+  }
 
   let pernyataan = [];
   let cleanKunci = 'A';
@@ -470,8 +521,8 @@ export function normalisasiButir(item, fallbackSubtes = 'PU', fallbackTopik = 'U
     babNomor: item.babNomor || null,
     namaBab: item.namaBab || item.bab || fallbackTopik,
     tipeSoal,
-    soal: teksPertanyaan,
-    wacana: item.wacana || item.stimulus || null,
+    soal: finalSoal,
+    wacana: teksWacana || null,
     opsi: opsiArray,
     pernyataan,
     kolomKategori: ['Benar', 'Salah'],
@@ -511,7 +562,16 @@ export function tentukanBabDanTopik(subtesKode, item, jenjang = 'SMP') {
     ) {
       return { babNomor: 3, namaBab: 'Bab 3 · Geometri & Pengukuran (Sudut, Pythagoras, Ruang & Transformasi)', ringkas: 'Bab 3: Geometri & Ruang' };
     }
-    if (teks.includes('aljabar') || teks.includes('persamaan') || teks.includes('fungsi') || teks.includes('pola') || teks.includes('barisan') || teks.includes('deret') || teks.includes('spldv') || teks.includes('kuadrat') || teks.includes('aritmetika sosial') || teks.includes('diskon') || teks.includes('bruto') || teks.includes('tara') || teks.includes('netto') || teks.includes('pertidaksamaan') || teks.includes('skala') || teks.includes('perbandingan')) {
+    if (
+      teks.includes('aljabar') || teks.includes('persamaan') || teks.includes('fungsi') || teks.includes('pola') ||
+      teks.includes('barisan') || teks.includes('deret') || teks.includes('spldv') || teks.includes('kuadrat') ||
+      teks.includes('aritmetika sosial') || teks.includes('diskon') || teks.includes('bruto') || teks.includes('tara') ||
+      teks.includes('netto') || teks.includes('pertidaksamaan') || teks.includes('skala') || teks.includes('perbandingan') ||
+      teks.includes('mesin') || teks.includes('laundry') || teks.includes('harga') || teks.includes('uang') ||
+      teks.includes('ongkos') || teks.includes('tarif') || teks.includes('biaya') || teks.includes('berbalik nilai') ||
+      teks.includes('senilai') || teks.includes('pekerja') || teks.includes('variabel') || teks.includes('linear') ||
+      teks.includes('substitusi') || teks.includes('eliminasi')
+    ) {
       return { babNomor: 2, namaBab: 'Bab 2 · Aljabar (SPLDV, Persamaan Kuadrat, Fungsi & Pola Bilangan)', ringkas: 'Bab 2: Aljabar & Persamaan' };
     }
     return { babNomor: 1, namaBab: 'Bab 1 · Bilangan (Operasi, Pecahan, Pangkat & Notasi Ilmiah)', ringkas: 'Bab 1: Bilangan & Bentuk Akar' };

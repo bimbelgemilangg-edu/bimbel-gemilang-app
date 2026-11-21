@@ -430,54 +430,106 @@ export default function AmbisPracticePlayer({
                   const isBenarDipilih = pilihanSiswa === 'benar';
                   const isSalahDipilih = pilihanSiswa === 'salah';
 
+                  // Tombol Benar / Salah memiliki kontras border tajam yang sama persis (tidak buram/faint)
+                  // agar siswa tidak bisa menduga jawaban dari perbedaan visual tombol.
                   let styleBtnBenar = {
-                    padding: '8px 14px',
+                    padding: '8px 16px',
                     borderRadius: 8,
-                    fontSize: 12,
+                    fontSize: 12.5,
                     fontWeight: 700,
-                    border: '1.5px solid #cbd5e1',
+                    border: '1.5px solid #94a3b8',
                     background: '#ffffff',
-                    color: '#475569',
+                    color: '#0f172a',
                     cursor: sudahDiperiksa ? 'default' : 'pointer',
                     display: 'inline-flex',
                     alignItems: 'center',
-                    gap: 4,
+                    justifyContent: 'center',
+                    minWidth: 78,
+                    gap: 5,
+                    outline: 'none',
+                    boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
                     transition: 'all 0.15s ease',
                   };
 
                   let styleBtnSalah = {
-                    padding: '8px 14px',
+                    padding: '8px 16px',
                     borderRadius: 8,
-                    fontSize: 12,
+                    fontSize: 12.5,
                     fontWeight: 700,
-                    border: '1.5px solid #cbd5e1',
+                    border: '1.5px solid #94a3b8',
                     background: '#ffffff',
-                    color: '#475569',
+                    color: '#0f172a',
                     cursor: sudahDiperiksa ? 'default' : 'pointer',
                     display: 'inline-flex',
                     alignItems: 'center',
-                    gap: 4,
+                    justifyContent: 'center',
+                    minWidth: 78,
+                    gap: 5,
+                    outline: 'none',
+                    boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
                     transition: 'all 0.15s ease',
                   };
 
                   if (!sudahDiperiksa) {
+                    // SEBELUM DIPERIKSA: Gunakan warna seleksi netral seragam (Teal Gemilang #0d9488)
+                    // TIDAK BOLEH memberi warna hijau/oranye sebelum periksa agar tidak membocorkan kunci/menyesatkan siswa!
                     if (isBenarDipilih) {
-                      styleBtnBenar = { ...styleBtnBenar, borderColor: '#10b981', background: '#ecfdf5', color: '#065f46', boxShadow: '0 0 0 1px #10b981' };
+                      styleBtnBenar = {
+                        ...styleBtnBenar,
+                        borderColor: '#0d9488',
+                        background: '#f0fdfa',
+                        color: '#0f766e',
+                        fontWeight: 800,
+                        boxShadow: '0 0 0 1.5px #0d9488, 0 1px 4px rgba(13, 148, 136, 0.15)',
+                      };
                     }
                     if (isSalahDipilih) {
-                      styleBtnSalah = { ...styleBtnSalah, borderColor: '#ea580c', background: '#fff7ed', color: '#9a3412', boxShadow: '0 0 0 1px #ea580c' };
+                      styleBtnSalah = {
+                        ...styleBtnSalah,
+                        borderColor: '#0d9488',
+                        background: '#f0fdfa',
+                        color: '#0f766e',
+                        fontWeight: 800,
+                        boxShadow: '0 0 0 1.5px #0d9488, 0 1px 4px rgba(13, 148, 136, 0.15)',
+                      };
                     }
                   } else {
-                    // Review mode: Beri feedback warna per baris
+                    // SETELAH DIPERIKSA: Evaluasi jawaban secara adil & objektif
                     if (rowKunci === 'benar') {
-                      styleBtnBenar = { ...styleBtnBenar, borderColor: '#10b981', background: '#d1fae5', color: '#065f46', fontWeight: 800 };
+                      styleBtnBenar = {
+                        ...styleBtnBenar,
+                        borderColor: '#10b981',
+                        background: '#d1fae5',
+                        color: '#065f46',
+                        fontWeight: 800,
+                        boxShadow: '0 0 0 1.5px #10b981',
+                      };
                       if (isSalahDipilih) {
-                        styleBtnSalah = { ...styleBtnSalah, borderColor: '#ef4444', background: '#fee2e2', color: '#991b1b', textDecoration: 'line-through' };
+                        styleBtnSalah = {
+                          ...styleBtnSalah,
+                          borderColor: '#ef4444',
+                          background: '#fee2e2',
+                          color: '#991b1b',
+                          textDecoration: 'line-through',
+                        };
                       }
                     } else {
-                      styleBtnSalah = { ...styleBtnSalah, borderColor: '#10b981', background: '#d1fae5', color: '#065f46', fontWeight: 800 };
+                      styleBtnSalah = {
+                        ...styleBtnSalah,
+                        borderColor: '#10b981',
+                        background: '#d1fae5',
+                        color: '#065f46',
+                        fontWeight: 800,
+                        boxShadow: '0 0 0 1.5px #10b981',
+                      };
                       if (isBenarDipilih) {
-                        styleBtnBenar = { ...styleBtnBenar, borderColor: '#ef4444', background: '#fee2e2', color: '#991b1b', textDecoration: 'line-through' };
+                        styleBtnBenar = {
+                          ...styleBtnBenar,
+                          borderColor: '#ef4444',
+                          background: '#fee2e2',
+                          color: '#991b1b',
+                          textDecoration: 'line-through',
+                        };
                       }
                     }
                   }
@@ -521,7 +573,7 @@ export default function AmbisPracticePlayer({
           /* 2. TIPE SOAL: PILIHAN GANDA KOMPLEKS (MULTI-SELECT CHECKBOX)      */
           /* ================================================================ */
           <div style={{ marginBottom: 12 }}>
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 10px', background: '#f5f3ff', border: '1px solid #ddd6fe', borderRadius: 999, fontSize: 12, fontWeight: 700, color: '#6d28d9', marginBottom: 12 }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '5px 12px', background: '#f0fdfa', border: '1px solid #99f6e4', borderRadius: 999, fontSize: 12, fontWeight: 700, color: '#0f766e', marginBottom: 12 }}>
               <span>☑️ Pilihan Ganda Kompleks (Pilih semua jawaban yang benar, bisa lebih dari satu)</span>
             </div>
             <div style={st.listOpsi}>
@@ -534,34 +586,46 @@ export default function AmbisPracticePlayer({
                 let gayaKotak = {
                   width: 28,
                   height: 28,
-                  borderRadius: 6,
-                  border: '2px solid #cbd5e1',
+                  borderRadius: 7,
+                  border: '2px solid #94a3b8',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   fontSize: 13,
                   fontWeight: 800,
                   flexShrink: 0,
-                  background: '#ffffff',
-                  color: '#475569',
+                  background: '#f8fafc',
+                  color: '#1e293b',
+                  outline: 'none',
                   transition: 'all 0.15s ease',
                 };
 
                 if (!sudahDiperiksa) {
+                  // Warna seleksi Teal Gemilang konsisten di semua jenis soal
                   if (isDipilih) {
-                    gayaTombol = { ...gayaTombol, borderColor: '#7c3aed', background: '#f5f3ff' };
-                    gayaKotak = { ...gayaKotak, borderColor: '#7c3aed', background: '#7c3aed', color: '#ffffff' };
+                    gayaTombol = {
+                      ...gayaTombol,
+                      borderColor: '#0d9488',
+                      background: '#f0fdfa',
+                      boxShadow: '0 0 0 1.5px #0d9488, 0 1px 4px rgba(13, 148, 136, 0.15)',
+                    };
+                    gayaKotak = {
+                      ...gayaKotak,
+                      borderColor: '#0d9488',
+                      background: '#0d9488',
+                      color: '#ffffff',
+                    };
                   }
                 } else {
                   if (isKunci && isDipilih) {
-                    gayaTombol = { ...gayaTombol, borderColor: '#10b981', background: '#ecfdf5' };
+                    gayaTombol = { ...gayaTombol, borderColor: '#10b981', background: '#ecfdf5', boxShadow: '0 0 0 1.5px #10b981' };
                     gayaKotak = { ...gayaKotak, borderColor: '#10b981', background: '#10b981', color: '#ffffff' };
                   } else if (!isKunci && isDipilih) {
                     gayaTombol = { ...gayaTombol, borderColor: '#ef4444', background: '#fef2f2' };
                     gayaKotak = { ...gayaKotak, borderColor: '#ef4444', background: '#ef4444', color: '#ffffff' };
                   } else if (isKunci && !isDipilih) {
                     gayaTombol = { ...gayaTombol, borderColor: '#10b981', background: '#ffffff', borderStyle: 'dashed' };
-                    gayaKotak = { ...gayaKotak, borderColor: '#10b981', color: '#10b981' };
+                    gayaKotak = { ...gayaKotak, borderColor: '#10b981', color: '#10b981', background: '#ecfdf5' };
                   }
                 }
 
@@ -601,17 +665,28 @@ export default function AmbisPracticePlayer({
               let gayaHuruf = { ...st.hurufOpsi };
 
               if (!sudahDiperiksa) {
+                // Warna seleksi Teal Gemilang konsisten di semua jenis soal
                 if (isDipilih) {
-                  gayaTombol = { ...gayaTombol, borderColor: '#0d9488', background: '#f0fdfa' };
-                  gayaHuruf = { ...gayaHuruf, background: '#0d9488', color: '#ffffff' };
+                  gayaTombol = {
+                    ...gayaTombol,
+                    borderColor: '#0d9488',
+                    background: '#f0fdfa',
+                    boxShadow: '0 0 0 1.5px #0d9488, 0 1px 4px rgba(13, 148, 136, 0.15)',
+                  };
+                  gayaHuruf = {
+                    ...gayaHuruf,
+                    borderColor: '#0d9488',
+                    background: '#0d9488',
+                    color: '#ffffff',
+                  };
                 }
               } else {
                 if (isKunci) {
-                  gayaTombol = { ...gayaTombol, borderColor: '#10b981', background: '#ecfdf5' };
-                  gayaHuruf = { ...gayaHuruf, background: '#10b981', color: '#ffffff' };
+                  gayaTombol = { ...gayaTombol, borderColor: '#10b981', background: '#ecfdf5', boxShadow: '0 0 0 1.5px #10b981' };
+                  gayaHuruf = { ...gayaHuruf, borderColor: '#10b981', background: '#10b981', color: '#ffffff' };
                 } else if (isDipilih && !isKunci) {
                   gayaTombol = { ...gayaTombol, borderColor: '#ef4444', background: '#fef2f2' };
-                  gayaHuruf = { ...gayaHuruf, background: '#ef4444', color: '#ffffff' };
+                  gayaHuruf = { ...gayaHuruf, borderColor: '#ef4444', background: '#ef4444', color: '#ffffff' };
                 }
               }
 
@@ -802,24 +877,29 @@ const st = {
     width: '100%',
     padding: '12px 14px',
     background: '#ffffff',
-    border: '1.5px solid #e2e8f0',
+    border: '1.5px solid #cbd5e1',
     borderRadius: 12,
     textAlign: 'left',
     cursor: 'pointer',
+    outline: 'none',
+    boxShadow: '0 1px 2px rgba(0, 0, 0, 0.03)',
     transition: 'all 0.15s ease',
   },
   hurufOpsi: {
     width: 28,
     height: 28,
     borderRadius: 8,
-    background: '#f1f5f9',
-    color: '#475569',
+    background: '#f8fafc',
+    border: '1.5px solid #94a3b8',
+    color: '#0f172a',
     fontSize: 13,
     fontWeight: 800,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     flexShrink: 0,
+    outline: 'none',
+    transition: 'all 0.15s ease',
   },
   teksOpsi: {
     fontSize: 14,
