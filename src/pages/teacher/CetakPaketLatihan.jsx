@@ -36,7 +36,7 @@
 
 import React, { useState, useEffect, useLayoutEffect, useCallback, useMemo, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { collection, query, where, getDocs, addDoc, deleteDoc, doc } from 'firebase/firestore';
 import 'katex/dist/katex.min.css';
 import katexCssInline from 'katex/dist/katex.min.css?inline';
 import { db } from '../../firebase';
@@ -220,11 +220,120 @@ export default function CetakPaketLatihan() {
   const refUkurLebarKunci = useRef(null);
   const refUkurKunci = useRef(null);
 
+  // State untuk Fitur Terbitkan Paket ke Kelas Pendampingan Siswa
+  const [daftarTerbitan, setDaftarTerbitan] = useState([]);
+  const [modalTerbitkanTerbuka, setModalTerbitkanTerbuka] = useState(false);
+  const [judulTerbitInput, setJudulTerbitInput] = useState('');
+  const [catatanTerbitInput, setCatatanTerbitInput] = useState('');
+  const [sedangMenerbitkan, setSedangMenerbitkan] = useState(false);
+
+  // Muat daftar paket terbitan kelas pendampingan
+  const muatTerbitan = useCallback(async () => {
+    let list = [];
+    try {
+      const snap = await getDocs(collection(db, 'kelas_pendampingan_terbitan'));
+      snap.forEach((d) => list.push({ docId: d.id, ...d.data() }));
+    } catch (e) {
+      console.warn('Muat firestore terbitan fallback ke local:', e);
+    }
+    if (list.length === 0) {
+      try {
+        list = JSON.parse(localStorage.getItem('gemilang_paket_pendampingan_terbitan') || '[]');
+      } catch (err) {
+        list = [];
+      }
+    }
+    setDaftarTerbitan(list);
+  }, []);
+
+  useEffect(() => {
+    muatTerbitan();
+  }, [muatTerbitan]);
+
+  const handleBukaModalTerbitkan = () => {
+    const judulOtomatis = `${jenjangAktif || 'TKA'} ${mapelAktif || 'Matematika'} - ${babAktif || 'Latihan Pekanan'}`;
+    setJudulTerbitInput(judulOtomatis);
+    setCatatanTerbitInput('Catat nomor & langkah rumus di Buku Besar fisikmu! Soal yang belum tuntas akan dibedah bersama Tentor di kelas.');
+    setModalTerbitkanTerbuka(true);
+  };
+
+  const handleTerbitkanKeKelas = async () => {
+    if (siap.length === 0) return;
+    setSedangMenerbitkan(true);
+    const idt = bacaIdentitasGuru();
+    const judulFinal = judulTerbitInput.trim() || `${jenjangAktif || 'TKA'} ${mapelAktif || 'Matematika'} - ${babAktif || 'Latihan Pekanan'}`;
+    const paketBaru = {
+      id: `pendampingan_${Date.now()}`,
+      judul: judulFinal,
+      judulPaket: judulFinal,
+      jenjang: jenjangAktif || 'SMP',
+      mapel: mapelAktif || 'Matematika',
+      subtes: mapelAktif || 'Matematika',
+      bab: babAktif || 'Materi Inti',
+      catatanTentor: catatanTerbitInput || 'Catat nomor dan langkah rumus di Buku Besar! Soal belum tuntas akan dibahas bersama di kelas.',
+      tentorNama: idt.guruNama || 'Tentor Gemilang',
+      tentorId: idt.guruId || '',
+      daftarSoal: siap.map((s, idx) => ({
+        ...s,
+        kodeSoal: s.kodeSoal || s.kodeUnik || `#${(mapelAktif || 'TKA').slice(0, 3).toUpperCase()}-${String(idx + 1).padStart(2, '0')}`,
+      })),
+      soalList: siap.map((s, idx) => ({
+        ...s,
+        kodeSoal: s.kodeSoal || s.kodeUnik || `#${(mapelAktif || 'TKA').slice(0, 3).toUpperCase()}-${String(idx + 1).padStart(2, '0')}`,
+      })),
+      jumlahSoal: siap.length,
+      totalSoal: siap.length,
+      tanggalTerbit: new Date().toISOString(),
+      status: 'aktif',
+    };
+
+    try {
+      await addDoc(collection(db, 'kelas_pendampingan_terbitan'), paketBaru);
+    } catch (e) {
+      console.warn('Simpan Firestore terbitan gagal, gunakan localStorage:', e);
+    }
+
+    try {
+      const lokalLama = JSON.parse(localStorage.getItem('gemilang_paket_pendampingan_terbitan') || '[]');
+      const lokalBaru = [paketBaru, ...lokalLama];
+      localStorage.setItem('gemilang_paket_pendampingan_terbitan', JSON.stringify(lokalBaru));
+      setDaftarTerbitan(lokalBaru);
+    } catch (err) {
+      console.warn('Simpan localStorage terbitan error:', err);
+    }
+
+    setSedangMenerbitkan(false);
+    setModalTerbitkanTerbuka(false);
+    alert(`✅ Berhasil Menerbitkan Paket!\n\nPaket "${judulFinal}" (${siap.length} butir) kini resmi aktif di akun siswa Kelas Pendampingan.`);
+  };
+
+  const handleHapusTerbitan = async (id) => {
+    if (!window.confirm('Tarik paket latihan ini dari akun siswa?')) return;
+    try {
+      const q = query(collection(db, 'kelas_pendampingan_terbitan'), where('id', '==', id));
+      const snap = await getDocs(q);
+      snap.forEach(async (d) => {
+        await deleteDoc(d.ref);
+      });
+    } catch (e) {
+      console.warn('Hapus firestore terbitan error:', e);
+    }
+    try {
+      const lokalLama = JSON.parse(localStorage.getItem('gemilang_paket_pendampingan_terbitan') || '[]');
+      const lokalBaru = lokalLama.filter((p) => p.id !== id);
+      localStorage.setItem('gemilang_paket_pendampingan_terbitan', JSON.stringify(lokalBaru));
+      setDaftarTerbitan(lokalBaru);
+    } catch (err) {
+      console.warn('Hapus localStorage error:', err);
+    }
+  };
+
   const versiSegar = useSegarSaatTerlihat();
   // 🔥 BARU: bisa dibuka dengan bab sudah terpilih dari Perpustakaan
   // (/guru/cetak-latihan?jenjang=..&mapel=..&bab=..), supaya alur
   // "cari materi -> cetak" tidak meminta tentor memilih ulang dari nol.
   const [params] = useSearchParams();
+  const isJalurPendampingan = params.get('jalur') === 'pendampingan' || (typeof window !== 'undefined' && window.location.pathname.includes('/guru/pendampingan'));
 
   const muatSemua = useCallback(async (paksa = false) => {
     const kini = Date.now();
@@ -539,14 +648,16 @@ export default function CetakPaketLatihan() {
     <div style={{ maxWidth: 960, margin: '0 auto' }}>
       {/* gaya naskah dipakai juga oleh lapisan ukur tersembunyi di bawah */}
       <style>{GAYA_NASKAH}</style>
-      <h2 style={{ margin: '4px 0 4px', fontSize: 18 }}>🖨️ Cetak Paket Latihan</h2>
+      <h2 style={{ margin: '4px 0 4px', fontSize: 18 }}>
+        {isJalurPendampingan ? '📋 Manajemen Soal & Kelas Pendampingan (TKA & UTBK)' : '🖨️ Cetak Paket Latihan'}
+      </h2>
       <p style={{ fontSize: 12, color: '#64748b', margin: '0 0 12px' }}>
-        Baca dulu isi soal lengkap di daftar bawah, centang yang mau dicetak, lalu
-        lihat pratinjau susunan naskah sebelum mencetak. Sistem yang menata kolom,
-        ukuran gambar, dan nomor halaman; Bapak/Ibu tinggal memilih ukuran kertas.
+        {isJalurPendampingan
+          ? 'Pilih butir soal terbaik dari bank soal resmi, terbitkan ke akun siswa binaan untuk latihan di Buku Besar, atau cetak Lembar Gunting & Kunci Pembahasan.'
+          : 'Baca dulu isi soal lengkap di daftar bawah, centang yang mau dicetak, lalu lihat pratinjau susunan naskah sebelum mencetak.'}
       </p>
 
-      {params.get('jalur') === 'pendampingan' && (
+      {isJalurPendampingan && (
         <div style={{
           background: '#f0fdfa',
           border: '1.5px solid #5eead4',
@@ -883,6 +994,13 @@ export default function CetakPaketLatihan() {
                 Pratinjau discaling {Math.round(skala * 100)}% agar muat layar; ukuran cetak sesungguhnya tetap {kertas.lebarMm}×{kertas.tinggiMm} mm.
               </div>
               <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 10 }}>
+                <button
+                  style={{ ...gayaTombol('#0d9488', siap.length === 0), fontWeight: 800 }}
+                  disabled={siap.length === 0}
+                  onClick={handleBukaModalTerbitkan}
+                >
+                  🚀 TERBITKAN KE KELAS SISWA ({siap.length} SOAL)
+                </button>
                 <button style={gayaTombol('#2563eb', false)} onClick={() => cetakNaskah('siswa')}>📄 CETAK NASKAH SISWA</button>
                 <button style={gayaTombol('#b91c1c', false)} onClick={() => cetakNaskah('kunci')}>🔑 CETAK KUNCI (PEGANGAN GURU)</button>
                 <button style={gayaTombol('#15803d', false)} onClick={() => cetakLewatIframe(htmlLembarCatatan(meta, siap, { kertas: kodeKertas }), 'Lembar Catatan')}>📝 LEMBAR-CATATAN</button>
@@ -892,6 +1010,13 @@ export default function CetakPaketLatihan() {
 
           {gayaLembar === 'kotak' && (
             <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+              <button
+                style={{ ...gayaTombol('#0d9488', siap.length === 0), fontWeight: 800 }}
+                disabled={siap.length === 0}
+                onClick={handleBukaModalTerbitkan}
+              >
+                🚀 TERBITKAN KE KELAS SISWA ({siap.length} SOAL)
+              </button>
               <button style={gayaTombol('#2563eb', siap.length === 0)} disabled={siap.length === 0} onClick={() => cetakLewatIframe(htmlPaketSiswa(meta, siap, { kertas: kodeKertas }), 'Paket Siswa')}>✂️ PAKET-SISWA</button>
               <button style={gayaTombol('#b91c1c', siap.length === 0)} disabled={siap.length === 0} onClick={() => cetakLewatIframe(htmlKunciTentor(meta, siap, { kertas: kodeKertas }), 'Kunci Tentor')}>🔑 KUNCI-TENTOR</button>
               <button style={gayaTombol('#15803d', siap.length === 0)} disabled={siap.length === 0} onClick={() => cetakLewatIframe(htmlLembarCatatan(meta, siap, { kertas: kodeKertas }), 'Lembar Catatan')}>📝 LEMBAR-CATATAN</button>
@@ -909,6 +1034,269 @@ export default function CetakPaketLatihan() {
       )}
 
       </div>
+      )}
+
+      {/* 📋 SECTION: DAFTAR PAKET SOAL TERBITAN KELAS PENDAMPINGAN */}
+      <div style={{
+        marginTop: 32,
+        background: '#ffffff',
+        border: '1.5px solid #cbd5e1',
+        borderRadius: 16,
+        padding: '22px 24px',
+        boxShadow: '0 4px 14px rgba(0,0,0,0.03)',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14, flexWrap: 'wrap', gap: 10 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <span style={{ fontSize: 22 }}>🎓</span>
+            <div>
+              <h3 style={{ margin: 0, fontSize: 16, fontWeight: 800, color: '#0f172a' }}>
+                Paket Soal Terbitan Kelas Pendampingan (Aktif di Akun Siswa)
+              </h3>
+              <p style={{ margin: '2px 0 0', fontSize: 12, color: '#64748b' }}>
+                Paket latihan yang diterbitkan di sini langsung muncul di akun siswa pada menu <strong>Kelas Pendampingan → Tab Latihan Bersama Tentor</strong>.
+              </p>
+            </div>
+          </div>
+          <span style={{ fontSize: 11, fontWeight: 800, color: '#0f766e', background: '#ccfbf1', padding: '4px 10px', borderRadius: 99 }}>
+            {daftarTerbitan.length} Paket Aktif
+          </span>
+        </div>
+
+        {daftarTerbitan.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '32px 20px', background: '#f8fafc', borderRadius: 12, border: '1px dashed #cbd5e1' }}>
+            <div style={{ fontSize: 32, marginBottom: 8 }}>📦</div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: '#334155' }}>Belum Ada Paket Soal yang Diterbitkan ke Kelas</div>
+            <div style={{ fontSize: 12, color: '#64748b', marginTop: 4, maxWidth: 460, margin: '4px auto 0' }}>
+              Pilih soal dari bank soal di atas, lalu klik tombol hijau <strong>🚀 TERBITKAN KE KELAS SISWA</strong> agar siswa dapat mengerjakannya di kelas dengan Buku Besar.
+            </div>
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            {daftarTerbitan.map((pkt) => (
+              <div
+                key={pkt.id}
+                style={{
+                  background: '#f8fafc',
+                  border: '1px solid #e2e8f0',
+                  borderRadius: 12,
+                  padding: '14px 18px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  flexWrap: 'wrap',
+                  gap: 12,
+                }}
+              >
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                    <span style={{ fontSize: 10, fontWeight: 800, color: '#0f766e', background: '#ccfbf1', padding: '2px 8px', borderRadius: 99 }}>
+                      {pkt.jenjang || 'SMP'} • {pkt.mapel || 'Matematika'}
+                    </span>
+                    <span style={{ fontSize: 11, color: '#64748b' }}>
+                      {new Date(pkt.tanggalTerbit).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
+                    </span>
+                  </div>
+                  <h4 style={{ margin: '0 0 4px', fontSize: 14.5, fontWeight: 800, color: '#0f172a' }}>
+                    {pkt.judul}
+                  </h4>
+                  <div style={{ fontSize: 12, color: '#475569' }}>
+                    📑 <strong>{pkt.totalSoal || pkt.daftarSoal?.length || 0} Soal</strong> • Tentor: <strong>{pkt.tentorNama || 'Tentor Gemilang'}</strong>
+                  </div>
+                  {pkt.catatanTentor && (
+                    <div style={{ fontSize: 11.5, color: '#0d9488', marginTop: 4, fontStyle: 'italic' }}>
+                      💬 "{pkt.catatanTentor}"
+                    </div>
+                  )}
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const paketMeta = { judul: pkt.judul, mapel: pkt.mapel, subjudul: 'Lembar Kotak Siap Gunting Ramah Buku Besar' };
+                      cetakLewatIframe(htmlPaketSiswa(paketMeta, pkt.daftarSoal || [], { kertas: kodeKertas }), 'Paket Siswa');
+                    }}
+                    style={{
+                      padding: '8px 12px',
+                      borderRadius: 8,
+                      border: '1px solid #0d9488',
+                      background: '#f0fdfa',
+                      color: '#0f766e',
+                      fontSize: 12,
+                      fontWeight: 800,
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 4,
+                    }}
+                    title="Cetak lembar gunting-tempel kotak soal untuk Buku Besar siswa"
+                  >
+                    ✂️ Cetak Lembar Gunting
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const paketMeta = { judul: pkt.judul, mapel: pkt.mapel, subjudul: 'Kunci Jawaban & Pembahasan Pegangan Tentor' };
+                      cetakLewatIframe(htmlKunciTentor(paketMeta, pkt.daftarSoal || [], { kertas: kodeKertas }), 'Kunci Tentor');
+                    }}
+                    style={{
+                      padding: '8px 12px',
+                      borderRadius: 8,
+                      border: '1px solid #cbd5e1',
+                      background: '#ffffff',
+                      color: '#b91c1c',
+                      fontSize: 12,
+                      fontWeight: 800,
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 4,
+                    }}
+                    title="Cetak kunci dan pembahasan detail pegangan mengajar tentor"
+                  >
+                    🔑 Cetak Kunci Tentor
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleHapusTerbitan(pkt.id)}
+                    style={{
+                      padding: '8px 10px',
+                      borderRadius: 8,
+                      border: '1px solid #fecaca',
+                      background: '#fef2f2',
+                      color: '#b91c1c',
+                      fontSize: 12,
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                    }}
+                    title="Tarik paket ini dari akun siswa"
+                  >
+                    🗑️ Tarik
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* 🚀 MODAL TERBITKAN PAKET KE KELAS SISWA */}
+      {modalTerbitkanTerbuka && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          background: 'rgba(15, 23, 42, 0.65)',
+          backdropFilter: 'blur(3px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 9999,
+          padding: 16,
+        }}>
+          <div style={{
+            background: '#ffffff',
+            borderRadius: 18,
+            maxWidth: 500,
+            width: '100%',
+            padding: '24px 26px',
+            boxShadow: '0 20px 40px rgba(0,0,0,0.2)',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
+              <span style={{ fontSize: 24 }}>🚀</span>
+              <div>
+                <h3 style={{ margin: 0, fontSize: 17, fontWeight: 800, color: '#0f172a' }}>
+                  Terbitkan Paket ke Kelas Pendampingan
+                </h3>
+                <p style={{ margin: '2px 0 0', fontSize: 12, color: '#64748b' }}>
+                  {siap.length} butir soal terpilih akan langsung muncul di akun siswa binaan.
+                </p>
+              </div>
+            </div>
+
+            <div style={{ marginBottom: 14 }}>
+              <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#334155', marginBottom: 6 }}>
+                Judul Paket Latihan:
+              </label>
+              <input
+                type="text"
+                value={judulTerbitInput}
+                onChange={(e) => setJudulTerbitInput(e.target.value)}
+                placeholder="Contoh: TKA Matematika - Bab 1 Bilangan (Latihan Pekan 3)"
+                style={{
+                  width: '100%',
+                  padding: '10px 12px',
+                  borderRadius: 10,
+                  border: '1px solid #cbd5e1',
+                  fontSize: 13,
+                  outline: 'none',
+                  boxSizing: 'border-box',
+                }}
+              />
+            </div>
+
+            <div style={{ marginBottom: 18 }}>
+              <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#334155', marginBottom: 6 }}>
+                Pesan / Instruksi Tentor untuk Siswa:
+              </label>
+              <textarea
+                value={catatanTerbitInput}
+                onChange={(e) => setCatatanTerbitInput(e.target.value)}
+                rows={3}
+                placeholder="Tuliskan instruksi pengerjaan di Buku Besar fisik..."
+                style={{
+                  width: '100%',
+                  padding: '10px 12px',
+                  borderRadius: 10,
+                  border: '1px solid #cbd5e1',
+                  fontSize: 12.5,
+                  outline: 'none',
+                  boxSizing: 'border-box',
+                  resize: 'vertical',
+                }}
+              />
+            </div>
+
+            <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+              <button
+                type="button"
+                onClick={() => setModalTerbitkanTerbuka(false)}
+                disabled={sedangMenerbitkan}
+                style={{
+                  padding: '10px 16px',
+                  borderRadius: 10,
+                  border: '1px solid #cbd5e1',
+                  background: '#ffffff',
+                  color: '#475569',
+                  fontSize: 13,
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                }}
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                onClick={handleTerbitkanKeKelas}
+                disabled={sedangMenerbitkan || siap.length === 0}
+                style={{
+                  padding: '10px 20px',
+                  borderRadius: 10,
+                  border: 'none',
+                  background: '#0d9488',
+                  color: '#ffffff',
+                  fontSize: 13,
+                  fontWeight: 800,
+                  cursor: sedangMenerbitkan ? 'not-allowed' : 'pointer',
+                  boxShadow: '0 4px 12px rgba(13, 148, 136, 0.25)',
+                }}
+              >
+                {sedangMenerbitkan ? 'Menerbitkan...' : '🚀 Terbitkan Sekarang'}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* 🔥 LAPISAN UKUR: blok naskah dirender sembunyi-sembunyi dengan lebar

@@ -160,7 +160,7 @@ function renderPembahasanRapi(teksPembahasan) {
         const isKesimpulan = trimmed.startsWith('✅') || trimmed.startsWith('Kesimpulan') || trimmed.toLowerCase().startsWith('kunci evaluasi');
 
         // Bullet / Butir Kartu
-        const isBullet = trimmed.startsWith('•') || /^\(?\d+\)?[.)]\s+/.test(trimmed);
+        const isBullet = trimmed.startsWith('•') || /^\(?\d+\)?[.]\s+/.test(trimmed) || /^\(?\d+\)?\)\s+/.test(trimmed);
 
         if (isHeader) {
           return (
@@ -727,7 +727,9 @@ export default function AmbisPracticePlayer({
             <button
               type="button"
               onClick={() => {
-                if (typeof onSelesai === 'function') onSelesai();
+                if (typeof onSelesai === 'function') {
+                  onSelesai({ skor, totalBenar, totalSoal: totalSoalAwal, soalSalahList: daftarBelumPaham });
+                }
               }}
               style={st.btnTuntas}
             >

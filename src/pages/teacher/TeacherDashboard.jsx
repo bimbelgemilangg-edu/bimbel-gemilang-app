@@ -1227,7 +1227,7 @@ const TeacherDashboard = () => {
             </div>
             <button
               type="button"
-              onClick={() => navigate('/guru/cetak-latihan?jalur=pendampingan')}
+              onClick={() => navigate('/guru/pendampingan')}
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
@@ -1471,7 +1471,7 @@ const TeacherDashboard = () => {
           <div style={styles.quickActionsCard}>
             <h4 style={styles.quickActionsTitle}>⚡ Akses Cepat</h4>
             <div style={styles.quickActionsGrid}>
-              <button onClick={() => navigate('/guru/cetak-latihan?jalur=pendampingan')} style={styles.quickAction}>
+              <button onClick={() => navigate('/guru/pendampingan')} style={styles.quickAction}>
                 <div style={{...styles.quickIcon, background: '#ccfbf1', color: '#0f766e'}}>
                   <GraduationCap size={18} />
                 </div>

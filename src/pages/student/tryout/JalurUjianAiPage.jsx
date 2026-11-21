@@ -23,7 +23,11 @@ import {
   ChevronLeft, AlertCircle, Play, ShieldAlert, Timer, Award,
   Flame, BarChart3, HelpCircle, X, Compass, ExternalLink,
   Target, Zap, RotateCcw, ArrowRight, BookOpen, Layers, Check, Scissors,
+  GraduationCap, Download,
 } from 'lucide-react';
+import { DAFTAR_SUBTES_SMP, SEMUA_BAB_SMP } from '../../../data/tkaSmpModulData.js';
+import { DAFTAR_SUBTES_MODUL, SEMUA_BAB_MODUL } from '../../../data/ambisModulUtbkData.js';
+import RenderMath from '../../../components/RenderMath';
 import { useProfilSiswa } from '../../../utils/profilSiswa';
 import { useDataTargetKampus } from '../../../services/dataTargetKampus';
 import { saringPaketUntukSiswa } from '../../../utils/cocokkanTargetPaket';
@@ -104,6 +108,15 @@ function bangunBreakdownSubtes(unitList = []) {
   });
 }
 
+function getWeekKey(date = new Date()) {
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  const dayNum = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+  return `${d.getUTCFullYear()}-W${String(weekNo).padStart(2, '0')}`;
+}
+
 export default function JalurUjianAiPage() {
   const navigate = useNavigate();
   const profil = useProfilSiswa();
@@ -130,8 +143,30 @@ export default function JalurUjianAiPage() {
     return getSubtesLatihanList(targetJenjang?.jenjang || 'SMA');
   }, [targetJenjang]);
 
-  // Tab tampilan: 'ambis_practice' (Latihan Subtes Gaya Ambis) vs 'ekspedisi_jalur' (Peta Tahapan)
-  const [tabTampilan, setTabTampilan] = useState('ambis_practice');
+  const daftarSubtesModul = useMemo(() => {
+    return isSmp ? DAFTAR_SUBTES_SMP : DAFTAR_SUBTES_MODUL;
+  }, [isSmp]);
+
+  const semuaBabModul = useMemo(() => {
+    return isSmp ? SEMUA_BAB_SMP : SEMUA_BAB_MODUL;
+  }, [isSmp]);
+
+  // 3 Pilar Kelas Pendampingan:
+  // 'latihan_kelas' (Tugas Bersama Tentor & Buku Besar)
+  // 'modul_materi' (Modul Teori TKA/UTBK)
+  // 'ambis_practice' (Latihan Mandiri AI Kuota Mingguan)
+  const [tabTampilan, setTabTampilan] = useState('latihan_kelas');
+  const [daftarTerbitanTentor, setDaftarTerbitanTentor] = useState([]);
+  const [subtesModulTerpilih, setSubtesModulTerpilih] = useState('ALL');
+  const [subtesSilabusTerpilih, setSubtesSilabusTerpilih] = useState(() => (targetJenjang?.jenjang === 'SMP' ? 'MTK' : targetJenjang?.jenjang === 'SD' ? 'MTK' : 'PU'));
+
+  // Kuota Latihan Mandiri Mingguan (1x per pekan)
+  const weekKey = useMemo(() => getWeekKey(), []);
+  const [subtesKilatTerpilih, setSubtesKilatTerpilih] = useState(() => (targetJenjang?.jenjang === 'SMP' ? 'MTK' : targetJenjang?.jenjang === 'SD' ? 'MTK' : 'PU'));
+  const storageWeeklyKey = useMemo(() => {
+    return `gemilang_weekly_drill_${studentId || studentDocId || 'default'}_${subtesKilatTerpilih}_${weekKey}`;
+  }, [studentId, studentDocId, subtesKilatTerpilih, weekKey]);
+  const [misiMingguanData, setMisiMingguanData] = useState(null);
 
   const [loading, setLoading] = useState(true);
   const [paketOtomatisDb, setPaketOtomatisDb] = useState([]);
@@ -143,10 +178,12 @@ export default function JalurUjianAiPage() {
   const [pesanError, setPesanError] = useState('');
 
   // State untuk AmbisPTN Practice
-  const [subtesKilatTerpilih, setSubtesKilatTerpilih] = useState(() => (targetJenjang?.jenjang === 'SMP' ? 'MTK' : targetJenjang?.jenjang === 'SD' ? 'MTK' : 'PU'));
   const [modeLatihan, setModeLatihan] = useState('Active Recall'); // 'Active Recall' | 'Basic'
   const [subtesDetailModal, setSubtesDetailModal] = useState(null); // Subtes yang sedang dibuka rincian paketnya
   const [sesiLatihanAktif, setSesiLatihanAktif] = useState(null); // Sesi player pengerjaan aktif
+
+  // State update counter latihan siswa
+  const [refreshLatihanTick, setRefreshLatihanTick] = useState(0);
 
   // Pastikan subtesKilatTerpilih sinkron dengan daftar subtes jenjang aktif
   useEffect(() => {
@@ -157,8 +194,46 @@ export default function JalurUjianAiPage() {
     }
   }, [daftarSubtes, subtesKilatTerpilih]);
 
-  // State update counter latihan siswa
-  const [refreshLatihanTick, setRefreshLatihanTick] = useState(0);
+  // Efek memuat data kuota latihan mandiri mingguan
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(storageWeeklyKey);
+      if (raw) {
+        setMisiMingguanData(JSON.parse(raw));
+      } else {
+        setMisiMingguanData(null);
+      }
+    } catch (e) {
+      setMisiMingguanData(null);
+    }
+  }, [storageWeeklyKey, refreshLatihanTick]);
+
+  // Efek memuat paket terbitan dari tentor untuk kelas pendampingan
+  useEffect(() => {
+    async function muatTerbitan() {
+      let list = [];
+      try {
+        const snap = await getDocs(collection(db, 'kelas_pendampingan_terbitan'));
+        snap.forEach((d) => list.push({ docId: d.id, ...d.data() }));
+      } catch (e) {
+        console.warn('Muat firestore terbitan fallback ke local:', e);
+      }
+      if (list.length === 0) {
+        try {
+          list = JSON.parse(localStorage.getItem('gemilang_paket_pendampingan_terbitan') || '[]');
+        } catch (err) {
+          list = [];
+        }
+      }
+      const jenjangSiswa = targetJenjang?.jenjang || 'SMA';
+      const disaring = list.filter((p) => {
+        if (!p.jenjang) return true;
+        return p.jenjang.toUpperCase() === jenjangSiswa.toUpperCase();
+      });
+      setDaftarTerbitanTentor(disaring.length > 0 ? disaring : list);
+    }
+    muatTerbitan();
+  }, [targetJenjang, refreshLatihanTick]);
 
   // 1. Tarik paket otomatis Firestore, sesi siswa, & bank_soal
   useEffect(() => {
@@ -465,9 +540,10 @@ export default function JalurUjianAiPage() {
 
     setSesiLatihanAktif({
       subtes: subtesObj,
-      paket: { id: `kilat_${subtesObj.kode.toLowerCase()}_${Date.now()}`, judul: `Latihan Kilat 10 Soal` },
+      paket: { id: `kilat_${subtesObj.kode.toLowerCase()}_${Date.now()}`, judul: `Misi Latihan Pekanan (10 Soal)` },
       daftarSoal: soalKilat,
       mode: modeLatihan,
+      isWeeklyDrill: true,
     });
   };
 
@@ -484,6 +560,7 @@ export default function JalurUjianAiPage() {
       paket,
       daftarSoal: paket.soalList || [],
       mode: modeLatihan,
+      isWeeklyDrill: false,
     });
   };
 
@@ -511,6 +588,7 @@ export default function JalurUjianAiPage() {
       },
       daftarSoal: soalRemedial,
       mode: 'Active Recall',
+      isWeeklyDrill: false,
     });
   };
 
@@ -531,8 +609,47 @@ export default function JalurUjianAiPage() {
   };
 
   // Selesai Sesi Latihan
-  const handleSelesaiLatihan = () => {
+  const handleSelesaiLatihan = (hasil = {}) => {
+    // Jika sesi ini adalah Latihan Kilat Mingguan, catat kuota pekanan
+    if (sesiLatihanAktif?.isWeeklyDrill) {
+      const record = {
+        skor: hasil.skor || 0,
+        benar: hasil.totalBenar || 0,
+        total: hasil.totalSoal || 10,
+        waktu: Date.now(),
+        butirSalah: hasil.soalSalahList || [],
+      };
+      try {
+        localStorage.setItem(storageWeeklyKey, JSON.stringify(record));
+        setMisiMingguanData(record);
+      } catch (e) {
+        console.warn('Gagal menyimpan record misi mingguan:', e);
+      }
+    }
     setSesiLatihanAktif(null);
+    setRefreshLatihanTick((t) => t + 1);
+  };
+
+  // Handler pelunasan butir salah mingguan (Active Recall)
+  const handlePelunasanSalahMingguan = () => {
+    if (!misiMingguanData || !misiMingguanData.butirSalah || misiMingguanData.butirSalah.length === 0) return;
+    const subtesObj = daftarSubtes.find((s) => s.kode === subtesKilatTerpilih) || daftarSubtes[0];
+    setSesiLatihanAktif({
+      subtes: subtesObj,
+      paket: {
+        id: `remedial_weekly_${subtesObj.kode.toLowerCase()}_${Date.now()}`,
+        judul: `Pelunasan Active Recall Pekanan: ${subtesObj.nama}`,
+      },
+      daftarSoal: misiMingguanData.butirSalah,
+      mode: 'Active Recall',
+      isWeeklyDrill: false,
+    });
+  };
+
+  // Reset kuota mingguan (untuk demo/uji coba)
+  const handleResetMisiMingguan = () => {
+    localStorage.removeItem(storageWeeklyKey);
+    setMisiMingguanData(null);
     setRefreshLatihanTick((t) => t + 1);
   };
 
@@ -734,8 +851,38 @@ export default function JalurUjianAiPage() {
         )}
       </div>
 
-      {/* 🧭 TAB SWITCHER: LATIHAN 7 SUBTES (AMBISPTN) VS PETA EKSPEDISI JALUR */}
+      {/* 🧭 TAB SWITCHER: 3 PILAR KELAS PENDAMPINGAN */}
       <div style={st.tabSwitcherWrap}>
+        <button
+          type="button"
+          onClick={() => setTabTampilan('latihan_kelas')}
+          style={{
+            ...st.btnTabPilihan,
+            background: tabTampilan === 'latihan_kelas' ? '#ffffff' : 'transparent',
+            color: tabTampilan === 'latihan_kelas' ? '#0f766e' : '#64748b',
+            boxShadow: tabTampilan === 'latihan_kelas' ? '0 2px 8px rgba(0,0,0,0.06)' : 'none',
+            fontWeight: tabTampilan === 'latihan_kelas' ? 800 : 600,
+          }}
+        >
+          <GraduationCap size={16} />
+          <span>📋 Latihan Kelas Bersama Tentor</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setTabTampilan('modul_materi')}
+          style={{
+            ...st.btnTabPilihan,
+            background: tabTampilan === 'modul_materi' ? '#ffffff' : 'transparent',
+            color: tabTampilan === 'modul_materi' ? '#0f766e' : '#64748b',
+            boxShadow: tabTampilan === 'modul_materi' ? '0 2px 8px rgba(0,0,0,0.06)' : 'none',
+            fontWeight: tabTampilan === 'modul_materi' ? 800 : 600,
+          }}
+        >
+          <BookOpen size={16} />
+          <span>📚 Modul Belajar (Materi Teori)</span>
+        </button>
+
         <button
           type="button"
           onClick={() => setTabTampilan('ambis_practice')}
@@ -747,10 +894,8 @@ export default function JalurUjianAiPage() {
             fontWeight: tabTampilan === 'ambis_practice' ? 800 : 600,
           }}
         >
-          <Layers size={16} />
-          <span>
-            {isSmp ? 'Latihan Subtes TKA SMP (Gaya Ambis)' : isSd ? 'Latihan Subtes TKA SD' : 'Latihan 7 Subtes (Gaya AmbisPTN)'}
-          </span>
+          <Zap size={16} />
+          <span>⚡ Latihan Mandiri AI (Misi Mingguan)</span>
         </button>
 
         <button
@@ -765,12 +910,635 @@ export default function JalurUjianAiPage() {
           }}
         >
           <Rocket size={16} />
-          <span>Peta Ekspedisi Jalur (Leveling)</span>
+          <span>🗺️ Peta Jalur</span>
         </button>
       </div>
 
       {/* ==================================================================== */}
-      {/* TAB 1: LATIHAN 7 SUBTES AMBISPTN (1:1 DENGAN AMBISPTN.COM/PRACTICE)  */}
+      {/* PILAR 1: LATIHAN KELAS BERSAMA TENTOR (BUKU BESAR & LEMBAR GUNTING)  */}
+      {/* ==================================================================== */}
+      {tabTampilan === 'latihan_kelas' && (
+        <div style={{ marginTop: 16 }}>
+          {/* BANNER HEADER LATIHAN KELAS */}
+          <div style={{
+            background: 'linear-gradient(135deg, #042f2e 0%, #0f766e 100%)',
+            borderRadius: 18,
+            padding: '24px 26px',
+            color: '#ffffff',
+            marginBottom: 20,
+            boxShadow: '0 8px 24px rgba(13, 148, 136, 0.18)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: 16,
+          }}>
+            <div style={{ maxWidth: 620 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                <span style={{
+                  background: 'rgba(255,255,255,0.2)',
+                  padding: '3px 10px',
+                  borderRadius: 99,
+                  fontSize: 11,
+                  fontWeight: 800,
+                  letterSpacing: 0.5,
+                  textTransform: 'uppercase',
+                }}>
+                  Pilar Pendampingan Utama
+                </span>
+                <span style={{ fontSize: 12, opacity: 0.9 }}>
+                  Tatap Muka & Buku Besar Fisik
+                </span>
+              </div>
+              <h2 style={{ fontSize: 22, fontWeight: 900, margin: '0 0 8px', color: '#ffffff' }}>
+                Latihan Kelas Bersama Tentor
+              </h2>
+              <p style={{ fontSize: 13.5, margin: 0, opacity: 0.92, lineHeight: 1.6 }}>
+                Kerjakan paket latihan yang diterbitkan khusus oleh Tentor pendamping Anda. Kerjakan langkah perhitungan di <b>Buku Besar fisik</b>, masukkan jawaban di sistem untuk analitik otomatis, dan unduh lembar gunting-tempel untuk arsip portofolio belajar Anda.
+              </p>
+            </div>
+            <div style={{
+              background: 'rgba(255,255,255,0.12)',
+              border: '1px solid rgba(255,255,255,0.2)',
+              borderRadius: 14,
+              padding: '14px 18px',
+              textAlign: 'center',
+              minWidth: 160,
+            }}>
+              <div style={{ fontSize: 11, opacity: 0.85, fontWeight: 700 }}>Metode Belajar</div>
+              <div style={{ fontSize: 14, fontWeight: 900, color: '#fef08a', margin: '4px 0' }}>
+                Proses &gt; Jawaban
+              </div>
+              <div style={{ fontSize: 11, opacity: 0.85 }}>Buku Besar + Anti-Nyontek</div>
+            </div>
+          </div>
+
+          {/* BAGIAN 1: PAKET TERBITAN TENTOR */}
+          <div style={{ marginBottom: 28 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ fontSize: 18 }}>🚀</span>
+                <h3 style={{ margin: 0, fontSize: 16, fontWeight: 800, color: '#0f172a' }}>
+                  Paket Soal Terbitan Tentor (Aktif Pekan Ini)
+                </h3>
+              </div>
+              <span style={{ fontSize: 12, fontWeight: 700, color: '#0d9488' }}>
+                {daftarTerbitanTentor.length} Paket Diterbitkan
+              </span>
+            </div>
+
+            {daftarTerbitanTentor.length === 0 ? (
+              <div style={{
+                background: '#ffffff',
+                border: '1.5px dashed #cbd5e1',
+                borderRadius: 16,
+                padding: '28px 20px',
+                textAlign: 'center',
+              }}>
+                <div style={{ fontSize: 36, marginBottom: 8 }}>👨‍🏫</div>
+                <div style={{ fontSize: 14, fontWeight: 800, color: '#1e293b', marginBottom: 4 }}>
+                  Belum Ada Paket Khusus Diterbitkan Tentor Hari Ini
+                </div>
+                <p style={{ fontSize: 12.5, color: '#64748b', maxWidth: 480, margin: '0 auto 16px', lineHeight: 1.5 }}>
+                  Tentor Anda akan menerbitkan paket soal pilihan saat kelas tatap muka dimulai. Sambil menunggu, Anda dapat berlatih dengan <b>Silabus Bab Resmi Bimbel Gemilang</b> di bawah ini.
+                </p>
+              </div>
+            ) : (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 14 }}>
+                {daftarTerbitanTentor.map((pkt) => {
+                  const jumlahSoal = pkt.jumlahSoal || (pkt.daftarSoal ? pkt.daftarSoal.length : (pkt.soalList ? pkt.soalList.length : 0));
+                  const soalListPkt = pkt.daftarSoal || pkt.soalList || [];
+                  return (
+                    <div
+                      key={pkt.id || pkt.docId}
+                      style={{
+                        background: '#ffffff',
+                        border: '1.5px solid #ccfbf1',
+                        borderRadius: 16,
+                        padding: '18px 20px',
+                        boxShadow: '0 4px 14px rgba(13, 148, 136, 0.08)',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'space-between',
+                      }}
+                    >
+                      <div>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 8 }}>
+                          <span style={{
+                            background: '#0d9488',
+                            color: '#ffffff',
+                            fontSize: 10,
+                            fontWeight: 800,
+                            padding: '3px 8px',
+                            borderRadius: 6,
+                            textTransform: 'uppercase',
+                          }}>
+                            {pkt.subtes || pkt.mapel || 'TKA / UTBK'}
+                          </span>
+                          <span style={{ fontSize: 11, color: '#64748b', fontWeight: 600 }}>
+                            {pkt.tentorNama ? `Tentor: ${pkt.tentorNama}` : 'Diterbitkan Tentor'}
+                          </span>
+                        </div>
+                        <h4 style={{ margin: '0 0 6px', fontSize: 15, fontWeight: 800, color: '#0f172a' }}>
+                          {pkt.judulPaket || pkt.judul}
+                        </h4>
+                        {pkt.catatanTentor && (
+                          <div style={{
+                            background: '#f8fafc',
+                            borderLeft: '3px solid #0d9488',
+                            padding: '8px 10px',
+                            borderRadius: 6,
+                            fontSize: 11.5,
+                            color: '#475569',
+                            marginBottom: 12,
+                            lineHeight: 1.4,
+                          }}>
+                            <b>Catatan Tentor:</b> {pkt.catatanTentor}
+                          </div>
+                        )}
+                        <div style={{ fontSize: 12, color: '#64748b', marginBottom: 14 }}>
+                          📝 <b>{jumlahSoal} Butir Soal</b> • Estimasi {Math.max(15, jumlahSoal * 2)} Menit
+                        </div>
+                      </div>
+
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSesiLatihanAktif({
+                              subtes: { kode: pkt.subtes || pkt.mapel || 'TKA', nama: pkt.subtes || pkt.mapel || 'Latihan Kelas Tentor' },
+                              paket: { id: pkt.id || pkt.docId, judul: pkt.judulPaket || pkt.judul },
+                              daftarSoal: soalListPkt,
+                              mode: 'Active Recall',
+                              isWeeklyDrill: false,
+                            });
+                          }}
+                          style={{
+                            width: '100%',
+                            padding: '10px 14px',
+                            borderRadius: 10,
+                            border: 'none',
+                            background: '#0d9488',
+                            color: '#ffffff',
+                            fontSize: 13,
+                            fontWeight: 800,
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: 6,
+                            boxShadow: '0 4px 10px rgba(13, 148, 136, 0.25)',
+                          }}
+                        >
+                          <Play size={15} />
+                          <span>Kerjakan di Kelas (Buku Besar)</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            handleCetakLembarGuntingPaket(
+                              { nama: pkt.subtes || pkt.mapel || 'Kelas Pendampingan' },
+                              { judul: pkt.judulPaket || pkt.judul, soalList: soalListPkt }
+                            );
+                          }}
+                          style={{
+                            width: '100%',
+                            padding: '8px 12px',
+                            borderRadius: 10,
+                            border: '1px solid #cbd5e1',
+                            background: '#ffffff',
+                            color: '#475569',
+                            fontSize: 12,
+                            fontWeight: 700,
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: 6,
+                          }}
+                        >
+                          <Scissors size={14} />
+                          <span>Unduh Lembar Gunting-Tempel (PDF)</span>
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* BAGIAN 2: SILABUS BAB RESMI BIMBEL GEMILANG */}
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, flexWrap: 'wrap', gap: 10 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ fontSize: 18 }}>📚</span>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: 16, fontWeight: 800, color: '#0f172a' }}>
+                    Katalog Silabus Bab Resmi Bimbel Gemilang
+                  </h3>
+                  <p style={{ margin: '2px 0 0', fontSize: 12, color: '#64748b' }}>
+                    Pilih subtes dan bab kurikulum resmi untuk latihan terstruktur bersama tentor.
+                  </p>
+                </div>
+              </div>
+
+              {/* Subtes Switcher Tabs */}
+              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                {daftarSubtes.map((sub) => {
+                  const aktif = subtesSilabusTerpilih === sub.kode;
+                  return (
+                    <button
+                      key={sub.kode}
+                      type="button"
+                      onClick={() => setSubtesSilabusTerpilih(sub.kode)}
+                      style={{
+                        padding: '6px 12px',
+                        borderRadius: 8,
+                        border: aktif ? '1.5px solid #0d9488' : '1px solid #e2e8f0',
+                        background: aktif ? '#ccfbf1' : '#ffffff',
+                        color: aktif ? '#0f766e' : '#475569',
+                        fontSize: 12,
+                        fontWeight: aktif ? 800 : 600,
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 6,
+                      }}
+                    >
+                      <span>{sub.emoji || '📖'}</span>
+                      <span>{sub.singkatan || sub.kode}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Render Bab & Paket List untuk Subtes Silabus Terpilih */}
+            {(() => {
+              const subtesAktifObj = daftarSubtes.find((s) => s.kode === subtesSilabusTerpilih) || daftarSubtes[0];
+              const paketList = getPaketLatihanPerSubtes(subtesAktifObj?.kode, 10, targetJenjang?.jenjang || 'SMA', bankSoalFirestore);
+
+              if (paketList.length === 0) {
+                return (
+                  <div style={{ padding: 24, textAlign: 'center', background: '#ffffff', borderRadius: 14, border: '1px dashed #cbd5e1', color: '#64748b', fontSize: 13 }}>
+                    Paket latihan untuk subtes ini sedang disiapkan dari bank soal resmi.
+                  </div>
+                );
+              }
+
+              // Kelompokkan per Bab kurikulum resmi
+              const mapGrup = new Map();
+              paketList.forEach((p) => {
+                const namaBab = p.namaBab || 'Materi Latihan Terstruktur';
+                if (!mapGrup.has(namaBab)) {
+                  mapGrup.set(namaBab, {
+                    namaBab,
+                    babNomor: p.babNomor || 99,
+                    items: [],
+                  });
+                }
+                mapGrup.get(namaBab).items.push(p);
+              });
+
+              const daftarGrup = Array.from(mapGrup.values()).sort((a, b) => a.babNomor - b.babNomor);
+
+              return (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                  {daftarGrup.map((grup) => (
+                    <div key={grup.namaBab} style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 16, padding: '16px 20px', boxShadow: '0 2px 8px rgba(0,0,0,0.03)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, paddingBottom: 10, borderBottom: '1px solid #f1f5f9' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <span style={{ fontSize: 18 }}>📖</span>
+                          <span style={{ fontSize: 14, fontWeight: 800, color: '#0f172a' }}>
+                            {grup.namaBab}
+                          </span>
+                        </div>
+                        <span style={{ fontSize: 11, fontWeight: 700, color: '#0d9488', background: '#ccfbf1', padding: '2px 10px', borderRadius: 99 }}>
+                          {grup.items.length} Paket Latihan
+                        </span>
+                      </div>
+
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 10 }}>
+                        {grup.items.map((paket) => {
+                          const progres = bacaProgresLatihanSiswa(studentId);
+                          const infoPaket = progres?.paketMap?.[paket.id];
+                          const sudahDikerjakan = Boolean(infoPaket && infoPaket.total > 0);
+                          const akurasi = sudahDikerjakan ? (infoPaket.akurasi ?? Math.round((infoPaket.benar / Math.max(1, infoPaket.total)) * 100)) : 0;
+                          const isLunas = sudahDikerjakan && akurasi >= 70;
+
+                          return (
+                            <div
+                              key={paket.id}
+                              style={{
+                                background: '#f8fafc',
+                                border: '1px solid #e2e8f0',
+                                borderRadius: 12,
+                                padding: '12px 14px',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                justifyContent: 'space-between',
+                                gap: 10,
+                              }}
+                            >
+                              <div>
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6, marginBottom: 4 }}>
+                                  <span style={{ fontSize: 13, fontWeight: 800, color: '#0f172a' }}>
+                                    {paket.judul}
+                                  </span>
+                                  {sudahDikerjakan && (
+                                    <span style={{
+                                      fontSize: 10,
+                                      fontWeight: 800,
+                                      padding: '2px 6px',
+                                      borderRadius: 99,
+                                      background: isLunas ? '#dcfce7' : '#fee2e2',
+                                      color: isLunas ? '#15803d' : '#b91c1c',
+                                    }}>
+                                      {isLunas ? `🟢 ${akurasi}%` : `🟠 ${akurasi}%`}
+                                    </span>
+                                  )}
+                                </div>
+                                <div style={{ fontSize: 11, color: '#64748b' }}>
+                                  {paket.jumlahSoal} Soal • {paket.durasiMenit} Menit
+                                </div>
+                              </div>
+
+                              <div style={{ display: 'flex', gap: 6 }}>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setSesiLatihanAktif({
+                                      subtes: subtesAktifObj,
+                                      paket,
+                                      daftarSoal: paket.soalList || [],
+                                      mode: 'Active Recall',
+                                      isWeeklyDrill: false,
+                                    });
+                                  }}
+                                  style={{
+                                    flex: 1,
+                                    padding: '7px 10px',
+                                    borderRadius: 8,
+                                    border: 'none',
+                                    background: '#0d9488',
+                                    color: '#ffffff',
+                                    fontSize: 11.5,
+                                    fontWeight: 700,
+                                    cursor: 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: 4,
+                                  }}
+                                >
+                                  <Play size={12} />
+                                  <span>Kerjakan</span>
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleCetakLembarGuntingPaket(subtesAktifObj, paket)}
+                                  title="Unduh Lembar Gunting Siswa (PDF)"
+                                  style={{
+                                    padding: '7px 10px',
+                                    borderRadius: 8,
+                                    border: '1px solid #cbd5e1',
+                                    background: '#ffffff',
+                                    color: '#475569',
+                                    fontSize: 11.5,
+                                    fontWeight: 700,
+                                    cursor: 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 4,
+                                  }}
+                                >
+                                  <Scissors size={12} />
+                                  <span>PDF</span>
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              );
+            })()}
+          </div>
+        </div>
+      )}
+
+      {/* ==================================================================== */}
+      {/* PILAR 2: MODUL BELAJAR (MATERI TEORI PEKANAN & RUMUS KILAT)         */}
+      {/* ==================================================================== */}
+      {tabTampilan === 'modul_materi' && (
+        <div style={{ marginTop: 16 }}>
+          {/* BANNER HEADER MODUL */}
+          <div style={{
+            background: 'linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%)',
+            borderRadius: 18,
+            padding: '24px 26px',
+            color: '#ffffff',
+            marginBottom: 20,
+            boxShadow: '0 8px 24px rgba(37, 99, 235, 0.18)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: 16,
+          }}>
+            <div style={{ maxWidth: 620 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                <span style={{
+                  background: 'rgba(255,255,255,0.2)',
+                  padding: '3px 10px',
+                  borderRadius: 99,
+                  fontSize: 11,
+                  fontWeight: 800,
+                  letterSpacing: 0.5,
+                  textTransform: 'uppercase',
+                }}>
+                  Pilar Teori & Konsep
+                </span>
+                <span style={{ fontSize: 12, opacity: 0.9 }}>
+                  {isSmp ? 'Kurikulum TKA SMP 2027' : 'Kurikulum Standar UTBK 2027'}
+                </span>
+              </div>
+              <h2 style={{ fontSize: 22, fontWeight: 900, margin: '0 0 8px', color: '#ffffff' }}>
+                Modul Teori & Ringkasan Rumus Kilat
+              </h2>
+              <p style={{ fontSize: 13.5, margin: 0, opacity: 0.92, lineHeight: 1.6 }}>
+                Pelajari konsep inti, trik kilat 30 detik, jebakan umum, dan contoh soal bertahap sebelum kelas tatap muka dimulai. Dilengkapi rumus ringkas dan kuis pemahaman interaktif per bab.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => navigate('/siswa/modul')}
+              style={{
+                background: '#ffffff',
+                color: '#1e3a8a',
+                border: 'none',
+                padding: '12px 18px',
+                borderRadius: 12,
+                fontSize: 13,
+                fontWeight: 800,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+              }}
+            >
+              <BookOpen size={16} />
+              <span>Buka Portal Modul Lengkap</span>
+            </button>
+          </div>
+
+          {/* Subtest Selector Pills */}
+          <div style={{ display: 'flex', gap: 8, marginBottom: 18, overflowX: 'auto', paddingBottom: 6 }}>
+            <button
+              type="button"
+              onClick={() => setSubtesModulTerpilih('ALL')}
+              style={{
+                padding: '8px 16px',
+                borderRadius: 10,
+                border: subtesModulTerpilih === 'ALL' ? '1.5px solid #2563eb' : '1px solid #e2e8f0',
+                background: subtesModulTerpilih === 'ALL' ? '#eff6ff' : '#ffffff',
+                color: subtesModulTerpilih === 'ALL' ? '#1d4ed8' : '#64748b',
+                fontSize: 12.5,
+                fontWeight: subtesModulTerpilih === 'ALL' ? 800 : 600,
+                cursor: 'pointer',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              Semua Subtes ({isSmp ? SEMUA_BAB_SMP.length : SEMUA_BAB_MODUL.length} Bab)
+            </button>
+            {(isSmp ? DAFTAR_SUBTES_SMP : DAFTAR_SUBTES_MODUL).map((sub) => {
+              const aktif = subtesModulTerpilih === sub.kode;
+              return (
+                <button
+                  key={sub.kode}
+                  type="button"
+                  onClick={() => setSubtesModulTerpilih(sub.kode)}
+                  style={{
+                    padding: '8px 14px',
+                    borderRadius: 10,
+                    border: aktif ? '1.5px solid #2563eb' : '1px solid #e2e8f0',
+                    background: aktif ? '#eff6ff' : '#ffffff',
+                    color: aktif ? '#1d4ed8' : '#64748b',
+                    fontSize: 12.5,
+                    fontWeight: aktif ? 800 : 600,
+                    cursor: 'pointer',
+                    whiteSpace: 'nowrap',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 6,
+                  }}
+                >
+                  <span>{sub.emoji || '📖'}</span>
+                  <span>{sub.singkatan || sub.kode} ({sub.totalBab || (sub.babList && sub.babList.length) || 0} Bab)</span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Cards Grid of Chapters */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 16 }}>
+            {(() => {
+              const daftarBab = isSmp ? SEMUA_BAB_SMP : SEMUA_BAB_MODUL;
+              const disaring = subtesModulTerpilih === 'ALL'
+                ? daftarBab
+                : daftarBab.filter((b) => (b.subtestKode || b.subtes) === subtesModulTerpilih);
+
+              return disaring.map((bab, idx) => {
+                const subKode = bab.subtestKode || bab.subtes || (isSmp ? 'MTK_SMP' : 'PU');
+                const slug = bab.slug || `bab-${idx + 1}`;
+                return (
+                  <div
+                    key={bab.id || `${subKode}_${slug}`}
+                    style={{
+                      background: '#ffffff',
+                      border: '1px solid #e2e8f0',
+                      borderRadius: 16,
+                      padding: '18px 20px',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.03)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'space-between',
+                    }}
+                  >
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 8 }}>
+                        <span style={{
+                          background: '#eff6ff',
+                          color: '#1d4ed8',
+                          fontSize: 10.5,
+                          fontWeight: 800,
+                          padding: '3px 8px',
+                          borderRadius: 6,
+                          textTransform: 'uppercase',
+                        }}>
+                          {bab.subtestNama || subKode}
+                        </span>
+                        <span style={{ fontSize: 11, color: '#64748b', fontWeight: 600 }}>
+                          ⏱️ {bab.durasiBacaMenit || 15} Menit
+                        </span>
+                      </div>
+                      <h4 style={{ margin: '0 0 6px', fontSize: 14.5, fontWeight: 800, color: '#0f172a', lineHeight: 1.4 }}>
+                        {bab.judul}
+                      </h4>
+                      <p style={{
+                        fontSize: 12,
+                        color: '#64748b',
+                        margin: '0 0 14px',
+                        lineHeight: 1.5,
+                        display: '-webkit-box',
+                        WebkitLineClamp: 3,
+                        WebkitBoxOrient: 'vertical',
+                        overflow: 'hidden',
+                      }}>
+                        {bab.ringkasanSingkat || bab.deskripsi || (Array.isArray(bab.learningObjectives) ? bab.learningObjectives.join('. ') : 'Pelajari konsep materi teori dan latihan bertahap.')}
+                      </p>
+                    </div>
+
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <button
+                        type="button"
+                        onClick={() => navigate(`/siswa/modul/${subKode}/${slug}`)}
+                        style={{
+                          flex: 1,
+                          padding: '9px 12px',
+                          borderRadius: 10,
+                          border: 'none',
+                          background: '#2563eb',
+                          color: '#ffffff',
+                          fontSize: 12.5,
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: 6,
+                          boxShadow: '0 3px 8px rgba(37, 99, 235, 0.2)',
+                        }}
+                      >
+                        <BookOpen size={14} />
+                        <span>Baca Materi & Rumus</span>
+                      </button>
+                    </div>
+                  </div>
+                );
+              });
+            })()}
+          </div>
+        </div>
+      )}
+
+      {/* ==================================================================== */}
+      {/* PILAR 3: LATIHAN MANDIRI AI (MISI MINGGUAN DENGAN SISTEM KUOTA)       */}
       {/* ==================================================================== */}
       {tabTampilan === 'ambis_practice' && (
         <div style={{ marginTop: 16 }}>
@@ -947,14 +1715,111 @@ export default function JalurUjianAiPage() {
               })}
             </div>
 
-            <button
-              type="button"
-              onClick={handleMulaiLatihanKilat}
-              style={st.btnMulaiLatihanKilat}
-            >
-              <Zap size={16} />
-              <span>Mulai Latihan Kilat {subtesKilatTerpilih} (10 Soal • {modeLatihan}) 🚀</span>
-            </button>
+            {misiMingguanData ? (
+              <div style={{
+                background: '#f0fdf4',
+                border: '1.5px solid #86efac',
+                borderRadius: 14,
+                padding: '14px 18px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                flexWrap: 'wrap',
+                gap: 12,
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <div style={{
+                    width: 38,
+                    height: 38,
+                    borderRadius: 10,
+                    background: '#22c55e',
+                    color: '#ffffff',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}>
+                    <CheckCircle2 size={20} />
+                  </div>
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <span style={{ fontSize: 14, fontWeight: 800, color: '#166534' }}>
+                        Misi Mingguan {subtesKilatTerpilih} Tuntas!
+                      </span>
+                      <span style={{
+                        fontSize: 10.5,
+                        fontWeight: 800,
+                        padding: '2px 8px',
+                        borderRadius: 99,
+                        background: '#dcfce7',
+                        color: '#15803d',
+                        border: '1px solid #86efac',
+                      }}>
+                        Skor: {misiMingguanData.skor}
+                      </span>
+                    </div>
+                    <div style={{ fontSize: 11.5, color: '#475569', marginTop: 2 }}>
+                      {misiMingguanData.benar} dari {misiMingguanData.total} butir benar ({weekKey}). Kuota pekanan terjaga aman.
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                  {misiMingguanData.butirSalah && misiMingguanData.butirSalah.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={handlePelunasanSalahMingguan}
+                      style={{
+                        padding: '8px 14px',
+                        borderRadius: 10,
+                        border: 'none',
+                        background: '#e11d48',
+                        color: '#ffffff',
+                        fontSize: 12,
+                        fontWeight: 800,
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 6,
+                        boxShadow: '0 2px 8px rgba(225, 29, 72, 0.25)',
+                      }}
+                    >
+                      <Zap size={14} />
+                      <span>Pelunasan Active Recall ({misiMingguanData.butirSalah.length} Soal)</span>
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={handleResetMisiMingguan}
+                    title="Reset simulasi kuota pekanan (untuk evaluasi/demo)"
+                    style={{
+                      padding: '8px 12px',
+                      borderRadius: 10,
+                      border: '1px solid #cbd5e1',
+                      background: '#ffffff',
+                      color: '#64748b',
+                      fontSize: 11.5,
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 4,
+                    }}
+                  >
+                    <RotateCcw size={12} />
+                    <span>Ulangi Simulasi</span>
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={handleMulaiLatihanKilat}
+                style={st.btnMulaiLatihanKilat}
+              >
+                <Zap size={16} />
+                <span>Mulai Misi Mingguan {subtesKilatTerpilih} (10 Soal • {modeLatihan}) 🚀</span>
+              </button>
+            )}
           </div>
 
           {/* 📚 DAFTAR KARTU SUBTES UTAMA SESUAI JENJANG */}

@@ -33,7 +33,7 @@ const SidebarGuru = () => {
     { name: 'Dashboard', path: '/guru/dashboard', icon: <LayoutDashboard size={20} /> },
     {
       name: 'Kelas Pendampingan',
-      path: '/guru/cetak-latihan?jalur=pendampingan',
+      path: '/guru/pendampingan',
       icon: <GraduationCap size={20} />,
       badge: 'TKA & UTBK',
       badgeColor: '#0d9488',
@@ -159,7 +159,10 @@ const SidebarGuru = () => {
           {menu.map((item) => {
             const itemBase = item.path.split('?')[0];
             const hasQuery = item.path.includes('?');
-            const isActive = hasQuery
+            const isPendampingan = item.path === '/guru/pendampingan' || item.path.includes('jalur=pendampingan');
+            const isActive = isPendampingan
+              ? (location.pathname === '/guru/pendampingan' || (location.pathname === '/guru/cetak-latihan' && location.search.includes('jalur=pendampingan')))
+              : hasQuery
               ? (location.pathname === itemBase && location.search.includes('jalur=pendampingan'))
               : (location.pathname === itemBase && !location.search.includes('jalur=pendampingan')) ||
                 (itemBase !== '/guru/dashboard' && itemBase !== '/guru/modul' && !hasQuery && location.pathname.startsWith(itemBase));
