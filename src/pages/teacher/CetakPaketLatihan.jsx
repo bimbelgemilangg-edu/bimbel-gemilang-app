@@ -43,6 +43,7 @@ import { db } from '../../firebase';
 import { bacaIdentitasGuru } from '../../utils/identitasGuru';
 import { perluSegar, kebijakanGagalMuat } from '../../utils/keputusanMuat';
 import { pilihSoalUntukCetak, htmlPaketSiswa, htmlKunciTentor, htmlLembarCatatan } from '../../utils/cetakLatihan';
+import { getPaketLatihanPerSubtes } from '../../data/ambisLatihanBankSoal';
 // 🔥 2026-10-08 (Fase 1 cetak biru bank soal): keranjang yang BERTAHAN.
 // Dulu `tercentang` berisi id dan DIHAPUS setiap ganti filter
 // (setTercentang([]) di pill jenjang/mapel/bab/kelas), jadi tentor yang
@@ -320,11 +321,72 @@ export default function CetakPaketLatihan() {
     }
     try {
       const lokalLama = JSON.parse(localStorage.getItem('gemilang_paket_pendampingan_terbitan') || '[]');
-      const lokalBaru = lokalLama.filter((p) => p.id !== id);
+      const lokalBaru = lokalLama.filter((p) => p.id !== id && p.paketId !== id);
       localStorage.setItem('gemilang_paket_pendampingan_terbitan', JSON.stringify(lokalBaru));
       setDaftarTerbitan(lokalBaru);
     } catch (err) {
       console.warn('Hapus localStorage error:', err);
+    }
+  };
+
+  const handleToggleKunciPaketSilabus = async (paket) => {
+    const isDibuka = daftarTerbitan.some(
+      (t) => (t.status === 'aktif' || t.terbuka !== false) && (t.id === paket.id || t.paketId === paket.id)
+    );
+
+    if (isDibuka) {
+      if (!window.confirm(`Kunci kembali "${paket.judul}"? Siswa di kelas tidak akan bisa lagi mengakses paket ini.`)) return;
+      await handleHapusTerbitan(paket.id);
+    } else {
+      setSedangMenerbitkan(true);
+      const idt = bacaIdentitasGuru();
+      const paketBaru = {
+        id: paket.id,
+        paketId: paket.id,
+        judul: `${mapelAktif || 'TKA'} - ${paket.judul}`,
+        judulPaket: `${mapelAktif || 'TKA'} - ${paket.judul}`,
+        jenjang: jenjangAktif || 'SMP',
+        mapel: mapelAktif || 'Matematika',
+        subtes: mapelAktif || 'Matematika',
+        bab: paket.namaBab || babAktif || 'Materi Inti',
+        babNomor: paket.babNomor,
+        paketNomor: paket.paketNomor,
+        catatanTentor: 'Kerjakan soal di Buku Besar fisikmu! Bedah langkah pengerjaan bersama Tentor di kelas.',
+        tentorNama: idt.guruNama || 'Tentor Gemilang',
+        tentorId: idt.guruId || '',
+        daftarSoal: (paket.soalList || []).map((s, idx) => ({
+          ...s,
+          kodeSoal: s.kodeSoal || s.kodeUnik || `#${(mapelAktif || 'TKA').slice(0, 3).toUpperCase()}-${String(idx + 1).padStart(2, '0')}`,
+        })),
+        soalList: (paket.soalList || []).map((s, idx) => ({
+          ...s,
+          kodeSoal: s.kodeSoal || s.kodeUnik || `#${(mapelAktif || 'TKA').slice(0, 3).toUpperCase()}-${String(idx + 1).padStart(2, '0')}`,
+        })),
+        jumlahSoal: (paket.soalList || []).length,
+        totalSoal: (paket.soalList || []).length,
+        tanggalTerbit: new Date().toISOString(),
+        status: 'aktif',
+        terbuka: true,
+      };
+
+      try {
+        await addDoc(collection(db, 'kelas_pendampingan_terbitan'), paketBaru);
+      } catch (e) {
+        console.warn('Simpan Firestore terbitan gagal:', e);
+      }
+
+      try {
+        const lokalLama = JSON.parse(localStorage.getItem('gemilang_paket_pendampingan_terbitan') || '[]');
+        const filtered = lokalLama.filter((l) => l.id !== paket.id && l.paketId !== paket.id);
+        const lokalBaru = [paketBaru, ...filtered];
+        localStorage.setItem('gemilang_paket_pendampingan_terbitan', JSON.stringify(lokalBaru));
+        setDaftarTerbitan(lokalBaru);
+      } catch (err) {
+        console.warn('Simpan localStorage error:', err);
+      }
+
+      setSedangMenerbitkan(false);
+      alert(`🔓 KUNCI DIBUKA!\n\nPaket "${paket.judul}" sekarang resmi TERBUKA di akun seluruh siswa binaan untuk dikerjakan di kelas.`);
     }
   };
 
@@ -1035,6 +1097,123 @@ export default function CetakPaketLatihan() {
 
       </div>
       )}
+
+      {/* 🔓 KONTROL KUNCI PAKET SILABUS KELAS (BUKA/KUNCI AKSES SISWA) */}
+      <div style={{
+        marginTop: 28,
+        background: '#ffffff',
+        border: '1.5px solid #5eead4',
+        borderRadius: 16,
+        padding: '22px 24px',
+        boxShadow: '0 4px 14px rgba(13, 148, 136, 0.06)',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14, flexWrap: 'wrap', gap: 10 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <span style={{ fontSize: 24 }}>🔓</span>
+            <div>
+              <h3 style={{ margin: 0, fontSize: 16, fontWeight: 800, color: '#0f172a' }}>
+                Kontrol Kunci Paket Silabus Bab Resmi (Buka / Kunci Akses Siswa)
+              </h3>
+              <p style={{ margin: '2px 0 0', fontSize: 12, color: '#64748b' }}>
+                Semua paket di sisi siswa <b>terkunci secara default (🔒)</b>. Klik tombol <strong>Buka Kunci</strong> saat kelas tatap muka dimulai agar siswa dapat mengerjakan di Buku Besar fisik.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Daftar Paket Silabus Berdasarkan Jenjang & Mapel Aktif */}
+        {(() => {
+          const mLow = String(mapelAktif || '').toLowerCase();
+          const kodeSubtes = (jenjangAktif === 'SMP' || jenjangAktif === 'SD')
+            ? (mLow.includes('indonesia') ? 'BIN' : mLow.includes('ipa') ? 'IPA' : mLow.includes('inggris') ? 'BIG' : 'MTK')
+            : (mLow.includes('penalaran umum') ? 'PU' : mLow.includes('pengetahuan') ? 'PPU' : mLow.includes('bacaan') ? 'PBM' : 'PK');
+
+          const paketSilabus = getPaketLatihanPerSubtes(kodeSubtes, 10, jenjangAktif || 'SMP', bankSoal);
+
+          if (paketSilabus.length === 0) {
+            return (
+              <div style={{ padding: 20, textAlign: 'center', color: '#64748b', fontSize: 12.5, background: '#f8fafc', borderRadius: 10, border: '1px dashed #cbd5e1' }}>
+                Pilih jenjang dan mapel pada panel filter di atas untuk melihat dan mengontrol paket silabus resmi.
+              </div>
+            );
+          }
+
+          return (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 12 }}>
+              {paketSilabus.map((pkt) => {
+                const isDibuka = daftarTerbitan.some(
+                  (t) => (t.status === 'aktif' || t.terbuka !== false) && (t.id === pkt.id || t.paketId === pkt.id)
+                );
+
+                return (
+                  <div
+                    key={pkt.id}
+                    style={{
+                      background: isDibuka ? '#f0fdfa' : '#f8fafc',
+                      border: isDibuka ? '1.5px solid #14b8a6' : '1px solid #e2e8f0',
+                      borderRadius: 12,
+                      padding: '14px 16px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'space-between',
+                      gap: 10,
+                      boxShadow: isDibuka ? '0 2px 8px rgba(13, 148, 136, 0.1)' : 'none',
+                    }}
+                  >
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6, marginBottom: 4 }}>
+                        <span style={{ fontSize: 13, fontWeight: 800, color: '#0f172a' }}>
+                          {pkt.judul}
+                        </span>
+                        <span style={{
+                          fontSize: 10,
+                          fontWeight: 800,
+                          padding: '2px 8px',
+                          borderRadius: 99,
+                          background: isDibuka ? '#ccfbf1' : '#f1f5f9',
+                          color: isDibuka ? '#0f766e' : '#64748b',
+                          border: `1px solid ${isDibuka ? '#5eead4' : '#cbd5e1'}`,
+                        }}>
+                          {isDibuka ? '🔓 Terbuka di Kelas' : '🔒 Terkunci'}
+                        </span>
+                      </div>
+                      <div style={{ fontSize: 11.5, color: '#64748b' }}>
+                        {pkt.namaBab} • {pkt.jumlahSoal} Butir Soal
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <button
+                        type="button"
+                        onClick={() => handleToggleKunciPaketSilabus(pkt)}
+                        disabled={sedangMenerbitkan}
+                        style={{
+                          flex: 1,
+                          padding: '8px 12px',
+                          borderRadius: 8,
+                          border: 'none',
+                          background: isDibuka ? '#e11d48' : '#0d9488',
+                          color: '#ffffff',
+                          fontSize: 12,
+                          fontWeight: 800,
+                          cursor: sedangMenerbitkan ? 'not-allowed' : 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: 6,
+                          boxShadow: isDibuka ? '0 2px 6px rgba(225, 29, 72, 0.25)' : '0 2px 6px rgba(13, 148, 136, 0.25)',
+                        }}
+                      >
+                        <span>{isDibuka ? '🔒 Kunci Kembali' : '🔓 Buka Kunci di Kelas'}</span>
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          );
+        })()}
+      </div>
 
       {/* 📋 SECTION: DAFTAR PAKET SOAL TERBITAN KELAS PENDAMPINGAN */}
       <div style={{

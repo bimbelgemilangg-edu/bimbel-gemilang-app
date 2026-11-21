@@ -235,6 +235,37 @@ export default function JalurUjianAiPage() {
     muatTerbitan();
   }, [targetJenjang, refreshLatihanTick]);
 
+  // Pemeriksa apakah suatu paket silabus resmi sudah dibuka kuncinya oleh tentor di kelas
+  const isPaketDibukaTentor = useCallback((paket) => {
+    if (!paket || !daftarTerbitanTentor || daftarTerbitanTentor.length === 0) return false;
+    return daftarTerbitanTentor.some((t) => {
+      if (t.status && t.status !== 'aktif') return false;
+      if (t.terbuka === false) return false;
+      if (t.id === paket.id || t.paketId === paket.id) return true;
+      if (
+        t.babNomor != null &&
+        paket.babNomor != null &&
+        Number(t.babNomor) === Number(paket.babNomor) &&
+        t.paketNomor != null &&
+        paket.paketNomor != null &&
+        Number(t.paketNomor) === Number(paket.paketNomor)
+      ) {
+        return true;
+      }
+      if (t.judul && paket.judul) {
+        const jT = t.judul.toLowerCase();
+        const jP = paket.judul.toLowerCase();
+        if (jT === jP || jT.includes(jP) || jP.includes(jT)) return true;
+      }
+      if (t.judulPaket && paket.judul) {
+        const jT = t.judulPaket.toLowerCase();
+        const jP = paket.judul.toLowerCase();
+        if (jT === jP || jT.includes(jP) || jP.includes(jT)) return true;
+      }
+      return false;
+    });
+  }, [daftarTerbitanTentor]);
+
   // 1. Tarik paket otomatis Firestore, sesi siswa, & bank_soal
   useEffect(() => {
     let aktif = true;
@@ -915,26 +946,148 @@ export default function JalurUjianAiPage() {
       </div>
 
       {/* ==================================================================== */}
-      {/* PILAR 1: LATIHAN KELAS BERSAMA TENTOR (BUKU BESAR & LEMBAR GUNTING)  */}
+      {/* PILAR 1: LATIHAN KELAS BERSAMA TENTOR & TRY OUT MINGGUAN            */}
       {/* ==================================================================== */}
       {tabTampilan === 'latihan_kelas' && (
         <div style={{ marginTop: 16 }}>
-          {/* BANNER HEADER LATIHAN KELAS */}
+          {/* ================================================================ */}
+          {/* 🎯 1. TRY OUT MINGGUAN UTAMA (OTOMATIS SISTEM PEKANAN)            */}
+          {/* ================================================================ */}
           <div style={{
-            background: 'linear-gradient(135deg, #042f2e 0%, #0f766e 100%)',
+            background: misiMingguanData
+              ? 'linear-gradient(135deg, #064e3b 0%, #047857 100%)'
+              : 'linear-gradient(135deg, #78350f 0%, #b45309 60%, #d97706 100%)',
             borderRadius: 18,
             padding: '24px 26px',
             color: '#ffffff',
-            marginBottom: 20,
-            boxShadow: '0 8px 24px rgba(13, 148, 136, 0.18)',
+            marginBottom: 24,
+            boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
             flexWrap: 'wrap',
             gap: 16,
           }}>
-            <div style={{ maxWidth: 620 }}>
+            <div style={{ maxWidth: 600 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                <span style={{
+                  background: 'rgba(255,255,255,0.25)',
+                  padding: '3px 10px',
+                  borderRadius: 99,
+                  fontSize: 11,
+                  fontWeight: 800,
+                  letterSpacing: 0.5,
+                  textTransform: 'uppercase',
+                }}>
+                  {misiMingguanData ? '✅ Tuntas Pekan Ini' : '⚡ Langkah Wajib Pekanan'}
+                </span>
+                <span style={{ fontSize: 12, opacity: 0.9 }}>
+                  Pekan: <b>{weekKey}</b> • Sistem Otomatis
+                </span>
+              </div>
+
+              <h2 style={{ fontSize: 22, fontWeight: 900, margin: '0 0 8px', color: '#ffffff' }}>
+                {misiMingguanData
+                  ? `Try Out Mingguan Pekan Ini Telah Tuntas! 🎉`
+                  : `Ayo, Silakan Kerjakan Try Out Mingguanmu Dahulu!`}
+              </h2>
+
+              <p style={{ fontSize: 13.5, margin: 0, opacity: 0.95, lineHeight: 1.6 }}>
+                {misiMingguanData
+                  ? `Luar biasa! Kamu sudah menyelesaikan try out adaptif pekan ini dengan Skor ${misiMingguanData.skor} (${misiMingguanData.benar}/${misiMingguanData.total} Benar). Sekarang kamu siap mengikuti sesi latihan pendampingan bersama Tentor di bawah.`
+                  : `Sebelum memulai sesi kelas pendampingan bersama Tentor, selesaikan Try Out Mingguan adaptif (10 butir) ini sebagai pemetaan kompetensimu. Sistem otomatis membatasi 1x akses per pekan agar bank soal tetap terlindungi.`}
+              </p>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, minWidth: 220 }}>
+              {misiMingguanData ? (
+                <>
+                  <div style={{
+                    background: 'rgba(255,255,255,0.15)',
+                    border: '1px solid rgba(255,255,255,0.3)',
+                    borderRadius: 12,
+                    padding: '10px 14px',
+                    textAlign: 'center',
+                  }}>
+                    <div style={{ fontSize: 11, opacity: 0.9 }}>Hasil Try Out Pekanan</div>
+                    <div style={{ fontSize: 22, fontWeight: 900, color: '#fef08a' }}>
+                      Skor: {misiMingguanData.skor}
+                    </div>
+                    <div style={{ fontSize: 11, opacity: 0.9 }}>
+                      {misiMingguanData.benar} Benar • {misiMingguanData.total - misiMingguanData.benar} Belum Paham
+                    </div>
+                  </div>
+
+                  {misiMingguanData.butirSalah && misiMingguanData.butirSalah.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={handlePelunasanSalahMingguan}
+                      style={{
+                        padding: '10px 16px',
+                        borderRadius: 10,
+                        border: 'none',
+                        background: '#e11d48',
+                        color: '#ffffff',
+                        fontSize: 12.5,
+                        fontWeight: 800,
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: 6,
+                        boxShadow: '0 4px 12px rgba(225, 29, 72, 0.35)',
+                      }}
+                    >
+                      <Zap size={14} />
+                      <span>Pelunasan Salah ({misiMingguanData.butirSalah.length} Soal)</span>
+                    </button>
+                  )}
+                </>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleMulaiLatihanKilat}
+                  style={{
+                    padding: '14px 22px',
+                    borderRadius: 12,
+                    border: 'none',
+                    background: '#ffffff',
+                    color: '#92400e',
+                    fontSize: 14,
+                    fontWeight: 900,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 8,
+                    boxShadow: '0 6px 18px rgba(0,0,0,0.2)',
+                  }}
+                >
+                  <Play size={18} fill="#92400e" />
+                  <span>Kerjakan Try Out Sekarang →</span>
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* ================================================================ */}
+          {/* 👨‍🏫 2. PAKET LATIHAN PENDAMPINGAN (DIKONTROL PENUH OLEH TENTOR)     */}
+          {/* ================================================================ */}
+          <div style={{
+            background: 'linear-gradient(135deg, #042f2e 0%, #0f766e 100%)',
+            borderRadius: 18,
+            padding: '20px 24px',
+            color: '#ffffff',
+            marginBottom: 24,
+            boxShadow: '0 6px 20px rgba(13, 148, 136, 0.15)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: 14,
+          }}>
+            <div style={{ maxWidth: 640 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
                 <span style={{
                   background: 'rgba(255,255,255,0.2)',
                   padding: '3px 10px',
@@ -944,50 +1097,50 @@ export default function JalurUjianAiPage() {
                   letterSpacing: 0.5,
                   textTransform: 'uppercase',
                 }}>
-                  Pilar Pendampingan Utama
+                  Kontrol Penuh Oleh Tentor
                 </span>
                 <span style={{ fontSize: 12, opacity: 0.9 }}>
-                  Tatap Muka & Buku Besar Fisik
+                  Sesi Tatap Muka & Buku Besar Fisik
                 </span>
               </div>
-              <h2 style={{ fontSize: 22, fontWeight: 900, margin: '0 0 8px', color: '#ffffff' }}>
-                Latihan Kelas Bersama Tentor
-              </h2>
-              <p style={{ fontSize: 13.5, margin: 0, opacity: 0.92, lineHeight: 1.6 }}>
-                Kerjakan paket latihan yang diterbitkan khusus oleh Tentor pendamping Anda. Kerjakan langkah perhitungan di <b>Buku Besar fisik</b>, masukkan jawaban di sistem untuk analitik otomatis, dan unduh lembar gunting-tempel untuk arsip portofolio belajar Anda.
+              <h3 style={{ fontSize: 20, fontWeight: 900, margin: '0 0 6px', color: '#ffffff' }}>
+                Paket Latihan Pendampingan Bersama Tentor
+              </h3>
+              <p style={{ fontSize: 13, margin: 0, opacity: 0.92, lineHeight: 1.55 }}>
+                Berbeda dari Try Out Mingguan yang otomatis, paket latihan di bawah ini <b>sepenuhnya dikontrol oleh Tentor</b>. Posisi awal paket silabus masih <b>TERKUNCI (🔒)</b> dan kuncinya baru dibuka oleh Tentor saat sesi kelas tatap muka dimulai.
               </p>
             </div>
             <div style={{
               background: 'rgba(255,255,255,0.12)',
               border: '1px solid rgba(255,255,255,0.2)',
-              borderRadius: 14,
-              padding: '14px 18px',
+              borderRadius: 12,
+              padding: '12px 16px',
               textAlign: 'center',
-              minWidth: 160,
+              minWidth: 150,
             }}>
-              <div style={{ fontSize: 11, opacity: 0.85, fontWeight: 700 }}>Metode Belajar</div>
-              <div style={{ fontSize: 14, fontWeight: 900, color: '#fef08a', margin: '4px 0' }}>
-                Proses &gt; Jawaban
+              <div style={{ fontSize: 11, opacity: 0.85, fontWeight: 700 }}>Alur Pengerjaan</div>
+              <div style={{ fontSize: 13.5, fontWeight: 900, color: '#fef08a', margin: '3px 0' }}>
+                🔒 Kunci Dibuka Tentor
               </div>
-              <div style={{ fontSize: 11, opacity: 0.85 }}>Buku Besar + Anti-Nyontek</div>
+              <div style={{ fontSize: 11, opacity: 0.85 }}>Kerjakan di Buku Besar</div>
             </div>
           </div>
 
-          {/* BAGIAN 1: PAKET TERBITAN TENTOR */}
+          {/* BAGIAN A: PAKET KHUSUS YANG SEDANG DIBUKA/DITERBITKAN TENTOR HARI INI */}
           <div style={{ marginBottom: 28 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <span style={{ fontSize: 18 }}>🚀</span>
                 <h3 style={{ margin: 0, fontSize: 16, fontWeight: 800, color: '#0f172a' }}>
-                  Paket Soal Terbitan Tentor (Aktif Pekan Ini)
+                  Paket Soal yang Dibuka Tentor (Aktif di Kelas)
                 </h3>
               </div>
               <span style={{ fontSize: 12, fontWeight: 700, color: '#0d9488' }}>
-                {daftarTerbitanTentor.length} Paket Diterbitkan
+                {daftarTerbitanTentor.filter((p) => p.status === 'aktif' || p.terbuka !== false).length} Paket Terbuka
               </span>
             </div>
 
-            {daftarTerbitanTentor.length === 0 ? (
+            {daftarTerbitanTentor.filter((p) => p.status === 'aktif' || p.terbuka !== false).length === 0 ? (
               <div style={{
                 background: '#ffffff',
                 border: '1.5px dashed #cbd5e1',
@@ -995,141 +1148,143 @@ export default function JalurUjianAiPage() {
                 padding: '28px 20px',
                 textAlign: 'center',
               }}>
-                <div style={{ fontSize: 36, marginBottom: 8 }}>👨‍🏫</div>
+                <div style={{ fontSize: 36, marginBottom: 8 }}>👨‍🏫 🔒</div>
                 <div style={{ fontSize: 14, fontWeight: 800, color: '#1e293b', marginBottom: 4 }}>
-                  Belum Ada Paket Khusus Diterbitkan Tentor Hari Ini
+                  Belum Ada Paket Khusus yang Dibuka Tentor Hari Ini
                 </div>
-                <p style={{ fontSize: 12.5, color: '#64748b', maxWidth: 480, margin: '0 auto 16px', lineHeight: 1.5 }}>
-                  Tentor Anda akan menerbitkan paket soal pilihan saat kelas tatap muka dimulai. Sambil menunggu, Anda dapat berlatih dengan <b>Silabus Bab Resmi Bimbel Gemilang</b> di bawah ini.
+                <p style={{ fontSize: 12.5, color: '#64748b', maxWidth: 500, margin: '0 auto 14px', lineHeight: 1.5 }}>
+                  Kunci paket latihan akan dibuka oleh Tentor saat jam kelas pendampingan tatap muka dimulai. Pastikan buku besar catatan fisikmu sudah siap untuk menuliskan nomor dan langkah pengerjaan!
                 </p>
               </div>
             ) : (
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 14 }}>
-                {daftarTerbitanTentor.map((pkt) => {
-                  const jumlahSoal = pkt.jumlahSoal || (pkt.daftarSoal ? pkt.daftarSoal.length : (pkt.soalList ? pkt.soalList.length : 0));
-                  const soalListPkt = pkt.daftarSoal || pkt.soalList || [];
-                  return (
-                    <div
-                      key={pkt.id || pkt.docId}
-                      style={{
-                        background: '#ffffff',
-                        border: '1.5px solid #ccfbf1',
-                        borderRadius: 16,
-                        padding: '18px 20px',
-                        boxShadow: '0 4px 14px rgba(13, 148, 136, 0.08)',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        justifyContent: 'space-between',
-                      }}
-                    >
-                      <div>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 8 }}>
-                          <span style={{
-                            background: '#0d9488',
-                            color: '#ffffff',
-                            fontSize: 10,
-                            fontWeight: 800,
-                            padding: '3px 8px',
-                            borderRadius: 6,
-                            textTransform: 'uppercase',
-                          }}>
-                            {pkt.subtes || pkt.mapel || 'TKA / UTBK'}
-                          </span>
-                          <span style={{ fontSize: 11, color: '#64748b', fontWeight: 600 }}>
-                            {pkt.tentorNama ? `Tentor: ${pkt.tentorNama}` : 'Diterbitkan Tentor'}
-                          </span>
-                        </div>
-                        <h4 style={{ margin: '0 0 6px', fontSize: 15, fontWeight: 800, color: '#0f172a' }}>
-                          {pkt.judulPaket || pkt.judul}
-                        </h4>
-                        {pkt.catatanTentor && (
-                          <div style={{
-                            background: '#f8fafc',
-                            borderLeft: '3px solid #0d9488',
-                            padding: '8px 10px',
-                            borderRadius: 6,
-                            fontSize: 11.5,
-                            color: '#475569',
-                            marginBottom: 12,
-                            lineHeight: 1.4,
-                          }}>
-                            <b>Catatan Tentor:</b> {pkt.catatanTentor}
+                {daftarTerbitanTentor
+                  .filter((p) => p.status === 'aktif' || p.terbuka !== false)
+                  .map((pkt) => {
+                    const jumlahSoal = pkt.jumlahSoal || (pkt.daftarSoal ? pkt.daftarSoal.length : (pkt.soalList ? pkt.soalList.length : 0));
+                    const soalListPkt = pkt.daftarSoal || pkt.soalList || [];
+                    return (
+                      <div
+                        key={pkt.id || pkt.docId}
+                        style={{
+                          background: '#ffffff',
+                          border: '2px solid #14b8a6',
+                          borderRadius: 16,
+                          padding: '18px 20px',
+                          boxShadow: '0 4px 16px rgba(13, 148, 136, 0.12)',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          justifyContent: 'space-between',
+                        }}
+                      >
+                        <div>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 8 }}>
+                            <span style={{
+                              background: '#0d9488',
+                              color: '#ffffff',
+                              fontSize: 10,
+                              fontWeight: 800,
+                              padding: '3px 8px',
+                              borderRadius: 6,
+                              textTransform: 'uppercase',
+                            }}>
+                              🔓 {pkt.subtes || pkt.mapel || 'TKA / UTBK'}
+                            </span>
+                            <span style={{ fontSize: 11, color: '#0d9488', fontWeight: 700 }}>
+                              {pkt.tentorNama ? `Tentor: ${pkt.tentorNama}` : 'Dibuka Tentor'}
+                            </span>
                           </div>
-                        )}
-                        <div style={{ fontSize: 12, color: '#64748b', marginBottom: 14 }}>
-                          📝 <b>{jumlahSoal} Butir Soal</b> • Estimasi {Math.max(15, jumlahSoal * 2)} Menit
+                          <h4 style={{ margin: '0 0 6px', fontSize: 15, fontWeight: 800, color: '#0f172a' }}>
+                            {pkt.judulPaket || pkt.judul}
+                          </h4>
+                          {pkt.catatanTentor && (
+                            <div style={{
+                              background: '#f0fdfa',
+                              borderLeft: '3px solid #0d9488',
+                              padding: '8px 10px',
+                              borderRadius: 6,
+                              fontSize: 11.5,
+                              color: '#134e4a',
+                              marginBottom: 12,
+                              lineHeight: 1.4,
+                            }}>
+                              <b>Catatan Tentor:</b> {pkt.catatanTentor}
+                            </div>
+                          )}
+                          <div style={{ fontSize: 12, color: '#64748b', marginBottom: 14 }}>
+                            📝 <b>{jumlahSoal} Butir Soal</b> • Estimasi {Math.max(15, jumlahSoal * 2)} Menit
+                          </div>
+                        </div>
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSesiLatihanAktif({
+                                subtes: { kode: pkt.subtes || pkt.mapel || 'TKA', nama: pkt.subtes || pkt.mapel || 'Latihan Kelas Tentor' },
+                                paket: { id: pkt.id || pkt.docId, judul: pkt.judulPaket || pkt.judul },
+                                daftarSoal: soalListPkt,
+                                mode: 'Active Recall',
+                                isWeeklyDrill: false,
+                              });
+                            }}
+                            style={{
+                              width: '100%',
+                              padding: '10px 14px',
+                              borderRadius: 10,
+                              border: 'none',
+                              background: '#0d9488',
+                              color: '#ffffff',
+                              fontSize: 13,
+                              fontWeight: 800,
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              gap: 6,
+                              boxShadow: '0 4px 10px rgba(13, 148, 136, 0.25)',
+                            }}
+                          >
+                            <Play size={15} />
+                            <span>Kerjakan di Kelas (Buku Besar)</span>
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => {
+                              handleCetakLembarGuntingPaket(
+                                { nama: pkt.subtes || pkt.mapel || 'Kelas Pendampingan' },
+                                { judul: pkt.judulPaket || pkt.judul, soalList: soalListPkt }
+                              );
+                            }}
+                            style={{
+                              width: '100%',
+                              padding: '8px 12px',
+                              borderRadius: 10,
+                              border: '1px solid #cbd5e1',
+                              background: '#ffffff',
+                              color: '#475569',
+                              fontSize: 12,
+                              fontWeight: 700,
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              gap: 6,
+                            }}
+                          >
+                            <Scissors size={14} />
+                            <span>Unduh Lembar Gunting-Tempel (PDF)</span>
+                          </button>
                         </div>
                       </div>
-
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setSesiLatihanAktif({
-                              subtes: { kode: pkt.subtes || pkt.mapel || 'TKA', nama: pkt.subtes || pkt.mapel || 'Latihan Kelas Tentor' },
-                              paket: { id: pkt.id || pkt.docId, judul: pkt.judulPaket || pkt.judul },
-                              daftarSoal: soalListPkt,
-                              mode: 'Active Recall',
-                              isWeeklyDrill: false,
-                            });
-                          }}
-                          style={{
-                            width: '100%',
-                            padding: '10px 14px',
-                            borderRadius: 10,
-                            border: 'none',
-                            background: '#0d9488',
-                            color: '#ffffff',
-                            fontSize: 13,
-                            fontWeight: 800,
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            gap: 6,
-                            boxShadow: '0 4px 10px rgba(13, 148, 136, 0.25)',
-                          }}
-                        >
-                          <Play size={15} />
-                          <span>Kerjakan di Kelas (Buku Besar)</span>
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={() => {
-                            handleCetakLembarGuntingPaket(
-                              { nama: pkt.subtes || pkt.mapel || 'Kelas Pendampingan' },
-                              { judul: pkt.judulPaket || pkt.judul, soalList: soalListPkt }
-                            );
-                          }}
-                          style={{
-                            width: '100%',
-                            padding: '8px 12px',
-                            borderRadius: 10,
-                            border: '1px solid #cbd5e1',
-                            background: '#ffffff',
-                            color: '#475569',
-                            fontSize: 12,
-                            fontWeight: 700,
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            gap: 6,
-                          }}
-                        >
-                          <Scissors size={14} />
-                          <span>Unduh Lembar Gunting-Tempel (PDF)</span>
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
               </div>
             )}
           </div>
 
-          {/* BAGIAN 2: SILABUS BAB RESMI BIMBEL GEMILANG */}
+          {/* BAGIAN B: KATALOG SILABUS BAB RESMI BIMBEL GEMILANG (TERKUNCI SECARA DEFAULT) */}
           <div>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, flexWrap: 'wrap', gap: 10 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -1139,7 +1294,7 @@ export default function JalurUjianAiPage() {
                     Katalog Silabus Bab Resmi Bimbel Gemilang
                   </h3>
                   <p style={{ margin: '2px 0 0', fontSize: 12, color: '#64748b' }}>
-                    Pilih subtes dan bab kurikulum resmi untuk latihan terstruktur bersama tentor.
+                    Paket silabus terstruktur per bab. <b>Terkunci secara default</b> dan baru dapat dikerjakan setelah kunci dibuka oleh Tentor di kelas.
                   </p>
                 </div>
               </div>
@@ -1222,6 +1377,7 @@ export default function JalurUjianAiPage() {
 
                       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 10 }}>
                         {grup.items.map((paket) => {
+                          const isPaketDibuka = isPaketDibukaTentor(paket);
                           const progres = bacaProgresLatihanSiswa(studentId);
                           const infoPaket = progres?.paketMap?.[paket.id];
                           const sudahDikerjakan = Boolean(infoPaket && infoPaket.total > 0);
@@ -1232,22 +1388,53 @@ export default function JalurUjianAiPage() {
                             <div
                               key={paket.id}
                               style={{
-                                background: '#f8fafc',
-                                border: '1px solid #e2e8f0',
+                                background: isPaketDibuka ? '#ffffff' : '#f8fafc',
+                                border: isPaketDibuka ? '1.5px solid #14b8a6' : '1px solid #e2e8f0',
                                 borderRadius: 12,
                                 padding: '12px 14px',
                                 display: 'flex',
                                 flexDirection: 'column',
                                 justifyContent: 'space-between',
                                 gap: 10,
+                                boxShadow: isPaketDibuka ? '0 3px 10px rgba(13, 148, 136, 0.1)' : 'none',
+                                opacity: isPaketDibuka ? 1 : 0.88,
                               }}
                             >
                               <div>
                                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6, marginBottom: 4 }}>
-                                  <span style={{ fontSize: 13, fontWeight: 800, color: '#0f172a' }}>
+                                  <span style={{ fontSize: 13, fontWeight: 800, color: isPaketDibuka ? '#0f172a' : '#475569' }}>
                                     {paket.judul}
                                   </span>
-                                  {sudahDikerjakan && (
+                                  <span style={{
+                                    fontSize: 9.5,
+                                    fontWeight: 800,
+                                    padding: '2px 6px',
+                                    borderRadius: 99,
+                                    background: isPaketDibuka ? '#ccfbf1' : '#f1f5f9',
+                                    color: isPaketDibuka ? '#0f766e' : '#64748b',
+                                    border: `1px solid ${isPaketDibuka ? '#5eead4' : '#e2e8f0'}`,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 3,
+                                  }}>
+                                    {isPaketDibuka ? (
+                                      <>
+                                        <span>🔓</span>
+                                        <span>Dibuka Tentor</span>
+                                      </>
+                                    ) : (
+                                      <>
+                                        <Lock size={10} color="#64748b" />
+                                        <span>Terkunci</span>
+                                      </>
+                                    )}
+                                  </span>
+                                </div>
+                                <div style={{ fontSize: 11, color: '#64748b' }}>
+                                  {paket.jumlahSoal} Soal • {paket.durasiMenit} Menit
+                                </div>
+                                {sudahDikerjakan && (
+                                  <div style={{ marginTop: 4 }}>
                                     <span style={{
                                       fontSize: 10,
                                       fontWeight: 800,
@@ -1256,67 +1443,121 @@ export default function JalurUjianAiPage() {
                                       background: isLunas ? '#dcfce7' : '#fee2e2',
                                       color: isLunas ? '#15803d' : '#b91c1c',
                                     }}>
-                                      {isLunas ? `🟢 ${akurasi}%` : `🟠 ${akurasi}%`}
+                                      {isLunas ? `🟢 Selesai (${akurasi}%)` : `🟠 ${akurasi}%`}
                                     </span>
-                                  )}
-                                </div>
-                                <div style={{ fontSize: 11, color: '#64748b' }}>
-                                  {paket.jumlahSoal} Soal • {paket.durasiMenit} Menit
-                                </div>
+                                  </div>
+                                )}
                               </div>
 
-                              <div style={{ display: 'flex', gap: 6 }}>
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    setSesiLatihanAktif({
-                                      subtes: subtesAktifObj,
-                                      paket,
-                                      daftarSoal: paket.soalList || [],
-                                      mode: 'Active Recall',
-                                      isWeeklyDrill: false,
-                                    });
-                                  }}
-                                  style={{
-                                    flex: 1,
-                                    padding: '7px 10px',
-                                    borderRadius: 8,
-                                    border: 'none',
-                                    background: '#0d9488',
-                                    color: '#ffffff',
-                                    fontSize: 11.5,
-                                    fontWeight: 700,
-                                    cursor: 'pointer',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    gap: 4,
-                                  }}
-                                >
-                                  <Play size={12} />
-                                  <span>Kerjakan</span>
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => handleCetakLembarGuntingPaket(subtesAktifObj, paket)}
-                                  title="Unduh Lembar Gunting Siswa (PDF)"
-                                  style={{
-                                    padding: '7px 10px',
-                                    borderRadius: 8,
-                                    border: '1px solid #cbd5e1',
-                                    background: '#ffffff',
-                                    color: '#475569',
-                                    fontSize: 11.5,
-                                    fontWeight: 700,
-                                    cursor: 'pointer',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: 4,
-                                  }}
-                                >
-                                  <Scissors size={12} />
-                                  <span>PDF</span>
-                                </button>
+                              <div>
+                                {isPaketDibuka ? (
+                                  <div style={{ display: 'flex', gap: 6 }}>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setSesiLatihanAktif({
+                                          subtes: subtesAktifObj,
+                                          paket,
+                                          daftarSoal: paket.soalList || [],
+                                          mode: 'Active Recall',
+                                          isWeeklyDrill: false,
+                                        });
+                                      }}
+                                      style={{
+                                        flex: 1,
+                                        padding: '7px 10px',
+                                        borderRadius: 8,
+                                        border: 'none',
+                                        background: '#0d9488',
+                                        color: '#ffffff',
+                                        fontSize: 11.5,
+                                        fontWeight: 700,
+                                        cursor: 'pointer',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        gap: 4,
+                                        boxShadow: '0 2px 6px rgba(13, 148, 136, 0.2)',
+                                      }}
+                                    >
+                                      <Play size={12} />
+                                      <span>Kerjakan</span>
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleCetakLembarGuntingPaket(subtesAktifObj, paket)}
+                                      title="Unduh Lembar Gunting Siswa (PDF)"
+                                      style={{
+                                        padding: '7px 10px',
+                                        borderRadius: 8,
+                                        border: '1px solid #cbd5e1',
+                                        background: '#ffffff',
+                                        color: '#475569',
+                                        fontSize: 11.5,
+                                        fontWeight: 700,
+                                        cursor: 'pointer',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: 4,
+                                      }}
+                                    >
+                                      <Scissors size={12} />
+                                      <span>PDF</span>
+                                    </button>
+                                  </div>
+                                ) : (
+                                  <div>
+                                    <div style={{ display: 'flex', gap: 6 }}>
+                                      <button
+                                        type="button"
+                                        disabled={true}
+                                        title="Paket terkunci, menunggu dibuka oleh Tentor di kelas"
+                                        style={{
+                                          flex: 1,
+                                          padding: '7px 10px',
+                                          borderRadius: 8,
+                                          border: '1px solid #e2e8f0',
+                                          background: '#f1f5f9',
+                                          color: '#94a3b8',
+                                          fontSize: 11.5,
+                                          fontWeight: 700,
+                                          cursor: 'not-allowed',
+                                          display: 'flex',
+                                          alignItems: 'center',
+                                          justifyContent: 'center',
+                                          gap: 4,
+                                        }}
+                                      >
+                                        <Lock size={12} color="#94a3b8" />
+                                        <span>Terkunci</span>
+                                      </button>
+                                      <button
+                                        type="button"
+                                        disabled={true}
+                                        title="Lembar soal baru bisa diunduh setelah dibuka Tentor di kelas"
+                                        style={{
+                                          padding: '7px 10px',
+                                          borderRadius: 8,
+                                          border: '1px solid #e2e8f0',
+                                          background: '#f1f5f9',
+                                          color: '#cbd5e1',
+                                          fontSize: 11.5,
+                                          fontWeight: 700,
+                                          cursor: 'not-allowed',
+                                          display: 'flex',
+                                          alignItems: 'center',
+                                          gap: 4,
+                                        }}
+                                      >
+                                        <Lock size={12} color="#cbd5e1" />
+                                        <span>PDF</span>
+                                      </button>
+                                    </div>
+                                    <div style={{ fontSize: 10, color: '#94a3b8', textAlign: 'center', marginTop: 4 }}>
+                                      🔒 Dibuka Tentor saat sesi kelas tatap muka
+                                    </div>
+                                  </div>
+                                )}
                               </div>
                             </div>
                           );
@@ -1330,6 +1571,7 @@ export default function JalurUjianAiPage() {
           </div>
         </div>
       )}
+
 
       {/* ==================================================================== */}
       {/* PILAR 2: MODUL BELAJAR (MATERI TEORI PEKANAN & RUMUS KILAT)         */}
