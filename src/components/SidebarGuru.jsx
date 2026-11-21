@@ -31,6 +31,13 @@ const SidebarGuru = () => {
 
   const menu = [
     { name: 'Dashboard', path: '/guru/dashboard', icon: <LayoutDashboard size={20} /> },
+    {
+      name: 'Kelas Pendampingan',
+      path: '/guru/cetak-latihan?jalur=pendampingan',
+      icon: <GraduationCap size={20} />,
+      badge: 'TKA & UTBK',
+      badgeColor: '#0d9488',
+    },
     { name: 'E-Learning (Modul & Kuis)', path: '/guru/modul', icon: <BookOpen size={20} /> },
     { name: 'Upload Modul Materi', path: '/guru/modul/materi', icon: <FileText size={20} /> },
     { name: 'Buat Kuis Interaktif', path: '/guru/modul/quiz', icon: <FileQuestion size={20} /> },
@@ -150,9 +157,12 @@ const SidebarGuru = () => {
           }}
         >
           {menu.map((item) => {
-            const isActive =
-              location.pathname === item.path ||
-              (item.path !== '/guru/dashboard' && item.path !== '/guru/modul' && location.pathname.startsWith(item.path));
+            const itemBase = item.path.split('?')[0];
+            const hasQuery = item.path.includes('?');
+            const isActive = hasQuery
+              ? (location.pathname === itemBase && location.search.includes('jalur=pendampingan'))
+              : (location.pathname === itemBase && !location.search.includes('jalur=pendampingan')) ||
+                (itemBase !== '/guru/dashboard' && itemBase !== '/guru/modul' && !hasQuery && location.pathname.startsWith(itemBase));
             return (
               <Link
                 key={item.path}
@@ -198,6 +208,24 @@ const SidebarGuru = () => {
                   {item.icon}
                 </span>
                 <span>{item.name}</span>
+                {item.badge && (
+                  <span
+                    style={{
+                      marginLeft: 'auto',
+                      fontSize: '9px',
+                      fontWeight: '800',
+                      padding: '2px 6px',
+                      borderRadius: '99px',
+                      background: item.badgeColor || '#0d9488',
+                      color: '#ffffff',
+                      letterSpacing: '0.02em',
+                      whiteSpace: 'nowrap',
+                      marginRight: isActive ? '12px' : '0',
+                    }}
+                  >
+                    {item.badge}
+                  </span>
+                )}
                 {isActive && (
                   <span
                     style={{

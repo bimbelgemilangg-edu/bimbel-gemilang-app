@@ -22,7 +22,7 @@ import {
   Rocket, Lock, CheckCircle2, Star, Sparkles, Brain, Trophy,
   ChevronLeft, AlertCircle, Play, ShieldAlert, Timer, Award,
   Flame, BarChart3, HelpCircle, X, Compass, ExternalLink,
-  Target, Zap, RotateCcw, ArrowRight, BookOpen, Layers, Check,
+  Target, Zap, RotateCcw, ArrowRight, BookOpen, Layers, Check, Scissors,
 } from 'lucide-react';
 import { useProfilSiswa } from '../../../utils/profilSiswa';
 import { useDataTargetKampus } from '../../../services/dataTargetKampus';
@@ -48,6 +48,8 @@ import {
   resetProgresLatihanSiswa,
 } from '../../../data/ambisLatihanBankSoal';
 import AmbisPracticePlayer from '../../../components/latihan/AmbisPracticePlayer';
+import { htmlPaketSiswa } from '../../../utils/cetakLatihan';
+import { cetakLewatIframe } from '../../../utils/kwitansi';
 
 /**
  * Membangun laporan breakdown penguasaan per subtes / per mapel murni (Benchmark AmbisPTN)
@@ -483,6 +485,49 @@ export default function JalurUjianAiPage() {
       daftarSoal: paket.soalList || [],
       mode: modeLatihan,
     });
+  };
+
+  // Handler Misi Pelunasan Mandiri di Rumah (5 Butir Soal Adaptif Serupa)
+  const handleMisiPelunasanMandiri = (subtes, paket) => {
+    setSubtesDetailModal(null);
+    const pool = (paket.soalList && paket.soalList.length > 0)
+      ? paket.soalList
+      : getBankSoalPerSubtes(subtes.kode, targetJenjang?.jenjang || 'SMA', bankSoalFirestore);
+
+    // Ambil 5 butir soal secara acak/adaptif untuk penguatan tuntas
+    const acak = [...pool];
+    for (let i = acak.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [acak[i], acak[j]] = [acak[j], acak[i]];
+    }
+    const soalRemedial = acak.slice(0, Math.min(5, acak.length));
+
+    setSesiLatihanAktif({
+      subtes,
+      paket: {
+        ...paket,
+        id: `${paket.id}_remedial_${Date.now()}`,
+        judul: `Misi Pelunasan Mandiri: ${paket.ringkasBab || paket.judul}`,
+      },
+      daftarSoal: soalRemedial,
+      mode: 'Active Recall',
+    });
+  };
+
+  // Handler cetak lembar gunting tempel langsung dari kartu paket
+  const handleCetakLembarGuntingPaket = (subtes, paket) => {
+    const paketData = {
+      judul: `${subtes?.nama || 'Latihan'} - ${paket.judul}`,
+      mapel: subtes?.nama || 'Pendampingan',
+      subjudul: 'Lembar Kotak Siap Gunting Ramah Buku Besar',
+    };
+    try {
+      const html = htmlPaketSiswa(paketData, paket.soalList || [], { kertas: 'A4' });
+      cetakLewatIframe(html, `Lembar-Gunting-${paket.judul}`);
+    } catch (err) {
+      console.error('Gagal mencetak lembar gunting tempel:', err);
+      alert('Terjadi kesalahan saat menyiapkan dokumen cetak.');
+    }
   };
 
   // Selesai Sesi Latihan
@@ -1232,29 +1277,106 @@ export default function JalurUjianAiPage() {
                       </span>
                     </div>
 
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                      {grup.items.map((paket) => (
-                        <div key={paket.id} style={st.kartuPaketModalItem}>
-                          <div>
-                            <div style={{ fontSize: 13.5, fontWeight: 800, color: '#0f172a' }}>
-                              {paket.judul}
-                            </div>
-                            <div style={{ fontSize: 11.5, color: '#64748b', marginTop: 2 }}>
-                              {paket.jumlahSoal} Butir Soal • Estimasi {paket.durasiMenit} Menit
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                      {grup.items.map((paket) => {
+                        const progres = bacaProgresLatihanSiswa(studentId);
+                        const infoPaket = progres?.paketMap?.[paket.id];
+                        const sudahDikerjakan = Boolean(infoPaket && infoPaket.total > 0);
+                        const akurasi = sudahDikerjakan ? (infoPaket.akurasi ?? Math.round((infoPaket.benar / Math.max(1, infoPaket.total)) * 100)) : 0;
+                        const isLunas = sudahDikerjakan && akurasi >= 70;
+
+                        return (
+                          <div key={paket.id} style={{ ...st.kartuPaketModalItem, flexDirection: 'column', alignItems: 'stretch', gap: 10 }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8, flexWrap: 'wrap' }}>
+                              <div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                                  <span style={{ fontSize: 13.5, fontWeight: 800, color: '#0f172a' }}>
+                                    {paket.judul}
+                                  </span>
+                                  {sudahDikerjakan && (
+                                    <span style={{
+                                      fontSize: 10.5,
+                                      fontWeight: 800,
+                                      padding: '2px 8px',
+                                      borderRadius: 99,
+                                      background: isLunas ? '#dcfce7' : '#fee2e2',
+                                      color: isLunas ? '#15803d' : '#b91c1c',
+                                      border: `1px solid ${isLunas ? '#86efac' : '#fca5a5'}`,
+                                    }}>
+                                      {isLunas ? `🟢 Lunas (${akurasi}%)` : `🟠 Belum Lunas (${akurasi}%)`}
+                                    </span>
+                                  )}
+                                </div>
+                                <div style={{ fontSize: 11.5, color: '#64748b', marginTop: 3 }}>
+                                  {paket.jumlahSoal} Butir Soal • Estimasi {paket.durasiMenit} Menit
+                                </div>
+                              </div>
+
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                                <button
+                                  type="button"
+                                  onClick={() => handleCetakLembarGuntingPaket(subtesDetailModal, paket)}
+                                  style={{
+                                    padding: '6px 10px',
+                                    fontSize: 11.5,
+                                    fontWeight: 700,
+                                    color: '#0d9488',
+                                    background: '#f0fdfa',
+                                    border: '1px solid #99f6e4',
+                                    borderRadius: 8,
+                                    cursor: 'pointer',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: 4,
+                                  }}
+                                  title="Cetak lembar potong gunting (✂️) tanpa kunci jawaban untuk Buku Besar"
+                                >
+                                  <Scissors size={13} />
+                                  <span>Lembar Gunting (PDF)</span>
+                                </button>
+
+                                {sudahDikerjakan && !isLunas && (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleMisiPelunasanMandiri(subtesDetailModal, paket)}
+                                    style={{
+                                      padding: '6px 12px',
+                                      fontSize: 11.5,
+                                      fontWeight: 800,
+                                      color: '#ffffff',
+                                      background: '#ea580c',
+                                      border: 'none',
+                                      borderRadius: 8,
+                                      cursor: 'pointer',
+                                      display: 'inline-flex',
+                                      alignItems: 'center',
+                                      gap: 5,
+                                      boxShadow: '0 2px 4px rgba(234, 88, 12, 0.25)',
+                                    }}
+                                    title="Selesaikan 5 soal adaptif untuk melunasi bab ini"
+                                  >
+                                    <Zap size={13} />
+                                    <span>Pelunasan (5 Soal)</span>
+                                  </button>
+                                )}
+
+                                <button
+                                  type="button"
+                                  onClick={() => handleMulaiPaketSpesifik(subtesDetailModal, paket)}
+                                  style={{
+                                    ...st.btnMulaiPaketModal,
+                                    background: subtesDetailModal.badgeWarna,
+                                    padding: '6px 14px',
+                                    fontSize: 12,
+                                  }}
+                                >
+                                  <span>{sudahDikerjakan ? 'Latih Ulang →' : 'Latih →'}</span>
+                                </button>
+                              </div>
                             </div>
                           </div>
-                          <button
-                            type="button"
-                            onClick={() => handleMulaiPaketSpesifik(subtesDetailModal, paket)}
-                            style={{
-                              ...st.btnMulaiPaketModal,
-                              background: subtesDetailModal.badgeWarna,
-                            }}
-                          >
-                            <span>Latih →</span>
-                          </button>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
                 ));

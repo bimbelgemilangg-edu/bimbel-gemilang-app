@@ -546,6 +546,50 @@ export default function CetakPaketLatihan() {
         ukuran gambar, dan nomor halaman; Bapak/Ibu tinggal memilih ukuran kertas.
       </p>
 
+      {params.get('jalur') === 'pendampingan' && (
+        <div style={{
+          background: '#f0fdfa',
+          border: '1.5px solid #5eead4',
+          borderRadius: 12,
+          padding: '14px 18px',
+          marginBottom: 16,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: 12,
+          boxShadow: '0 2px 8px rgba(13, 148, 136, 0.08)',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div style={{
+              width: 42,
+              height: 42,
+              borderRadius: 10,
+              background: '#0d9488',
+              color: '#fff',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: 20,
+              flexShrink: 0,
+            }}>
+              🎓
+            </div>
+            <div>
+              <h3 style={{ margin: 0, fontSize: 15, fontWeight: 800, color: '#0f766e' }}>
+                Portal Kelas Pendampingan Bersama Tentor (TKA SMP & UTBK SNBT)
+              </h3>
+              <p style={{ margin: '4px 0 0', fontSize: 12.5, color: '#134e4a', lineHeight: 1.5 }}>
+                Pilih paket materi pekanan dari Bank Soal. Cetak <strong>PAKET-SISWA (Kotak Siap Gunting ✂️)</strong> untuk ditempel di Buku Besar fisik siswa, dan cetak <strong>KUNCI-TENTOR</strong> sebagai panduan Bedah Akbar di kelas!
+              </p>
+            </div>
+          </div>
+          <span style={{ fontSize: 11, fontWeight: 800, color: '#0f766e', background: '#ccfbf1', padding: '4px 10px', borderRadius: 99 }}>
+            Anti-Nyontek • Ramah Buku Besar
+          </span>
+        </div>
+      )}
+
       {pesanError && (
         <div style={{ background: '#fef2f2', border: '1px solid #fecaca', color: '#b91c1c', borderRadius: 10, padding: '10px 12px', fontSize: 12, marginBottom: 12, display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
           <span style={{ flex: 1, minWidth: 200 }}>⚠️ {pesanError}</span>

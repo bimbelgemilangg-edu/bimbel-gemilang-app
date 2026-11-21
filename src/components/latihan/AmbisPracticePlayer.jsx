@@ -9,12 +9,18 @@
 // ==============================================================================
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { CheckCircle2, XCircle, ArrowRight, RotateCcw, Award, ChevronLeft, Sparkles, Brain, Flame } from 'lucide-react';
+import {
+  CheckCircle2, XCircle, ArrowRight, RotateCcw, Award, ChevronLeft,
+  Sparkles, Brain, Flame, Scissors, HelpCircle, Printer, BookOpen,
+  ChevronDown, ChevronUp
+} from 'lucide-react';
 import 'katex/dist/katex.min.css';
 import { InlineMath, BlockMath } from 'react-katex';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../firebase';
-import { simpanHasilSesiLatihan } from '../../data/ambisLatihanBankSoal.js';
+import { simpanHasilSesiLatihan, rapikanDanStrukturkanPembahasan } from '../../data/ambisLatihanBankSoal.js';
+import { htmlPaketSiswa } from '../../utils/cetakLatihan.js';
+import { cetakLewatIframe } from '../../utils/kwitansi.js';
 
 // Renderer rumus KaTeX matematika & fisika
 function renderMath(text) {
@@ -225,6 +231,16 @@ function renderPembahasanRapi(teksPembahasan) {
   );
 }
 
+// Fungsi pembuat kode unik butir soal untuk referensi Buku Besar fisik siswa
+function getKodeSoal(soal, indeks = 0) {
+  if (!soal) return `#SOAL-${indeks + 1}`;
+  if (soal.kodeUnik) return `#${soal.kodeUnik}`;
+  const subtes = String(soal.subtesKode || 'TKA').toUpperCase();
+  const rawId = String(soal.id || '').replace(/[^a-zA-Z0-9]/g, '');
+  const idTail = rawId.length >= 4 ? rawId.slice(-4).toUpperCase() : String(indeks + 1).padStart(2, '0');
+  return `#${subtes}-${idTail}`;
+}
+
 export default function AmbisPracticePlayer({
   subtes,
   paket,
@@ -234,8 +250,15 @@ export default function AmbisPracticePlayer({
   onSelesai,
   onKembali,
 }) {
-  // Antrean soal: pada Active Recall, soal salah akan di-push ke akhir
-  const [antreanSoal, setAntreanSoal] = useState(() => [...daftarSoal]);
+  // Antrean soal: diacak saat inisialisasi agar siswa bersebelahan di kelas tidak sama nomornya (Anti-Nyontek)
+  const [antreanSoal, setAntreanSoal] = useState(() => {
+    const salinan = [...daftarSoal];
+    for (let i = salinan.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [salinan[i], salinan[j]] = [salinan[j], salinan[i]];
+    }
+    return salinan;
+  });
   const [indeksAktif, setIndeksAktif] = useState(0);
 
   // Status pengerjaan butir aktif (Mendukung PG Sederhana, PG Kompleks, dan Tabel Benar/Salah)
@@ -244,6 +267,11 @@ export default function AmbisPracticePlayer({
   const [jawabanBenarSalah, setJawabanBenarSalah] = useState({}); // Tabel Benar/Salah ({ [rowIdx]: 'benar' | 'salah' })
   const [jawabanIsian, setJawabanIsian] = useState(''); // Isian Singkat
   const [sudahDiperiksa, setSudahDiperiksa] = useState(false);
+
+  // Status dan Kantung Soal Belum Paham (Kantung Bedah Akbar Tentor)
+  const [daftarBelumPaham, setDaftarBelumPaham] = useState([]);
+  const [statusBelumPahamAktif, setStatusBelumPahamAktif] = useState(false);
+  const [soalTerbukaPembahasanId, setSoalTerbukaPembahasanId] = useState(null);
 
   // Rekap hasil pertama kali dijawab (untuk penilaian skor objektif)
   const [riwayatJawabanPertama, setRiwayatJawabanPertama] = useState({});
@@ -256,6 +284,7 @@ export default function AmbisPracticePlayer({
   const soalSekarang = antreanSoal[indeksAktif] || null;
   const totalSoalAwal = daftarSoal.length;
   const nomorUrutTampil = Math.min(indeksAktif + 1, antreanSoal.length);
+  const kodeSoalAktif = soalSekarang ? getKodeSoal(soalSekarang, indeksAktif) : '';
 
   // Reset state per butir soal baru
   useEffect(() => {
@@ -264,7 +293,46 @@ export default function AmbisPracticePlayer({
     setJawabanBenarSalah({});
     setJawabanIsian('');
     setSudahDiperiksa(false);
+    setStatusBelumPahamAktif(false);
   }, [indeksAktif]);
+
+  // Handler tandai belum paham / lewati soal untuk dibedah bersama Tentor
+  const handleBelumPaham = () => {
+    if (!soalSekarang || sudahDiperiksa) return;
+    setDaftarBelumPaham((prev) => {
+      if (prev.some((s) => s.id === soalSekarang.id)) return prev;
+      return [...prev, { ...soalSekarang, kodeSoal: kodeSoalAktif, alasan: 'Ditandai Belum Paham / Dilewati Siswa' }];
+    });
+    setRiwayatJawabanPertama((prev) => {
+      if (prev[soalSekarang.id] !== undefined) return prev;
+      return {
+        ...prev,
+        [soalSekarang.id]: { benar: false, dilewati: true, kodeSoal: kodeSoalAktif },
+      };
+    });
+    setStatusBelumPahamAktif(true);
+    setSudahDiperiksa(true);
+
+    if (mode === 'Active Recall') {
+      setAntreanSoal((prev) => [...prev, soalSekarang]);
+    }
+  };
+
+  // Handler cetak lembar gunting tempel (PDF tanpa kunci)
+  const handleCetakLembarGuntingTempel = () => {
+    const paketData = {
+      judul: paket?.judul || `${subtes?.nama || 'Latihan'} - Paket Pendampingan`,
+      mapel: subtes?.nama || 'Pendampingan',
+      subjudul: 'Lembar Kotak Siap Gunting Ramah Buku Besar',
+    };
+    try {
+      const html = htmlPaketSiswa(paketData, antreanSoal, { kertas: 'A4' });
+      cetakLewatIframe(html, `Lembar-Gunting-${paketData.judul}`);
+    } catch (err) {
+      console.error('Gagal mencetak lembar gunting tempel:', err);
+      alert('Terjadi kesalahan saat menyiapkan dokumen cetak.');
+    }
+  };
 
   // Evaluasi kelayakan tombol 'Periksa Jawaban'
   const canPeriksa = useMemo(() => {
@@ -349,7 +417,7 @@ export default function AmbisPracticePlayer({
       const durasiDetik = Math.round((Date.now() - waktuMulai) / 1000);
       let benarCount = 0;
       Object.values(riwayatJawabanPertama).forEach((b) => {
-        if (b === true) benarCount++;
+        if (b === true || b?.benar === true) benarCount++;
       });
 
       const hasil = simpanHasilSesiLatihan({
@@ -361,6 +429,25 @@ export default function AmbisPracticePlayer({
         jawabanMap: riwayatJawabanPertama,
         benarCount,
         durasiDetik,
+      });
+
+      // Kumpulkan kantung soal belum tuntas untuk Bedah Akbar bersama Tentor di kelas
+      const kantungBedah = [];
+      antreanSoal.forEach((s, idx) => {
+        const hist = riwayatJawabanPertama[s.id];
+        const isBenar = hist === true || hist?.benar === true;
+        const isDilewati = hist?.dilewati || daftarBelumPaham.some((bp) => bp.id === s.id);
+        if (!isBenar || isDilewati) {
+          if (!kantungBedah.some((kb) => kb.id === s.id)) {
+            kantungBedah.push({
+              ...s,
+              nomorAwal: idx + 1,
+              kodeSoal: getKodeSoal(s, idx),
+              status: isDilewati ? 'belum_paham' : 'salah',
+              alasan: isDilewati ? 'Ditandai Belum Paham oleh Siswa' : 'Jawaban Percobaan Pertama Kurang Tepat',
+            });
+          }
+        }
       });
 
       // 🔥 Catat otomatis ke Firestore tryout_sesi agar langsung terhubung ke Statistik Belajar & Kalender Heatmap
@@ -396,20 +483,21 @@ export default function AmbisPracticePlayer({
         skorPersen: Math.round((benarCount / Math.max(1, totalSoalAwal)) * 100),
         xpDapat: hasil.xpDapat || benarCount * 10,
         durasiDetik,
+        kantungBedah,
       });
       setSesiTuntas(true);
     }
   };
 
   // --------------------------------------------------------------------------
-  // LAYAR HASIL AKHIR SESI LATIHAN
+  // LAYAR HASIL AKHIR SESI LATIHAN (Lunas vs Belum Lunas & Kantung Bedah Akbar)
   // --------------------------------------------------------------------------
   if (sesiTuntas && hasilFinal) {
     const isLolos = hasilFinal.skorPersen >= 70;
     return (
       <div style={st.wrap}>
         <div style={st.cardRingkasan}>
-          <div style={{ textAlign: 'center', marginBottom: 20 }}>
+          <div style={{ textAlign: 'center', marginBottom: 16 }}>
             <div style={{
               width: 72,
               height: 72,
@@ -419,16 +507,30 @@ export default function AmbisPracticePlayer({
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              margin: '0 auto 14px',
+              margin: '0 auto 12px',
             }}>
               {isLolos ? <Award size={36} color="#10b981" /> : <Flame size={36} color="#f59e0b" />}
             </div>
             <h2 style={{ fontSize: 22, fontWeight: 800, color: '#0f172a', margin: '0 0 6px' }}>
-              {isLolos ? 'Latihan Tuntas dengan Gemilang!' : 'Latihan Selesai, Terus Asah!'}
+              {isLolos ? 'Latihan Tuntas & Lunas!' : 'Sesi Selesai — Belum Lunas (Perlu Bedah Tentor)'}
             </h2>
-            <p style={{ fontSize: 14, color: '#64748b', margin: 0 }}>
-              Subtes <strong>{subtes?.nama || 'UTBK'}</strong> • Mode {mode}
+            <p style={{ fontSize: 14, color: '#64748b', margin: '0 0 10px' }}>
+              Subtes <strong>{subtes?.nama || 'TKA / UTBK'}</strong> • Mode {mode}
             </p>
+            <div style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 8,
+              padding: '6px 16px',
+              borderRadius: 99,
+              fontSize: 13,
+              fontWeight: 800,
+              background: isLolos ? '#dcfce7' : '#ffedd5',
+              color: isLolos ? '#15803d' : '#9a3412',
+              border: `1.5px solid ${isLolos ? '#86efac' : '#fdba74'}`,
+            }}>
+              <span>{isLolos ? '🟢 STATUS: LUNAS & TUNTAS' : '🟠 STATUS: BELUM LUNAS (Perlu Bedah Bersama Tentor)'}</span>
+            </div>
           </div>
 
           <div style={st.gridStatistik}>
@@ -446,14 +548,165 @@ export default function AmbisPracticePlayer({
             </div>
           </div>
 
+          {/* DOKUMEN CETAK LEMBAR GUNTING TEMPEL UNTUK BUKU BESAR */}
+          <div style={{
+            background: '#f0fdfa',
+            border: '1.5px solid #99f6e4',
+            borderRadius: 14,
+            padding: 16,
+            marginBottom: 20,
+            textAlign: 'center',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 6 }}>
+              <Scissors size={20} color="#0d9488" />
+              <h3 style={{ margin: 0, fontSize: 15, fontWeight: 800, color: '#0f766e' }}>
+                Dokumen Lembar Gunting-Tempel (Buku Besar)
+              </h3>
+            </div>
+            <p style={{ fontSize: 12.5, color: '#134e4a', margin: '0 0 14px', lineHeight: 1.5 }}>
+              Cetak naskah soal bergaris potong (✂️) tanpa kunci jawaban untuk digunting dan ditempel di Buku Besar fisikmu di samping coretan alur rumus untuk diparaf oleh Tentor.
+            </p>
+            <button
+              type="button"
+              onClick={handleCetakLembarGuntingTempel}
+              style={{
+                background: '#0d9488',
+                color: '#ffffff',
+                border: 'none',
+                borderRadius: 10,
+                padding: '10px 20px',
+                fontSize: 13.5,
+                fontWeight: 800,
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 8,
+                boxShadow: '0 2px 6px rgba(13, 148, 136, 0.25)',
+              }}
+            >
+              <Scissors size={16} />
+              <span>Unduh / Cetak Lembar Gunting-Tempel (PDF)</span>
+            </button>
+          </div>
+
+          {/* KANTUNG BEDAH AKBAR TENTOR */}
+          {hasilFinal.kantungBedah && hasilFinal.kantungBedah.length > 0 && (
+            <div style={{
+              background: '#ffffff',
+              border: '1.5px solid #fed7aa',
+              borderRadius: 14,
+              padding: 16,
+              marginBottom: 20,
+              boxShadow: '0 2px 8px rgba(0,0,0,0.03)',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, borderBottom: '1px solid #ffedd5', paddingBottom: 8, flexWrap: 'wrap', gap: 8 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ fontSize: 18 }}>🎒</span>
+                  <div>
+                    <h4 style={{ margin: 0, fontSize: 14, fontWeight: 800, color: '#9a3412' }}>
+                      Kantung Soal Belum Tuntas ({hasilFinal.kantungBedah.length} Butir)
+                    </h4>
+                    <span style={{ fontSize: 11, color: '#c2410c' }}>
+                      Siap dibedah bersama Tentor di papan tulis sesi kelas tatap muka
+                    </span>
+                  </div>
+                </div>
+                <span style={{ fontSize: 11, fontWeight: 700, color: '#c2410c', background: '#ffedd5', padding: '3px 8px', borderRadius: 99 }}>
+                  Fokus Sesi Offline
+                </span>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {hasilFinal.kantungBedah.map((item, bIdx) => {
+                  const isBuka = soalTerbukaPembahasanId === item.id;
+                  return (
+                    <div
+                      key={item.id || bIdx}
+                      style={{
+                        background: '#fffaf5',
+                        border: '1px solid #fed7aa',
+                        borderRadius: 10,
+                        padding: '10px 14px',
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <span style={{
+                            fontSize: 11,
+                            fontWeight: 800,
+                            color: '#9a3412',
+                            background: '#ffedd5',
+                            padding: '2px 8px',
+                            borderRadius: 6,
+                            fontFamily: 'monospace',
+                          }}>
+                            {item.kodeSoal}
+                          </span>
+                          <span style={{ fontSize: 13, fontWeight: 700, color: '#1e293b' }}>
+                            {item.topik || 'Soal Latihan'}
+                          </span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <span style={{
+                            fontSize: 11,
+                            fontWeight: 700,
+                            padding: '2px 8px',
+                            borderRadius: 99,
+                            background: item.status === 'belum_paham' ? '#fee2e2' : '#fef3c7',
+                            color: item.status === 'belum_paham' ? '#b91c1c' : '#b45309',
+                          }}>
+                            {item.status === 'belum_paham' ? '🤷‍♂️ Ditandai Belum Paham' : '❌ Perlu Penguatan'}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => setSoalTerbukaPembahasanId(isBuka ? null : item.id)}
+                            style={{
+                              background: 'transparent',
+                              border: '1px solid #fed7aa',
+                              borderRadius: 6,
+                              padding: '2px 8px',
+                              fontSize: 11,
+                              fontWeight: 700,
+                              color: '#c2410c',
+                              cursor: 'pointer',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: 4,
+                            }}
+                          >
+                            <span>{isBuka ? 'Tutup' : 'Lihat Solusi KaTeX'}</span>
+                            {isBuka ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+                          </button>
+                        </div>
+                      </div>
+
+                      <div style={{ fontSize: 13, color: '#475569', marginTop: 6, lineHeight: 1.5 }}>
+                        {String(item.soal || '').slice(0, 140)}...
+                      </div>
+
+                      {isBuka && (
+                        <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px dashed #fed7aa' }}>
+                          <div style={{ fontSize: 11, fontWeight: 800, color: '#9a3412', marginBottom: 4 }}>
+                            📖 Langkah Penyelesaian Terstruktur:
+                          </div>
+                          {renderPembahasanRapi(rapikanDanStrukturkanPembahasan(item.pembahasan, item))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           <div style={{ background: '#f8fafc', borderRadius: 12, padding: 14, marginBottom: 20, border: '1px solid #e2e8f0', fontSize: 13, color: '#475569' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontWeight: 700, color: '#0f172a', marginBottom: 4 }}>
               <Brain size={16} color="#0d9488" />
               <span>Evaluasi Asisten Belajar Gemilang</span>
             </div>
             {isLolos
-              ? `Pemahamanmu pada subtes ${subtes?.nama} sudah sangat solid! Pertahankan konsistensi latihan untuk memperkuat daya ingat aktif menuju target PTN.`
-              : `Masih ada ${hasilFinal.salahCount} butir soal yang keliru pada percobaan pertama. Manfaatkan fitur Active Recall untuk melatih kembali poin yang belum tuntas.`}
+              ? `Pemahamanmu pada subtes ${subtes?.nama} sudah sangat solid (Lunas)! Tunjukkan caramu di Buku Besar ke Tentor untuk diparaf.`
+              : `Masih ada ${hasilFinal.salahCount} butir soal yang belum tuntas. Bedah soal-soal di atas bersama Tentor di kelas, lalu selesaikan Misi Pelunasan Mandiri di rumah untuk melunasi status bab ini!`}
           </div>
 
           <div style={{ display: 'flex', gap: 10 }}>
@@ -463,6 +716,7 @@ export default function AmbisPracticePlayer({
                 setAntreanSoal([...daftarSoal]);
                 setIndeksAktif(0);
                 setRiwayatJawabanPertama({});
+                setDaftarBelumPaham([]);
                 setSesiTuntas(false);
               }}
               style={st.btnUlangi}
@@ -544,13 +798,64 @@ export default function AmbisPracticePlayer({
 
       {/* KARTU SOAL */}
       <div style={st.cardSoal}>
-        {/* Topik & Subkategori */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-          <span style={st.tagTopik}>
-            {soalSekarang.topik || 'Latihan Subtes'}
-          </span>
+        {/* Topik, Kode Soal Buku Besar, & Subkategori */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, flexWrap: 'wrap', gap: 8 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+            <span style={st.tagTopik}>
+              {soalSekarang.topik || 'Latihan Subtes'}
+            </span>
+            <span style={{
+              fontSize: 11,
+              fontWeight: 800,
+              color: '#1d4ed8',
+              background: '#dbeafe',
+              border: '1px solid #bfdbfe',
+              borderRadius: 6,
+              padding: '2px 8px',
+              fontFamily: 'monospace',
+              letterSpacing: '0.04em',
+            }}>
+              {kodeSoalAktif}
+            </span>
+          </div>
           <span style={{ fontSize: 11, color: '#94a3b8', fontWeight: 600 }}>
             Tingkat: {soalSekarang.tingkatKesulitan || 'Standar UTBK'}
+          </span>
+        </div>
+
+        {/* BANNER BUKU BESAR FISIK */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 10,
+          background: '#eff6ff',
+          border: '1px solid #bfdbfe',
+          borderRadius: 10,
+          padding: '8px 12px',
+          marginBottom: 14,
+          fontSize: 12.5,
+          color: '#1e40af',
+          lineHeight: 1.45,
+          flexWrap: 'wrap',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontSize: 16 }}>📖</span>
+            <span>
+              <strong>Buku Besar Fisik:</strong> Catat kode <strong>{kodeSoalAktif}</strong> & coret langkah rumus pengerjaanmu di buku tulis sebelum memilih jawaban!
+            </span>
+          </div>
+          <span style={{
+            fontSize: 10.5,
+            fontWeight: 800,
+            color: '#2563eb',
+            background: '#ffffff',
+            border: '1px solid #bfdbfe',
+            borderRadius: 99,
+            padding: '2px 8px',
+            whiteSpace: 'nowrap',
+          }}>
+            Soal Diacak • Anti-Nyontek
           </span>
         </div>
 
@@ -913,7 +1218,14 @@ export default function AmbisPracticePlayer({
               background: isBenar ? '#f0fdf4' : '#fff1f2',
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                {isBenar ? (
+                {statusBelumPahamAktif ? (
+                  <>
+                    <HelpCircle size={20} color="#ea580c" />
+                    <span style={{ fontWeight: 800, color: '#c2410c', fontSize: 14 }}>
+                      Ditandai Belum Paham (Disimpan ke Kantung Bedah Akbar untuk Dibahas Bersama Tentor)
+                    </span>
+                  </>
+                ) : isBenar ? (
                   <>
                     <CheckCircle2 size={20} color="#10b981" />
                     <span style={{ fontWeight: 800, color: '#166534', fontSize: 14 }}>
@@ -930,7 +1242,7 @@ export default function AmbisPracticePlayer({
                 )}
               </div>
 
-              {mode === 'Active Recall' && !isBenar && (
+              {mode === 'Active Recall' && !isBenar && !statusBelumPahamAktif && (
                 <div style={{ fontSize: 12, color: '#b91c1c', marginBottom: 8, fontStyle: 'italic' }}>
                   💡 Mode Active Recall aktif: Soal ini akan dimunculkan kembali di akhir sesi hingga Anda berhasil menjawabnya dengan benar.
                 </div>
@@ -941,7 +1253,7 @@ export default function AmbisPracticePlayer({
                 <span>Langkah Pembahasan & Analisis:</span>
               </div>
               <div>
-                {renderPembahasanRapi(soalSekarang.pembahasan)}
+                {renderPembahasanRapi(rapikanDanStrukturkanPembahasan(soalSekarang.pembahasan, soalSekarang))}
               </div>
             </div>
           );
@@ -950,19 +1262,45 @@ export default function AmbisPracticePlayer({
         {/* TOMBOL AKSI */}
         <div style={{ marginTop: 20 }}>
           {!sudahDiperiksa ? (
-            <button
-              type="button"
-              disabled={!canPeriksa}
-              onClick={handlePeriksaJawaban}
-              style={{
-                ...st.btnAksiUtama,
-                opacity: canPeriksa ? 1 : 0.6,
-                cursor: canPeriksa ? 'pointer' : 'not-allowed',
-              }}
-            >
-              <span>Periksa Jawaban</span>
-              <CheckCircle2 size={18} />
-            </button>
+            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+              <button
+                type="button"
+                disabled={!canPeriksa}
+                onClick={handlePeriksaJawaban}
+                style={{
+                  ...st.btnAksiUtama,
+                  flex: '2 1 200px',
+                  opacity: canPeriksa ? 1 : 0.6,
+                  cursor: canPeriksa ? 'pointer' : 'not-allowed',
+                }}
+              >
+                <span>Periksa Jawaban</span>
+                <CheckCircle2 size={18} />
+              </button>
+              <button
+                type="button"
+                onClick={handleBelumPaham}
+                style={{
+                  flex: '1 1 140px',
+                  background: '#fff7ed',
+                  border: '1.5px solid #fed7aa',
+                  color: '#c2410c',
+                  borderRadius: 12,
+                  padding: '12px 14px',
+                  fontSize: 13,
+                  fontWeight: 800,
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 6,
+                  transition: 'all 0.15s ease',
+                }}
+                title="Tandai butir ini ke Kantung Bedah Akbar untuk dibahas bersama Tentor di kelas"
+              >
+                <span>🤷‍♂️ Belum Paham / Lewati</span>
+              </button>
+            </div>
           ) : (
             <button
               type="button"

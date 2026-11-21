@@ -1002,6 +1002,10 @@ function App() {
           path="/guru/cetak-latihan"
           element={<GuruPage><CetakPaketLatihan /></GuruPage>}
         />
+        <Route
+          path="/guru/pendampingan"
+          element={<GuruPage><CetakPaketLatihan /></GuruPage>}
+        />
         <Route path="/guru/perpustakaan" element={<GuruPage><PerpustakaanKonten peran="guru" /></GuruPage>} />
         <Route path="/guru/sesi-live" element={<GuruRoute><LiveSessionTeacher /></GuruRoute>} />
         {/* MATERI v2 FASE 3 -- panggung presentasi sinkron.

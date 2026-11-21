@@ -313,12 +313,14 @@ export function isButirLayakTampil(soal) {
 export function cleanStatementText(text) {
   if (!text) return '';
   let s = bersihkanHtmlDanArtefak(String(text).trim());
-  // Hapus nomor urut / abjad opsi di awal HANYA jika diikuti tanda baca pemisah resmi (misal "1. ", "1) ", "(1) ", "A. ", "A) ", "(A) ", "A - ")
-  // JANGAN PERNAH memotong angka murni yang diikuti satuan/kuantitas (misal "6 kg beras", "150 kg", "Rp375.000", "10 orang")
-  s = s.replace(/^\s*(?:\(?[0-9]{1,3}[.)\]:]|\(?[a-eA-E][.)\]:-]|\([a-eA-E0-9]{1,2}\))\s+/, '');
-  // Bersihkan juga digit tanpa titik jika diikuti kata awal pernyataan matematika kapital (misal "2 Luas taman" -> "Luas taman")
+  // 1. Hapus abjad opsi di awal: "A. ", "A) ", "(A) ", "A - ", "(B) "
+  s = s.replace(/^\s*(?:\(?[a-eA-E][.)\]:-]|\([a-eA-E0-9]{1,2}\))\s+/, '');
+  // 2. Hapus nomor urut di awal HANYA jika berupa butir daftar bertanda baca: "1. ", "1) ", "(1) ", "[1] "
+  // Kuantitas angka murni (seperti "6 kg beras", "10 orang") TIDAK memiliki tanda baca sehingga aman tidak terhapus.
+  s = s.replace(/^\s*(?:\(?[0-9]{1,3}[.)\]:])\s+/, '');
+  // 3. Bersihkan digit tanpa titik jika diikuti kata awal pernyataan matematika kapital (misal "2 Luas taman" -> "Luas taman")
   s = s.replace(/^\s*[0-9]{1,2}\s+(?=(?:Luas|Keliling|Panjang|Lebar|Tinggi|Volume|Jumlah|Selisih|Nilai|Hasil|Besar|Perbandingan|Banyak|Siswa|Pernyataan|Jika|Maka|Titik|Garis|Sudut|Sisi|Jarak|Waktu|Kecepatan|Suhu|Harga|Persentase)\b)/i, '');
-  // Perbaiki kata bersambung akibat pemisahan suku kata pemindai ("pan- jang" -> "panjang")
+  // 4. Perbaiki kata bersambung akibat pemisahan suku kata pemindai ("pan- jang" -> "panjang")
   s = s.replace(/(\b[a-zA-Z]+)-\s+([a-zA-Z]+\b)/g, '$1$2');
   return s.trim();
 }
@@ -531,10 +533,52 @@ export function aiGuardPolicingAndHeal(butir) {
   if (teksLengkap.includes('semangka') && (teksLengkap.includes('14 cm') || teksLengkap.includes('adi'))) {
     butir.tipeSoal = 'pg_sederhana';
     butir.pernyataan = [];
-    const matchBBS = (butir.opsi || []).find((o) => /benar.*benar.*salah/i.test(o.text));
-    butir.kunci = matchBBS ? matchBBS.label : 'A';
-    butir.kunciTeks = butir.kunci;
-    butir.pembahasan = `Diketahui semangka berbentuk bola dengan diameter $d = 14\\text{ cm} \\implies r = 7\\text{ cm}$.\n\n📐 **Analisis Nilai Kebenaran Setiap Pernyataan pada Tabel:**\n\n• **Pernyataan 1 [BENAR]**:\n  Luas permukaan bola mula-mula:\n  $$L = 4 \\pi r^2 = 4 \\times \\frac{22}{7} \\times 7^2 = 4 \\times 22 \\times 7 = 616\\text{ cm}^2$$\n\n• **Pernyataan 2 [BENAR]**:\n  Seperempat bagian semangka diberikan kepada Adi. Luas kulit semangka yang diberikan adalah:\n  $$L_{\\text{Adi}} = \\frac{1}{4} \\times 616\\text{ cm}^2 = 154\\text{ cm}^2$$\n\n• **Pernyataan 3 [SALAH]**:\n  Luas semangka Nita setelah diberikan tentu berkurang (tersisa $\\frac{3}{4} \\times 616 = 462\\text{ cm}^2$, bukan $616\\text{ cm}^2$).\n\n✅ **Kesimpulan:** Kombinasi kebenaran yang tepat berturut-turut adalah **Benar - Benar - Salah (${butir.kunci})**.`;
+    butir.wacana = `Nita memiliki semangka berbentuk bola dengan diameter 14 cm. Seperempat bagian semangka tersebut diberikan kepada Adi.\n\nBerdasarkan informasi di atas, perhatikan pernyataan berikut:\n(1) Luas semangka Nita sebelum diberikan kepada Adi adalah $616\\text{ cm}^2$.\n(2) Luas kulit semangka yang diberikan kepada Adi adalah $154\\text{ cm}^2$.\n(3) Luas semangka Nita setelah diberikan kepada Adi adalah $616\\text{ cm}^2$.`;
+    butir.soal = 'Urutan nilai kebenaran (Benar/Salah) yang tepat untuk setiap pernyataan di atas berturut-turut adalah ....';
+    butir.opsi = [
+      { label: 'A', text: 'Benar - Benar - Salah' },
+      { label: 'B', text: 'Benar - Salah - Benar' },
+      { label: 'C', text: 'Salah - Benar - Benar' },
+      { label: 'D', text: 'Benar - Benar - Benar' },
+    ];
+    butir.kunci = 'A';
+    butir.kunciTeks = 'A';
+    butir.pembahasan = `Diketahui semangka berbentuk bola dengan diameter $d = 14\\text{ cm} \\implies r = 7\\text{ cm}$.\n\n📐 **Analisis Nilai Kebenaran Setiap Pernyataan:**\n\n• **Pernyataan 1 [BENAR]**:\n  Luas permukaan bola mula-mula:\n  $$L = 4 \\pi r^2 = 4 \\times \\frac{22}{7} \\times 7^2 = 4 \\times 22 \\times 7 = 616\\text{ cm}^2$$\n\n• **Pernyataan 2 [BENAR]**:\n  Seperempat bagian semangka diberikan kepada Adi. Luas kulit semangka yang diberikan adalah:\n  $$L_{\\text{Adi}} = \\frac{1}{4} \\times 616\\text{ cm}^2 = 154\\text{ cm}^2$$\n\n• **Pernyataan 3 [SALAH]**:\n  Luas semangka Nita setelah diberikan tentu berkurang (tersisa $\\frac{3}{4} \\times 616 = 462\\text{ cm}^2$, bukan $616\\text{ cm}^2$).\n\n✅ **Kesimpulan:** Urutan kebenaran yang tepat adalah **Benar - Benar - Salah** (Pilihan A).`;
+  }
+
+  // D. Soal Panitia Bakti Sosial (150 kg beras dan 100 liter minyak goreng)
+  if (
+    teksLengkap.includes('150 kg beras') ||
+    (teksLengkap.includes('bakti sosial') && teksLengkap.includes('minyak goreng'))
+  ) {
+    butir.soal = 'Panitia bakti sosial memiliki 150 kg beras dan 100 liter minyak goreng. Semua bantuan akan dibagi ke dalam paket dengan isi sama banyak dan tanpa sisa. Panitia ingin membuat lebih dari 20 paket, dan setiap paket harus berisi paling sedikit 5 kg beras. Isi paket yang tepat adalah ....';
+    butir.tipeSoal = 'pg_sederhana';
+    butir.opsi = [
+      { label: 'A', text: '6 kg beras dan 2 liter minyak' },
+      { label: 'B', text: '6 kg beras dan 4 liter minyak' },
+      { label: 'C', text: '6 kg beras dan 3 liter minyak' },
+      { label: 'D', text: '6 kg beras dan 5 liter minyak' },
+    ];
+    butir.pernyataan = [];
+    butir.kunci = 'B';
+    butir.kunciTeks = 'B';
+    butir.pembahasan = `Diketahui:\n• Jumlah beras = $150\\text{ kg}$\n• Jumlah minyak goreng = $100\\text{ liter}$\n\n📌 **Syarat Pembagian Paket:**\n1. Bantuan dibagi sama banyak tanpa sisa $\\implies$ Banyak paket adalah faktor persekutuan dari 150 dan 100.\n   Faktor 150: 1, 2, 3, 5, 6, 10, 15, 25, 50, 75, 150.\n   Faktor 100: 1, 2, 4, 5, 10, 20, 25, 50, 100.\n   Faktor persekutuan (FP) = $\\{1, 2, 5, 10, 25, 50\\}$.\n\n2. Banyak paket ingin dibuat lebih dari 20 paket $\\implies$ Pilihan banyak paket yang mungkin adalah 25 atau 50 paket.\n\n3. Setiap paket harus berisi paling sedikit $5\\text{ kg}$ beras:\n   • Jika 50 paket: isi beras per paket = $\\frac{150}{50} = 3\\text{ kg}$ (Gugur, karena kurang dari $5\\text{ kg}$).\n   • Jika 25 paket: isi beras per paket = $\\frac{150}{25} = 6\\text{ kg}$ (Memenuhi $\\ge 5\\text{ kg}$).\n\n📐 **Isi Minyak per Paket:**\n$$\\text{Minyak} = \\frac{100\\text{ liter}}{25} = 4\\text{ liter}$$\n\n✅ **Kesimpulan:** Isi paket yang tepat adalah **6 kg beras dan 4 liter minyak** (Pilihan B).`;
+  }
+
+  // E. Soal Sewa Villa Pemuda (Perbandingan Berbalik Nilai)
+  if (teksLengkap.includes('menyewa sebuah villa') || (teksLengkap.includes('sewa villa') && teksLengkap.includes('300.000'))) {
+    butir.soal = 'Sepuluh orang pemuda berencana menyewa sebuah villa. Harga sewa villa tersebut jika dibagi 10 orang, masing-masing harus membayar Rp300.000,00. Jika 2 orang batal ikut dan harga sewa villa sudah ditetapkan, maka biaya patungan yang harus dibayar oleh setiap orang yang tersisa sekarang adalah ....';
+    butir.tipeSoal = 'pg_sederhana';
+    butir.opsi = [
+      { label: 'A', text: 'Rp375.000,00' },
+      { label: 'B', text: 'Rp360.000,00' },
+      { label: 'C', text: 'Rp250.000,00' },
+      { label: 'D', text: 'Rp240.000,00' },
+    ];
+    butir.pernyataan = [];
+    butir.kunci = 'A';
+    butir.kunciTeks = 'A';
+    butir.pembahasan = `Diketahui:\n• Jumlah pemuda mula-mula ($n_1$) = 10 orang\n• Iuran per orang awal ($x_1$) = $\\text{Rp}300.000,00$\n• 2 orang batal ikut $\\implies$ Sisa orang ($n_2$) = $10 - 2 = 8$ orang\n\n📌 **Konsep:** Total harga sewa villa tetap (Konstanta), sehingga ini merupakan **Perbandingan Berbalik Nilai**:\n\n📐 **Langkah Perhitungan:**\n1. Hitung total harga sewa villa:\n$$\\text{Total Sewa} = n_1 \\times x_1 = 10 \\times \\text{Rp}300.000,00 = \\text{Rp}3.000.000,00$$\n\n2. Hitung iuran per orang yang tersisa (8 orang):\n$$x_2 = \\frac{\\text{Total Sewa}}{n_2} = \\frac{\\text{Rp}3.000.000,00}{8} = \\text{Rp}375.000,00$$\n\n✅ **Kesimpulan:** Biaya patungan setiap orang yang tersisa adalah **Rp375.000,00** (Pilihan A).`;
   }
 
   // -------------------------------------------------------------
@@ -709,8 +753,12 @@ export function normalisasiButir(item, fallbackSubtes = 'PU', fallbackTopik = 'U
   // maka ini adalah PILIHAN GANDA BIASA (pg_sederhana) di mana siswa memilih 1 opsi jawaban, BUKAN tabel interaktif!
   const opsiAdalahKombinasiBenarSalah = (
     opsiArray.length >= 2 &&
-    opsiArray.some((o) => /^(?:benar|salah|b|s)(?:\s*[-–,\s]+\s*(?:benar|salah|b|s))+$/i.test(o.text.trim()))
+    opsiArray.some((o) => /(?:benar|salah|b|s)\s*[-–,/\s]+\s*(?:benar|salah|b|s)\s*[-–,/\s]*(?:benar|salah|b|s)?/i.test(o.text.trim()))
   );
+
+  if (opsiAdalahKombinasiBenarSalah) {
+    tipeSoal = 'pg_sederhana';
+  }
 
   const isBenarSalahFormat = !opsiAdalahKombinasiBenarSalah && (
     tipeSoal === 'benar_salah' ||

@@ -1181,6 +1181,73 @@ const TeacherDashboard = () => {
             </div>
           </div>
 
+          {/* Card Khusus Pendampingan TKA & UTBK Bersama Tentor */}
+          <div style={{
+            background: 'linear-gradient(135deg, #f0fdfa 0%, #ffffff 100%)',
+            border: '1.5px solid #5eead4',
+            borderRadius: 14,
+            padding: '16px 18px',
+            marginBottom: 22,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: 14,
+            boxShadow: '0 2px 8px rgba(13, 148, 136, 0.06)',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14, flex: '1 1 320px' }}>
+              <div style={{
+                width: 44,
+                height: 44,
+                borderRadius: 12,
+                background: '#0d9488',
+                color: '#ffffff',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: 22,
+                boxShadow: '0 4px 10px rgba(13, 148, 136, 0.25)',
+                flexShrink: 0,
+              }}>
+                🎓
+              </div>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                  <h4 style={{ margin: 0, fontSize: 15, fontWeight: 800, color: '#0f766e' }}>
+                    Kelas Pendampingan Ujian Akhir (TKA SMP & UTBK SNBT)
+                  </h4>
+                  <span style={{ fontSize: 10, fontWeight: 800, color: '#ffffff', background: '#0d9488', padding: '2px 8px', borderRadius: 99 }}>
+                    Khusus Tentor
+                  </span>
+                </div>
+                <p style={{ margin: '4px 0 0', fontSize: 12.5, color: '#134e4a', lineHeight: 1.5 }}>
+                  Pilih bank soal materi pekanan, cetak Lembar Gunting-Tempel (✂️) ramah Buku Besar siswa, dan siapkan pegangan Kunci Bedah Akbar di kelas!
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => navigate('/guru/cetak-latihan?jalur=pendampingan')}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 6,
+                padding: '9px 16px',
+                borderRadius: 8,
+                border: 'none',
+                background: '#0d9488',
+                color: 'white',
+                fontWeight: 800,
+                fontSize: 12.5,
+                cursor: 'pointer',
+                boxShadow: '0 2px 6px rgba(13, 148, 136, 0.25)',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              <span>Buka Kelas Pendampingan →</span>
+            </button>
+          </div>
+
           <div style={styles.sectionHeader}>
             <h3 style={styles.sectionTitle}>
               <Layout size={16} /> Jadwal Mengajar
@@ -1404,6 +1471,13 @@ const TeacherDashboard = () => {
           <div style={styles.quickActionsCard}>
             <h4 style={styles.quickActionsTitle}>⚡ Akses Cepat</h4>
             <div style={styles.quickActionsGrid}>
+              <button onClick={() => navigate('/guru/cetak-latihan?jalur=pendampingan')} style={styles.quickAction}>
+                <div style={{...styles.quickIcon, background: '#ccfbf1', color: '#0f766e'}}>
+                  <GraduationCap size={18} />
+                </div>
+                <span style={styles.quickLabel}>Pendampingan</span>
+                <span style={styles.quickDesc}>TKA & UTBK</span>
+              </button>
               <button onClick={() => navigate('/guru/modul/materi')} style={styles.quickAction}>
                 <div style={{...styles.quickIcon, background: '#dbeafe', color: '#2563eb'}}>
                   <BookOpen size={18} />
