@@ -632,18 +632,6 @@ export default function CetakPaketLatihan() {
     }
   }, [params, isJalurPendampingan, mapelAktif]);
 
-  // Otomatis pasang bab default jika belum ada bab terpilih
-  useEffect(() => {
-    if (isJalurPendampingan && mapelAktif && !babAktif && daftarBab && daftarBab.length > 0) {
-      const babBil = daftarBab.find(([b]) => b.toLowerCase().includes('bilangan'));
-      if (babBil) {
-        setBabAktif(babBil[0]);
-      } else {
-        setBabAktif(daftarBab[0][0]);
-      }
-    }
-  }, [isJalurPendampingan, mapelAktif, babAktif, daftarBab]);
-
   // ---- hirarki bank: jenjang -> mapel -> bab, persis pola Lemari Soal admin ----
   const daftarJenjang = useMemo(() => {
     const hitung = new Map();
@@ -676,6 +664,18 @@ export default function CetakPaketLatihan() {
     }
     return [...hitung.entries()].sort((a, b) => a[0].localeCompare(b[0], 'id'));
   }, [bankSoal, jenjangAktif, mapelAktif]);
+
+  // Otomatis pasang bab default jika belum ada bab terpilih
+  useEffect(() => {
+    if (isJalurPendampingan && mapelAktif && !babAktif && daftarBab && daftarBab.length > 0) {
+      const babBil = daftarBab.find(([b]) => b.toLowerCase().includes('bilangan'));
+      if (babBil) {
+        setBabAktif(babBil[0]);
+      } else {
+        setBabAktif(daftarBab[0][0]);
+      }
+    }
+  }, [isJalurPendampingan, mapelAktif, babAktif, daftarBab]);
 
   const soalDiBab = useMemo(() => {
     if (!jenjangAktif || !mapelAktif || !babAktif) return [];
@@ -1116,7 +1116,7 @@ export default function CetakPaketLatihan() {
               })}
             </div>
           </div>
-        <>
+
           <div style={gayaKartu}>
             <div style={gayaJudulKartu}>1 · Jenjang</div>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
