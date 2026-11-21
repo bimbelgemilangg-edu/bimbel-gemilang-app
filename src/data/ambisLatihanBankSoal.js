@@ -313,6 +313,8 @@ export function normalisasiButir(item, fallbackSubtes = 'PU', fallbackTopik = 'U
     id: String(item.id || `latihan_${kodeSubtes.toLowerCase()}_${idx}`),
     subtesKode: kodeSubtes,
     topik,
+    babNomor: item.babNomor || null,
+    namaBab: item.namaBab || item.bab || fallbackTopik,
     soal: teksPertanyaan,
     wacana: item.wacana || item.stimulus || null,
     opsi: opsiArray,
@@ -321,6 +323,175 @@ export function normalisasiButir(item, fallbackSubtes = 'PU', fallbackTopik = 'U
     gambar: gambarList,
     tingkatKesulitan: item.tingkatKesulitan || (idx % 3 === 0 ? 'sulit' : idx % 2 === 0 ? 'sedang' : 'mudah'),
   };
+}
+
+// ==============================================================================
+// ==============================================================================
+// 3B. PEMETAAN BAB & TOPIK OTOMATIS BERDASARKAN SILABUS MODUL GEMILANG
+// ==============================================================================
+export function tentukanBabDanTopik(subtesKode, item, jenjang = 'SMP') {
+  const teks = (
+    String(item.bab || '') + ' ' +
+    String(item.materi || '') + ' ' +
+    String(item.topik || '') + ' ' +
+    String(item.subkategori || '') + ' ' +
+    String(item.teksSoal || item.teks_soal || item.soal || '')
+  ).toLowerCase();
+
+  const sk = String(subtesKode || '').toUpperCase();
+
+  // === TKA SMP ===
+  if (sk === 'MTK') {
+    if (teks.includes('peluang') || teks.includes('statistika') || teks.includes('diagram') || teks.includes('rata-rata') || teks.includes('median') || teks.includes('modus') || teks.includes('frekuensi') || teks.includes('kejadian') || teks.includes('dadu') || teks.includes('koin')) {
+      return { babNomor: 4, namaBab: 'Bab 4 · Data & Peluang (Statistika, Diagram & Peluang Teoretik)', ringkas: 'Bab 4: Data & Peluang' };
+    }
+    if (teks.includes('geometri') || teks.includes('sudut') || teks.includes('pythagoras') || teks.includes('bangun ruang') || teks.includes('bangun datar') || teks.includes('transformasi') || teks.includes('lingkaran') || teks.includes('luas') || teks.includes('keliling') || teks.includes('volume') || teks.includes('kesebangunan') || teks.includes('kongruen') || teks.includes('balok') || teks.includes('kubus') || teks.includes('tabung') || teks.includes('kerucut') || teks.includes('bola') || teks.includes('limas') || teks.includes('trapesium') || teks.includes('jaring')) {
+      return { babNomor: 3, namaBab: 'Bab 3 · Geometri & Pengukuran (Sudut, Pythagoras, Ruang & Transformasi)', ringkas: 'Bab 3: Geometri & Ruang' };
+    }
+    if (teks.includes('aljabar') || teks.includes('persamaan') || teks.includes('fungsi') || teks.includes('pola') || teks.includes('barisan') || teks.includes('deret') || teks.includes('spldv') || teks.includes('kuadrat') || teks.includes('aritmetika sosial') || teks.includes('diskon') || teks.includes('bruto') || teks.includes('tara') || teks.includes('netto') || teks.includes('pertidaksamaan') || teks.includes('skala') || teks.includes('perbandingan')) {
+      return { babNomor: 2, namaBab: 'Bab 2 · Aljabar (SPLDV, Persamaan Kuadrat, Fungsi & Pola Bilangan)', ringkas: 'Bab 2: Aljabar & Persamaan' };
+    }
+    return { babNomor: 1, namaBab: 'Bab 1 · Bilangan (Operasi, Pecahan, Pangkat & Notasi Ilmiah)', ringkas: 'Bab 1: Bilangan & Bentuk Akar' };
+  }
+
+  if (sk === 'BIN') {
+    if (teks.includes('evaluasi') || teks.includes('argumen') || teks.includes('opini') || teks.includes('apresiasi') || teks.includes('sikap penulis') || teks.includes('akurasi') || teks.includes('fakta vs opini')) {
+      return { babNomor: 4, namaBab: 'Bab 4 · Evaluasi & Apresiasi (Akurasi Argumen, Relevansi Teks & Sikap Penulis)', ringkas: 'Bab 4: Evaluasi & Apresiasi' };
+    }
+    if (teks.includes('fiksi') || teks.includes('cerpen') || teks.includes('puisi') || teks.includes('tokoh') || teks.includes('majas') || teks.includes('alur') || teks.includes('moral') || teks.includes('latar') || teks.includes('watak')) {
+      return { babNomor: 3, namaBab: 'Bab 3 · Teks Fiksi & Puisi (Tokoh, Alur, Majas & Nilai Moral)', ringkas: 'Bab 3: Teks Fiksi & Puisi' };
+    }
+    if (teks.includes('inferensial') || teks.includes('ide pokok') || teks.includes('simpulan') || teks.includes('gagasan') || teks.includes('sebab') || teks.includes('akibat') || teks.includes('paragraf') || teks.includes('kalimat utama')) {
+      return { babNomor: 2, namaBab: 'Bab 2 · Pemahaman Inferensial (Ide Pokok, Simpulan & Hubungan Sebab-Akibat)', ringkas: 'Bab 2: Pemahaman Inferensial' };
+    }
+    return { babNomor: 1, namaBab: 'Bab 1 · Pemahaman Tekstual (Istilah Teknis, Informasi Tersurat & Tata Bahasa)', ringkas: 'Bab 1: Pemahaman Tekstual' };
+  }
+
+  if (sk === 'IPA') {
+    if (teks.includes('lingkungan') || teks.includes('bumi') || teks.includes('tata surya') || teks.includes('ekosistem') || teks.includes('pencemaran') || teks.includes('litosfer') || teks.includes('hidrosfer') || teks.includes('atmosfer') || teks.includes('rotasi') || teks.includes('revolusi')) {
+      return { babNomor: 4, namaBab: 'Bab 4 · Lingkungan, Bumi–Tata Surya & Ekosistem', ringkas: 'Bab 4: Lingkungan & Bumi' };
+    }
+    if (teks.includes('sel') || teks.includes('organ') || teks.includes('pewarisan') || teks.includes('genetika') || teks.includes('makhluk hidup') || teks.includes('sistem pencernaan') || teks.includes('sistem peredaran') || teks.includes('respirasi') || teks.includes('mitokondria') || teks.includes('enzim') || teks.includes('fotosintesis')) {
+      return { babNomor: 3, namaBab: 'Bab 3 · Makhluk Hidup, Sel, Sistem Organ & Pewarisan Sifat', ringkas: 'Bab 3: Sel & Sistem Organ' };
+    }
+    if (teks.includes('mekanika') || teks.includes('gelombang') || teks.includes('optik') || teks.includes('listrik') || teks.includes('magnet') || teks.includes('gaya') || teks.includes('gerak') || teks.includes('tekanan') || teks.includes('hukum newton') || teks.includes('cermin') || teks.includes('lensa') || teks.includes('bunyi')) {
+      return { babNomor: 2, namaBab: 'Bab 2 · Mekanika, Gelombang, Optik, Listrik & Magnet', ringkas: 'Bab 2: Mekanika & Optik' };
+    }
+    return { babNomor: 1, namaBab: 'Bab 1 · Pengukuran, Zat, Suhu, Kalor & Energi', ringkas: 'Bab 1: Pengukuran & Kalor' };
+  }
+
+  if (sk === 'BIG') {
+    if (teks.includes('multimodal') || teks.includes('dialogue') || teks.includes('conversation') || teks.includes('poster') || teks.includes('sign') || teks.includes('announcement') || teks.includes('notice')) {
+      return { babNomor: 4, namaBab: 'Bab 4 · Multimodal Literacy, Dialogues & Functional Text', ringkas: 'Bab 4: Multimodal & Dialogues' };
+    }
+    if (teks.includes('genre') || teks.includes('narrative') || teks.includes('recount') || teks.includes('report') || teks.includes('procedure') || teks.includes('descriptive') || teks.includes('passage') || teks.includes('main idea')) {
+      return { babNomor: 3, namaBab: 'Bab 3 · Mastering 5 Core Reading Genres', ringkas: 'Bab 3: 5 Reading Genres' };
+    }
+    if (teks.includes('tenses') || teks.includes('passive') || teks.includes('grammar') || teks.includes('connector') || teks.includes('past') || teks.includes('present') || teks.includes('future') || teks.includes('conjunction')) {
+      return { babNomor: 2, namaBab: 'Bab 2 · Essential Tenses, Passive Voice & Connectors', ringkas: 'Bab 2: Tenses & Grammar' };
+    }
+    return { babNomor: 1, namaBab: 'Bab 1 · Expressions, Functional Texts & Core Grammar', ringkas: 'Bab 1: Expressions & Basics' };
+  }
+
+  // === UTBK SNBT ===
+  if (sk === 'PU') {
+    if (teks.includes('pola') || teks.includes('barisan') || teks.includes('deret') || teks.includes('angka') || teks.includes('huruf')) {
+      return { babNomor: 3, namaBab: 'Bab 3 · Pola Barisan Angka & Huruf', ringkas: 'Bab 3: Pola Angka/Huruf' };
+    }
+    if (teks.includes('posisi') || teks.includes('analitik') || teks.includes('urutan') || teks.includes('spasial')) {
+      return { babNomor: 4, namaBab: 'Bab 4 · Penalaran Analitik Spasial & Posisi', ringkas: 'Bab 4: Penalaran Spasial' };
+    }
+    if (teks.includes('sebab') || teks.includes('akibat') || teks.includes('kausal')) {
+      return { babNomor: 5, namaBab: 'Bab 5 · Hubungan Sebab-Akibat & Kesimpulan Logis', ringkas: 'Bab 5: Sebab-Akibat' };
+    }
+    if (teks.includes('induktif') || teks.includes('generalisasi')) {
+      return { babNomor: 2, namaBab: 'Bab 2 · Logika Induktif & Generalisasi', ringkas: 'Bab 2: Logika Induktif' };
+    }
+    return { babNomor: 1, namaBab: 'Bab 1 · Logika Deduktif & Silogisme', ringkas: 'Bab 1: Silogisme' };
+  }
+
+  if (sk === 'PPU') {
+    if (teks.includes('sikap') || teks.includes('nada') || teks.includes('bias') || teks.includes('penulis')) {
+      return { babNomor: 4, namaBab: 'Bab 4 · Sikap, Nada & Bias Penulis', ringkas: 'Bab 4: Nada Penulis' };
+    }
+    if (teks.includes('hubungan') || teks.includes('antarparagraf') || teks.includes('koherensi')) {
+      return { babNomor: 3, namaBab: 'Bab 3 · Hubungan Antarparagraf & Koherensi', ringkas: 'Bab 3: Antarparagraf' };
+    }
+    if (teks.includes('afiks') || teks.includes('imbuhan') || teks.includes('bentukan kata')) {
+      return { babNomor: 2, namaBab: 'Bab 2 · Kaidah Afiksasi & Bentuk Terikat', ringkas: 'Bab 2: Afiksasi' };
+    }
+    return { babNomor: 1, namaBab: 'Bab 1 · Makna Kontekstual Kata & Frasa', ringkas: 'Bab 1: Makna Kata' };
+  }
+
+  if (sk === 'PBM') {
+    if (teks.includes('tanda baca') || teks.includes('titik') || teks.includes('koma') || teks.includes('rancu')) {
+      return { babNomor: 4, namaBab: 'Bab 4 · Tanda Baca & Bentuk Rancu', ringkas: 'Bab 4: Tanda Baca' };
+    }
+    if (teks.includes('konjungsi') || teks.includes('hubung') || teks.includes('padu')) {
+      return { babNomor: 3, namaBab: 'Bab 3 · Konjungsi & Paragraf Padu', ringkas: 'Bab 3: Konjungsi' };
+    }
+    if (teks.includes('kalimat efektif') || teks.includes('spok') || teks.includes('sintaksis')) {
+      return { babNomor: 2, namaBab: 'Bab 2 · Kalimat Efektif & Struktur Sintaksis', ringkas: 'Bab 2: Kalimat Efektif' };
+    }
+    return { babNomor: 1, namaBab: 'Bab 1 · Pedoman EYD V & Huruf Kapital', ringkas: 'Bab 1: EYD V' };
+  }
+
+  if (sk === 'PK') {
+    if (teks.includes('kecukupan data') || teks.includes('(1) dan (2)') || teks.includes('pernyataan (1)')) {
+      return { babNomor: 5, namaBab: 'Bab 5 · Kecukupan Data Pernyataan (1) & (2)', ringkas: 'Bab 5: Kecukupan Data' };
+    }
+    if (teks.includes('p vs q') || teks.includes('hubungan p dan q') || teks.includes('kuantitas p')) {
+      return { babNomor: 4, namaBab: 'Bab 4 · Relasi Nilai P vs Nilai Q', ringkas: 'Bab 4: Nilai P vs Q' };
+    }
+    if (teks.includes('geometri') || teks.includes('sudut') || teks.includes('segitiga') || teks.includes('lingkaran') || teks.includes('ruang') || teks.includes('garis')) {
+      return { babNomor: 3, namaBab: 'Bab 3 · Geometri Bidang Datar & Ruang', ringkas: 'Bab 3: Geometri' };
+    }
+    if (teks.includes('persamaan') || teks.includes('pertidaksamaan') || teks.includes('sistem') || teks.includes('kuadrat')) {
+      return { babNomor: 2, namaBab: 'Bab 2 · Persamaan, Pertidaksamaan & Sistem Linier', ringkas: 'Bab 2: Persamaan Kuadrat' };
+    }
+    return { babNomor: 1, namaBab: 'Bab 1 · Aljabar Fungsi & Operasi Bilangan', ringkas: 'Bab 1: Aljabar & Fungsi' };
+  }
+
+  if (sk === 'LBIN') {
+    if (teks.includes('grafik') || teks.includes('tabel') || teks.includes('infografik') || teks.includes('data')) {
+      return { babNomor: 4, namaBab: 'Bab 4 · Membaca Grafik, Tabel & Infografik', ringkas: 'Bab 4: Grafik & Data' };
+    }
+    if (teks.includes('evaluasi') || teks.includes('argumen') || teks.includes('fakta') || teks.includes('opini')) {
+      return { babNomor: 3, namaBab: 'Bab 3 · Evaluasi Argumen & Fakta vs Opini', ringkas: 'Bab 3: Evaluasi Argumen' };
+    }
+    if (teks.includes('opini') || teks.includes('esai') || teks.includes('editorial')) {
+      return { babNomor: 2, namaBab: 'Bab 2 · Analisis Teks Opini & Editorial', ringkas: 'Bab 2: Opini & Editorial' };
+    }
+    return { babNomor: 1, namaBab: 'Bab 1 · Membedah Teks Eksplanasi Ilmiah', ringkas: 'Bab 1: Teks Eksplanasi' };
+  }
+
+  if (sk === 'LBING') {
+    if (teks.includes('critical') || teks.includes('inference') || teks.includes('conclude') || teks.includes('implied')) {
+      return { babNomor: 4, namaBab: 'Bab 4 · Critical Reading & Inferred Conclusions', ringkas: 'Bab 4: Critical Reading' };
+    }
+    if (teks.includes('tone') || teks.includes('attitude') || teks.includes('perspective')) {
+      return { babNomor: 3, namaBab: 'Bab 3 · Tone, Attitude & Author Perspective', ringkas: 'Bab 3: Tone & Attitude' };
+    }
+    if (teks.includes('vocabulary') || teks.includes('meaning') || teks.includes('contextual')) {
+      return { babNomor: 2, namaBab: 'Bab 2 · Vocabulary in Academic Context', ringkas: 'Bab 2: Vocabulary' };
+    }
+    return { babNomor: 1, namaBab: 'Bab 1 · Main Idea & Author Primary Purpose', ringkas: 'Bab 1: Main Idea' };
+  }
+
+  if (sk === 'PM') {
+    if (teks.includes('peluang') || teks.includes('probabilitas') || teks.includes('risiko') || teks.includes('kombinasi')) {
+      return { babNomor: 4, namaBab: 'Bab 4 · Peluang & Analisis Risiko Kasus', ringkas: 'Bab 4: Peluang & Risiko' };
+    }
+    if (teks.includes('pemodelan') || teks.includes('fungsi') || teks.includes('optimasi') || teks.includes('maksimum') || teks.includes('minimum')) {
+      return { babNomor: 3, namaBab: 'Bab 3 · Pemodelan Fungsi Realistis & Optimasi', ringkas: 'Bab 3: Pemodelan Fungsi' };
+    }
+    if (teks.includes('laju') || teks.includes('kecepatan') || teks.includes('debit') || teks.includes('waktu') || teks.includes('jarak')) {
+      return { babNomor: 2, namaBab: 'Bab 2 · Laju Perpindahan, Kecepatan & Debit', ringkas: 'Bab 2: Laju & Debit' };
+    }
+    return { babNomor: 1, namaBab: 'Bab 1 · Aritmetika Sosial, Bunga & Finansial', ringkas: 'Bab 1: Aritmetika Sosial' };
+  }
+
+  return { babNomor: 1, namaBab: `${sk} · Paket Latihan Terstruktur`, ringkas: `${sk} Latihan` };
 }
 
 // ==============================================================================
@@ -345,45 +516,79 @@ export function susunBankSoalLatihanSmp(bankSoalFirestore = []) {
   if (Array.isArray(bankSoalFirestore) && bankSoalFirestore.length > 0) {
     bankSoalFirestore.forEach((s) => {
       const sj = String(s.jenjang || '').toUpperCase();
-      const sk = String(s.kelas || s.kelasSekolah || s.tingkatKelas || '');
+      const sk = String(s.kelas || s.kelasSekolah || s.tingkatKelas || '').trim();
       const sm = String(s.mataPelajaran || s.mapel || s.subtes || '').toLowerCase();
       const subtesRaw = String(s.subtes || s.subtesKode || s.kodeSubtes || '').toUpperCase();
 
-      const isSmp = sj.includes('SMP') || sk.includes('7') || sk.includes('8') || sk.includes('9')
+      // Filter ketat: Buang soal SMA/SMK atau SD
+      if (sj.includes('SMA') || sj.includes('SMK') || sj.includes('SD')) return;
+      if (['10', '11', '12', '1', '2', '3', '4', '5', '6'].includes(sk)) return;
+
+      // Buang soal mapel yang bukan subtes TKA SMP (IPS, Geografi, Kimia SMA, dll)
+      if (sm.includes('ips') || sm.includes('geografi') || sm.includes('ekonomi') || sm.includes('sosiologi') || sm.includes('sejarah') || sm.includes('kimia') || sm.includes('fisika sma') || sm.includes('biologi sma') || sm.includes('faraday') || sm.includes('elektrolisis') || sm.includes('sel volta')) {
+        return;
+      }
+
+      const isSmp = sj.includes('SMP') || ['7', '8', '9'].includes(sk)
         || sm.includes('smp') || String(s.materi || '').toLowerCase().includes('smp')
-        || (!sj && !sk); // Bila metadata jenjang kosong saat input
+        || (!sj && !sk);
 
       if (isSmp) {
-        let subtes = 'MTK';
+        let subtes = null;
         if (subtesRaw === 'MTK' || subtesRaw === 'BIN' || subtesRaw === 'IPA' || subtesRaw === 'BIG') {
           subtes = subtesRaw;
         } else if (sm.includes('indonesia') || sm.includes('literasi') || sm.includes('lbin')) {
           subtes = 'BIN';
         } else if (sm.includes('inggris') || sm.includes('english') || sm.includes('lbing')) {
           subtes = 'BIG';
-        } else if (sm.includes('ipa') || sm.includes('alam') || sm.includes('sains') || sm.includes('fisika') || sm.includes('biologi')) {
+        } else if (sm.includes('ipa') || sm.includes('sains') || sm.includes('fisika') || sm.includes('biologi')) {
           subtes = 'IPA';
-        } else if (sm.includes('matematika') || sm.includes('numerasi') || sm.includes('hitung') || sm.includes('aljabar') || sm.includes('pk') || sm.includes('pm')) {
+        } else if (sm.includes('matematika') || sm.includes('numerasi') || sm.includes('hitung') || sm.includes('aljabar')) {
           subtes = 'MTK';
         }
-        tambahSoalUnik(s, subtes, s.bab || s.materi || 'Bank Soal Gemilang');
+
+        // Jika mapel tidak cocok dengan 4 subtes resmi TKA SMP, JANGAN MASUKKAN
+        if (!subtes) return;
+
+        const babInfo = tentukanBabDanTopik(subtes, s, 'SMP');
+        tambahSoalUnik({
+          ...s,
+          subtesKode: subtes,
+          babNomor: babInfo.babNomor,
+          namaBab: babInfo.namaBab,
+          topik: babInfo.namaBab,
+        }, subtes, babInfo.namaBab);
       }
     });
   }
 
-  // 2. Tambahkan Master Bank Soal TKA SMP DIY 2026 (60 Soal Resmi Berkualitas Tinggi)
+  // 2. Tambahkan Master Bank Soal TKA SMP DIY 2026 (Dipetakan ke Bab Kurikulum Resmi)
   if (Array.isArray(SOAL_TKA_2026_SMP_MTK_PAKET_B)) {
     SOAL_TKA_2026_SMP_MTK_PAKET_B.forEach((s) => {
-      tambahSoalUnik(s, 'MTK', s.materi || 'TKA SMP DIY Paket B');
+      const babInfo = tentukanBabDanTopik('MTK', s, 'SMP');
+      tambahSoalUnik({
+        ...s,
+        subtesKode: 'MTK',
+        babNomor: babInfo.babNomor,
+        namaBab: babInfo.namaBab,
+        topik: babInfo.namaBab,
+      }, 'MTK', babInfo.namaBab);
     });
   }
   if (Array.isArray(SOAL_TKA_2026_SMP_BINDO_PAKET_A)) {
     SOAL_TKA_2026_SMP_BINDO_PAKET_A.forEach((s) => {
-      tambahSoalUnik(s, 'BIN', s.materi || 'TKA SMP DIY Paket A');
+      const babInfo = tentukanBabDanTopik('BIN', s, 'SMP');
+      tambahSoalUnik({
+        ...s,
+        subtesKode: 'BIN',
+        babNomor: babInfo.babNomor,
+        namaBab: babInfo.namaBab,
+        topik: babInfo.namaBab,
+      }, 'BIN', babInfo.namaBab);
     });
   }
 
-  // 3. Tambahkan 86 Kuis Pemahaman Master dari 16 Bab Modul SMP 2027
+  // 3. Tambahkan Kuis Pemahaman Master dari 16 Bab Modul SMP 2027
   const mapelSmpList = [
     { kode: 'MTK', data: MTK_SMP_MODUL },
     { kode: 'BIN', data: BIN_SMP_MODUL },
@@ -391,10 +596,17 @@ export function susunBankSoalLatihanSmp(bankSoalFirestore = []) {
     { kode: 'BIG', data: BIG_SMP_MODUL },
   ];
   mapelSmpList.forEach(({ kode, data }) => {
-    (data || []).forEach((bab) => {
-      const judulBab = bab.judul || 'Materi Modul';
-      (bab.kuisPemahaman || []).forEach((k) => {
-        tambahSoalUnik({ ...k, subtesKode: kode, topik: judulBab }, kode, judulBab);
+    (data || []).forEach((babItem, bIdx) => {
+      const judulBab = babItem.judul || `Bab ${bIdx + 1}`;
+      const babNomor = babItem.babNumber || (bIdx + 1);
+      (babItem.kuisPemahaman || []).forEach((k) => {
+        tambahSoalUnik({
+          ...k,
+          subtesKode: kode,
+          topik: judulBab,
+          babNomor,
+          namaBab: judulBab,
+        }, kode, judulBab);
       });
     });
   });
@@ -478,7 +690,14 @@ export function susunBankSoalLatihanUtbk(bankSoalFirestore = []) {
   // 2. Preset Katkiel 160 Soal
   if (Array.isArray(SOAL_PRESET_UTBK)) {
     SOAL_PRESET_UTBK.forEach((s) => {
-      tambahSoalUnik(s, 'PU', s.subkategori || 'Preset UTBK Katkiel');
+      const kode = PETA_KODE_SUBTES[s.subtesKode || s.kode || s.mapel] || 'PU';
+      const babInfo = tentukanBabDanTopik(kode, s, 'SMA');
+      tambahSoalUnik({
+        ...s,
+        subtesKode: kode,
+        babNomor: babInfo.babNomor,
+        namaBab: babInfo.namaBab,
+      }, kode, babInfo.namaBab);
     });
   }
 
@@ -486,10 +705,17 @@ export function susunBankSoalLatihanUtbk(bankSoalFirestore = []) {
   if (Array.isArray(DAFTAR_SUBTES_MODUL)) {
     DAFTAR_SUBTES_MODUL.forEach((st) => {
       const kode = st.kode;
-      (st.babList || []).forEach((bab) => {
-        const judulBab = bab.judul || 'Materi Modul';
+      (st.babList || []).forEach((bab, bIdx) => {
+        const judulBab = bab.judul || `Bab ${bIdx + 1}`;
+        const babNomor = bab.babNumber || (bIdx + 1);
         (bab.kuisPemahaman || []).forEach((k) => {
-          tambahSoalUnik({ ...k, subtesKode: kode, topik: judulBab }, kode, judulBab);
+          tambahSoalUnik({
+            ...k,
+            subtesKode: kode,
+            topik: judulBab,
+            babNomor,
+            namaBab: judulBab,
+          }, kode, judulBab);
         });
       });
     });
@@ -529,27 +755,58 @@ export function getBankSoalPerSubtes(subtesKode, jenjang = 'SMA', bankSoalFirest
  */
 export function getPaketLatihanPerSubtes(subtesKode, ukuranPaket = 10, jenjang = 'SMA', bankSoalFirestore = []) {
   const soalSubtes = getBankSoalPerSubtes(subtesKode, jenjang, bankSoalFirestore);
-  const paketList = [];
-  const total = soalSubtes.length;
-  const nPaket = Math.max(1, Math.ceil(total / ukuranPaket));
+  if (soalSubtes.length === 0) return [];
 
-  for (let i = 0; i < nPaket; i++) {
-    const start = i * ukuranPaket;
-    const sliceSoal = soalSubtes.slice(start, start + ukuranPaket);
-    if (sliceSoal.length > 0) {
-      paketList.push({
-        id: `paket_${String(jenjang).toLowerCase()}_${String(subtesKode).toLowerCase()}_bag_${i + 1}`,
-        paketNomor: i + 1,
-        judul: `Paket Latihan Bagian ${i + 1}`,
-        subjudul: `${sliceSoal.length} Butir Soal Terstruktur`,
-        subtesKode,
-        jenjang,
-        jumlahSoal: sliceSoal.length,
-        durasiMenit: Math.max(10, Math.round(sliceSoal.length * 1.5)),
-        soalList: sliceSoal,
+  // Kelompokkan butir soal per Bab / Silabus Kurikulum
+  const mapBab = new Map();
+
+  soalSubtes.forEach((s) => {
+    let babInfo;
+    if (s.babNomor && s.namaBab) {
+      babInfo = { babNomor: s.babNomor, namaBab: s.namaBab, ringkas: `Bab ${s.babNomor}` };
+    } else {
+      babInfo = tentukanBabDanTopik(subtesKode, s, jenjang);
+    }
+
+    const kunci = `bab_${babInfo.babNomor}`;
+    if (!mapBab.has(kunci)) {
+      mapBab.set(kunci, {
+        babNomor: babInfo.babNomor,
+        namaBab: babInfo.namaBab,
+        ringkas: babInfo.ringkas || `Bab ${babInfo.babNomor}`,
+        soalList: [],
       });
     }
-  }
+    mapBab.get(kunci).soalList.push(s);
+  });
+
+  const paketList = [];
+  const babSorted = Array.from(mapBab.values()).sort((a, b) => a.babNomor - b.babNomor);
+
+  babSorted.forEach((b) => {
+    const totalSoal = b.soalList.length;
+    const nPaket = Math.max(1, Math.ceil(totalSoal / ukuranPaket));
+    for (let i = 0; i < nPaket; i++) {
+      const start = i * ukuranPaket;
+      const sliceSoal = b.soalList.slice(start, start + ukuranPaket);
+      if (sliceSoal.length > 0) {
+        paketList.push({
+          id: `paket_${String(jenjang).toLowerCase()}_${String(subtesKode).toLowerCase()}_bab_${b.babNomor}_p${i + 1}`,
+          babNomor: b.babNomor,
+          namaBab: b.namaBab,
+          ringkasBab: b.ringkas,
+          paketNomor: i + 1,
+          judul: `${b.ringkas} · Paket ${i + 1}`,
+          subjudul: `${sliceSoal.length} Butir Soal Terstruktur • Bab ${b.babNomor}`,
+          subtesKode,
+          jenjang,
+          jumlahSoal: sliceSoal.length,
+          durasiMenit: Math.max(10, Math.round(sliceSoal.length * 1.5)),
+          soalList: sliceSoal,
+        });
+      }
+    }
+  });
 
   return paketList;
 }

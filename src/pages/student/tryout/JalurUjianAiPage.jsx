@@ -442,10 +442,10 @@ export default function JalurUjianAiPage() {
             <MaskotAstronot size={110} />
           </div>
           <h2 style={{ fontSize: 22, fontWeight: 800, color: '#0f766e', margin: '0 0 10px' }}>
-            Roadmap Kemampuan Ujian Akhir
+            Kelas Pendampingan Ujian Akhir
           </h2>
           <p style={{ color: '#475569', fontSize: 14, lineHeight: 1.6, margin: '0 0 20px' }}>
-            Halo <strong>{profil.nama || 'Siswa'}</strong>! Fitur <strong>Roadmap Kemampuan</strong> ini dirancang khusus bagi sahabat kelas <strong>6 SD (TKA SD)</strong>, <strong>9 SMP (TKA SMP)</strong>, dan <strong>12 SMA/SMK (UTBK-SNBT)</strong> untuk simulasi kelulusan dan seleksi sekolah/kampus impian.
+            Halo <strong>{profil.nama || 'Siswa'}</strong>! Fitur <strong>Kelas Pendampingan</strong> ini dirancang khusus bagi sahabat kelas <strong>6 SD (TKA SD)</strong>, <strong>9 SMP (TKA SMP)</strong>, dan <strong>12 SMA/SMK (UTBK-SNBT)</strong> untuk simulasi kelulusan dan seleksi sekolah/kampus impian.
           </p>
           <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 12, padding: 14, marginBottom: 20, textAlign: 'left', fontSize: 13, color: '#166534' }}>
             ✨ Untuk kelasmu (<strong>{profil.kelas || 'Reguler'}</strong>), silakan nikmati menu <strong>Modul Belajar UTBK</strong> dan <strong>Try Out</strong> untuk mengasah kemampuan harian!
@@ -482,7 +482,7 @@ export default function JalurUjianAiPage() {
                 {isSmp ? '4 Subtes Resmi TKA SMP' : isSd ? '2 Subtes Resmi TKA SD' : '7 Subtes Resmi SNPMB'}
               </span>
             </div>
-            <h1 style={st.headerJudul}>Roadmap Belajar & Latihan Soal</h1>
+            <h1 style={st.headerJudul}>Kelas Pendampingan Belajar</h1>
           </div>
         </div>
 
@@ -960,10 +960,10 @@ export default function JalurUjianAiPage() {
             </p>
 
             <div style={{ marginBottom: 12, fontSize: 13, fontWeight: 800, color: '#0f172a' }}>
-              Pilih Paket Latihan (Maksimal 10 Soal per Paket):
+              Pilih Paket Latihan Terstruktur per Bab (Maksimal 10 Soal per Paket):
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, maxHeight: 360, overflowY: 'auto' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14, maxHeight: 420, overflowY: 'auto', paddingRight: 4 }}>
               {(() => {
                 const paketList = getPaketLatihanPerSubtes(subtesDetailModal.kode, 10, targetJenjang?.jenjang || 'SMA', bankSoalFirestore);
                 if (paketList.length === 0) {
@@ -973,26 +973,61 @@ export default function JalurUjianAiPage() {
                     </div>
                   );
                 }
-                return paketList.map((paket) => (
-                  <div key={paket.id} style={st.kartuPaketModalItem}>
-                    <div>
-                      <div style={{ fontSize: 14, fontWeight: 800, color: '#0f172a' }}>
-                        {paket.judul}
+
+                // Kelompokkan per Bab kurikulum resmi
+                const mapGrup = new Map();
+                paketList.forEach((p) => {
+                  const namaBab = p.namaBab || 'Materi Latihan Terstruktur';
+                  if (!mapGrup.has(namaBab)) {
+                    mapGrup.set(namaBab, {
+                      namaBab,
+                      babNomor: p.babNomor || 99,
+                      items: [],
+                    });
+                  }
+                  mapGrup.get(namaBab).items.push(p);
+                });
+
+                const daftarGrup = Array.from(mapGrup.values()).sort((a, b) => a.babNomor - b.babNomor);
+
+                return daftarGrup.map((grup) => (
+                  <div key={grup.namaBab} style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 12, padding: 12 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10, paddingBottom: 8, borderBottom: '1px solid #e2e8f0' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <span style={{ fontSize: 15 }}>📖</span>
+                        <span style={{ fontSize: 13, fontWeight: 800, color: '#0f172a' }}>
+                          {grup.namaBab}
+                        </span>
                       </div>
-                      <div style={{ fontSize: 12, color: '#64748b', marginTop: 2 }}>
-                        {paket.jumlahSoal} Butir Soal • Estimasi {paket.durasiMenit} Menit
-                      </div>
+                      <span style={{ fontSize: 11, fontWeight: 700, color: '#0d9488', background: '#ccfbf1', padding: '2px 8px', borderRadius: 99 }}>
+                        {grup.items.length} Paket
+                      </span>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => handleMulaiPaketSpesifik(subtesDetailModal, paket)}
-                      style={{
-                        ...st.btnMulaiPaketModal,
-                        background: subtesDetailModal.badgeWarna,
-                      }}
-                    >
-                      <span>Latih →</span>
-                    </button>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                      {grup.items.map((paket) => (
+                        <div key={paket.id} style={st.kartuPaketModalItem}>
+                          <div>
+                            <div style={{ fontSize: 13.5, fontWeight: 800, color: '#0f172a' }}>
+                              {paket.judul}
+                            </div>
+                            <div style={{ fontSize: 11.5, color: '#64748b', marginTop: 2 }}>
+                              {paket.jumlahSoal} Butir Soal • Estimasi {paket.durasiMenit} Menit
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleMulaiPaketSpesifik(subtesDetailModal, paket)}
+                            style={{
+                              ...st.btnMulaiPaketModal,
+                              background: subtesDetailModal.badgeWarna,
+                            }}
+                          >
+                            <span>Latih →</span>
+                          </button>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 ));
               })()}

@@ -75,12 +75,12 @@ const SidebarSiswa = ({ activeMenu, setActiveMenu, isOpen, setIsOpen }) => {
     {
       label: 'BELAJAR',
       items: [
-        // 🗺️ Roadmap: Simulasi bertahap untuk memantau perjalanan kemampuan siswa real-time
+        // 🚀 Kelas Pendampingan: Jalur khusus pendampingan TKA SD, TKA SMP, dan UTBK SNBT
         ...(targetUjianAi ? [{
-          id: 'roadmap',
-          label: 'Roadmap',
+          id: 'pendampingan',
+          label: 'Kelas Pendampingan',
           icon: <Rocket size={18} />,
-          path: '/siswa/roadmap',
+          path: '/siswa/pendampingan',
           color: '#0d9488',
           badge: targetUjianAi.labelBadge,
         }] : []),
@@ -241,7 +241,7 @@ const SidebarSiswa = ({ activeMenu, setActiveMenu, isOpen, setIsOpen }) => {
                 const isActive = activeMenu === item.id ||
                   location.pathname === item.path ||
                   (item.id === 'elearning' && (location.pathname === '/siswa/elearning' || location.pathname.startsWith('/siswa/materi'))) ||
-                  (item.id === 'roadmap' && (location.pathname === '/siswa/roadmap' || location.pathname === '/siswa/jalur-ai'));
+                  ((item.id === 'pendampingan' || item.id === 'roadmap') && (location.pathname === '/siswa/pendampingan' || location.pathname === '/siswa/roadmap' || location.pathname === '/siswa/jalur-ai'));
                 return (
                   <div
                     key={item.id}

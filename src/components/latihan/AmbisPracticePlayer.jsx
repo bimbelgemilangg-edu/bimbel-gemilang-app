@@ -256,7 +256,7 @@ export default function AmbisPracticePlayer({
   const isRemedial = indeksAktif >= totalSoalAwal;
 
   return (
-    <div style={st.wrap}>
+    <div style={st.wrap} onCopy={(e) => e.preventDefault()}>
       {/* HEADER SESI */}
       <div style={st.headerBar}>
         <button type="button" onClick={onKembali} style={st.btnKembaliHeader}>
@@ -509,6 +509,8 @@ const st = {
     border: '1px solid #e2e8f0',
     padding: '24px 20px',
     boxShadow: '0 4px 14px rgba(0, 0, 0, 0.04)',
+    userSelect: 'none',
+    WebkitUserSelect: 'none',
   },
   tagTopik: {
     fontSize: 11,
