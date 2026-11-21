@@ -27,6 +27,11 @@ import {
   SOAL_TKA_2026_SD_BINDO,
 } from './tka2026SdData.js';
 import { tambahXpMingguan } from '../utils/mingguIni.js';
+import {
+  bakuKategoriBenarSalah,
+  kunciBarisBenarSalah,
+  safeArray,
+} from '../utils/skoringSoalKompleks.js';
 
 // ==============================================================================
 // 1. KAMUS PEMETAAN KODE & NAMA SUBTES
@@ -247,13 +252,49 @@ export function getSubtesLatihanList(jenjang = 'SMA') {
 // ==============================================================================
 // 3. NORMALISASI FORMAT BUTIR SOAL SECARA UNIVERSAL
 // ==============================================================================
+// Bersihkan teks pernyataan dan hapus penomoran berlebih dari OCR/importer (mis. "2 Luas..." -> "Luas...")
+export function cleanStatementText(text) {
+  if (!text) return '';
+  let s = String(text).trim();
+  s = s.replace(/^\s*([0-9]+|[a-eA-E])[.)\s-]+\s*/, '');
+  s = s.replace(/(\b[a-zA-Z]+)-\s+([a-zA-Z]+\b)/g, '$1$2');
+  return s.trim();
+}
+
+// Urai kunci benar salah dari berbagai format penyimpanan (array, "B, B, S", "B-B-S", atau dari teks pembahasan)
+export function uraiKunciBenarSalah(rawKunci, pembahasan, jumlahBaris = 0) {
+  let tokens = [];
+  const found = String(rawKunci || '').match(/\b(benar|salah|b|s)\b/gi);
+  if (found && jumlahBaris > 0 && found.length >= jumlahBaris) {
+    tokens = found.slice(0, jumlahBaris).map((x) => (x.toLowerCase().startsWith('b') ? 'benar' : 'salah'));
+  }
+
+  if (tokens.length < jumlahBaris && pembahasan) {
+    const m = String(pembahasan).match(/\b(benar|salah)\s*[-,\s]+\s*(benar|salah)\s*[-,\s]+\s*(benar|salah)\b/i);
+    if (m) {
+      tokens = [m[1].toLowerCase(), m[2].toLowerCase(), m[3].toLowerCase()];
+    } else {
+      const m2 = String(pembahasan).match(/Jawaban:\s*([BS])\s*,\s*([BS])\s*,\s*([BS])/i);
+      if (m2) {
+        tokens = [
+          m2[1].toUpperCase() === 'B' ? 'benar' : 'salah',
+          m2[2].toUpperCase() === 'B' ? 'benar' : 'salah',
+          m2[3].toUpperCase() === 'B' ? 'benar' : 'salah',
+        ];
+      }
+    }
+  }
+  return tokens;
+}
 export function normalisasiButir(item, fallbackSubtes = 'PU', fallbackTopik = 'Umum', idx = 1) {
   if (!item) return null;
   const subtesKasar = item.subtesKode || item.mataPelajaran || item.mapel || item.subtes || fallbackSubtes;
   const kodeSubtes = PETA_KODE_SUBTES[subtesKasar] || fallbackSubtes;
   const topik = item.bab || item.materi || item.subkategori || item.topik || fallbackTopik || 'Latihan Subtes';
+  const teksPertanyaan = cleanStatementText(item.teksSoal || item.teks_soal || item.soal || item.pertanyaan || '');
+  const pembahasan = item.pembahasan || 'Pembahasan terperinci mengacu pada kaidah dan konsep inti materi.';
 
-  // Normalisasi opsi jawaban ke format [{ label: 'A', text: '...' }, ...]
+  // 1. Ekstraksi opsi jawaban mentah
   let opsiArray = [];
   if (Array.isArray(item.opsiJawaban) && item.opsiJawaban.length > 0) {
     opsiArray = item.opsiJawaban.map((o, oIdx) => ({
@@ -272,7 +313,6 @@ export function normalisasiButir(item, fallbackSubtes = 'PU', fallbackTopik = 'U
       };
     });
   } else if (item.opsi && typeof item.opsi === 'object' && !Array.isArray(item.opsi)) {
-    // Format object dictionary: { A: "...", B: "...", C: "...", D: "..." }
     opsiArray = Object.entries(item.opsi).map(([k, v]) => ({
       label: String(k).toUpperCase(),
       text: String(v || ''),
@@ -284,13 +324,80 @@ export function normalisasiButir(item, fallbackSubtes = 'PU', fallbackTopik = 'U
     }));
   }
 
-  // Saring teks opsi placeholder dummy yang tidak valid
+  // Saring opsi placeholder dummy
   opsiArray = opsiArray.filter((o) => !o.text.startsWith('Pernyataan / Opsi ('));
 
-  const rawKunci = String(item.kunciJawaban || item.kunci_jawaban || item.kunci || item.jawabanBenar || 'A').trim().toUpperCase();
-  const cleanKunci = (['A', 'B', 'C', 'D', 'E'].find((h) => rawKunci.startsWith(h))) || 'A';
-  const teksPertanyaan = item.teksSoal || item.teks_soal || item.soal || item.pertanyaan || '';
-  const pembahasan = item.pembahasan || 'Pembahasan terperinci mengacu pada kaidah dan konsep inti materi.';
+  // 2. Deteksi Cerdas Tipe Soal: Benar/Salah, PG Kompleks, atau PG Sederhana
+  let tipeSoal = item.tipeSoal || item.tipe || 'pg_sederhana';
+  const rawKunci = String(item.kunciJawaban || item.kunci_jawaban || item.kunci || item.jawabanBenar || '').trim();
+  const lowerTeks = (teksPertanyaan + ' ' + rawKunci).toLowerCase();
+
+  const isBenarSalahFormat = (
+    tipeSoal === 'benar_salah' ||
+    tipeSoal === 'pg_kategori' ||
+    (Array.isArray(item.tabel_benar_salah) && item.tabel_benar_salah.length > 0) ||
+    (Array.isArray(item.tabelBenarSalah) && item.tabelBenarSalah.length > 0) ||
+    lowerTeks.includes('tentukan benar (b) atau salah (s)') ||
+    lowerTeks.includes('benar (b) atau salah (s)') ||
+    lowerTeks.includes('benar atau salah') ||
+    lowerTeks.includes('benar/salah') ||
+    /^(b|s)(\s*[,-\s]+\s*(b|s))+$/i.test(rawKunci) ||
+    /^(benar|salah)(\s*[,-\s]+\s*(benar|salah))+$/i.test(rawKunci)
+  );
+
+  const isPgKompleksFormat = !isBenarSalahFormat && (
+    tipeSoal === 'pg_kompleks' ||
+    lowerTeks.includes('jawaban benar lebih dari satu') ||
+    lowerTeks.includes('lebih dari satu') ||
+    lowerTeks.includes('pilihlah pernyataan dengan jawaban yang benar') ||
+    lowerTeks.includes('pilih semua pernyataan yang benar') ||
+    (Array.isArray(item.kunciJawaban) && item.kunciJawaban.length > 1) ||
+    /^[A-E]\s*[,;\s]\s*[A-E]/i.test(rawKunci)
+  );
+
+  let pernyataan = [];
+  let cleanKunci = 'A';
+  let kunciTeks = '';
+
+  if (isBenarSalahFormat) {
+    tipeSoal = 'benar_salah';
+    let barisMentah = [];
+    if (Array.isArray(item.tabel_benar_salah) && item.tabel_benar_salah.length > 0) {
+      barisMentah = item.tabel_benar_salah;
+    } else if (Array.isArray(item.tabelBenarSalah) && item.tabelBenarSalah.length > 0) {
+      barisMentah = item.tabelBenarSalah;
+    } else if (Array.isArray(item.pernyataan) && item.pernyataan.length > 0) {
+      barisMentah = item.pernyataan;
+    } else if (opsiArray.length > 0) {
+      barisMentah = opsiArray.map((o) => ({ pernyataan: o.text }));
+    }
+
+    const extractedTokens = uraiKunciBenarSalah(rawKunci, pembahasan, barisMentah.length);
+
+    pernyataan = barisMentah.map((b, bIdx) => {
+      const teks = cleanStatementText(typeof b === 'object' ? (b.pernyataan || b.teks || b.statement || '') : String(b));
+      let k = (typeof b === 'object' ? (b.jawaban || b.kunci || b.value) : '') || '';
+      k = bakuKategoriBenarSalah(k);
+      if (!k && extractedTokens[bIdx]) k = extractedTokens[bIdx];
+      if (!k) k = 'benar';
+      return { id: bIdx + 1, teks, kunci: k };
+    });
+
+    cleanKunci = pernyataan.map((p) => p.kunci);
+    kunciTeks = pernyataan.map((p) => (p.kunci === 'benar' ? 'B' : 'S')).join(', ');
+
+  } else if (isPgKompleksFormat) {
+    tipeSoal = 'pg_kompleks';
+    const keysFound = (rawKunci.match(/[A-E]/gi) || []).map((h) => h.toUpperCase());
+    cleanKunci = [...new Set(keysFound)];
+    if (cleanKunci.length === 0) cleanKunci = ['A'];
+    kunciTeks = cleanKunci.join(', ');
+
+  } else {
+    tipeSoal = 'pg_sederhana';
+    cleanKunci = (['A', 'B', 'C', 'D', 'E'].find((h) => rawKunci.toUpperCase().startsWith(h))) || 'A';
+    kunciTeks = cleanKunci;
+  }
 
   // Ekstraksi gambar soal jika ada
   const gambarList = [];
@@ -315,20 +422,20 @@ export function normalisasiButir(item, fallbackSubtes = 'PU', fallbackTopik = 'U
     topik,
     babNomor: item.babNomor || null,
     namaBab: item.namaBab || item.bab || fallbackTopik,
+    tipeSoal,
     soal: teksPertanyaan,
     wacana: item.wacana || item.stimulus || null,
     opsi: opsiArray,
+    pernyataan,
+    kolomKategori: ['Benar', 'Salah'],
     kunci: cleanKunci,
+    kunciTeks,
     pembahasan,
     gambar: gambarList,
     tingkatKesulitan: item.tingkatKesulitan || (idx % 3 === 0 ? 'sulit' : idx % 2 === 0 ? 'sedang' : 'mudah'),
   };
 }
 
-// ==============================================================================
-// ==============================================================================
-// 3B. PEMETAAN BAB & TOPIK OTOMATIS BERDASARKAN SILABUS MODUL GEMILANG
-// ==============================================================================
 export function tentukanBabDanTopik(subtesKode, item, jenjang = 'SMP') {
   const teks = (
     String(item.bab || '') + ' ' +
@@ -506,7 +613,7 @@ export function susunBankSoalLatihanSmp(bankSoalFirestore = []) {
 
   const tambahSoalUnik = (item, fallbackSubtes, fallbackTopik) => {
     const b = normalisasiButir(item, fallbackSubtes, fallbackTopik, counter++);
-    if (b && b.soal && b.opsi.length >= 2 && !idsSudahAda.has(b.id)) {
+    if (b && b.soal && (b.opsi.length >= 2 || (b.pernyataan && b.pernyataan.length >= 2)) && !idsSudahAda.has(b.id)) {
       idsSudahAda.add(b.id);
       bank.push(b);
     }
@@ -524,41 +631,69 @@ export function susunBankSoalLatihanSmp(bankSoalFirestore = []) {
       if (sj.includes('SMA') || sj.includes('SMK') || sj.includes('SD')) return;
       if (['10', '11', '12', '1', '2', '3', '4', '5', '6'].includes(sk)) return;
 
-      // Buang soal mapel yang bukan subtes TKA SMP (IPS, Geografi, Kimia SMA, dll)
-      if (sm.includes('ips') || sm.includes('geografi') || sm.includes('ekonomi') || sm.includes('sosiologi') || sm.includes('sejarah') || sm.includes('kimia') || sm.includes('fisika sma') || sm.includes('biologi sma') || sm.includes('faraday') || sm.includes('elektrolisis') || sm.includes('sel volta')) {
+      // Filter ketat mapel non-TKA SMP (IPS, Geografi, Sejarah, PPKN, Agama, dll)
+      const teksNonTka = (sm + ' ' + String(s.materi || '') + ' ' + String(s.bab || '') + ' ' + String(s.teksSoal || s.soal || '')).toLowerCase();
+      if (
+        teksNonTka.includes('ips') || teksNonTka.includes('geografi') || teksNonTka.includes('ekonomi') ||
+        teksNonTka.includes('sosiologi') || teksNonTka.includes('sejarah') || teksNonTka.includes('kimia') ||
+        teksNonTka.includes('ppkn') || teksNonTka.includes('pancasila') || teksNonTka.includes('agama') ||
+        teksNonTka.includes('keragaman alam indonesia') || teksNonTka.includes('garis khayal bio-geografi') ||
+        teksNonTka.includes('garis wallace') || teksNonTka.includes('fauna indonesia')
+      ) {
         return;
       }
 
-      const isSmp = sj.includes('SMP') || ['7', '8', '9'].includes(sk)
-        || sm.includes('smp') || String(s.materi || '').toLowerCase().includes('smp')
-        || (!sj && !sk);
+      // Pastikan hanya memasukkan soal dari folder TKA / bertanda TKA jika ada sumberSoalId
+      const isTaggedTka = (
+        String(s.jenisUjian || '').toUpperCase() === 'TKA' ||
+        String(s.folderNama || s.sumberSoalNama || s.folderJudul || '').toLowerCase().includes('tka') ||
+        String(s.folderNama || s.sumberSoalNama || s.folderJudul || '').toLowerCase().includes('pendampingan') ||
+        (Array.isArray(s.tags) && s.tags.some((t) => String(t).toUpperCase().includes('TKA')))
+      );
 
-      if (isSmp) {
-        let subtes = null;
-        if (subtesRaw === 'MTK' || subtesRaw === 'BIN' || subtesRaw === 'IPA' || subtesRaw === 'BIG') {
-          subtes = subtesRaw;
-        } else if (sm.includes('indonesia') || sm.includes('literasi') || sm.includes('lbin')) {
-          subtes = 'BIN';
-        } else if (sm.includes('inggris') || sm.includes('english') || sm.includes('lbing')) {
-          subtes = 'BIG';
-        } else if (sm.includes('ipa') || sm.includes('sains') || sm.includes('fisika') || sm.includes('biologi')) {
-          subtes = 'IPA';
-        } else if (sm.includes('matematika') || sm.includes('numerasi') || sm.includes('hitung') || sm.includes('aljabar')) {
-          subtes = 'MTK';
-        }
-
-        // Jika mapel tidak cocok dengan 4 subtes resmi TKA SMP, JANGAN MASUKKAN
-        if (!subtes) return;
-
-        const babInfo = tentukanBabDanTopik(subtes, s, 'SMP');
-        tambahSoalUnik({
-          ...s,
-          subtesKode: subtes,
-          babNomor: babInfo.babNomor,
-          namaBab: babInfo.namaBab,
-          topik: babInfo.namaBab,
-        }, subtes, babInfo.namaBab);
+      // Jika soal memiliki sumberSoalId tetapi BUKAN folder TKA, lewati
+      if (s.sumberSoalId && !isTaggedTka) {
+        return;
       }
+
+      // Jangan izinkan soal orphan tak bertuan tanpa identitas TKA
+      if (!s.sumberSoalId && !isTaggedTka && !sj.includes('SMP')) {
+        return;
+      }
+
+      let subtes = null;
+      if (subtesRaw === 'MTK' || subtesRaw === 'BIN' || subtesRaw === 'IPA' || subtesRaw === 'BIG') {
+        subtes = subtesRaw;
+      } else if (sm.includes('indonesia') || sm.includes('literasi') || sm.includes('lbin')) {
+        subtes = 'BIN';
+      } else if (sm.includes('inggris') || sm.includes('english') || sm.includes('lbing')) {
+        subtes = 'BIG';
+      } else if (sm.includes('ipa') || sm.includes('sains') || sm.includes('fisika') || sm.includes('biologi')) {
+        subtes = 'IPA';
+      } else if (sm.includes('matematika') || sm.includes('numerasi') || sm.includes('hitung') || sm.includes('aljabar')) {
+        subtes = 'MTK';
+      }
+
+      // Jika mapel tidak cocok dengan 4 subtes resmi TKA SMP, JANGAN MASUKKAN
+      if (!subtes) return;
+
+      // Filter kewarasan untuk MTK: Soal MTK harus memuat angka, rumus, bangun, atau kata numerik
+      if (subtes === 'MTK') {
+        const teksSoalLengkap = (String(s.teksSoal || s.soal || '') + ' ' + String(s.materi || '')).toLowerCase();
+        const adaKarakterMatematika = /[\d\+\-\*\/=\^√%]|luas|keliling|volume|panjang|lebar|tinggi|alas|sudut|akar|pangkat|himpunan|fungsi|aljabar|persamaan|bilangan|pecahan|skala|peluang|median|modus|rata-rata|koordinat/i.test(teksSoalLengkap);
+        if (!adaKarakterMatematika) {
+          return; // Buang wacana teks non-numerik yang salah masuk mapel MTK
+        }
+      }
+
+      const babInfo = tentukanBabDanTopik(subtes, s, 'SMP');
+      tambahSoalUnik({
+        ...s,
+        subtesKode: subtes,
+        babNomor: babInfo.babNomor,
+        namaBab: babInfo.namaBab,
+        topik: babInfo.namaBab,
+      }, subtes, babInfo.namaBab);
     });
   }
 
@@ -785,7 +920,8 @@ export function getPaketLatihanPerSubtes(subtesKode, ukuranPaket = 10, jenjang =
 
   babSorted.forEach((b) => {
     const totalSoal = b.soalList.length;
-    const nPaket = Math.max(1, Math.ceil(totalSoal / ukuranPaket));
+    // Batasi maksimal 2-3 paket terstruktur per bab (10-20 butir soal terbaik per bab)
+    const nPaket = Math.min(3, Math.max(1, Math.ceil(totalSoal / ukuranPaket)));
     for (let i = 0; i < nPaket; i++) {
       const start = i * ukuranPaket;
       const sliceSoal = b.soalList.slice(start, start + ukuranPaket);

@@ -50,8 +50,11 @@ export default function AmbisPracticePlayer({
   const [antreanSoal, setAntreanSoal] = useState(() => [...daftarSoal]);
   const [indeksAktif, setIndeksAktif] = useState(0);
 
-  // Status pengerjaan butir aktif
-  const [jawabanTerpilih, setJawabanTerpilih] = useState(null);
+  // Status pengerjaan butir aktif (Mendukung PG Sederhana, PG Kompleks, dan Tabel Benar/Salah)
+  const [jawabanTerpilih, setJawabanTerpilih] = useState(null); // PG Sederhana (string e.g. 'A')
+  const [jawabanKompleks, setJawabanKompleks] = useState([]); // PG Kompleks (array e.g. ['A', 'C'])
+  const [jawabanBenarSalah, setJawabanBenarSalah] = useState({}); // Tabel Benar/Salah ({ [rowIdx]: 'benar' | 'salah' })
+  const [jawabanIsian, setJawabanIsian] = useState(''); // Isian Singkat
   const [sudahDiperiksa, setSudahDiperiksa] = useState(false);
 
   // Rekap hasil pertama kali dijawab (untuk penilaian skor objektif)
@@ -69,14 +72,70 @@ export default function AmbisPracticePlayer({
   // Reset state per butir soal baru
   useEffect(() => {
     setJawabanTerpilih(null);
+    setJawabanKompleks([]);
+    setJawabanBenarSalah({});
+    setJawabanIsian('');
     setSudahDiperiksa(false);
   }, [indeksAktif]);
 
+  // Evaluasi kelayakan tombol 'Periksa Jawaban'
+  const canPeriksa = useMemo(() => {
+    if (sudahDiperiksa || !soalSekarang) return false;
+    const tipe = soalSekarang.tipeSoal || 'pg_sederhana';
+    if (tipe === 'benar_salah') {
+      const baris = soalSekarang.pernyataan || [];
+      if (!baris.length) return false;
+      return baris.every((_, idx) => Boolean(jawabanBenarSalah[idx]));
+    }
+    if (tipe === 'pg_kompleks') {
+      return Array.isArray(jawabanKompleks) && jawabanKompleks.length > 0;
+    }
+    if (tipe === 'isian_singkat') {
+      return Boolean(jawabanIsian && jawabanIsian.trim().length > 0);
+    }
+    return Boolean(jawabanTerpilih);
+  }, [soalSekarang, sudahDiperiksa, jawabanBenarSalah, jawabanKompleks, jawabanIsian, jawabanTerpilih]);
+
+  // Evaluasi kebenaran jawaban siswa
+  const evaluasiJawaban = () => {
+    if (!soalSekarang) return false;
+    const tipe = soalSekarang.tipeSoal || 'pg_sederhana';
+
+    if (tipe === 'benar_salah') {
+      const baris = soalSekarang.pernyataan || [];
+      if (!baris.length) return false;
+      return baris.every((b, idx) => {
+        const k = String(b.kunci || soalSekarang.kunci?.[idx] || 'benar').toLowerCase().trim();
+        const j = String(jawabanBenarSalah[idx] || '').toLowerCase().trim();
+        return k === j;
+      });
+    }
+
+    if (tipe === 'pg_kompleks') {
+      const kunciSet = new Set(
+        (Array.isArray(soalSekarang.kunci) ? soalSekarang.kunci : [soalSekarang.kunci])
+          .map((k) => String(k).toUpperCase().trim())
+      );
+      const siswaSet = new Set((jawabanKompleks || []).map((j) => String(j).toUpperCase().trim()));
+      if (kunciSet.size === 0 || kunciSet.size !== siswaSet.size) return false;
+      return [...kunciSet].every((k) => siswaSet.has(k));
+    }
+
+    if (tipe === 'isian_singkat') {
+      const k = String(soalSekarang.kunci || '').trim().toLowerCase();
+      const j = String(jawabanIsian || '').trim().toLowerCase();
+      return k === j;
+    }
+
+    // Default pg_sederhana
+    return jawabanTerpilih === soalSekarang.kunci;
+  };
+
   // Periksa jawaban
   const handlePeriksaJawaban = () => {
-    if (!jawabanTerpilih || !soalSekarang || sudahDiperiksa) return;
+    if (!canPeriksa || !soalSekarang || sudahDiperiksa) return;
 
-    const benar = jawabanTerpilih === soalSekarang.kunci;
+    const benar = evaluasiJawaban();
     setSudahDiperiksa(true);
 
     // Catat jika ini percobaan pertama untuk soal ini
@@ -339,98 +398,293 @@ export default function AmbisPracticePlayer({
           </div>
         )}
 
-        {/* DAFTAR OPSI JAWABAN */}
-        <div style={st.listOpsi}>
-          {(soalSekarang.opsi || []).map((opsi) => {
-            const label = opsi.label;
-            const isDipilih = jawabanTerpilih === label;
-            const isKunci = label === soalSekarang.kunci;
-
-            let gayaTombol = { ...st.btnOpsi };
-            let gayaHuruf = { ...st.hurufOpsi };
-
-            if (!sudahDiperiksa) {
-              if (isDipilih) {
-                gayaTombol = { ...gayaTombol, borderColor: '#0d9488', background: '#f0fdfa' };
-                gayaHuruf = { ...gayaHuruf, background: '#0d9488', color: '#ffffff' };
-              }
-            } else {
-              // Sudah diperiksa: beri kode warna hijau untuk benar dan merah untuk salah
-              if (isKunci) {
-                gayaTombol = { ...gayaTombol, borderColor: '#10b981', background: '#ecfdf5' };
-                gayaHuruf = { ...gayaHuruf, background: '#10b981', color: '#ffffff' };
-              } else if (isDipilih && !isKunci) {
-                gayaTombol = { ...gayaTombol, borderColor: '#ef4444', background: '#fef2f2' };
-                gayaHuruf = { ...gayaHuruf, background: '#ef4444', color: '#ffffff' };
-              }
-            }
-
-            return (
-              <button
-                key={label}
-                type="button"
-                disabled={sudahDiperiksa}
-                onClick={() => setJawabanTerpilih(label)}
-                style={gayaTombol}
-              >
-                <div style={gayaHuruf}>{label}</div>
-                <div style={st.teksOpsi}>{renderMath(opsi.text)}</div>
-              </button>
-            );
-          })}
-        </div>
-
-        {/* FEEDBACK & PEMBAHASAN INSTAN */}
-        {sudahDiperiksa && (
-          <div style={{
-            ...st.boxPembahasan,
-            borderColor: isBenar ? '#a7f3d0' : '#fecaca',
-            background: isBenar ? '#f0fdf4' : '#fff1f2',
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-              {isBenar ? (
-                <>
-                  <CheckCircle2 size={20} color="#10b981" />
-                  <span style={{ fontWeight: 800, color: '#166534', fontSize: 14 }}>
-                    Jawaban Anda Benar! 🎉 (+10 XP)
-                  </span>
-                </>
-              ) : (
-                <>
-                  <XCircle size={20} color="#ef4444" />
-                  <span style={{ fontWeight: 800, color: '#991b1b', fontSize: 14 }}>
-                    Jawaban Anda Kurang Tepat (Kunci: {soalSekarang.kunci})
-                  </span>
-                </>
-              )}
+        {/* TAMPILAN INTERAKTIF SESUAI TIPE SOAL */}
+        {soalSekarang.tipeSoal === 'benar_salah' ? (
+          /* ================================================================ */
+          /* 1. TIPE SOAL: TABEL PERNYATAAN BENAR / SALAH                      */
+          /* ================================================================ */
+          <div style={{ marginTop: 16, marginBottom: 16, borderRadius: 14, border: '1px solid #cbd5e1', overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.03)' }}>
+            <div style={{ background: '#f8fafc', padding: '10px 14px', borderBottom: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span style={{ fontSize: 12, fontWeight: 800, color: '#334155', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                📊 Evaluasi Pernyataan (Tentukan Benar / Salah)
+              </span>
+              <span style={{ fontSize: 11, color: '#64748b', fontWeight: 600 }}>
+                {soalSekarang.pernyataan?.length || 0} Pernyataan
+              </span>
             </div>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13.5, color: '#1e293b' }}>
+              <thead>
+                <tr style={{ background: '#0f172a', color: '#f8fafc' }}>
+                  <th style={{ width: 38, padding: '10px 6px', textAlign: 'center', fontSize: 12, fontWeight: 700 }}>No</th>
+                  <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 12, fontWeight: 700 }}>Pernyataan</th>
+                  <th style={{ width: 95, padding: '10px 6px', textAlign: 'center', fontSize: 12, fontWeight: 700, borderLeft: '1px solid #334155' }}>Benar</th>
+                  <th style={{ width: 95, padding: '10px 6px', textAlign: 'center', fontSize: 12, fontWeight: 700, borderLeft: '1px solid #334155' }}>Salah</th>
+                </tr>
+              </thead>
+              <tbody>
+                {(soalSekarang.pernyataan || []).map((p, pIdx) => {
+                  const rowKunci = String(p.kunci || soalSekarang.kunci?.[pIdx] || 'benar').toLowerCase().trim();
+                  const pilihanSiswa = jawabanBenarSalah[pIdx];
+                  const isGenap = pIdx % 2 === 1;
 
-            {mode === 'Active Recall' && !isBenar && (
-              <div style={{ fontSize: 12, color: '#b91c1c', marginBottom: 8, fontStyle: 'italic' }}>
-                💡 Mode Active Recall aktif: Soal ini akan dimunculkan kembali di akhir sesi hingga Anda berhasil menjawabnya dengan benar.
-              </div>
-            )}
+                  const isBenarDipilih = pilihanSiswa === 'benar';
+                  const isSalahDipilih = pilihanSiswa === 'salah';
 
-            <div style={{ fontSize: 12, fontWeight: 700, color: '#0f172a', marginBottom: 4 }}>
-              Langkah Pembahasan:
+                  let styleBtnBenar = {
+                    padding: '8px 14px',
+                    borderRadius: 8,
+                    fontSize: 12,
+                    fontWeight: 700,
+                    border: '1.5px solid #cbd5e1',
+                    background: '#ffffff',
+                    color: '#475569',
+                    cursor: sudahDiperiksa ? 'default' : 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 4,
+                    transition: 'all 0.15s ease',
+                  };
+
+                  let styleBtnSalah = {
+                    padding: '8px 14px',
+                    borderRadius: 8,
+                    fontSize: 12,
+                    fontWeight: 700,
+                    border: '1.5px solid #cbd5e1',
+                    background: '#ffffff',
+                    color: '#475569',
+                    cursor: sudahDiperiksa ? 'default' : 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 4,
+                    transition: 'all 0.15s ease',
+                  };
+
+                  if (!sudahDiperiksa) {
+                    if (isBenarDipilih) {
+                      styleBtnBenar = { ...styleBtnBenar, borderColor: '#10b981', background: '#ecfdf5', color: '#065f46', boxShadow: '0 0 0 1px #10b981' };
+                    }
+                    if (isSalahDipilih) {
+                      styleBtnSalah = { ...styleBtnSalah, borderColor: '#ea580c', background: '#fff7ed', color: '#9a3412', boxShadow: '0 0 0 1px #ea580c' };
+                    }
+                  } else {
+                    // Review mode: Beri feedback warna per baris
+                    if (rowKunci === 'benar') {
+                      styleBtnBenar = { ...styleBtnBenar, borderColor: '#10b981', background: '#d1fae5', color: '#065f46', fontWeight: 800 };
+                      if (isSalahDipilih) {
+                        styleBtnSalah = { ...styleBtnSalah, borderColor: '#ef4444', background: '#fee2e2', color: '#991b1b', textDecoration: 'line-through' };
+                      }
+                    } else {
+                      styleBtnSalah = { ...styleBtnSalah, borderColor: '#10b981', background: '#d1fae5', color: '#065f46', fontWeight: 800 };
+                      if (isBenarDipilih) {
+                        styleBtnBenar = { ...styleBtnBenar, borderColor: '#ef4444', background: '#fee2e2', color: '#991b1b', textDecoration: 'line-through' };
+                      }
+                    }
+                  }
+
+                  return (
+                    <tr key={p.id || pIdx} style={{ background: isGenap ? '#f8fafc' : '#ffffff', borderBottom: '1px solid #e2e8f0' }}>
+                      <td style={{ textAlign: 'center', fontWeight: 700, color: '#64748b', padding: '12px 6px' }}>{pIdx + 1}</td>
+                      <td style={{ padding: '12px 14px', lineHeight: 1.5, verticalAlign: 'middle' }}>
+                        <div>{renderMath(p.teks)}</div>
+                      </td>
+                      <td style={{ textAlign: 'center', padding: '8px', verticalAlign: 'middle', borderLeft: '1px solid #f1f5f9' }}>
+                        <button
+                          type="button"
+                          disabled={sudahDiperiksa}
+                          onClick={() => setJawabanBenarSalah((prev) => ({ ...prev, [pIdx]: 'benar' }))}
+                          style={styleBtnBenar}
+                        >
+                          <span>Benar</span>
+                          {sudahDiperiksa && rowKunci === 'benar' && ' ✔️'}
+                        </button>
+                      </td>
+                      <td style={{ textAlign: 'center', padding: '8px', verticalAlign: 'middle', borderLeft: '1px solid #f1f5f9' }}>
+                        <button
+                          type="button"
+                          disabled={sudahDiperiksa}
+                          onClick={() => setJawabanBenarSalah((prev) => ({ ...prev, [pIdx]: 'salah' }))}
+                          style={styleBtnSalah}
+                        >
+                          <span>Salah</span>
+                          {sudahDiperiksa && rowKunci === 'salah' && ' ✔️'}
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        ) : soalSekarang.tipeSoal === 'pg_kompleks' ? (
+          /* ================================================================ */
+          /* 2. TIPE SOAL: PILIHAN GANDA KOMPLEKS (MULTI-SELECT CHECKBOX)      */
+          /* ================================================================ */
+          <div style={{ marginBottom: 12 }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 10px', background: '#f5f3ff', border: '1px solid #ddd6fe', borderRadius: 999, fontSize: 12, fontWeight: 700, color: '#6d28d9', marginBottom: 12 }}>
+              <span>☑️ Pilihan Ganda Kompleks (Pilih semua jawaban yang benar, bisa lebih dari satu)</span>
             </div>
-            <div style={{ fontSize: 13, lineHeight: 1.6, color: '#334155' }}>
-              {renderMath(soalSekarang.pembahasan)}
+            <div style={st.listOpsi}>
+              {(soalSekarang.opsi || []).map((opsi) => {
+                const label = opsi.label;
+                const isDipilih = (jawabanKompleks || []).includes(label);
+                const isKunci = (Array.isArray(soalSekarang.kunci) ? soalSekarang.kunci : [soalSekarang.kunci]).includes(label);
+
+                let gayaTombol = { ...st.btnOpsi };
+                let gayaKotak = {
+                  width: 28,
+                  height: 28,
+                  borderRadius: 6,
+                  border: '2px solid #cbd5e1',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: 13,
+                  fontWeight: 800,
+                  flexShrink: 0,
+                  background: '#ffffff',
+                  color: '#475569',
+                  transition: 'all 0.15s ease',
+                };
+
+                if (!sudahDiperiksa) {
+                  if (isDipilih) {
+                    gayaTombol = { ...gayaTombol, borderColor: '#7c3aed', background: '#f5f3ff' };
+                    gayaKotak = { ...gayaKotak, borderColor: '#7c3aed', background: '#7c3aed', color: '#ffffff' };
+                  }
+                } else {
+                  if (isKunci && isDipilih) {
+                    gayaTombol = { ...gayaTombol, borderColor: '#10b981', background: '#ecfdf5' };
+                    gayaKotak = { ...gayaKotak, borderColor: '#10b981', background: '#10b981', color: '#ffffff' };
+                  } else if (!isKunci && isDipilih) {
+                    gayaTombol = { ...gayaTombol, borderColor: '#ef4444', background: '#fef2f2' };
+                    gayaKotak = { ...gayaKotak, borderColor: '#ef4444', background: '#ef4444', color: '#ffffff' };
+                  } else if (isKunci && !isDipilih) {
+                    gayaTombol = { ...gayaTombol, borderColor: '#10b981', background: '#ffffff', borderStyle: 'dashed' };
+                    gayaKotak = { ...gayaKotak, borderColor: '#10b981', color: '#10b981' };
+                  }
+                }
+
+                return (
+                  <button
+                    key={label}
+                    type="button"
+                    disabled={sudahDiperiksa}
+                    onClick={() => {
+                      setJawabanKompleks((prev) => {
+                        const s = new Set(prev);
+                        if (s.has(label)) s.delete(label);
+                        else s.add(label);
+                        return Array.from(s);
+                      });
+                    }}
+                    style={gayaTombol}
+                  >
+                    <div style={gayaKotak}>{isDipilih ? '✓' : label}</div>
+                    <div style={st.teksOpsi}>{renderMath(opsi.text)}</div>
+                  </button>
+                );
+              })}
             </div>
           </div>
+        ) : (
+          /* ================================================================ */
+          /* 3. TIPE SOAL: PILIHAN GANDA SEDERHANA (SINGLE RADIO)              */
+          /* ================================================================ */
+          <div style={st.listOpsi}>
+            {(soalSekarang.opsi || []).map((opsi) => {
+              const label = opsi.label;
+              const isDipilih = jawabanTerpilih === label;
+              const isKunci = label === soalSekarang.kunci;
+
+              let gayaTombol = { ...st.btnOpsi };
+              let gayaHuruf = { ...st.hurufOpsi };
+
+              if (!sudahDiperiksa) {
+                if (isDipilih) {
+                  gayaTombol = { ...gayaTombol, borderColor: '#0d9488', background: '#f0fdfa' };
+                  gayaHuruf = { ...gayaHuruf, background: '#0d9488', color: '#ffffff' };
+                }
+              } else {
+                if (isKunci) {
+                  gayaTombol = { ...gayaTombol, borderColor: '#10b981', background: '#ecfdf5' };
+                  gayaHuruf = { ...gayaHuruf, background: '#10b981', color: '#ffffff' };
+                } else if (isDipilih && !isKunci) {
+                  gayaTombol = { ...gayaTombol, borderColor: '#ef4444', background: '#fef2f2' };
+                  gayaHuruf = { ...gayaHuruf, background: '#ef4444', color: '#ffffff' };
+                }
+              }
+
+              return (
+                <button
+                  key={label}
+                  type="button"
+                  disabled={sudahDiperiksa}
+                  onClick={() => setJawabanTerpilih(label)}
+                  style={gayaTombol}
+                >
+                  <div style={gayaHuruf}>{label}</div>
+                  <div style={st.teksOpsi}>{renderMath(opsi.text)}</div>
+                </button>
+              );
+            })}
+          </div>
         )}
+
+        {/* FEEDBACK & PEMBAHASAN INSTAN */}
+        {sudahDiperiksa && (() => {
+          const isBenar = evaluasiJawaban();
+          return (
+            <div style={{
+              ...st.boxPembahasan,
+              borderColor: isBenar ? '#a7f3d0' : '#fecaca',
+              background: isBenar ? '#f0fdf4' : '#fff1f2',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                {isBenar ? (
+                  <>
+                    <CheckCircle2 size={20} color="#10b981" />
+                    <span style={{ fontWeight: 800, color: '#166534', fontSize: 14 }}>
+                      Jawaban Anda Benar! 🎉 (+10 XP)
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <XCircle size={20} color="#ef4444" />
+                    <span style={{ fontWeight: 800, color: '#991b1b', fontSize: 14 }}>
+                      Jawaban Anda Kurang Tepat (Kunci: {soalSekarang.kunciTeks || (Array.isArray(soalSekarang.kunci) ? soalSekarang.kunci.join(', ') : soalSekarang.kunci)})
+                    </span>
+                  </>
+                )}
+              </div>
+
+              {mode === 'Active Recall' && !isBenar && (
+                <div style={{ fontSize: 12, color: '#b91c1c', marginBottom: 8, fontStyle: 'italic' }}>
+                  💡 Mode Active Recall aktif: Soal ini akan dimunculkan kembali di akhir sesi hingga Anda berhasil menjawabnya dengan benar.
+                </div>
+              )}
+
+              <div style={{ fontSize: 12, fontWeight: 700, color: '#0f172a', marginBottom: 4 }}>
+                Langkah Pembahasan:
+              </div>
+              <div style={{ fontSize: 13, lineHeight: 1.6, color: '#334155' }}>
+                {renderMath(soalSekarang.pembahasan)}
+              </div>
+            </div>
+          );
+        })()}
 
         {/* TOMBOL AKSI */}
         <div style={{ marginTop: 20 }}>
           {!sudahDiperiksa ? (
             <button
               type="button"
-              disabled={!jawabanTerpilih}
+              disabled={!canPeriksa}
               onClick={handlePeriksaJawaban}
               style={{
                 ...st.btnAksiUtama,
-                opacity: jawabanTerpilih ? 1 : 0.6,
-                cursor: jawabanTerpilih ? 'pointer' : 'not-allowed',
+                opacity: canPeriksa ? 1 : 0.6,
+                cursor: canPeriksa ? 'pointer' : 'not-allowed',
               }}
             >
               <span>Periksa Jawaban</span>

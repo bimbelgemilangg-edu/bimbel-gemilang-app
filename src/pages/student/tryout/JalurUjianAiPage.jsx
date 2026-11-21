@@ -177,12 +177,17 @@ export default function JalurUjianAiPage() {
           console.warn('Gagal memuat bank_soal:', e);
           return { docs: [] };
         });
+        const querySumber = getDocs(collection(db, 'sumber_soal')).catch((e) => {
+          console.warn('Gagal memuat sumber_soal:', e);
+          return { docs: [] };
+        });
 
-        const [snapPaket, snapSesi1, snapSesi2, snapBankSoal] = await Promise.all([
+        const [snapPaket, snapSesi1, snapSesi2, snapBankSoal, snapSumberSoal] = await Promise.all([
           getDocs(query(collection(db, 'tryout_paket'), where('status', '==', 'aktif'))),
           querySesi1,
           querySesi2,
           queryBank,
+          querySumber,
         ]);
 
         if (!aktif) return;
@@ -202,13 +207,82 @@ export default function JalurUjianAiPage() {
         (snapSesi1.docs || []).forEach((d) => mapSesi.set(d.id, { id: d.id, ...d.data() }));
         (snapSesi2.docs || []).forEach((d) => mapSesi.set(d.id, { id: d.id, ...d.data() }));
 
+        // Identifikasi folder sumber (sumber_soal) khusus TKA / Pendampingan
+        const folders = (snapSumberSoal.docs || []).map((d) => ({ id: d.id, ...d.data() }));
+        const folderMap = new Map();
+        folders.forEach((f) => folderMap.set(f.id, f));
+
+        const tkaFolderIds = new Set(
+          folders
+            .filter((f) => {
+              const jn = String(f.jenisUjian || '').toUpperCase();
+              const nm = String(f.judul || f.nama || '').toLowerCase();
+              const jg = String(f.jenjang || '').toUpperCase();
+              return (
+                jn === 'TKA' ||
+                nm.includes('tka') ||
+                nm.includes('pendampingan') ||
+                (jg.includes('SMP') && !nm.includes('reguler') && !nm.includes('ulangan'))
+              );
+            })
+            .map((f) => f.id)
+        );
+
         const allBankSoal = (snapBankSoal.docs || [])
-          .map((d) => ({ id: d.id, ...d.data() }))
+          .map((d) => {
+            const data = d.data();
+            const folder = data.sumberSoalId ? folderMap.get(data.sumberSoalId) : null;
+            return {
+              id: d.id,
+              ...data,
+              folderNama: folder ? (folder.judul || folder.nama || '') : (data.folderNama || ''),
+              sumberSoalNama: folder ? (folder.judul || folder.nama || '') : (data.sumberSoalNama || ''),
+            };
+          })
           .filter((d) => d.status !== 'dihapus');
+
+        // Filter ketat isolasi: Khusus SMP, HANYA ambil butir soal dari Folder TKA pengguna atau jenisUjian TKA
+        let bankSoalTersaring = allBankSoal;
+        if (isSmp) {
+          bankSoalTersaring = allBankSoal.filter((s) => {
+            const isDariFolderTka = s.sumberSoalId && tkaFolderIds.has(s.sumberSoalId);
+            const isJenisTka = String(s.jenisUjian || '').toUpperCase() === 'TKA';
+            const isTagTka = Array.isArray(s.tags) && s.tags.some((t) => String(t).toUpperCase().includes('TKA'));
+            const isFolderNamaTka = (
+              String(s.folderNama || '').toLowerCase().includes('tka') ||
+              String(s.folderNama || '').toLowerCase().includes('pendampingan')
+            );
+
+            // Jika ada sumberSoalId dan BUKAN folder TKA, jangan masukkan
+            if (s.sumberSoalId && !isDariFolderTka && !isJenisTka && !isFolderNamaTka) {
+              return false;
+            }
+
+            // Jika soal orphan tanpa folder, harus eksplisit jenisUjian TKA
+            if (!s.sumberSoalId && !isJenisTka && !isTagTka) {
+              return false;
+            }
+
+            // Buang mapel non-TKA (IPS, Geografi, Sejarah, PPKN, Agama)
+            const sm = String(s.mataPelajaran || s.mapel || s.subtes || '').toLowerCase();
+            const st = (String(s.materi || '') + ' ' + String(s.bab || '') + ' ' + String(s.teksSoal || s.soal || '')).toLowerCase();
+            if (
+              sm.includes('ips') || sm.includes('geografi') || sm.includes('ekonomi') ||
+              sm.includes('sosiologi') || sm.includes('sejarah') || sm.includes('agama') ||
+              sm.includes('ppkn') || sm.includes('pancasila') || st.includes('keragaman alam indonesia') ||
+              st.includes('fauna indonesia') || st.includes('garis khayal bio-geografi') ||
+              st.includes('garis wallace')
+            ) {
+              return false;
+            }
+
+            return true;
+          });
+        }
 
         setPaketOtomatisDb(paketAi);
         setSesiList(Array.from(mapSesi.values()));
-        setBankSoalFirestore(allBankSoal);
+        setBankSoalFirestore(bankSoalTersaring);
       } catch (err) {
         console.error('Gagal memuat paket jalur AI / bank_soal:', err);
       } finally {
