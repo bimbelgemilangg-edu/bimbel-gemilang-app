@@ -469,7 +469,7 @@ ATURAN WAJIB:
 2. Jika tipe soal adalah pilihan ganda kompleks (jawaban lebih dari satu), pastikan 'kunci' adalah array huruf (misal ["A", "C"]).
 3. Jika tipe benar/salah, pastikan setiap baris pernyataan memiliki kunci "benar" atau "salah".
 4. Jika pilihan ganda biasa, tentukan satu huruf 'kunci' yang benar (misal "B").
-5. Tulis pembahasan lengkap yang menguraikan alasan mengapa kunci tersebut benar.
+5. Tulis PEMBAHASAN yang SANGAT RAPI, terstruktur per baris/poin (gunakan bullet •, tebalkan judul dengan **, tandai status [BENAR] atau [SALAH] pada tipe benar/salah, pisahkan baris dengan enter ganda, dan gunakan KaTeX $...$ untuk semua rumus/angka/variabel/pertidaksamaan). JANGAN menulis pembahasan dalam satu paragraf panjang menyatu.
 
 Kembalikan HANYA JSON persis format:
 {

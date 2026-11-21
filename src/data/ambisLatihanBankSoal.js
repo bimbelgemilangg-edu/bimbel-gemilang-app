@@ -343,6 +343,79 @@ export function uraiKunciBenarSalah(rawKunci, pembahasan, jumlahBaris = 0) {
 }
 
 /**
+ * PENGURAI & PENATA PEMBAHASAN OTOMATIS (AI EXPLANATION FORMATTER)
+ * Mengubah teks pembahasan mentah yang menyatu/padat (wall-of-text)
+ * menjadi format berstruktur rapi, elegan, ber-bullet, bertag [BENAR]/[SALAH],
+ * dan berformat KaTeX matematis ($...).
+ */
+export function rapikanDanStrukturkanPembahasan(raw, butir = {}) {
+  if (!raw) return 'Pembahasan terverifikasi mengacu pada kaidah dan konsep inti materi.';
+  let s = String(raw).trim();
+
+  // 1. Bersihkan artefak pemindai dan teks judul tabel usang
+  s = s.replace(/^Analisis\s+setiap\s+pernyataan[^\n:]*?:\s*/i, '');
+  s = s.replace(/pada tabel soal nomor\s*\d+\([^)]*\):\s*/i, '');
+  s = s.replace(/\bPPAD[-–\s\d]*[^\n]*/gi, '');
+
+  // 2. Deteksi pola Pernyataan berulang (Pernyataan 1, Pernyataan 2, Pernyataan 3...)
+  if (/Pernyataan\s*\(?\d+\)?/i.test(s)) {
+    let kesimpulan = '';
+    const mKes = s.match(/(?:Oleh karena itu|Jadi|Kesimpulan|Kunci|Jawaban)\s*:?[\s\S]*$/i);
+    if (mKes && mKes.index > 20) {
+      kesimpulan = mKes[0].trim();
+      s = s.slice(0, mKes.index).trim();
+    }
+
+    const items = s.split(/;\s*(?=Pernyataan|\(\d+\)|\d+\.)|(?=Pernyataan\s*\(?\d+\)?)/i);
+    const lines = ['📊 **Analisis Evaluasi Setiap Pernyataan:**'];
+
+    items.forEach((it) => {
+      const itTrim = it.trim();
+      if (!itTrim) return;
+
+      const m = itTrim.match(/^Pernyataan\s*\(?(\d+)\)?\s*[:"“']?\s*([\s\S]*?)\s*(?:["”']?\s*bernilai\s*(Benar|Salah)(?:\s*\([BS]\))?|["”']?\s*\(([BS])\)|["”']?\s*:\s*(Benar|Salah))[\s.;]*$/i);
+      if (m) {
+        const nomor = m[1];
+        let isi = (m[2] || '').trim().replace(/^["“']|["”']$/g, '');
+        const rawStatus = (m[3] || m[4] || m[5] || 'Benar').toUpperCase();
+        const statusTag = rawStatus.startsWith('B') ? 'BENAR' : 'SALAH';
+
+        // Konversi pertidaksamaan dan ekspresi matematika menjadi KaTeX
+        isi = isi.replace(/(\d+[\d\.]*x)\s*>=\s*([\d\.]+)/g, '$$1 \\ge $2$$');
+        isi = isi.replace(/(\d+[\d\.]*x)\s*<=\s*([\d\.]+)/g, '$$1 \\le $2$$');
+        isi = isi.replace(/(\d+[\d\.]*x)\s*>\s*([\d\.]+)/g, '$$1 > $2$$');
+        isi = isi.replace(/(\d+[\d\.]*x)\s*<\s*([\d\.]+)/g, '$$1 < $2$$');
+
+        lines.push(`• **Pernyataan (${nomor}) [${statusTag}]**:\n  ${isi}`);
+      } else {
+        lines.push(`• ${itTrim}`);
+      }
+    });
+
+    if (kesimpulan) {
+      lines.push(`✅ **Kesimpulan:** ${kesimpulan.replace(/^[!,.\s:]+/, '')}`);
+    }
+
+    return lines.join('\n\n');
+  }
+
+  // 3. Format umum: Pisahkan bullet, diketahui, ditanya, dijawab yang menyatu
+  s = s.replace(/\s*(?:•|\*)\s*/g, '\n• ');
+  s = s.replace(/\s*(Diketahui\s*:)/gi, '\n📌 **$1**\n');
+  s = s.replace(/\s*(Ditanya(?:kan)?\s*:)/gi, '\n❓ **$1**\n');
+  s = s.replace(/\s*(Dijawab\s*:|Penyelesaian\s*:|Langkah\s*:)/gi, '\n📐 **$1**\n');
+  s = s.replace(/\s*(Oleh karena itu[^\n]*|Kesimpulan\s*:[^\n]*|Jadi\b[^\n]*|Jawaban\s*:[^\n]*)$/gi, '\n✅ **$1**');
+
+  // Konversi pertidaksamaan & simbol umum matematika jika belum dalam KaTeX
+  s = s.replace(/(\d+[\d\.]*x)\s*>=\s*([\d\.]+)/g, '$$1 \\ge $2$$');
+  s = s.replace(/(\d+[\d\.]*x)\s*<=\s*([\d\.]+)/g, '$$1 \\le $2$$');
+
+  // Rapikan baris kosong berlebih
+  s = s.replace(/\n{3,}/g, '\n\n');
+  return s.trim();
+}
+
+/**
  * GENERATOR PEMBAHASAN OTOMATIS BERSTRUKTUR
  * Membangun penjelasan langkah demi langkah, konsep inti, dan kunci jawaban
  */
@@ -543,6 +616,8 @@ export function aiGuardPolicingAndHeal(butir) {
 
   if (isDummyPembahasan) {
     butir.pembahasan = bangunPembahasanOtomatis(butir);
+  } else {
+    butir.pembahasan = rapikanDanStrukturkanPembahasan(butir.pembahasan, butir);
   }
 
   return butir;

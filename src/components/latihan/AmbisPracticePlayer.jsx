@@ -37,6 +37,194 @@ function renderMath(text) {
   });
 }
 
+// Renderer teks berformat kaya (tebal **...**, badge [BENAR]/[SALAH], dan KaTeX)
+function renderRichTextSegment(segment, keyPrefix = '') {
+  if (!segment) return null;
+  const subParts = segment.split(/(\*\*.*?\*\*|\[(?:BENAR|SALAH|TEPAT|KELIRU)\]|\((?:BENAR|SALAH|Benar|Salah)\))/g);
+
+  return subParts.map((sub, j) => {
+    if (!sub) return null;
+    const k = `${keyPrefix}_${j}`;
+
+    if (sub.startsWith('**') && sub.endsWith('**') && sub.length >= 4) {
+      return (
+        <strong key={k} style={{ fontWeight: 800, color: '#0f172a' }}>
+          {sub.slice(2, -2)}
+        </strong>
+      );
+    }
+
+    if (/^\[?(?:BENAR|TEPAT)\]?$/i.test(sub) || /^\((?:BENAR|Benar)\)$/.test(sub)) {
+      return (
+        <span
+          key={k}
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 3,
+            background: '#dcfce7',
+            color: '#15803d',
+            border: '1px solid #86efac',
+            borderRadius: 6,
+            padding: '1px 8px',
+            fontSize: 11,
+            fontWeight: 800,
+            margin: '0 4px',
+            verticalAlign: 'baseline',
+          }}
+        >
+          BENAR ✓
+        </span>
+      );
+    }
+
+    if (/^\[?(?:SALAH|KELIRU)\]?$/i.test(sub) || /^\((?:SALAH|Salah)\)$/.test(sub)) {
+      return (
+        <span
+          key={k}
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 3,
+            background: '#fee2e2',
+            color: '#b91c1c',
+            border: '1px solid #fca5a5',
+            borderRadius: 6,
+            padding: '1px 8px',
+            fontSize: 11,
+            fontWeight: 800,
+            margin: '0 4px',
+            verticalAlign: 'baseline',
+          }}
+        >
+          SALAH ✗
+        </span>
+      );
+    }
+
+    return <React.Fragment key={k}>{sub}</React.Fragment>;
+  });
+}
+
+function renderMathWithFormatting(text, keyPrefix = '') {
+  if (!text) return null;
+  const parts = String(text).split(/(\$\$.*?\$\$|\$.*?\$|\\\[.*?\\\]|\\\(.*?\\\))/g);
+  return parts.map((part, i) => {
+    const k = `${keyPrefix}_m_${i}`;
+    if (part.startsWith('$$') && part.endsWith('$$')) {
+      try { return <BlockMath key={k} math={part.slice(2, -2)} />; } catch (_e) { return <span key={k}>{part}</span>; }
+    }
+    if (part.startsWith('$') && part.endsWith('$')) {
+      try { return <InlineMath key={k} math={part.slice(1, -1)} />; } catch (_e) { return <span key={k}>{part}</span>; }
+    }
+    if (part.startsWith('\\[') && part.endsWith('\\]')) {
+      try { return <BlockMath key={k} math={part.slice(2, -2)} />; } catch (_e) { return <span key={k}>{part}</span>; }
+    }
+    if (part.startsWith('\\(') && part.endsWith('\\)')) {
+      try { return <InlineMath key={k} math={part.slice(2, -2)} />; } catch (_e) { return <span key={k}>{part}</span>; }
+    }
+    return <span key={k}>{renderRichTextSegment(part, k)}</span>;
+  });
+}
+
+// Renderer Pembahasan Berstruktur Rapi & Cantik
+function renderPembahasanRapi(teksPembahasan) {
+  if (!teksPembahasan) return null;
+  const rawLines = String(teksPembahasan).split('\n');
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 10, fontSize: 13.5, lineHeight: 1.65, color: '#334155', marginTop: 4 }}>
+      {rawLines.map((line, idx) => {
+        const trimmed = line.trim();
+        if (!trimmed) return <div key={idx} style={{ height: 4 }} />;
+
+        // Header Kategori / Bagian
+        const isHeader = (
+          trimmed.startsWith('📚') ||
+          trimmed.startsWith('📊') ||
+          trimmed.startsWith('📌') ||
+          trimmed.startsWith('📐') ||
+          trimmed.startsWith('🎯') ||
+          trimmed.startsWith('❓') ||
+          trimmed.startsWith('Analisis Evaluasi') ||
+          trimmed.startsWith('Langkah Penyelesaian')
+        );
+
+        // Kesimpulan / Jawaban Akhir
+        const isKesimpulan = trimmed.startsWith('✅') || trimmed.startsWith('Kesimpulan') || trimmed.toLowerCase().startsWith('kunci evaluasi');
+
+        // Bullet / Butir Kartu
+        const isBullet = trimmed.startsWith('•') || /^\(?\d+\)?[.)]\s+/.test(trimmed);
+
+        if (isHeader) {
+          return (
+            <div
+              key={idx}
+              style={{
+                fontWeight: 800,
+                color: '#0f172a',
+                background: '#f8fafc',
+                border: '1px solid #e2e8f0',
+                borderRadius: 8,
+                padding: '8px 12px',
+                marginTop: idx > 0 ? 8 : 0,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+              }}
+            >
+              {renderMathWithFormatting(trimmed, `h_${idx}`)}
+            </div>
+          );
+        }
+
+        if (isKesimpulan) {
+          return (
+            <div
+              key={idx}
+              style={{
+                fontWeight: 700,
+                color: '#065f46',
+                background: '#ecfdf5',
+                border: '1px solid #a7f3d0',
+                borderRadius: 8,
+                padding: '10px 14px',
+                marginTop: 6,
+              }}
+            >
+              {renderMathWithFormatting(trimmed, `k_${idx}`)}
+            </div>
+          );
+        }
+
+        if (isBullet) {
+          return (
+            <div
+              key={idx}
+              style={{
+                background: '#ffffff',
+                border: '1px solid #e2e8f0',
+                borderRadius: 8,
+                padding: '10px 14px',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.02)',
+              }}
+            >
+              {renderMathWithFormatting(trimmed, `b_${idx}`)}
+            </div>
+          );
+        }
+
+        // Teks biasa / indentasi
+        return (
+          <div key={idx} style={{ paddingLeft: line.startsWith('  ') ? 14 : 2 }}>
+            {renderMathWithFormatting(trimmed, `p_${idx}`)}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 export default function AmbisPracticePlayer({
   subtes,
   paket,
@@ -748,11 +936,12 @@ export default function AmbisPracticePlayer({
                 </div>
               )}
 
-              <div style={{ fontSize: 12, fontWeight: 700, color: '#0f172a', marginBottom: 4 }}>
-                Langkah Pembahasan:
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 800, color: '#0f172a', marginBottom: 8 }}>
+                <span>📖</span>
+                <span>Langkah Pembahasan & Analisis:</span>
               </div>
-              <div style={{ fontSize: 13, lineHeight: 1.6, color: '#334155' }}>
-                {renderMath(soalSekarang.pembahasan)}
+              <div>
+                {renderPembahasanRapi(soalSekarang.pembahasan)}
               </div>
             </div>
           );
