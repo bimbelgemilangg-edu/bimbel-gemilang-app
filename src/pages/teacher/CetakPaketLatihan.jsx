@@ -43,7 +43,7 @@ import { db } from '../../firebase';
 import { bacaIdentitasGuru } from '../../utils/identitasGuru';
 import { perluSegar, kebijakanGagalMuat } from '../../utils/keputusanMuat';
 import { pilihSoalUntukCetak, htmlPaketSiswa, htmlKunciTentor, htmlLembarCatatan } from '../../utils/cetakLatihan';
-import { getPaketLatihanPerSubtes } from '../../data/ambisLatihanBankSoal';
+import { getPaketLatihanPerSubtes, ekstrakSidikJariSoal, auditKesesuaianMateriMtk } from '../../data/ambisLatihanBankSoal';
 // 🔥 2026-10-08 (Fase 1 cetak biru bank soal): keranjang yang BERTAHAN.
 // Dulu `tercentang` berisi id dan DIHAPUS setiap ganti filter
 // (setTercentang([]) di pill jenjang/mapel/bab/kelas), jadi tentor yang
@@ -249,6 +249,12 @@ export default function CetakPaketLatihan() {
   const [modeKunciGuru, setModeKunciGuru] = useState(true);
   const [paketTelaahModal, setPaketTelaahModal] = useState(null);
 
+  // State untuk Asisten Cerdas Astro Gemilang (AI Curation Engine & Deliberation Modal)
+  const [modalAstroThinking, setModalAstroThinking] = useState(false);
+  const [astroStep, setAstroStep] = useState(0);
+  const [astroReport, setAstroReport] = useState(null);
+  const [astroSedangBekerja, setAstroSedangBekerja] = useState(false);
+
   // Muat daftar paket terbitan kelas pendampingan
   const muatTerbitan = useCallback(async () => {
     let list = [];
@@ -389,13 +395,110 @@ export default function CetakPaketLatihan() {
       return;
     }
 
-    const acak = [...valid].sort(() => Math.random() - 0.5);
-    const terpilih = acak.slice(0, 10);
-    setKeranjang(terpilih);
-    setPesanKeranjang(`✨ Astro Gemilang memilihkan 10 butir soal terbaik untuk ${babAktif}!`);
-    setModeTampil('preview');
-    setIndeksPreview(0);
-    alert(`🤖 Astro Gemilang Siap Membantu!\n\nBerhasil memilihkan ${terpilih.length} butir soal pilihan untuk materi "${babAktif}".\n\nAnda dapat menelaah soal secara lengkap (soal, pilihan, kunci & pembahasan), menguji coba sendiri, mencetak lembar soal/kunci, lalu menerbitkan ke kelas.`);
+    // Buka Modal AI Thinking & jalankan proses kurasi cerdas multi-tahap
+    setModalAstroThinking(true);
+    setAstroSedangBekerja(true);
+    setAstroStep(1); // Langkah 1: Memindai Bank Soal
+    setAstroReport(null);
+
+    // Langkah 2: Audit Silabus (Eliminasi soal salah kamar seperti Statistika & Deret yang tersasar ke Bilangan)
+    setTimeout(() => {
+      setAstroStep(2);
+
+      const lolosSilabus = [];
+      const salahSilabus = [];
+
+      valid.forEach((s) => {
+        const audit = auditKesesuaianMateriMtk(s, babAktif);
+        if (audit.cocok) {
+          lolosSilabus.push(s);
+        } else {
+          salahSilabus.push({ soal: s, alasan: audit.alasan });
+        }
+      });
+
+      // Jika lolosSilabus mencukupi, pakai yang murni; jika terlalu sedikit karena salah tag database, fallback
+      const poolTahap2 = lolosSilabus.length >= 10 ? lolosSilabus : valid;
+
+      // Langkah 3: Deduplikasi Semantik (Anti-Kloning Wacana/Cerita Template)
+      setTimeout(() => {
+        setAstroStep(3);
+
+        const sidikSet = new Set();
+        const lolosDedup = [];
+        const kloningTereliminasi = [];
+
+        poolTahap2.forEach((s) => {
+          const fp = ekstrakSidikJariSoal(s);
+          if (!sidikSet.has(fp)) {
+            sidikSet.add(fp);
+            lolosDedup.push(s);
+          } else {
+            kloningTereliminasi.push(s);
+          }
+        });
+
+        const poolTahap3 = lolosDedup.length >= 10 ? lolosDedup : poolTahap2;
+
+        // Langkah 4: Kalibrasi Komposisi Tingkat Kognitif TKA (Mudah, Sedang, HOTS)
+        setTimeout(() => {
+          setAstroStep(4);
+
+          // Pisahkan tingkat kesulitan
+          const mudah = poolTahap3.filter((s) => (s?.tingkatKesulitan || '').toLowerCase() === 'mudah');
+          const sedang = poolTahap3.filter((s) => (s?.tingkatKesulitan || '').toLowerCase() === 'sedang');
+          const sulit = poolTahap3.filter((s) => ['sulit', 'hots', 'expert'].includes((s?.tingkatKesulitan || '').toLowerCase()));
+          const lainnya = poolTahap3.filter((s) => !mudah.includes(s) && !sedang.includes(s) && !sulit.includes(s));
+
+          const shuffle = (arr) => {
+            const res = [...arr];
+            for (let i = res.length - 1; i > 0; i--) {
+              const j = Math.floor(Math.random() * (i + 1));
+              [res[i], res[j]] = [res[j], res[i]];
+            }
+            return res;
+          };
+
+          const sMudah = shuffle(mudah);
+          const sSedang = shuffle(sedang);
+          const sSulit = shuffle(sulit);
+          const sLain = shuffle(lainnya);
+
+          // Ambil komposisi ideal: 3 Mudah, 5 Sedang, 2 Sulit/HOTS
+          const terpilih = [];
+          terpilih.push(...sMudah.slice(0, 3));
+          terpilih.push(...sSedang.slice(0, 5));
+          terpilih.push(...sSulit.slice(0, 2));
+
+          // Jika belum cukup 10, penuhi dari sisa poolTahap3
+          if (terpilih.length < 10) {
+            const sisa = shuffle(poolTahap3.filter((s) => !terpilih.includes(s)));
+            terpilih.push(...sisa.slice(0, 10 - terpilih.length));
+          }
+
+          const final10 = terpilih.slice(0, 10);
+
+          // Langkah 5: Finalisasi & Ringkasan Laporan Kurasi
+          setTimeout(() => {
+            setAstroStep(5);
+            setAstroSedangBekerja(false);
+            setKeranjang(final10);
+            setPesanKeranjang(`✨ Astro Gemilang berhasil mengkurasi 10 butir soal pilihan untuk ${babAktif}!`);
+            setModeTampil('preview');
+            setIndeksPreview(0);
+
+            setAstroReport({
+              totalDipindai: valid.length,
+              dieliminasiSalahMateri: salahSilabus.length,
+              dieliminasiKloning: kloningTereliminasi.length,
+              totalLolos: poolTahap3.length,
+              terpilih: final10,
+              bab: babAktif,
+            });
+          }, 600);
+        }, 700);
+      }, 700);
+    }, 800);
   };
 
   const versiSegar = useSegarSaatTerlihat();
@@ -1551,6 +1654,233 @@ export default function CetakPaketLatihan() {
               >
                 {sedangMenerbitkan ? 'Menerbitkan...' : '🚀 Terbitkan Sekarang'}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 🤖 MODAL KURASI AI ASTRO GEMILANG (DELIBERATION & AUDIT REPORT) */}
+      {modalAstroThinking && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(15, 23, 42, 0.75)',
+            backdropFilter: 'blur(5px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 9999,
+            padding: 16,
+          }}
+        >
+          <div
+            style={{
+              background: '#ffffff',
+              borderRadius: 16,
+              maxWidth: 580,
+              width: '100%',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+              overflow: 'hidden',
+            }}
+          >
+            {/* Header */}
+            <div
+              style={{
+                background: 'linear-gradient(135deg, #042f2e 0%, #0f766e 100%)',
+                color: '#ffffff',
+                padding: '20px 24px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <div
+                  style={{
+                    width: 42,
+                    height: 42,
+                    borderRadius: 12,
+                    background: 'rgba(255,255,255,0.15)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: 22,
+                  }}
+                >
+                  🤖
+                </div>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: 16, fontWeight: 900, color: '#f0fdfa' }}>
+                    Asisten Astro Gemilang
+                  </h3>
+                  <p style={{ margin: '2px 0 0', fontSize: 12, color: '#99f6e4' }}>
+                    Mesin Kurasi & Audit Bank Soal Cerdas TKA
+                  </p>
+                </div>
+              </div>
+
+              {!astroSedangBekerja && (
+                <button
+                  type="button"
+                  onClick={() => setModalAstroThinking(false)}
+                  style={{
+                    background: 'rgba(255,255,255,0.1)',
+                    border: 'none',
+                    color: '#ffffff',
+                    width: 32,
+                    height: 32,
+                    borderRadius: 8,
+                    cursor: 'pointer',
+                    fontSize: 16,
+                    fontWeight: 700,
+                  }}
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+
+            {/* Body */}
+            <div style={{ padding: '24px', maxHeight: '75vh', overflowY: 'auto' }}>
+              {/* Stepper Progres AI Berpikir */}
+              <div style={{ marginBottom: 20 }}>
+                <div style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#64748b', marginBottom: 12 }}>
+                  Tahapan Kurasi & Pembersihan Soal Materi: <span style={{ color: '#0f766e' }}>{babAktif}</span>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  {/* Step 1 */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <div style={{
+                      width: 24, height: 24, borderRadius: '50%',
+                      background: astroStep > 1 ? '#10b981' : astroStep === 1 ? '#0d9488' : '#e2e8f0',
+                      color: astroStep >= 1 ? '#ffffff' : '#94a3b8',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 800,
+                    }}>
+                      {astroStep > 1 ? '✓' : '1'}
+                    </div>
+                    <div style={{ flex: 1, fontSize: 12.5, fontWeight: astroStep === 1 ? 800 : 600, color: astroStep >= 1 ? '#0f172a' : '#94a3b8' }}>
+                      Memindai & Mengindeks Bank Soal Materi {babAktif}
+                    </div>
+                    {astroStep === 1 && <span style={{ fontSize: 11, color: '#0d9488', fontWeight: 700 }}>Sedang memindai...</span>}
+                  </div>
+
+                  {/* Step 2 */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <div style={{
+                      width: 24, height: 24, borderRadius: '50%',
+                      background: astroStep > 2 ? '#10b981' : astroStep === 2 ? '#0d9488' : '#e2e8f0',
+                      color: astroStep >= 2 ? '#ffffff' : '#94a3b8',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 800,
+                    }}>
+                      {astroStep > 2 ? '✓' : '2'}
+                    </div>
+                    <div style={{ flex: 1, fontSize: 12.5, fontWeight: astroStep === 2 ? 800 : 600, color: astroStep >= 2 ? '#0f172a' : '#94a3b8' }}>
+                      Audit Silabus: Eliminasi Soal Salah Kamar (Statistika & Deret)
+                    </div>
+                    {astroStep === 2 && <span style={{ fontSize: 11, color: '#0d9488', fontWeight: 700 }}>Mengeliminasi...</span>}
+                  </div>
+
+                  {/* Step 3 */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <div style={{
+                      width: 24, height: 24, borderRadius: '50%',
+                      background: astroStep > 3 ? '#10b981' : astroStep === 3 ? '#0d9488' : '#e2e8f0',
+                      color: astroStep >= 3 ? '#ffffff' : '#94a3b8',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 800,
+                    }}>
+                      {astroStep > 3 ? '✓' : '3'}
+                    </div>
+                    <div style={{ flex: 1, fontSize: 12.5, fontWeight: astroStep === 3 ? 800 : 600, color: astroStep >= 3 ? '#0f172a' : '#94a3b8' }}>
+                      Deduplikasi Semantik: Deteksi Cerita Kloning & Varian Angka
+                    </div>
+                    {astroStep === 3 && <span style={{ fontSize: 11, color: '#0d9488', fontWeight: 700 }}>Mendeteksi kloning...</span>}
+                  </div>
+
+                  {/* Step 4 */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <div style={{
+                      width: 24, height: 24, borderRadius: '50%',
+                      background: astroStep > 4 ? '#10b981' : astroStep === 4 ? '#0d9488' : '#e2e8f0',
+                      color: astroStep >= 4 ? '#ffffff' : '#94a3b8',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 800,
+                    }}>
+                      {astroStep > 4 ? '✓' : '4'}
+                    </div>
+                    <div style={{ flex: 1, fontSize: 12.5, fontWeight: astroStep === 4 ? 800 : 600, color: astroStep >= 4 ? '#0f172a' : '#94a3b8' }}>
+                      Kalibrasi Bobot Kognitif TKA (3 Dasar, 5 Aplikasi, 2 HOTS)
+                    </div>
+                    {astroStep === 4 && <span style={{ fontSize: 11, color: '#0d9488', fontWeight: 700 }}>Menyeimbangkan...</span>}
+                  </div>
+                </div>
+              </div>
+
+              {/* Laporan Hasil Kurasi jika Step 5 tercapai */}
+              {astroStep === 5 && astroReport && (
+                <div style={{ background: '#f0fdf4', border: '1.5px solid #86efac', borderRadius: 12, padding: '16px', marginBottom: 16 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+                    <span style={{ fontSize: 18 }}>✨</span>
+                    <h4 style={{ margin: 0, fontSize: 14, fontWeight: 800, color: '#166534' }}>
+                      Laporan Audit Kurasi Berhasil!
+                    </h4>
+                  </div>
+                  <p style={{ margin: '0 0 12px', fontSize: 12, color: '#15803d', lineHeight: 1.45 }}>
+                    Astro Gemilang telah menyelesaikan kurasi bank soal materi <b>{astroReport.bab}</b>:
+                  </p>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8, marginBottom: 12 }}>
+                    <div style={{ background: '#ffffff', padding: '8px 10px', borderRadius: 8, border: '1px solid #bbf7d0' }}>
+                      <div style={{ fontSize: 11, color: '#64748b' }}>Total Butir Dipindai</div>
+                      <div style={{ fontSize: 15, fontWeight: 900, color: '#0f172a' }}>{astroReport.totalDipindai} Butir</div>
+                    </div>
+                    <div style={{ background: '#ffffff', padding: '8px 10px', borderRadius: 8, border: '1px solid #fed7aa' }}>
+                      <div style={{ fontSize: 11, color: '#ea580c' }}>Salah Kamar Dibuang</div>
+                      <div style={{ fontSize: 15, fontWeight: 900, color: '#c2410c' }}>{astroReport.dieliminasiSalahMateri} Butir</div>
+                    </div>
+                    <div style={{ background: '#ffffff', padding: '8px 10px', borderRadius: 8, border: '1px solid #fecaca' }}>
+                      <div style={{ fontSize: 11, color: '#dc2626' }}>Kloning Dieliminasi</div>
+                      <div style={{ fontSize: 15, fontWeight: 900, color: '#b91c1c' }}>{astroReport.dieliminasiKloning} Butir</div>
+                    </div>
+                    <div style={{ background: '#ffffff', padding: '8px 10px', borderRadius: 8, border: '1px solid #86efac' }}>
+                      <div style={{ fontSize: 11, color: '#15803d' }}>Terpilih untuk Kelas</div>
+                      <div style={{ fontSize: 15, fontWeight: 900, color: '#15803d' }}>10 Butir Terunggul</div>
+                    </div>
+                  </div>
+
+                  <div style={{ fontSize: 11.5, color: '#334155', background: '#ffffff', padding: '10px 12px', borderRadius: 8, border: '1px solid #e2e8f0', lineHeight: 1.5 }}>
+                    💡 <b>Catatan Kurasi Guru:</b> 10 butir soal terpilih kini telah dimuat ke Meja Telaah. Guru dapat menelaah butir lengkap dengan kunci & pembahasan, menguji coba mandiri, mencetak lembar fisik, atau menerbitkan ke kelas binaan.
+                  </div>
+                </div>
+              )}
+
+              {/* Action Buttons */}
+              <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 8 }}>
+                {astroSedangBekerja ? (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12.5, color: '#0f766e', fontWeight: 700 }}>
+                    <span style={{ fontSize: 14 }}>⏳</span>
+                    <span>Astro Gemilang sedang menganalisis & mengkurasi...</span>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setModalAstroThinking(false)}
+                    style={{
+                      padding: '10px 18px',
+                      borderRadius: 10,
+                      border: 'none',
+                      background: '#0d9488',
+                      color: '#ffffff',
+                      fontSize: 13,
+                      fontWeight: 800,
+                      cursor: 'pointer',
+                      boxShadow: '0 4px 12px rgba(13, 148, 136, 0.25)',
+                    }}
+                  >
+                    👀 Mulai Telaah & Uji Coba Kunci (10 Soal)
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </div>

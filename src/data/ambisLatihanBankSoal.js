@@ -914,33 +914,60 @@ export function normalisasiButir(item, fallbackSubtes = 'PU', fallbackTopik = 'U
 }
 
 export function tentukanBabDanTopik(subtesKode, item, jenjang = 'SMP') {
+  // Ekstrak seluruh teks konteks butir soal secara mendalam (soal, wacana, opsi, pernyataan, pembahasan)
+  let opsiStr = '';
+  if (Array.isArray(item.opsiJawaban)) {
+    opsiStr = item.opsiJawaban.map((o) => (typeof o === 'string' ? o : (o?.teks || o?.pernyataan || ''))).join(' ');
+  } else if (Array.isArray(item.opsiTeksBersih)) {
+    opsiStr = item.opsiTeksBersih.join(' ');
+  } else if (Array.isArray(item.pernyataan)) {
+    opsiStr = item.pernyataan.map((p) => (typeof p === 'string' ? p : (p?.teks || ''))).join(' ');
+  }
+
   const teks = (
     String(item.bab || '') + ' ' +
     String(item.materi || '') + ' ' +
     String(item.topik || '') + ' ' +
     String(item.subkategori || '') + ' ' +
-    String(item.teksSoal || item.teks_soal || item.soal || '')
+    String(item.bacaan || item.wacana || item.stimulus || '') + ' ' +
+    String(item.soalTeksBersih || item.teksSoal || item.teks_soal || item.soal || '') + ' ' +
+    opsiStr + ' ' +
+    String(item.pembahasan || '')
   ).toLowerCase();
 
   const sk = String(subtesKode || '').toUpperCase();
 
   // === TKA SMP ===
   if (sk === 'MTK') {
-    if (teks.includes('peluang') || teks.includes('statistika') || teks.includes('diagram') || teks.includes('rata-rata') || teks.includes('median') || teks.includes('modus') || teks.includes('frekuensi') || teks.includes('kejadian') || teks.includes('dadu') || teks.includes('koin')) {
+    // 1. Prioritas Utama: Data & Peluang (Statistika, Diagram, Modus, Median, Mean)
+    if (
+      teks.includes('statistika') || teks.includes('peluang') || teks.includes('diagram') ||
+      teks.includes('rata-rata') || teks.includes('median') || teks.includes('modus') ||
+      teks.includes('frekuensi') || teks.includes('kuartil') || teks.includes('jangkauan') ||
+      teks.includes('tinggi badan') || teks.includes('nilai siswa') || teks.includes('tabel data') ||
+      teks.includes('kejadian') || teks.includes('dadu') || teks.includes('koin') ||
+      teks.includes('titik sampel') || teks.includes('ruang sampel')
+    ) {
       return { babNomor: 4, namaBab: 'Bab 4 · Data & Peluang (Statistika, Diagram & Peluang Teoretik)', ringkas: 'Bab 4: Data & Peluang' };
     }
+
+    // 2. Geometri & Pengukuran
     if (
-      teks.includes('geometri') || teks.includes('sudut') || teks.includes('pythagoras') || teks.includes('bangun ruang') ||
-      teks.includes('bangun datar') || teks.includes('transformasi') || teks.includes('lingkaran') || teks.includes('luas') ||
-      teks.includes('keliling') || teks.includes('volume') || teks.includes('kesebangunan') || teks.includes('kongruen') ||
-      teks.includes('balok') || teks.includes('kubus') || teks.includes('tabung') || teks.includes('kerucut') ||
-      teks.includes('bola') || teks.includes('limas') || teks.includes('trapesium') || teks.includes('jaring') ||
-      teks.includes('segiempat') || teks.includes('segitiga') || teks.includes('persegi') || teks.includes('persegi panjang') ||
-      teks.includes('jajar genjang') || teks.includes('jajargenjang') || teks.includes('belah ketupat') || teks.includes('layang-layang') ||
-      teks.includes('prisma') || teks.includes('diagonal') || teks.includes('rusuk') || teks.includes('garis')
+      teks.includes('geometri') || teks.includes('sudut') || teks.includes('pythagoras') || teks.includes('pitagoras') ||
+      teks.includes('bangun ruang') || teks.includes('bangun datar') || teks.includes('transformasi') ||
+      teks.includes('lingkaran') || teks.includes('luas') || teks.includes('keliling') || teks.includes('volume') ||
+      teks.includes('kesebangunan') || teks.includes('kongruen') || teks.includes('balok') || teks.includes('kubus') ||
+      teks.includes('tabung') || teks.includes('kerucut') || teks.includes('bola') || teks.includes('limas') ||
+      teks.includes('trapesium') || teks.includes('jaring') || teks.includes('segiempat') || teks.includes('segitiga') ||
+      teks.includes('persegi') || teks.includes('persegi panjang') || teks.includes('jajar genjang') ||
+      teks.includes('jajargenjang') || teks.includes('belah ketupat') || teks.includes('layang-layang') ||
+      teks.includes('prisma') || teks.includes('diagonal') || teks.includes('rusuk') || teks.includes('garis') ||
+      teks.includes('refleksi') || teks.includes('translasi') || teks.includes('rotasi') || teks.includes('dilatasi')
     ) {
       return { babNomor: 3, namaBab: 'Bab 3 · Geometri & Pengukuran (Sudut, Pythagoras, Ruang & Transformasi)', ringkas: 'Bab 3: Geometri & Ruang' };
     }
+
+    // 3. Aljabar, Barisan & Deret, Aritmetika Sosial
     if (
       teks.includes('aljabar') || teks.includes('persamaan') || teks.includes('fungsi') || teks.includes('pola') ||
       teks.includes('barisan') || teks.includes('deret') || teks.includes('spldv') || teks.includes('kuadrat') ||
@@ -949,10 +976,15 @@ export function tentukanBabDanTopik(subtesKode, item, jenjang = 'SMP') {
       teks.includes('mesin') || teks.includes('laundry') || teks.includes('harga') || teks.includes('uang') ||
       teks.includes('ongkos') || teks.includes('tarif') || teks.includes('biaya') || teks.includes('berbalik nilai') ||
       teks.includes('senilai') || teks.includes('pekerja') || teks.includes('variabel') || teks.includes('linear') ||
-      teks.includes('substitusi') || teks.includes('eliminasi')
+      teks.includes('substitusi') || teks.includes('eliminasi') || teks.includes('secara tetap') ||
+      teks.includes('gaji bertambah') || teks.includes('masa training') || teks.includes('bertambah secara tetap') ||
+      teks.includes('jumlah tas yang diproduksi') || teks.includes('bunga tunggal') || teks.includes('pajak') ||
+      teks.includes('keuntungan') || teks.includes('kerugian')
     ) {
       return { babNomor: 2, namaBab: 'Bab 2 · Aljabar (SPLDV, Persamaan Kuadrat, Fungsi & Pola Bilangan)', ringkas: 'Bab 2: Aljabar & Persamaan' };
     }
+
+    // 4. Bilangan Murni
     return { babNomor: 1, namaBab: 'Bab 1 · Bilangan (Operasi, Pecahan, Pangkat & Notasi Ilmiah)', ringkas: 'Bab 1: Bilangan & Bentuk Akar' };
   }
 
@@ -1381,6 +1413,59 @@ export function getBankSoalPerSubtes(subtesKode, jenjang = 'SMA', bankSoalFirest
 }
 
 /**
+ * Ekstraktor Sidik Jari Konteks Soal (Deduplikasi Semantik).
+ * Menghilangkan angka dan karakter khusus agar varian soal kloningan (misal UMKM 50 tas vs UMKM 80 tas)
+ * memiliki fingerprint yang identik dan tidak dimasukkan ke dalam paket yang sama.
+ */
+export function ekstrakSidikJariSoal(item) {
+  const sumber = String(
+    item?.bacaan ||
+    item?.wacana ||
+    item?.stimulus ||
+    item?.soalTeksBersih ||
+    item?.teksSoal ||
+    item?.soal ||
+    ''
+  ).toLowerCase();
+
+  // Bersihkan angka dan karakter khusus
+  const kataKunci = sumber
+    .replace(/[0-9]/g, '')
+    .replace(/[^a-z\s]/g, ' ')
+    .trim()
+    .split(/\s+/)
+    .filter((k) => k.length > 3)
+    .slice(0, 10)
+    .join('_');
+
+  return kataKunci || `sidik_${item?.id || item?.kodeSoal || Math.random()}`;
+}
+
+/**
+ * Audit Kesesuaian Materi untuk MTK SMP
+ * Memeriksa apakah butir soal benar-benar cocok dengan materi yang dipilih guru,
+ * atau merupakan soal salah kamar (misal Statistika/Deret tersasar ke Bilangan).
+ */
+export function auditKesesuaianMateriMtk(soal, targetMateri = '') {
+  const babTarget = tentukanBabDanTopik('MTK', { materi: targetMateri, bab: targetMateri }, 'SMP');
+  const babAktual = tentukanBabDanTopik('MTK', soal, 'SMP');
+
+  const tm = String(targetMateri || '').toLowerCase();
+  const isTargetBilangan = tm.includes('bilangan') || babTarget.babNomor === 1;
+
+  if (isTargetBilangan && babAktual.babNomor !== 1) {
+    return {
+      cocok: false,
+      alasan: `Soal terdeteksi masuk ${babAktual.namaBab} (bukan Bilangan murni)`,
+      babAktual: babAktual.babNomor,
+      namaBabAktual: babAktual.namaBab,
+    };
+  }
+
+  return { cocok: true, babAktual: babAktual.babNomor, namaBabAktual: babAktual.namaBab };
+}
+
+/**
  * Membagi Bank Soal menjadi Paket Micro-Learning (10 butir per paket)
  */
 export function getPaketLatihanPerSubtes(subtesKode, ukuranPaket = 10, jenjang = 'SMA', bankSoalFirestore = []) {
@@ -1414,12 +1499,23 @@ export function getPaketLatihanPerSubtes(subtesKode, ukuranPaket = 10, jenjang =
   const babSorted = Array.from(mapBab.values()).sort((a, b) => a.babNomor - b.babNomor);
 
   babSorted.forEach((b) => {
-    const totalSoal = b.soalList.length;
+    // Terapkan deduplikasi semantik (Anti-Kloning wacana/cerita)
+    const sidikSet = new Set();
+    const soalUnik = [];
+    b.soalList.forEach((s) => {
+      const fp = ekstrakSidikJariSoal(s);
+      if (!sidikSet.has(fp)) {
+        sidikSet.add(fp);
+        soalUnik.push(s);
+      }
+    });
+
+    const totalSoal = soalUnik.length;
     // Batasi maksimal 2-3 paket terstruktur per bab (10-20 butir soal terbaik per bab)
     const nPaket = Math.min(3, Math.max(1, Math.ceil(totalSoal / ukuranPaket)));
     for (let i = 0; i < nPaket; i++) {
       const start = i * ukuranPaket;
-      const sliceSoal = b.soalList.slice(start, start + ukuranPaket);
+      const sliceSoal = soalUnik.slice(start, start + ukuranPaket);
       if (sliceSoal.length > 0) {
         paketList.push({
           id: `paket_${String(jenjang).toLowerCase()}_${String(subtesKode).toLowerCase()}_bab_${b.babNomor}_p${i + 1}`,
@@ -1464,7 +1560,18 @@ export function getSoalLatihanKilat(subtesKode = 'MTK', jumlah = 10, modeKesulit
     [acak[i], acak[j]] = [acak[j], acak[i]];
   }
 
-  return acak.slice(0, Math.min(jumlah, acak.length));
+  // Terapkan deduplikasi semantik agar wacana kloningan tidak muncul dua kali di Quick Play
+  const sidikSet = new Set();
+  const soalDedup = [];
+  acak.forEach((s) => {
+    const fp = ekstrakSidikJariSoal(s);
+    if (!sidikSet.has(fp)) {
+      sidikSet.add(fp);
+      soalDedup.push(s);
+    }
+  });
+
+  return soalDedup.slice(0, Math.min(jumlah, soalDedup.length));
 }
 
 // ==============================================================================

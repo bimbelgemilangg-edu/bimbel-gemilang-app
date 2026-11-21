@@ -231,7 +231,7 @@ export function htmlPaketSiswa(paket = {}, soalList = [], opsi = {}) {
     ${opsi.watermark === false ? '' : watermarkHtml({ ...opsi, mode: 'tetap' })}
     ${kepalaHtml(paket, 'LEMBAR LATIHAN SISWA')}
     <div class="identitas"><span>Nama: </span><span>Kelas: </span><span>Tanggal: </span></div>
-    <div style="font-size:10.5px;margin-bottom:10px;">Gunting setiap kotak sesuai garis putus-putus, lalu tempel di buku progresmu.</div>
+    <div style="font-size:10.5px;margin-bottom:10px;color:#475569;">Petunjuk: Kerjakan setiap butir soal berikut dengan teliti. Tuliskan jawaban dan langkah penyelesaian pada lembar kerja atau Buku Besar siswa.</div>
     ${kotak}
   </body></html>`;
 }
