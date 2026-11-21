@@ -316,6 +316,12 @@ export default function AmbisPracticePlayer({
 
   return (
     <div style={st.wrap} onCopy={(e) => e.preventDefault()}>
+      <style>{`
+        button, button:focus, button:active, button:focus-visible {
+          outline: none !important;
+          -webkit-tap-highlight-color: transparent !important;
+        }
+      `}</style>
       {/* HEADER SESI */}
       <div style={st.headerBar}>
         <button type="button" onClick={onKembali} style={st.btnKembaliHeader}>
@@ -447,7 +453,7 @@ export default function AmbisPracticePlayer({
                     minWidth: 78,
                     gap: 5,
                     outline: 'none',
-                    boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
+                    boxShadow: 'none',
                     transition: 'all 0.15s ease',
                   };
 
@@ -466,7 +472,7 @@ export default function AmbisPracticePlayer({
                     minWidth: 78,
                     gap: 5,
                     outline: 'none',
-                    boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
+                    boxShadow: 'none',
                     transition: 'all 0.15s ease',
                   };
 
@@ -476,21 +482,21 @@ export default function AmbisPracticePlayer({
                     if (isBenarDipilih) {
                       styleBtnBenar = {
                         ...styleBtnBenar,
-                        borderColor: '#0d9488',
+                        border: '2px solid #0d9488',
                         background: '#f0fdfa',
                         color: '#0f766e',
                         fontWeight: 800,
-                        boxShadow: '0 0 0 1.5px #0d9488, 0 1px 4px rgba(13, 148, 136, 0.15)',
+                        boxShadow: 'none',
                       };
                     }
                     if (isSalahDipilih) {
                       styleBtnSalah = {
                         ...styleBtnSalah,
-                        borderColor: '#0d9488',
+                        border: '2px solid #0d9488',
                         background: '#f0fdfa',
                         color: '#0f766e',
                         fontWeight: 800,
-                        boxShadow: '0 0 0 1.5px #0d9488, 0 1px 4px rgba(13, 148, 136, 0.15)',
+                        boxShadow: 'none',
                       };
                     }
                   } else {
@@ -498,37 +504,39 @@ export default function AmbisPracticePlayer({
                     if (rowKunci === 'benar') {
                       styleBtnBenar = {
                         ...styleBtnBenar,
-                        borderColor: '#10b981',
+                        border: '2px solid #10b981',
                         background: '#d1fae5',
                         color: '#065f46',
                         fontWeight: 800,
-                        boxShadow: '0 0 0 1.5px #10b981',
+                        boxShadow: 'none',
                       };
                       if (isSalahDipilih) {
                         styleBtnSalah = {
                           ...styleBtnSalah,
-                          borderColor: '#ef4444',
+                          border: '2px solid #ef4444',
                           background: '#fee2e2',
                           color: '#991b1b',
                           textDecoration: 'line-through',
+                          boxShadow: 'none',
                         };
                       }
                     } else {
                       styleBtnSalah = {
                         ...styleBtnSalah,
-                        borderColor: '#10b981',
+                        border: '2px solid #10b981',
                         background: '#d1fae5',
                         color: '#065f46',
                         fontWeight: 800,
-                        boxShadow: '0 0 0 1.5px #10b981',
+                        boxShadow: 'none',
                       };
                       if (isBenarDipilih) {
                         styleBtnBenar = {
                           ...styleBtnBenar,
-                          borderColor: '#ef4444',
+                          border: '2px solid #ef4444',
                           background: '#fee2e2',
                           color: '#991b1b',
                           textDecoration: 'line-through',
+                          boxShadow: 'none',
                         };
                       }
                     }
@@ -587,7 +595,7 @@ export default function AmbisPracticePlayer({
                   width: 28,
                   height: 28,
                   borderRadius: 7,
-                  border: '2px solid #94a3b8',
+                  border: '1.5px solid #94a3b8',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -597,6 +605,7 @@ export default function AmbisPracticePlayer({
                   background: '#f8fafc',
                   color: '#1e293b',
                   outline: 'none',
+                  boxShadow: 'none',
                   transition: 'all 0.15s ease',
                 };
 
@@ -605,27 +614,27 @@ export default function AmbisPracticePlayer({
                   if (isDipilih) {
                     gayaTombol = {
                       ...gayaTombol,
-                      borderColor: '#0d9488',
+                      border: '2px solid #0d9488',
                       background: '#f0fdfa',
-                      boxShadow: '0 0 0 1.5px #0d9488, 0 1px 4px rgba(13, 148, 136, 0.15)',
+                      boxShadow: 'none',
                     };
                     gayaKotak = {
                       ...gayaKotak,
-                      borderColor: '#0d9488',
+                      border: '2px solid #0d9488',
                       background: '#0d9488',
                       color: '#ffffff',
                     };
                   }
                 } else {
                   if (isKunci && isDipilih) {
-                    gayaTombol = { ...gayaTombol, borderColor: '#10b981', background: '#ecfdf5', boxShadow: '0 0 0 1.5px #10b981' };
-                    gayaKotak = { ...gayaKotak, borderColor: '#10b981', background: '#10b981', color: '#ffffff' };
+                    gayaTombol = { ...gayaTombol, border: '2px solid #10b981', background: '#ecfdf5', boxShadow: 'none' };
+                    gayaKotak = { ...gayaKotak, border: '2px solid #10b981', background: '#10b981', color: '#ffffff' };
                   } else if (!isKunci && isDipilih) {
-                    gayaTombol = { ...gayaTombol, borderColor: '#ef4444', background: '#fef2f2' };
-                    gayaKotak = { ...gayaKotak, borderColor: '#ef4444', background: '#ef4444', color: '#ffffff' };
+                    gayaTombol = { ...gayaTombol, border: '2px solid #ef4444', background: '#fef2f2', boxShadow: 'none' };
+                    gayaKotak = { ...gayaKotak, border: '2px solid #ef4444', background: '#ef4444', color: '#ffffff' };
                   } else if (isKunci && !isDipilih) {
-                    gayaTombol = { ...gayaTombol, borderColor: '#10b981', background: '#ffffff', borderStyle: 'dashed' };
-                    gayaKotak = { ...gayaKotak, borderColor: '#10b981', color: '#10b981', background: '#ecfdf5' };
+                    gayaTombol = { ...gayaTombol, border: '2px dashed #10b981', background: '#ffffff', boxShadow: 'none' };
+                    gayaKotak = { ...gayaKotak, border: '2px solid #10b981', color: '#10b981', background: '#ecfdf5' };
                   }
                 }
 
@@ -669,24 +678,24 @@ export default function AmbisPracticePlayer({
                 if (isDipilih) {
                   gayaTombol = {
                     ...gayaTombol,
-                    borderColor: '#0d9488',
+                    border: '2px solid #0d9488',
                     background: '#f0fdfa',
-                    boxShadow: '0 0 0 1.5px #0d9488, 0 1px 4px rgba(13, 148, 136, 0.15)',
+                    boxShadow: 'none',
                   };
                   gayaHuruf = {
                     ...gayaHuruf,
-                    borderColor: '#0d9488',
+                    border: '2px solid #0d9488',
                     background: '#0d9488',
                     color: '#ffffff',
                   };
                 }
               } else {
                 if (isKunci) {
-                  gayaTombol = { ...gayaTombol, borderColor: '#10b981', background: '#ecfdf5', boxShadow: '0 0 0 1.5px #10b981' };
-                  gayaHuruf = { ...gayaHuruf, borderColor: '#10b981', background: '#10b981', color: '#ffffff' };
+                  gayaTombol = { ...gayaTombol, border: '2px solid #10b981', background: '#ecfdf5', boxShadow: 'none' };
+                  gayaHuruf = { ...gayaHuruf, border: '2px solid #10b981', background: '#10b981', color: '#ffffff' };
                 } else if (isDipilih && !isKunci) {
-                  gayaTombol = { ...gayaTombol, borderColor: '#ef4444', background: '#fef2f2' };
-                  gayaHuruf = { ...gayaHuruf, borderColor: '#ef4444', background: '#ef4444', color: '#ffffff' };
+                  gayaTombol = { ...gayaTombol, border: '2px solid #ef4444', background: '#fef2f2', boxShadow: 'none' };
+                  gayaHuruf = { ...gayaHuruf, border: '2px solid #ef4444', background: '#ef4444', color: '#ffffff' };
                 }
               }
 
@@ -877,12 +886,12 @@ const st = {
     width: '100%',
     padding: '12px 14px',
     background: '#ffffff',
-    border: '1.5px solid #cbd5e1',
+    border: '1.5px solid #94a3b8',
     borderRadius: 12,
     textAlign: 'left',
     cursor: 'pointer',
     outline: 'none',
-    boxShadow: '0 1px 2px rgba(0, 0, 0, 0.03)',
+    boxShadow: 'none',
     transition: 'all 0.15s ease',
   },
   hurufOpsi: {

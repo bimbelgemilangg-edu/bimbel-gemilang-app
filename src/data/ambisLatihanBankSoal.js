@@ -303,9 +303,10 @@ export function isButirLayakTampil(soal) {
 export function cleanStatementText(text) {
   if (!text) return '';
   let s = bersihkanHtmlDanArtefak(String(text).trim());
-  // Hapus nomor urut di awal, misal "1.", "1)", "1 -", "A.", "A)", "B -", atau "2 Luas" (tetapi jangan memotong kata utuh)
-  s = s.replace(/^\s*(?:[0-9]+[.)\s-]|[a-eA-E][.):-])\s*/, '');
-  // Perbaiki kata bersambung akibat pemisahan suku kata pemindai
+  // Hapus nomor urut / abjad opsi di awal HANYA jika diikuti tanda baca pemisah resmi (misal "1. ", "1) ", "(1) ", "A. ", "A) ", "(A) ", "A - ")
+  // JANGAN PERNAH memotong angka murni yang diikuti spasi (misal "6 kg beras", "150 kg", "Rp375.000", "10 orang")
+  s = s.replace(/^\s*(?:\(?[0-9]{1,3}[.)\]:]|\(?[a-eA-E][.)\]:-]|\([a-eA-E0-9]{1,2}\))\s+/, '');
+  // Perbaiki kata bersambung akibat pemisahan suku kata pemindai ("pan- jang" -> "panjang")
   s = s.replace(/(\b[a-zA-Z]+)-\s+([a-zA-Z]+\b)/g, '$1$2');
   return s.trim();
 }
@@ -359,6 +360,9 @@ export function normalisasiButir(item, fallbackSubtes = 'PU', fallbackTopik = 'U
   }
   if (!teksWacana && typeof item.cerita === 'string') teksWacana = item.cerita.trim();
   if (!teksWacana && typeof item.deskripsi === 'string') teksWacana = item.deskripsi.trim();
+  if (!teksWacana && typeof item.info === 'string') teksWacana = item.info.trim();
+  if (!teksWacana && typeof item.pengantar === 'string') teksWacana = item.pengantar.trim();
+  if (!teksWacana && typeof item.teksBacaan === 'string') teksWacana = item.teksBacaan.trim();
 
   // 1. Ekstraksi opsi jawaban mentah
   let opsiArray = [];
@@ -499,20 +503,25 @@ export function normalisasiButir(item, fallbackSubtes = 'PU', fallbackTopik = 'U
 
   // Ekstraksi gambar soal jika ada
   const gambarList = [];
-  if (Array.isArray(item.gambarUrls)) {
-    item.gambarUrls.forEach((g) => {
-      if (typeof g === 'string' && g.trim()) gambarList.push(g.trim());
-      else if (g?.url || g?.uploadedUrl) gambarList.push(String(g.url || g.uploadedUrl).trim());
-    });
-  }
-  if (Array.isArray(item.gambar)) {
-    item.gambar.forEach((g) => {
-      if (typeof g === 'string' && g.trim()) gambarList.push(g.trim());
-      else if (g?.url || g?.uploadedUrl) gambarList.push(String(g.url || g.uploadedUrl).trim());
-    });
-  }
-  if (typeof item.gambarUrl === 'string' && item.gambarUrl.trim()) gambarList.push(item.gambarUrl.trim());
-  if (typeof item.mediaUrl === 'string' && item.mediaUrl.trim()) gambarList.push(item.mediaUrl.trim());
+  const tambahGambarUnik = (g) => {
+    if (!g) return;
+    if (typeof g === 'string' && g.trim() && !gambarList.includes(g.trim())) {
+      gambarList.push(g.trim());
+    } else if (typeof g === 'object' && g !== null) {
+      const u = g.url || g.uploadedUrl || g.src || g.link;
+      if (u && typeof u === 'string' && u.trim() && !gambarList.includes(u.trim())) {
+        gambarList.push(u.trim());
+      }
+    }
+  };
+  if (Array.isArray(item.gambarUrls)) item.gambarUrls.forEach(tambahGambarUnik);
+  if (Array.isArray(item.gambar)) item.gambar.forEach(tambahGambarUnik);
+  if (Array.isArray(item.bacaan?.gambar)) item.bacaan.gambar.forEach(tambahGambarUnik);
+  if (Array.isArray(item.stimulus?.gambar)) item.stimulus.gambar.forEach(tambahGambarUnik);
+  if (item.gambarUrl) tambahGambarUnik(item.gambarUrl);
+  if (item.mediaUrl) tambahGambarUnik(item.mediaUrl);
+  if (item.bacaan_gambar) tambahGambarUnik(item.bacaan_gambar);
+  if (item.bacaanGambar) tambahGambarUnik(item.bacaanGambar);
 
   return {
     id: String(item.id || `latihan_${kodeSubtes.toLowerCase()}_${idx}`),
