@@ -253,9 +253,56 @@ export function getSubtesLatihanList(jenjang = 'SMA') {
 // 3. NORMALISASI FORMAT BUTIR SOAL SECARA UNIVERSAL
 // ==============================================================================
 // Bersihkan teks pernyataan dan hapus penomoran berlebih dari OCR/importer (mis. "2 Luas..." -> "Luas...")
+// Pembersih otomatis tag HTML mentah dan artefak kode footer OCR (misal "<em>PPAD-1/Literasi Numerasi </em>5")
+export function bersihkanHtmlDanArtefak(teks) {
+  if (!teks) return '';
+  let s = String(teks);
+  // Bersihkan tag HTML
+  s = s.replace(/<[^>]+>/g, ' ');
+  // Bersihkan artefak footer/header sumber ujian seperti PPAD, TOBK, dll
+  s = s.replace(/\bPPAD[-–\s\d]*\/(Literasi\s*)?Numerasi\b[^\n]*/gi, '');
+  s = s.replace(/\bPPAD[-–\s\d]*\/(Literasi\s*)?Membaca\b[^\n]*/gi, '');
+  s = s.replace(/\bPPAD[-–\s\d]*[^\n]*/gi, '');
+  s = s.replace(/[ \t]{2,}/g, ' ');
+  return s.trim();
+}
+
+// Sensor kelayakan butir soal (Otak AI Filter) untuk mencegah soal cacat visual/tabel hilang tampil ke siswa
+export function isButirLayakTampil(soal) {
+  if (!soal || !soal.soal) return false;
+  const teks = soal.soal.trim().toLowerCase();
+
+  // 1. Cek rujukan visual/tabel yang hilang:
+  const rujukanTabel = teks.includes('tabel berikut') || teks.includes('tabel di bawah') || teks.includes('pada tabel');
+  const punyaPernyataanTabel = Array.isArray(soal.pernyataan) && soal.pernyataan.length >= 2;
+  const punyaVisual = Array.isArray(soal.gambar) && soal.gambar.length > 0;
+  if (rujukanTabel && !punyaPernyataanTabel && !punyaVisual) {
+    return false; // Tabel hilang dari scan/impor lama -> tolak
+  }
+
+  // 2. Jika tipe benar_salah tetapi tidak memiliki baris pernyataan yang bisa dinilai
+  if (soal.tipeSoal === 'benar_salah' && !punyaPernyataanTabel) {
+    return false;
+  }
+
+  // 3. Cek rumus rusak parah / pembagian dengan nol (mis. 0^{1/7} di penyebut)
+  if (teks.includes('/(0^') || teks.includes('/(0}') || teks.includes('/0}') || teks.includes('/0)')) {
+    return false;
+  }
+
+  // 4. Cek opsi PG biasa & kompleks: minimal 2 opsi bermakna
+  if (soal.tipeSoal === 'pg_sederhana' || soal.tipeSoal === 'pg_kompleks') {
+    if (!Array.isArray(soal.opsi) || soal.opsi.length < 2) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 export function cleanStatementText(text) {
   if (!text) return '';
-  let s = String(text).trim();
+  let s = bersihkanHtmlDanArtefak(String(text).trim());
   s = s.replace(/^\s*([0-9]+|[a-eA-E])[.)\s-]+\s*/, '');
   s = s.replace(/(\b[a-zA-Z]+)-\s+([a-zA-Z]+\b)/g, '$1$2');
   return s.trim();
@@ -292,14 +339,14 @@ export function normalisasiButir(item, fallbackSubtes = 'PU', fallbackTopik = 'U
   const kodeSubtes = PETA_KODE_SUBTES[subtesKasar] || fallbackSubtes;
   const topik = item.bab || item.materi || item.subkategori || item.topik || fallbackTopik || 'Latihan Subtes';
   const teksPertanyaan = cleanStatementText(item.teksSoal || item.teks_soal || item.soal || item.pertanyaan || '');
-  const pembahasan = item.pembahasan || 'Pembahasan terperinci mengacu pada kaidah dan konsep inti materi.';
+  const pembahasan = bersihkanHtmlDanArtefak(item.pembahasan || 'Pembahasan terperinci mengacu pada kaidah dan konsep inti materi.');
 
   // 1. Ekstraksi opsi jawaban mentah
   let opsiArray = [];
   if (Array.isArray(item.opsiJawaban) && item.opsiJawaban.length > 0) {
     opsiArray = item.opsiJawaban.map((o, oIdx) => ({
       label: String(o.key || o.label || ['A', 'B', 'C', 'D', 'E'][oIdx] || 'A').toUpperCase(),
-      text: String(o.teks || o.text || ''),
+      text: bersihkanHtmlDanArtefak(String(o.teks || o.text || '')),
     }));
   } else if (Array.isArray(item.pilihan) && item.pilihan.length > 0) {
     opsiArray = item.pilihan.map((o, oIdx) => {
@@ -309,7 +356,7 @@ export function normalisasiButir(item, fallbackSubtes = 'PU', fallbackTopik = 'U
       }
       return {
         label: String(o.key || o.label || ['A', 'B', 'C', 'D', 'E'][oIdx] || 'A').toUpperCase(),
-        text: String(o.teks || o.text || ''),
+        text: bersihkanHtmlDanArtefak(String(o.teks || o.text || '')),
       };
     });
   } else if (item.opsi && typeof item.opsi === 'object' && !Array.isArray(item.opsi)) {
@@ -452,7 +499,16 @@ export function tentukanBabDanTopik(subtesKode, item, jenjang = 'SMP') {
     if (teks.includes('peluang') || teks.includes('statistika') || teks.includes('diagram') || teks.includes('rata-rata') || teks.includes('median') || teks.includes('modus') || teks.includes('frekuensi') || teks.includes('kejadian') || teks.includes('dadu') || teks.includes('koin')) {
       return { babNomor: 4, namaBab: 'Bab 4 · Data & Peluang (Statistika, Diagram & Peluang Teoretik)', ringkas: 'Bab 4: Data & Peluang' };
     }
-    if (teks.includes('geometri') || teks.includes('sudut') || teks.includes('pythagoras') || teks.includes('bangun ruang') || teks.includes('bangun datar') || teks.includes('transformasi') || teks.includes('lingkaran') || teks.includes('luas') || teks.includes('keliling') || teks.includes('volume') || teks.includes('kesebangunan') || teks.includes('kongruen') || teks.includes('balok') || teks.includes('kubus') || teks.includes('tabung') || teks.includes('kerucut') || teks.includes('bola') || teks.includes('limas') || teks.includes('trapesium') || teks.includes('jaring')) {
+    if (
+      teks.includes('geometri') || teks.includes('sudut') || teks.includes('pythagoras') || teks.includes('bangun ruang') ||
+      teks.includes('bangun datar') || teks.includes('transformasi') || teks.includes('lingkaran') || teks.includes('luas') ||
+      teks.includes('keliling') || teks.includes('volume') || teks.includes('kesebangunan') || teks.includes('kongruen') ||
+      teks.includes('balok') || teks.includes('kubus') || teks.includes('tabung') || teks.includes('kerucut') ||
+      teks.includes('bola') || teks.includes('limas') || teks.includes('trapesium') || teks.includes('jaring') ||
+      teks.includes('segiempat') || teks.includes('segitiga') || teks.includes('persegi') || teks.includes('persegi panjang') ||
+      teks.includes('jajar genjang') || teks.includes('jajargenjang') || teks.includes('belah ketupat') || teks.includes('layang-layang') ||
+      teks.includes('prisma') || teks.includes('diagonal') || teks.includes('rusuk') || teks.includes('garis')
+    ) {
       return { babNomor: 3, namaBab: 'Bab 3 · Geometri & Pengukuran (Sudut, Pythagoras, Ruang & Transformasi)', ringkas: 'Bab 3: Geometri & Ruang' };
     }
     if (teks.includes('aljabar') || teks.includes('persamaan') || teks.includes('fungsi') || teks.includes('pola') || teks.includes('barisan') || teks.includes('deret') || teks.includes('spldv') || teks.includes('kuadrat') || teks.includes('aritmetika sosial') || teks.includes('diskon') || teks.includes('bruto') || teks.includes('tara') || teks.includes('netto') || teks.includes('pertidaksamaan') || teks.includes('skala') || teks.includes('perbandingan')) {
@@ -613,7 +669,7 @@ export function susunBankSoalLatihanSmp(bankSoalFirestore = []) {
 
   const tambahSoalUnik = (item, fallbackSubtes, fallbackTopik) => {
     const b = normalisasiButir(item, fallbackSubtes, fallbackTopik, counter++);
-    if (b && b.soal && (b.opsi.length >= 2 || (b.pernyataan && b.pernyataan.length >= 2)) && !idsSudahAda.has(b.id)) {
+    if (b && isButirLayakTampil(b) && !idsSudahAda.has(b.id)) {
       idsSudahAda.add(b.id);
       bank.push(b);
     }
@@ -757,7 +813,7 @@ export function susunBankSoalLatihanSd(bankSoalFirestore = []) {
 
   const tambahSoalUnik = (item, fallbackSubtes, fallbackTopik) => {
     const b = normalisasiButir(item, fallbackSubtes, fallbackTopik, counter++);
-    if (b && b.soal && b.opsi.length >= 2 && !idsSudahAda.has(b.id)) {
+    if (b && isButirLayakTampil(b) && !idsSudahAda.has(b.id)) {
       idsSudahAda.add(b.id);
       bank.push(b);
     }
@@ -802,7 +858,7 @@ export function susunBankSoalLatihanUtbk(bankSoalFirestore = []) {
 
   const tambahSoalUnik = (item, fallbackSubtes, fallbackTopik) => {
     const b = normalisasiButir(item, fallbackSubtes, fallbackTopik, counter++);
-    if (b && b.soal && b.opsi.length >= 2 && !idsSudahAda.has(b.id)) {
+    if (b && isButirLayakTampil(b) && !idsSudahAda.has(b.id)) {
       idsSudahAda.add(b.id);
       bank.push(b);
     }
