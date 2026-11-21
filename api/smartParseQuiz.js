@@ -452,6 +452,52 @@ async function handleDefaultTextMode(req, res) {
 }
 
 // ============================================================
+// MODE: guardCurateQuestion / curateSoal -- Otak Polisi & Dokter Soal AI
+// ============================================================
+async function handleGuardCurateQuestionMode(req, res) {
+  const { soal, jenjang = 'SMP', mapel = 'Matematika' } = req.body || {};
+  if (!soal || typeof soal !== 'object') {
+    return res.status(400).json({ success: false, error: 'Objek soal tidak valid.' });
+  }
+
+  const systemPrompt = `Kamu adalah Polisi & Dokter Soal AI Bimbel Gemilang (AI Question Police & Healer).
+TUGAS UTAMA:
+Periksa butir soal ujian (${jenjang} - ${mapel}), perbaiki teks/stimulus yang terpotong/hilang, hitung dan pastikan KUNCI JAWABAN 100% BENAR secara matematis dan logis, serta buat PEMBAHASAN langkah demi langkah yang detail menggunakan rumus KaTeX ($...$).
+
+ATURAN WAJIB:
+1. Jika soal merujuk ke data/langkah yang hilang (misal 'Langkah beberapa siswa', stimulus terpotong), lengkapi secara cerdas, realistis, dan logis.
+2. Jika tipe soal adalah pilihan ganda kompleks (jawaban lebih dari satu), pastikan 'kunci' adalah array huruf (misal ["A", "C"]).
+3. Jika tipe benar/salah, pastikan setiap baris pernyataan memiliki kunci "benar" atau "salah".
+4. Jika pilihan ganda biasa, tentukan satu huruf 'kunci' yang benar (misal "B").
+5. Tulis pembahasan lengkap yang menguraikan alasan mengapa kunci tersebut benar.
+
+Kembalikan HANYA JSON persis format:
+{
+  "layak": true,
+  "tipeSoal": "pg_sederhana",
+  "soal": "teks soal",
+  "wacana": "teks stimulus/wacana lengkap atau null",
+  "opsi": [{"label":"A","text":"..."}, {"label":"B","text":"..."}],
+  "pernyataan": [{"id":1,"teks":"...","kunci":"benar"}],
+  "kunci": "A",
+  "kunciTeks": "A",
+  "pembahasan": "Langkah pembahasan lengkap dengan $...$"
+}`;
+
+  try {
+    const userText = `Periksa, kurasi, dan perbaiki soal ini:\n${JSON.stringify(soal, null, 2)}`;
+    const result = await callGemini(systemPrompt, userText);
+    return res.status(200).json({ success: true, soalDiperbaiki: result });
+  } catch (err) {
+    console.error('smartParseQuiz (guardCurateQuestion) error:', err);
+    return res.status(502).json({
+      success: false,
+      error: err.message || 'Gagal memproses kurasi AI untuk soal ini.',
+    });
+  }
+}
+
+// ============================================================
 // ROUTER UTAMA
 // ============================================================
 export default async function handler(req, res) {
@@ -472,6 +518,10 @@ export default async function handler(req, res) {
   }
 
   const body = req.body || {};
+
+  if (body.mode === 'guardCurateQuestion' || body.mode === 'curateSoal') {
+    return handleGuardCurateQuestionMode(req, res);
+  }
 
   if (body.mode === 'transcribePage') {
     return handleTranscribePageMode(req, res);
