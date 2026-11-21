@@ -276,8 +276,8 @@ export default function PapanJelajahPage({ studentId: studentIdProp = '' }) {
       profil: { ...profil, nama, kelas, studentId },
       targetKampus: targetKampusData,
     });
-    // Sertakan token di URL agar siswa langsung otomatis terisi tokennya dan siap klik mulai
-    navigate(`/tobk/ruang-tunggu?event=${event.id}&token=${event.token || ''}`);
+    // Buka ruang tunggu ujian CBT (token dimasukkan peserta sesuai arahan tentor/pengawas)
+    navigate(`/tobk/ruang-tunggu?event=${event.id}`);
   };
 
   const inisial = String(nama || 'S').trim().split(/\s+/).map((x) => x[0]).slice(0, 2).join('').toUpperCase();
@@ -559,7 +559,7 @@ export default function PapanJelajahPage({ studentId: studentIdProp = '' }) {
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10, marginTop: 14 }}>
                       <div style={{ fontSize: 12, color: '#64748b', display: 'flex', alignItems: 'center', gap: 6 }}>
                         <Lock size={14} color="#0d9488" />
-                        <span>Token Ujian: <strong style={{ color: '#0f766e', background: '#ccfbf1', padding: '3px 8px', borderRadius: 6, fontSize: 12, fontWeight: 800 }}>{ev.token || 'GEMILANG2026'}</strong></span>
+                        <span>Token Keamanan: <strong style={{ color: '#0f766e', background: '#f0fdfa', border: '1px solid #99f6e4', padding: '3px 8px', borderRadius: 6, fontSize: 11.5, fontWeight: 700 }}>🔒 Diberikan Tentor di Kelas</strong></span>
                       </div>
 
                       <button
@@ -713,7 +713,7 @@ export default function PapanJelajahPage({ studentId: studentIdProp = '' }) {
                       gap: 4,
                     }}>
                       <div>📑 <strong>{ev.totalSoal} Soal</strong> • ⏱️ <strong>{ev.durasiMenit} Menit</strong></div>
-                      <div>🔑 Token: <strong style={{ color: '#0f766e' }}>{ev.token}</strong></div>
+                      <div>🔑 Token Keamanan: <strong style={{ color: '#0f766e', background: '#f0fdfa', border: '1px solid #99f6e4', padding: '2px 6px', borderRadius: 4, fontSize: 11, fontWeight: 700 }}>🔒 Diberikan Pengawas di Kelas</strong></div>
                     </div>
 
                     <button
@@ -721,10 +721,11 @@ export default function PapanJelajahPage({ studentId: studentIdProp = '' }) {
                       onClick={() => handleMasukCbtProfesional(ev)}
                       style={{
                         ...st.btnMasukAgenda,
-                        background: isHariIni ? '#0d9488' : '#0f172a',
+                        background: isHariIni ? '#0d9488' : '#0f766e',
+                        color: '#ffffff',
                       }}
                     >
-                      <ShieldCheck size={14} />
+                      <ShieldCheck size={14} color="#ffffff" />
                       <span>{isHariIni ? 'Mulai Ujian Sekarang 🚀' : 'Buka Ruang Ujian CBT'}</span>
                     </button>
                   </div>
@@ -1053,6 +1054,22 @@ const st = {
     fontWeight: 800,
     cursor: 'pointer',
     boxShadow: '0 4px 12px rgba(13, 148, 136, 0.25)',
+  },
+  btnMasukAgenda: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    width: '100%',
+    padding: '11px 16px',
+    borderRadius: 10,
+    border: 'none',
+    fontSize: 13,
+    fontWeight: 800,
+    cursor: 'pointer',
+    color: '#ffffff',
+    boxShadow: '0 4px 12px rgba(13, 148, 136, 0.2)',
+    transition: 'all 0.15s ease',
   },
   kartuPaketManual: {
     background: '#ffffff',
