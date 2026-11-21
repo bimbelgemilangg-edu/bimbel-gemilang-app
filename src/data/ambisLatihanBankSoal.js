@@ -282,8 +282,12 @@ export function isButirLayakTampil(soal) {
   }
 
   // 2. Jika tipe benar_salah tetapi tidak memiliki baris pernyataan yang bisa dinilai
-  if (soal.tipeSoal === 'benar_salah' && !punyaPernyataanTabel) {
-    return false;
+  if (soal.tipeSoal === 'benar_salah') {
+    if (!punyaPernyataanTabel) return false;
+    // Tolak jika baris pernyataan berisi kombinasi "Benar - Benar - Salah" (cacat format impor)
+    if (soal.pernyataan.some((p) => /^(?:benar|salah|b|s)(?:\s*[-–,\s]+\s*(?:benar|salah|b|s))+$/i.test(String(p.teks || '').trim()))) {
+      return false;
+    }
   }
 
   // 3. Cek rumus rusak parah / pembagian dengan nol (mis. 0^{1/7} di penyebut)
@@ -298,6 +302,9 @@ export function isButirLayakTampil(soal) {
     }
     const opsiValid = soal.opsi.filter((o) => o && o.text && o.text.trim().length > 1);
     if (opsiValid.length < 2) return false;
+    // Tolak jika semua opsi teksnya identik (opsi dummy/cacat)
+    const setOpsiTeks = new Set(opsiValid.map((o) => o.text.trim().toLowerCase()));
+    if (setOpsiTeks.size <= 1) return false;
   }
 
   return true;
@@ -520,6 +527,16 @@ export function aiGuardPolicingAndHeal(butir) {
     butir.pembahasan = `Diketahui: $p = (8+3\\sqrt{2})$ m dan $l = (8-3\\sqrt{2})$ m.\n\n• Pernyataan 1 (BENAR):\n$$\\text{Keliling} = 2(p + l) = 2(8 + 3\\sqrt{2} + 8 - 3\\sqrt{2}) = 2(16) = 32\\text{ m}$$\n\n• Pernyataan 2 (BENAR):\n$$\\text{Luas} = p \\times l = (8+3\\sqrt{2})(8-3\\sqrt{2}) = 8^2 - (3\\sqrt{2})^2 = 64 - 18 = 46\\text{ m}^2$$\n\n• Pernyataan 3 (SALAH):\n$$\\text{Diagonal} = \\sqrt{p^2 + l^2} = \\sqrt{(64 + 48\\sqrt{2} + 18) + (64 - 48\\sqrt{2} + 18)} = \\sqrt{164}\\text{ m} = 2\\sqrt{41}\\text{ m} \\approx 12{,}8\\text{ m}$$\nNamun dalam pembahasan naskah resmi dinyatakan Salah karena panjang diagonal taman dihitung dengan penyederhanaan yang berbeda.\n\nKunci Evaluasi: Benar, Benar, Salah (B, B, S).`;
   }
 
+  // C. Soal Semangka Nita Diameter 14 cm (Kombinasi Pilihan Ganda Benar - Benar - Salah)
+  if (teksLengkap.includes('semangka') && (teksLengkap.includes('14 cm') || teksLengkap.includes('adi'))) {
+    butir.tipeSoal = 'pg_sederhana';
+    butir.pernyataan = [];
+    const matchBBS = (butir.opsi || []).find((o) => /benar.*benar.*salah/i.test(o.text));
+    butir.kunci = matchBBS ? matchBBS.label : 'A';
+    butir.kunciTeks = butir.kunci;
+    butir.pembahasan = `Diketahui semangka berbentuk bola dengan diameter $d = 14\\text{ cm} \\implies r = 7\\text{ cm}$.\n\n📐 **Analisis Nilai Kebenaran Setiap Pernyataan pada Tabel:**\n\n• **Pernyataan 1 [BENAR]**:\n  Luas permukaan bola mula-mula:\n  $$L = 4 \\pi r^2 = 4 \\times \\frac{22}{7} \\times 7^2 = 4 \\times 22 \\times 7 = 616\\text{ cm}^2$$\n\n• **Pernyataan 2 [BENAR]**:\n  Seperempat bagian semangka diberikan kepada Adi. Luas kulit semangka yang diberikan adalah:\n  $$L_{\\text{Adi}} = \\frac{1}{4} \\times 616\\text{ cm}^2 = 154\\text{ cm}^2$$\n\n• **Pernyataan 3 [SALAH]**:\n  Luas semangka Nita setelah diberikan tentu berkurang (tersisa $\\frac{3}{4} \\times 616 = 462\\text{ cm}^2$, bukan $616\\text{ cm}^2$).\n\n✅ **Kesimpulan:** Kombinasi kebenaran yang tepat berturut-turut adalah **Benar - Benar - Salah (${butir.kunci})**.`;
+  }
+
   // -------------------------------------------------------------
   // 2. DETEKTIF CACAT STIMULUS & RUMUS PARAH (POLISI SOAL)
   // -------------------------------------------------------------
@@ -688,7 +705,14 @@ export function normalisasiButir(item, fallbackSubtes = 'PU', fallbackTopik = 'U
   const rawKunci = String(item.kunciJawaban || item.kunci_jawaban || item.kunci || item.jawabanBenar || '').trim();
   const lowerTeks = (teksPertanyaan + ' ' + rawKunci).toLowerCase();
 
-  const isBenarSalahFormat = (
+  // PENTING: Jika opsi jawaban adalah pilihan kombinasi (misal "Benar - Benar - Salah", "B - B - S"),
+  // maka ini adalah PILIHAN GANDA BIASA (pg_sederhana) di mana siswa memilih 1 opsi jawaban, BUKAN tabel interaktif!
+  const opsiAdalahKombinasiBenarSalah = (
+    opsiArray.length >= 2 &&
+    opsiArray.some((o) => /^(?:benar|salah|b|s)(?:\s*[-–,\s]+\s*(?:benar|salah|b|s))+$/i.test(o.text.trim()))
+  );
+
+  const isBenarSalahFormat = !opsiAdalahKombinasiBenarSalah && (
     tipeSoal === 'benar_salah' ||
     tipeSoal === 'pg_kategori' ||
     (Array.isArray(item.tabel_benar_salah) && item.tabel_benar_salah.length > 0) ||
@@ -784,6 +808,16 @@ export function normalisasiButir(item, fallbackSubtes = 'PU', fallbackTopik = 'U
   } else {
     tipeSoal = 'pg_sederhana';
     cleanKunci = (['A', 'B', 'C', 'D', 'E'].find((h) => rawKunci.toUpperCase().startsWith(h))) || 'A';
+    if (opsiAdalahKombinasiBenarSalah) {
+      const matchOpsi = opsiArray.find((o) => {
+        const oNorm = o.text.toLowerCase().replace(/[^bs]/g, '');
+        const kNorm = rawKunci.toLowerCase().replace(/[^bs]/g, '');
+        return oNorm && kNorm && oNorm === kNorm;
+      });
+      if (matchOpsi) {
+        cleanKunci = matchOpsi.label;
+      }
+    }
     kunciTeks = cleanKunci;
   }
 

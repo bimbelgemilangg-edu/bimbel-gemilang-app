@@ -797,27 +797,84 @@ export default function JalurUjianAiPage() {
               </div>
 
               {/* Pilihan Mode Pengerjaan */}
-              <div style={{ display: 'flex', background: '#f1f5f9', padding: 3, borderRadius: 10 }}>
-                {['Active Recall', 'Basic'].map((m) => (
+              <div style={{ display: 'flex', background: '#f1f5f9', padding: 3, borderRadius: 10, gap: 2 }}>
+                {[
+                  { id: 'Active Recall', label: '🧠 Active Recall' },
+                  { id: 'Basic', label: '⚡ Basic' },
+                ].map((m) => (
                   <button
-                    key={m}
+                    key={m.id}
                     type="button"
-                    onClick={() => setModeLatihan(m)}
+                    onClick={() => setModeLatihan(m.id)}
                     style={{
                       border: 'none',
-                      background: modeLatihan === m ? '#ffffff' : 'transparent',
-                      color: modeLatihan === m ? '#0f766e' : '#64748b',
+                      background: modeLatihan === m.id ? '#ffffff' : 'transparent',
+                      color: modeLatihan === m.id ? '#0f766e' : '#64748b',
                       fontSize: 11.5,
                       fontWeight: 700,
-                      padding: '4px 10px',
+                      padding: '5px 12px',
                       borderRadius: 8,
                       cursor: 'pointer',
-                      boxShadow: modeLatihan === m ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
+                      boxShadow: modeLatihan === m.id ? '0 1px 4px rgba(0,0,0,0.08)' : 'none',
+                      transition: 'all 0.15s ease',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 4,
                     }}
                   >
-                    {m}
+                    <span>{m.label}</span>
                   </button>
                 ))}
+              </div>
+            </div>
+
+            {/* 🤖 BUBBLE CHAT MASKOT ASTRONOT (GEMILANG ASSIST) */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: 12,
+                background: modeLatihan === 'Active Recall' ? 'linear-gradient(135deg, #f0fdfa 0%, #ecfdf5 100%)' : '#f8fafc',
+                border: modeLatihan === 'Active Recall' ? '1.5px solid #99f6e4' : '1.5px solid #e2e8f0',
+                borderRadius: 14,
+                padding: '11px 14px',
+                marginBottom: 14,
+                boxShadow: '0 2px 8px rgba(0,0,0,0.02)',
+                position: 'relative',
+                transition: 'all 0.2s ease',
+              }}
+            >
+              <div style={{ flexShrink: 0, marginTop: 2 }}>
+                <MaskotAstronot size={40} mengambang={true} />
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3, flexWrap: 'wrap' }}>
+                  <span style={{ fontSize: 12.5, fontWeight: 800, color: '#0f172a' }}>
+                    Gemilang Assist (Master G)
+                  </span>
+                  <span style={{
+                    fontSize: 10.5,
+                    fontWeight: 800,
+                    padding: '2px 8px',
+                    borderRadius: 999,
+                    background: modeLatihan === 'Active Recall' ? '#ccfbf1' : '#e2e8f0',
+                    color: modeLatihan === 'Active Recall' ? '#0f766e' : '#475569',
+                    border: modeLatihan === 'Active Recall' ? '1px solid #5eead4' : '1px solid #cbd5e1',
+                  }}>
+                    {modeLatihan === 'Active Recall' ? '🧠 Mode Active Recall (Sangat Disarankan)' : '⚡ Mode Basic (Standar Sekali Jalan)'}
+                  </span>
+                </div>
+                <div style={{ fontSize: 12, lineHeight: 1.55, color: '#334155' }}>
+                  {modeLatihan === 'Active Recall' ? (
+                    <>
+                      Halo Pejuang Gemilang! Di <strong>Mode Active Recall</strong>, setiap butir soal yang kamu jawab kurang tepat akan <span style={{ color: '#0f766e', fontWeight: 700 }}>otomatis diulang kembali di akhir sesi</span> hingga kamu berhasil menjawabnya dengan benar. Metode ini terbukti ilmiah melatih retensi memori jangka panjang agar tidak mudah lupa saat ujian asli!
+                    </>
+                  ) : (
+                    <>
+                      Halo Pejuang Gemilang! Di <strong>Mode Basic</strong>, kamu akan mengerjakan latihan secara <strong>mengalir sekali jalan (10 soal)</strong> dari awal sampai akhir tanpa pengulangan soal yang salah. Mode ini cocok untuk simulasi cepat mengukur kesiapan dan kecepatan pengerjaanmu.
+                    </>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -1090,13 +1147,40 @@ export default function JalurUjianAiPage() {
                   </div>
                 </div>
               </div>
-              <button
-                type="button"
-                onClick={() => setSubtesDetailModal(null)}
-                style={st.btnCloseModal}
-              >
-                <X size={20} color="#64748b" />
-              </button>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div style={{ display: 'flex', background: '#f1f5f9', padding: 2, borderRadius: 8, gap: 2 }}>
+                  {[
+                    { id: 'Active Recall', label: '🧠 Active Recall' },
+                    { id: 'Basic', label: '⚡ Basic' },
+                  ].map((m) => (
+                    <button
+                      key={m.id}
+                      type="button"
+                      onClick={() => setModeLatihan(m.id)}
+                      style={{
+                        border: 'none',
+                        background: modeLatihan === m.id ? '#ffffff' : 'transparent',
+                        color: modeLatihan === m.id ? '#0f766e' : '#64748b',
+                        fontSize: 11,
+                        fontWeight: 700,
+                        padding: '4px 8px',
+                        borderRadius: 6,
+                        cursor: 'pointer',
+                        boxShadow: modeLatihan === m.id ? '0 1px 2px rgba(0,0,0,0.08)' : 'none',
+                      }}
+                    >
+                      {m.label}
+                    </button>
+                  ))}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setSubtesDetailModal(null)}
+                  style={st.btnCloseModal}
+                >
+                  <X size={20} color="#64748b" />
+                </button>
+              </div>
             </div>
 
             <p style={{ fontSize: 13, color: '#475569', marginBottom: 16, lineHeight: 1.5 }}>
