@@ -172,11 +172,16 @@ function stemHtml(soal) {
 // lembar cetak yang hanya mencetak teksnya membuat tentor mencetak soal
 // yang pilihannya kosong.
 function opsiHtml(soal) {
-  const opsi = Array.isArray(soal?.opsiJawaban) ? soal.opsiJawaban : [];
+  let opsi = [];
+  if (Array.isArray(soal?.opsiJawaban) && soal.opsiJawaban.length > 0) {
+    opsi = soal.opsiJawaban;
+  } else if (Array.isArray(soal?.opsi) && soal.opsi.length > 0) {
+    opsi = soal.opsi;
+  }
   return opsi
     .map((o, i) => {
-      const huruf = String.fromCharCode(65 + i);
-      const teks = typeof o === 'string' ? o : o?.teks || '';
+      const huruf = o?.label || String.fromCharCode(65 + i);
+      const teks = typeof o === 'string' ? o : o?.text || o?.teks || '';
       const gambar = (o && typeof o === 'object' && Array.isArray(o.gambar)) ? o.gambar : [];
       const gambarHtml = gambar
         .map((g) => {
@@ -212,12 +217,15 @@ function pembahasanHtml(soal) {
 /** DOKUMEN 1 — paket siswa: kotak soal siap gunting, TANPA kunci. */
 export function htmlPaketSiswa(paket = {}, soalList = [], opsi = {}) {
   const kotak = soalList
-    .map((s, i) => `<div class="kotak">
-      <span class="nomor">${i + 1}</span><b>${escapeHtml(String(s?.tipe || 'pg_sederhana').replace(/_/g, ' '))}</b>
+    .map((s, i) => {
+      const kodeTag = s?.kodeSoal || s?.kodeUnik ? ` <span style="font-size:11px;color:#475569;margin-left:6px;font-family:monospace;font-weight:700;">[${escapeHtml(s.kodeSoal || s.kodeUnik)}]</span>` : '';
+      return `<div class="kotak">
+      <span class="nomor">${i + 1}</span>${kodeTag}
       ${stemHtml(s)}
       ${opsiHtml(s)}
       ${isiJawabanKotak(s)}
-    </div>`)
+    </div>`;
+    })
     .join('\n');
   return `<html><head><meta charset="utf-8" /><style>${gayaDasar(opsi.kertas, opsi)}</style></head><body>
     ${opsi.watermark === false ? '' : watermarkHtml({ ...opsi, mode: 'tetap' })}
