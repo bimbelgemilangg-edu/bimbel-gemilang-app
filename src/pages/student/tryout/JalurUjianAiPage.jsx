@@ -1126,13 +1126,13 @@ export default function JalurUjianAiPage() {
             </div>
           </div>
 
-          {/* BAGIAN A: PAKET KHUSUS YANG SEDANG DIBUKA/DITERBITKAN TENTOR HARI INI */}
-          <div style={{ marginBottom: 28 }}>
+          {/* BAGIAN A: PAKET KHUSUS YANG SEDANG DIBUKA/DITERBITKAN GURU HARI INI */}
+          <div>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <span style={{ fontSize: 18 }}>🚀</span>
                 <h3 style={{ margin: 0, fontSize: 16, fontWeight: 800, color: '#0f172a' }}>
-                  Paket Soal yang Dibuka Tentor (Aktif di Kelas)
+                  Paket Soal yang Diterbitkan Guru (Aktif di Kelas)
                 </h3>
               </div>
               <span style={{ fontSize: 12, fontWeight: 700, color: '#0d9488' }}>
@@ -1150,10 +1150,10 @@ export default function JalurUjianAiPage() {
               }}>
                 <div style={{ fontSize: 36, marginBottom: 8 }}>👨‍🏫 🔒</div>
                 <div style={{ fontSize: 14, fontWeight: 800, color: '#1e293b', marginBottom: 4 }}>
-                  Belum Ada Paket Khusus yang Dibuka Tentor Hari Ini
+                  Belum Ada Paket Khusus yang Diterbitkan Guru Hari Ini
                 </div>
                 <p style={{ fontSize: 12.5, color: '#64748b', maxWidth: 500, margin: '0 auto 14px', lineHeight: 1.5 }}>
-                  Kunci paket latihan akan dibuka oleh Tentor saat jam kelas pendampingan tatap muka dimulai. Pastikan buku besar catatan fisikmu sudah siap untuk menuliskan nomor dan langkah pengerjaan!
+                  Paket latihan akan diterbitkan oleh Guru saat jam kelas pendampingan tatap muka dimulai. Pastikan buku catatan fisik (Buku Besar) sudah siap untuk menuliskan nomor dan langkah pengerjaan!
                 </p>
               </div>
             ) : (
@@ -1191,7 +1191,7 @@ export default function JalurUjianAiPage() {
                               🔓 {pkt.subtes || pkt.mapel || 'TKA / UTBK'}
                             </span>
                             <span style={{ fontSize: 11, color: '#0d9488', fontWeight: 700 }}>
-                              {pkt.tentorNama ? `Tentor: ${pkt.tentorNama}` : 'Dibuka Tentor'}
+                              {pkt.tentorNama ? `Guru: ${pkt.tentorNama}` : 'Dibuka Guru'}
                             </span>
                           </div>
                           <h4 style={{ margin: '0 0 6px', fontSize: 15, fontWeight: 800, color: '#0f172a' }}>
@@ -1208,7 +1208,7 @@ export default function JalurUjianAiPage() {
                               marginBottom: 12,
                               lineHeight: 1.4,
                             }}>
-                              <b>Catatan Tentor:</b> {pkt.catatanTentor}
+                              <b>Catatan Guru:</b> {pkt.catatanTentor}
                             </div>
                           )}
                           <div style={{ fontSize: 12, color: '#64748b', marginBottom: 14 }}>
@@ -1254,248 +1254,6 @@ export default function JalurUjianAiPage() {
                   })}
               </div>
             )}
-          </div>
-
-          {/* BAGIAN B: KATALOG SILABUS BAB RESMI BIMBEL GEMILANG (TERKUNCI SECARA DEFAULT) */}
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, flexWrap: 'wrap', gap: 10 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{ fontSize: 18 }}>📚</span>
-                <div>
-                  <h3 style={{ margin: 0, fontSize: 16, fontWeight: 800, color: '#0f172a' }}>
-                    Katalog Silabus Bab Resmi Bimbel Gemilang
-                  </h3>
-                  <p style={{ margin: '2px 0 0', fontSize: 12, color: '#64748b' }}>
-                    Paket silabus terstruktur per bab. <b>Terkunci secara default</b> dan baru dapat dikerjakan setelah kunci dibuka oleh Tentor di kelas.
-                  </p>
-                </div>
-              </div>
-
-              {/* Subtes Switcher Tabs */}
-              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                {daftarSubtes.map((sub) => {
-                  const aktif = subtesSilabusTerpilih === sub.kode;
-                  return (
-                    <button
-                      key={sub.kode}
-                      type="button"
-                      onClick={() => setSubtesSilabusTerpilih(sub.kode)}
-                      style={{
-                        padding: '6px 12px',
-                        borderRadius: 8,
-                        border: aktif ? '1.5px solid #0d9488' : '1px solid #e2e8f0',
-                        background: aktif ? '#ccfbf1' : '#ffffff',
-                        color: aktif ? '#0f766e' : '#475569',
-                        fontSize: 12,
-                        fontWeight: aktif ? 800 : 600,
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 6,
-                      }}
-                    >
-                      <span>{sub.emoji || '📖'}</span>
-                      <span>{sub.singkatan || sub.kode}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Render Bab & Paket List untuk Subtes Silabus Terpilih */}
-            {(() => {
-              const subtesAktifObj = daftarSubtes.find((s) => s.kode === subtesSilabusTerpilih) || daftarSubtes[0];
-              const paketList = getPaketLatihanPerSubtes(subtesAktifObj?.kode, 10, targetJenjang?.jenjang || 'SMA', bankSoalFirestore);
-
-              if (paketList.length === 0) {
-                return (
-                  <div style={{ padding: 24, textAlign: 'center', background: '#ffffff', borderRadius: 14, border: '1px dashed #cbd5e1', color: '#64748b', fontSize: 13 }}>
-                    Paket latihan untuk subtes ini sedang disiapkan dari bank soal resmi.
-                  </div>
-                );
-              }
-
-              // Kelompokkan per Bab kurikulum resmi
-              const mapGrup = new Map();
-              paketList.forEach((p) => {
-                const namaBab = p.namaBab || 'Materi Latihan Terstruktur';
-                if (!mapGrup.has(namaBab)) {
-                  mapGrup.set(namaBab, {
-                    namaBab,
-                    babNomor: p.babNomor || 99,
-                    items: [],
-                  });
-                }
-                mapGrup.get(namaBab).items.push(p);
-              });
-
-              const daftarGrup = Array.from(mapGrup.values()).sort((a, b) => a.babNomor - b.babNomor);
-
-              return (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                  {daftarGrup.map((grup) => (
-                    <div key={grup.namaBab} style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 16, padding: '16px 20px', boxShadow: '0 2px 8px rgba(0,0,0,0.03)' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, paddingBottom: 10, borderBottom: '1px solid #f1f5f9' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                          <span style={{ fontSize: 18 }}>📖</span>
-                          <span style={{ fontSize: 14, fontWeight: 800, color: '#0f172a' }}>
-                            {grup.namaBab}
-                          </span>
-                        </div>
-                        <span style={{ fontSize: 11, fontWeight: 700, color: '#0d9488', background: '#ccfbf1', padding: '2px 10px', borderRadius: 99 }}>
-                          {grup.items.length} Paket Latihan
-                        </span>
-                      </div>
-
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 10 }}>
-                        {grup.items.map((paket) => {
-                          const isPaketDibuka = isPaketDibukaTentor(paket);
-                          const progres = bacaProgresLatihanSiswa(studentId);
-                          const infoPaket = progres?.paketMap?.[paket.id];
-                          const sudahDikerjakan = Boolean(infoPaket && infoPaket.total > 0);
-                          const akurasi = sudahDikerjakan ? (infoPaket.akurasi ?? Math.round((infoPaket.benar / Math.max(1, infoPaket.total)) * 100)) : 0;
-                          const isLunas = sudahDikerjakan && akurasi >= 70;
-
-                          return (
-                            <div
-                              key={paket.id}
-                              style={{
-                                background: isPaketDibuka ? '#ffffff' : '#f8fafc',
-                                border: isPaketDibuka ? '1.5px solid #14b8a6' : '1px solid #e2e8f0',
-                                borderRadius: 12,
-                                padding: '12px 14px',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                justifyContent: 'space-between',
-                                gap: 10,
-                                boxShadow: isPaketDibuka ? '0 3px 10px rgba(13, 148, 136, 0.1)' : 'none',
-                                opacity: isPaketDibuka ? 1 : 0.88,
-                              }}
-                            >
-                              <div>
-                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6, marginBottom: 4 }}>
-                                  <span style={{ fontSize: 13, fontWeight: 800, color: isPaketDibuka ? '#0f172a' : '#475569' }}>
-                                    {paket.judul}
-                                  </span>
-                                  <span style={{
-                                    fontSize: 9.5,
-                                    fontWeight: 800,
-                                    padding: '2px 6px',
-                                    borderRadius: 99,
-                                    background: isPaketDibuka ? '#ccfbf1' : '#f1f5f9',
-                                    color: isPaketDibuka ? '#0f766e' : '#64748b',
-                                    border: `1px solid ${isPaketDibuka ? '#5eead4' : '#e2e8f0'}`,
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: 3,
-                                  }}>
-                                    {isPaketDibuka ? (
-                                      <>
-                                        <span>🔓</span>
-                                        <span>Dibuka Tentor</span>
-                                      </>
-                                    ) : (
-                                      <>
-                                        <Lock size={10} color="#64748b" />
-                                        <span>Terkunci</span>
-                                      </>
-                                    )}
-                                  </span>
-                                </div>
-                                <div style={{ fontSize: 11, color: '#64748b' }}>
-                                  {paket.jumlahSoal} Soal • {paket.durasiMenit} Menit
-                                </div>
-                                {sudahDikerjakan && (
-                                  <div style={{ marginTop: 4 }}>
-                                    <span style={{
-                                      fontSize: 10,
-                                      fontWeight: 800,
-                                      padding: '2px 6px',
-                                      borderRadius: 99,
-                                      background: isLunas ? '#dcfce7' : '#fee2e2',
-                                      color: isLunas ? '#15803d' : '#b91c1c',
-                                    }}>
-                                      {isLunas ? `🟢 Selesai (${akurasi}%)` : `🟠 ${akurasi}%`}
-                                    </span>
-                                  </div>
-                                )}
-                              </div>
-
-                              <div>
-                                {isPaketDibuka ? (
-                                  <div>
-                                    <button
-                                      type="button"
-                                      onClick={() => {
-                                        setSesiLatihanAktif({
-                                          subtes: subtesAktifObj,
-                                          paket,
-                                          daftarSoal: paket.soalList || [],
-                                          mode: 'Active Recall',
-                                          isWeeklyDrill: false,
-                                        });
-                                      }}
-                                      style={{
-                                        width: '100%',
-                                        padding: '8px 12px',
-                                        borderRadius: 8,
-                                        border: 'none',
-                                        background: '#0d9488',
-                                        color: '#ffffff',
-                                        fontSize: 12,
-                                        fontWeight: 800,
-                                        cursor: 'pointer',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        gap: 5,
-                                        boxShadow: '0 2px 6px rgba(13, 148, 136, 0.2)',
-                                      }}
-                                    >
-                                      <Play size={13} />
-                                      <span>Kerjakan di Kelas</span>
-                                    </button>
-                                  </div>
-                                ) : (
-                                  <div>
-                                    <button
-                                      type="button"
-                                      disabled={true}
-                                      title="Paket terkunci, menunggu dibuka oleh Tentor di kelas"
-                                      style={{
-                                        width: '100%',
-                                        padding: '8px 12px',
-                                        borderRadius: 8,
-                                        border: '1px solid #e2e8f0',
-                                        background: '#f1f5f9',
-                                        color: '#94a3b8',
-                                        fontSize: 12,
-                                        fontWeight: 700,
-                                        cursor: 'not-allowed',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        gap: 5,
-                                      }}
-                                    >
-                                      <Lock size={13} color="#94a3b8" />
-                                      <span>Terkunci</span>
-                                    </button>
-                                    <div style={{ fontSize: 10.5, color: '#94a3b8', textAlign: 'center', marginTop: 4 }}>
-                                      🔒 Dibuka Tentor saat sesi kelas tatap muka
-                                    </div>
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              );
-            })()}
           </div>
         </div>
       )}
