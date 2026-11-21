@@ -17,7 +17,7 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../../../firebase';
-import { collection, getDocs, query, where } from 'firebase/firestore';
+import { collection, getDocs, query, where, doc, deleteDoc } from 'firebase/firestore';
 import {
   Rocket, Lock, CheckCircle2, Star, Sparkles, Brain, Trophy,
   ChevronLeft, AlertCircle, Play, ShieldAlert, Timer, Award,
@@ -45,6 +45,7 @@ import {
   getSoalLatihanKilat,
   hitungStatistikLatihanSiswa,
   bacaProgresLatihanSiswa,
+  resetProgresLatihanSiswa,
 } from '../../../data/ambisLatihanBankSoal';
 import AmbisPracticePlayer from '../../../components/latihan/AmbisPracticePlayer';
 
@@ -490,6 +491,49 @@ export default function JalurUjianAiPage() {
     setRefreshLatihanTick((t) => t + 1);
   };
 
+  // 🔄 Reset Progres Uji Coba Latihan Siswa (Kembalikan ke 0)
+  const [sedangResetProgres, setSedangResetProgres] = useState(false);
+  const handleResetProgres = async () => {
+    const yakin = window.confirm(
+      `Kembalikan progres latihan akun ${profil.nama || 'siswa'} ke semula (0 soal dilatih & matikan status)?\n\nCatatan: Ini aman dan hanya mereset riwayat uji coba latihan mandiri.`
+    );
+    if (!yakin) return;
+
+    setSedangResetProgres(true);
+    try {
+      // 1. Bersihkan localStorage
+      resetProgresLatihanSiswa(studentId);
+      if (studentDocId && studentDocId !== studentId) {
+        resetProgresLatihanSiswa(studentDocId);
+      }
+
+      // 2. Bersihkan sesi latihan mandiri di Firestore tryout_sesi bila ada
+      if (studentId) {
+        try {
+          const qSesi = query(
+            collection(db, 'tryout_sesi'),
+            where('studentId', '==', studentId),
+            where('sumber', '==', 'menu_jalur')
+          );
+          const snapSesi = await getDocs(qSesi);
+          const hapusPromises = snapSesi.docs.map((d) => deleteDoc(doc(db, 'tryout_sesi', d.id)));
+          await Promise.all(hapusPromises);
+        } catch (errDb) {
+          console.warn('[JalurUjianAiPage] Gagal bersihkan sesi Firestore:', errDb);
+        }
+      }
+
+      // 3. Perbarui tampilan
+      setRefreshLatihanTick((t) => t + 1);
+      alert('Progres latihan mandiri berhasil dikembalikan ke semula! ✨');
+    } catch (err) {
+      console.error('Gagal reset progres latihan:', err);
+      alert('Terjadi kesalahan saat mereset progres.');
+    } finally {
+      setSedangResetProgres(false);
+    }
+  };
+
   // Jika siswa sedang di tengah sesi pengerjaan latihan AmbisPTN
   if (sesiLatihanAktif) {
     return (
@@ -701,11 +745,37 @@ export default function JalurUjianAiPage() {
             </div>
 
             <div style={st.miniLevelBox}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <Flame size={18} color="#ea580c" />
-                <span style={{ fontSize: 13, fontWeight: 800, color: '#9a3412' }}>
-                  {isSmp ? 'Pejuang SMA Unggulan (Lv. 1)' : isSd ? 'Pejuang SMP Favorit (Lv. 1)' : 'Pendaki Pemula (Lv. 1)'}
-                </span>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <Flame size={18} color="#ea580c" />
+                  <span style={{ fontSize: 13, fontWeight: 800, color: '#9a3412' }}>
+                    {isSmp ? 'Pejuang SMA Unggulan (Lv. 1)' : isSd ? 'Pejuang SMP Favorit (Lv. 1)' : 'Pendaki Pemula (Lv. 1)'}
+                  </span>
+                </div>
+                {statistikLatihan.totalSoalDikerjakanSemua > 0 && (
+                  <button
+                    type="button"
+                    onClick={handleResetProgres}
+                    disabled={sedangResetProgres}
+                    title="Kembalikan progres uji coba ke 0"
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 4,
+                      background: '#ffffff',
+                      border: '1px solid #fecaca',
+                      color: '#b91c1c',
+                      borderRadius: 8,
+                      padding: '3px 8px',
+                      fontSize: 11,
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    <RotateCcw size={12} className={sedangResetProgres ? 'animate-spin' : ''} />
+                    <span>{sedangResetProgres ? 'Mereset...' : 'Reset Progres'}</span>
+                  </button>
+                )}
               </div>
               <div style={{ fontSize: 11, color: '#c2410c', marginTop: 2 }}>
                 Total {statistikLatihan.totalSoalDikerjakanSemua} soal dilatih • Akurasi {statistikLatihan.akurasiGlobal}%

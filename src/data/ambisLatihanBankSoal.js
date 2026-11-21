@@ -1054,6 +1054,20 @@ export function bacaProgresLatihanSiswa(studentId) {
 }
 
 /**
+ * Mereset progres latihan mandiri siswa kembali ke nol (bersih dari sesi uji coba)
+ */
+export function resetProgresLatihanSiswa(studentId) {
+  const kunci = getKunciPenyimpananLatihan(studentId);
+  if (typeof localStorage !== 'undefined') {
+    try {
+      localStorage.removeItem(kunci);
+    } catch (_e) {}
+  }
+  memoriFallbackStorage.delete(kunci);
+  return true;
+}
+
+/**
  * Menghitung rekapitulasi progres per subtes dinamis sesuai jenjang siswa
  */
 export function hitungStatistikLatihanSiswa(studentId, jenjang = 'SMA', bankSoalFirestore = []) {
