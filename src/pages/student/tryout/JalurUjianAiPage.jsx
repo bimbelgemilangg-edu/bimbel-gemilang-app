@@ -926,7 +926,7 @@ export default function JalurUjianAiPage() {
           }}
         >
           <Zap size={16} />
-          <span>⚡ Latihan Mandiri AI (Misi Mingguan)</span>
+          <span>⚡ Latihan Mandiri (Misi Mingguan)</span>
         </button>
 
         <button
@@ -1248,34 +1248,6 @@ export default function JalurUjianAiPage() {
                             <Play size={15} />
                             <span>Kerjakan di Kelas (Buku Besar)</span>
                           </button>
-
-                          <button
-                            type="button"
-                            onClick={() => {
-                              handleCetakLembarGuntingPaket(
-                                { nama: pkt.subtes || pkt.mapel || 'Kelas Pendampingan' },
-                                { judul: pkt.judulPaket || pkt.judul, soalList: soalListPkt }
-                              );
-                            }}
-                            style={{
-                              width: '100%',
-                              padding: '8px 12px',
-                              borderRadius: 10,
-                              border: '1px solid #cbd5e1',
-                              background: '#ffffff',
-                              color: '#475569',
-                              fontSize: 12,
-                              fontWeight: 700,
-                              cursor: 'pointer',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              gap: 6,
-                            }}
-                          >
-                            <Scissors size={14} />
-                            <span>Unduh Lembar Gunting-Tempel (PDF)</span>
-                          </button>
                         </div>
                       </div>
                     );
@@ -1451,7 +1423,7 @@ export default function JalurUjianAiPage() {
 
                               <div>
                                 {isPaketDibuka ? (
-                                  <div style={{ display: 'flex', gap: 6 }}>
+                                  <div>
                                     <button
                                       type="button"
                                       onClick={() => {
@@ -1464,96 +1436,52 @@ export default function JalurUjianAiPage() {
                                         });
                                       }}
                                       style={{
-                                        flex: 1,
-                                        padding: '7px 10px',
+                                        width: '100%',
+                                        padding: '8px 12px',
                                         borderRadius: 8,
                                         border: 'none',
                                         background: '#0d9488',
                                         color: '#ffffff',
-                                        fontSize: 11.5,
-                                        fontWeight: 700,
+                                        fontSize: 12,
+                                        fontWeight: 800,
                                         cursor: 'pointer',
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'center',
-                                        gap: 4,
+                                        gap: 5,
                                         boxShadow: '0 2px 6px rgba(13, 148, 136, 0.2)',
                                       }}
                                     >
-                                      <Play size={12} />
-                                      <span>Kerjakan</span>
-                                    </button>
-                                    <button
-                                      type="button"
-                                      onClick={() => handleCetakLembarGuntingPaket(subtesAktifObj, paket)}
-                                      title="Unduh Lembar Gunting Siswa (PDF)"
-                                      style={{
-                                        padding: '7px 10px',
-                                        borderRadius: 8,
-                                        border: '1px solid #cbd5e1',
-                                        background: '#ffffff',
-                                        color: '#475569',
-                                        fontSize: 11.5,
-                                        fontWeight: 700,
-                                        cursor: 'pointer',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: 4,
-                                      }}
-                                    >
-                                      <Scissors size={12} />
-                                      <span>PDF</span>
+                                      <Play size={13} />
+                                      <span>Kerjakan di Kelas</span>
                                     </button>
                                   </div>
                                 ) : (
                                   <div>
-                                    <div style={{ display: 'flex', gap: 6 }}>
-                                      <button
-                                        type="button"
-                                        disabled={true}
-                                        title="Paket terkunci, menunggu dibuka oleh Tentor di kelas"
-                                        style={{
-                                          flex: 1,
-                                          padding: '7px 10px',
-                                          borderRadius: 8,
-                                          border: '1px solid #e2e8f0',
-                                          background: '#f1f5f9',
-                                          color: '#94a3b8',
-                                          fontSize: 11.5,
-                                          fontWeight: 700,
-                                          cursor: 'not-allowed',
-                                          display: 'flex',
-                                          alignItems: 'center',
-                                          justifyContent: 'center',
-                                          gap: 4,
-                                        }}
-                                      >
-                                        <Lock size={12} color="#94a3b8" />
-                                        <span>Terkunci</span>
-                                      </button>
-                                      <button
-                                        type="button"
-                                        disabled={true}
-                                        title="Lembar soal baru bisa diunduh setelah dibuka Tentor di kelas"
-                                        style={{
-                                          padding: '7px 10px',
-                                          borderRadius: 8,
-                                          border: '1px solid #e2e8f0',
-                                          background: '#f1f5f9',
-                                          color: '#cbd5e1',
-                                          fontSize: 11.5,
-                                          fontWeight: 700,
-                                          cursor: 'not-allowed',
-                                          display: 'flex',
-                                          alignItems: 'center',
-                                          gap: 4,
-                                        }}
-                                      >
-                                        <Lock size={12} color="#cbd5e1" />
-                                        <span>PDF</span>
-                                      </button>
-                                    </div>
-                                    <div style={{ fontSize: 10, color: '#94a3b8', textAlign: 'center', marginTop: 4 }}>
+                                    <button
+                                      type="button"
+                                      disabled={true}
+                                      title="Paket terkunci, menunggu dibuka oleh Tentor di kelas"
+                                      style={{
+                                        width: '100%',
+                                        padding: '8px 12px',
+                                        borderRadius: 8,
+                                        border: '1px solid #e2e8f0',
+                                        background: '#f1f5f9',
+                                        color: '#94a3b8',
+                                        fontSize: 12,
+                                        fontWeight: 700,
+                                        cursor: 'not-allowed',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        gap: 5,
+                                      }}
+                                    >
+                                      <Lock size={13} color="#94a3b8" />
+                                      <span>Terkunci</span>
+                                    </button>
+                                    <div style={{ fontSize: 10.5, color: '#94a3b8', textAlign: 'center', marginTop: 4 }}>
                                       🔒 Dibuka Tentor saat sesi kelas tatap muka
                                     </div>
                                   </div>
@@ -2420,28 +2348,6 @@ export default function JalurUjianAiPage() {
                               </div>
 
                               <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-                                <button
-                                  type="button"
-                                  onClick={() => handleCetakLembarGuntingPaket(subtesDetailModal, paket)}
-                                  style={{
-                                    padding: '6px 10px',
-                                    fontSize: 11.5,
-                                    fontWeight: 700,
-                                    color: '#0d9488',
-                                    background: '#f0fdfa',
-                                    border: '1px solid #99f6e4',
-                                    borderRadius: 8,
-                                    cursor: 'pointer',
-                                    display: 'inline-flex',
-                                    alignItems: 'center',
-                                    gap: 4,
-                                  }}
-                                  title="Cetak lembar potong gunting (✂️) tanpa kunci jawaban untuk Buku Besar"
-                                >
-                                  <Scissors size={13} />
-                                  <span>Lembar Gunting (PDF)</span>
-                                </button>
-
                                 {sudahDikerjakan && !isLunas && (
                                   <button
                                     type="button"
