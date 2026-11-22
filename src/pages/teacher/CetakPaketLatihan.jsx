@@ -48,6 +48,7 @@ import {
   ekstrakSidikJariSoal,
   auditKesesuaianMateriMtk,
   susunBankSoalLatihanSmp,
+  susunSemuaBankSoalLatihan,
 } from '../../data/ambisLatihanBankSoal';
 // 🔥 2026-10-08 (Fase 1 cetak biru bank soal): keranjang yang BERTAHAN.
 // Dulu `tercentang` berisi id dan DIHAPUS setiap ganti filter
@@ -88,6 +89,106 @@ import { useSegarSaatTerlihat } from '../../utils/useSegarSaatTerlihat';
 import { sebaranKelas } from '../../utils/petaKonten';
 
 const BELUM = '(Belum diatur)';
+
+export function normalisasiMetaSoal(s) {
+  if (!s || typeof s !== 'object') return s;
+
+  // 1. Jenjang (Standar Resmi Bimbel Gemilang)
+  let rawJ = String(s.jenjang || '').trim();
+  let j = 'SMP';
+  if (rawJ && rawJ !== BELUM && rawJ !== 'undefined') {
+    const uj = rawJ.toUpperCase();
+    if (uj.includes('SMA') || uj.includes('UTBK') || uj.includes('SNBT') || uj.includes('SMK')) j = 'SMA';
+    else if (uj.includes('SD')) j = 'SD';
+    else j = 'SMP';
+  } else {
+    const k = String(s.kelas || s.kelasSekolah || '').trim();
+    const sub = String(s.subtesKode || s.subtes || s.mapel || s.mataPelajaran || '').toUpperCase();
+    if (['10', '11', '12'].includes(k) || ['PU', 'PPU', 'PBM', 'PK', 'PM', 'LBIN', 'LBING'].includes(sub)) {
+      j = 'SMA';
+    } else if (['1', '2', '3', '4', '5', '6'].includes(k)) {
+      j = 'SD';
+    } else {
+      j = 'SMP';
+    }
+  }
+
+  // 2. Mata Pelajaran Standar
+  let rawM = String(s.mataPelajaran || s.mapel || s.subtes || '').trim();
+  let m = 'Matematika';
+  if (rawM && rawM !== BELUM && rawM !== 'undefined') {
+    const lm = rawM.toLowerCase();
+    if (lm.includes('matematika') || lm.includes('numerasi') || lm === 'mtk') m = 'Matematika';
+    else if (lm.includes('indonesia') || lm.includes('lbin') || lm === 'bin') m = 'Bahasa Indonesia';
+    else if (lm.includes('inggris') || lm.includes('lbing') || lm === 'big') m = 'Bahasa Inggris';
+    else if (lm.includes('ipa') || lm.includes('sains') || lm.includes('biologi') || lm.includes('fisika')) m = 'IPA';
+    else if (lm.includes('penalaran umum') || lm === 'pu') m = 'Penalaran Umum';
+    else if (lm.includes('kuantitatif') || lm === 'pk') m = 'Pengetahuan Kuantitatif';
+    else if (lm.includes('penalaran matematika') || lm === 'pm') m = 'Penalaran Matematika';
+    else if (lm.includes('bacaan') || lm === 'pbm') m = 'Pemahaman Bacaan & Menulis';
+    else if (lm.includes('pemahaman umum') || lm === 'ppu') m = 'Pengetahuan & Pemahaman Umum';
+    else m = rawM;
+  } else {
+    const sub = String(s.subtesKode || '').toUpperCase();
+    if (sub === 'MTK') m = 'Matematika';
+    else if (sub === 'BIN') m = 'Bahasa Indonesia';
+    else if (sub === 'IPA') m = 'IPA';
+    else if (sub === 'BIG') m = 'Bahasa Inggris';
+    else if (sub === 'PU') m = 'Penalaran Umum';
+    else if (sub === 'PK') m = 'Pengetahuan Kuantitatif';
+    else if (sub === 'PM') m = 'Penalaran Matematika';
+    else if (sub === 'PBM') m = 'Pemahaman Bacaan & Menulis';
+    else if (sub === 'PPU') m = 'Pengetahuan & Pemahaman Umum';
+    else if (sub === 'LBIN') m = 'Bahasa Indonesia';
+    else if (sub === 'LBING') m = 'Bahasa Inggris';
+    else m = 'Matematika';
+  }
+
+  // 3. Bab / Materi
+  let rawB = String(s.materi || s.bab || s.namaBab || s.topik || '').trim();
+  let bab = rawB;
+  if (!bab || bab === BELUM || bab === 'undefined') {
+    bab = 'Materi Inti & Penguatan Konsep';
+  }
+
+  return {
+    ...s,
+    jenjang: j,
+    mataPelajaran: m,
+    mapel: m,
+    materi: bab,
+    bab: bab,
+    namaBab: s.namaBab || bab,
+  };
+}
+
+const DAFTAR_JENJANG_UTAMA = [
+  { id: 'SMP', label: 'SMP / MTs', deskripsi: 'TKA SMP · Asesmen Daerah · Masuk SMA Unggulan', icon: '🎓', badge: 'TKA SMP' },
+  { id: 'SMA', label: 'SMA / MA / UTBK', deskripsi: 'UTBK SNBT · SNPMB · Masuk PTN Impian', icon: '🏛️', badge: 'UTBK SNBT' },
+  { id: 'SD', label: 'SD / MI', deskripsi: 'TKA SD · Fondasi Numerasi & Literasi', icon: '🎒', badge: 'TKA SD' },
+];
+
+const MAPEL_RESMI_PER_JENJANG = {
+  SMP: [
+    { nama: 'Matematika', icon: '📐', deskripsi: 'Numerasi & Penalaran Geometri' },
+    { nama: 'Bahasa Indonesia', icon: '📖', deskripsi: 'Literasi Membaca & Tata Bahasa' },
+    { nama: 'IPA', icon: '🔬', deskripsi: 'Fisika, Biologi & Sains Terpadu' },
+    { nama: 'Bahasa Inggris', icon: '🇬🇧', deskripsi: 'Reading Comprehension & Grammar' },
+  ],
+  SMA: [
+    { nama: 'Pengetahuan Kuantitatif', icon: '🔢', deskripsi: 'Kuantitatif & Aljabar' },
+    { nama: 'Penalaran Matematika', icon: '📊', deskripsi: 'Pemecahan Masalah Matematis' },
+    { nama: 'Penalaran Umum', icon: '💡', deskripsi: 'Induktif, Deduktif & Logika' },
+    { nama: 'Pemahaman Bacaan & Menulis', icon: '✍️', deskripsi: 'PBM & Ejaan Bahasa' },
+    { nama: 'Pengetahuan & Pemahaman Umum', icon: '🧠', deskripsi: 'PPU & Analisis Konsep' },
+    { nama: 'Bahasa Indonesia', icon: '🇮🇩', deskripsi: 'Literasi Bahasa Indonesia' },
+    { nama: 'Bahasa Inggris', icon: '🇬🇧', deskripsi: 'Literasi Bahasa Inggris' },
+  ],
+  SD: [
+    { nama: 'Matematika', icon: '📐', deskripsi: 'Fondasi Berhitung & Geometri' },
+    { nama: 'Bahasa Indonesia', icon: '📖', deskripsi: 'Membaca Cerita & Menulis Kalimat' },
+  ],
+};
 // Cache modul-level: satu tab menyapu bank_soal sekali per TTL, bukan sekali
 // per mount/focus. Lihat komentar di muatSemua() untuk alasan kuotanya.
 const TTL_CACHE_MS = 10 * 60 * 1000;
@@ -182,15 +283,15 @@ const teksSoalMentah = teksSoalDari;
 export default function CetakPaketLatihan() {
   const [sumber, setSumber] = useState('bank');       // 'bank' | 'paket'
   const [bankSoal, setBankSoal] = useState(() => {
-    if (cacheBank && cacheBank.length > 0) return cacheBank;
+    if (cacheBank && cacheBank.length > 0) return cacheBank.map(normalisasiMetaSoal);
     try {
       const lokal = JSON.parse(localStorage.getItem('gemilang_cached_bank_soal') || '[]');
-      if (Array.isArray(lokal) && lokal.length > 0) return lokal;
+      if (Array.isArray(lokal) && lokal.length > 0) return lokal.map(normalisasiMetaSoal);
     } catch {}
     try {
-      return susunBankSoalLatihanSmp([]);
+      return susunSemuaBankSoalLatihan([]).map(normalisasiMetaSoal);
     } catch {
-      return [];
+      return susunBankSoalLatihanSmp([]).map(normalisasiMetaSoal);
     }
   });
   const [paketList, setPaketList] = useState(() => cachePaket || []);
@@ -554,8 +655,9 @@ export default function CetakPaketLatihan() {
       try {
         const lokal = JSON.parse(localStorage.getItem('gemilang_cached_bank_soal') || '[]');
         if (Array.isArray(lokal) && lokal.length > 0) {
-          cacheBank = lokal;
-          setBankSoal(lokal);
+          const listNorm = lokal.map(normalisasiMetaSoal);
+          cacheBank = listNorm;
+          setBankSoal(listNorm);
         }
       } catch {}
     }
@@ -587,11 +689,12 @@ export default function CetakPaketLatihan() {
         }
         const list = (h.docs || []).map((d) => ({ id: d.id, ...d.data() }));
         if (jenis === 'bank' && list.length > 0) {
-          cacheBank = list;
+          const listNorm = susunSemuaBankSoalLatihan(list).map(normalisasiMetaSoal);
+          cacheBank = listNorm;
           waktuCacheBank = Date.now();
-          setBankSoal(list);
+          setBankSoal(listNorm);
           try {
-            localStorage.setItem('gemilang_cached_bank_soal', JSON.stringify(list));
+            localStorage.setItem('gemilang_cached_bank_soal', JSON.stringify(listNorm));
           } catch {}
         } else if (jenis === 'paket') {
           const terbit = saringPaketTerbit(list);
@@ -606,7 +709,7 @@ export default function CetakPaketLatihan() {
       const k = kebijakanGagalMuat(!!cacheBank, e?.code || e?.message || '');
       if (!k.pertahankanDataLama && (!cacheBank || cacheBank.length === 0)) {
         try {
-          const fallback = susunBankSoalLatihanSmp([]);
+          const fallback = susunSemuaBankSoalLatihan([]).map(normalisasiMetaSoal);
           setBankSoal(fallback);
         } catch {}
       }
@@ -632,34 +735,77 @@ export default function CetakPaketLatihan() {
     }
   }, [params, isJalurPendampingan, mapelAktif]);
 
-  // ---- hirarki bank: jenjang -> mapel -> bab, persis pola Lemari Soal admin ----
+  // ---- hirarki bank: jenjang -> mapel -> bab, terintegrasi standar Bimbel Gemilang ----
   const daftarJenjang = useMemo(() => {
     const hitung = new Map();
     for (const s of bankSoal) {
-      const k = (s.jenjang || '').trim() || BELUM;
+      const norm = normalisasiMetaSoal(s);
+      const k = norm.jenjang || 'SMP';
+      if (k === BELUM) continue;
       hitung.set(k, (hitung.get(k) || 0) + 1);
     }
-    return [...hitung.entries()].sort((a, b) => a[0].localeCompare(b[0], 'id'));
+
+    const hasil = DAFTAR_JENJANG_UTAMA.map((j) => ({
+      ...j,
+      jumlah: hitung.get(j.id) || 0,
+    }));
+
+    for (const [k, count] of hitung.entries()) {
+      if (!hasil.some((h) => h.id === k) && k !== BELUM) {
+        hasil.push({
+          id: k,
+          label: k,
+          deskripsi: `Koleksi bank soal ${k}`,
+          icon: '📚',
+          badge: k,
+          jumlah: count,
+        });
+      }
+    }
+    return hasil;
   }, [bankSoal]);
 
   const daftarMapel = useMemo(() => {
     if (!jenjangAktif) return [];
     const hitung = new Map();
     for (const s of bankSoal) {
-      if (((s.jenjang || '').trim() || BELUM) !== jenjangAktif) continue;
-      const k = (s.mataPelajaran || '').trim() || BELUM;
+      const norm = normalisasiMetaSoal(s);
+      if (norm.jenjang !== jenjangAktif) continue;
+      const k = norm.mataPelajaran || 'Matematika';
+      if (k === BELUM) continue;
       hitung.set(k, (hitung.get(k) || 0) + 1);
     }
-    return [...hitung.entries()].sort((a, b) => a[0].localeCompare(b[0], 'id'));
+
+    const defaultList = MAPEL_RESMI_PER_JENJANG[jenjangAktif] || [];
+    const hasil = defaultList.map((m) => ({
+      nama: m.nama,
+      icon: m.icon,
+      deskripsi: m.deskripsi,
+      jumlah: hitung.get(m.nama) || 0,
+    }));
+
+    for (const [k, count] of hitung.entries()) {
+      if (!hasil.some((h) => h.nama.toLowerCase() === k.toLowerCase()) && k !== BELUM) {
+        hasil.push({
+          nama: k,
+          icon: '📚',
+          deskripsi: `Koleksi ${k}`,
+          jumlah: count,
+        });
+      }
+    }
+    return hasil;
   }, [bankSoal, jenjangAktif]);
 
   const daftarBab = useMemo(() => {
     if (!jenjangAktif || !mapelAktif) return [];
     const hitung = new Map();
     for (const s of bankSoal) {
-      if (((s.jenjang || '').trim() || BELUM) !== jenjangAktif) continue;
-      if (((s.mataPelajaran || '').trim() || BELUM) !== mapelAktif) continue;
-      const k = (s.materi || '').trim() || BELUM;
+      const norm = normalisasiMetaSoal(s);
+      if (norm.jenjang !== jenjangAktif) continue;
+      if (norm.mataPelajaran.toLowerCase() !== mapelAktif.toLowerCase()) continue;
+      const k = norm.materi || 'Materi Inti';
+      if (k === BELUM) continue;
       hitung.set(k, (hitung.get(k) || 0) + 1);
     }
     return [...hitung.entries()].sort((a, b) => a[0].localeCompare(b[0], 'id'));
@@ -667,22 +813,22 @@ export default function CetakPaketLatihan() {
 
   // Otomatis pasang bab default jika belum ada bab terpilih
   useEffect(() => {
-    if (isJalurPendampingan && mapelAktif && !babAktif && daftarBab && daftarBab.length > 0) {
-      const babBil = daftarBab.find(([b]) => b.toLowerCase().includes('bilangan'));
-      if (babBil) {
-        setBabAktif(babBil[0]);
-      } else {
-        setBabAktif(daftarBab[0][0]);
+    if (mapelAktif && daftarBab && daftarBab.length > 0) {
+      if (!babAktif || !daftarBab.some(([b]) => b === babAktif)) {
+        const babBil = daftarBab.find(([b]) => b.toLowerCase().includes('bilangan'));
+        setBabAktif(babBil ? babBil[0] : daftarBab[0][0]);
       }
     }
-  }, [isJalurPendampingan, mapelAktif, babAktif, daftarBab]);
+  }, [mapelAktif, babAktif, daftarBab]);
 
   const soalDiBab = useMemo(() => {
     if (!jenjangAktif || !mapelAktif || !babAktif) return [];
-    return bankSoal.filter((s) =>
-      ((s.jenjang || '').trim() || BELUM) === jenjangAktif &&
-      ((s.mataPelajaran || '').trim() || BELUM) === mapelAktif &&
-      ((s.materi || '').trim() || BELUM) === babAktif);
+    return bankSoal
+      .map(normalisasiMetaSoal)
+      .filter((s) =>
+        s.jenjang === jenjangAktif &&
+        s.mataPelajaran.toLowerCase() === mapelAktif.toLowerCase() &&
+        s.materi === babAktif);
   }, [bankSoal, jenjangAktif, mapelAktif, babAktif]);
 
   const daftarKelas = useMemo(() => sebaranKelas(soalDiBab), [soalDiBab]);
@@ -1117,59 +1263,179 @@ export default function CetakPaketLatihan() {
             </div>
           </div>
 
-          <div style={gayaKartu}>
-            <div style={gayaJudulKartu}>1 · Jenjang</div>
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-              {daftarJenjang.map(([j, n]) => (
-                <button key={j} style={gayaPill(jenjangAktif === j)} onClick={() => { setJenjangAktif(j); setMapelAktif(''); setBabAktif(''); }}>
-                  {j} <span style={{ opacity: 0.6 }}>({n})</span>
-                </button>
-              ))}
-              {daftarJenjang.length === 0 && <span style={{ fontSize: 12, color: '#94a3b8' }}>Bank soal masih kosong.</span>}
+          <div style={{ ...gayaKartu, border: '1.5px solid #e0e7ff', background: '#faf5ff linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10, flexWrap: 'wrap', gap: 6 }}>
+              <div style={{ ...gayaJudulKartu, marginBottom: 0, display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ fontSize: 15 }}>🏫</span>
+                <span>1 · Jenjang Pendidikan</span>
+                <span style={{ fontSize: 11, fontWeight: 700, color: '#4338ca', background: '#e0e7ff', padding: '2px 8px', borderRadius: 99 }}>
+                  Pilih Target Kelas Siswa
+                </span>
+              </div>
+              <span style={{ fontSize: 11, color: '#64748b' }}>
+                Total Bank Soal Tersedia: <b style={{ color: '#0f172a' }}>{bankSoal.length} Butir</b>
+              </span>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 10 }}>
+              {daftarJenjang.map((j) => {
+                const aktif = jenjangAktif === j.id;
+                return (
+                  <button
+                    key={j.id}
+                    type="button"
+                    onClick={() => {
+                      setJenjangAktif(j.id);
+                      const defMapel = j.id === 'SMA' ? 'Pengetahuan Kuantitatif' : 'Matematika';
+                      setMapelAktif(defMapel);
+                      setBabAktif('');
+                    }}
+                    style={{
+                      textAlign: 'left',
+                      borderRadius: 12,
+                      padding: '12px 14px',
+                      cursor: 'pointer',
+                      border: aktif ? '2px solid #4f46e5' : '1.5px solid #e2e8f0',
+                      background: aktif ? '#eef2ff' : '#ffffff',
+                      boxShadow: aktif ? '0 4px 12px rgba(79, 70, 229, 0.15)' : '0 1px 3px rgba(0,0,0,0.04)',
+                      transition: 'all 0.15s ease',
+                    }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <span style={{ fontSize: 22 }}>{j.icon}</span>
+                        <div>
+                          <div style={{ fontSize: 13.5, fontWeight: 800, color: aktif ? '#312e81' : '#0f172a' }}>
+                            {j.label}
+                          </div>
+                          <div style={{ fontSize: 11, color: aktif ? '#4338ca' : '#64748b', marginTop: 2 }}>
+                            {j.deskripsi}
+                          </div>
+                        </div>
+                      </div>
+                      <span
+                        style={{
+                          fontSize: 10.5,
+                          fontWeight: 800,
+                          padding: '3px 8px',
+                          borderRadius: 99,
+                          background: aktif ? '#4f46e5' : '#f1f5f9',
+                          color: aktif ? '#ffffff' : '#475569',
+                          whiteSpace: 'nowrap',
+                        }}
+                      >
+                        {j.jumlah} soal
+                      </span>
+                    </div>
+                  </button>
+                );
+              })}
             </div>
           </div>
 
           {jenjangAktif && (
-          <div style={gayaKartu}>
-            <div style={gayaJudulKartu}>2 · Mata pelajaran pada {jenjangAktif}</div>
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-              {daftarMapel.map(([m, n]) => (
-                <button key={m} style={gayaPill(mapelAktif === m)} onClick={() => { setMapelAktif(m); setBabAktif(''); }}>
-                  {m} <span style={{ opacity: 0.6 }}>({n})</span>
-                </button>
-              ))}
+            <div style={gayaKartu}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10, flexWrap: 'wrap', gap: 6 }}>
+                <div style={gayaJudulKartu}>
+                  2 · Mata Pelajaran pada <span style={{ color: '#4f46e5' }}>{daftarJenjang.find((d) => d.id === jenjangAktif)?.label || jenjangAktif}</span>
+                </div>
+                <span style={{ fontSize: 11, color: '#64748b' }}>Klik mapel untuk membuka daftar bab silabus</span>
+              </div>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                {daftarMapel.map((m) => {
+                  const aktif = mapelAktif.toLowerCase() === m.nama.toLowerCase();
+                  return (
+                    <button
+                      key={m.nama}
+                      type="button"
+                      onClick={() => {
+                        setMapelAktif(m.nama);
+                        setBabAktif('');
+                      }}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 8,
+                        padding: '8px 14px',
+                        borderRadius: 999,
+                        fontSize: 12,
+                        fontWeight: aktif ? 800 : 600,
+                        cursor: 'pointer',
+                        border: aktif ? '1.5px solid #4f46e5' : '1px solid #cbd5e1',
+                        background: aktif ? '#4f46e5' : '#ffffff',
+                        color: aktif ? '#ffffff' : '#334155',
+                        boxShadow: aktif ? '0 2px 6px rgba(79, 70, 229, 0.25)' : 'none',
+                        transition: 'all 0.15s ease',
+                      }}
+                    >
+                      <span>{m.icon || '📚'}</span>
+                      <span>{m.nama}</span>
+                      <span
+                        style={{
+                          fontSize: 11,
+                          opacity: aktif ? 0.95 : 0.65,
+                          background: aktif ? 'rgba(255,255,255,0.22)' : '#f1f5f9',
+                          padding: '1px 7px',
+                          borderRadius: 99,
+                        }}
+                      >
+                        {m.jumlah}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
-          </div>
           )}
 
           {mapelAktif && (
             <div style={gayaKartu}>
-              <div style={gayaJudulKartu}>3 · Pilih topik / materi pada {mapelAktif}</div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10, flexWrap: 'wrap', gap: 6 }}>
+                <div style={gayaJudulKartu}>
+                  3 · Pilih Bab / Materi Silabus <span style={{ color: '#0f766e' }}>{mapelAktif}</span>
+                </div>
+                <div style={{ fontSize: 11.5, color: '#64748b' }}>
+                  <b>{daftarBab.length}</b> Bab Kurikulum Tersedia
+                </div>
+              </div>
               <input
                 value={cariMateri}
                 onChange={(e) => setCariMateri(e.target.value)}
-                placeholder="cari materi…"
-                style={{ width: '100%', padding: '9px 12px', border: '1px solid #d1d5db', borderRadius: 10, fontSize: 12.5, marginBottom: 10 }}
+                placeholder="🔍 Cari bab materi (contoh: Bilangan, Aljabar, Geometri, Statistika)..."
+                style={{ width: '100%', padding: '9px 12px', border: '1px solid #d1d5db', borderRadius: 10, fontSize: 12.5, marginBottom: 12 }}
               />
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(215px, 1fr))', gap: 10 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(230px, 1fr))', gap: 10 }}>
                 {daftarBab
                   .filter(([b]) => !cariMateri.trim() || b.toLowerCase().includes(cariMateri.trim().toLowerCase()))
-                  .map(([b, n]) => (
-                    <button
-                      key={b}
-                      onClick={() => { setBabAktif(b); setKelasFilter(''); setIndeksPreview(0); }}
-                      style={{
-                        textAlign: 'left', borderRadius: 12, padding: '11px 13px', cursor: 'pointer',
-                        border: `1.5px solid ${babAktif === b ? '#5B2ECC' : '#e5e7eb'}`,
-                        background: babAktif === b ? '#f5f3ff' : '#fff',
-                      }}
-                    >
-                      <div style={{ fontSize: 12.5, fontWeight: 800, color: '#0f172a', lineHeight: 1.4 }}>{b}</div>
-                      <div style={{ fontSize: 11, color: '#64748b', marginTop: 3 }}>{n} soal</div>
-                    </button>
-                  ))}
+                  .map(([b, n]) => {
+                    const aktif = babAktif === b;
+                    return (
+                      <button
+                        key={b}
+                        type="button"
+                        onClick={() => { setBabAktif(b); setKelasFilter(''); setIndeksPreview(0); }}
+                        style={{
+                          textAlign: 'left', borderRadius: 12, padding: '12px 14px', cursor: 'pointer',
+                          border: `1.5px solid ${aktif ? '#0f766e' : '#e5e7eb'}`,
+                          background: aktif ? '#f0fdfa' : '#fff',
+                          boxShadow: aktif ? '0 3px 8px rgba(15, 118, 110, 0.15)' : 'none',
+                          transition: 'all 0.15s ease',
+                        }}
+                      >
+                        <div style={{ fontSize: 12.5, fontWeight: 800, color: aktif ? '#042f2e' : '#0f172a', lineHeight: 1.4 }}>
+                          {b}
+                        </div>
+                        <div style={{ fontSize: 11, color: aktif ? '#0d9488' : '#64748b', marginTop: 4, display: 'flex', alignItems: 'center', gap: 4 }}>
+                          <span>📚</span>
+                          <span>{n} butir soal siap uji</span>
+                        </div>
+                      </button>
+                    );
+                  })}
                 {daftarBab.filter(([b]) => !cariMateri.trim() || b.toLowerCase().includes(cariMateri.trim().toLowerCase())).length === 0 && (
-                  <div style={{ fontSize: 12, color: '#94a3b8' }}>Tidak ada materi yang cocok dengan pencarian.</div>
+                  <div style={{ gridColumn: '1 / -1', padding: 16, background: '#f8fafc', borderRadius: 10, textAlign: 'center', color: '#64748b', fontSize: 12.5 }}>
+                    Belum ada butir soal tersimpan untuk materi ini. Guru dapat mengunggah soal atau memilih materi silabus lainnya.
+                  </div>
                 )}
               </div>
             </div>

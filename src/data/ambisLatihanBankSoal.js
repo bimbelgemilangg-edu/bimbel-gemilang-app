@@ -891,12 +891,64 @@ export function normalisasiButir(item, fallbackSubtes = 'PU', fallbackTopik = 'U
   if (item.bacaan_gambar) tambahGambarUnik(item.bacaan_gambar);
   if (item.bacaanGambar) tambahGambarUnik(item.bacaanGambar);
 
+  const inferJenjang = () => {
+    if (item.jenjang && String(item.jenjang).trim() && String(item.jenjang).trim() !== '(Belum diatur)') {
+      const sj = String(item.jenjang).toUpperCase();
+      if (sj.includes('SD')) return 'SD';
+      if (sj.includes('SMA') || sj.includes('UTBK') || sj.includes('SNBT') || sj.includes('SMK')) return 'SMA';
+      return 'SMP';
+    }
+    const sk = String(item.kelas || item.kelasSekolah || '').trim();
+    if (['10', '11', '12'].includes(sk)) return 'SMA';
+    if (['1', '2', '3', '4', '5', '6'].includes(sk)) return 'SD';
+    if (['PU', 'PPU', 'PBM', 'PK', 'LBIN', 'LBING', 'PM'].includes(kodeSubtes)) return 'SMA';
+    if (['MTK', 'BIN', 'IPA', 'BIG'].includes(kodeSubtes)) return 'SMP';
+    return 'SMP';
+  };
+
+  const inferMapel = () => {
+    if (item.mataPelajaran && String(item.mataPelajaran).trim() && String(item.mataPelajaran).trim() !== '(Belum diatur)') {
+      return String(item.mataPelajaran).trim();
+    }
+    if (item.mapel && String(item.mapel).trim() && String(item.mapel).trim() !== '(Belum diatur)') {
+      return String(item.mapel).trim();
+    }
+    if (kodeSubtes === 'MTK') return 'Matematika';
+    if (kodeSubtes === 'BIN') return 'Bahasa Indonesia';
+    if (kodeSubtes === 'IPA') return 'IPA';
+    if (kodeSubtes === 'BIG') return 'Bahasa Inggris';
+    if (kodeSubtes === 'PU') return 'Penalaran Umum';
+    if (kodeSubtes === 'PK') return 'Pengetahuan Kuantitatif';
+    if (kodeSubtes === 'PBM') return 'Pemahaman Bacaan & Menulis';
+    if (kodeSubtes === 'PPU') return 'Pengetahuan & Pemahaman Umum';
+    if (kodeSubtes === 'PM') return 'Penalaran Matematika';
+    if (kodeSubtes === 'LBIN') return 'Literasi Bahasa Indonesia';
+    if (kodeSubtes === 'LBING') return 'Literasi Bahasa Inggris';
+    return 'Matematika';
+  };
+
+  const inferMateri = () => {
+    if (item.materi && String(item.materi).trim() && String(item.materi).trim() !== '(Belum diatur)') {
+      return String(item.materi).trim();
+    }
+    return item.namaBab || item.bab || fallbackTopik || topik || 'Materi Inti';
+  };
+
+  const jenjangFix = inferJenjang();
+  const mapelFix = inferMapel();
+  const materiFix = inferMateri();
+
   const hasilMentah = {
     id: String(item.id || `latihan_${kodeSubtes.toLowerCase()}_${idx}`),
     subtesKode: kodeSubtes,
-    topik,
+    topik: materiFix,
+    materi: materiFix,
+    bab: materiFix,
+    namaBab: item.namaBab || materiFix,
     babNomor: item.babNomor || null,
-    namaBab: item.namaBab || item.bab || fallbackTopik,
+    jenjang: jenjangFix,
+    mataPelajaran: mapelFix,
+    mapel: mapelFix,
     tipeSoal,
     soal: finalSoal,
     wacana: teksWacana || null,
@@ -1387,6 +1439,36 @@ export function susunBankSoalLatihanUtbk(bankSoalFirestore = []) {
 }
 
 export const BANK_SOAL_LATIHAN_UTBK = susunBankSoalLatihanUtbk();
+
+/**
+ * Pembangun Bank Soal Lengkap Multi-Jenjang (SMP + SMA/UTBK + SD)
+ * Menyatukan seluruh dataset resmi Bimbel Gemilang dan Firestore
+ */
+export function susunSemuaBankSoalLatihan(bankSoalFirestore = []) {
+  const smp = susunBankSoalLatihanSmp(bankSoalFirestore);
+  const utbk = susunBankSoalLatihanUtbk(bankSoalFirestore);
+  const sd = susunBankSoalLatihanSd(bankSoalFirestore);
+  const bank = [];
+  const idsSudahAda = new Set();
+  [...smp, ...utbk, ...sd].forEach((b) => {
+    if (b && b.id && !idsSudahAda.has(b.id)) {
+      idsSudahAda.add(b.id);
+      bank.push(b);
+    }
+  });
+
+  if (Array.isArray(bankSoalFirestore) && bankSoalFirestore.length > 0) {
+    bankSoalFirestore.forEach((s) => {
+      const b = normalisasiButir(s);
+      if (b && b.id && !idsSudahAda.has(b.id)) {
+        idsSudahAda.add(b.id);
+        bank.push(b);
+      }
+    });
+  }
+
+  return bank;
+}
 
 // ==============================================================================
 // 5. QUERY DAN GENERATOR PAKET LATIHAN ADAPTIF
