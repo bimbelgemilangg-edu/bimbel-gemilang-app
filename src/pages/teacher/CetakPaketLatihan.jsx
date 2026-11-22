@@ -491,7 +491,7 @@ export default function CetakPaketLatihan() {
   };
 
   const handleBantuAstroGemilang = (babTargetManual = null) => {
-    let targetBab = babTargetManual || babAktif;
+    let targetBab = (babTargetManual || babAktif || '').trim();
     if (!targetBab) {
       if (daftarBab.length > 0) {
         const babBil = daftarBab.find(([b]) => b.toLowerCase().includes('bilangan'));
@@ -499,19 +499,54 @@ export default function CetakPaketLatihan() {
       } else {
         targetBab = 'Bilangan (Bulat, Pecahan, Berpangkat, & Bentuk Akar)';
       }
-      setBabAktif(targetBab);
     }
+    setBabAktif(targetBab);
     if (!jenjangAktif) setJenjangAktif('SMP');
     if (!mapelAktif) setMapelAktif('Matematika');
 
-    let kandidat = (soalBankTampil && soalBankTampil.length > 0) ? soalBankTampil : soalDiBab;
-    if (!kandidat || kandidat.length === 0) {
-      kandidat = bankSoal.filter((s) => {
-        const m = (s?.materi || s?.bab || s?.topik || '').toLowerCase();
-        return m.includes('bilangan') || m.includes('hitung') || m.includes('numerasi') || m.includes(targetBab.toLowerCase().slice(0, 8));
+    // 1. Kumpulkan butir soal yang sesuai jenjang dan mata pelajaran
+    const poolJenjangMapel = bankSoal.filter((s) => {
+      const norm = normalisasiMetaSoal(s);
+      const matchJ = !jenjangAktif || norm.jenjang === jenjangAktif;
+      const matchM = !mapelAktif || norm.mataPelajaran.toLowerCase() === mapelAktif.toLowerCase();
+      return matchJ && matchM;
+    });
+
+    const stopWords = new Set(['dan', 'atau', 'yang', 'di', 'ke', 'dari', 'pada', 'untuk', 'dengan', '&', '-', '/']);
+    const targetTokens = targetBab.toLowerCase().split(/[\s,\-\/]+/).filter((t) => t.length > 1 && !stopWords.has(t));
+
+    // 2. Beri skor relevansi semantik berdasarkan kemunculan token di materi, soal, opsi, & pembahasan
+    let kandidat = poolJenjangMapel.map((s) => {
+      const norm = normalisasiMetaSoal(s);
+      const teksMateri = (norm.materi + ' ' + (norm.namaBab || '') + ' ' + (s.topik || '')).toLowerCase();
+      const teksSoal = (s.soalTeksBersih || s.soal || s.teksSoal || '').toLowerCase();
+      const teksPembahasan = String(s.pembahasan || '').toLowerCase();
+
+      let skor = 0;
+      targetTokens.forEach((tok) => {
+        if (teksMateri.includes(tok)) skor += 12;
+        if (teksSoal.includes(tok)) skor += 6;
+        if (teksPembahasan.includes(tok)) skor += 3;
+      });
+
+      return { soal: s, skor };
+    }).filter((item) => item.skor > 0)
+      .sort((a, b) => b.skor - a.skor)
+      .map((item) => item.soal);
+
+    // 3. Jika pencarian spesifik belum mencukupi 10 soal, tambahkan dari pool yang relevan
+    if (kandidat.length < 10) {
+      const idsSudah = new Set(kandidat.map((s) => s.id));
+      const poolFallback = (soalDiBab && soalDiBab.length > 0) ? soalDiBab : poolJenjangMapel;
+      poolFallback.forEach((s) => {
+        if (!idsSudah.has(s.id)) {
+          idsSudah.add(s.id);
+          kandidat.push(s);
+        }
       });
     }
-    if ((!kandidat || kandidat.length === 0) && bankSoal.length > 0) {
+
+    if (kandidat.length === 0 && bankSoal.length > 0) {
       kandidat = bankSoal;
     }
 
@@ -810,6 +845,40 @@ export default function CetakPaketLatihan() {
     }
     return [...hitung.entries()].sort((a, b) => a[0].localeCompare(b[0], 'id'));
   }, [bankSoal, jenjangAktif, mapelAktif]);
+
+  // Pencarian Cerdas Multi-Token Bab / Materi (Fuzzy + Anti-Stopwords)
+  const daftarBabTerfilter = useMemo(() => {
+    const q = cariMateri.trim().toLowerCase();
+    if (!q) return daftarBab;
+
+    const stopWords = new Set(['dan', 'atau', 'yang', 'di', 'ke', 'dari', 'pada', 'untuk', 'dengan', '&', '-', '/']);
+    const tokens = q.split(/[\s,\-\/]+/).filter((t) => t.length > 1 && !stopWords.has(t));
+
+    if (tokens.length === 0) {
+      return daftarBab.filter(([b]) => b.toLowerCase().includes(q));
+    }
+
+    const skorList = [];
+    for (const [b, count] of daftarBab) {
+      const bLow = b.toLowerCase();
+      let matchCount = 0;
+      const exactSub = bLow.includes(q) ? 10 : 0;
+
+      for (const tok of tokens) {
+        if (bLow.includes(tok)) {
+          matchCount++;
+        }
+      }
+
+      if (matchCount > 0 || exactSub > 0) {
+        const score = exactSub + (matchCount * 2);
+        skorList.push({ bab: b, count, score, matchCount });
+      }
+    }
+
+    skorList.sort((a, b) => b.score - a.score || b.matchCount - a.matchCount || b.count - a.count);
+    return skorList.map((item) => [item.bab, item.count]);
+  }, [daftarBab, cariMateri]);
 
   // Otomatis pasang bab default jika belum ada bab terpilih
   useEffect(() => {
@@ -1398,43 +1467,107 @@ export default function CetakPaketLatihan() {
                   <b>{daftarBab.length}</b> Bab Kurikulum Tersedia
                 </div>
               </div>
-              <input
-                value={cariMateri}
-                onChange={(e) => setCariMateri(e.target.value)}
-                placeholder="🔍 Cari bab materi (contoh: Bilangan, Aljabar, Geometri, Statistika)..."
-                style={{ width: '100%', padding: '9px 12px', border: '1px solid #d1d5db', borderRadius: 10, fontSize: 12.5, marginBottom: 12 }}
-              />
+              {/* Input Pencarian Cerdas + Tombol AI Astro */}
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 12, flexWrap: 'wrap' }}>
+                <div style={{ position: 'relative', flex: 1, minWidth: 260 }}>
+                  <input
+                    value={cariMateri}
+                    onChange={(e) => setCariMateri(e.target.value)}
+                    placeholder="🔍 Cari bab materi (contoh: Bilangan, Aljabar, Geometri, Statistika)..."
+                    style={{ width: '100%', padding: '10px 34px 10px 14px', border: '1.5px solid #cbd5e1', borderRadius: 10, fontSize: 13, background: '#ffffff', boxSizing: 'border-box' }}
+                  />
+                  {cariMateri && (
+                    <button
+                      type="button"
+                      onClick={() => setCariMateri('')}
+                      style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', background: 'transparent', border: 'none', color: '#94a3b8', cursor: 'pointer', fontSize: 15 }}
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+                {cariMateri.trim() && (
+                  <button
+                    type="button"
+                    onClick={() => handleBantuAstroGemilang(cariMateri.trim())}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 7,
+                      padding: '10px 18px',
+                      borderRadius: 10,
+                      background: '#042f2e linear-gradient(135deg, #042f2e 0%, #064e3b 100%)',
+                      color: '#fef08a',
+                      border: '1.5px solid #2dd4bf',
+                      fontSize: 12.5,
+                      fontWeight: 800,
+                      cursor: 'pointer',
+                      whiteSpace: 'nowrap',
+                      boxShadow: '0 2px 8px rgba(4, 47, 46, 0.25)',
+                    }}
+                  >
+                    <span>✨</span>
+                    <span>Minta AI Carikan Soal "{cariMateri.slice(0, 18)}{cariMateri.length > 18 ? '…' : ''}"</span>
+                  </button>
+                )}
+              </div>
+
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(230px, 1fr))', gap: 10 }}>
-                {daftarBab
-                  .filter(([b]) => !cariMateri.trim() || b.toLowerCase().includes(cariMateri.trim().toLowerCase()))
-                  .map(([b, n]) => {
-                    const aktif = babAktif === b;
-                    return (
-                      <button
-                        key={b}
-                        type="button"
-                        onClick={() => { setBabAktif(b); setKelasFilter(''); setIndeksPreview(0); }}
-                        style={{
-                          textAlign: 'left', borderRadius: 12, padding: '12px 14px', cursor: 'pointer',
-                          border: `1.5px solid ${aktif ? '#0f766e' : '#e5e7eb'}`,
-                          background: aktif ? '#f0fdfa' : '#fff',
-                          boxShadow: aktif ? '0 3px 8px rgba(15, 118, 110, 0.15)' : 'none',
-                          transition: 'all 0.15s ease',
-                        }}
-                      >
-                        <div style={{ fontSize: 12.5, fontWeight: 800, color: aktif ? '#042f2e' : '#0f172a', lineHeight: 1.4 }}>
-                          {b}
-                        </div>
-                        <div style={{ fontSize: 11, color: aktif ? '#0d9488' : '#64748b', marginTop: 4, display: 'flex', alignItems: 'center', gap: 4 }}>
-                          <span>📚</span>
-                          <span>{n} butir soal siap uji</span>
-                        </div>
-                      </button>
-                    );
-                  })}
-                {daftarBab.filter(([b]) => !cariMateri.trim() || b.toLowerCase().includes(cariMateri.trim().toLowerCase())).length === 0 && (
-                  <div style={{ gridColumn: '1 / -1', padding: 16, background: '#f8fafc', borderRadius: 10, textAlign: 'center', color: '#64748b', fontSize: 12.5 }}>
-                    Belum ada butir soal tersimpan untuk materi ini. Guru dapat mengunggah soal atau memilih materi silabus lainnya.
+                {daftarBabTerfilter.map(([b, n]) => {
+                  const aktif = babAktif === b;
+                  return (
+                    <button
+                      key={b}
+                      type="button"
+                      onClick={() => { setBabAktif(b); setKelasFilter(''); setIndeksPreview(0); }}
+                      style={{
+                        textAlign: 'left', borderRadius: 12, padding: '12px 14px', cursor: 'pointer',
+                        border: `1.5px solid ${aktif ? '#0f766e' : '#e5e7eb'}`,
+                        background: aktif ? '#f0fdfa' : '#fff',
+                        boxShadow: aktif ? '0 3px 8px rgba(15, 118, 110, 0.15)' : 'none',
+                        transition: 'all 0.15s ease',
+                      }}
+                    >
+                      <div style={{ fontSize: 12.5, fontWeight: 800, color: aktif ? '#042f2e' : '#0f172a', lineHeight: 1.4 }}>
+                        {b}
+                      </div>
+                      <div style={{ fontSize: 11, color: aktif ? '#0d9488' : '#64748b', marginTop: 4, display: 'flex', alignItems: 'center', gap: 4 }}>
+                        <span>📚</span>
+                        <span>{n} butir soal siap uji</span>
+                      </div>
+                    </button>
+                  );
+                })}
+                {daftarBabTerfilter.length === 0 && (
+                  <div style={{ gridColumn: '1 / -1', padding: 22, background: '#f8fafc', border: '1.5px dashed #cbd5e1', borderRadius: 12, textAlign: 'center' }}>
+                    <div style={{ fontSize: 26, marginBottom: 8 }}>🤖</div>
+                    <div style={{ fontSize: 14, fontWeight: 800, color: '#0f172a', marginBottom: 4 }}>
+                      Ingin Astro Gemilang mencari soal materi "{cariMateri}" dari seluruh Bank Soal?
+                    </div>
+                    <div style={{ fontSize: 12, color: '#64748b', maxWidth: 520, margin: '0 auto 16px', lineHeight: 1.5 }}>
+                      Astro Gemilang akan memindai teks pertanyaan, wacana, rumus, dan pembahasan di seluruh {bankSoal.length} butir bank soal untuk mengkurasi 10 soal terbaik materi ini.
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleBantuAstroGemilang(cariMateri.trim())}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 8,
+                        padding: '11px 22px',
+                        borderRadius: 10,
+                        background: '#fef08a linear-gradient(180deg, #fef08a 0%, #fde047 100%)',
+                        color: '#713f12',
+                        border: '1.5px solid #ca8a04',
+                        fontSize: 13,
+                        fontWeight: 900,
+                        cursor: 'pointer',
+                        boxShadow: '0 4px 12px rgba(202, 138, 4, 0.25)',
+                      }}
+                    >
+                      <span>✨</span>
+                      <span>Minta AI Astro Gemilang Carikan 10 Soal Sekarang</span>
+                    </button>
                   </div>
                 )}
               </div>
