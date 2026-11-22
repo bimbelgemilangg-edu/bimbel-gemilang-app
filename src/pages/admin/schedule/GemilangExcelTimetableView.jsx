@@ -15,7 +15,8 @@ export default function GemilangExcelTimetableView({
   isDarkMode = false,
   onOpenModal,
   onOpenDetailModal,
-  onOpenPindahRuang
+  onOpenPindahRuang,
+  onDeleteSchedule
 }) {
   const [subView, setSubView] = useState('per_kelas'); // 'per_kelas' | 'per_tentor'
 
@@ -236,6 +237,14 @@ export default function GemilangExcelTimetableView({
                         >
                           👁️
                         </button>
+                        <button
+                          type="button"
+                          onClick={() => onDeleteSchedule && onDeleteSchedule(s)}
+                          style={{ ...styles.btnActionIcon, color: '#ef4444' }}
+                          title="Hapus Jadwal"
+                        >
+                          🗑️
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -368,6 +377,14 @@ export default function GemilangExcelTimetableView({
                           title="Pindah Ruangan"
                         >
                           🔄
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => onDeleteSchedule && onDeleteSchedule(s)}
+                          style={{ ...styles.btnActionIcon, color: '#ef4444' }}
+                          title="Hapus Jadwal"
+                        >
+                          🗑️
                         </button>
                       </div>
                     </div>

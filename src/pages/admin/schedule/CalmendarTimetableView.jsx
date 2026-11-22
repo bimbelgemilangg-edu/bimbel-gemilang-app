@@ -614,6 +614,14 @@ export default function CalmendarTimetableView({
                             >
                               <Edit3 size={11} style={{ marginRight: 3 }} /> Edit
                             </button>
+                            <button
+                              type="button"
+                              onClick={() => onDeleteSchedule && onDeleteSchedule(item)}
+                              style={styles.btnCardActionDelete}
+                              title="Hapus Jadwal"
+                            >
+                              <Trash2 size={11} style={{ marginRight: 3 }} /> Hapus
+                            </button>
                           </div>
                         )}
                       </div>
@@ -746,6 +754,18 @@ export default function CalmendarTimetableView({
                 style={styles.btnPopupEdit}
               >
                 <Edit3 size={14} /> Edit
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  const s = activePopupSession;
+                  setActivePopupSession(null);
+                  if (onDeleteSchedule) onDeleteSchedule(s);
+                }}
+                style={styles.btnPopupHapus}
+              >
+                <Trash2 size={14} /> Hapus Jadwal
               </button>
             </div>
           </div>
@@ -1047,6 +1067,20 @@ const styles = {
     alignItems: 'center',
     justifyContent: 'center'
   },
+  btnCardActionDelete: {
+    flex: 1,
+    padding: '4px 6px',
+    borderRadius: 5,
+    background: '#dc2626',
+    color: '#ffffff',
+    border: 'none',
+    fontSize: 9.5,
+    fontWeight: 800,
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
 
   // POPOVER STYLES
   popupOverlay: {
@@ -1170,6 +1204,21 @@ const styles = {
     background: '#f1f5f9',
     color: '#334155',
     border: 'none',
+    fontSize: 11.5,
+    fontWeight: 800,
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6
+  },
+  btnPopupHapus: {
+    flex: 1,
+    padding: '9px 12px',
+    borderRadius: 10,
+    background: '#fee2e2',
+    color: '#dc2626',
+    border: '1px solid #fca5a5',
     fontSize: 11.5,
     fontWeight: 800,
     cursor: 'pointer',

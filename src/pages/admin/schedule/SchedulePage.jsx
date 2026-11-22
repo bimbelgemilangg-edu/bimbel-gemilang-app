@@ -1774,6 +1774,7 @@ const SchedulePage = () => {
                 onOpenModal={handleOpenModal}
                 onOpenDetailModal={item => setDetailSchedule(item)}
                 onOpenPindahRuang={item => setSessionToPindah(item)}
+                onDeleteSchedule={handleDeleteSchedule}
               />
             )}
 
@@ -1984,10 +1985,25 @@ const SchedulePage = () => {
                 )}
 
                 <div style={styles.modalFooter}>
-                  <button type="button" onClick={() => setIsModalOpen(false)} style={styles.btnCancel}>Batal</button>
-                  <button type="submit" style={styles.btnSave}>
-                    <Save size={16} /> {editId ? 'Perbarui Sesi' : (scheduleMode === 'draft' ? 'Simpan ke Draft' : 'Simpan Jadwal')}
-                  </button>
+                  {editId && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const itemToDelete = currentActiveSchedules.find(s => s.id === editId) || { id: editId, seriesId: editingSeriesId, dateStr: selectedDateStr };
+                        setIsModalOpen(false);
+                        handleDeleteSchedule(itemToDelete);
+                      }}
+                      style={styles.btnDeleteModal}
+                    >
+                      <Trash2 size={15} /> Hapus Jadwal
+                    </button>
+                  )}
+                  <div style={{ display: 'flex', gap: 8, marginLeft: editId ? 'auto' : 0, width: editId ? 'auto' : '100%' }}>
+                    <button type="button" onClick={() => setIsModalOpen(false)} style={styles.btnCancel}>Batal</button>
+                    <button type="submit" style={styles.btnSave}>
+                      <Save size={16} /> {editId ? 'Perbarui Sesi' : (scheduleMode === 'draft' ? 'Simpan ke Draft' : 'Simpan Jadwal')}
+                    </button>
+                  </div>
                 </div>
               </form>
             </div>
@@ -2366,6 +2382,7 @@ const styles = {
   modalFooter: { display: 'flex', gap: 10, marginTop: 14, paddingTop: 12, borderTop: '1px solid #f1f5f9' },
   btnCancel: { flex: 1, padding: 10, borderRadius: 10, border: '1px solid #e2e8f0', background: 'white', fontWeight: 700, fontSize: 12, cursor: 'pointer', color: '#64748b' },
   btnSave: { flex: 2, padding: 10, borderRadius: 10, border: 'none', background: '#4f46e5', color: 'white', fontWeight: 800, fontSize: 12.5, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 },
+  btnDeleteModal: { padding: '9px 14px', borderRadius: 10, border: '1px solid #fecaca', background: '#fee2e2', color: '#dc2626', fontWeight: 800, fontSize: 12, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap' },
   seriesNotice: { background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 8, padding: 10 },
 
   detailContent: { display: 'flex', flexDirection: 'column', gap: 8 },
