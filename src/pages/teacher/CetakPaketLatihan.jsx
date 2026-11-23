@@ -505,7 +505,7 @@ export default function CetakPaketLatihan() {
     alert(statusBaru ? `🔓 Akses Dibuka!\n\nPaket "${pkt.judul}" kini dibuka untuk siswa di kelas.` : `🔒 Akses Ditutup!\n\nPaket "${pkt.judul}" kini dikunci dari siswa.`);
   };
 
-  const handleBantuAstroGemilang = (babTargetManual = null, subMateriIdManual = null) => {
+  const handleBantuAstroGemilang = async (babTargetManual = null, subMateriIdManual = null) => {
     const targetJenjang = jenjangAktif || 'SMP';
     const targetMapel = mapelAktif || 'Matematika';
     const targetBabNomor = babAktifObj?.babNomor || 1;
@@ -518,15 +518,26 @@ export default function CetakPaketLatihan() {
     setAstroStep(1); // Langkah 1: Memindai Bank Soal
     setAstroReport(null);
 
+    let activePool = bankSoal;
+    // Jika bankSoal masih kosong atau sedang sinkronisasi awal, tunggu pemuatan cloud
+    if (!activePool || activePool.length === 0) {
+      try {
+        await muatSemua(true);
+        activePool = cacheBank || bankSoal;
+      } catch (err) {
+        console.warn('Fallback muat bank soal:', err);
+      }
+    }
+
     // Langkah 2: Audit Silabus (Eliminasi soal salah kamar)
     setTimeout(() => {
       setAstroStep(2);
 
-      // Langkah 3: Deduplikasi & Mix Soal HOTS AI
+      // Langkah 3: Deduplikasi & Seleksi Butir Otentik TKA
       setTimeout(() => {
         setAstroStep(3);
 
-        // Langkah 4: Kalibrasi Bobot Kognitif TKA & Verifikasi KaTeX
+        // Langkah 4: Auto-Mix Soal HOTS AI & Kalibrasi KaTeX
         setTimeout(() => {
           setAstroStep(4);
 
@@ -536,7 +547,7 @@ export default function CetakPaketLatihan() {
             babNomor: targetBabNomor,
             subMateriId: targetSubId,
             subMateriNama: subObj?.label || '',
-            bankSoalPool: bankSoal,
+            bankSoalPool: activePool && activePool.length > 0 ? activePool : bankSoal,
             targetJumlah: 10,
           });
 
@@ -549,18 +560,23 @@ export default function CetakPaketLatihan() {
             setModeTampil('preview');
             setIndeksPreview(0);
 
+            const jumlahAsli = final10Healed.filter((s) => !s.isAiGenerated).length;
+            const jumlahAi = final10Healed.filter((s) => s.isAiGenerated).length;
+
             setAstroReport({
-              totalDipindai: bankSoal.length,
+              totalDipindai: (activePool && activePool.length) || bankSoal.length,
               dieliminasiSalahMateri: 0,
               dieliminasiKloning: 0,
               totalLolos: final10Healed.length,
               terpilih: final10Healed,
+              jumlahAsli,
+              jumlahAi,
               bab: `${babAktifObj?.namaBab} · ${subObj?.label}`,
             });
-          }, 500);
-        }, 600);
-      }, 600);
-    }, 700);
+          }, 800);
+        }, 900);
+      }, 900);
+    }, 1000);
   };
 
   const versiSegar = useSegarSaatTerlihat();
@@ -1078,14 +1094,80 @@ export default function CetakPaketLatihan() {
         <button style={gayaPill(sumber === 'paket')} onClick={() => setSumber('paket')}>📦 Paket Try Out saya ({paketList.length})</button>
       </div>
 
-      {memuat && (
+      {memuat && bankSoal.length > 0 && (
         <div style={{ fontSize: 11.5, color: '#0d9488', background: '#f0fdfa', border: '1px solid #ccfbf1', padding: '6px 14px', borderRadius: 8, display: 'inline-flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
-          <span>🔄 Menyinkronkan bank soal terbaru...</span>
+          <span>🔄 Menyinkronkan pembaruan cloud ({bankSoal.length} soal aktif di memori)...</span>
         </div>
       )}
 
       {sumber === 'bank' && (
         <>
+          {memuat && bankSoal.length === 0 ? (
+            <div style={{
+              background: '#ffffff',
+              borderRadius: 16,
+              padding: '48px 24px',
+              textAlign: 'center',
+              border: '1.5px solid #ccfbf1',
+              boxShadow: '0 4px 20px rgba(13, 148, 136, 0.08)',
+              margin: '16px 0 24px',
+            }}>
+              <div style={{
+                width: 68,
+                height: 68,
+                borderRadius: '50%',
+                background: 'linear-gradient(135deg, #f0fdfa 0%, #ccfbf1 100%)',
+                border: '2px solid #2dd4bf',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: 32,
+                margin: '0 auto 16px',
+                boxShadow: '0 4px 12px rgba(13, 148, 136, 0.15)',
+              }}>
+                ⏳
+              </div>
+              <h3 style={{ margin: '0 0 8px', fontSize: 18, fontWeight: 900, color: '#0f766e' }}>
+                Menyiapkan & Menyinkronkan Bank Soal Gemilang...
+              </h3>
+              <p style={{ margin: '0 auto 20px', maxWidth: 540, fontSize: 13, color: '#475569', lineHeight: 1.6 }}>
+                Sistem sedang mengunduh dan menyusun arsip bank soal resmi (TKA SMP, ASPD DIY, & UTBK SNBT) langsung dari database cloud. Mohon tunggu sejenak agar kurasi dan penyusunan soal menghasilkan butir berkualitas tinggi.
+              </p>
+
+              <div style={{ display: 'inline-flex', flexDirection: 'column', gap: 10, textAlign: 'left', background: '#f8fafc', padding: '16px 24px', borderRadius: 12, border: '1px solid #e2e8f0', marginBottom: 20 }}>
+                <div style={{ fontSize: 12.5, color: '#059669', display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span>✓</span> <b>Memeriksa Cache & Otentikasi Guru</b>
+                </div>
+                <div style={{ fontSize: 12.5, color: '#0d9488', display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span>🔄</span> <b>Menghubungkan & Mengunduh Bank Soal dari Firestore...</b>
+                </div>
+                <div style={{ fontSize: 12.5, color: '#64748b', display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span>⏳</span> <span>Menyiapkan Engine Kurasi & AI HOTS Mixer</span>
+                </div>
+              </div>
+
+              <div>
+                <button
+                  type="button"
+                  onClick={() => muatSemua(true)}
+                  style={{
+                    background: '#0d9488',
+                    border: 'none',
+                    color: '#ffffff',
+                    padding: '9px 20px',
+                    borderRadius: 8,
+                    fontSize: 12.5,
+                    fontWeight: 800,
+                    cursor: 'pointer',
+                    boxShadow: '0 2px 8px rgba(13, 148, 136, 0.25)',
+                  }}
+                >
+                  🔄 Muat Ulang Sekarang
+                </button>
+              </div>
+            </div>
+          ) : (
+            <>
           {/* 🤖 ASISTEN ASTRO GEMILANG BANNER UTAMA (SELALU MUNCUL DI ATAS) */}
           <div style={{
             background: 'linear-gradient(135deg, #042f2e 0%, #115e59 100%)',
@@ -1137,24 +1219,26 @@ export default function CetakPaketLatihan() {
               <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
                 <button
                   type="button"
+                  disabled={astroSedangBekerja || (memuat && bankSoal.length === 0)}
                   onClick={() => handleBantuAstroGemilang()}
                   style={{
-                    background: '#fef08a linear-gradient(180deg, #fef08a 0%, #fde047 100%)',
-                    color: '#713f12',
-                    border: '1.5px solid #ca8a04',
+                    background: (memuat && bankSoal.length === 0) ? '#64748b' : '#fef08a linear-gradient(180deg, #fef08a 0%, #fde047 100%)',
+                    color: (memuat && bankSoal.length === 0) ? '#ffffff' : '#713f12',
+                    border: (memuat && bankSoal.length === 0) ? '1.5px solid #475569' : '1.5px solid #ca8a04',
                     borderRadius: 10,
                     padding: '10px 18px',
                     fontSize: 13,
                     fontWeight: 900,
-                    cursor: 'pointer',
+                    cursor: (astroSedangBekerja || (memuat && bankSoal.length === 0)) ? 'not-allowed' : 'pointer',
                     display: 'flex',
                     alignItems: 'center',
                     gap: 8,
-                    boxShadow: '0 4px 12px rgba(202, 138, 4, 0.25)',
+                    boxShadow: (memuat && bankSoal.length === 0) ? 'none' : '0 4px 12px rgba(202, 138, 4, 0.25)',
+                    opacity: (memuat && bankSoal.length === 0) ? 0.7 : 1,
                   }}
                 >
-                  <span style={{ fontSize: 16 }}>✨</span>
-                  <span>Siapkan 10 Soal (Mix Bank Asli + AI HOTS)</span>
+                  <span style={{ fontSize: 16 }}>{astroSedangBekerja ? '🤖' : (memuat && bankSoal.length === 0) ? '⏳' : '✨'}</span>
+                  <span>{astroSedangBekerja ? 'AI Sedang Mengkurasi...' : (memuat && bankSoal.length === 0) ? 'Menyiapkan Bank Soal...' : 'Siapkan 10 Soal (Mix Bank Asli + AI HOTS)'}</span>
                 </button>
                 {keranjang.length > 0 && (
                   <button
@@ -1802,6 +1886,8 @@ export default function CetakPaketLatihan() {
             </div>
           )}
 
+            </>
+          )}
         </>
       )}
 
@@ -2372,7 +2458,7 @@ export default function CetakPaketLatihan() {
               {/* Stepper Progres AI Berpikir */}
               <div style={{ marginBottom: 20 }}>
                 <div style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#64748b', marginBottom: 12 }}>
-                  Tahapan Kurasi & Pembersihan Soal Materi: <span style={{ color: '#0f766e' }}>{babAktif}</span>
+                  Tahapan Kurasi & Pembersihan Soal Materi: <span style={{ color: '#0f766e' }}>{babAktifObj?.ringkas || babAktif}</span>
                 </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -2387,7 +2473,7 @@ export default function CetakPaketLatihan() {
                       {astroStep > 1 ? '✓' : '1'}
                     </div>
                     <div style={{ flex: 1, fontSize: 12.5, fontWeight: astroStep === 1 ? 800 : 600, color: astroStep >= 1 ? '#0f172a' : '#94a3b8' }}>
-                      Memindai & Mengindeks Bank Soal Materi {babAktif}
+                      Memindai & Mengindeks Bank Soal ({astroReport?.totalDipindai || bankSoal.length} butir) untuk {babAktifObj?.ringkas || babAktif}
                     </div>
                     {astroStep === 1 && <span style={{ fontSize: 11, color: '#0d9488', fontWeight: 700 }}>Sedang memindai...</span>}
                   </div>
@@ -2403,9 +2489,9 @@ export default function CetakPaketLatihan() {
                       {astroStep > 2 ? '✓' : '2'}
                     </div>
                     <div style={{ flex: 1, fontSize: 12.5, fontWeight: astroStep === 2 ? 800 : 600, color: astroStep >= 2 ? '#0f172a' : '#94a3b8' }}>
-                      Audit Silabus: Eliminasi Soal Salah Kamar (Statistika & Deret)
+                      Audit Silabus: Memastikan Kesesuaian Sub-Materi ({subMateriObj?.label || 'Topik Fokus'})
                     </div>
-                    {astroStep === 2 && <span style={{ fontSize: 11, color: '#0d9488', fontWeight: 700 }}>Mengeliminasi...</span>}
+                    {astroStep === 2 && <span style={{ fontSize: 11, color: '#0d9488', fontWeight: 700 }}>Mengaudit silabus...</span>}
                   </div>
 
                   {/* Step 3 */}
@@ -2419,9 +2505,9 @@ export default function CetakPaketLatihan() {
                       {astroStep > 3 ? '✓' : '3'}
                     </div>
                     <div style={{ flex: 1, fontSize: 12.5, fontWeight: astroStep === 3 ? 800 : 600, color: astroStep >= 3 ? '#0f172a' : '#94a3b8' }}>
-                      Deduplikasi Semantik: Deteksi Cerita Kloning & Varian Angka
+                      Penyaringan Butir Otentik TKA (ASPD / MKKS DIY Terverifikasi)
                     </div>
-                    {astroStep === 3 && <span style={{ fontSize: 11, color: '#0d9488', fontWeight: 700 }}>Mendeteksi kloning...</span>}
+                    {astroStep === 3 && <span style={{ fontSize: 11, color: '#0d9488', fontWeight: 700 }}>Menyeleksi butir otentik...</span>}
                   </div>
 
                   {/* Step 4 */}
@@ -2435,9 +2521,9 @@ export default function CetakPaketLatihan() {
                       {astroStep > 4 ? '✓' : '4'}
                     </div>
                     <div style={{ flex: 1, fontSize: 12.5, fontWeight: astroStep === 4 ? 800 : 600, color: astroStep >= 4 ? '#0f172a' : '#94a3b8' }}>
-                      Kalibrasi Bobot Kognitif TKA (3 Dasar, 5 Aplikasi, 2 HOTS)
+                      Auto-Mix Sintesis HOTS AI & Kalibrasi Rumus KaTeX
                     </div>
-                    {astroStep === 4 && <span style={{ fontSize: 11, color: '#0d9488', fontWeight: 700 }}>Menyeimbangkan...</span>}
+                    {astroStep === 4 && <span style={{ fontSize: 11, color: '#0d9488', fontWeight: 700 }}>Memadukan & kalibrasi...</span>}
                   </div>
                 </div>
               </div>
@@ -2448,34 +2534,34 @@ export default function CetakPaketLatihan() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
                     <span style={{ fontSize: 18 }}>✨</span>
                     <h4 style={{ margin: 0, fontSize: 14, fontWeight: 800, color: '#166534' }}>
-                      Laporan Audit Kurasi Berhasil!
+                      Laporan Audit & Kurasi AI Berhasil!
                     </h4>
                   </div>
                   <p style={{ margin: '0 0 12px', fontSize: 12, color: '#15803d', lineHeight: 1.45 }}>
-                    Astro Gemilang telah menyelesaikan kurasi bank soal materi <b>{astroReport.bab}</b>:
+                    Astro Gemilang telah menyelesaikan kurasi & peracikan 10 butir soal untuk materi <b>{astroReport.bab}</b>:
                   </p>
 
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8, marginBottom: 12 }}>
-                    <div style={{ background: '#ffffff', padding: '8px 10px', borderRadius: 8, border: '1px solid #bbf7d0' }}>
+                    <div style={{ background: '#ffffff', padding: '10px 12px', borderRadius: 8, border: '1px solid #bbf7d0' }}>
                       <div style={{ fontSize: 11, color: '#64748b' }}>Total Butir Dipindai</div>
                       <div style={{ fontSize: 15, fontWeight: 900, color: '#0f172a' }}>{astroReport.totalDipindai} Butir</div>
                     </div>
-                    <div style={{ background: '#ffffff', padding: '8px 10px', borderRadius: 8, border: '1px solid #fed7aa' }}>
-                      <div style={{ fontSize: 11, color: '#ea580c' }}>Salah Kamar Dibuang</div>
-                      <div style={{ fontSize: 15, fontWeight: 900, color: '#c2410c' }}>{astroReport.dieliminasiSalahMateri} Butir</div>
+                    <div style={{ background: '#ffffff', padding: '10px 12px', borderRadius: 8, border: '1px solid #bfdbfe' }}>
+                      <div style={{ fontSize: 11, color: '#2563eb' }}>Bank Asli TKA DIY</div>
+                      <div style={{ fontSize: 15, fontWeight: 900, color: '#1d4ed8' }}>{astroReport.jumlahAsli || 0} Butir Otentik</div>
                     </div>
-                    <div style={{ background: '#ffffff', padding: '8px 10px', borderRadius: 8, border: '1px solid #fecaca' }}>
-                      <div style={{ fontSize: 11, color: '#dc2626' }}>Kloning Dieliminasi</div>
-                      <div style={{ fontSize: 15, fontWeight: 900, color: '#b91c1c' }}>{astroReport.dieliminasiKloning} Butir</div>
+                    <div style={{ background: '#ffffff', padding: '10px 12px', borderRadius: 8, border: '1px solid #fbcfe8' }}>
+                      <div style={{ fontSize: 11, color: '#db2777' }}>Kurasi HOTS Astro AI</div>
+                      <div style={{ fontSize: 15, fontWeight: 900, color: '#be185d' }}>{astroReport.jumlahAi || 0} Butir Sintesis</div>
                     </div>
-                    <div style={{ background: '#ffffff', padding: '8px 10px', borderRadius: 8, border: '1px solid #86efac' }}>
-                      <div style={{ fontSize: 11, color: '#15803d' }}>Terpilih untuk Kelas</div>
-                      <div style={{ fontSize: 15, fontWeight: 900, color: '#15803d' }}>10 Butir Terunggul</div>
+                    <div style={{ background: '#ffffff', padding: '10px 12px', borderRadius: 8, border: '1px solid #86efac' }}>
+                      <div style={{ fontSize: 11, color: '#15803d' }}>Terpilih Siap Cetak & Terbit</div>
+                      <div style={{ fontSize: 15, fontWeight: 900, color: '#15803d' }}>10 Butir Terkalibrasi</div>
                     </div>
                   </div>
 
                   <div style={{ fontSize: 11.5, color: '#334155', background: '#ffffff', padding: '10px 12px', borderRadius: 8, border: '1px solid #e2e8f0', lineHeight: 1.5 }}>
-                    💡 <b>Catatan Kurasi Guru:</b> 10 butir soal terpilih kini telah dimuat ke Meja Telaah. Guru dapat menelaah butir lengkap dengan kunci & pembahasan, menguji coba mandiri, mencetak lembar fisik, atau menerbitkan ke kelas binaan.
+                    💡 <b>Paket Siap Ditelusuri:</b> 10 butir soal terpilih kini telah dimuat ke Meja Telaah. Guru dapat menelaah butir lengkap dengan kunci & pembahasan terbuka, mencoba mandiri (anti-bocor), mencetak lembar siap gunting, atau langsung menerbitkan ke siswa kelas pendampingan.
                   </div>
                 </div>
               )}
