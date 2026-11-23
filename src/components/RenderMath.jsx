@@ -18,7 +18,11 @@ import { renderLatexHtml } from '../utils/renderLatexHtml.js';
 
 function ubahMarkdownTableDanGambar(teks) {
   if (!teks || typeof teks !== 'string') return teks;
-  let hasil = teks;
+  let hasil = teks
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&apos;/g, "'")
+    .replace(/&nbsp;/g, ' ');
 
   // 1. Ekstraksi markdown table: | a | b | \n |---|---| \n | c | d |
   const reTable = /(?:^|\n)(\|[^\n]+\|\r?\n\|(?:\s*:?-+:?\s*\|)+\r?\n(?:\|[^\n]+\|\r?\n?)+)/g;

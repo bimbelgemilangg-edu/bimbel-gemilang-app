@@ -470,19 +470,59 @@ export function escapeHtml(s) {
 }
 
 export function teksKeHtml(teks) {
-  // 🔥 2026-10-27: JANGAN ratakan ganti baris -- struktur baris naskah buku
-  // (bullet himpunan, langkah penyelesaian) harus bertahan sampai kertas.
-  const bersih = String(teks ?? '')
+  if (!teks) return '';
+  let str = String(teks)
     .replace(/\{\{GAMBAR(?:_\d+)?\}\}/g, ' ')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&apos;/g, "'")
+    .replace(/&nbsp;/g, ' ')
     .replace(/[ \t]{2,}/g, ' ')
-    .replace(/\n{3,}/g, '\n\n')
     .trim();
-  // 🔥 2026-10-23: pakai pemecah SATU SUMBER (utils/segmenMatematika).
-  // Sebelumnya cetak TIDAK mengenal \(..\) / \[..\] sehingga delimiter itu
-  // tercetak MENTAH di kertas, padahal kontrak impor mengizinkannya.
-  return pecahSegmenMatematika(bersih)
+
+  // 1. Amankan tag HTML yang sah & aman (tabel, bold, italic, list, br, dsb.)
+  // agar tidak rusak saat teks biasa di-escape
+  const safeTags = [];
+  str = str.replace(/(<\/?(?:table|thead|tbody|tfoot|tr|th|td|b|strong|i|em|u|s|p|br|span|div|ul|ol|li)\b[^>]*>)/gi, (m) => {
+    let tag = m;
+    if (/^<table\b/i.test(tag)) {
+      tag = '<div class="nsk-tabel"><table style="width:100%;border-collapse:collapse;border:1px solid #000;margin:6px 0;font-size:10px;">';
+    } else if (/^<\/table>/i.test(tag)) {
+      tag = '</table></div>';
+    } else if (/^<th\b/i.test(tag)) {
+      tag = '<th style="border:1px solid #000;padding:4px 6px;background:#f1f5f9;font-weight:700;text-align:center;">';
+    } else if (/^<td\b/i.test(tag)) {
+      tag = '<td style="border:1px solid #000;padding:4px 6px;vertical-align:top;">';
+    } else if (/^<(b|strong)\b/i.test(tag)) {
+      tag = '<strong style="font-weight:700;">';
+    } else if (/^<\/(b|strong)>/i.test(tag)) {
+      tag = '</strong>';
+    } else if (/^<(i|em)\b/i.test(tag)) {
+      tag = '<em style="font-style:italic;">';
+    } else if (/^<\/(i|em)>/i.test(tag)) {
+      tag = '</em>';
+    } else if (/^<br\s*\/?>/i.test(tag)) {
+      tag = '<br>';
+    }
+    const idx = safeTags.length;
+    safeTags.push(tag);
+    return `___SAFE_HTML_TAG_${idx}___`;
+  });
+
+  // 2. Pecah segmen matematika untuk KaTeX
+  const segmen = pecahSegmenMatematika(str);
+  let hasil = segmen
     .map((seg) => {
-      if (seg.jenis === 'teks') return escapeHtml(seg.isi).replace(/\n/g, '<br>');
+      if (seg.jenis === 'teks') {
+        let txt = escapeHtml(seg.isi);
+        // Format markdown bold: **teks**
+        txt = txt.replace(/\*\*([^*\n]+?)\*\*/g, '<strong style="font-weight:700;">$1</strong>');
+        // Format markdown italic: *teks*
+        txt = txt.replace(/(^|[^\*])\*([^\*\s\n](?:[^*\n]*?[^\*\s\n])?)\*(?!\*)/g, '$1<em style="font-style:italic;">$2</em>');
+        // Konversi baris baru menjadi <br>
+        txt = txt.replace(/\n/g, '<br>');
+        return txt;
+      }
       try {
         return katex.renderToString(sumberKaTeX(seg), { throwOnError: false });
       } catch {
@@ -490,6 +530,16 @@ export function teksKeHtml(teks) {
       }
     })
     .join('');
+
+  // 3. Kembalikan tag HTML aman dari placeholder
+  for (let i = 0; i < safeTags.length; i++) {
+    hasil = hasil.split(`___SAFE_HTML_TAG_${i}___`).join(safeTags[i]);
+  }
+
+  // 4. Rampingkan jeda baris berlebih (<br><br><br> -> <br><br>)
+  hasil = hasil.replace(/(?:<br>\s*){3,}/gi, '<br><br>');
+
+  return hasil;
 }
 
 // ---- gaya tampilan (selector selalu di bawah .naskah supaya aman
@@ -1210,13 +1260,20 @@ export function blokBacaanNaskah(unit, lebarKolom, rasioGambar = {}, kapasitasMm
     let hCetak;
     let hLapor;
     if (sg.jenis === 'teks') {
-      // pecah per paragraf/kalimat panjang supaya titik potong rapi
-      const paragraf = String(sg.isi).split(/(?<=[.!?])\s+(?=[A-Z"“])/).filter(Boolean);
-      for (const par of paragraf) {
-        hCetak = baris(par, lebarCetak);
-        hLapor = lebarPenuh ? baris(par, lebarKolom) : hCetak;
+      // Pecah per baris paragraf / butir daftar / poin bernomor secara utuh.
+      // JANGAN memecah kalimat di tengah butir bernomor (mis. "1. Pastikan...")
+      const barisTeks = String(sg.isi)
+        .replace(/<br\s*\/?>/gi, '\n')
+        .replace(/<\/p>/gi, '\n\n')
+        .split(/\n+/)
+        .map((p) => p.trim())
+        .filter(Boolean);
+
+      for (const b of barisTeks) {
+        hCetak = baris(b, lebarCetak);
+        hLapor = lebarPenuh ? baris(b, lebarKolom) : hCetak;
         if (tCetak + hCetak > kapasitas && isiSekarang) tutup();
-        isiSekarang += `<div>${teksKeHtml(par)}</div>`;
+        isiSekarang += `<div style="margin-bottom: 3pt;">${teksKeHtml(b)}</div>`;
         tCetak += hCetak;
         tLapor += hLapor;
       }
