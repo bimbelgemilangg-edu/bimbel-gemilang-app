@@ -523,21 +523,56 @@ export function kurasiDanMixSoalAi({
   bankSoalPool = [],
   targetJumlah = 10,
 }) {
-  // 1. Dapatkan daftar kata kunci pencocokan sub-materi
-  const mapelNorm = mapel.toLowerCase().includes('indonesia') ? 'Bahasa Indonesia' : 'Matematika';
+  // 1. Normalisasi nama mapel dan subtes kode secara presisi
+  const mapelLower = String(mapel || '').toLowerCase();
+  let mapelNorm = 'Matematika';
+  let subtesKode = 'MTK';
+
+  if (mapelLower.includes('indonesia') || mapelLower.includes('indo') || mapelLower.includes('literasi b. indonesia')) {
+    mapelNorm = 'Bahasa Indonesia';
+    subtesKode = 'BIN';
+  } else if (mapelLower.includes('inggris') || mapelLower.includes('english') || mapelLower.includes('literasi b. inggris')) {
+    mapelNorm = 'Bahasa Inggris';
+    subtesKode = 'BIG';
+  } else if (mapelLower.includes('ipa') || mapelLower.includes('alam') || mapelLower.includes('sains')) {
+    mapelNorm = 'IPA Terpadu';
+    subtesKode = 'IPA';
+  } else if (mapelLower.includes('ips') || mapelLower.includes('sosial')) {
+    mapelNorm = 'IPS';
+    subtesKode = 'IPS';
+  } else if (
+    jenjang.toUpperCase() === 'SMA' ||
+    jenjang.toUpperCase() === 'UTBK' ||
+    mapelLower.includes('utbk') ||
+    mapelLower.includes('snbt') ||
+    mapelLower.includes('penalaran')
+  ) {
+    mapelNorm = 'UTBK SNBT';
+    subtesKode = 'PU';
+  } else {
+    mapelNorm = 'Matematika';
+    subtesKode = 'MTK';
+  }
+
   const babObj = (SILABUS_RESMI_SMP[mapelNorm] || []).find((b) => b.babNomor === babNomor) || (SILABUS_RESMI_SMP[mapelNorm] || [])[0];
   const subObj = babObj?.subMateriList?.find((s) => s.id === subMateriId) || babObj?.subMateriList?.[0];
 
   const kataKunci = subObj?.kataKunci || ['bilangan'];
 
-  // 2. Kumpulkan soal relevan dari bank soal yang tersedia
+  // 2. Kumpulkan soal relevan dari bank soal yang tersedia (pastikan mapel cocok)
   const cocokBank = [];
   bankSoalPool.forEach((s) => {
     const sj = String(s.jenjang || '').toUpperCase();
     if (jenjang === 'SMP' && !sj.includes('SMP') && s.jenjang) return;
 
     const sm = String(s.mataPelajaran || s.mapel || '').toLowerCase();
-    if (mapel.toLowerCase().includes('matematika') && !sm.includes('matematika') && !sm.includes('numerasi') && s.subtesKode !== 'MTK') return;
+    let cocokMapel = false;
+    if (mapelNorm === 'Bahasa Indonesia' && (sm.includes('indonesia') || s.subtesKode === 'BIN')) cocokMapel = true;
+    else if (mapelNorm === 'Matematika' && (sm.includes('matematika') || sm.includes('numerasi') || s.subtesKode === 'MTK')) cocokMapel = true;
+    else if (mapelNorm === 'IPA Terpadu' && (sm.includes('ipa') || sm.includes('sains') || s.subtesKode === 'IPA')) cocokMapel = true;
+    else if (mapelNorm === 'Bahasa Inggris' && (sm.includes('inggris') || sm.includes('english') || s.subtesKode === 'BIG')) cocokMapel = true;
+    else if (mapelNorm === 'UTBK SNBT' && (s.subtesKode === 'PU' || s.subtesKode === 'PK' || s.subtesKode === 'PBM' || sm.includes('utbk'))) cocokMapel = true;
+    if (!cocokMapel) return;
 
     const teksLengkap = (
       String(s.materi || '') + ' ' +
@@ -554,7 +589,7 @@ export function kurasiDanMixSoalAi({
     });
 
     if (hit > 0 || subMateriId === 'semua') {
-      const bFix = normalisasiButir(s, 'MTK', babObj.namaBab, cocokBank.length + 1);
+      const bFix = normalisasiButir(s, subtesKode, babObj?.namaBab || mapelNorm, cocokBank.length + 1);
       if (bFix) {
         cocokBank.push({
           ...bFix,
@@ -583,9 +618,29 @@ export function kurasiDanMixSoalAi({
   const kuotaBank = Math.min(bankLolosDedup.length, targetJumlah);
   hasilPaket.push(...bankLolosDedup.slice(0, kuotaBank));
 
-  // 5. JIKA KURANG DARI targetJumlah: MIX DENGAN SOAL HOTS SINTESIS AI
+  // 5. JIKA KURANG DARI targetJumlah: MIX DENGAN PURE AI & SOAL HOTS SINTESIS
   if (hasilPaket.length < targetJumlah) {
-    const sisa = targetJumlah - hasilPaket.length;
+    const poolPure = KATALOG_PURE_AI_HOTS[mapelNorm] || [];
+    poolPure.forEach((soalAi) => {
+      if (hasilPaket.length >= targetJumlah) return;
+      const fp = (soalAi.soal || soalAi.teksSoal || '').toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 40);
+      if (!sidikSet.has(fp)) {
+        sidikSet.add(fp);
+        const normAi = normalisasiButir(soalAi, subtesKode, babObj?.namaBab || mapelNorm, hasilPaket.length + 1);
+        if (normAi) {
+          hasilPaket.push({
+            ...normAi,
+            isAiGenerated: true,
+            isPureAi: true,
+            sumberAsal: soalAi.sumberAsal || '⚡ Pure AI HOTS (Riset Soal Asli & Gambar)',
+          });
+        }
+      }
+    });
+  }
+
+  // 6. Jika masih kurang dan mapel Matematika: lengkapi dari BANK_SINTESIS_HOTS_AI
+  if (hasilPaket.length < targetJumlah && mapelNorm === 'Matematika') {
     const katalogKey = (subMateriId && subMateriId !== 'semua') ? subMateriId : 'sifat_real';
     const poolSintesis = BANK_SINTESIS_HOTS_AI[katalogKey] || BANK_SINTESIS_HOTS_AI.sifat_real || [];
 
@@ -594,7 +649,7 @@ export function kurasiDanMixSoalAi({
       const fp = (soalAi.soal || '').toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 40);
       if (!sidikSet.has(fp)) {
         sidikSet.add(fp);
-        const normAi = normalisasiButir(soalAi, 'MTK', babObj.namaBab, hasilPaket.length + 1);
+        const normAi = normalisasiButir(soalAi, subtesKode, babObj?.namaBab || mapelNorm, hasilPaket.length + 1);
         if (normAi) {
           hasilPaket.push(normAi);
         }
@@ -602,20 +657,29 @@ export function kurasiDanMixSoalAi({
     });
   }
 
-  // 6. Jika masih kurang juga, lengkapi dari bank soal cadangan bab tersebut
+  // 7. Jika masih kurang juga, lengkapi dari bank soal cadangan bab tersebut yang mapelnya cocok
   if (hasilPaket.length < targetJumlah) {
     bankSoalPool.forEach((s) => {
       if (hasilPaket.length >= targetJumlah) return;
+      const sm = String(s.mataPelajaran || s.mapel || '').toLowerCase();
+      let cocokMapel = false;
+      if (mapelNorm === 'Bahasa Indonesia' && (sm.includes('indonesia') || s.subtesKode === 'BIN')) cocokMapel = true;
+      else if (mapelNorm === 'Matematika' && (sm.includes('matematika') || sm.includes('numerasi') || s.subtesKode === 'MTK')) cocokMapel = true;
+      else if (mapelNorm === 'IPA Terpadu' && (sm.includes('ipa') || sm.includes('sains') || s.subtesKode === 'IPA')) cocokMapel = true;
+      else if (mapelNorm === 'Bahasa Inggris' && (sm.includes('inggris') || sm.includes('english') || s.subtesKode === 'BIG')) cocokMapel = true;
+      else if (mapelNorm === 'UTBK SNBT' && (s.subtesKode === 'PU' || s.subtesKode === 'PK' || s.subtesKode === 'PBM' || sm.includes('utbk'))) cocokMapel = true;
+      if (!cocokMapel) return;
+
       const fp = (s.soal || s.teksSoal || '').toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 40);
       if (!sidikSet.has(fp)) {
         sidikSet.add(fp);
-        const norm = normalisasiButir(s, 'MTK', babObj.namaBab, hasilPaket.length + 1);
+        const norm = normalisasiButir(s, subtesKode, babObj?.namaBab || mapelNorm, hasilPaket.length + 1);
         if (norm) hasilPaket.push(norm);
       }
     });
   }
 
-  // 7. Penomoran akhir 1 s.d. targetJumlah
+  // 8. Penomoran akhir 1 s.d. targetJumlah
   return hasilPaket.slice(0, targetJumlah).map((b, idx) => ({
     ...b,
     nomor: idx + 1,

@@ -411,6 +411,7 @@ export default function CetakPaketLatihan() {
   const [astroReport, setAstroReport] = useState(null);
   const [astroSedangBekerja, setAstroSedangBekerja] = useState(false);
   const [astroMode, setAstroMode] = useState('mix'); // 'mix' | 'pure_ai'
+  const [targetJumlahSoal, setTargetJumlahSoal] = useState(10); // Target butir soal (Kuis 10, Pengayaan 15, Remedial Drill 20-30)
 
   // Muat daftar paket terbitan kelas pendampingan
   const muatTerbitan = useCallback(async () => {
@@ -580,7 +581,7 @@ export default function CetakPaketLatihan() {
             subMateriId: targetSubId,
             subMateriNama: subObj?.label || '',
             bankSoalPool: activePool && activePool.length > 0 ? activePool : bankSoal,
-            targetJumlah: 10,
+            targetJumlah: targetJumlahSoal,
           });
 
           // Langkah 5: Finalisasi & Ringkasan Laporan Kurasi
@@ -588,7 +589,7 @@ export default function CetakPaketLatihan() {
             setAstroStep(5);
             setAstroSedangBekerja(false);
             setKeranjang(final10Healed);
-            setPesanKeranjang(`✨ Astro Gemilang berhasil menyiapkan 10 butir soal (Mix Bank Asli + AI HOTS) untuk ${subObj?.label || babAktifObj?.namaBab}!`);
+            setPesanKeranjang(`✨ Astro Gemilang berhasil menyiapkan ${final10Healed.length} butir soal (Mix Bank Asli + AI HOTS) untuk ${subObj?.label || babAktifObj?.namaBab}!`);
             setModeTampil('preview');
             setIndeksPreview(0);
 
@@ -646,7 +647,7 @@ export default function CetakPaketLatihan() {
               babNomor: targetBabNomor,
               subMateriId: targetSubId,
               subMateriNama: subObj?.label || '',
-              targetJumlah: 10,
+              targetJumlah: targetJumlahSoal,
               bankSoalPool: bankSoal,
             });
           } catch (err) {
@@ -658,12 +659,12 @@ export default function CetakPaketLatihan() {
             setAstroStep(5);
             setAstroSedangBekerja(false);
             setKeranjang(final10Pure);
-            setPesanKeranjang(`⚡ Astro AI berhasil menghasilkan 10 butir soal Pure AI (Fresh HOTS + Gambar Lengkap) untuk ${targetMapel} (${subObj?.label || babAktifObj?.namaBab || 'Materi'})!`);
+            setPesanKeranjang(`⚡ Astro AI berhasil menghasilkan ${final10Pure.length} butir soal Pure AI (Fresh HOTS + Gambar Lengkap) untuk ${targetMapel} (${subObj?.label || babAktifObj?.namaBab || 'Materi'})!`);
             setModeTampil('preview');
             setIndeksPreview(0);
 
             setAstroReport({
-              totalDipindai: 10,
+              totalDipindai: targetJumlahSoal,
               dieliminasiSalahMateri: 0,
               dieliminasiKloning: 0,
               totalLolos: final10Pure.length,
@@ -1311,8 +1312,83 @@ export default function CetakPaketLatihan() {
                     </span>
                   </div>
                   <p style={{ margin: '4px 0 0', fontSize: 12, color: '#ccfbf1', lineHeight: 1.4 }}>
-                    Materi Aktif: <b>{babAktifObj?.ringkas || babAktif || 'Bilangan'}</b> → <b style={{ color: '#fef08a' }}>{subMateriObj?.label || 'Semua Sub-Materi'}</b> ({soalBankTampil.length} butir di Bank Soal). AI siap memadukan soal asli dengan soal pengayaan HOTS berstandar TKA agar menjadi 10 butir lengkap siap cetak & terbit.
+                    Materi Aktif: <b>{babAktifObj?.ringkas || babAktif || 'Bilangan'}</b> → <b style={{ color: '#fef08a' }}>{subMateriObj?.label || 'Semua Sub-Materi'}</b> ({soalBankTampil.length} butir di Bank Soal). AI siap memadukan soal asli dengan soal pengayaan HOTS berstandar TKA/SNBT dengan volume sesuai kebutuhan pengayaan maupun drill remedial.
                   </p>
+                </div>
+              </div>
+
+              {/* Selector Target Jumlah Butir Soal (Kuis, Pengayaan, Drill Remedial) */}
+              <div style={{
+                background: 'rgba(15, 23, 42, 0.5)',
+                border: '1px solid rgba(45, 212, 191, 0.35)',
+                borderRadius: 12,
+                padding: '10px 14px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                flexWrap: 'wrap',
+                gap: 10,
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ fontSize: 13, color: '#fef08a', fontWeight: 800 }}>🎯 Target Jumlah Butir:</span>
+                  <span style={{ fontSize: 11.5, color: '#99f6e4' }}>
+                    Pilih porsi latihan (remedial/drill bab pertama butuh lebih banyak butir latihan):
+                  </span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                  {[
+                    { jml: 10, label: '10 Soal (Kuis Harian)' },
+                    { jml: 15, label: '15 Soal (Pengayaan)' },
+                    { jml: 20, label: '🔥 20 Soal (Drill Remedial)' },
+                    { jml: 30, label: '📚 30 Soal (Simulasi Lengkap)' },
+                  ].map((preset) => {
+                    const isSelected = targetJumlahSoal === preset.jml;
+                    return (
+                      <button
+                        key={preset.jml}
+                        type="button"
+                        onClick={() => setTargetJumlahSoal(preset.jml)}
+                        style={{
+                          background: isSelected ? '#fde047' : 'rgba(255, 255, 255, 0.12)',
+                          color: isSelected ? '#713f12' : '#ffffff',
+                          border: isSelected ? '1.5px solid #ca8a04' : '1px solid rgba(255, 255, 255, 0.25)',
+                          borderRadius: 8,
+                          padding: '5px 11px',
+                          fontSize: 11.5,
+                          fontWeight: isSelected ? 900 : 700,
+                          cursor: 'pointer',
+                          transition: 'all 0.15s ease',
+                        }}
+                      >
+                        {preset.label}
+                      </button>
+                    );
+                  })}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginLeft: 4 }}>
+                    <span style={{ fontSize: 11, color: '#99f6e4', fontWeight: 700 }}>Custom:</span>
+                    <input
+                      type="number"
+                      min={5}
+                      max={50}
+                      value={targetJumlahSoal}
+                      onChange={(e) => {
+                        const val = parseInt(e.target.value, 10);
+                        if (!isNaN(val) && val >= 1 && val <= 100) setTargetJumlahSoal(val);
+                      }}
+                      style={{
+                        width: 54,
+                        padding: '4px 6px',
+                        borderRadius: 6,
+                        border: '1.5px solid #2dd4bf',
+                        background: '#042f2e',
+                        color: '#fef08a',
+                        fontWeight: 900,
+                        fontSize: 12,
+                        textAlign: 'center',
+                      }}
+                    />
+                    <span style={{ fontSize: 11, color: '#ccfbf1' }}>butir</span>
+                  </div>
                 </div>
               </div>
 
@@ -1338,7 +1414,7 @@ export default function CetakPaketLatihan() {
                   }}
                 >
                   <span style={{ fontSize: 16 }}>{astroSedangBekerja ? '🤖' : (memuat && bankSoal.length === 0) ? '⏳' : '✨'}</span>
-                  <span>{astroSedangBekerja ? 'AI Sedang Bekerja...' : (memuat && bankSoal.length === 0) ? 'Menyiapkan Bank Soal...' : 'Siapkan 10 Soal (Mix Bank Asli + AI HOTS)'}</span>
+                  <span>{astroSedangBekerja ? 'AI Sedang Bekerja...' : (memuat && bankSoal.length === 0) ? 'Menyiapkan Bank Soal...' : `Siapkan ${targetJumlahSoal} Soal (Mix Bank Asli + AI HOTS)`}</span>
                 </button>
 
                 <button
@@ -1360,10 +1436,10 @@ export default function CetakPaketLatihan() {
                     boxShadow: (memuat && bankSoal.length === 0) ? 'none' : '0 4px 12px rgba(2, 132, 199, 0.3)',
                     opacity: (memuat && bankSoal.length === 0) ? 0.7 : 1,
                   }}
-                  title="Generate 10 butir murni AI tanpa menggunakan bank soal lama (solusi bila butir bank soal terasa berulang)"
+                  title={`Generate ${targetJumlahSoal} butir murni AI tanpa menggunakan bank soal lama (solusi bila butir bank soal terasa berulang)`}
                 >
                   <span style={{ fontSize: 16 }}>⚡</span>
-                  <span>Generate 10 Soal Pure AI (HOTS Baru & Gambar Lengkap)</span>
+                  <span>Generate {targetJumlahSoal} Soal Pure AI (HOTS Baru & Gambar Lengkap)</span>
                 </button>
                 {keranjang.length > 0 && (
                   <button
@@ -1773,7 +1849,7 @@ export default function CetakPaketLatihan() {
                         }}
                       >
                         <span>✨</span>
-                        <span>Mix Bank & AI (10 Soal)</span>
+                        <span>Mix Bank & AI ({targetJumlahSoal} Soal)</span>
                       </button>
                       <button
                         type="button"
@@ -1792,10 +1868,10 @@ export default function CetakPaketLatihan() {
                           cursor: 'pointer',
                           boxShadow: '0 2px 6px rgba(2, 132, 199, 0.25)',
                         }}
-                        title="Generate 10 butir segar murni AI lengkap dengan gambar tanpa mengulang bank soal"
+                        title={`Generate ${targetJumlahSoal} butir segar murni AI lengkap dengan gambar tanpa mengulang bank soal`}
                       >
                         <span>⚡</span>
-                        <span>Pure AI: 10 Soal HOTS Baru + Gambar</span>
+                        <span>Pure AI: {targetJumlahSoal} Soal HOTS Baru + Gambar</span>
                       </button>
                     </div>
                   </div>
@@ -1837,7 +1913,7 @@ export default function CetakPaketLatihan() {
                       boxShadow: '0 2px 6px rgba(202, 138, 4, 0.2)',
                     }}
                   >
-                    <span>✨ Siapkan 10 Soal (Mix Bank Asli + AI HOTS)</span>
+                    <span>✨ Siapkan {targetJumlahSoal} Soal (Mix Bank Asli + AI HOTS)</span>
                   </button>
 
                   <button
@@ -1859,10 +1935,10 @@ export default function CetakPaketLatihan() {
                       boxShadow: '0 2px 6px rgba(2, 132, 199, 0.25)',
                       opacity: (astroSedangBekerja || (memuat && bankSoal.length === 0)) ? 0.7 : 1,
                     }}
-                    title="Generate 10 butir murni AI tanpa mengulang bank soal lama (lengkap dengan gambar & pembahasan)"
+                    title={`Generate ${targetJumlahSoal} butir murni AI tanpa mengulang bank soal lama (lengkap dengan gambar & pembahasan)`}
                   >
                     <span>⚡</span>
-                    <span>Generate 10 Soal Pure AI (Fresh HOTS + Gambar Lengkap)</span>
+                    <span>Generate {targetJumlahSoal} Soal Pure AI (Fresh HOTS + Gambar Lengkap)</span>
                   </button>
                   {keranjang.length > 0 && (
                     <button
@@ -1909,7 +1985,7 @@ export default function CetakPaketLatihan() {
                         Butir soal asli di Bank Soal untuk topik ini terbatas ({soalBankTampil.length} butir)
                       </div>
                       <div style={{ fontSize: 11.5, color: '#a16207', marginTop: 2 }}>
-                        Astro Gemilang dapat memadukan butir asli dengan bank soal sintesis HOTS berstandar TKA agar menjadi 10 soal lengkap.
+                        Astro Gemilang dapat memadukan butir asli dengan bank soal sintesis HOTS berstandar TKA agar menjadi {targetJumlahSoal} soal lengkap.
                       </div>
                     </div>
                   </div>
@@ -1927,7 +2003,7 @@ export default function CetakPaketLatihan() {
                       cursor: 'pointer',
                     }}
                   >
-                    ✨ Auto-Mix Jadi 10 Soal
+                    ✨ Auto-Mix Jadi {targetJumlahSoal} Soal
                   </button>
                 </div>
               )}
@@ -2748,14 +2824,14 @@ export default function CetakPaketLatihan() {
                     </div>
                     <div style={{ background: '#ffffff', padding: '10px 12px', borderRadius: 8, border: '1px solid #86efac' }}>
                       <div style={{ fontSize: 11, color: '#15803d' }}>{astroReport.isPureAi ? 'Kunci & Pembahasan' : 'Terpilih Siap Cetak & Terbit'}</div>
-                      <div style={{ fontSize: 15, fontWeight: 900, color: '#15803d' }}>10 Butir Terkalibrasi</div>
+                      <div style={{ fontSize: 15, fontWeight: 900, color: '#15803d' }}>{astroReport.totalLolos || targetJumlahSoal} Butir Terkalibrasi</div>
                     </div>
                   </div>
 
                   <div style={{ fontSize: 11.5, color: '#334155', background: '#ffffff', padding: '10px 12px', borderRadius: 8, border: '1px solid #e2e8f0', lineHeight: 1.5 }}>
                     💡 <b>Paket Siap Ditelusuri:</b> {astroReport.isPureAi
-                      ? '10 butir soal baru hasil riset cerdas AI telah dimuat ke Meja Telaah lengkap dengan gambar diagram teknis, kunci terverifikasi, dan pembahasan rumus KaTeX siap dicetak atau diterbitkan ke siswa.'
-                      : '10 butir soal terpilih kini telah dimuat ke Meja Telaah. Guru dapat menelaah butir lengkap dengan kunci & pembahasan terbuka, mencoba mandiri (anti-bocor), mencetak lembar siap gunting, atau langsung menerbitkan ke siswa kelas pendampingan.'}
+                      ? `${astroReport.totalLolos || targetJumlahSoal} butir soal baru hasil riset cerdas AI telah dimuat ke Meja Telaah lengkap dengan gambar diagram teknis, kunci terverifikasi, dan pembahasan rumus KaTeX siap dicetak atau diterbitkan ke siswa.`
+                      : `${astroReport.totalLolos || targetJumlahSoal} butir soal terpilih kini telah dimuat ke Meja Telaah. Guru dapat menelaah butir lengkap dengan kunci & pembahasan terbuka, mencoba mandiri (anti-bocor), mencetak lembar siap gunting, atau langsung menerbitkan ke siswa kelas pendampingan.`}
                   </div>
                 </div>
               )}
@@ -2783,7 +2859,7 @@ export default function CetakPaketLatihan() {
                       boxShadow: '0 4px 12px rgba(13, 148, 136, 0.25)',
                     }}
                   >
-                    👀 Mulai Telaah & Uji Coba Kunci (10 Soal)
+                    👀 Mulai Telaah & Uji Coba Kunci ({keranjang.length || targetJumlahSoal} Soal)
                   </button>
                 )}
               </div>
