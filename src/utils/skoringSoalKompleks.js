@@ -91,7 +91,7 @@ export function opsiPgKompleks(soal) {
  * data lama); kunci yang sudah huruf lolos apa adanya.
  */
 export function kunciHurufPgKompleks(soal) {
-  const mentah = safeArray(soal?.kunciJawaban)
+  const mentah = safeArray(soal?.kunciJawaban ?? soal?.kunci)
     .map((h) => String(h).trim())
     .filter(Boolean);
   if (!mentah.length) return [];

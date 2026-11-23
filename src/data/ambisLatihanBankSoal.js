@@ -313,6 +313,8 @@ export function isButirLayakTampil(soal) {
 export function cleanStatementText(text) {
   if (!text) return '';
   let s = bersihkanHtmlDanArtefak(String(text).trim());
+  // 0. Hapus header label modul/unit internal: "Soal 5 · Unit 2.6 (PGK Kategori — SPLDV Parkir)", "Soal 1 · Unit 1.6 (Promo Belanja)", "Unit 1.6 (...)"
+  s = s.replace(/^(?:Soal\s*\d+\s*[·•\-]\s*Unit\s*[\d.]+\s*(?:\([^)]+\))?|Unit\s*[\d.]+\s*(?:\([^)]+\))?)\s*/i, '');
   // 1. Hapus abjad opsi di awal: "A. ", "A) ", "(A) ", "A - ", "(B) "
   s = s.replace(/^\s*(?:\(?[a-eA-E][.)\]:-]|\([a-eA-E0-9]{1,2}\))\s+/, '');
   // 2. Hapus nomor urut di awal HANYA jika berupa butir daftar bertanda baca: "1. ", "1) ", "(1) ", "[1] "
@@ -928,6 +930,9 @@ export function normalisasiButir(item, fallbackSubtes = 'PU', fallbackTopik = 'U
       if (sj.includes('SMA') || sj.includes('UTBK') || sj.includes('SNBT') || sj.includes('SMK')) return 'SMA';
       return 'SMP';
     }
+    const sid = String(item.id || '').toLowerCase();
+    if (sid.includes('_sd_') || sid.startsWith('sd_') || sid.includes('-sd-') || sid.includes('tka_sd')) return 'SD';
+    if (sid.includes('_sma_') || sid.includes('utbk') || sid.includes('snbt')) return 'SMA';
     const sk = String(item.kelas || item.kelasSekolah || '').trim();
     if (['10', '11', '12'].includes(sk)) return 'SMA';
     if (['1', '2', '3', '4', '5', '6'].includes(sk)) return 'SD';
@@ -980,19 +985,61 @@ export function normalisasiButir(item, fallbackSubtes = 'PU', fallbackTopik = 'U
     mataPelajaran: mapelFix,
     mapel: mapelFix,
     tipeSoal,
+    tipe: tipeSoal,
+    teksSoal: finalSoal,
     soal: finalSoal,
     wacana: teksWacana || null,
+    bacaan: teksWacana || null,
     opsi: opsiArray,
+    opsiJawaban: opsiArray.map((o, oIdx) => ({
+      key: o.label || o.key || ['A', 'B', 'C', 'D', 'E'][oIdx] || 'A',
+      label: o.label || o.key || ['A', 'B', 'C', 'D', 'E'][oIdx] || 'A',
+      teks: o.text || o.teks || '',
+      gambar: o.gambar || null,
+    })),
+    tabel: item.tabel || item.tabelSoal || null,
+    tabelSoal: item.tabelSoal || item.tabel || null,
     pernyataan,
     kolomKategori: ['Benar', 'Salah'],
     kunci: cleanKunci,
+    kunciJawaban: cleanKunci,
     kunciTeks,
     pembahasan,
     gambar: gambarList,
+    gambarUrls: gambarList,
     tingkatKesulitan: item.tingkatKesulitan || (idx % 3 === 0 ? 'sulit' : idx % 2 === 0 ? 'sedang' : 'mudah'),
   };
 
-  return aiGuardPolicingAndHeal(hasilMentah);
+  const butirFix = aiGuardPolicingAndHeal(hasilMentah);
+
+  // Pastikan sinkronisasi 100% konsisten untuk kedua konvensi alias (tipe vs tipeSoal, opsi vs opsiJawaban, dll)
+  butirFix.tipe = butirFix.tipeSoal || butirFix.tipe || 'pg_sederhana';
+  butirFix.tipeSoal = butirFix.tipe;
+  butirFix.teksSoal = butirFix.soal || butirFix.teksSoal || '';
+  butirFix.soal = butirFix.teksSoal;
+  butirFix.kunci = butirFix.kunci || butirFix.kunciJawaban || 'A';
+  butirFix.kunciJawaban = butirFix.kunci;
+  butirFix.tabelSoal = butirFix.tabelSoal || butirFix.tabel || null;
+  butirFix.tabel = butirFix.tabelSoal;
+  butirFix.gambarUrls = Array.isArray(butirFix.gambar) ? butirFix.gambar : (butirFix.gambar ? [butirFix.gambar] : []);
+  butirFix.gambar = butirFix.gambarUrls;
+
+  if (Array.isArray(butirFix.opsi) && butirFix.opsi.length > 0) {
+    butirFix.opsiJawaban = butirFix.opsi.map((o, oIdx) => ({
+      key: o.label || o.key || ['A', 'B', 'C', 'D', 'E'][oIdx] || 'A',
+      label: o.label || o.key || ['A', 'B', 'C', 'D', 'E'][oIdx] || 'A',
+      teks: o.text || o.teks || '',
+      gambar: o.gambar || null,
+    }));
+  } else if (Array.isArray(butirFix.opsiJawaban) && butirFix.opsiJawaban.length > 0) {
+    butirFix.opsi = butirFix.opsiJawaban.map((o, oIdx) => ({
+      label: o.label || o.key || ['A', 'B', 'C', 'D', 'E'][oIdx] || 'A',
+      text: o.teks || o.text || '',
+      gambar: o.gambar || null,
+    }));
+  }
+
+  return butirFix;
 }
 
 export function tentukanBabDanTopik(subtesKode, item, jenjang = 'SMP') {
@@ -1221,7 +1268,8 @@ export function susunBankSoalLatihanSmp(bankSoalFirestore = []) {
   const idsSudahAda = new Set();
 
   const tambahSoalUnik = (item, fallbackSubtes, fallbackTopik) => {
-    const b = normalisasiButir(item, fallbackSubtes, fallbackTopik, counter++);
+    const itemSmp = (item && !item.jenjang) ? { ...item, jenjang: 'SMP', kelas: item.kelas || '9' } : item;
+    const b = normalisasiButir(itemSmp, fallbackSubtes, fallbackTopik, counter++);
     if (b && isButirLayakTampil(b) && !idsSudahAda.has(b.id)) {
       idsSudahAda.add(b.id);
       bank.push(b);
@@ -1365,7 +1413,8 @@ export function susunBankSoalLatihanSd(bankSoalFirestore = []) {
   const idsSudahAda = new Set();
 
   const tambahSoalUnik = (item, fallbackSubtes, fallbackTopik) => {
-    const b = normalisasiButir(item, fallbackSubtes, fallbackTopik, counter++);
+    const itemSd = (item && !item.jenjang) ? { ...item, jenjang: 'SD', kelas: item.kelas || '6' } : item;
+    const b = normalisasiButir(itemSd, fallbackSubtes, fallbackTopik, counter++);
     if (b && isButirLayakTampil(b) && !idsSudahAda.has(b.id)) {
       idsSudahAda.add(b.id);
       bank.push(b);
@@ -1383,7 +1432,7 @@ export function susunBankSoalLatihanSd(bankSoalFirestore = []) {
         let subtes = 'MTK';
         if (sm.includes('indonesia') || sm.includes('literasi')) subtes = 'BIN';
         else if (sm.includes('matematika') || sm.includes('numerasi')) subtes = 'MTK';
-        tambahSoalUnik(s, subtes, s.bab || s.materi || 'Bank Soal Gemilang SD');
+        tambahSoalUnik({ ...s, jenjang: 'SD', kelas: '6' }, subtes, s.bab || s.materi || 'Bank Soal Gemilang SD');
       }
     });
   }
@@ -1391,12 +1440,12 @@ export function susunBankSoalLatihanSd(bankSoalFirestore = []) {
   // 2. Master Dataset TKA SD 2026
   if (Array.isArray(SOAL_TKA_2026_SD_MTK)) {
     SOAL_TKA_2026_SD_MTK.forEach((s) => {
-      tambahSoalUnik(s, 'MTK', s.materi || 'TKA SD Matematika');
+      tambahSoalUnik({ ...s, jenjang: 'SD', kelas: '6' }, 'MTK', s.materi || 'TKA SD Matematika');
     });
   }
   if (Array.isArray(SOAL_TKA_2026_SD_BINDO)) {
     SOAL_TKA_2026_SD_BINDO.forEach((s) => {
-      tambahSoalUnik(s, 'BIN', s.materi || 'TKA SD Bahasa Indonesia');
+      tambahSoalUnik({ ...s, jenjang: 'SD', kelas: '6' }, 'BIN', s.materi || 'TKA SD Bahasa Indonesia');
     });
   }
 
@@ -1410,7 +1459,8 @@ export function susunBankSoalLatihanUtbk(bankSoalFirestore = []) {
   const idsSudahAda = new Set();
 
   const tambahSoalUnik = (item, fallbackSubtes, fallbackTopik) => {
-    const b = normalisasiButir(item, fallbackSubtes, fallbackTopik, counter++);
+    const itemSma = (item && !item.jenjang) ? { ...item, jenjang: 'SMA', kelas: item.kelas || '12' } : item;
+    const b = normalisasiButir(itemSma, fallbackSubtes, fallbackTopik, counter++);
     if (b && isButirLayakTampil(b) && !idsSudahAda.has(b.id)) {
       idsSudahAda.add(b.id);
       bank.push(b);

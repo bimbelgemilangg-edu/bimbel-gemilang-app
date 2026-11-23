@@ -763,7 +763,7 @@ function gambarDalamTeks(teks, gambarUrls, nomor, rasioGambar, lebarKolom) {
  * @returns {string} HTML tambahan setelah badan soal
  */
 export function isiJawabanNaskah(soal, nomor, lebarKolom, rasioGambar = {}) {
-  const tipe = String(soal?.tipe || 'pg_sederhana');
+  const tipe = String(soal?.tipe || soal?.tipeSoal || 'pg_sederhana');
   const rg = rasioGambar;
 
   if (tipe === 'benar_salah' || tipe === 'pg_kategori') {
@@ -803,7 +803,7 @@ export function isiJawabanNaskah(soal, nomor, lebarKolom, rasioGambar = {}) {
 
 /** Kunci per baris untuk LEMBAR KUNCI (benar/salah & menjodohkan). */
 export function kunciPerBaris(soal) {
-  const tipe = String(soal?.tipe || 'pg_sederhana');
+  const tipe = String(soal?.tipe || soal?.tipeSoal || 'pg_sederhana');
   if (tipe === 'benar_salah' || tipe === 'pg_kategori') {
     const baris = barisBenarSalah(soal).filter((b) => b.kunci);
     if (!baris.length) return '';
@@ -822,7 +822,9 @@ export function butirNaskahHtml(soal, nomor, lebarKolom, rasioGambar = {}, opsiB
   // sudah dicetak sebagai blok stimulus terpisah (lihat kelompokkanStimulus),
   // butir menerima opsiButir.tanpaBacaan supaya teks tidak TERULANG per nomor.
   const bacaanHtml = opsiButir.tanpaBacaan ? '' : bacaanNaskahHtml(soal, nomor, lebarKolom, rasioGambar);
-  const kodeSrc = pisahKodeSumber(teksSoalDari(soal));
+  const teksBersih = teksSoalDari(soal)
+    .replace(/^(?:Soal\s*\d+\s*[·•\-]\s*Unit\s*[\d.]+\s*(?:\([^)]+\))?|Unit\s*[\d.]+\s*(?:\([^)]+\))?)\s*/i, '');
+  const kodeSrc = pisahKodeSumber(teksBersih);
   const kodeHtml = kodeSrc.kode ? `<div class="nsk-kode">${escapeHtml(kodeSrc.kode)}</div>` : '';
   // 🔥 2026-10-29: gambar yang sudah diangkat ke blok stimulus grup TIDAK boleh
   // tercetak lagi di sini. opts.lewati membuat placeholder-nya tetap terpakai
@@ -840,18 +842,20 @@ export function butirNaskahHtml(soal, nomor, lebarKolom, rasioGambar = {}, opsiB
       return imgNaskahHtml(sg.url, `Gambar soal nomor ${nomor}`, ukuran);
     })
     .join('');
-  const opsi = Array.isArray(soal?.opsiJawaban) ? soal.opsiJawaban : [];
+  const opsi = (Array.isArray(soal?.opsiJawaban) && soal.opsiJawaban.length > 0)
+    ? soal.opsiJawaban
+    : (Array.isArray(soal?.opsi) ? soal.opsi : []);
   // 🔥 2026-10-09: teks opsi dilepas dari glif penanda kunci (☑/☐) yang
   // terbawa impor -- di data produksi glif itu persis sama dengan kunci
   // jawaban, jadi lembar siswa yang mencetaknya berarti membocorkan
   // kunci. Lihat src/utils/bersihkanGlifKunci.js.
-  const teksOpsi = opsi.map((o) => bersihkanTeksOpsi(typeof o === 'string' ? o : o?.teks || ''));
+  const teksOpsi = opsi.map((o) => bersihkanTeksOpsi(typeof o === 'string' ? o : o?.teks || o?.text || ''));
   const nKolomOpsi = kolomPilihanNaskah(teksOpsi, lebarKolom);
   // pg_kompleks tanpa daftar pernyataan: pilihannyalah permukaan centang
   // siswa, jadi tiap baris mendapat kotak KOSONG dari mesin cetak (bukan
   // dari data). Kalau ada pernyataan, kotaknya dipasang di blok jawaban
   // (isiJawabanNaskah) supaya tidak dobel.
-  const tipeButir = String(soal?.tipe || 'pg_sederhana');
+  const tipeButir = String(soal?.tipe || soal?.tipeSoal || 'pg_sederhana');
   const adaPernyataan = Array.isArray(soal?.pernyataan) && soal.pernyataan.length > 0;
   const kotakCentang = tipeButir === 'pg_kompleks' && !adaPernyataan
     ? '<i class="nsk-kotak-centang" aria-hidden="true"></i>'
@@ -957,7 +961,8 @@ export function kunciButirNaskahHtml(soal, nomor, opsiButir = {}) {
   // 🔥 2026-11-03: pg_kompleks dibakukan ke huruf lewat sumber kanonik yang
   // sama dengan renderer & skoring (dialek kunci angka "1, 3" ikut) supaya
   // lembar kunci guru tak pernah menyebut kunci yang tak bisa dicentang.
-  const kunci = String(soal?.tipe || '') === 'pg_kompleks'
+  const tipe = String(soal?.tipe || soal?.tipeSoal || '');
+  const kunci = tipe === 'pg_kompleks'
     ? escapeHtml(kunciHurufPgKompleks(soal).join(', ') || '-')
     : Array.isArray(soal?.kunciJawaban)
       ? soal.kunciJawaban.map((k) => (/^\d+$/.test(String(k).trim()) ? String.fromCharCode(65 + Number(k)) : String(k))).join(', ')

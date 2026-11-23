@@ -11,18 +11,19 @@ export const SOAL_TKA_2026_SMP_MTK_PAKET_B = [
   {
     "id": "tka26_mtk_b_01",
     "nomor": 1,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
     "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
     "materi": "Operasi Bilangan Bulat / Penskoran",
     "tipe": "pg_sederhana",
     "teksSoal": "Dalam seleksi Olimpiade Sains tersedia 40 butir soal dengan pedoman penskoran sebagai berikut:\nSeorang peserta menjawab 37 butir soal dan 32 di antaranya benar. Skor yang diperoleh peserta tersebut adalah ….",
     "teks_soal": "Dalam seleksi Olimpiade Sains tersedia 40 butir soal dengan pedoman penskoran sebagai berikut:\nSeorang peserta menjawab 37 butir soal dan 32 di antaranya benar. Skor yang diperoleh peserta tersebut adalah ….",
     "soal": "Dalam seleksi Olimpiade Sains tersedia 40 butir soal dengan pedoman penskoran sebagai berikut:\nSeorang peserta menjawab 37 butir soal dan 32 di antaranya benar. Skor yang diperoleh peserta tersebut adalah ….",
-    "gambar": "/soal/tryout_tka_matematika_paket_b/q1_tabel_pedoman_skor.png",
-    "gambarUrls": [
-      "/soal/tryout_tka_matematika_paket_b/q1_tabel_pedoman_skor.png"
-    ],
+    "gambar": null,
+    "gambarUrls": [],
     "tabel": {
-      "gambar_tabel": "/soal/tryout_tka_matematika_paket_b/q1_tabel_pedoman_skor.png",
       "headers": [
         "Tiap Butir Soal",
         "Skor"
@@ -43,7 +44,6 @@ export const SOAL_TKA_2026_SMP_MTK_PAKET_B = [
       ]
     },
     "tabelSoal": {
-      "gambar_tabel": "/soal/tryout_tka_matematika_paket_b/q1_tabel_pedoman_skor.png",
       "headers": [
         "Tiap Butir Soal",
         "Skor"
@@ -124,7 +124,11 @@ export const SOAL_TKA_2026_SMP_MTK_PAKET_B = [
   {
     "id": "tka26_mtk_b_02",
     "nomor": 2,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
     "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
     "materi": "Urutan Bilangan Rasional & Garis Bilangan",
     "tipe": "pg_sederhana",
     "teksSoal": "Diketahui bilangan-bilangan 4/5; 1,25; 1 1/5; 90%. Letak bilangan-bilangan tersebut pada garis bilangan yang tepat adalah ….",
@@ -195,7 +199,11 @@ export const SOAL_TKA_2026_SMP_MTK_PAKET_B = [
   {
     "id": "tka26_mtk_b_03",
     "nomor": 3,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
     "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
     "materi": "FPB (Faktor Persekutuan Terbesar)",
     "tipe": "pg_sederhana",
     "teksSoal": "Diketahui tiga bilangan 180, 360, dan 540. Faktor persekutuan terbesar dari ketiga bilangan tersebut adalah ….",
@@ -266,18 +274,21 @@ export const SOAL_TKA_2026_SMP_MTK_PAKET_B = [
   {
     "id": "tka26_mtk_b_04",
     "nomor": 4,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
     "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
     "materi": "Luas Bangun Datar & Optimasi Biaya",
     "tipe": "pg_sederhana",
     "teksSoal": "Gambar berikut merupakan salah satu sisi dinding rumah.\nPaman akan mengecat dinding tersebut. Di toko tersedia dua kemasan cat dengan merek yang sama seperti pada tabel.\nBerapa banyak cat kemasan A dan B yang harus dibeli paman agar biaya yang dikeluarkan minimum?",
     "teks_soal": "Gambar berikut merupakan salah satu sisi dinding rumah.\nPaman akan mengecat dinding tersebut. Di toko tersedia dua kemasan cat dengan merek yang sama seperti pada tabel.\nBerapa banyak cat kemasan A dan B yang harus dibeli paman agar biaya yang dikeluarkan minimum?",
     "soal": "Gambar berikut merupakan salah satu sisi dinding rumah.\nPaman akan mengecat dinding tersebut. Di toko tersedia dua kemasan cat dengan merek yang sama seperti pada tabel.\nBerapa banyak cat kemasan A dan B yang harus dibeli paman agar biaya yang dikeluarkan minimum?",
-    "gambar": "/soal/tryout_tka_matematika_paket_b/q4_tabel_kemasan_cat.png",
+    "gambar": "/soal/tryout_tka_matematika_paket_b/q4_dinding_rumah.png",
     "gambarUrls": [
-      "/soal/tryout_tka_matematika_paket_b/q4_tabel_kemasan_cat.png"
+      "/soal/tryout_tka_matematika_paket_b/q4_dinding_rumah.png"
     ],
     "tabel": {
-      "gambar_tabel": "/soal/tryout_tka_matematika_paket_b/q4_tabel_kemasan_cat.png",
       "headers": [
         "Kemasan",
         "Kemampuan pengecatan dengan kualitas baik/ kg",
@@ -300,7 +311,6 @@ export const SOAL_TKA_2026_SMP_MTK_PAKET_B = [
       ]
     },
     "tabelSoal": {
-      "gambar_tabel": "/soal/tryout_tka_matematika_paket_b/q4_tabel_kemasan_cat.png",
       "headers": [
         "Kemasan",
         "Kemampuan pengecatan dengan kualitas baik/ kg",
@@ -383,14 +393,20 @@ export const SOAL_TKA_2026_SMP_MTK_PAKET_B = [
   {
     "id": "tka26_mtk_b_05",
     "nomor": 5,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
     "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
     "materi": "Skala & Geometri Denah Rumah",
     "tipe": "pg_kompleks",
     "teksSoal": "Perhatikan denah rumah berikut!\nSumber gambar : 15+ Inspirasi Denah Rumah Type 36 3 Kamar Tidur yang Nyaman - Masterpiece Arsitek\nDenah tersebut digambar dengan skala 1 : 50 dan satuan angka pada gambar adalah cm. Berdasar keterangan tersebut. Pilih lebih dari satu pernyataan yang benar dari pernyataan-pernyataan berikut:",
     "teks_soal": "Perhatikan denah rumah berikut!\nSumber gambar : 15+ Inspirasi Denah Rumah Type 36 3 Kamar Tidur yang Nyaman - Masterpiece Arsitek\nDenah tersebut digambar dengan skala 1 : 50 dan satuan angka pada gambar adalah cm. Berdasar keterangan tersebut. Pilih lebih dari satu pernyataan yang benar dari pernyataan-pernyataan berikut:",
     "soal": "Perhatikan denah rumah berikut!\nSumber gambar : 15+ Inspirasi Denah Rumah Type 36 3 Kamar Tidur yang Nyaman - Masterpiece Arsitek\nDenah tersebut digambar dengan skala 1 : 50 dan satuan angka pada gambar adalah cm. Berdasar keterangan tersebut. Pilih lebih dari satu pernyataan yang benar dari pernyataan-pernyataan berikut:",
-    "gambar": null,
-    "gambarUrls": [],
+    "gambar": "/soal/tryout_tka_matematika_paket_b/q5_denah_rumah.jpg",
+    "gambarUrls": [
+      "/soal/tryout_tka_matematika_paket_b/q5_denah_rumah.jpg"
+    ],
     "tabel": null,
     "tabelSoal": null,
     "opsiJawaban": [
@@ -463,7 +479,11 @@ export const SOAL_TKA_2026_SMP_MTK_PAKET_B = [
   {
     "id": "tka26_mtk_b_06",
     "nomor": 6,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
     "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
     "materi": "Perbandingan Berbalik Nilai",
     "tipe": "pg_sederhana",
     "teksSoal": "Seorang peternak memiliki 250 ekor ayam dan menyediakan pakan yang cukup untuk 30 hari. Setelah 9 hari berjalan, peternak tersebut menjual 100 ekor ayamnya. Sisa pakan yang tersedia akan habis dalam waktu ….",
@@ -534,7 +554,11 @@ export const SOAL_TKA_2026_SMP_MTK_PAKET_B = [
   {
     "id": "tka26_mtk_b_07",
     "nomor": 7,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
     "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
     "materi": "Aritmetika Sosial / Perbandingan Senilai",
     "tipe": "pg_sederhana",
     "teksSoal": "Di Sebuah toko buah harga 6 kilogram mangga adalah Rp132.000,00. Jika Ibu memiliki uang Rp250.000,00 dan akan membeli 11 kilogram mangga yang sama, maka uang kembalian yang diterima Ibu adalah …..",
@@ -605,82 +629,36 @@ export const SOAL_TKA_2026_SMP_MTK_PAKET_B = [
   {
     "id": "tka26_mtk_b_08",
     "nomor": 8,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
     "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
     "materi": "Operasi Bentuk Akar",
     "tipe": "benar_salah",
-    "teksSoal": "Diketahui dua bilangan P = 3√3 − 4 dan Q = 4√3 + 5.\nTentukan benar atau salah setiap pernyataan berikut:",
-    "teks_soal": "Diketahui dua bilangan P = 3√3 − 4 dan Q = 4√3 + 5.\nTentukan benar atau salah setiap pernyataan berikut:",
-    "soal": "Diketahui dua bilangan P = 3√3 − 4 dan Q = 4√3 + 5.\nTentukan benar atau salah setiap pernyataan berikut:",
-    "gambar": "/soal/tryout_tka_matematika_paket_b/q8_tabel_pernyataan_akar.png",
-    "gambarUrls": [
-      "/soal/tryout_tka_matematika_paket_b/q8_tabel_pernyataan_akar.png"
-    ],
-    "tabel": {
-      "gambar_tabel": "/soal/tryout_tka_matematika_paket_b/q8_tabel_pernyataan_akar.png",
-      "headers": [
-        "Pernyataan",
-        "Benar",
-        "Salah"
-      ],
-      "rows": [
-        [
-          "(1) P + Q = 7√3 + 9",
-          "",
-          "✓"
-        ],
-        [
-          "(2) P − Q = −√3 − 9",
-          "✓",
-          ""
-        ],
-        [
-          "(3) P × Q = 16 − √3",
-          "✓",
-          ""
-        ]
-      ]
-    },
-    "tabelSoal": {
-      "gambar_tabel": "/soal/tryout_tka_matematika_paket_b/q8_tabel_pernyataan_akar.png",
-      "headers": [
-        "Pernyataan",
-        "Benar",
-        "Salah"
-      ],
-      "rows": [
-        [
-          "(1) P + Q = 7√3 + 9",
-          "",
-          "✓"
-        ],
-        [
-          "(2) P − Q = −√3 − 9",
-          "✓",
-          ""
-        ],
-        [
-          "(3) P × Q = 16 − √3",
-          "✓",
-          ""
-        ]
-      ]
-    },
+    "teksSoal": "Diketahui dua bilangan $P = 3\\sqrt{3} - 4$ dan $Q = 4\\sqrt{3} + 5$.\nTentukan benar atau salah setiap pernyataan berikut:",
+    "teks_soal": "Diketahui dua bilangan $P = 3\\sqrt{3} - 4$ dan $Q = 4\\sqrt{3} + 5$.\nTentukan benar atau salah setiap pernyataan berikut:",
+    "soal": "Diketahui dua bilangan $P = 3\\sqrt{3} - 4$ dan $Q = 4\\sqrt{3} + 5$.\nTentukan benar atau salah setiap pernyataan berikut:",
+    "gambar": null,
+    "gambarUrls": [],
+    "tabel": null,
+    "tabelSoal": null,
     "opsiJawaban": [],
     "opsi": [],
     "pernyataan": [
       {
         "id": "p_1",
-        "teks": "(1) P + Q = 7√3 + 9",
+        "teks": "(1) $P + Q = 7\\sqrt{3} + 9$",
         "kunci": "Salah"
       },
       {
         "id": "p_2",
-        "teks": "(2) P − Q = −√3 − 9",
+        "teks": "(2) $P - Q = -\\sqrt{3} - 9$",
         "kunci": "Benar"
       },
       {
         "id": "p_3",
-        "teks": "(3) P × Q = 16 − √3",
+        "teks": "(3) $P \\times Q = 16 - \\sqrt{3}$",
         "kunci": "Benar"
       }
     ],
@@ -699,19 +677,25 @@ export const SOAL_TKA_2026_SMP_MTK_PAKET_B = [
       "2": "Benar",
       "3": "Benar"
     },
-    "pembahasan": "P + Q = (3√3 - 4) + (4√3 + 5) = 7√3 + 1 (maka (1) Salah). P - Q = (3√3 - 4) - (4√3 + 5) = -√3 - 9 ((2) Benar). P × Q = (3√3 - 4)(4√3 + 5) = 36 + 15√3 - 16√3 - 20 = 16 - √3 ((3) Benar)."
+    "pembahasan": "$P + Q = (3\\sqrt{3} - 4) + (4\\sqrt{3} + 5) = 7\\sqrt{3} + 1$ (maka (1) Salah).\n$P - Q = (3\\sqrt{3} - 4) - (4\\sqrt{3} + 5) = -\\sqrt{3} - 9$ ((2) Benar).\n$P \\times Q = (3\\sqrt{3} - 4)(4\\sqrt{3} + 5) = 36 + 15\\sqrt{3} - 16\\sqrt{3} - 20 = 16 - \\sqrt{3}$ ((3) Benar)."
   },
   {
     "id": "tka26_mtk_b_09",
     "nomor": 9,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
     "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
     "materi": "Aritmetika Sosial / Diskon Toko",
     "tipe": "pg_sederhana",
     "teksSoal": "Perhatikan gambar beberapa strategi potongan harga dari beberapa toko berikut!\nBibi ingin membeli 3 buah baju yang sama di salah satu toko tersebut. Agar mendapatkan harga total termurah, toko yang dipilih Bibi adalah ….",
     "teks_soal": "Perhatikan gambar beberapa strategi potongan harga dari beberapa toko berikut!\nBibi ingin membeli 3 buah baju yang sama di salah satu toko tersebut. Agar mendapatkan harga total termurah, toko yang dipilih Bibi adalah ….",
     "soal": "Perhatikan gambar beberapa strategi potongan harga dari beberapa toko berikut!\nBibi ingin membeli 3 buah baju yang sama di salah satu toko tersebut. Agar mendapatkan harga total termurah, toko yang dipilih Bibi adalah ….",
-    "gambar": null,
-    "gambarUrls": [],
+    "gambar": "/soal/tryout_tka_matematika_paket_b/q9_potongan_harga_jaket.jpg",
+    "gambarUrls": [
+      "/soal/tryout_tka_matematika_paket_b/q9_potongan_harga_jaket.jpg"
+    ],
     "tabel": null,
     "tabelSoal": null,
     "opsiJawaban": [
@@ -775,7 +759,11 @@ export const SOAL_TKA_2026_SMP_MTK_PAKET_B = [
   {
     "id": "tka26_mtk_b_10",
     "nomor": 10,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
     "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
     "materi": "Persamaan Linear Satu Variabel",
     "tipe": "pg_sederhana",
     "teksSoal": "Diketahui persamaan 3(3x + 4) − 19 = 4x + 13. Nilai dari 3x − 4 adalah ….",
@@ -846,7 +834,11 @@ export const SOAL_TKA_2026_SMP_MTK_PAKET_B = [
   {
     "id": "tka26_mtk_b_11",
     "nomor": 11,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
     "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
     "materi": "Pertidaksamaan Linear Satu Variabel",
     "tipe": "pg_sederhana",
     "teksSoal": "Betry memiliki uang sebesar Rp120.000,00 yang akan digunakan untuk membeli buku dan pulpen. Biaya perjalanan menuju toko Rp9.000.00. Harga sebuah buku Rp8.000,00 dan harga sebuah pulpen Rp6.000,00. Jika Betry membeli 4 pulpen, maka jumlah maksimal buku yang dapat dibeli adalah ….",
@@ -917,7 +909,11 @@ export const SOAL_TKA_2026_SMP_MTK_PAKET_B = [
   {
     "id": "tka26_mtk_b_12",
     "nomor": 12,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
     "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
     "materi": "Sistem Persamaan Linear Dua Variabel (SPLDV)",
     "tipe": "pg_kompleks",
     "teksSoal": "Di sebuah toko buah diketahui:\n• Harga 3 kg buah anggur dan 4 kg buah kiwi adalah Rp460.000,00.\n• Harga 1 kg buah anggur dan 2 kg buah kiwi adalah Rp200.000,00.\nPilih lebih dari satu pernyataan yang benar dari pernyataan-pernyataan berikut:",
@@ -1000,14 +996,20 @@ export const SOAL_TKA_2026_SMP_MTK_PAKET_B = [
   {
     "id": "tka26_mtk_b_13",
     "nomor": 13,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
     "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
     "materi": "Operasi Bentuk Aljabar & Geometri Trapesium",
     "tipe": "pg_sederhana",
     "teksSoal": "Perhatikan gambar!\nLuas daerah trapesium tersebut adalah ….",
     "teks_soal": "Perhatikan gambar!\nLuas daerah trapesium tersebut adalah ….",
     "soal": "Perhatikan gambar!\nLuas daerah trapesium tersebut adalah ….",
-    "gambar": null,
-    "gambarUrls": [],
+    "gambar": "/soal/tryout_tka_matematika_paket_b/q13_trapesium.png",
+    "gambarUrls": [
+      "/soal/tryout_tka_matematika_paket_b/q13_trapesium.png"
+    ],
     "tabel": null,
     "tabelSoal": null,
     "opsiJawaban": [
@@ -1071,18 +1073,21 @@ export const SOAL_TKA_2026_SMP_MTK_PAKET_B = [
   {
     "id": "tka26_mtk_b_14",
     "nomor": 14,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
     "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
     "materi": "Relasi dan Fungsi",
     "tipe": "benar_salah",
     "teksSoal": "Perhatikan diagram panah berikut!\nTentukan benar atau salah untuk setiap pernyataan berikut:",
     "teks_soal": "Perhatikan diagram panah berikut!\nTentukan benar atau salah untuk setiap pernyataan berikut:",
     "soal": "Perhatikan diagram panah berikut!\nTentukan benar atau salah untuk setiap pernyataan berikut:",
-    "gambar": "/soal/tryout_tka_matematika_paket_b/q14_tabel_pernyataan_fungsi.png",
+    "gambar": "/soal/tryout_tka_matematika_paket_b/q14_diagram_panah_fungsi.png",
     "gambarUrls": [
-      "/soal/tryout_tka_matematika_paket_b/q14_tabel_pernyataan_fungsi.png"
+      "/soal/tryout_tka_matematika_paket_b/q14_diagram_panah_fungsi.png"
     ],
     "tabel": {
-      "gambar_tabel": "/soal/tryout_tka_matematika_paket_b/q14_tabel_pernyataan_fungsi.png",
       "headers": [
         "Pernyataan",
         "Benar",
@@ -1107,7 +1112,6 @@ export const SOAL_TKA_2026_SMP_MTK_PAKET_B = [
       ]
     },
     "tabelSoal": {
-      "gambar_tabel": "/soal/tryout_tka_matematika_paket_b/q14_tabel_pernyataan_fungsi.png",
       "headers": [
         "Pernyataan",
         "Benar",
@@ -1170,7 +1174,11 @@ export const SOAL_TKA_2026_SMP_MTK_PAKET_B = [
   {
     "id": "tka26_mtk_b_15",
     "nomor": 15,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
     "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
     "materi": "Barisan dan Deret Aritmatika",
     "tipe": "pg_sederhana",
     "teksSoal": "Diketahui suatu barisan aritmatika 10, 12, 14, 16, 18, …\nNilai U72 − U15 adalah ….",
@@ -1241,14 +1249,20 @@ export const SOAL_TKA_2026_SMP_MTK_PAKET_B = [
   {
     "id": "tka26_mtk_b_16",
     "nomor": 16,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
     "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
     "materi": "Pola Bilangan / Deret Batang Korek Api",
     "tipe": "pg_sederhana",
     "teksSoal": "Perhatikan gambar susunan batang korek api berikut!\nSeorang siswa ditugaskan untuk menyusun batang korek api dari pola ke-1 sampai dengan pola ke-55. Jumlah batang korek api yang diperlukan untuk membuat seluruh susunan pola tersebut adalah ….",
     "teks_soal": "Perhatikan gambar susunan batang korek api berikut!\nSeorang siswa ditugaskan untuk menyusun batang korek api dari pola ke-1 sampai dengan pola ke-55. Jumlah batang korek api yang diperlukan untuk membuat seluruh susunan pola tersebut adalah ….",
     "soal": "Perhatikan gambar susunan batang korek api berikut!\nSeorang siswa ditugaskan untuk menyusun batang korek api dari pola ke-1 sampai dengan pola ke-55. Jumlah batang korek api yang diperlukan untuk membuat seluruh susunan pola tersebut adalah ….",
-    "gambar": null,
-    "gambarUrls": [],
+    "gambar": "/soal/tryout_tka_matematika_paket_b/q16_susunan_korek_api.jpg",
+    "gambarUrls": [
+      "/soal/tryout_tka_matematika_paket_b/q16_susunan_korek_api.jpg"
+    ],
     "tabel": null,
     "tabelSoal": null,
     "opsiJawaban": [
@@ -1312,18 +1326,21 @@ export const SOAL_TKA_2026_SMP_MTK_PAKET_B = [
   {
     "id": "tka26_mtk_b_17",
     "nomor": 17,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
     "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
     "materi": "Garis dan Sudut",
     "tipe": "benar_salah",
     "teksSoal": "Perhatikan gambar!\nBerdasarkan informasi pada gambar, tentukan benar atau salah untuk setiap pernyataan berikut:",
     "teks_soal": "Perhatikan gambar!\nBerdasarkan informasi pada gambar, tentukan benar atau salah untuk setiap pernyataan berikut:",
     "soal": "Perhatikan gambar!\nBerdasarkan informasi pada gambar, tentukan benar atau salah untuk setiap pernyataan berikut:",
-    "gambar": "/soal/tryout_tka_matematika_paket_b/q17_tabel_pernyataan_sudut.png",
+    "gambar": "/soal/tryout_tka_matematika_paket_b/q17_garis_sudut.png",
     "gambarUrls": [
-      "/soal/tryout_tka_matematika_paket_b/q17_tabel_pernyataan_sudut.png"
+      "/soal/tryout_tka_matematika_paket_b/q17_garis_sudut.png"
     ],
     "tabel": {
-      "gambar_tabel": "/soal/tryout_tka_matematika_paket_b/q17_tabel_pernyataan_sudut.png",
       "headers": [
         "Pernyataan",
         "Benar",
@@ -1348,7 +1365,6 @@ export const SOAL_TKA_2026_SMP_MTK_PAKET_B = [
       ]
     },
     "tabelSoal": {
-      "gambar_tabel": "/soal/tryout_tka_matematika_paket_b/q17_tabel_pernyataan_sudut.png",
       "headers": [
         "Pernyataan",
         "Benar",
@@ -1411,18 +1427,21 @@ export const SOAL_TKA_2026_SMP_MTK_PAKET_B = [
   {
     "id": "tka26_mtk_b_18",
     "nomor": 18,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
     "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
     "materi": "Teorema Pythagoras",
     "tipe": "benar_salah",
     "teksSoal": "Perhatikan gambar! Yusuf berada di puncak gedung (C). Ia melihat mobil A (hijau) dan mobil B (merah). Dasar gedung (D) tempat Yusuf berada terletak segaris dengan kedua mobil tersebut.\nBerdasarkan informasi pada gambar, tentukan benar atau salah untuk setiap pernyataan berikut:",
     "teks_soal": "Perhatikan gambar! Yusuf berada di puncak gedung (C). Ia melihat mobil A (hijau) dan mobil B (merah). Dasar gedung (D) tempat Yusuf berada terletak segaris dengan kedua mobil tersebut.\nBerdasarkan informasi pada gambar, tentukan benar atau salah untuk setiap pernyataan berikut:",
     "soal": "Perhatikan gambar! Yusuf berada di puncak gedung (C). Ia melihat mobil A (hijau) dan mobil B (merah). Dasar gedung (D) tempat Yusuf berada terletak segaris dengan kedua mobil tersebut.\nBerdasarkan informasi pada gambar, tentukan benar atau salah untuk setiap pernyataan berikut:",
-    "gambar": "/soal/tryout_tka_matematika_paket_b/q18_tabel_pernyataan_gedung.png",
+    "gambar": "/soal/tryout_tka_matematika_paket_b/q18_gedung_dan_mobil.png",
     "gambarUrls": [
-      "/soal/tryout_tka_matematika_paket_b/q18_tabel_pernyataan_gedung.png"
+      "/soal/tryout_tka_matematika_paket_b/q18_gedung_dan_mobil.png"
     ],
     "tabel": {
-      "gambar_tabel": "/soal/tryout_tka_matematika_paket_b/q18_tabel_pernyataan_gedung.png",
       "headers": [
         "Pernyataan",
         "Benar",
@@ -1447,7 +1466,6 @@ export const SOAL_TKA_2026_SMP_MTK_PAKET_B = [
       ]
     },
     "tabelSoal": {
-      "gambar_tabel": "/soal/tryout_tka_matematika_paket_b/q18_tabel_pernyataan_gedung.png",
       "headers": [
         "Pernyataan",
         "Benar",
@@ -1510,14 +1528,20 @@ export const SOAL_TKA_2026_SMP_MTK_PAKET_B = [
   {
     "id": "tka26_mtk_b_19",
     "nomor": 19,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
     "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
     "materi": "Kekongruenan Segitiga",
     "tipe": "pg_sederhana",
     "teksSoal": "Perhatikan gambar!\nDiketahui ∆ABC kongruen dengan ∆PQR, besar sudut RPQ adalah ….",
     "teks_soal": "Perhatikan gambar!\nDiketahui ∆ABC kongruen dengan ∆PQR, besar sudut RPQ adalah ….",
     "soal": "Perhatikan gambar!\nDiketahui ∆ABC kongruen dengan ∆PQR, besar sudut RPQ adalah ….",
-    "gambar": null,
-    "gambarUrls": [],
+    "gambar": "/soal/tryout_tka_matematika_paket_b/q19_segitiga_kongruen.png",
+    "gambarUrls": [
+      "/soal/tryout_tka_matematika_paket_b/q19_segitiga_kongruen.png"
+    ],
     "tabel": null,
     "tabelSoal": null,
     "opsiJawaban": [
@@ -1581,14 +1605,20 @@ export const SOAL_TKA_2026_SMP_MTK_PAKET_B = [
   {
     "id": "tka26_mtk_b_20",
     "nomor": 20,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
     "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
     "materi": "Kesebangunan Persegi Panjang",
     "tipe": "pg_kompleks",
     "teksSoal": "Perhatikan gambar!\nLukisan (PQRS) ditempel pada sebuah karton (ABCD) yang berbentuk persegi panjang. Diketahui lukisan dan karton sebangun.\nPilih lebih dari satu jawaban yang benar dari pernyataan berikut:",
     "teks_soal": "Perhatikan gambar!\nLukisan (PQRS) ditempel pada sebuah karton (ABCD) yang berbentuk persegi panjang. Diketahui lukisan dan karton sebangun.\nPilih lebih dari satu jawaban yang benar dari pernyataan berikut:",
     "soal": "Perhatikan gambar!\nLukisan (PQRS) ditempel pada sebuah karton (ABCD) yang berbentuk persegi panjang. Diketahui lukisan dan karton sebangun.\nPilih lebih dari satu jawaban yang benar dari pernyataan berikut:",
-    "gambar": null,
-    "gambarUrls": [],
+    "gambar": "/soal/tryout_tka_matematika_paket_b/q20_lukisan_karton.jpg",
+    "gambarUrls": [
+      "/soal/tryout_tka_matematika_paket_b/q20_lukisan_karton.jpg"
+    ],
     "tabel": null,
     "tabelSoal": null,
     "opsiJawaban": [
@@ -1664,14 +1694,20 @@ export const SOAL_TKA_2026_SMP_MTK_PAKET_B = [
   {
     "id": "tka26_mtk_b_21",
     "nomor": 21,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
     "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
     "materi": "Transformasi Geometri",
     "tipe": "pg_kompleks",
     "teksSoal": "Perhatikan gambar!\nPilih lebih dari satu pernyataan yang benar mengenai hasil transformasi titik A berikut:",
     "teks_soal": "Perhatikan gambar!\nPilih lebih dari satu pernyataan yang benar mengenai hasil transformasi titik A berikut:",
     "soal": "Perhatikan gambar!\nPilih lebih dari satu pernyataan yang benar mengenai hasil transformasi titik A berikut:",
-    "gambar": null,
-    "gambarUrls": [],
+    "gambar": "/soal/tryout_tka_matematika_paket_b/q21_koordinat_titik_a.jpg",
+    "gambarUrls": [
+      "/soal/tryout_tka_matematika_paket_b/q21_koordinat_titik_a.jpg"
+    ],
     "tabel": null,
     "tabelSoal": null,
     "opsiJawaban": [
@@ -1744,14 +1780,20 @@ export const SOAL_TKA_2026_SMP_MTK_PAKET_B = [
   {
     "id": "tka26_mtk_b_22",
     "nomor": 22,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
     "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
     "materi": "Keliling Gabungan Bangun Datar",
     "tipe": "pg_sederhana",
     "teksSoal": "Perhatikan gambar!\nBangun datar tersebut merupakan gabungan antara belah ketupat ABFG dan trapesium samakaki BCDF. Diketahui AF = 16 cm, OB = 6 cm, FD = 25 cm dan BC = 13 cm, keliling gabungan bangun datar tersebut adalah ….",
     "teks_soal": "Perhatikan gambar!\nBangun datar tersebut merupakan gabungan antara belah ketupat ABFG dan trapesium samakaki BCDF. Diketahui AF = 16 cm, OB = 6 cm, FD = 25 cm dan BC = 13 cm, keliling gabungan bangun datar tersebut adalah ….",
     "soal": "Perhatikan gambar!\nBangun datar tersebut merupakan gabungan antara belah ketupat ABFG dan trapesium samakaki BCDF. Diketahui AF = 16 cm, OB = 6 cm, FD = 25 cm dan BC = 13 cm, keliling gabungan bangun datar tersebut adalah ….",
-    "gambar": null,
-    "gambarUrls": [],
+    "gambar": "/soal/tryout_tka_matematika_paket_b/q22_belah_ketupat_trapesium.jpg",
+    "gambarUrls": [
+      "/soal/tryout_tka_matematika_paket_b/q22_belah_ketupat_trapesium.jpg"
+    ],
     "tabel": null,
     "tabelSoal": null,
     "opsiJawaban": [
@@ -1815,14 +1857,20 @@ export const SOAL_TKA_2026_SMP_MTK_PAKET_B = [
   {
     "id": "tka26_mtk_b_23",
     "nomor": 23,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
     "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
     "materi": "Luas Daerah Diarsir (Lingkaran & Segitiga)",
     "tipe": "pg_sederhana",
     "teksSoal": "Perhatikan gambar!\nLuas daerah yang diarsir adalah …. (π = 22/7)",
     "teks_soal": "Perhatikan gambar!\nLuas daerah yang diarsir adalah …. (π = 22/7)",
     "soal": "Perhatikan gambar!\nLuas daerah yang diarsir adalah …. (π = 22/7)",
-    "gambar": null,
-    "gambarUrls": [],
+    "gambar": "/soal/tryout_tka_matematika_paket_b/q23_daerah_arsir_juring.jpg",
+    "gambarUrls": [
+      "/soal/tryout_tka_matematika_paket_b/q23_daerah_arsir_juring.jpg"
+    ],
     "tabel": null,
     "tabelSoal": null,
     "opsiJawaban": [
@@ -1886,18 +1934,21 @@ export const SOAL_TKA_2026_SMP_MTK_PAKET_B = [
   {
     "id": "tka26_mtk_b_24",
     "nomor": 24,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
     "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
     "materi": "Jaring-Jaring Bangun Ruang Sisi Datar",
     "tipe": "benar_salah",
     "teksSoal": "Perhatikan gambar jaring-jaring bangun ruang sisi datar berikut!\nTentukan benar atau salah dari setiap pernyataan berikut:",
     "teks_soal": "Perhatikan gambar jaring-jaring bangun ruang sisi datar berikut!\nTentukan benar atau salah dari setiap pernyataan berikut:",
     "soal": "Perhatikan gambar jaring-jaring bangun ruang sisi datar berikut!\nTentukan benar atau salah dari setiap pernyataan berikut:",
-    "gambar": "/soal/tryout_tka_matematika_paket_b/q24_tabel_pernyataan_jaring.png",
+    "gambar": "/soal/tryout_tka_matematika_paket_b/q24_jaring_jaring_bangun.png",
     "gambarUrls": [
-      "/soal/tryout_tka_matematika_paket_b/q24_tabel_pernyataan_jaring.png"
+      "/soal/tryout_tka_matematika_paket_b/q24_jaring_jaring_bangun.png"
     ],
     "tabel": {
-      "gambar_tabel": "/soal/tryout_tka_matematika_paket_b/q24_tabel_pernyataan_jaring.png",
       "headers": [
         "Pernyataan",
         "Benar",
@@ -1922,7 +1973,6 @@ export const SOAL_TKA_2026_SMP_MTK_PAKET_B = [
       ]
     },
     "tabelSoal": {
-      "gambar_tabel": "/soal/tryout_tka_matematika_paket_b/q24_tabel_pernyataan_jaring.png",
       "headers": [
         "Pernyataan",
         "Benar",
@@ -1985,14 +2035,20 @@ export const SOAL_TKA_2026_SMP_MTK_PAKET_B = [
   {
     "id": "tka26_mtk_b_25",
     "nomor": 25,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
     "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
     "materi": "Volume Gabungan Balok dan Limas",
     "tipe": "pg_sederhana",
     "teksSoal": "Perhatikan gambar bangun ruang gabungan berikut!\nBangun tersebut merupakan gabungan balok ABCD. EFGH dan limas T.EFGH. Jika diketahui TK = 22 cm maka volume bangun tersebut adalah ….",
     "teks_soal": "Perhatikan gambar bangun ruang gabungan berikut!\nBangun tersebut merupakan gabungan balok ABCD. EFGH dan limas T.EFGH. Jika diketahui TK = 22 cm maka volume bangun tersebut adalah ….",
     "soal": "Perhatikan gambar bangun ruang gabungan berikut!\nBangun tersebut merupakan gabungan balok ABCD. EFGH dan limas T.EFGH. Jika diketahui TK = 22 cm maka volume bangun tersebut adalah ….",
-    "gambar": null,
-    "gambarUrls": [],
+    "gambar": "/soal/tryout_tka_matematika_paket_b/q25_balok_dan_limas.jpg",
+    "gambarUrls": [
+      "/soal/tryout_tka_matematika_paket_b/q25_balok_dan_limas.jpg"
+    ],
     "tabel": null,
     "tabelSoal": null,
     "opsiJawaban": [
@@ -2056,14 +2112,20 @@ export const SOAL_TKA_2026_SMP_MTK_PAKET_B = [
   {
     "id": "tka26_mtk_b_26",
     "nomor": 26,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
     "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
     "materi": "Volume Bola dan Tabung",
     "tipe": "pg_sederhana",
     "teksSoal": "Perhatikan gambar!\nSebuah tempat penampungan minyak berbentuk bola dengan diameter 21 meter terisi penuh oleh minyak. Seluruh minyak tersebut akan didistribusikan ketempat-tempat penjualan menggunakan truk tangki. Setiap truk memiliki tangki berbentuk tabung dengan panjang jari-jari 1,5 meter dan panjang tangki 7 meter. Berapakah jumlah truk tangki yang diperlukan untuk mengangkut seluruh minyak tersebut hingga habis?",
     "teks_soal": "Perhatikan gambar!\nSebuah tempat penampungan minyak berbentuk bola dengan diameter 21 meter terisi penuh oleh minyak. Seluruh minyak tersebut akan didistribusikan ketempat-tempat penjualan menggunakan truk tangki. Setiap truk memiliki tangki berbentuk tabung dengan panjang jari-jari 1,5 meter dan panjang tangki 7 meter. Berapakah jumlah truk tangki yang diperlukan untuk mengangkut seluruh minyak tersebut hingga habis?",
     "soal": "Perhatikan gambar!\nSebuah tempat penampungan minyak berbentuk bola dengan diameter 21 meter terisi penuh oleh minyak. Seluruh minyak tersebut akan didistribusikan ketempat-tempat penjualan menggunakan truk tangki. Setiap truk memiliki tangki berbentuk tabung dengan panjang jari-jari 1,5 meter dan panjang tangki 7 meter. Berapakah jumlah truk tangki yang diperlukan untuk mengangkut seluruh minyak tersebut hingga habis?",
-    "gambar": null,
-    "gambarUrls": [],
+    "gambar": "/soal/tryout_tka_matematika_paket_b/q26_tangki_bola_dan_truk.jpg",
+    "gambarUrls": [
+      "/soal/tryout_tka_matematika_paket_b/q26_tangki_bola_dan_truk.jpg"
+    ],
     "tabel": null,
     "tabelSoal": null,
     "opsiJawaban": [
@@ -2127,14 +2189,20 @@ export const SOAL_TKA_2026_SMP_MTK_PAKET_B = [
   {
     "id": "tka26_mtk_b_27",
     "nomor": 27,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
     "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
     "materi": "Statistika / Diagram Batang",
     "tipe": "pg_sederhana",
     "teksSoal": "Perhatikan diagram berikut!\nSelisih rata-rata hasil penjualan selama 5 hari antara gula pasir merek A dan merek B di Toko Sembako Laris Manis adalah ….",
     "teks_soal": "Perhatikan diagram berikut!\nSelisih rata-rata hasil penjualan selama 5 hari antara gula pasir merek A dan merek B di Toko Sembako Laris Manis adalah ….",
     "soal": "Perhatikan diagram berikut!\nSelisih rata-rata hasil penjualan selama 5 hari antara gula pasir merek A dan merek B di Toko Sembako Laris Manis adalah ….",
-    "gambar": null,
-    "gambarUrls": [],
+    "gambar": "/soal/tryout_tka_matematika_paket_b/q27_diagram_batang_gula.png",
+    "gambarUrls": [
+      "/soal/tryout_tka_matematika_paket_b/q27_diagram_batang_gula.png"
+    ],
     "tabel": null,
     "tabelSoal": null,
     "opsiJawaban": [
@@ -2198,18 +2266,19 @@ export const SOAL_TKA_2026_SMP_MTK_PAKET_B = [
   {
     "id": "tka26_mtk_b_28",
     "nomor": 28,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
     "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
     "materi": "Statistika Data Tunggal Berbobot",
     "tipe": "pg_kompleks",
     "teksSoal": "Perhatikan tabel tinggi badan siswa!\nTentukan lebih dari satu pernyataan yang benar terkait dari tabel tersebut!",
     "teks_soal": "Perhatikan tabel tinggi badan siswa!\nTentukan lebih dari satu pernyataan yang benar terkait dari tabel tersebut!",
     "soal": "Perhatikan tabel tinggi badan siswa!\nTentukan lebih dari satu pernyataan yang benar terkait dari tabel tersebut!",
-    "gambar": "/soal/tryout_tka_matematika_paket_b/q28_tabel_tinggi_badan.png",
-    "gambarUrls": [
-      "/soal/tryout_tka_matematika_paket_b/q28_tabel_tinggi_badan.png"
-    ],
+    "gambar": null,
+    "gambarUrls": [],
     "tabel": {
-      "gambar_tabel": "/soal/tryout_tka_matematika_paket_b/q28_tabel_tinggi_badan.png",
       "headers": [
         "Tinggi siswa (cm)",
         "152",
@@ -2234,7 +2303,6 @@ export const SOAL_TKA_2026_SMP_MTK_PAKET_B = [
       ]
     },
     "tabelSoal": {
-      "gambar_tabel": "/soal/tryout_tka_matematika_paket_b/q28_tabel_tinggi_badan.png",
       "headers": [
         "Tinggi siswa (cm)",
         "152",
@@ -2331,14 +2399,20 @@ export const SOAL_TKA_2026_SMP_MTK_PAKET_B = [
   {
     "id": "tka26_mtk_b_29",
     "nomor": 29,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
     "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
     "materi": "Peluang Suatu Kejadian",
     "tipe": "pg_sederhana",
     "teksSoal": "Perhatikan gambar!\nSebuah dadu bersisi enam dilempar undi sebanyak satu kali. Peluang muncul mata dadu lebih dari empat adalah ….",
     "teks_soal": "Perhatikan gambar!\nSebuah dadu bersisi enam dilempar undi sebanyak satu kali. Peluang muncul mata dadu lebih dari empat adalah ….",
     "soal": "Perhatikan gambar!\nSebuah dadu bersisi enam dilempar undi sebanyak satu kali. Peluang muncul mata dadu lebih dari empat adalah ….",
-    "gambar": null,
-    "gambarUrls": [],
+    "gambar": "/soal/tryout_tka_matematika_paket_b/q29_dadu_merah.jpg",
+    "gambarUrls": [
+      "/soal/tryout_tka_matematika_paket_b/q29_dadu_merah.jpg"
+    ],
     "tabel": null,
     "tabelSoal": null,
     "opsiJawaban": [
@@ -2402,18 +2476,19 @@ export const SOAL_TKA_2026_SMP_MTK_PAKET_B = [
   {
     "id": "tka26_mtk_b_30",
     "nomor": 30,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
     "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
     "materi": "Persentase & Efektivitas",
     "tipe": "pg_sederhana",
     "teksSoal": "Seorang peternak ayam memiliki 4 buah mesin penetas telor dengan kapasitas dan tingkat keberhasilan yang berbeda-beda. Data hasil penetasan dari keempat mesin tersebut disajikan dalam tabel berikut:\nMesin penetas memiliki kualitas paling baik dan efektif tinggi adalah ….",
     "teks_soal": "Seorang peternak ayam memiliki 4 buah mesin penetas telor dengan kapasitas dan tingkat keberhasilan yang berbeda-beda. Data hasil penetasan dari keempat mesin tersebut disajikan dalam tabel berikut:\nMesin penetas memiliki kualitas paling baik dan efektif tinggi adalah ….",
     "soal": "Seorang peternak ayam memiliki 4 buah mesin penetas telor dengan kapasitas dan tingkat keberhasilan yang berbeda-beda. Data hasil penetasan dari keempat mesin tersebut disajikan dalam tabel berikut:\nMesin penetas memiliki kualitas paling baik dan efektif tinggi adalah ….",
-    "gambar": "/soal/tryout_tka_matematika_paket_b/q30_tabel_mesin_penetas.png",
-    "gambarUrls": [
-      "/soal/tryout_tka_matematika_paket_b/q30_tabel_mesin_penetas.png"
-    ],
+    "gambar": null,
+    "gambarUrls": [],
     "tabel": {
-      "gambar_tabel": "/soal/tryout_tka_matematika_paket_b/q30_tabel_mesin_penetas.png",
       "headers": [
         "Nama Mesin",
         "Jumlah Telor yang Diisi",
@@ -2443,7 +2518,6 @@ export const SOAL_TKA_2026_SMP_MTK_PAKET_B = [
       ]
     },
     "tabelSoal": {
-      "gambar_tabel": "/soal/tryout_tka_matematika_paket_b/q30_tabel_mesin_penetas.png",
       "headers": [
         "Nama Mesin",
         "Jumlah Telor yang Diisi",
@@ -2536,7 +2610,11 @@ export const SOAL_TKA_2026_SMP_BINDO_PAKET_A = [
   {
     "id": "tka26_indo_a_01",
     "nomor": 1,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
     "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
     "materi": "Makna Istilah / Kosakata",
     "tipe": "pg_sederhana",
     "teksSoal": "Makna istilah kapasitas yang sesuai dengan isi teks tersebut adalah …",
@@ -2613,18 +2691,19 @@ export const SOAL_TKA_2026_SMP_BINDO_PAKET_A = [
   {
     "id": "tka26_indo_a_02",
     "nomor": 2,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
     "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
     "materi": "Kesesuaian Pernyataan Teks",
     "tipe": "benar_salah",
     "teksSoal": "Tentukan kesesuaian pernyataan berikut dengan isi teks tersebut!",
     "teks_soal": "Tentukan kesesuaian pernyataan berikut dengan isi teks tersebut!",
     "soal": "Tentukan kesesuaian pernyataan berikut dengan isi teks tersebut!",
-    "gambar": "/soal/tryout_tpm_bindo_paket_a/q2_tabel_kesesuaian_pernyataan.png",
-    "gambarUrls": [
-      "/soal/tryout_tpm_bindo_paket_a/q2_tabel_kesesuaian_pernyataan.png"
-    ],
+    "gambar": null,
+    "gambarUrls": [],
     "tabel": {
-      "gambar_tabel": "/soal/tryout_tpm_bindo_paket_a/q2_tabel_kesesuaian_pernyataan.png",
       "headers": [
         "Pernyataan",
         "Sesuai",
@@ -2649,7 +2728,6 @@ export const SOAL_TKA_2026_SMP_BINDO_PAKET_A = [
       ]
     },
     "tabelSoal": {
-      "gambar_tabel": "/soal/tryout_tpm_bindo_paket_a/q2_tabel_kesesuaian_pernyataan.png",
       "headers": [
         "Pernyataan",
         "Sesuai",
@@ -2678,17 +2756,17 @@ export const SOAL_TKA_2026_SMP_BINDO_PAKET_A = [
     "pernyataan": [
       {
         "id": "p_1",
-        "teks": "Penyediaan ruang terbuka hijau terkendala lahan yang terbatas.",
+        "teks": "A. Penyediaan ruang terbuka hijau terkendala lahan yang terbatas.",
         "kunci": "Sesuai"
       },
       {
         "id": "p_2",
-        "teks": "Kapasitas penanganan lokal mampu mengatasi masalah sampah",
+        "teks": "B. Kapasitas penanganan lokal mampu mengatasi masalah sampah",
         "kunci": "Tidak Sesuai"
       },
       {
         "id": "p_3",
-        "teks": "Urbanisasi dan pertumbuhan penduduk menyebabkan masalah lingkungan.",
+        "teks": "C. Urbanisasi dan pertumbuhan penduduk menyebabkan masalah lingkungan.",
         "kunci": "Sesuai"
       }
     ],
@@ -2718,7 +2796,11 @@ export const SOAL_TKA_2026_SMP_BINDO_PAKET_A = [
   {
     "id": "tka26_indo_a_03",
     "nomor": 3,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
     "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
     "materi": "Gagasan Pendukung Paragraf",
     "tipe": "pg_sederhana",
     "teksSoal": "Gagasan pendukung paragraf pertama yang sesuai adalah …",
@@ -2795,7 +2877,11 @@ export const SOAL_TKA_2026_SMP_BINDO_PAKET_A = [
   {
     "id": "tka26_indo_a_04",
     "nomor": 4,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
     "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
     "materi": "Istilah Bidang Media Sosial",
     "tipe": "pg_kompleks",
     "teksSoal": "Pilihlah jawaban lebih dari satu!\nIstilah media sosial yang terdapat pada teks tersebut adalah ….",
@@ -2882,7 +2968,11 @@ export const SOAL_TKA_2026_SMP_BINDO_PAKET_A = [
   {
     "id": "tka26_indo_a_05",
     "nomor": 5,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
     "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
     "materi": "Tujuan Teks Prosedur",
     "tipe": "pg_sederhana",
     "teksSoal": "Tujuan dibuatnya teks prosedur tersebut adalah ….",
@@ -2960,7 +3050,11 @@ export const SOAL_TKA_2026_SMP_BINDO_PAKET_A = [
   {
     "id": "tka26_indo_a_06",
     "nomor": 6,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
     "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
     "materi": "Ketepatan Isi Teks Prosedur",
     "tipe": "pg_sederhana",
     "teksSoal": "Berdasarkan teks tersebut, bagian yang tidak sesuai adalah ….",
@@ -3038,7 +3132,11 @@ export const SOAL_TKA_2026_SMP_BINDO_PAKET_A = [
   {
     "id": "tka26_indo_a_07",
     "nomor": 7,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
     "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
     "materi": "Pokok-Pokok Berita",
     "tipe": "pg_kompleks",
     "teksSoal": "Pilihlah jawaban lebih dari satu!\nPernyataan yang merupakan pokok-pokok berita tersebut adalah ...",
@@ -3125,7 +3223,11 @@ export const SOAL_TKA_2026_SMP_BINDO_PAKET_A = [
   {
     "id": "tka26_indo_a_08",
     "nomor": 8,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
     "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
     "materi": "Tindakan Berdasarkan Berita",
     "tipe": "pg_kompleks",
     "teksSoal": "Pilihlah jawaban lebih dari satu!\nHal yang dapat dilakukan pihak-pihak nonpemerintah untuk menggiatkan olahraga di masyarakat adalah ....",
@@ -3212,7 +3314,11 @@ export const SOAL_TKA_2026_SMP_BINDO_PAKET_A = [
   {
     "id": "tka26_indo_a_09",
     "nomor": 9,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
     "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
     "materi": "Kelengkapan Unsur Berita (Adiksimba)",
     "tipe": "pg_sederhana",
     "teksSoal": "Apa yang membuat teks tersebut belum memuat unsur-unsur berita secara lengkap?",
@@ -3290,7 +3396,11 @@ export const SOAL_TKA_2026_SMP_BINDO_PAKET_A = [
   {
     "id": "tka26_indo_a_10",
     "nomor": 10,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
     "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
     "materi": "Menemukan Informasi Tersurat",
     "tipe": "pg_sederhana",
     "teksSoal": "Berdasarkan teks tersebut yang dapat menjadi spons untuk menyerap air ke dalam tanah seraya menahan untuk tidak langsung masuk ke sungai menunjuk pada ….",
@@ -3368,7 +3478,11 @@ export const SOAL_TKA_2026_SMP_BINDO_PAKET_A = [
   {
     "id": "tka26_indo_a_11",
     "nomor": 11,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
     "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
     "materi": "Identifikasi Peristiwa Teks",
     "tipe": "pg_sederhana",
     "teksSoal": "Peristiwa yang terjadi pada kutipan teks tersebut adalah ….",
@@ -3446,7 +3560,11 @@ export const SOAL_TKA_2026_SMP_BINDO_PAKET_A = [
   {
     "id": "tka26_indo_a_12",
     "nomor": 12,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
     "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
     "materi": "Tindakan Pencegahan Bencana",
     "tipe": "pg_sederhana",
     "teksSoal": "Tindakan yang tepat bagi kita untuk mencegah peristiwa tersebut terulang adalah …",
@@ -3524,7 +3642,11 @@ export const SOAL_TKA_2026_SMP_BINDO_PAKET_A = [
   {
     "id": "tka26_indo_a_13",
     "nomor": 13,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
     "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
     "materi": "Ketepatan Penggunaan Istilah",
     "tipe": "pg_kompleks",
     "teksSoal": "Pilihlah jawaban yang benar! Jawaban benar lebih dari satu.\nKata/istilah manakah yang tidak sesuai kaidah pada teks tersebut?",
@@ -3617,7 +3739,11 @@ export const SOAL_TKA_2026_SMP_BINDO_PAKET_A = [
   {
     "id": "tka26_indo_a_14",
     "nomor": 14,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
     "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
     "materi": "Pola Pengembangan Paragraf",
     "tipe": "pg_sederhana",
     "teksSoal": "Pola pengembangan manakah yang digunakan pada paragraf kedua dalam teks tersebut?",
@@ -3701,7 +3827,11 @@ export const SOAL_TKA_2026_SMP_BINDO_PAKET_A = [
   {
     "id": "tka26_indo_a_15",
     "nomor": 15,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
     "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
     "materi": "Ketepatan Penggunaan Konjungsi",
     "tipe": "pg_sederhana",
     "teksSoal": "Penggunaan konjungsi manakah yang tidak sesuai kaidah pada teks tersebut?",
@@ -3785,18 +3915,19 @@ export const SOAL_TKA_2026_SMP_BINDO_PAKET_A = [
   {
     "id": "tka26_indo_a_16",
     "nomor": 16,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
     "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
     "materi": "Opini Penulis Teks Ulasan",
     "tipe": "benar_salah",
     "teksSoal": "Tentukan kebenaran opini penulis berikut berdasarkan teks tersebut!",
     "teks_soal": "Tentukan kebenaran opini penulis berikut berdasarkan teks tersebut!",
     "soal": "Tentukan kebenaran opini penulis berikut berdasarkan teks tersebut!",
-    "gambar": "/soal/tryout_tpm_bindo_paket_a/q16_tabel_kebenaran_opini.png",
-    "gambarUrls": [
-      "/soal/tryout_tpm_bindo_paket_a/q16_tabel_kebenaran_opini.png"
-    ],
+    "gambar": null,
+    "gambarUrls": [],
     "tabel": {
-      "gambar_tabel": "/soal/tryout_tpm_bindo_paket_a/q16_tabel_kebenaran_opini.png",
       "headers": [
         "Pernyataan",
         "Benar",
@@ -3821,7 +3952,6 @@ export const SOAL_TKA_2026_SMP_BINDO_PAKET_A = [
       ]
     },
     "tabelSoal": {
-      "gambar_tabel": "/soal/tryout_tpm_bindo_paket_a/q16_tabel_kebenaran_opini.png",
       "headers": [
         "Pernyataan",
         "Benar",
@@ -3850,17 +3980,17 @@ export const SOAL_TKA_2026_SMP_BINDO_PAKET_A = [
     "pernyataan": [
       {
         "id": "p_1",
-        "teks": "Film Na Willa menjadi sorotan karena memadukan alur drama yang emosional dengan sinematografi yang kuat.",
+        "teks": "A. Film Na Willa menjadi sorotan karena memadukan alur drama yang emosional dengan sinematografi yang kuat.",
         "kunci": "Benar"
       },
       {
         "id": "p_2",
-        "teks": "Akting para pemain, terutama pemeran Willa, terasa autentik dan natural.",
+        "teks": "B. Akting para pemain, terutama pemeran Willa, terasa autentik dan natural.",
         "kunci": "Benar"
       },
       {
         "id": "p_3",
-        "teks": "Tokoh utamanya bernama Willa, seorang wanita muda yang berjuang menghadapi berbagai kesulitan hidup",
+        "teks": "C. Tokoh utamanya bernama Willa, seorang wanita muda yang berjuang menghadapi berbagai kesulitan hidup",
         "kunci": "Salah"
       }
     ],
@@ -3891,7 +4021,11 @@ export const SOAL_TKA_2026_SMP_BINDO_PAKET_A = [
   {
     "id": "tka26_indo_a_17",
     "nomor": 17,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
     "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
     "materi": "Simpulan Teks Ulasan",
     "tipe": "pg_sederhana",
     "teksSoal": "Simpulan paling akurat yang merangkum keseluruhan teks adalah …",
@@ -3969,7 +4103,11 @@ export const SOAL_TKA_2026_SMP_BINDO_PAKET_A = [
   {
     "id": "tka26_indo_a_18",
     "nomor": 18,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
     "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
     "materi": "Hubungan Judul dengan Isi Teks",
     "tipe": "pg_sederhana",
     "teksSoal": "Alasan yang paling tepat mengapa judul tersebut sesuai dengan isi teks adalah …",
@@ -4047,7 +4185,11 @@ export const SOAL_TKA_2026_SMP_BINDO_PAKET_A = [
   {
     "id": "tka26_indo_a_19",
     "nomor": 19,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
     "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
     "materi": "Bagan Pokok Pikiran Teks",
     "tipe": "pg_sederhana",
     "teksSoal": "Bagan yang sesuai dengan pokok-pokok teks tersebut adalah ….",
@@ -4125,18 +4267,19 @@ export const SOAL_TKA_2026_SMP_BINDO_PAKET_A = [
   {
     "id": "tka26_indo_a_20",
     "nomor": 20,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
     "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
     "materi": "Ide Pokok Paragraf",
     "tipe": "benar_salah",
     "teksSoal": "Ide pokok paragraf ketiga teks tersebut adalah …. Tentukan benar atau salah pada setiap pernyataan berikut!",
     "teks_soal": "Ide pokok paragraf ketiga teks tersebut adalah …. Tentukan benar atau salah pada setiap pernyataan berikut!",
     "soal": "Ide pokok paragraf ketiga teks tersebut adalah …. Tentukan benar atau salah pada setiap pernyataan berikut!",
-    "gambar": "/soal/tryout_tpm_bindo_paket_a/q20_tabel_ide_pokok_benar_salah.png",
-    "gambarUrls": [
-      "/soal/tryout_tpm_bindo_paket_a/q20_tabel_ide_pokok_benar_salah.png"
-    ],
+    "gambar": null,
+    "gambarUrls": [],
     "tabel": {
-      "gambar_tabel": "/soal/tryout_tpm_bindo_paket_a/q20_tabel_ide_pokok_benar_salah.png",
       "headers": [
         "Pernyataan",
         "Benar",
@@ -4161,7 +4304,6 @@ export const SOAL_TKA_2026_SMP_BINDO_PAKET_A = [
       ]
     },
     "tabelSoal": {
-      "gambar_tabel": "/soal/tryout_tpm_bindo_paket_a/q20_tabel_ide_pokok_benar_salah.png",
       "headers": [
         "Pernyataan",
         "Benar",
@@ -4190,17 +4332,17 @@ export const SOAL_TKA_2026_SMP_BINDO_PAKET_A = [
     "pernyataan": [
       {
         "id": "p_1",
-        "teks": "risiko alergi dan peradangan bagi pemakainya",
+        "teks": "A. risiko alergi dan peradangan bagi pemakainya",
         "kunci": "Salah"
       },
       {
         "id": "p_2",
-        "teks": "pengaruh akibat penggunaan make up berlebihan",
+        "teks": "B. pengaruh akibat penggunaan make up berlebihan",
         "kunci": "Benar"
       },
       {
         "id": "p_3",
-        "teks": "akibat penggunaan make up tanpa memperhatikan kualitas",
+        "teks": "C. akibat penggunaan make up tanpa memperhatikan kualitas",
         "kunci": "Salah"
       }
     ],
@@ -4231,7 +4373,11 @@ export const SOAL_TKA_2026_SMP_BINDO_PAKET_A = [
   {
     "id": "tka26_indo_a_21",
     "nomor": 21,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
     "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
     "materi": "Refleksi dan Dampak Positif Teks",
     "tipe": "pg_kompleks",
     "teksSoal": "Pilihlah jawaban yang tepat lebih dari satu!\nHal positif yang mungkin terjadi setelah memahami isi teks tersebut adalah …",
@@ -4318,7 +4464,11 @@ export const SOAL_TKA_2026_SMP_BINDO_PAKET_A = [
   {
     "id": "tka26_indo_a_22",
     "nomor": 22,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
     "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
     "materi": "Suasana Puisi",
     "tipe": "pg_sederhana",
     "teksSoal": "Baris-baris puisi “di bawah cahaya lampu remang-remang”, “pada bulu matanya yang sayup, yang mengungkai cahaya redup” dan “Kereta api hitam membelah malam” memperkuat suasana ...",
@@ -4402,7 +4552,11 @@ export const SOAL_TKA_2026_SMP_BINDO_PAKET_A = [
   {
     "id": "tka26_indo_a_23",
     "nomor": 23,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
     "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
     "materi": "Citraan (Imaji) Puisi",
     "tipe": "pg_sederhana",
     "teksSoal": "“Kubayangkan pula ladang-ladang karang dirambah, disiangi kaki-kaki telanjang dengan darah sepanjang zaman.” Baris-baris puisi tersebut menggunakan citraan ....",
@@ -4486,14 +4640,19 @@ export const SOAL_TKA_2026_SMP_BINDO_PAKET_A = [
   {
     "id": "tka26_indo_a_24",
     "nomor": 24,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
     "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
     "materi": "Apresiasi dan Interpretasi Puisi",
     "tipe": "pg_sederhana",
     "teksSoal": "Berikut ini adalah ungkapan perasaan Ari, Ira, Eni, dan Ani setelah membaca puisi tersebut.\nAri : Saya merasa prihatin terhadap para perempuan yang harus berjuang keras dan gigih menghadapi hidup yang berat.\nIra : Saya bersyukur sekali karena masih ada yang memperhatikan nasib para perempuan yang harus mengolah ladang.\nEni : Saya sungguh terharu atas perjuangan Raden Ajeng Kartini dalam memajukan kaum perempuan Indonesia.\nAni : Saya merasa biasa saja melihat nasib para perempuan harus bekerja keras di ladang karang dan menjual hasil palawijanya ke kota.\n\nUngkapan perasaan siapakah yang paling sesuai dengan isi puisi tersebut?",
     "teks_soal": "Berikut ini adalah ungkapan perasaan Ari, Ira, Eni, dan Ani setelah membaca puisi tersebut.\nAri : Saya merasa prihatin terhadap para perempuan yang harus berjuang keras dan gigih menghadapi hidup yang berat.\nIra : Saya bersyukur sekali karena masih ada yang memperhatikan nasib para perempuan yang harus mengolah ladang.\nEni : Saya sungguh terharu atas perjuangan Raden Ajeng Kartini dalam memajukan kaum perempuan Indonesia.\nAni : Saya merasa biasa saja melihat nasib para perempuan harus bekerja keras di ladang karang dan menjual hasil palawijanya ke kota.\n\nUngkapan perasaan siapakah yang paling sesuai dengan isi puisi tersebut?",
     "soal": "Berikut ini adalah ungkapan perasaan Ari, Ira, Eni, dan Ani setelah membaca puisi tersebut.\nAri : Saya merasa prihatin terhadap para perempuan yang harus berjuang keras dan gigih menghadapi hidup yang berat.\nIra : Saya bersyukur sekali karena masih ada yang memperhatikan nasib para perempuan yang harus mengolah ladang.\nEni : Saya sungguh terharu atas perjuangan Raden Ajeng Kartini dalam memajukan kaum perempuan Indonesia.\nAni : Saya merasa biasa saja melihat nasib para perempuan harus bekerja keras di ladang karang dan menjual hasil palawijanya ke kota.\n\nUngkapan perasaan siapakah yang paling sesuai dengan isi puisi tersebut?",
-    "gambar": "/soal/tryout_tpm_bindo_paket_a/teks22_puisi_kartini_lilin.jpg",
+    "gambar": "/soal/tryout_tpm_bindo_paket_a/q24_tabel_ungkapan_perasaan.png",
     "gambarUrls": [
+      "/soal/tryout_tpm_bindo_paket_a/q24_tabel_ungkapan_perasaan.png",
       "/soal/tryout_tpm_bindo_paket_a/teks22_puisi_kartini_lilin.jpg"
     ],
     "tabel": null,
@@ -4570,7 +4729,11 @@ export const SOAL_TKA_2026_SMP_BINDO_PAKET_A = [
   {
     "id": "tka26_indo_a_25",
     "nomor": 25,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
     "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
     "materi": "Kerangka Cerita",
     "tipe": "pg_sederhana",
     "teksSoal": "Kerangka cerita tersebut yang paling tepat adalah ….",
@@ -4648,18 +4811,19 @@ export const SOAL_TKA_2026_SMP_BINDO_PAKET_A = [
   {
     "id": "tka26_indo_a_26",
     "nomor": 26,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
     "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
     "materi": "Prediksi Kelanjutan Cerita",
     "tipe": "benar_salah",
     "teksSoal": "Tentukan sesuai atau tidak sesuai terkait peristiwa yang mungkin terjadi dari cerita tersebut!",
     "teks_soal": "Tentukan sesuai atau tidak sesuai terkait peristiwa yang mungkin terjadi dari cerita tersebut!",
     "soal": "Tentukan sesuai atau tidak sesuai terkait peristiwa yang mungkin terjadi dari cerita tersebut!",
-    "gambar": "/soal/tryout_tpm_bindo_paket_a/q26_tabel_prediksi_peristiwa.png",
-    "gambarUrls": [
-      "/soal/tryout_tpm_bindo_paket_a/q26_tabel_prediksi_peristiwa.png"
-    ],
+    "gambar": null,
+    "gambarUrls": [],
     "tabel": {
-      "gambar_tabel": "/soal/tryout_tpm_bindo_paket_a/q26_tabel_prediksi_peristiwa.png",
       "headers": [
         "Prediksi peristiwa",
         "Sesuai",
@@ -4684,7 +4848,6 @@ export const SOAL_TKA_2026_SMP_BINDO_PAKET_A = [
       ]
     },
     "tabelSoal": {
-      "gambar_tabel": "/soal/tryout_tpm_bindo_paket_a/q26_tabel_prediksi_peristiwa.png",
       "headers": [
         "Prediksi peristiwa",
         "Sesuai",
@@ -4713,17 +4876,17 @@ export const SOAL_TKA_2026_SMP_BINDO_PAKET_A = [
     "pernyataan": [
       {
         "id": "p_1",
-        "teks": "Banyak warga yang mengikuti kegiatan peduli lingkungan yang dilakukan Maya dan teman-temannya.",
+        "teks": "A. Banyak warga yang mengikuti kegiatan peduli lingkungan yang dilakukan Maya dan teman-temannya.",
         "kunci": "Sesuai"
       },
       {
         "id": "p_2",
-        "teks": "Maya diusir dari kota tersebut karena membuat repot warga yang masih dilanda kesusahan.",
+        "teks": "B. Maya diusir dari kota tersebut karena membuat repot warga yang masih dilanda kesusahan.",
         "kunci": "Tidak Sesuai"
       },
       {
         "id": "p_3",
-        "teks": "Maya mendapatkan apresiasi dari warga karena upayanya dalam peduli lingkungan.",
+        "teks": "C. Maya mendapatkan apresiasi dari warga karena upayanya dalam peduli lingkungan.",
         "kunci": "Sesuai"
       }
     ],
@@ -4754,7 +4917,11 @@ export const SOAL_TKA_2026_SMP_BINDO_PAKET_A = [
   {
     "id": "tka26_indo_a_27",
     "nomor": 27,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
     "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
     "materi": "Nilai Kehidupan / Amanat Cerita",
     "tipe": "pg_sederhana",
     "teksSoal": "Pelajaran yang relevan untuk diterapkan di lingkungan sekolah dari peristiwa yang dilakukan Maya adalah …",
@@ -4832,7 +4999,11 @@ export const SOAL_TKA_2026_SMP_BINDO_PAKET_A = [
   {
     "id": "tka26_indo_a_28",
     "nomor": 28,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
     "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
     "materi": "Latar Suasana Cerita Fantasi",
     "tipe": "pg_sederhana",
     "teksSoal": "Pernyataan manakah yang menunjukkan latar suasana di Negeri Serindit saat Kapten Hitam mulai menguasai negeri?",
@@ -4916,7 +5087,11 @@ export const SOAL_TKA_2026_SMP_BINDO_PAKET_A = [
   {
     "id": "tka26_indo_a_29",
     "nomor": 29,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
     "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
     "materi": "Nilai Moral Cerita Fantasi",
     "tipe": "pg_sederhana",
     "teksSoal": "Setelah membaca “Pahlawan Negeri Serindit”, nilai moral apa yang dapat kamu temukan?",
@@ -5000,7 +5175,11 @@ export const SOAL_TKA_2026_SMP_BINDO_PAKET_A = [
   {
     "id": "tka26_indo_a_30",
     "nomor": 30,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
     "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
     "materi": "Unsur Intrinsik Cerita Fantasi",
     "tipe": "pg_kompleks",
     "teksSoal": "Pilihlah jawaban yang benar! Jawaban benar lebih dari satu.\nPendapat manakah yang sesuai untuk menggambarkan unsur pembangun karya sastra atau unsur intrinsik pada teks tersebut?",

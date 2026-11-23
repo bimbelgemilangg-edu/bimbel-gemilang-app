@@ -102,14 +102,21 @@ export function normalisasiMetaSoal(s) {
     else if (uj.includes('SD')) j = 'SD';
     else j = 'SMP';
   } else {
-    const k = String(s.kelas || s.kelasSekolah || '').trim();
-    const sub = String(s.subtesKode || s.subtes || s.mapel || s.mataPelajaran || '').toUpperCase();
-    if (['10', '11', '12'].includes(k) || ['PU', 'PPU', 'PBM', 'PK', 'PM', 'LBIN', 'LBING'].includes(sub)) {
-      j = 'SMA';
-    } else if (['1', '2', '3', '4', '5', '6'].includes(k)) {
+    const sid = String(s.id || '').toLowerCase();
+    if (sid.includes('_sd_') || sid.startsWith('sd_') || sid.includes('-sd-') || sid.includes('tka_sd')) {
       j = 'SD';
+    } else if (sid.includes('_sma_') || sid.includes('utbk') || sid.includes('snbt')) {
+      j = 'SMA';
     } else {
-      j = 'SMP';
+      const k = String(s.kelas || s.kelasSekolah || '').trim();
+      const sub = String(s.subtesKode || s.subtes || s.mapel || s.mataPelajaran || '').toUpperCase();
+      if (['10', '11', '12'].includes(k) || ['PU', 'PPU', 'PBM', 'PK', 'PM', 'LBIN', 'LBING'].includes(sub)) {
+        j = 'SMA';
+      } else if (['1', '2', '3', '4', '5', '6'].includes(k)) {
+        j = 'SD';
+      } else {
+        j = 'SMP';
+      }
     }
   }
 
@@ -500,15 +507,17 @@ export default function CetakPaketLatihan() {
         targetBab = 'Bilangan (Bulat, Pecahan, Berpangkat, & Bentuk Akar)';
       }
     }
+    const targetJenjang = jenjangAktif || 'SMP';
+    const targetMapel = mapelAktif || 'Matematika';
     setBabAktif(targetBab);
-    if (!jenjangAktif) setJenjangAktif('SMP');
-    if (!mapelAktif) setMapelAktif('Matematika');
+    if (!jenjangAktif) setJenjangAktif(targetJenjang);
+    if (!mapelAktif) setMapelAktif(targetMapel);
 
     // 1. Kumpulkan butir soal yang sesuai jenjang dan mata pelajaran
     const poolJenjangMapel = bankSoal.filter((s) => {
       const norm = normalisasiMetaSoal(s);
-      const matchJ = !jenjangAktif || norm.jenjang === jenjangAktif;
-      const matchM = !mapelAktif || norm.mataPelajaran.toLowerCase() === mapelAktif.toLowerCase();
+      const matchJ = norm.jenjang === targetJenjang;
+      const matchM = norm.mataPelajaran.toLowerCase() === targetMapel.toLowerCase();
       return matchJ && matchM;
     });
 
@@ -546,8 +555,8 @@ export default function CetakPaketLatihan() {
       });
     }
 
-    if (kandidat.length === 0 && bankSoal.length > 0) {
-      kandidat = bankSoal;
+    if (kandidat.length === 0 && poolJenjangMapel.length > 0) {
+      kandidat = poolJenjangMapel;
     }
 
     const valid = (kandidat || []).filter((s) => {
