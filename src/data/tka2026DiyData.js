@@ -3,7 +3,11 @@
 // BANK SOAL RESMI TKA SMP/MTS DIY 2025/2026 (MKKS DIY)
 // 100% PRESISI BERDASARKAN NASKAH RESMI UJIAN
 // - PAKET B: MATEMATIKA (30 Butir Soal, Durasi 75 Menit)
+// - PAKET A: MATEMATIKA (30 Butir Soal, Durasi 75 Menit)
+// - TRY OUT AKBAR: MATEMATIKA (30 Butir Soal)
 // - PAKET A: BAHASA INDONESIA (30 Butir Soal, Durasi 75 Menit)
+// - PAKET B: BAHASA INDONESIA (30 Butir Soal, Durasi 75 Menit)
+// - TRY OUT AKBAR: BAHASA INDONESIA (30 Butir Soal)
 // Dilengkapi Crop Gambar Diagram 300 DPI, Tabel Presisi, Diagram Opsi
 // ============================================================
 
@@ -2603,6 +2607,4240 @@ export const SOAL_TKA_2026_SMP_MTK_PAKET_B = [
     "kunci_jawaban": "C",
     "kunci": "C",
     "pembahasan": "Persentase daya tetas: Alpha = 34/40 = 85%; Beta = 16/20 = 80%; Gamma = 44/50 = 88%; Delta = 60/80 = 75%. Mesin Gamma memiliki tingkat efektivitas dan kualitas tertinggi (88%). Jawaban: C"
+  }
+];
+
+export const SOAL_TKA_2026_SMP_MTK_PAKET_A = [
+  {
+    "id": "tka26_mtk_a_01",
+    "nomor": 1,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
+    "materi": "Operasi Bilangan Bulat",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Dalam kompetisi Olimpiade Matematika, setiap butir soal dijawab benar diberi skor 5, salah −2 dan tidak dijawab −1. Dari 40 butir soal yang disediakan, Andi menjawab benar 30 butir soal dan salah 6 butir soal. Skor yang diperoleh Andi adalah ….",
+    "teks_soal": "Dalam kompetisi Olimpiade Matematika, setiap butir soal dijawab benar diberi skor 5, salah −2 dan tidak dijawab −1. Dari 40 butir soal yang disediakan, Andi menjawab benar 30 butir soal dan salah 6 butir soal. Skor yang diperoleh Andi adalah ….",
+    "soal": "Dalam kompetisi Olimpiade Matematika, setiap butir soal dijawab benar diberi skor 5, salah −2 dan tidak dijawab −1. Dari 40 butir soal yang disediakan, Andi menjawab benar 30 butir soal dan salah 6 butir soal. Skor yang diperoleh Andi adalah ….",
+    "gambar": null,
+    "gambarUrls": [],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "140",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "134",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "130",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "125",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "140",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "134",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "130",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "125",
+        "gambar": null
+      }
+    ],
+    "pernyataan": null,
+    "kunciJawaban": "B",
+    "kunci_jawaban": "B",
+    "kunci": "B",
+    "pembahasan": "Diketahui total 40 butir soal: Benar = 30 soal (skor $30 \\times 5 = 150$), Salah = 6 soal (skor $6 \\times (-2) = -12$), Tidak dijawab = $40 - (30 + 6) = 4$ soal (skor $4 \\times (-1) = -4$). Skor total Andi = $150 + (-12) + (-4) = 150 - 16 = 134$."
+  },
+  {
+    "id": "tka26_mtk_a_02",
+    "nomor": 2,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
+    "materi": "Pecahan dan Urutan Bilangan Rasional",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Final lomba Sains diikuti oleh empat orang siswa yaitu Andi, Budi, Candra dan Dewi. Tabel berikut adalah hasil akhir skor yang diperoleh oleh empat siswa tersebut:<br><table border='1' cellpadding='6' style='border-collapse:collapse; margin:10px 0;'><thead><tr><th>Nama</th><th>Skor (dari nilai sempurna)</th></tr></thead><tbody><tr><td>Andi</td><td>0,6</td></tr><tr><td>Budi</td><td>55%</td></tr><tr><td>Candra</td><td>2/3</td></tr><tr><td>Dewi</td><td>0,54</td></tr></tbody></table>Urutan juara pertama sampai dengan keempat adalah ….",
+    "teks_soal": "Final lomba Sains diikuti oleh empat orang siswa yaitu Andi, Budi, Candra dan Dewi. Tabel berikut adalah hasil akhir skor yang diperoleh oleh empat siswa tersebut:<br><table border='1' cellpadding='6' style='border-collapse:collapse; margin:10px 0;'><thead><tr><th>Nama</th><th>Skor (dari nilai sempurna)</th></tr></thead><tbody><tr><td>Andi</td><td>0,6</td></tr><tr><td>Budi</td><td>55%</td></tr><tr><td>Candra</td><td>2/3</td></tr><tr><td>Dewi</td><td>0,54</td></tr></tbody></table>Urutan juara pertama sampai dengan keempat adalah ….",
+    "soal": "Final lomba Sains diikuti oleh empat orang siswa yaitu Andi, Budi, Candra dan Dewi. Tabel berikut adalah hasil akhir skor yang diperoleh oleh empat siswa tersebut:<br><table border='1' cellpadding='6' style='border-collapse:collapse; margin:10px 0;'><thead><tr><th>Nama</th><th>Skor (dari nilai sempurna)</th></tr></thead><tbody><tr><td>Andi</td><td>0,6</td></tr><tr><td>Budi</td><td>55%</td></tr><tr><td>Candra</td><td>2/3</td></tr><tr><td>Dewi</td><td>0,54</td></tr></tbody></table>Urutan juara pertama sampai dengan keempat adalah ….",
+    "gambar": null,
+    "gambarUrls": [],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Budi – Dewi – Andi – Candra",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Dewi – Budi – Andi – Candra",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Candra – Andi – Budi – Dewi",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "Dewi – Budi – Candra – Andi",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Budi – Dewi – Andi – Candra",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Dewi – Budi – Andi – Candra",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Candra – Andi – Budi – Dewi",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "Dewi – Budi – Candra – Andi",
+        "gambar": null
+      }
+    ],
+    "pernyataan": null,
+    "kunciJawaban": "C",
+    "kunci_jawaban": "C",
+    "kunci": "C",
+    "pembahasan": "Ubah semua nilai ke bentuk desimal berderajat tiga desimal: Candra = $2/3 \\approx 0{,}667$; Andi = $0{,}6 = 0{,}600$; Budi = $55\\% = 0{,}550$; Dewi = $0{,}54 = 0{,}540$. Urutan skor dari tertinggi (juara 1) ke terendah (juara 4): Candra ($0{,}667$) – Andi ($0{,}600$) – Budi ($0{,}550$) – Dewi ($0{,}540$)."
+  },
+  {
+    "id": "tka26_mtk_a_03",
+    "nomor": 3,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
+    "materi": "Faktor Persekutuan Terbesar (FPB)",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Diketahui tiga bilangan $a = (8 \\times 9)$, $b = (3 \\times 4 + 6)$, dan $c = (8^2 - 4^2)$. Faktor persekutuan terbesar dari $a$, $b$ dan $c$ adalah ….",
+    "teks_soal": "Diketahui tiga bilangan $a = (8 \\times 9)$, $b = (3 \\times 4 + 6)$, dan $c = (8^2 - 4^2)$. Faktor persekutuan terbesar dari $a$, $b$ dan $c$ adalah ….",
+    "soal": "Diketahui tiga bilangan $a = (8 \\times 9)$, $b = (3 \\times 4 + 6)$, dan $c = (8^2 - 4^2)$. Faktor persekutuan terbesar dari $a$, $b$ dan $c$ adalah ….",
+    "gambar": null,
+    "gambarUrls": [],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "$2 \\times 3$",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "$2^3$",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "$3^2$",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "$2^2 \\times 3$",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "$2 \\times 3$",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "$2^3$",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "$3^2$",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "$2^2 \\times 3$",
+        "gambar": null
+      }
+    ],
+    "pernyataan": null,
+    "kunciJawaban": "A",
+    "kunci_jawaban": "A",
+    "kunci": "A",
+    "pembahasan": "Hitung masing-masing bilangan dan faktorisasi primanya: $a = 8 \\times 9 = 72 = 2^3 \\times 3^2$; $b = 3 \\times 4 + 6 = 12 + 6 = 18 = 2 \\times 3^2$; $c = 8^2 - 4^2 = 64 - 16 = 48 = 2^4 \\times 3$. FPB diambil dari faktor prima sekutu dengan pangkat terendah: faktor $2$ berpangkat $1$ dan faktor $3$ berpangkat $1$. Jadi FPB = $2 \\times 3$."
+  },
+  {
+    "id": "tka26_mtk_a_04",
+    "nomor": 4,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
+    "materi": "Aritmatika Sosial dan Optimasi",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Seorang kontraktor bangunan akan melapisi lantai sebuah ruang kelas seluas 120 m². Karena proyek harus segera dikerjakan, kontraktor membeli semen di toko bangunan terdekat. Namun, sebagian besar stok semen di toko tersebut sedang habis dan pengiriman ulang belum datang, sehingga hanya tersedia beberapa persediaan berikut:<br><table border='1' cellpadding='6' style='border-collapse:collapse; margin:10px 0;'><thead><tr><th>Jenis semen</th><th>Berat (kg)</th><th>Jumlah</th><th>Harga (Rp)</th></tr></thead><tbody><tr><td>Kemasan K</td><td>5</td><td>6</td><td>40.000</td></tr><tr><td>Kemasan B</td><td>10</td><td>6</td><td>75.000</td></tr></tbody></table>Keterangan: K = semen kemasan kecil, B = semen kemasan besar.<br>Jika 1 kg semen dapat melapisi 2 m² lantai, kombinasi pembelian semen yang paling murah agar seluruh lantai dapat dilapisi adalah ….",
+    "teks_soal": "Seorang kontraktor bangunan akan melapisi lantai sebuah ruang kelas seluas 120 m². Karena proyek harus segera dikerjakan, kontraktor membeli semen di toko bangunan terdekat. Namun, sebagian besar stok semen di toko tersebut sedang habis dan pengiriman ulang belum datang, sehingga hanya tersedia beberapa persediaan berikut:<br><table border='1' cellpadding='6' style='border-collapse:collapse; margin:10px 0;'><thead><tr><th>Jenis semen</th><th>Berat (kg)</th><th>Jumlah</th><th>Harga (Rp)</th></tr></thead><tbody><tr><td>Kemasan K</td><td>5</td><td>6</td><td>40.000</td></tr><tr><td>Kemasan B</td><td>10</td><td>6</td><td>75.000</td></tr></tbody></table>Keterangan: K = semen kemasan kecil, B = semen kemasan besar.<br>Jika 1 kg semen dapat melapisi 2 m² lantai, kombinasi pembelian semen yang paling murah agar seluruh lantai dapat dilapisi adalah ….",
+    "soal": "Seorang kontraktor bangunan akan melapisi lantai sebuah ruang kelas seluas 120 m². Karena proyek harus segera dikerjakan, kontraktor membeli semen di toko bangunan terdekat. Namun, sebagian besar stok semen di toko tersebut sedang habis dan pengiriman ulang belum datang, sehingga hanya tersedia beberapa persediaan berikut:<br><table border='1' cellpadding='6' style='border-collapse:collapse; margin:10px 0;'><thead><tr><th>Jenis semen</th><th>Berat (kg)</th><th>Jumlah</th><th>Harga (Rp)</th></tr></thead><tbody><tr><td>Kemasan K</td><td>5</td><td>6</td><td>40.000</td></tr><tr><td>Kemasan B</td><td>10</td><td>6</td><td>75.000</td></tr></tbody></table>Keterangan: K = semen kemasan kecil, B = semen kemasan besar.<br>Jika 1 kg semen dapat melapisi 2 m² lantai, kombinasi pembelian semen yang paling murah agar seluruh lantai dapat dilapisi adalah ….",
+    "gambar": null,
+    "gambarUrls": [],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "3 kemasan B dan 6 kemasan K",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "4 kemasan B dan 4 kemasan K",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "5 kemasan B dan 2 kemasan K",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "6 kemasan B dan 1 kemasan K",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "3 kemasan B dan 6 kemasan K",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "4 kemasan B dan 4 kemasan K",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "5 kemasan B dan 2 kemasan K",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "6 kemasan B dan 1 kemasan K",
+        "gambar": null
+      }
+    ],
+    "pernyataan": null,
+    "kunciJawaban": "C",
+    "kunci_jawaban": "C",
+    "kunci": "C",
+    "pembahasan": "Kebutuhan semen: $120\\text{ m}^2 / 2\\text{ m}^2/\\text{kg} = 60\\text{ kg}$ semen. Uji setiap opsi kombinasi: A. $3B + 6K = 3(10) + 6(5) = 60\\text{ kg}$, biaya = $3(75.000) + 6(40.000) = 225.000 + 240.000 = \\text{Rp}465.000$. B. $4B + 4K = 4(10) + 4(5) = 60\\text{ kg}$, biaya = $4(75.000) + 4(40.000) = 300.000 + 160.000 = \\text{Rp}460.000$. C. $5B + 2K = 5(10) + 2(5) = 60\\text{ kg}$, biaya = $5(75.000) + 2(40.000) = 375.000 + 80.000 = \\text{Rp}455.000$. D. $6B + 1K = 6(10) + 1(5) = 65\\text{ kg}$, biaya = $6(75.000) + 1(40.000) = 450.000 + 40.000 = \\text{Rp}490.000$. Kombinasi yang paling murah adalah 5 kemasan B dan 2 kemasan K dengan biaya Rp455.000."
+  },
+  {
+    "id": "tka26_mtk_a_05",
+    "nomor": 5,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
+    "materi": "Perbandingan Skala dan Geometri",
+    "tipe": "pg_kompleks",
+    "teksSoal": "Perhatikan gambar denah rumah berikut!<br>Pilih lebih dari satu pernyataan berikut yang benar terkait dengan denah tersebut!",
+    "teks_soal": "Perhatikan gambar denah rumah berikut!<br>Pilih lebih dari satu pernyataan berikut yang benar terkait dengan denah tersebut!",
+    "soal": "Perhatikan gambar denah rumah berikut!<br>Pilih lebih dari satu pernyataan berikut yang benar terkait dengan denah tersebut!",
+    "gambar": "/soal/tryout_tka_matematika_paket_a/q5_denah_rumah.png",
+    "gambarUrls": [
+      "/soal/tryout_tka_matematika_paket_a/q5_denah_rumah.png"
+    ],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [
+      {
+        "key": "1",
+        "label": "1",
+        "teks": "Panjang garasi AB sebenarnya adalah 7 m.",
+        "gambar": null
+      },
+      {
+        "key": "2",
+        "label": "2",
+        "teks": "Lebar garasi AD sebenarnya adalah 4,5 m.",
+        "gambar": null
+      },
+      {
+        "key": "3",
+        "label": "3",
+        "teks": "Keliling garasi ABCD sebenarnya 24 m.",
+        "gambar": null
+      },
+      {
+        "key": "4",
+        "label": "4",
+        "teks": "Luas garasi ABCD sebenarnya 31,5 m².",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "1",
+        "label": "1",
+        "teks": "Panjang garasi AB sebenarnya adalah 7 m.",
+        "gambar": null
+      },
+      {
+        "key": "2",
+        "label": "2",
+        "teks": "Lebar garasi AD sebenarnya adalah 4,5 m.",
+        "gambar": null
+      },
+      {
+        "key": "3",
+        "label": "3",
+        "teks": "Keliling garasi ABCD sebenarnya 24 m.",
+        "gambar": null
+      },
+      {
+        "key": "4",
+        "label": "4",
+        "teks": "Luas garasi ABCD sebenarnya 31,5 m².",
+        "gambar": null
+      }
+    ],
+    "pernyataan": null,
+    "kunciJawaban": "2, 3",
+    "kunci_jawaban": "2, 3",
+    "kunci": "2, 3",
+    "pembahasan": "Skala denah = $1 : 150$. Pada denah garasi ABCD: Panjang $AB = 5{,}0\\text{ cm} \\implies$ panjang sebenarnya = $5{,}0 \\times 150 = 750\\text{ cm} = 7{,}5\\text{ m}$ (Pernyataan 1 Salah). Lebar $AD = 3{,}0\\text{ cm} \\implies$ lebar sebenarnya = $3{,}0 \\times 150 = 450\\text{ cm} = 4{,}5\\text{ m}$ (Pernyataan 2 Benar). Keliling garasi ABCD sebenarnya = $2 \\times (p + l) = 2 \\times (7{,}5 + 4{,}5) = 2 \\times 12 = 24\\text{ m}$ (Pernyataan 3 Benar). Luas garasi ABCD sebenarnya = $p \\times l = 7{,}5 \\times 4{,}5 = 33{,}75\\text{ m}^2$ (Pernyataan 4 Salah). Jadi pernyataan yang benar adalah nomor 2 dan 3."
+  },
+  {
+    "id": "tka26_mtk_a_06",
+    "nomor": 6,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
+    "materi": "Perbandingan Berbalik Nilai",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Sebuah mobil menempuh jarak dari kota A ke kota B dalam waktu 1,6 jam dengan kecepatan rata-rata 75 km/jam. Jika mobil ingin menempuh jarak yang sama dalam waktu 1 jam, maka kecepatan rata-rata yang harus dicapai adalah ….",
+    "teks_soal": "Sebuah mobil menempuh jarak dari kota A ke kota B dalam waktu 1,6 jam dengan kecepatan rata-rata 75 km/jam. Jika mobil ingin menempuh jarak yang sama dalam waktu 1 jam, maka kecepatan rata-rata yang harus dicapai adalah ….",
+    "soal": "Sebuah mobil menempuh jarak dari kota A ke kota B dalam waktu 1,6 jam dengan kecepatan rata-rata 75 km/jam. Jika mobil ingin menempuh jarak yang sama dalam waktu 1 jam, maka kecepatan rata-rata yang harus dicapai adalah ….",
+    "gambar": null,
+    "gambarUrls": [],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "90 km/jam",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "100 km/jam",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "110 km/jam",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "120 km/jam",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "90 km/jam",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "100 km/jam",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "110 km/jam",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "120 km/jam",
+        "gambar": null
+      }
+    ],
+    "pernyataan": null,
+    "kunciJawaban": "D",
+    "kunci_jawaban": "D",
+    "kunci": "D",
+    "pembahasan": "Jarak dari kota A ke B: $s = v_1 \\times t_1 = 75\\text{ km/jam} \\times 1{,}6\\text{ jam} = 120\\text{ km}$. Kecepatan rata-rata baru agar menempuh jarak tersebut dalam waktu $t_2 = 1\\text{ jam}$: $v_2 = \\frac{s}{t_2} = \\frac{120\\text{ km}}{1\\text{ jam}} = 120\\text{ km/jam}$."
+  },
+  {
+    "id": "tka26_mtk_a_07",
+    "nomor": 7,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
+    "materi": "Bentuk Akar",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Hasil dari $\\frac{2\\sqrt{27}+3\\sqrt{48}}{3\\sqrt{12}}$ adalah ….",
+    "teks_soal": "Hasil dari $\\frac{2\\sqrt{27}+3\\sqrt{48}}{3\\sqrt{12}}$ adalah ….",
+    "soal": "Hasil dari $\\frac{2\\sqrt{27}+3\\sqrt{48}}{3\\sqrt{12}}$ adalah ….",
+    "gambar": null,
+    "gambarUrls": [],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "3",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "$3\\sqrt{3}$",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "12",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "$12\\sqrt{3}$",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "3",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "$3\\sqrt{3}$",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "12",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "$12\\sqrt{3}$",
+        "gambar": null
+      }
+    ],
+    "pernyataan": null,
+    "kunciJawaban": "A",
+    "kunci_jawaban": "A",
+    "kunci": "A",
+    "pembahasan": "Sederhanakan masing-masing bentuk akar: $2\\sqrt{27} = 2\\sqrt{9 \\times 3} = 2(3)\\sqrt{3} = 6\\sqrt{3}$; $3\\sqrt{48} = 3\\sqrt{16 \\times 3} = 3(4)\\sqrt{3} = 12\\sqrt{3}$; $3\\sqrt{12} = 3\\sqrt{4 \\times 3} = 3(2)\\sqrt{3} = 6\\sqrt{3}$. Maka: $\\frac{6\\sqrt{3} + 12\\sqrt{3}}{6\\sqrt{3}} = \\frac{18\\sqrt{3}}{6\\sqrt{3}} = 3$."
+  },
+  {
+    "id": "tka26_mtk_a_08",
+    "nomor": 8,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
+    "materi": "Aritmatika Sosial (Diskon)",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Perhatikan tabel!<br><table border='1' cellpadding='6' style='border-collapse:collapse; margin:10px 0;'><thead><tr><th>Toko Arjuna</th><th>Toko Krisna</th></tr></thead><tbody><tr><td>Harga Rp210.000</td><td>Harga Rp200.000</td></tr><tr><td>Diskon 30%</td><td>Diskon 20% + 10%</td></tr></tbody></table>Selisih harga pembayaran untuk pembelian sebuah kaos di Toko Arjuna dan Toko Krisna adalah ….",
+    "teks_soal": "Perhatikan tabel!<br><table border='1' cellpadding='6' style='border-collapse:collapse; margin:10px 0;'><thead><tr><th>Toko Arjuna</th><th>Toko Krisna</th></tr></thead><tbody><tr><td>Harga Rp210.000</td><td>Harga Rp200.000</td></tr><tr><td>Diskon 30%</td><td>Diskon 20% + 10%</td></tr></tbody></table>Selisih harga pembayaran untuk pembelian sebuah kaos di Toko Arjuna dan Toko Krisna adalah ….",
+    "soal": "Perhatikan tabel!<br><table border='1' cellpadding='6' style='border-collapse:collapse; margin:10px 0;'><thead><tr><th>Toko Arjuna</th><th>Toko Krisna</th></tr></thead><tbody><tr><td>Harga Rp210.000</td><td>Harga Rp200.000</td></tr><tr><td>Diskon 30%</td><td>Diskon 20% + 10%</td></tr></tbody></table>Selisih harga pembayaran untuk pembelian sebuah kaos di Toko Arjuna dan Toko Krisna adalah ….",
+    "gambar": "/soal/tryout_tka_matematika_paket_a/q8_kaos_diskon.png",
+    "gambarUrls": [
+      "/soal/tryout_tka_matematika_paket_a/q8_kaos_diskon.png"
+    ],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Rp7.000",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Rp4.000",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Rp3.000",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "Rp2.000",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Rp7.000",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Rp4.000",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Rp3.000",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "Rp2.000",
+        "gambar": null
+      }
+    ],
+    "pernyataan": null,
+    "kunciJawaban": "C",
+    "kunci_jawaban": "C",
+    "kunci": "C",
+    "pembahasan": "Toko Arjuna: Harga awal Rp210.000, diskon 30%. Harga bayar = $(100\\% - 30\\%) \\times 210.000 = 70\\% \\times 210.000 = \\text{Rp}147.000$. Toko Krisna: Harga awal Rp200.000, diskon $20\\% + 10\\%$. Setelah diskon $20\\%$: $80\\% \\times 200.000 = \\text{Rp}160.000$. Setelah diskon $10\\%$ tambahan: $90\\% \\times 160.000 = \\text{Rp}144.000$. Selisih harga pembayaran = $147.000 - 144.000 = \\text{Rp}3.000$."
+  },
+  {
+    "id": "tka26_mtk_a_09",
+    "nomor": 9,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
+    "materi": "Persamaan Linear Satu Variabel (PLSV)",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Diketahui $3(4x + 3) = 6x - 15$. Jika $n$ adalah penyelesaian dari persamaan tersebut, nilai dari $3n + 7$ adalah ….",
+    "teks_soal": "Diketahui $3(4x + 3) = 6x - 15$. Jika $n$ adalah penyelesaian dari persamaan tersebut, nilai dari $3n + 7$ adalah ….",
+    "soal": "Diketahui $3(4x + 3) = 6x - 15$. Jika $n$ adalah penyelesaian dari persamaan tersebut, nilai dari $3n + 7$ adalah ….",
+    "gambar": null,
+    "gambarUrls": [],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "19",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "5",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "−5",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "−19",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "19",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "5",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "−5",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "−19",
+        "gambar": null
+      }
+    ],
+    "pernyataan": null,
+    "kunciJawaban": "C",
+    "kunci_jawaban": "C",
+    "kunci": "C",
+    "pembahasan": "Selesaikan persamaan: $3(4x + 3) = 6x - 15 \\iff 12x + 9 = 6x - 15 \\iff 12x - 6x = -15 - 9 \\iff 6x = -24 \\iff x = -4$. Jadi penyelesaian $n = -4$. Nilai dari $3n + 7 = 3(-4) + 7 = -12 + 7 = -5$."
+  },
+  {
+    "id": "tka26_mtk_a_10",
+    "nomor": 10,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
+    "materi": "Pertidaksamaan Linear Satu Variabel (PtLSV)",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Bayu akan membeli sejumlah baju sejenis secara online dengan harga Rp55.000 per potong. Setiap transaksi pembelian dikenakan biaya ongkos kirim Rp15.000 (berapapun jumlah baju yang dibeli). Jika Bayu memiliki uang sebesar Rp385.000, maka jumlah maksimum baju yang dapat dibeli Bayu dengan uang tersebut adalah ….",
+    "teks_soal": "Bayu akan membeli sejumlah baju sejenis secara online dengan harga Rp55.000 per potong. Setiap transaksi pembelian dikenakan biaya ongkos kirim Rp15.000 (berapapun jumlah baju yang dibeli). Jika Bayu memiliki uang sebesar Rp385.000, maka jumlah maksimum baju yang dapat dibeli Bayu dengan uang tersebut adalah ….",
+    "soal": "Bayu akan membeli sejumlah baju sejenis secara online dengan harga Rp55.000 per potong. Setiap transaksi pembelian dikenakan biaya ongkos kirim Rp15.000 (berapapun jumlah baju yang dibeli). Jika Bayu memiliki uang sebesar Rp385.000, maka jumlah maksimum baju yang dapat dibeli Bayu dengan uang tersebut adalah ….",
+    "gambar": null,
+    "gambarUrls": [],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "8 potong",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "7 potong",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "6 potong",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "5 potong",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "8 potong",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "7 potong",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "6 potong",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "5 potong",
+        "gambar": null
+      }
+    ],
+    "pernyataan": null,
+    "kunciJawaban": "C",
+    "kunci_jawaban": "C",
+    "kunci": "C",
+    "pembahasan": "Misalkan $x$ adalah jumlah baju yang dibeli. Model pertidaksamaan: $55.000x + 15.000 \\le 385.000 \\iff 55.000x \\le 370.000 \\iff x \\le \\frac{370.000}{55.000} \\approx 6{,}727$. Karena jumlah baju harus berupa bilangan bulat, maka jumlah maksimum baju yang dapat dibeli Bayu adalah 6 potong (total biaya: $6 \\times 55.000 + 15.000 = \\text{Rp}345.000$)."
+  },
+  {
+    "id": "tka26_mtk_a_11",
+    "nomor": 11,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
+    "materi": "Sistem Persamaan Linear Dua Variabel (SPLDV)",
+    "tipe": "benar_salah",
+    "teksSoal": "Punky, Qoni dan Rina akan berbelanja buku dan pensil sejenis di toko yang sama. Punky membeli 2 buah buku dan 1 batang pensil seharga Rp18.500. Qoni membeli 3 buah buku dan 2 batang pensil seharga Rp29.000. Sedangkan Rina membeli 1 buah buku dan 3 batang pensil.<br>Tentukan benar atau salah setiap pernyataan berikut:",
+    "teks_soal": "Punky, Qoni dan Rina akan berbelanja buku dan pensil sejenis di toko yang sama. Punky membeli 2 buah buku dan 1 batang pensil seharga Rp18.500. Qoni membeli 3 buah buku dan 2 batang pensil seharga Rp29.000. Sedangkan Rina membeli 1 buah buku dan 3 batang pensil.<br>Tentukan benar atau salah setiap pernyataan berikut:",
+    "soal": "Punky, Qoni dan Rina akan berbelanja buku dan pensil sejenis di toko yang sama. Punky membeli 2 buah buku dan 1 batang pensil seharga Rp18.500. Qoni membeli 3 buah buku dan 2 batang pensil seharga Rp29.000. Sedangkan Rina membeli 1 buah buku dan 3 batang pensil.<br>Tentukan benar atau salah setiap pernyataan berikut:",
+    "gambar": null,
+    "gambarUrls": [],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [],
+    "opsi": [],
+    "pernyataan": [
+      {
+        "id": "p_1",
+        "teks": "A. Harga sebuah buku adalah Rp6.000.",
+        "kunci": ""
+      },
+      {
+        "id": "p_2",
+        "teks": "B. Harga sebuah pensil adalah Rp2.500.",
+        "kunci": ""
+      },
+      {
+        "id": "p_3",
+        "teks": "C. Harga pembelian Rina adalah Rp15.500.",
+        "kunci": ""
+      }
+    ],
+    "kunciJawaban": "A: Salah, B: Benar, C: Benar",
+    "kunci_jawaban": "A: Salah, B: Benar, C: Benar",
+    "kunci": "A: Salah, B: Benar, C: Benar",
+    "pembahasan": "Misalkan $b$ = harga buku dan $p$ = harga pensil. Sistem persamaan: (1) $2b + p = 18.500 \\implies p = 18.500 - 2b$. (2) $3b + 2p = 29.000$. Substitusi (1) ke (2): $3b + 2(18.500 - 2b) = 29.000 \\implies 3b + 37.000 - 4b = 29.000 \\implies -b = -8.000 \\implies b = 8.000$. Harga sebuah buku = Rp8.000 (Pernyataan A Salah). Harga sebuah pensil $p = 18.500 - 2(8.000) = \\text{Rp}2.500$ (Pernyataan B Benar). Total belanja Rina = $1b + 3p = 8.000 + 3(2.500) = 8.000 + 7.500 = \\text{Rp}15.500$ (Pernyataan C Benar)."
+  },
+  {
+    "id": "tka26_mtk_a_12",
+    "nomor": 12,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
+    "materi": "Operasi Bentuk Aljabar dan Luas Segitiga",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Perhatikan gambar!<br>Luas daerah segitiga PQR adalah ….",
+    "teks_soal": "Perhatikan gambar!<br>Luas daerah segitiga PQR adalah ….",
+    "soal": "Perhatikan gambar!<br>Luas daerah segitiga PQR adalah ….",
+    "gambar": "/soal/tryout_tka_matematika_paket_a/q12_segitiga_pqr.png",
+    "gambarUrls": [
+      "/soal/tryout_tka_matematika_paket_a/q12_segitiga_pqr.png"
+    ],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "$(x^2 - x - 12)\\text{ cm}^2$",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "$(x^2 + x - 12)\\text{ cm}^2$",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "$(2x^2 - 2x - 24)\\text{ cm}^2$",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "$(2x^2 + 2x - 24)\\text{ cm}^2$",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "$(x^2 - x - 12)\\text{ cm}^2$",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "$(x^2 + x - 12)\\text{ cm}^2$",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "$(2x^2 - 2x - 24)\\text{ cm}^2$",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "$(2x^2 + 2x - 24)\\text{ cm}^2$",
+        "gambar": null
+      }
+    ],
+    "pernyataan": null,
+    "kunciJawaban": "A",
+    "kunci_jawaban": "A",
+    "kunci": "A",
+    "pembahasan": "Segitiga siku-siku di P memiliki alas $PQ = (x - 4)\\text{ cm}$ dan tinggi $PR = (2x + 6)\\text{ cm}$. Rumus luas segitiga: $L = \\frac{1}{2} \\times \\text{alas} \\times \\text{tinggi} = \\frac{1}{2} (x - 4)(2x + 6) = (x - 4)(x + 3) = x^2 + 3x - 4x - 12 = (x^2 - x - 12)\\text{ cm}^2$."
+  },
+  {
+    "id": "tka26_mtk_a_13",
+    "nomor": 13,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
+    "materi": "Relasi dan Fungsi Linear",
+    "tipe": "pg_kompleks",
+    "teksSoal": "Perhatikan diagram panah suatu fungsi berikut!<br>Pilih lebih dari satu pernyataan berikut yang benar!",
+    "teks_soal": "Perhatikan diagram panah suatu fungsi berikut!<br>Pilih lebih dari satu pernyataan berikut yang benar!",
+    "soal": "Perhatikan diagram panah suatu fungsi berikut!<br>Pilih lebih dari satu pernyataan berikut yang benar!",
+    "gambar": "/soal/tryout_tka_matematika_paket_a/q13_diagram_panah.png",
+    "gambarUrls": [
+      "/soal/tryout_tka_matematika_paket_a/q13_diagram_panah.png"
+    ],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [
+      {
+        "key": "1",
+        "label": "1",
+        "teks": "Domain fungsi adalah {−4,1,3}.",
+        "gambar": null
+      },
+      {
+        "key": "2",
+        "label": "2",
+        "teks": "Kodomain fungsi adalah {19,4, −2}.",
+        "gambar": null
+      },
+      {
+        "key": "3",
+        "label": "3",
+        "teks": "Nilai q = −1.",
+        "gambar": null
+      },
+      {
+        "key": "4",
+        "label": "4",
+        "teks": "Rumus fungsi f(x) = −3x + 7.",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "1",
+        "label": "1",
+        "teks": "Domain fungsi adalah {−4,1,3}.",
+        "gambar": null
+      },
+      {
+        "key": "2",
+        "label": "2",
+        "teks": "Kodomain fungsi adalah {19,4, −2}.",
+        "gambar": null
+      },
+      {
+        "key": "3",
+        "label": "3",
+        "teks": "Nilai q = −1.",
+        "gambar": null
+      },
+      {
+        "key": "4",
+        "label": "4",
+        "teks": "Rumus fungsi f(x) = −3x + 7.",
+        "gambar": null
+      }
+    ],
+    "pernyataan": null,
+    "kunciJawaban": "1, 4",
+    "kunci_jawaban": "1, 4",
+    "kunci": "1, 4",
+    "pembahasan": "Fungsi $f(x) = ax + b$. Dari diagram: $f(-4) = -4a + b = 19$ dan $f(3) = 3a + b = -2$. Kurangkan kedua persamaan: $-7a = 21 \\implies a = -3$. Nilai $b = -2 - 3(-3) = 7$. Maka rumus fungsi $f(x) = -3x + 7$ (Pernyataan 4 Benar). Menentukan $q$: $f(q) = 4 \\implies -3q + 7 = 4 \\implies -3q = -3 \\implies q = 1$ (Pernyataan 3 Salah). Domain fungsi adalah himpunan asal A = $\\{-4, q, 3\\} = \\{-4, 1, 3\\}$ (Pernyataan 1 Benar). Kodomain fungsi adalah seluruh himpunan kawan B = $\\{19, 4, -2, -8\\}$ (Pernyataan 2 Salah karena $\\{19, 4, -2\\}$ hanyalah daerah hasil/range). Jadi pernyataan yang benar adalah nomor 1 dan 4."
+  },
+  {
+    "id": "tka26_mtk_a_14",
+    "nomor": 14,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
+    "materi": "Barisan Aritmatika",
+    "tipe": "benar_salah",
+    "teksSoal": "Diketahui barisan aritmatika: $4, 6, p, 10, 12, 14, q, \\dots$<br>Tentukan benar atau salah untuk setiap pernyataan berikut:",
+    "teks_soal": "Diketahui barisan aritmatika: $4, 6, p, 10, 12, 14, q, \\dots$<br>Tentukan benar atau salah untuk setiap pernyataan berikut:",
+    "soal": "Diketahui barisan aritmatika: $4, 6, p, 10, 12, 14, q, \\dots$<br>Tentukan benar atau salah untuk setiap pernyataan berikut:",
+    "gambar": null,
+    "gambarUrls": [],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [],
+    "opsi": [],
+    "pernyataan": [
+      {
+        "id": "p_1",
+        "teks": "A. Nilai p + q = 24.",
+        "kunci": ""
+      },
+      {
+        "id": "p_2",
+        "teks": "B. Nilai suku ke – 50 adalah 102.",
+        "kunci": ""
+      },
+      {
+        "id": "p_3",
+        "teks": "C. Selisih suku ke – 50 dengan suku ke– 3 adalah 98.",
+        "kunci": ""
+      }
+    ],
+    "kunciJawaban": "A: Benar, B: Benar, C: Salah",
+    "kunci_jawaban": "A: Benar, B: Benar, C: Salah",
+    "kunci": "A: Benar, B: Benar, C: Salah",
+    "pembahasan": "Suku pertama $a = 4$ dan beda $b = 6 - 4 = 2$. Suku ke-3 $p = 4 + 2(2) = 8$. Suku ke-7 $q = 4 + 6(2) = 16$. Pernyataan A: $p + q = 8 + 16 = 24$ (Benar). Pernyataan B: $U_{50} = a + 49b = 4 + 49(2) = 4 + 98 = 102$ (Benar). Pernyataan C: Selisih suku ke-50 dan suku ke-3 $= U_{50} - U_3 = 102 - 8 = 94$ (Salah, seharusnya 94 bukan 98)."
+  },
+  {
+    "id": "tka26_mtk_a_15",
+    "nomor": 15,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
+    "materi": "Deret Aritmatika Kontekstual",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Seorang pelari marathon berlatih setiap hari. Pada hari pertama ia menempuh jarak 10 kilometer, dan untuk setiap hari berikutnya ia selalu menambah jarak larinya sejauh 2 kilometer. Jika pelari tersebut berlatih selama 10 hari, maka jumlah jarak total yang telah ia tempuh selama 10 hari adalah ….",
+    "teks_soal": "Seorang pelari marathon berlatih setiap hari. Pada hari pertama ia menempuh jarak 10 kilometer, dan untuk setiap hari berikutnya ia selalu menambah jarak larinya sejauh 2 kilometer. Jika pelari tersebut berlatih selama 10 hari, maka jumlah jarak total yang telah ia tempuh selama 10 hari adalah ….",
+    "soal": "Seorang pelari marathon berlatih setiap hari. Pada hari pertama ia menempuh jarak 10 kilometer, dan untuk setiap hari berikutnya ia selalu menambah jarak larinya sejauh 2 kilometer. Jika pelari tersebut berlatih selama 10 hari, maka jumlah jarak total yang telah ia tempuh selama 10 hari adalah ….",
+    "gambar": null,
+    "gambarUrls": [],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "162 km",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "190 km",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "200 km",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "220 km",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "162 km",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "190 km",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "200 km",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "220 km",
+        "gambar": null
+      }
+    ],
+    "pernyataan": null,
+    "kunciJawaban": "B",
+    "kunci_jawaban": "B",
+    "kunci": "B",
+    "pembahasan": "Deret aritmatika dengan $a = 10$, $b = 2$, dan $n = 10$. Jumlah total jarak: $S_{10} = \\frac{n}{2} [2a + (n - 1)b] = \\frac{10}{2} [2(10) + (10 - 1)2] = 5 [20 + 18] = 5 \\times 38 = 190\\text{ km}$."
+  },
+  {
+    "id": "tka26_mtk_a_16",
+    "nomor": 16,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
+    "materi": "Garis dan Sudut",
+    "tipe": "benar_salah",
+    "teksSoal": "Perhatikan gambar!<br>Tentukan benar atau salah untuk setiap pernyataan berikut terkait gambar tersebut:",
+    "teks_soal": "Perhatikan gambar!<br>Tentukan benar atau salah untuk setiap pernyataan berikut terkait gambar tersebut:",
+    "soal": "Perhatikan gambar!<br>Tentukan benar atau salah untuk setiap pernyataan berikut terkait gambar tersebut:",
+    "gambar": "/soal/tryout_tka_matematika_paket_a/q16_garis_sudut.png",
+    "gambarUrls": [
+      "/soal/tryout_tka_matematika_paket_a/q16_garis_sudut.png"
+    ],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [],
+    "opsi": [],
+    "pernyataan": [
+      {
+        "id": "p_1",
+        "teks": "A. Nilai q = 65°",
+        "kunci": ""
+      },
+      {
+        "id": "p_2",
+        "teks": "B. Nilai r = 84°",
+        "kunci": ""
+      },
+      {
+        "id": "p_3",
+        "teks": "C. Nilai p = 41°",
+        "kunci": ""
+      }
+    ],
+    "kunciJawaban": "A: Salah, B: Benar, C: Benar",
+    "kunci_jawaban": "A: Salah, B: Benar, C: Benar",
+    "kunci": "A: Salah, B: Benar, C: Benar",
+    "pembahasan": "Sudut $r$ berpelurus dengan sudut $96^\\circ \\implies r = 180^\\circ - 96^\\circ = 84^\\circ$ (Pernyataan B Benar). Sudut $125^\\circ$ berpelurus dengan sudut dalam yang berseberangan dengan $q$: sudut dalam $= 180^\\circ - 125^\\circ = 55^\\circ$. Berdasarkan sifat sudut dalam berseberangan pada garis sejajar, maka $q = 55^\\circ$ (Pernyataan A Salah, karena tertulis $65^\\circ$). Pada segitiga di antara dua garis sejajar, jumlah sudut segitiga $= 180^\\circ$: $p + r + 55^\\circ = 180^\\circ \\implies p + 84^\\circ + 55^\\circ = 180^\\circ \\implies p = 180^\\circ - 139^\\circ = 41^\\circ$ (Pernyataan C Benar)."
+  },
+  {
+    "id": "tka26_mtk_a_17",
+    "nomor": 17,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
+    "materi": "Teorema Pythagoras",
+    "tipe": "benar_salah",
+    "teksSoal": "Perhatikan gambar!<br>Diketahui jarak dua tank (AB) adalah 240 m, jarak pandang pesawat C dengan tank A adalah 260 m, dan pesawat D dengan tank A adalah 300 m.<br>Tentukan benar atau salah setiap pernyataan berikut:",
+    "teks_soal": "Perhatikan gambar!<br>Diketahui jarak dua tank (AB) adalah 240 m, jarak pandang pesawat C dengan tank A adalah 260 m, dan pesawat D dengan tank A adalah 300 m.<br>Tentukan benar atau salah setiap pernyataan berikut:",
+    "soal": "Perhatikan gambar!<br>Diketahui jarak dua tank (AB) adalah 240 m, jarak pandang pesawat C dengan tank A adalah 260 m, dan pesawat D dengan tank A adalah 300 m.<br>Tentukan benar atau salah setiap pernyataan berikut:",
+    "gambar": "/soal/tryout_tka_matematika_paket_a/q17_tank_pesawat.png",
+    "gambarUrls": [
+      "/soal/tryout_tka_matematika_paket_a/q17_tank_pesawat.png"
+    ],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [],
+    "opsi": [],
+    "pernyataan": [
+      {
+        "id": "p_1",
+        "teks": "A. Jarak tank B dengan pesawat C adalah 100 m",
+        "kunci": ""
+      },
+      {
+        "id": "p_2",
+        "teks": "B. Jarak tank B dengan pesawat D adalah 120 m",
+        "kunci": ""
+      },
+      {
+        "id": "p_3",
+        "teks": "C. Jarak pesawat C dan D adalah 80 m",
+        "kunci": ""
+      }
+    ],
+    "kunciJawaban": "A: Benar, B: Salah, C: Benar",
+    "kunci_jawaban": "A: Benar, B: Salah, C: Benar",
+    "kunci": "A: Benar, B: Salah, C: Benar",
+    "pembahasan": "Segitiga siku-siku di titik B: Jarak tank B ke pesawat C: $BC = \\sqrt{AC^2 - AB^2} = \\sqrt{260^2 - 240^2} = \\sqrt{67.600 - 57.600} = \\sqrt{10.000} = 100\\text{ m}$ (Pernyataan A Benar). Jarak tank B ke pesawat D: $BD = \\sqrt{AD^2 - AB^2} = \\sqrt{300^2 - 240^2} = \\sqrt{90.000 - 57.600} = \\sqrt{32.400} = 180\\text{ m}$ (Pernyataan B Salah, tertulis 120 m). Jarak vertikal pesawat C dan D: $CD = BD - BC = 180\\text{ m} - 100\\text{ m} = 80\\text{ m}$ (Pernyataan C Benar)."
+  },
+  {
+    "id": "tka26_mtk_a_18",
+    "nomor": 18,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
+    "materi": "Kekongruenan Segitiga",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Perhatikan gambar!<br>Diketahui segitiga ABC kongruen dengan segitiga DEF. Pernyataan berikut yang benar adalah ….",
+    "teks_soal": "Perhatikan gambar!<br>Diketahui segitiga ABC kongruen dengan segitiga DEF. Pernyataan berikut yang benar adalah ….",
+    "soal": "Perhatikan gambar!<br>Diketahui segitiga ABC kongruen dengan segitiga DEF. Pernyataan berikut yang benar adalah ….",
+    "gambar": "/soal/tryout_tka_matematika_paket_a/q18_segitiga_kongruen.png",
+    "gambarUrls": [
+      "/soal/tryout_tka_matematika_paket_a/q18_segitiga_kongruen.png"
+    ],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "besar ∠C = 25°",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "besar ∠A = 35°",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "EF + BC = 20 cm",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "ED – BC = 6 cm",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "besar ∠C = 25°",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "besar ∠A = 35°",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "EF + BC = 20 cm",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "ED – BC = 6 cm",
+        "gambar": null
+      }
+    ],
+    "pernyataan": null,
+    "kunciJawaban": "C",
+    "kunci_jawaban": "C",
+    "kunci": "C",
+    "pembahasan": "Pada $\\triangle DEF$, sudut $\\angle F = 180^\\circ - (44^\\circ + 35^\\circ) = 101^\\circ$. Karena $\\triangle ABC \\cong \\triangle DEF$, sudut $\\angle B = 101^\\circ$ bersesuaian dengan $\\angle F = 101^\\circ$. Sisi yang bersesuaian: $AB = FE = 9\\text{ cm}$; $BC = FD = 11\\text{ cm}$; $AC = ED = 15\\text{ cm}$. Sudut yang bersesuaian: $\\angle C = \\angle D = 35^\\circ$ dan $\\angle A = \\angle E = 44^\\circ$. Cek opsi C: $EF + BC = 9\\text{ cm} + 11\\text{ cm} = 20\\text{ cm}$ (Benar)."
+  },
+  {
+    "id": "tka26_mtk_a_19",
+    "nomor": 19,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
+    "materi": "Kesebangunan Bangun Datar",
+    "tipe": "pg_kompleks",
+    "teksSoal": "Perhatikan gambar.<br>Pekarangan ABCD dan kolam BEFG berbentuk persegipanjang. Diketahui AD = 15 meter, GF = 1,5 meter, dan FE = 2 meter. Diketahui pekarangan ABCD dan kolam BEFG sebangun.<br>Pilihlah lebih dari satu pernyataan berikut yang benar!",
+    "teks_soal": "Perhatikan gambar.<br>Pekarangan ABCD dan kolam BEFG berbentuk persegipanjang. Diketahui AD = 15 meter, GF = 1,5 meter, dan FE = 2 meter. Diketahui pekarangan ABCD dan kolam BEFG sebangun.<br>Pilihlah lebih dari satu pernyataan berikut yang benar!",
+    "soal": "Perhatikan gambar.<br>Pekarangan ABCD dan kolam BEFG berbentuk persegipanjang. Diketahui AD = 15 meter, GF = 1,5 meter, dan FE = 2 meter. Diketahui pekarangan ABCD dan kolam BEFG sebangun.<br>Pilihlah lebih dari satu pernyataan berikut yang benar!",
+    "gambar": "/soal/tryout_tka_matematika_paket_a/q19_kebun_kolam.png",
+    "gambarUrls": [
+      "/soal/tryout_tka_matematika_paket_a/q19_kebun_kolam.png"
+    ],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [
+      {
+        "key": "1",
+        "label": "1",
+        "teks": "Panjang sisi CD = 20 meter.",
+        "gambar": null
+      },
+      {
+        "key": "2",
+        "label": "2",
+        "teks": "Luas pekarangan ABCD = 300 m².",
+        "gambar": null
+      },
+      {
+        "key": "3",
+        "label": "3",
+        "teks": "Luas Kolam BEFG = 3 m².",
+        "gambar": null
+      },
+      {
+        "key": "4",
+        "label": "4",
+        "teks": "Luas kebun = 270 m².",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "1",
+        "label": "1",
+        "teks": "Panjang sisi CD = 20 meter.",
+        "gambar": null
+      },
+      {
+        "key": "2",
+        "label": "2",
+        "teks": "Luas pekarangan ABCD = 300 m².",
+        "gambar": null
+      },
+      {
+        "key": "3",
+        "label": "3",
+        "teks": "Luas Kolam BEFG = 3 m².",
+        "gambar": null
+      },
+      {
+        "key": "4",
+        "label": "4",
+        "teks": "Luas kebun = 270 m².",
+        "gambar": null
+      }
+    ],
+    "pernyataan": null,
+    "kunciJawaban": "1, 2, 3",
+    "kunci_jawaban": "1, 2, 3",
+    "kunci": "1, 2, 3",
+    "pembahasan": "Kolam BEFG memiliki lebar $GF = 1{,}5\\text{ m}$ dan panjang $FE = 2\\text{ m}$. Karena pekarangan ABCD sebangun dengan kolam BEFG dan lebarnya $AD = 15\\text{ m}$: Panjang sisi $CD = \\frac{FE}{GF} \\times AD = \\frac{2}{1{,}5} \\times 15 = 20\\text{ meter}$ (Pernyataan 1 Benar). Luas pekarangan ABCD = $20\\text{ m} \\times 15\\text{ m} = 300\\text{ m}^2$ (Pernyataan 2 Benar). Luas kolam BEFG = $2\\text{ m} \\times 1{,}5\\text{ m} = 3\\text{ m}^2$ (Pernyataan 3 Benar). Luas kebun (tanah di luar kolam) = $300\\text{ m}^2 - 3\\text{ m}^2 = 297\\text{ m}^2$ (Pernyataan 4 Salah, tertulis $270\\text{ m}^2$). Jadi pernyataan yang benar adalah nomor 1, 2, dan 3."
+  },
+  {
+    "id": "tka26_mtk_a_20",
+    "nomor": 20,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
+    "materi": "Transformasi Geometri (Refleksi dan Dilatasi)",
+    "tipe": "pg_kompleks",
+    "teksSoal": "Perhatikan gambar berikut!<br>Trapesium A’B’C’D’ adalah bayangan dari trapesium ABCD setelah dicerminkan terhadap sumbu Y, kemudian trapesium A’B’C’D’ didilatasi dengan pusat O(0,0) dengan faktor skala $k$ memiliki bayangan akhir trapesium A”B”C”D”.<br>Pilih lebih dari satu pernyataan berikut yang benar!",
+    "teks_soal": "Perhatikan gambar berikut!<br>Trapesium A’B’C’D’ adalah bayangan dari trapesium ABCD setelah dicerminkan terhadap sumbu Y, kemudian trapesium A’B’C’D’ didilatasi dengan pusat O(0,0) dengan faktor skala $k$ memiliki bayangan akhir trapesium A”B”C”D”.<br>Pilih lebih dari satu pernyataan berikut yang benar!",
+    "soal": "Perhatikan gambar berikut!<br>Trapesium A’B’C’D’ adalah bayangan dari trapesium ABCD setelah dicerminkan terhadap sumbu Y, kemudian trapesium A’B’C’D’ didilatasi dengan pusat O(0,0) dengan faktor skala $k$ memiliki bayangan akhir trapesium A”B”C”D”.<br>Pilih lebih dari satu pernyataan berikut yang benar!",
+    "gambar": "/soal/tryout_tka_matematika_paket_a/q20_koordinat_trapesium.png",
+    "gambarUrls": [
+      "/soal/tryout_tka_matematika_paket_a/q20_koordinat_trapesium.png"
+    ],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [
+      {
+        "key": "1",
+        "label": "1",
+        "teks": "Koordinat titik A adalah A(−4, 3).",
+        "gambar": null
+      },
+      {
+        "key": "2",
+        "label": "2",
+        "teks": "Koordinat titik B adalah B(−5, 5).",
+        "gambar": null
+      },
+      {
+        "key": "3",
+        "label": "3",
+        "teks": "Faktor skala k = 2.",
+        "gambar": null
+      },
+      {
+        "key": "4",
+        "label": "4",
+        "teks": "Koordinat titik A” (12,6).",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "1",
+        "label": "1",
+        "teks": "Koordinat titik A adalah A(−4, 3).",
+        "gambar": null
+      },
+      {
+        "key": "2",
+        "label": "2",
+        "teks": "Koordinat titik B adalah B(−5, 5).",
+        "gambar": null
+      },
+      {
+        "key": "3",
+        "label": "3",
+        "teks": "Faktor skala k = 2.",
+        "gambar": null
+      },
+      {
+        "key": "4",
+        "label": "4",
+        "teks": "Koordinat titik A” (12,6).",
+        "gambar": null
+      }
+    ],
+    "pernyataan": null,
+    "kunciJawaban": "2, 3, 4",
+    "kunci_jawaban": "2, 3, 4",
+    "kunci": "2, 3, 4",
+    "pembahasan": "Dari grafik koordinat: $A'(6, 3)$, $B'(5, 5)$, $C'(3, 5)$, $D'(2, 3)$. Karena $A'B'C'D'$ hasil refleksi $ABCD$ terhadap sumbu Y, koordinat titik asal: $A(-6, 3)$ (Pernyataan 1 Salah) dan $B(-5, 5)$ (Pernyataan 2 Benar). Titik $D'(2, 3)$ didilatasi $[O, k]$ menjadi $D''(4, 6)$, sehingga faktor skala $k = 4/2 = 6/3 = 2$ (Pernyataan 3 Benar). Bayangan akhir titik $A'' = 2 \\times (6, 3) = (12, 6)$ (Pernyataan 4 Benar). Jadi pernyataan yang benar adalah nomor 2, 3, dan 4."
+  },
+  {
+    "id": "tka26_mtk_a_21",
+    "nomor": 21,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
+    "materi": "Keliling Gabungan Bangun Datar",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Perhatikan gambar!<br>Kolam renang ABCDEF merupakan gabungan jajargenjang ABEF dan belah ketupat BCDE. Diketahui panjang AB = 15 meter, BD = 12 meter, dan EC = 16 meter. Keliling kolam renang tersebut adalah ….",
+    "teks_soal": "Perhatikan gambar!<br>Kolam renang ABCDEF merupakan gabungan jajargenjang ABEF dan belah ketupat BCDE. Diketahui panjang AB = 15 meter, BD = 12 meter, dan EC = 16 meter. Keliling kolam renang tersebut adalah ….",
+    "soal": "Perhatikan gambar!<br>Kolam renang ABCDEF merupakan gabungan jajargenjang ABEF dan belah ketupat BCDE. Diketahui panjang AB = 15 meter, BD = 12 meter, dan EC = 16 meter. Keliling kolam renang tersebut adalah ….",
+    "gambar": "/soal/tryout_tka_matematika_paket_a/q21_kolam_renang.png",
+    "gambarUrls": [
+      "/soal/tryout_tka_matematika_paket_a/q21_kolam_renang.png"
+    ],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "70 meter",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "80 meter",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "100 meter",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "110 meter",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "70 meter",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "80 meter",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "100 meter",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "110 meter",
+        "gambar": null
+      }
+    ],
+    "pernyataan": null,
+    "kunciJawaban": "A",
+    "kunci_jawaban": "A",
+    "kunci": "A",
+    "pembahasan": "Pada belah ketupat BCDE, diagonal $BD = 12\\text{ m}$ dan $EC = 16\\text{ m}$. Setengah diagonalnya adalah $6\\text{ m}$ dan $8\\text{ m}$. Sisi belah ketupat: $BC = CD = DE = EB = \\sqrt{6^2 + 8^2} = \\sqrt{100} = 10\\text{ m}$. Pada jajargenjang ABEF: sisi $AB = EF = 15\\text{ m}$ dan sisi $AF = BE = 10\\text{ m}$. Keliling batas luar kolam ABCDEF = $AB + BC + CD + DE + EF + FA = 15 + 10 + 10 + 10 + 15 + 10 = 70\\text{ meter}$."
+  },
+  {
+    "id": "tka26_mtk_a_22",
+    "nomor": 22,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
+    "materi": "Luas Daerah Arsiran Lingkaran dan Trapesium",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Perhatikan gambar trapesium siku-siku dan juring lingkaran!<br>Diketahui panjang $AB = 22\\text{ cm}$, $DC = 14\\text{ cm}$, dan $AD = 10\\text{ cm}$. Luas daerah yang diarsir adalah ….",
+    "teks_soal": "Perhatikan gambar trapesium siku-siku dan juring lingkaran!<br>Diketahui panjang $AB = 22\\text{ cm}$, $DC = 14\\text{ cm}$, dan $AD = 10\\text{ cm}$. Luas daerah yang diarsir adalah ….",
+    "soal": "Perhatikan gambar trapesium siku-siku dan juring lingkaran!<br>Diketahui panjang $AB = 22\\text{ cm}$, $DC = 14\\text{ cm}$, dan $AD = 10\\text{ cm}$. Luas daerah yang diarsir adalah ….",
+    "gambar": "/soal/tryout_tka_matematika_paket_a/q22_trapesium_juring.png",
+    "gambarUrls": [
+      "/soal/tryout_tka_matematika_paket_a/q22_trapesium_juring.png"
+    ],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "103 cm²",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "125 cm²",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "257 cm²",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "283 cm²",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "103 cm²",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "125 cm²",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "257 cm²",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "283 cm²",
+        "gambar": null
+      }
+    ],
+    "pernyataan": null,
+    "kunciJawaban": "B",
+    "kunci_jawaban": "B",
+    "kunci": "B",
+    "pembahasan": "Luas trapesium siku-siku: $L_{\\text{trapesium}} = \\frac{AB + DC}{2} \\times AD = \\frac{22 + 14}{2} \\times 10 = 18 \\times 10 = 180\\text{ cm}^2$. Juring lingkaran berpusat di sudut C dengan jari-jari $r = 14 / 2 = 7\\text{ cm}$. Sudut $\\angle C = 180^\\circ - \\angle B \\approx 128{,}66^\\circ$. Luas juring $= \\frac{128{,}66^\\circ}{360^\\circ} \\times \\frac{22}{7} \\times 7^2 \\approx 55\\text{ cm}^2$. Luas daerah arsiran $= 180 - 55 = 125\\text{ cm}^2$."
+  },
+  {
+    "id": "tka26_mtk_a_23",
+    "nomor": 23,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
+    "materi": "Jaring-jaring Bangun Ruang Sisi Datar",
+    "tipe": "benar_salah",
+    "teksSoal": "Perhatikan gambar jaring-jaring bangun ruang sisi datar berikut!<br>Tentukan benar atau salah untuk setiap pernyataan berikut:",
+    "teks_soal": "Perhatikan gambar jaring-jaring bangun ruang sisi datar berikut!<br>Tentukan benar atau salah untuk setiap pernyataan berikut:",
+    "soal": "Perhatikan gambar jaring-jaring bangun ruang sisi datar berikut!<br>Tentukan benar atau salah untuk setiap pernyataan berikut:",
+    "gambar": "/soal/tryout_tka_matematika_paket_a/q23_jaring_jaring.png",
+    "gambarUrls": [
+      "/soal/tryout_tka_matematika_paket_a/q23_jaring_jaring.png"
+    ],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [],
+    "opsi": [],
+    "pernyataan": [
+      {
+        "id": "p_1",
+        "teks": "A. Gambar (1) adalah jaring-jaring prisma segitiga.",
+        "kunci": ""
+      },
+      {
+        "id": "p_2",
+        "teks": "B. Gambar (2) adalah jaring-jaring limas segiempat.",
+        "kunci": ""
+      },
+      {
+        "id": "p_3",
+        "teks": "C. Gambar (3) adalah jaring-jaring balok.",
+        "kunci": ""
+      }
+    ],
+    "kunciJawaban": "A: Benar, B: Salah, C: Benar",
+    "kunci_jawaban": "A: Benar, B: Salah, C: Benar",
+    "kunci": "A: Benar, B: Salah, C: Benar",
+    "pembahasan": "Gambar (1) memiliki 3 persegi panjang dan 2 segitiga penutup, merupakan jaring-jaring prisma segitiga (Pernyataan A Benar). Gambar (2) tersusun dari 4 segitiga (1 alas dan 3 sisi tegak), merupakan jaring-jaring limas segitiga / bidang empat, bukan limas segiempat (Pernyataan B Salah). Gambar (3) tersusun dari 6 persegi panjang yang kongruen berpasangan, merupakan jaring-jaring balok (Pernyataan C Benar)."
+  },
+  {
+    "id": "tka26_mtk_a_24",
+    "nomor": 24,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
+    "materi": "Luas Permukaan Atap Rumah",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Perhatikan gambar!<br>Pak Edi berencana membuat atap rumah dari genteng. Atap tersebut terbentuk dari dua segitiga sama kaki kongruen dan dua trapesium sama kaki kongruen. Jika diketahui panjang $AB = 8\\text{ m}$, $BC = 11\\text{ m}$, $DE = 5\\text{ m}$ dan $BE = 5\\text{ m}$, luas atap rumah adalah ….",
+    "teks_soal": "Perhatikan gambar!<br>Pak Edi berencana membuat atap rumah dari genteng. Atap tersebut terbentuk dari dua segitiga sama kaki kongruen dan dua trapesium sama kaki kongruen. Jika diketahui panjang $AB = 8\\text{ m}$, $BC = 11\\text{ m}$, $DE = 5\\text{ m}$ dan $BE = 5\\text{ m}$, luas atap rumah adalah ….",
+    "soal": "Perhatikan gambar!<br>Pak Edi berencana membuat atap rumah dari genteng. Atap tersebut terbentuk dari dua segitiga sama kaki kongruen dan dua trapesium sama kaki kongruen. Jika diketahui panjang $AB = 8\\text{ m}$, $BC = 11\\text{ m}$, $DE = 5\\text{ m}$ dan $BE = 5\\text{ m}$, luas atap rumah adalah ….",
+    "gambar": "/soal/tryout_tka_matematika_paket_a/q24_atap_rumah.png",
+    "gambarUrls": [
+      "/soal/tryout_tka_matematika_paket_a/q24_atap_rumah.png"
+    ],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "76 m²",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "88 m²",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "104 m²",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "112 m²",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "76 m²",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "88 m²",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "104 m²",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "112 m²",
+        "gambar": null
+      }
+    ],
+    "pernyataan": null,
+    "kunciJawaban": "B",
+    "kunci_jawaban": "B",
+    "kunci": "B",
+    "pembahasan": "Luas 2 segitiga sama kaki (depan dan belakang): alas $AB = 8\\text{ m}$, sisi miring $5\\text{ m}$, tinggi $t_1 = \\sqrt{5^2 - 4^2} = 3\\text{ m}$. Luas = $2 \\times (\\frac{1}{2} \\times 8 \\times 3) = 24\\text{ m}^2$. Luas 2 trapesium sama kaki (kiri dan kanan): sisi sejajar $BC = 11\\text{ m}$ dan $DE = 5\\text{ m}$, tinggi miring $t_2 = \\sqrt{5^2 - (\\frac{11 - 5}{2})^2} = \\sqrt{5^2 - 3^2} = 4\\text{ m}$. Luas = $2 \\times (\\frac{11 + 5}{2} \\times 4) = 2 \\times 32 = 64\\text{ m}^2$. Total luas atap = $24 + 64 = 88\\text{ m}^2$."
+  },
+  {
+    "id": "tka26_mtk_a_25",
+    "nomor": 25,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
+    "materi": "Volume Bangun Ruang Gabungan (Kubus dan Limas)",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Perhatikan gambar!<br>Bangun tersebut terdiri dari kubus dan dua limas yang kongruen. Diketahui panjang $AB = 12\\text{ cm}$ dan panjang $JT = 30\\text{ cm}$. Volume bangun tersebut adalah ….",
+    "teks_soal": "Perhatikan gambar!<br>Bangun tersebut terdiri dari kubus dan dua limas yang kongruen. Diketahui panjang $AB = 12\\text{ cm}$ dan panjang $JT = 30\\text{ cm}$. Volume bangun tersebut adalah ….",
+    "soal": "Perhatikan gambar!<br>Bangun tersebut terdiri dari kubus dan dua limas yang kongruen. Diketahui panjang $AB = 12\\text{ cm}$ dan panjang $JT = 30\\text{ cm}$. Volume bangun tersebut adalah ….",
+    "gambar": "/soal/tryout_tka_matematika_paket_a/q25_kubus_limas.png",
+    "gambarUrls": [
+      "/soal/tryout_tka_matematika_paket_a/q25_kubus_limas.png"
+    ],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "6.042 cm³",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "4.608 cm³",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "3.168 cm³",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "2.592 cm³",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "6.042 cm³",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "4.608 cm³",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "3.168 cm³",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "2.592 cm³",
+        "gambar": null
+      }
+    ],
+    "pernyataan": null,
+    "kunciJawaban": "D",
+    "kunci_jawaban": "D",
+    "kunci": "D",
+    "pembahasan": "Kubus memiliki rusuk $s = 12\\text{ cm}$. Tinggi total $JT = 30\\text{ cm}$. Tinggi kedua limas kongruen = $30 - 12 = 18\\text{ cm}$, maka tinggi masing-masing limas $t = 9\\text{ cm}$. Volume kubus = $12^3 = 1.728\\text{ cm}^3$. Volume 2 limas = $2 \\times (\\frac{1}{3} \\times 12^2 \\times 9) = 2 \\times 432 = 864\\text{ cm}^3$. Volume total bangun = $1.728 + 864 = 2.592\\text{ cm}^3$."
+  },
+  {
+    "id": "tka26_mtk_a_26",
+    "nomor": 26,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
+    "materi": "Volume Bangun Ruang Sisi Lengkung",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Perhatikan gambar!<br>Sebuah tempat minum terbentuk dari gabungan tabung dan kerucut seperti pada gambar. Jika tempat minum tersebut berisi penuh sirup, banyaknya gelas setengah bola yang diperlukan untuk memindah semua sirup adalah ….",
+    "teks_soal": "Perhatikan gambar!<br>Sebuah tempat minum terbentuk dari gabungan tabung dan kerucut seperti pada gambar. Jika tempat minum tersebut berisi penuh sirup, banyaknya gelas setengah bola yang diperlukan untuk memindah semua sirup adalah ….",
+    "soal": "Perhatikan gambar!<br>Sebuah tempat minum terbentuk dari gabungan tabung dan kerucut seperti pada gambar. Jika tempat minum tersebut berisi penuh sirup, banyaknya gelas setengah bola yang diperlukan untuk memindah semua sirup adalah ….",
+    "gambar": "/soal/tryout_tka_matematika_paket_a/q26_tempat_minum.png",
+    "gambarUrls": [
+      "/soal/tryout_tka_matematika_paket_a/q26_tempat_minum.png"
+    ],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "30 gelas",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "35 gelas",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "40 gelas",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "45 gelas",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "30 gelas",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "35 gelas",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "40 gelas",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "45 gelas",
+        "gambar": null
+      }
+    ],
+    "pernyataan": null,
+    "kunciJawaban": "C",
+    "kunci_jawaban": "C",
+    "kunci": "C",
+    "pembahasan": "Tempat minum: jari-jari $r = 24 / 2 = 12\\text{ cm}$. Volume tabung = $\\pi r^2 t = \\pi (12^2)(36) = 5.184\\pi\\text{ cm}^3$. Volume kerucut = $\\frac{1}{3} \\pi r^2 t = \\frac{1}{3} \\pi (12^2)(12) = 576\\pi\\text{ cm}^3$. Volume total sirup = $5.184\\pi + 576\\pi = 5.760\\pi\\text{ cm}^3$. Gelas setengah bola: diameter $12\\text{ cm} \\implies r = 6\\text{ cm}$. Volume 1 gelas = $\\frac{2}{3} \\pi r^3 = \\frac{2}{3} \\pi (6^3) = 144\\pi\\text{ cm}^3$. Banyaknya gelas = $\\frac{5.760\\pi}{144\\pi} = 40\\text{ gelas}$."
+  },
+  {
+    "id": "tka26_mtk_a_27",
+    "nomor": 27,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
+    "materi": "Statistika (Diagram Batang)",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Perhatikan diagram berikut!<br>Kenaikan penjualan HP merk Apik tertinggi terjadi pada bulan ….",
+    "teks_soal": "Perhatikan diagram berikut!<br>Kenaikan penjualan HP merk Apik tertinggi terjadi pada bulan ….",
+    "soal": "Perhatikan diagram berikut!<br>Kenaikan penjualan HP merk Apik tertinggi terjadi pada bulan ….",
+    "gambar": "/soal/tryout_tka_matematika_paket_a/q27_diagram_hp.png",
+    "gambarUrls": [
+      "/soal/tryout_tka_matematika_paket_a/q27_diagram_hp.png"
+    ],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Juli – Agustus",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "September – Oktober",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Oktober – November",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "November – Desember",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Juli – Agustus",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "September – Oktober",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Oktober – November",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "November – Desember",
+        "gambar": null
+      }
+    ],
+    "pernyataan": null,
+    "kunciJawaban": "A",
+    "kunci_jawaban": "A",
+    "kunci": "A",
+    "pembahasan": "Kenaikan penjualan antarbulan: Juli – Agustus = $140 - 110 = 30$ unit; September – Oktober = $145 - 125 = 20$ unit; Oktober – November = $160 - 145 = 15$ unit; November – Desember = $185 - 160 = 25$ unit. Kenaikan tertinggi sebesar 30 unit terjadi pada periode bulan Juli – Agustus."
+  },
+  {
+    "id": "tka26_mtk_a_28",
+    "nomor": 28,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
+    "materi": "Statistika (Ukuran Pemusatan dan Penyebaran)",
+    "tipe": "pg_kompleks",
+    "teksSoal": "Perhatikan tabel nilai ulangan matematika kelas 9A berikut!<br><table border='1' cellpadding='6' style='border-collapse:collapse; margin:10px 0;'><thead><tr><th>Nilai</th><th>60</th><th>70</th><th>80</th><th>90</th><th>100</th></tr></thead><tbody><tr><td>Frekuensi</td><td>6</td><td>7</td><td>8</td><td>5</td><td>4</td></tr></tbody></table>Berdasarkan tabel, pilihlah lebih dari satu pernyataan berikut yang benar!",
+    "teks_soal": "Perhatikan tabel nilai ulangan matematika kelas 9A berikut!<br><table border='1' cellpadding='6' style='border-collapse:collapse; margin:10px 0;'><thead><tr><th>Nilai</th><th>60</th><th>70</th><th>80</th><th>90</th><th>100</th></tr></thead><tbody><tr><td>Frekuensi</td><td>6</td><td>7</td><td>8</td><td>5</td><td>4</td></tr></tbody></table>Berdasarkan tabel, pilihlah lebih dari satu pernyataan berikut yang benar!",
+    "soal": "Perhatikan tabel nilai ulangan matematika kelas 9A berikut!<br><table border='1' cellpadding='6' style='border-collapse:collapse; margin:10px 0;'><thead><tr><th>Nilai</th><th>60</th><th>70</th><th>80</th><th>90</th><th>100</th></tr></thead><tbody><tr><td>Frekuensi</td><td>6</td><td>7</td><td>8</td><td>5</td><td>4</td></tr></tbody></table>Berdasarkan tabel, pilihlah lebih dari satu pernyataan berikut yang benar!",
+    "gambar": null,
+    "gambarUrls": [],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [
+      {
+        "key": "1",
+        "label": "1",
+        "teks": "Jangkauan dari data tersebut adalah 40.",
+        "gambar": null
+      },
+      {
+        "key": "2",
+        "label": "2",
+        "teks": "Modus dari data tersebut adalah 80.",
+        "gambar": null
+      },
+      {
+        "key": "3",
+        "label": "3",
+        "teks": "Rata-rata data tersebut adalah 78.",
+        "gambar": null
+      },
+      {
+        "key": "4",
+        "label": "4",
+        "teks": "Banyak siswa yang memperoleh nilai di atas rata-rata adalah 13 orang.",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "1",
+        "label": "1",
+        "teks": "Jangkauan dari data tersebut adalah 40.",
+        "gambar": null
+      },
+      {
+        "key": "2",
+        "label": "2",
+        "teks": "Modus dari data tersebut adalah 80.",
+        "gambar": null
+      },
+      {
+        "key": "3",
+        "label": "3",
+        "teks": "Rata-rata data tersebut adalah 78.",
+        "gambar": null
+      },
+      {
+        "key": "4",
+        "label": "4",
+        "teks": "Banyak siswa yang memperoleh nilai di atas rata-rata adalah 13 orang.",
+        "gambar": null
+      }
+    ],
+    "pernyataan": null,
+    "kunciJawaban": "1, 2, 3",
+    "kunci_jawaban": "1, 2, 3",
+    "kunci": "1, 2, 3",
+    "pembahasan": "Total siswa $n = 6 + 7 + 8 + 5 + 4 = 30$ siswa. Jumlah nilai: $(60 \\times 6) + (70 \\times 7) + (80 \\times 8) + (90 \\times 5) + (100 \\times 4) = 360 + 490 + 640 + 450 + 400 = 2.340$. Rata-rata = $2.340 / 30 = 78$ (Pernyataan 3 Benar). Jangkauan = Nilai maks - Nilai min = $100 - 60 = 40$ (Pernyataan 1 Benar). Modus = nilai dengan frekuensi terbanyak yaitu nilai 80 dengan frekuensi 8 (Pernyataan 2 Benar). Siswa dengan nilai di atas rata-rata (> 78) adalah siswa bernilai 80, 90, dan 100 dengan total $8 + 5 + 4 = 17$ orang (Pernyataan 4 Salah, tertulis 13 orang). Jadi pernyataan yang benar adalah nomor 1, 2, dan 3."
+  },
+  {
+    "id": "tka26_mtk_a_29",
+    "nomor": 29,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
+    "materi": "Peluang Teoretik",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Perhatikan gambar!<br>Cakram putar (spiner) terbagi menjadi 8 bagian yang ukurannya sama besar dan masing-masing diberi nomor urut 1 sampai 8 seperti pada gambar. Jika cakram diputar undi maka peluang bilangan prima berhenti pada jarum penunjuk adalah ….",
+    "teks_soal": "Perhatikan gambar!<br>Cakram putar (spiner) terbagi menjadi 8 bagian yang ukurannya sama besar dan masing-masing diberi nomor urut 1 sampai 8 seperti pada gambar. Jika cakram diputar undi maka peluang bilangan prima berhenti pada jarum penunjuk adalah ….",
+    "soal": "Perhatikan gambar!<br>Cakram putar (spiner) terbagi menjadi 8 bagian yang ukurannya sama besar dan masing-masing diberi nomor urut 1 sampai 8 seperti pada gambar. Jika cakram diputar undi maka peluang bilangan prima berhenti pada jarum penunjuk adalah ….",
+    "gambar": "/soal/tryout_tka_matematika_paket_a/q29_spinner.png",
+    "gambarUrls": [
+      "/soal/tryout_tka_matematika_paket_a/q29_spinner.png"
+    ],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "3/8",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "4/8",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "5/8",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "7/8",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "3/8",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "4/8",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "5/8",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "7/8",
+        "gambar": null
+      }
+    ],
+    "pernyataan": null,
+    "kunciJawaban": "B",
+    "kunci_jawaban": "B",
+    "kunci": "B",
+    "pembahasan": "Ruang sampel cakram putar: $S = \\{1, 2, 3, 4, 5, 6, 7, 8\\} \\implies n(S) = 8$. Kejadian muncul bilangan prima: $A = \\{2, 3, 5, 7\\} \\implies n(A) = 4$. Peluang muncul bilangan prima: $P(A) = \\frac{n(A)}{n(S)} = \\frac{4}{8}$."
+  },
+  {
+    "id": "tka26_mtk_a_30",
+    "nomor": 30,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
+    "materi": "Peluang Empirik dan Rasio Keberhasilan",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Empat percobaan menanam biji kacang hijau dilakukan dengan tanah dan pupuk yang sama. Hasilnya sebagai berikut:<br>• Percobaan E: ditanam 20 biji kacang hijau jenis A, tumbuh 15 biji.<br>• Percobaan F: ditanam 25 biji kacang hijau jenis B, tumbuh 18 biji.<br>• Percobaan G: ditanam 30 biji kacang hijau jenis C, tumbuh 24 biji.<br>• Percobaan H: ditanam 40 biji kacang hijau jenis D, tumbuh 31 biji.<br>Berdasarkan data tersebut, jenis biji kacang apakah yang paling cocok untuk ditanam pada tanah dan pupuk seperti pada percobaan?",
+    "teks_soal": "Empat percobaan menanam biji kacang hijau dilakukan dengan tanah dan pupuk yang sama. Hasilnya sebagai berikut:<br>• Percobaan E: ditanam 20 biji kacang hijau jenis A, tumbuh 15 biji.<br>• Percobaan F: ditanam 25 biji kacang hijau jenis B, tumbuh 18 biji.<br>• Percobaan G: ditanam 30 biji kacang hijau jenis C, tumbuh 24 biji.<br>• Percobaan H: ditanam 40 biji kacang hijau jenis D, tumbuh 31 biji.<br>Berdasarkan data tersebut, jenis biji kacang apakah yang paling cocok untuk ditanam pada tanah dan pupuk seperti pada percobaan?",
+    "soal": "Empat percobaan menanam biji kacang hijau dilakukan dengan tanah dan pupuk yang sama. Hasilnya sebagai berikut:<br>• Percobaan E: ditanam 20 biji kacang hijau jenis A, tumbuh 15 biji.<br>• Percobaan F: ditanam 25 biji kacang hijau jenis B, tumbuh 18 biji.<br>• Percobaan G: ditanam 30 biji kacang hijau jenis C, tumbuh 24 biji.<br>• Percobaan H: ditanam 40 biji kacang hijau jenis D, tumbuh 31 biji.<br>Berdasarkan data tersebut, jenis biji kacang apakah yang paling cocok untuk ditanam pada tanah dan pupuk seperti pada percobaan?",
+    "gambar": null,
+    "gambarUrls": [],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Kacang hijau jenis A.",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Kacang hijau jenis B.",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Kacang hijau jenis C.",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "Kacang hijau jenis D.",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Kacang hijau jenis A.",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Kacang hijau jenis B.",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Kacang hijau jenis C.",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "Kacang hijau jenis D.",
+        "gambar": null
+      }
+    ],
+    "pernyataan": null,
+    "kunciJawaban": "C",
+    "kunci_jawaban": "C",
+    "kunci": "C",
+    "pembahasan": "Hitung rasio / persentase keberhasilan tumbuh tiap jenis biji: Jenis A = $15/20 = 75\\%$; Jenis B = $18/25 = 72\\%$; Jenis C = $24/30 = 80\\%$; Jenis D = $31/40 = 77{,}5\\%$. Biji kacang hijau jenis C memiliki persentase keberhasilan tumbuh paling tinggi yaitu $80\\%$, sehingga paling cocok ditanam."
+  }
+];
+
+export const SOAL_TRYOUT_AKBAR_SMP_MTK = [
+  {
+    "id": "tka_akbar_mtk_01",
+    "nomor": 1,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
+    "materi": "Operasi Bilangan Bulat",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Dalam kompetisi Olimpiade Matematika, setiap butir soal dijawab benar diberi skor 5, salah −2 dan tidak dijawab −1. Dari 40 butir soal yang disediakan, Andi menjawab benar 30 butir soal dan salah 6 butir soal. Skor yang diperoleh Andi adalah ….",
+    "teks_soal": "Dalam kompetisi Olimpiade Matematika, setiap butir soal dijawab benar diberi skor 5, salah −2 dan tidak dijawab −1. Dari 40 butir soal yang disediakan, Andi menjawab benar 30 butir soal dan salah 6 butir soal. Skor yang diperoleh Andi adalah ….",
+    "soal": "Dalam kompetisi Olimpiade Matematika, setiap butir soal dijawab benar diberi skor 5, salah −2 dan tidak dijawab −1. Dari 40 butir soal yang disediakan, Andi menjawab benar 30 butir soal dan salah 6 butir soal. Skor yang diperoleh Andi adalah ….",
+    "gambar": null,
+    "gambarUrls": [],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "140",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "134",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "130",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "125",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "140",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "134",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "130",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "125",
+        "gambar": null
+      }
+    ],
+    "pernyataan": null,
+    "kunciJawaban": "B",
+    "kunci_jawaban": "B",
+    "kunci": "B",
+    "pembahasan": "Diketahui total 40 butir soal: Benar = 30 soal (skor $30 \\times 5 = 150$), Salah = 6 soal (skor $6 \\times (-2) = -12$), Tidak dijawab = $40 - (30 + 6) = 4$ soal (skor $4 \\times (-1) = -4$). Skor total Andi = $150 + (-12) + (-4) = 150 - 16 = 134$."
+  },
+  {
+    "id": "tka_akbar_mtk_02",
+    "nomor": 2,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
+    "materi": "Pecahan dan Urutan Bilangan Rasional",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Final lomba Sains diikuti oleh empat orang siswa yaitu Andi, Budi, Candra dan Dewi. Tabel berikut adalah hasil akhir skor yang diperoleh oleh empat siswa tersebut:<br><table border='1' cellpadding='6' style='border-collapse:collapse; margin:10px 0;'><thead><tr><th>Nama</th><th>Skor (dari nilai sempurna)</th></tr></thead><tbody><tr><td>Andi</td><td>0,6</td></tr><tr><td>Budi</td><td>55%</td></tr><tr><td>Candra</td><td>2/3</td></tr><tr><td>Dewi</td><td>0,54</td></tr></tbody></table>Urutan juara pertama sampai dengan keempat adalah ….",
+    "teks_soal": "Final lomba Sains diikuti oleh empat orang siswa yaitu Andi, Budi, Candra dan Dewi. Tabel berikut adalah hasil akhir skor yang diperoleh oleh empat siswa tersebut:<br><table border='1' cellpadding='6' style='border-collapse:collapse; margin:10px 0;'><thead><tr><th>Nama</th><th>Skor (dari nilai sempurna)</th></tr></thead><tbody><tr><td>Andi</td><td>0,6</td></tr><tr><td>Budi</td><td>55%</td></tr><tr><td>Candra</td><td>2/3</td></tr><tr><td>Dewi</td><td>0,54</td></tr></tbody></table>Urutan juara pertama sampai dengan keempat adalah ….",
+    "soal": "Final lomba Sains diikuti oleh empat orang siswa yaitu Andi, Budi, Candra dan Dewi. Tabel berikut adalah hasil akhir skor yang diperoleh oleh empat siswa tersebut:<br><table border='1' cellpadding='6' style='border-collapse:collapse; margin:10px 0;'><thead><tr><th>Nama</th><th>Skor (dari nilai sempurna)</th></tr></thead><tbody><tr><td>Andi</td><td>0,6</td></tr><tr><td>Budi</td><td>55%</td></tr><tr><td>Candra</td><td>2/3</td></tr><tr><td>Dewi</td><td>0,54</td></tr></tbody></table>Urutan juara pertama sampai dengan keempat adalah ….",
+    "gambar": null,
+    "gambarUrls": [],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Budi – Dewi – Andi – Candra",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Dewi – Budi – Andi – Candra",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Candra – Andi – Budi – Dewi",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "Dewi – Budi – Candra – Andi",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Budi – Dewi – Andi – Candra",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Dewi – Budi – Andi – Candra",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Candra – Andi – Budi – Dewi",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "Dewi – Budi – Candra – Andi",
+        "gambar": null
+      }
+    ],
+    "pernyataan": null,
+    "kunciJawaban": "C",
+    "kunci_jawaban": "C",
+    "kunci": "C",
+    "pembahasan": "Ubah semua nilai ke bentuk desimal berderajat tiga desimal: Candra = $2/3 \\approx 0{,}667$; Andi = $0{,}6 = 0{,}600$; Budi = $55\\% = 0{,}550$; Dewi = $0{,}54 = 0{,}540$. Urutan skor dari tertinggi (juara 1) ke terendah (juara 4): Candra ($0{,}667$) – Andi ($0{,}600$) – Budi ($0{,}550$) – Dewi ($0{,}540$)."
+  },
+  {
+    "id": "tka_akbar_mtk_03",
+    "nomor": 3,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
+    "materi": "Faktor Persekutuan Terbesar (FPB)",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Diketahui tiga bilangan $a = (8 \\times 9)$, $b = (3 \\times 4 + 6)$, dan $c = (8^2 - 4^2)$. Faktor persekutuan terbesar dari $a$, $b$ dan $c$ adalah ….",
+    "teks_soal": "Diketahui tiga bilangan $a = (8 \\times 9)$, $b = (3 \\times 4 + 6)$, dan $c = (8^2 - 4^2)$. Faktor persekutuan terbesar dari $a$, $b$ dan $c$ adalah ….",
+    "soal": "Diketahui tiga bilangan $a = (8 \\times 9)$, $b = (3 \\times 4 + 6)$, dan $c = (8^2 - 4^2)$. Faktor persekutuan terbesar dari $a$, $b$ dan $c$ adalah ….",
+    "gambar": null,
+    "gambarUrls": [],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "$2 \\times 3$",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "$2^3$",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "$3^2$",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "$2^2 \\times 3$",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "$2 \\times 3$",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "$2^3$",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "$3^2$",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "$2^2 \\times 3$",
+        "gambar": null
+      }
+    ],
+    "pernyataan": null,
+    "kunciJawaban": "A",
+    "kunci_jawaban": "A",
+    "kunci": "A",
+    "pembahasan": "Hitung masing-masing bilangan dan faktorisasi primanya: $a = 8 \\times 9 = 72 = 2^3 \\times 3^2$; $b = 3 \\times 4 + 6 = 12 + 6 = 18 = 2 \\times 3^2$; $c = 8^2 - 4^2 = 64 - 16 = 48 = 2^4 \\times 3$. FPB diambil dari faktor prima sekutu dengan pangkat terendah: faktor $2$ berpangkat $1$ dan faktor $3$ berpangkat $1$. Jadi FPB = $2 \\times 3$."
+  },
+  {
+    "id": "tka_akbar_mtk_04",
+    "nomor": 4,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
+    "materi": "Aritmatika Sosial dan Optimasi",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Seorang kontraktor bangunan akan melapisi lantai sebuah ruang kelas seluas 120 m². Karena proyek harus segera dikerjakan, kontraktor membeli semen di toko bangunan terdekat. Namun, sebagian besar stok semen di toko tersebut sedang habis dan pengiriman ulang belum datang, sehingga hanya tersedia beberapa persediaan berikut:<br><table border='1' cellpadding='6' style='border-collapse:collapse; margin:10px 0;'><thead><tr><th>Jenis semen</th><th>Berat (kg)</th><th>Jumlah</th><th>Harga (Rp)</th></tr></thead><tbody><tr><td>Kemasan K</td><td>5</td><td>6</td><td>40.000</td></tr><tr><td>Kemasan B</td><td>10</td><td>6</td><td>75.000</td></tr></tbody></table>Keterangan: K = semen kemasan kecil, B = semen kemasan besar.<br>Jika 1 kg semen dapat melapisi 2 m² lantai, kombinasi pembelian semen yang paling murah agar seluruh lantai dapat dilapisi adalah ….",
+    "teks_soal": "Seorang kontraktor bangunan akan melapisi lantai sebuah ruang kelas seluas 120 m². Karena proyek harus segera dikerjakan, kontraktor membeli semen di toko bangunan terdekat. Namun, sebagian besar stok semen di toko tersebut sedang habis dan pengiriman ulang belum datang, sehingga hanya tersedia beberapa persediaan berikut:<br><table border='1' cellpadding='6' style='border-collapse:collapse; margin:10px 0;'><thead><tr><th>Jenis semen</th><th>Berat (kg)</th><th>Jumlah</th><th>Harga (Rp)</th></tr></thead><tbody><tr><td>Kemasan K</td><td>5</td><td>6</td><td>40.000</td></tr><tr><td>Kemasan B</td><td>10</td><td>6</td><td>75.000</td></tr></tbody></table>Keterangan: K = semen kemasan kecil, B = semen kemasan besar.<br>Jika 1 kg semen dapat melapisi 2 m² lantai, kombinasi pembelian semen yang paling murah agar seluruh lantai dapat dilapisi adalah ….",
+    "soal": "Seorang kontraktor bangunan akan melapisi lantai sebuah ruang kelas seluas 120 m². Karena proyek harus segera dikerjakan, kontraktor membeli semen di toko bangunan terdekat. Namun, sebagian besar stok semen di toko tersebut sedang habis dan pengiriman ulang belum datang, sehingga hanya tersedia beberapa persediaan berikut:<br><table border='1' cellpadding='6' style='border-collapse:collapse; margin:10px 0;'><thead><tr><th>Jenis semen</th><th>Berat (kg)</th><th>Jumlah</th><th>Harga (Rp)</th></tr></thead><tbody><tr><td>Kemasan K</td><td>5</td><td>6</td><td>40.000</td></tr><tr><td>Kemasan B</td><td>10</td><td>6</td><td>75.000</td></tr></tbody></table>Keterangan: K = semen kemasan kecil, B = semen kemasan besar.<br>Jika 1 kg semen dapat melapisi 2 m² lantai, kombinasi pembelian semen yang paling murah agar seluruh lantai dapat dilapisi adalah ….",
+    "gambar": null,
+    "gambarUrls": [],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "3 kemasan B dan 6 kemasan K",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "4 kemasan B dan 4 kemasan K",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "5 kemasan B dan 2 kemasan K",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "6 kemasan B dan 1 kemasan K",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "3 kemasan B dan 6 kemasan K",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "4 kemasan B dan 4 kemasan K",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "5 kemasan B dan 2 kemasan K",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "6 kemasan B dan 1 kemasan K",
+        "gambar": null
+      }
+    ],
+    "pernyataan": null,
+    "kunciJawaban": "C",
+    "kunci_jawaban": "C",
+    "kunci": "C",
+    "pembahasan": "Kebutuhan semen: $120\\text{ m}^2 / 2\\text{ m}^2/\\text{kg} = 60\\text{ kg}$ semen. Uji setiap opsi kombinasi: A. $3B + 6K = 3(10) + 6(5) = 60\\text{ kg}$, biaya = $3(75.000) + 6(40.000) = 225.000 + 240.000 = \\text{Rp}465.000$. B. $4B + 4K = 4(10) + 4(5) = 60\\text{ kg}$, biaya = $4(75.000) + 4(40.000) = 300.000 + 160.000 = \\text{Rp}460.000$. C. $5B + 2K = 5(10) + 2(5) = 60\\text{ kg}$, biaya = $5(75.000) + 2(40.000) = 375.000 + 80.000 = \\text{Rp}455.000$. D. $6B + 1K = 6(10) + 1(5) = 65\\text{ kg}$, biaya = $6(75.000) + 1(40.000) = 450.000 + 40.000 = \\text{Rp}490.000$. Kombinasi yang paling murah adalah 5 kemasan B dan 2 kemasan K dengan biaya Rp455.000."
+  },
+  {
+    "id": "tka_akbar_mtk_05",
+    "nomor": 5,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
+    "materi": "Perbandingan Skala dan Geometri",
+    "tipe": "pg_kompleks",
+    "teksSoal": "Perhatikan gambar denah rumah berikut!<br>Pilih lebih dari satu pernyataan berikut yang benar terkait dengan denah tersebut!",
+    "teks_soal": "Perhatikan gambar denah rumah berikut!<br>Pilih lebih dari satu pernyataan berikut yang benar terkait dengan denah tersebut!",
+    "soal": "Perhatikan gambar denah rumah berikut!<br>Pilih lebih dari satu pernyataan berikut yang benar terkait dengan denah tersebut!",
+    "gambar": "/soal/tryout_tka_matematika_paket_a/q5_denah_rumah.png",
+    "gambarUrls": [
+      "/soal/tryout_tka_matematika_paket_a/q5_denah_rumah.png"
+    ],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [
+      {
+        "key": "1",
+        "label": "1",
+        "teks": "Panjang garasi AB sebenarnya adalah 7 m.",
+        "gambar": null
+      },
+      {
+        "key": "2",
+        "label": "2",
+        "teks": "Lebar garasi AD sebenarnya adalah 4,5 m.",
+        "gambar": null
+      },
+      {
+        "key": "3",
+        "label": "3",
+        "teks": "Keliling garasi ABCD sebenarnya 24 m.",
+        "gambar": null
+      },
+      {
+        "key": "4",
+        "label": "4",
+        "teks": "Luas garasi ABCD sebenarnya 31,5 m².",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "1",
+        "label": "1",
+        "teks": "Panjang garasi AB sebenarnya adalah 7 m.",
+        "gambar": null
+      },
+      {
+        "key": "2",
+        "label": "2",
+        "teks": "Lebar garasi AD sebenarnya adalah 4,5 m.",
+        "gambar": null
+      },
+      {
+        "key": "3",
+        "label": "3",
+        "teks": "Keliling garasi ABCD sebenarnya 24 m.",
+        "gambar": null
+      },
+      {
+        "key": "4",
+        "label": "4",
+        "teks": "Luas garasi ABCD sebenarnya 31,5 m².",
+        "gambar": null
+      }
+    ],
+    "pernyataan": null,
+    "kunciJawaban": "2, 3",
+    "kunci_jawaban": "2, 3",
+    "kunci": "2, 3",
+    "pembahasan": "Skala denah = $1 : 150$. Pada denah garasi ABCD: Panjang $AB = 5{,}0\\text{ cm} \\implies$ panjang sebenarnya = $5{,}0 \\times 150 = 750\\text{ cm} = 7{,}5\\text{ m}$ (Pernyataan 1 Salah). Lebar $AD = 3{,}0\\text{ cm} \\implies$ lebar sebenarnya = $3{,}0 \\times 150 = 450\\text{ cm} = 4{,}5\\text{ m}$ (Pernyataan 2 Benar). Keliling garasi ABCD sebenarnya = $2 \\times (p + l) = 2 \\times (7{,}5 + 4{,}5) = 2 \\times 12 = 24\\text{ m}$ (Pernyataan 3 Benar). Luas garasi ABCD sebenarnya = $p \\times l = 7{,}5 \\times 4{,}5 = 33{,}75\\text{ m}^2$ (Pernyataan 4 Salah). Jadi pernyataan yang benar adalah nomor 2 dan 3."
+  },
+  {
+    "id": "tka_akbar_mtk_06",
+    "nomor": 6,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
+    "materi": "Perbandingan Berbalik Nilai",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Sebuah mobil menempuh jarak dari kota A ke kota B dalam waktu 1,6 jam dengan kecepatan rata-rata 75 km/jam. Jika mobil ingin menempuh jarak yang sama dalam waktu 1 jam, maka kecepatan rata-rata yang harus dicapai adalah ….",
+    "teks_soal": "Sebuah mobil menempuh jarak dari kota A ke kota B dalam waktu 1,6 jam dengan kecepatan rata-rata 75 km/jam. Jika mobil ingin menempuh jarak yang sama dalam waktu 1 jam, maka kecepatan rata-rata yang harus dicapai adalah ….",
+    "soal": "Sebuah mobil menempuh jarak dari kota A ke kota B dalam waktu 1,6 jam dengan kecepatan rata-rata 75 km/jam. Jika mobil ingin menempuh jarak yang sama dalam waktu 1 jam, maka kecepatan rata-rata yang harus dicapai adalah ….",
+    "gambar": null,
+    "gambarUrls": [],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "90 km/jam",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "100 km/jam",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "110 km/jam",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "120 km/jam",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "90 km/jam",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "100 km/jam",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "110 km/jam",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "120 km/jam",
+        "gambar": null
+      }
+    ],
+    "pernyataan": null,
+    "kunciJawaban": "D",
+    "kunci_jawaban": "D",
+    "kunci": "D",
+    "pembahasan": "Jarak dari kota A ke B: $s = v_1 \\times t_1 = 75\\text{ km/jam} \\times 1{,}6\\text{ jam} = 120\\text{ km}$. Kecepatan rata-rata baru agar menempuh jarak tersebut dalam waktu $t_2 = 1\\text{ jam}$: $v_2 = \\frac{s}{t_2} = \\frac{120\\text{ km}}{1\\text{ jam}} = 120\\text{ km/jam}$."
+  },
+  {
+    "id": "tka_akbar_mtk_07",
+    "nomor": 7,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
+    "materi": "Bentuk Akar",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Hasil dari $\\frac{2\\sqrt{27}+3\\sqrt{48}}{3\\sqrt{12}}$ adalah ….",
+    "teks_soal": "Hasil dari $\\frac{2\\sqrt{27}+3\\sqrt{48}}{3\\sqrt{12}}$ adalah ….",
+    "soal": "Hasil dari $\\frac{2\\sqrt{27}+3\\sqrt{48}}{3\\sqrt{12}}$ adalah ….",
+    "gambar": null,
+    "gambarUrls": [],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "3",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "$3\\sqrt{3}$",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "12",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "$12\\sqrt{3}$",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "3",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "$3\\sqrt{3}$",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "12",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "$12\\sqrt{3}$",
+        "gambar": null
+      }
+    ],
+    "pernyataan": null,
+    "kunciJawaban": "A",
+    "kunci_jawaban": "A",
+    "kunci": "A",
+    "pembahasan": "Sederhanakan masing-masing bentuk akar: $2\\sqrt{27} = 2\\sqrt{9 \\times 3} = 2(3)\\sqrt{3} = 6\\sqrt{3}$; $3\\sqrt{48} = 3\\sqrt{16 \\times 3} = 3(4)\\sqrt{3} = 12\\sqrt{3}$; $3\\sqrt{12} = 3\\sqrt{4 \\times 3} = 3(2)\\sqrt{3} = 6\\sqrt{3}$. Maka: $\\frac{6\\sqrt{3} + 12\\sqrt{3}}{6\\sqrt{3}} = \\frac{18\\sqrt{3}}{6\\sqrt{3}} = 3$."
+  },
+  {
+    "id": "tka_akbar_mtk_08",
+    "nomor": 8,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
+    "materi": "Aritmatika Sosial (Diskon)",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Perhatikan tabel!<br><table border='1' cellpadding='6' style='border-collapse:collapse; margin:10px 0;'><thead><tr><th>Toko Arjuna</th><th>Toko Krisna</th></tr></thead><tbody><tr><td>Harga Rp210.000</td><td>Harga Rp200.000</td></tr><tr><td>Diskon 30%</td><td>Diskon 20% + 10%</td></tr></tbody></table>Selisih harga pembayaran untuk pembelian sebuah kaos di Toko Arjuna dan Toko Krisna adalah ….",
+    "teks_soal": "Perhatikan tabel!<br><table border='1' cellpadding='6' style='border-collapse:collapse; margin:10px 0;'><thead><tr><th>Toko Arjuna</th><th>Toko Krisna</th></tr></thead><tbody><tr><td>Harga Rp210.000</td><td>Harga Rp200.000</td></tr><tr><td>Diskon 30%</td><td>Diskon 20% + 10%</td></tr></tbody></table>Selisih harga pembayaran untuk pembelian sebuah kaos di Toko Arjuna dan Toko Krisna adalah ….",
+    "soal": "Perhatikan tabel!<br><table border='1' cellpadding='6' style='border-collapse:collapse; margin:10px 0;'><thead><tr><th>Toko Arjuna</th><th>Toko Krisna</th></tr></thead><tbody><tr><td>Harga Rp210.000</td><td>Harga Rp200.000</td></tr><tr><td>Diskon 30%</td><td>Diskon 20% + 10%</td></tr></tbody></table>Selisih harga pembayaran untuk pembelian sebuah kaos di Toko Arjuna dan Toko Krisna adalah ….",
+    "gambar": "/soal/tryout_tka_matematika_paket_a/q8_kaos_diskon.png",
+    "gambarUrls": [
+      "/soal/tryout_tka_matematika_paket_a/q8_kaos_diskon.png"
+    ],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Rp7.000",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Rp4.000",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Rp3.000",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "Rp2.000",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Rp7.000",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Rp4.000",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Rp3.000",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "Rp2.000",
+        "gambar": null
+      }
+    ],
+    "pernyataan": null,
+    "kunciJawaban": "C",
+    "kunci_jawaban": "C",
+    "kunci": "C",
+    "pembahasan": "Toko Arjuna: Harga awal Rp210.000, diskon 30%. Harga bayar = $(100\\% - 30\\%) \\times 210.000 = 70\\% \\times 210.000 = \\text{Rp}147.000$. Toko Krisna: Harga awal Rp200.000, diskon $20\\% + 10\\%$. Setelah diskon $20\\%$: $80\\% \\times 200.000 = \\text{Rp}160.000$. Setelah diskon $10\\%$ tambahan: $90\\% \\times 160.000 = \\text{Rp}144.000$. Selisih harga pembayaran = $147.000 - 144.000 = \\text{Rp}3.000$."
+  },
+  {
+    "id": "tka_akbar_mtk_09",
+    "nomor": 9,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
+    "materi": "Persamaan Linear Satu Variabel (PLSV)",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Diketahui $3(4x + 3) = 6x - 15$. Jika $n$ adalah penyelesaian dari persamaan tersebut, nilai dari $3n + 7$ adalah ….",
+    "teks_soal": "Diketahui $3(4x + 3) = 6x - 15$. Jika $n$ adalah penyelesaian dari persamaan tersebut, nilai dari $3n + 7$ adalah ….",
+    "soal": "Diketahui $3(4x + 3) = 6x - 15$. Jika $n$ adalah penyelesaian dari persamaan tersebut, nilai dari $3n + 7$ adalah ….",
+    "gambar": null,
+    "gambarUrls": [],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "19",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "5",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "−5",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "−19",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "19",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "5",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "−5",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "−19",
+        "gambar": null
+      }
+    ],
+    "pernyataan": null,
+    "kunciJawaban": "C",
+    "kunci_jawaban": "C",
+    "kunci": "C",
+    "pembahasan": "Selesaikan persamaan: $3(4x + 3) = 6x - 15 \\iff 12x + 9 = 6x - 15 \\iff 12x - 6x = -15 - 9 \\iff 6x = -24 \\iff x = -4$. Jadi penyelesaian $n = -4$. Nilai dari $3n + 7 = 3(-4) + 7 = -12 + 7 = -5$."
+  },
+  {
+    "id": "tka_akbar_mtk_10",
+    "nomor": 10,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
+    "materi": "Pertidaksamaan Linear Satu Variabel (PtLSV)",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Bayu akan membeli sejumlah baju sejenis secara online dengan harga Rp55.000 per potong. Setiap transaksi pembelian dikenakan biaya ongkos kirim Rp15.000 (berapapun jumlah baju yang dibeli). Jika Bayu memiliki uang sebesar Rp385.000, maka jumlah maksimum baju yang dapat dibeli Bayu dengan uang tersebut adalah ….",
+    "teks_soal": "Bayu akan membeli sejumlah baju sejenis secara online dengan harga Rp55.000 per potong. Setiap transaksi pembelian dikenakan biaya ongkos kirim Rp15.000 (berapapun jumlah baju yang dibeli). Jika Bayu memiliki uang sebesar Rp385.000, maka jumlah maksimum baju yang dapat dibeli Bayu dengan uang tersebut adalah ….",
+    "soal": "Bayu akan membeli sejumlah baju sejenis secara online dengan harga Rp55.000 per potong. Setiap transaksi pembelian dikenakan biaya ongkos kirim Rp15.000 (berapapun jumlah baju yang dibeli). Jika Bayu memiliki uang sebesar Rp385.000, maka jumlah maksimum baju yang dapat dibeli Bayu dengan uang tersebut adalah ….",
+    "gambar": null,
+    "gambarUrls": [],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "8 potong",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "7 potong",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "6 potong",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "5 potong",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "8 potong",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "7 potong",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "6 potong",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "5 potong",
+        "gambar": null
+      }
+    ],
+    "pernyataan": null,
+    "kunciJawaban": "C",
+    "kunci_jawaban": "C",
+    "kunci": "C",
+    "pembahasan": "Misalkan $x$ adalah jumlah baju yang dibeli. Model pertidaksamaan: $55.000x + 15.000 \\le 385.000 \\iff 55.000x \\le 370.000 \\iff x \\le \\frac{370.000}{55.000} \\approx 6{,}727$. Karena jumlah baju harus berupa bilangan bulat, maka jumlah maksimum baju yang dapat dibeli Bayu adalah 6 potong (total biaya: $6 \\times 55.000 + 15.000 = \\text{Rp}345.000$)."
+  },
+  {
+    "id": "tka_akbar_mtk_11",
+    "nomor": 11,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
+    "materi": "Sistem Persamaan Linear Dua Variabel (SPLDV)",
+    "tipe": "benar_salah",
+    "teksSoal": "Punky, Qoni dan Rina akan berbelanja buku dan pensil sejenis di toko yang sama. Punky membeli 2 buah buku dan 1 batang pensil seharga Rp18.500. Qoni membeli 3 buah buku dan 2 batang pensil seharga Rp29.000. Sedangkan Rina membeli 1 buah buku dan 3 batang pensil.<br>Tentukan benar atau salah setiap pernyataan berikut:",
+    "teks_soal": "Punky, Qoni dan Rina akan berbelanja buku dan pensil sejenis di toko yang sama. Punky membeli 2 buah buku dan 1 batang pensil seharga Rp18.500. Qoni membeli 3 buah buku dan 2 batang pensil seharga Rp29.000. Sedangkan Rina membeli 1 buah buku dan 3 batang pensil.<br>Tentukan benar atau salah setiap pernyataan berikut:",
+    "soal": "Punky, Qoni dan Rina akan berbelanja buku dan pensil sejenis di toko yang sama. Punky membeli 2 buah buku dan 1 batang pensil seharga Rp18.500. Qoni membeli 3 buah buku dan 2 batang pensil seharga Rp29.000. Sedangkan Rina membeli 1 buah buku dan 3 batang pensil.<br>Tentukan benar atau salah setiap pernyataan berikut:",
+    "gambar": null,
+    "gambarUrls": [],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [],
+    "opsi": [],
+    "pernyataan": [
+      {
+        "id": "p_1",
+        "teks": "A. Harga sebuah buku adalah Rp6.000.",
+        "kunci": ""
+      },
+      {
+        "id": "p_2",
+        "teks": "B. Harga sebuah pensil adalah Rp2.500.",
+        "kunci": ""
+      },
+      {
+        "id": "p_3",
+        "teks": "C. Harga pembelian Rina adalah Rp15.500.",
+        "kunci": ""
+      }
+    ],
+    "kunciJawaban": "A: Salah, B: Benar, C: Benar",
+    "kunci_jawaban": "A: Salah, B: Benar, C: Benar",
+    "kunci": "A: Salah, B: Benar, C: Benar",
+    "pembahasan": "Misalkan $b$ = harga buku dan $p$ = harga pensil. Sistem persamaan: (1) $2b + p = 18.500 \\implies p = 18.500 - 2b$. (2) $3b + 2p = 29.000$. Substitusi (1) ke (2): $3b + 2(18.500 - 2b) = 29.000 \\implies 3b + 37.000 - 4b = 29.000 \\implies -b = -8.000 \\implies b = 8.000$. Harga sebuah buku = Rp8.000 (Pernyataan A Salah). Harga sebuah pensil $p = 18.500 - 2(8.000) = \\text{Rp}2.500$ (Pernyataan B Benar). Total belanja Rina = $1b + 3p = 8.000 + 3(2.500) = 8.000 + 7.500 = \\text{Rp}15.500$ (Pernyataan C Benar)."
+  },
+  {
+    "id": "tka_akbar_mtk_12",
+    "nomor": 12,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
+    "materi": "Operasi Bentuk Aljabar dan Luas Segitiga",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Perhatikan gambar!<br>Luas daerah segitiga PQR adalah ….",
+    "teks_soal": "Perhatikan gambar!<br>Luas daerah segitiga PQR adalah ….",
+    "soal": "Perhatikan gambar!<br>Luas daerah segitiga PQR adalah ….",
+    "gambar": "/soal/tryout_tka_matematika_paket_a/q12_segitiga_pqr.png",
+    "gambarUrls": [
+      "/soal/tryout_tka_matematika_paket_a/q12_segitiga_pqr.png"
+    ],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "$(x^2 - x - 12)\\text{ cm}^2$",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "$(x^2 + x - 12)\\text{ cm}^2$",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "$(2x^2 - 2x - 24)\\text{ cm}^2$",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "$(2x^2 + 2x - 24)\\text{ cm}^2$",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "$(x^2 - x - 12)\\text{ cm}^2$",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "$(x^2 + x - 12)\\text{ cm}^2$",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "$(2x^2 - 2x - 24)\\text{ cm}^2$",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "$(2x^2 + 2x - 24)\\text{ cm}^2$",
+        "gambar": null
+      }
+    ],
+    "pernyataan": null,
+    "kunciJawaban": "A",
+    "kunci_jawaban": "A",
+    "kunci": "A",
+    "pembahasan": "Segitiga siku-siku di P memiliki alas $PQ = (x - 4)\\text{ cm}$ dan tinggi $PR = (2x + 6)\\text{ cm}$. Rumus luas segitiga: $L = \\frac{1}{2} \\times \\text{alas} \\times \\text{tinggi} = \\frac{1}{2} (x - 4)(2x + 6) = (x - 4)(x + 3) = x^2 + 3x - 4x - 12 = (x^2 - x - 12)\\text{ cm}^2$."
+  },
+  {
+    "id": "tka_akbar_mtk_13",
+    "nomor": 13,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
+    "materi": "Relasi dan Fungsi Linear",
+    "tipe": "pg_kompleks",
+    "teksSoal": "Perhatikan diagram panah suatu fungsi berikut!<br>Pilih lebih dari satu pernyataan berikut yang benar!",
+    "teks_soal": "Perhatikan diagram panah suatu fungsi berikut!<br>Pilih lebih dari satu pernyataan berikut yang benar!",
+    "soal": "Perhatikan diagram panah suatu fungsi berikut!<br>Pilih lebih dari satu pernyataan berikut yang benar!",
+    "gambar": "/soal/tryout_tka_matematika_paket_a/q13_diagram_panah.png",
+    "gambarUrls": [
+      "/soal/tryout_tka_matematika_paket_a/q13_diagram_panah.png"
+    ],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [
+      {
+        "key": "1",
+        "label": "1",
+        "teks": "Domain fungsi adalah {−4,1,3}.",
+        "gambar": null
+      },
+      {
+        "key": "2",
+        "label": "2",
+        "teks": "Kodomain fungsi adalah {19,4, −2}.",
+        "gambar": null
+      },
+      {
+        "key": "3",
+        "label": "3",
+        "teks": "Nilai q = −1.",
+        "gambar": null
+      },
+      {
+        "key": "4",
+        "label": "4",
+        "teks": "Rumus fungsi f(x) = −3x + 7.",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "1",
+        "label": "1",
+        "teks": "Domain fungsi adalah {−4,1,3}.",
+        "gambar": null
+      },
+      {
+        "key": "2",
+        "label": "2",
+        "teks": "Kodomain fungsi adalah {19,4, −2}.",
+        "gambar": null
+      },
+      {
+        "key": "3",
+        "label": "3",
+        "teks": "Nilai q = −1.",
+        "gambar": null
+      },
+      {
+        "key": "4",
+        "label": "4",
+        "teks": "Rumus fungsi f(x) = −3x + 7.",
+        "gambar": null
+      }
+    ],
+    "pernyataan": null,
+    "kunciJawaban": "1, 4",
+    "kunci_jawaban": "1, 4",
+    "kunci": "1, 4",
+    "pembahasan": "Fungsi $f(x) = ax + b$. Dari diagram: $f(-4) = -4a + b = 19$ dan $f(3) = 3a + b = -2$. Kurangkan kedua persamaan: $-7a = 21 \\implies a = -3$. Nilai $b = -2 - 3(-3) = 7$. Maka rumus fungsi $f(x) = -3x + 7$ (Pernyataan 4 Benar). Menentukan $q$: $f(q) = 4 \\implies -3q + 7 = 4 \\implies -3q = -3 \\implies q = 1$ (Pernyataan 3 Salah). Domain fungsi adalah himpunan asal A = $\\{-4, q, 3\\} = \\{-4, 1, 3\\}$ (Pernyataan 1 Benar). Kodomain fungsi adalah seluruh himpunan kawan B = $\\{19, 4, -2, -8\\}$ (Pernyataan 2 Salah karena $\\{19, 4, -2\\}$ hanyalah daerah hasil/range). Jadi pernyataan yang benar adalah nomor 1 dan 4."
+  },
+  {
+    "id": "tka_akbar_mtk_14",
+    "nomor": 14,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
+    "materi": "Barisan Aritmatika",
+    "tipe": "benar_salah",
+    "teksSoal": "Diketahui barisan aritmatika: $4, 6, p, 10, 12, 14, q, \\dots$<br>Tentukan benar atau salah untuk setiap pernyataan berikut:",
+    "teks_soal": "Diketahui barisan aritmatika: $4, 6, p, 10, 12, 14, q, \\dots$<br>Tentukan benar atau salah untuk setiap pernyataan berikut:",
+    "soal": "Diketahui barisan aritmatika: $4, 6, p, 10, 12, 14, q, \\dots$<br>Tentukan benar atau salah untuk setiap pernyataan berikut:",
+    "gambar": null,
+    "gambarUrls": [],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [],
+    "opsi": [],
+    "pernyataan": [
+      {
+        "id": "p_1",
+        "teks": "A. Nilai p + q = 24.",
+        "kunci": ""
+      },
+      {
+        "id": "p_2",
+        "teks": "B. Nilai suku ke – 50 adalah 102.",
+        "kunci": ""
+      },
+      {
+        "id": "p_3",
+        "teks": "C. Selisih suku ke – 50 dengan suku ke– 3 adalah 98.",
+        "kunci": ""
+      }
+    ],
+    "kunciJawaban": "A: Benar, B: Benar, C: Salah",
+    "kunci_jawaban": "A: Benar, B: Benar, C: Salah",
+    "kunci": "A: Benar, B: Benar, C: Salah",
+    "pembahasan": "Suku pertama $a = 4$ dan beda $b = 6 - 4 = 2$. Suku ke-3 $p = 4 + 2(2) = 8$. Suku ke-7 $q = 4 + 6(2) = 16$. Pernyataan A: $p + q = 8 + 16 = 24$ (Benar). Pernyataan B: $U_{50} = a + 49b = 4 + 49(2) = 4 + 98 = 102$ (Benar). Pernyataan C: Selisih suku ke-50 dan suku ke-3 $= U_{50} - U_3 = 102 - 8 = 94$ (Salah, seharusnya 94 bukan 98)."
+  },
+  {
+    "id": "tka_akbar_mtk_15",
+    "nomor": 15,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
+    "materi": "Deret Aritmatika Kontekstual",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Seorang pelari marathon berlatih setiap hari. Pada hari pertama ia menempuh jarak 10 kilometer, dan untuk setiap hari berikutnya ia selalu menambah jarak larinya sejauh 2 kilometer. Jika pelari tersebut berlatih selama 10 hari, maka jumlah jarak total yang telah ia tempuh selama 10 hari adalah ….",
+    "teks_soal": "Seorang pelari marathon berlatih setiap hari. Pada hari pertama ia menempuh jarak 10 kilometer, dan untuk setiap hari berikutnya ia selalu menambah jarak larinya sejauh 2 kilometer. Jika pelari tersebut berlatih selama 10 hari, maka jumlah jarak total yang telah ia tempuh selama 10 hari adalah ….",
+    "soal": "Seorang pelari marathon berlatih setiap hari. Pada hari pertama ia menempuh jarak 10 kilometer, dan untuk setiap hari berikutnya ia selalu menambah jarak larinya sejauh 2 kilometer. Jika pelari tersebut berlatih selama 10 hari, maka jumlah jarak total yang telah ia tempuh selama 10 hari adalah ….",
+    "gambar": null,
+    "gambarUrls": [],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "162 km",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "190 km",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "200 km",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "220 km",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "162 km",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "190 km",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "200 km",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "220 km",
+        "gambar": null
+      }
+    ],
+    "pernyataan": null,
+    "kunciJawaban": "B",
+    "kunci_jawaban": "B",
+    "kunci": "B",
+    "pembahasan": "Deret aritmatika dengan $a = 10$, $b = 2$, dan $n = 10$. Jumlah total jarak: $S_{10} = \\frac{n}{2} [2a + (n - 1)b] = \\frac{10}{2} [2(10) + (10 - 1)2] = 5 [20 + 18] = 5 \\times 38 = 190\\text{ km}$."
+  },
+  {
+    "id": "tka_akbar_mtk_16",
+    "nomor": 16,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
+    "materi": "Garis dan Sudut",
+    "tipe": "benar_salah",
+    "teksSoal": "Perhatikan gambar!<br>Tentukan benar atau salah untuk setiap pernyataan berikut terkait gambar tersebut:",
+    "teks_soal": "Perhatikan gambar!<br>Tentukan benar atau salah untuk setiap pernyataan berikut terkait gambar tersebut:",
+    "soal": "Perhatikan gambar!<br>Tentukan benar atau salah untuk setiap pernyataan berikut terkait gambar tersebut:",
+    "gambar": "/soal/tryout_tka_matematika_paket_a/q16_garis_sudut.png",
+    "gambarUrls": [
+      "/soal/tryout_tka_matematika_paket_a/q16_garis_sudut.png"
+    ],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [],
+    "opsi": [],
+    "pernyataan": [
+      {
+        "id": "p_1",
+        "teks": "A. Nilai q = 65°",
+        "kunci": ""
+      },
+      {
+        "id": "p_2",
+        "teks": "B. Nilai r = 84°",
+        "kunci": ""
+      },
+      {
+        "id": "p_3",
+        "teks": "C. Nilai p = 41°",
+        "kunci": ""
+      }
+    ],
+    "kunciJawaban": "A: Salah, B: Benar, C: Benar",
+    "kunci_jawaban": "A: Salah, B: Benar, C: Benar",
+    "kunci": "A: Salah, B: Benar, C: Benar",
+    "pembahasan": "Sudut $r$ berpelurus dengan sudut $96^\\circ \\implies r = 180^\\circ - 96^\\circ = 84^\\circ$ (Pernyataan B Benar). Sudut $125^\\circ$ berpelurus dengan sudut dalam yang berseberangan dengan $q$: sudut dalam $= 180^\\circ - 125^\\circ = 55^\\circ$. Berdasarkan sifat sudut dalam berseberangan pada garis sejajar, maka $q = 55^\\circ$ (Pernyataan A Salah, karena tertulis $65^\\circ$). Pada segitiga di antara dua garis sejajar, jumlah sudut segitiga $= 180^\\circ$: $p + r + 55^\\circ = 180^\\circ \\implies p + 84^\\circ + 55^\\circ = 180^\\circ \\implies p = 180^\\circ - 139^\\circ = 41^\\circ$ (Pernyataan C Benar)."
+  },
+  {
+    "id": "tka_akbar_mtk_17",
+    "nomor": 17,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
+    "materi": "Teorema Pythagoras",
+    "tipe": "benar_salah",
+    "teksSoal": "Perhatikan gambar!<br>Diketahui jarak dua tank (AB) adalah 240 m, jarak pandang pesawat C dengan tank A adalah 260 m, dan pesawat D dengan tank A adalah 300 m.<br>Tentukan benar atau salah setiap pernyataan berikut:",
+    "teks_soal": "Perhatikan gambar!<br>Diketahui jarak dua tank (AB) adalah 240 m, jarak pandang pesawat C dengan tank A adalah 260 m, dan pesawat D dengan tank A adalah 300 m.<br>Tentukan benar atau salah setiap pernyataan berikut:",
+    "soal": "Perhatikan gambar!<br>Diketahui jarak dua tank (AB) adalah 240 m, jarak pandang pesawat C dengan tank A adalah 260 m, dan pesawat D dengan tank A adalah 300 m.<br>Tentukan benar atau salah setiap pernyataan berikut:",
+    "gambar": "/soal/tryout_tka_matematika_paket_a/q17_tank_pesawat.png",
+    "gambarUrls": [
+      "/soal/tryout_tka_matematika_paket_a/q17_tank_pesawat.png"
+    ],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [],
+    "opsi": [],
+    "pernyataan": [
+      {
+        "id": "p_1",
+        "teks": "A. Jarak tank B dengan pesawat C adalah 100 m",
+        "kunci": ""
+      },
+      {
+        "id": "p_2",
+        "teks": "B. Jarak tank B dengan pesawat D adalah 120 m",
+        "kunci": ""
+      },
+      {
+        "id": "p_3",
+        "teks": "C. Jarak pesawat C dan D adalah 80 m",
+        "kunci": ""
+      }
+    ],
+    "kunciJawaban": "A: Benar, B: Salah, C: Benar",
+    "kunci_jawaban": "A: Benar, B: Salah, C: Benar",
+    "kunci": "A: Benar, B: Salah, C: Benar",
+    "pembahasan": "Segitiga siku-siku di titik B: Jarak tank B ke pesawat C: $BC = \\sqrt{AC^2 - AB^2} = \\sqrt{260^2 - 240^2} = \\sqrt{67.600 - 57.600} = \\sqrt{10.000} = 100\\text{ m}$ (Pernyataan A Benar). Jarak tank B ke pesawat D: $BD = \\sqrt{AD^2 - AB^2} = \\sqrt{300^2 - 240^2} = \\sqrt{90.000 - 57.600} = \\sqrt{32.400} = 180\\text{ m}$ (Pernyataan B Salah, tertulis 120 m). Jarak vertikal pesawat C dan D: $CD = BD - BC = 180\\text{ m} - 100\\text{ m} = 80\\text{ m}$ (Pernyataan C Benar)."
+  },
+  {
+    "id": "tka_akbar_mtk_18",
+    "nomor": 18,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
+    "materi": "Kekongruenan Segitiga",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Perhatikan gambar!<br>Diketahui segitiga ABC kongruen dengan segitiga DEF. Pernyataan berikut yang benar adalah ….",
+    "teks_soal": "Perhatikan gambar!<br>Diketahui segitiga ABC kongruen dengan segitiga DEF. Pernyataan berikut yang benar adalah ….",
+    "soal": "Perhatikan gambar!<br>Diketahui segitiga ABC kongruen dengan segitiga DEF. Pernyataan berikut yang benar adalah ….",
+    "gambar": "/soal/tryout_tka_matematika_paket_a/q18_segitiga_kongruen.png",
+    "gambarUrls": [
+      "/soal/tryout_tka_matematika_paket_a/q18_segitiga_kongruen.png"
+    ],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "besar ∠C = 25°",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "besar ∠A = 35°",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "EF + BC = 20 cm",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "ED – BC = 6 cm",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "besar ∠C = 25°",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "besar ∠A = 35°",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "EF + BC = 20 cm",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "ED – BC = 6 cm",
+        "gambar": null
+      }
+    ],
+    "pernyataan": null,
+    "kunciJawaban": "C",
+    "kunci_jawaban": "C",
+    "kunci": "C",
+    "pembahasan": "Pada $\\triangle DEF$, sudut $\\angle F = 180^\\circ - (44^\\circ + 35^\\circ) = 101^\\circ$. Karena $\\triangle ABC \\cong \\triangle DEF$, sudut $\\angle B = 101^\\circ$ bersesuaian dengan $\\angle F = 101^\\circ$. Sisi yang bersesuaian: $AB = FE = 9\\text{ cm}$; $BC = FD = 11\\text{ cm}$; $AC = ED = 15\\text{ cm}$. Sudut yang bersesuaian: $\\angle C = \\angle D = 35^\\circ$ dan $\\angle A = \\angle E = 44^\\circ$. Cek opsi C: $EF + BC = 9\\text{ cm} + 11\\text{ cm} = 20\\text{ cm}$ (Benar)."
+  },
+  {
+    "id": "tka_akbar_mtk_19",
+    "nomor": 19,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
+    "materi": "Kesebangunan Bangun Datar",
+    "tipe": "pg_kompleks",
+    "teksSoal": "Perhatikan gambar.<br>Pekarangan ABCD dan kolam BEFG berbentuk persegipanjang. Diketahui AD = 15 meter, GF = 1,5 meter, dan FE = 2 meter. Diketahui pekarangan ABCD dan kolam BEFG sebangun.<br>Pilihlah lebih dari satu pernyataan berikut yang benar!",
+    "teks_soal": "Perhatikan gambar.<br>Pekarangan ABCD dan kolam BEFG berbentuk persegipanjang. Diketahui AD = 15 meter, GF = 1,5 meter, dan FE = 2 meter. Diketahui pekarangan ABCD dan kolam BEFG sebangun.<br>Pilihlah lebih dari satu pernyataan berikut yang benar!",
+    "soal": "Perhatikan gambar.<br>Pekarangan ABCD dan kolam BEFG berbentuk persegipanjang. Diketahui AD = 15 meter, GF = 1,5 meter, dan FE = 2 meter. Diketahui pekarangan ABCD dan kolam BEFG sebangun.<br>Pilihlah lebih dari satu pernyataan berikut yang benar!",
+    "gambar": "/soal/tryout_tka_matematika_paket_a/q19_kebun_kolam.png",
+    "gambarUrls": [
+      "/soal/tryout_tka_matematika_paket_a/q19_kebun_kolam.png"
+    ],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [
+      {
+        "key": "1",
+        "label": "1",
+        "teks": "Panjang sisi CD = 20 meter.",
+        "gambar": null
+      },
+      {
+        "key": "2",
+        "label": "2",
+        "teks": "Luas pekarangan ABCD = 300 m².",
+        "gambar": null
+      },
+      {
+        "key": "3",
+        "label": "3",
+        "teks": "Luas Kolam BEFG = 3 m².",
+        "gambar": null
+      },
+      {
+        "key": "4",
+        "label": "4",
+        "teks": "Luas kebun = 270 m².",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "1",
+        "label": "1",
+        "teks": "Panjang sisi CD = 20 meter.",
+        "gambar": null
+      },
+      {
+        "key": "2",
+        "label": "2",
+        "teks": "Luas pekarangan ABCD = 300 m².",
+        "gambar": null
+      },
+      {
+        "key": "3",
+        "label": "3",
+        "teks": "Luas Kolam BEFG = 3 m².",
+        "gambar": null
+      },
+      {
+        "key": "4",
+        "label": "4",
+        "teks": "Luas kebun = 270 m².",
+        "gambar": null
+      }
+    ],
+    "pernyataan": null,
+    "kunciJawaban": "1, 2, 3",
+    "kunci_jawaban": "1, 2, 3",
+    "kunci": "1, 2, 3",
+    "pembahasan": "Kolam BEFG memiliki lebar $GF = 1{,}5\\text{ m}$ dan panjang $FE = 2\\text{ m}$. Karena pekarangan ABCD sebangun dengan kolam BEFG dan lebarnya $AD = 15\\text{ m}$: Panjang sisi $CD = \\frac{FE}{GF} \\times AD = \\frac{2}{1{,}5} \\times 15 = 20\\text{ meter}$ (Pernyataan 1 Benar). Luas pekarangan ABCD = $20\\text{ m} \\times 15\\text{ m} = 300\\text{ m}^2$ (Pernyataan 2 Benar). Luas kolam BEFG = $2\\text{ m} \\times 1{,}5\\text{ m} = 3\\text{ m}^2$ (Pernyataan 3 Benar). Luas kebun (tanah di luar kolam) = $300\\text{ m}^2 - 3\\text{ m}^2 = 297\\text{ m}^2$ (Pernyataan 4 Salah, tertulis $270\\text{ m}^2$). Jadi pernyataan yang benar adalah nomor 1, 2, dan 3."
+  },
+  {
+    "id": "tka_akbar_mtk_20",
+    "nomor": 20,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
+    "materi": "Transformasi Geometri (Refleksi dan Dilatasi)",
+    "tipe": "pg_kompleks",
+    "teksSoal": "Perhatikan gambar berikut!<br>Trapesium A’B’C’D’ adalah bayangan dari trapesium ABCD setelah dicerminkan terhadap sumbu Y, kemudian trapesium A’B’C’D’ didilatasi dengan pusat O(0,0) dengan faktor skala $k$ memiliki bayangan akhir trapesium A”B”C”D”.<br>Pilih lebih dari satu pernyataan berikut yang benar!",
+    "teks_soal": "Perhatikan gambar berikut!<br>Trapesium A’B’C’D’ adalah bayangan dari trapesium ABCD setelah dicerminkan terhadap sumbu Y, kemudian trapesium A’B’C’D’ didilatasi dengan pusat O(0,0) dengan faktor skala $k$ memiliki bayangan akhir trapesium A”B”C”D”.<br>Pilih lebih dari satu pernyataan berikut yang benar!",
+    "soal": "Perhatikan gambar berikut!<br>Trapesium A’B’C’D’ adalah bayangan dari trapesium ABCD setelah dicerminkan terhadap sumbu Y, kemudian trapesium A’B’C’D’ didilatasi dengan pusat O(0,0) dengan faktor skala $k$ memiliki bayangan akhir trapesium A”B”C”D”.<br>Pilih lebih dari satu pernyataan berikut yang benar!",
+    "gambar": "/soal/tryout_tka_matematika_paket_a/q20_koordinat_trapesium.png",
+    "gambarUrls": [
+      "/soal/tryout_tka_matematika_paket_a/q20_koordinat_trapesium.png"
+    ],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [
+      {
+        "key": "1",
+        "label": "1",
+        "teks": "Koordinat titik A adalah A(−4, 3).",
+        "gambar": null
+      },
+      {
+        "key": "2",
+        "label": "2",
+        "teks": "Koordinat titik B adalah B(−5, 5).",
+        "gambar": null
+      },
+      {
+        "key": "3",
+        "label": "3",
+        "teks": "Faktor skala k = 2.",
+        "gambar": null
+      },
+      {
+        "key": "4",
+        "label": "4",
+        "teks": "Koordinat titik A” (12,6).",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "1",
+        "label": "1",
+        "teks": "Koordinat titik A adalah A(−4, 3).",
+        "gambar": null
+      },
+      {
+        "key": "2",
+        "label": "2",
+        "teks": "Koordinat titik B adalah B(−5, 5).",
+        "gambar": null
+      },
+      {
+        "key": "3",
+        "label": "3",
+        "teks": "Faktor skala k = 2.",
+        "gambar": null
+      },
+      {
+        "key": "4",
+        "label": "4",
+        "teks": "Koordinat titik A” (12,6).",
+        "gambar": null
+      }
+    ],
+    "pernyataan": null,
+    "kunciJawaban": "2, 3, 4",
+    "kunci_jawaban": "2, 3, 4",
+    "kunci": "2, 3, 4",
+    "pembahasan": "Dari grafik koordinat: $A'(6, 3)$, $B'(5, 5)$, $C'(3, 5)$, $D'(2, 3)$. Karena $A'B'C'D'$ hasil refleksi $ABCD$ terhadap sumbu Y, koordinat titik asal: $A(-6, 3)$ (Pernyataan 1 Salah) dan $B(-5, 5)$ (Pernyataan 2 Benar). Titik $D'(2, 3)$ didilatasi $[O, k]$ menjadi $D''(4, 6)$, sehingga faktor skala $k = 4/2 = 6/3 = 2$ (Pernyataan 3 Benar). Bayangan akhir titik $A'' = 2 \\times (6, 3) = (12, 6)$ (Pernyataan 4 Benar). Jadi pernyataan yang benar adalah nomor 2, 3, dan 4."
+  },
+  {
+    "id": "tka_akbar_mtk_21",
+    "nomor": 21,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
+    "materi": "Keliling Gabungan Bangun Datar",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Perhatikan gambar!<br>Kolam renang ABCDEF merupakan gabungan jajargenjang ABEF dan belah ketupat BCDE. Diketahui panjang AB = 15 meter, BD = 12 meter, dan EC = 16 meter. Keliling kolam renang tersebut adalah ….",
+    "teks_soal": "Perhatikan gambar!<br>Kolam renang ABCDEF merupakan gabungan jajargenjang ABEF dan belah ketupat BCDE. Diketahui panjang AB = 15 meter, BD = 12 meter, dan EC = 16 meter. Keliling kolam renang tersebut adalah ….",
+    "soal": "Perhatikan gambar!<br>Kolam renang ABCDEF merupakan gabungan jajargenjang ABEF dan belah ketupat BCDE. Diketahui panjang AB = 15 meter, BD = 12 meter, dan EC = 16 meter. Keliling kolam renang tersebut adalah ….",
+    "gambar": "/soal/tryout_tka_matematika_paket_a/q21_kolam_renang.png",
+    "gambarUrls": [
+      "/soal/tryout_tka_matematika_paket_a/q21_kolam_renang.png"
+    ],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "70 meter",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "80 meter",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "100 meter",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "110 meter",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "70 meter",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "80 meter",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "100 meter",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "110 meter",
+        "gambar": null
+      }
+    ],
+    "pernyataan": null,
+    "kunciJawaban": "A",
+    "kunci_jawaban": "A",
+    "kunci": "A",
+    "pembahasan": "Pada belah ketupat BCDE, diagonal $BD = 12\\text{ m}$ dan $EC = 16\\text{ m}$. Setengah diagonalnya adalah $6\\text{ m}$ dan $8\\text{ m}$. Sisi belah ketupat: $BC = CD = DE = EB = \\sqrt{6^2 + 8^2} = \\sqrt{100} = 10\\text{ m}$. Pada jajargenjang ABEF: sisi $AB = EF = 15\\text{ m}$ dan sisi $AF = BE = 10\\text{ m}$. Keliling batas luar kolam ABCDEF = $AB + BC + CD + DE + EF + FA = 15 + 10 + 10 + 10 + 15 + 10 = 70\\text{ meter}$."
+  },
+  {
+    "id": "tka_akbar_mtk_22",
+    "nomor": 22,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
+    "materi": "Luas Daerah Arsiran Lingkaran dan Trapesium",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Perhatikan gambar trapesium siku-siku dan juring lingkaran!<br>Diketahui panjang $AB = 22\\text{ cm}$, $DC = 14\\text{ cm}$, dan $AD = 10\\text{ cm}$. Luas daerah yang diarsir adalah ….",
+    "teks_soal": "Perhatikan gambar trapesium siku-siku dan juring lingkaran!<br>Diketahui panjang $AB = 22\\text{ cm}$, $DC = 14\\text{ cm}$, dan $AD = 10\\text{ cm}$. Luas daerah yang diarsir adalah ….",
+    "soal": "Perhatikan gambar trapesium siku-siku dan juring lingkaran!<br>Diketahui panjang $AB = 22\\text{ cm}$, $DC = 14\\text{ cm}$, dan $AD = 10\\text{ cm}$. Luas daerah yang diarsir adalah ….",
+    "gambar": "/soal/tryout_tka_matematika_paket_a/q22_trapesium_juring.png",
+    "gambarUrls": [
+      "/soal/tryout_tka_matematika_paket_a/q22_trapesium_juring.png"
+    ],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "103 cm²",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "125 cm²",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "257 cm²",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "283 cm²",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "103 cm²",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "125 cm²",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "257 cm²",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "283 cm²",
+        "gambar": null
+      }
+    ],
+    "pernyataan": null,
+    "kunciJawaban": "B",
+    "kunci_jawaban": "B",
+    "kunci": "B",
+    "pembahasan": "Luas trapesium siku-siku: $L_{\\text{trapesium}} = \\frac{AB + DC}{2} \\times AD = \\frac{22 + 14}{2} \\times 10 = 18 \\times 10 = 180\\text{ cm}^2$. Juring lingkaran berpusat di sudut C dengan jari-jari $r = 14 / 2 = 7\\text{ cm}$. Sudut $\\angle C = 180^\\circ - \\angle B \\approx 128{,}66^\\circ$. Luas juring $= \\frac{128{,}66^\\circ}{360^\\circ} \\times \\frac{22}{7} \\times 7^2 \\approx 55\\text{ cm}^2$. Luas daerah arsiran $= 180 - 55 = 125\\text{ cm}^2$."
+  },
+  {
+    "id": "tka_akbar_mtk_23",
+    "nomor": 23,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
+    "materi": "Jaring-jaring Bangun Ruang Sisi Datar",
+    "tipe": "benar_salah",
+    "teksSoal": "Perhatikan gambar jaring-jaring bangun ruang sisi datar berikut!<br>Tentukan benar atau salah untuk setiap pernyataan berikut:",
+    "teks_soal": "Perhatikan gambar jaring-jaring bangun ruang sisi datar berikut!<br>Tentukan benar atau salah untuk setiap pernyataan berikut:",
+    "soal": "Perhatikan gambar jaring-jaring bangun ruang sisi datar berikut!<br>Tentukan benar atau salah untuk setiap pernyataan berikut:",
+    "gambar": "/soal/tryout_tka_matematika_paket_a/q23_jaring_jaring.png",
+    "gambarUrls": [
+      "/soal/tryout_tka_matematika_paket_a/q23_jaring_jaring.png"
+    ],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [],
+    "opsi": [],
+    "pernyataan": [
+      {
+        "id": "p_1",
+        "teks": "A. Gambar (1) adalah jaring-jaring prisma segitiga.",
+        "kunci": ""
+      },
+      {
+        "id": "p_2",
+        "teks": "B. Gambar (2) adalah jaring-jaring limas segiempat.",
+        "kunci": ""
+      },
+      {
+        "id": "p_3",
+        "teks": "C. Gambar (3) adalah jaring-jaring balok.",
+        "kunci": ""
+      }
+    ],
+    "kunciJawaban": "A: Benar, B: Salah, C: Benar",
+    "kunci_jawaban": "A: Benar, B: Salah, C: Benar",
+    "kunci": "A: Benar, B: Salah, C: Benar",
+    "pembahasan": "Gambar (1) memiliki 3 persegi panjang dan 2 segitiga penutup, merupakan jaring-jaring prisma segitiga (Pernyataan A Benar). Gambar (2) tersusun dari 4 segitiga (1 alas dan 3 sisi tegak), merupakan jaring-jaring limas segitiga / bidang empat, bukan limas segiempat (Pernyataan B Salah). Gambar (3) tersusun dari 6 persegi panjang yang kongruen berpasangan, merupakan jaring-jaring balok (Pernyataan C Benar)."
+  },
+  {
+    "id": "tka_akbar_mtk_24",
+    "nomor": 24,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
+    "materi": "Luas Permukaan Atap Rumah",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Perhatikan gambar!<br>Pak Edi berencana membuat atap rumah dari genteng. Atap tersebut terbentuk dari dua segitiga sama kaki kongruen dan dua trapesium sama kaki kongruen. Jika diketahui panjang $AB = 8\\text{ m}$, $BC = 11\\text{ m}$, $DE = 5\\text{ m}$ dan $BE = 5\\text{ m}$, luas atap rumah adalah ….",
+    "teks_soal": "Perhatikan gambar!<br>Pak Edi berencana membuat atap rumah dari genteng. Atap tersebut terbentuk dari dua segitiga sama kaki kongruen dan dua trapesium sama kaki kongruen. Jika diketahui panjang $AB = 8\\text{ m}$, $BC = 11\\text{ m}$, $DE = 5\\text{ m}$ dan $BE = 5\\text{ m}$, luas atap rumah adalah ….",
+    "soal": "Perhatikan gambar!<br>Pak Edi berencana membuat atap rumah dari genteng. Atap tersebut terbentuk dari dua segitiga sama kaki kongruen dan dua trapesium sama kaki kongruen. Jika diketahui panjang $AB = 8\\text{ m}$, $BC = 11\\text{ m}$, $DE = 5\\text{ m}$ dan $BE = 5\\text{ m}$, luas atap rumah adalah ….",
+    "gambar": "/soal/tryout_tka_matematika_paket_a/q24_atap_rumah.png",
+    "gambarUrls": [
+      "/soal/tryout_tka_matematika_paket_a/q24_atap_rumah.png"
+    ],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "76 m²",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "88 m²",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "104 m²",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "112 m²",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "76 m²",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "88 m²",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "104 m²",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "112 m²",
+        "gambar": null
+      }
+    ],
+    "pernyataan": null,
+    "kunciJawaban": "B",
+    "kunci_jawaban": "B",
+    "kunci": "B",
+    "pembahasan": "Luas 2 segitiga sama kaki (depan dan belakang): alas $AB = 8\\text{ m}$, sisi miring $5\\text{ m}$, tinggi $t_1 = \\sqrt{5^2 - 4^2} = 3\\text{ m}$. Luas = $2 \\times (\\frac{1}{2} \\times 8 \\times 3) = 24\\text{ m}^2$. Luas 2 trapesium sama kaki (kiri dan kanan): sisi sejajar $BC = 11\\text{ m}$ dan $DE = 5\\text{ m}$, tinggi miring $t_2 = \\sqrt{5^2 - (\\frac{11 - 5}{2})^2} = \\sqrt{5^2 - 3^2} = 4\\text{ m}$. Luas = $2 \\times (\\frac{11 + 5}{2} \\times 4) = 2 \\times 32 = 64\\text{ m}^2$. Total luas atap = $24 + 64 = 88\\text{ m}^2$."
+  },
+  {
+    "id": "tka_akbar_mtk_25",
+    "nomor": 25,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
+    "materi": "Volume Bangun Ruang Gabungan (Kubus dan Limas)",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Perhatikan gambar!<br>Bangun tersebut terdiri dari kubus dan dua limas yang kongruen. Diketahui panjang $AB = 12\\text{ cm}$ dan panjang $JT = 30\\text{ cm}$. Volume bangun tersebut adalah ….",
+    "teks_soal": "Perhatikan gambar!<br>Bangun tersebut terdiri dari kubus dan dua limas yang kongruen. Diketahui panjang $AB = 12\\text{ cm}$ dan panjang $JT = 30\\text{ cm}$. Volume bangun tersebut adalah ….",
+    "soal": "Perhatikan gambar!<br>Bangun tersebut terdiri dari kubus dan dua limas yang kongruen. Diketahui panjang $AB = 12\\text{ cm}$ dan panjang $JT = 30\\text{ cm}$. Volume bangun tersebut adalah ….",
+    "gambar": "/soal/tryout_tka_matematika_paket_a/q25_kubus_limas.png",
+    "gambarUrls": [
+      "/soal/tryout_tka_matematika_paket_a/q25_kubus_limas.png"
+    ],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "6.042 cm³",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "4.608 cm³",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "3.168 cm³",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "2.592 cm³",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "6.042 cm³",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "4.608 cm³",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "3.168 cm³",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "2.592 cm³",
+        "gambar": null
+      }
+    ],
+    "pernyataan": null,
+    "kunciJawaban": "D",
+    "kunci_jawaban": "D",
+    "kunci": "D",
+    "pembahasan": "Kubus memiliki rusuk $s = 12\\text{ cm}$. Tinggi total $JT = 30\\text{ cm}$. Tinggi kedua limas kongruen = $30 - 12 = 18\\text{ cm}$, maka tinggi masing-masing limas $t = 9\\text{ cm}$. Volume kubus = $12^3 = 1.728\\text{ cm}^3$. Volume 2 limas = $2 \\times (\\frac{1}{3} \\times 12^2 \\times 9) = 2 \\times 432 = 864\\text{ cm}^3$. Volume total bangun = $1.728 + 864 = 2.592\\text{ cm}^3$."
+  },
+  {
+    "id": "tka_akbar_mtk_26",
+    "nomor": 26,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
+    "materi": "Volume Bangun Ruang Sisi Lengkung",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Perhatikan gambar!<br>Sebuah tempat minum terbentuk dari gabungan tabung dan kerucut seperti pada gambar. Jika tempat minum tersebut berisi penuh sirup, banyaknya gelas setengah bola yang diperlukan untuk memindah semua sirup adalah ….",
+    "teks_soal": "Perhatikan gambar!<br>Sebuah tempat minum terbentuk dari gabungan tabung dan kerucut seperti pada gambar. Jika tempat minum tersebut berisi penuh sirup, banyaknya gelas setengah bola yang diperlukan untuk memindah semua sirup adalah ….",
+    "soal": "Perhatikan gambar!<br>Sebuah tempat minum terbentuk dari gabungan tabung dan kerucut seperti pada gambar. Jika tempat minum tersebut berisi penuh sirup, banyaknya gelas setengah bola yang diperlukan untuk memindah semua sirup adalah ….",
+    "gambar": "/soal/tryout_tka_matematika_paket_a/q26_tempat_minum.png",
+    "gambarUrls": [
+      "/soal/tryout_tka_matematika_paket_a/q26_tempat_minum.png"
+    ],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "30 gelas",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "35 gelas",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "40 gelas",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "45 gelas",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "30 gelas",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "35 gelas",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "40 gelas",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "45 gelas",
+        "gambar": null
+      }
+    ],
+    "pernyataan": null,
+    "kunciJawaban": "C",
+    "kunci_jawaban": "C",
+    "kunci": "C",
+    "pembahasan": "Tempat minum: jari-jari $r = 24 / 2 = 12\\text{ cm}$. Volume tabung = $\\pi r^2 t = \\pi (12^2)(36) = 5.184\\pi\\text{ cm}^3$. Volume kerucut = $\\frac{1}{3} \\pi r^2 t = \\frac{1}{3} \\pi (12^2)(12) = 576\\pi\\text{ cm}^3$. Volume total sirup = $5.184\\pi + 576\\pi = 5.760\\pi\\text{ cm}^3$. Gelas setengah bola: diameter $12\\text{ cm} \\implies r = 6\\text{ cm}$. Volume 1 gelas = $\\frac{2}{3} \\pi r^3 = \\frac{2}{3} \\pi (6^3) = 144\\pi\\text{ cm}^3$. Banyaknya gelas = $\\frac{5.760\\pi}{144\\pi} = 40\\text{ gelas}$."
+  },
+  {
+    "id": "tka_akbar_mtk_27",
+    "nomor": 27,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
+    "materi": "Statistika (Diagram Batang)",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Perhatikan diagram berikut!<br>Kenaikan penjualan HP merk Apik tertinggi terjadi pada bulan ….",
+    "teks_soal": "Perhatikan diagram berikut!<br>Kenaikan penjualan HP merk Apik tertinggi terjadi pada bulan ….",
+    "soal": "Perhatikan diagram berikut!<br>Kenaikan penjualan HP merk Apik tertinggi terjadi pada bulan ….",
+    "gambar": "/soal/tryout_tka_matematika_paket_a/q27_diagram_hp.png",
+    "gambarUrls": [
+      "/soal/tryout_tka_matematika_paket_a/q27_diagram_hp.png"
+    ],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Juli – Agustus",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "September – Oktober",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Oktober – November",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "November – Desember",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Juli – Agustus",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "September – Oktober",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Oktober – November",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "November – Desember",
+        "gambar": null
+      }
+    ],
+    "pernyataan": null,
+    "kunciJawaban": "A",
+    "kunci_jawaban": "A",
+    "kunci": "A",
+    "pembahasan": "Kenaikan penjualan antarbulan: Juli – Agustus = $140 - 110 = 30$ unit; September – Oktober = $145 - 125 = 20$ unit; Oktober – November = $160 - 145 = 15$ unit; November – Desember = $185 - 160 = 25$ unit. Kenaikan tertinggi sebesar 30 unit terjadi pada periode bulan Juli – Agustus."
+  },
+  {
+    "id": "tka_akbar_mtk_28",
+    "nomor": 28,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
+    "materi": "Statistika (Ukuran Pemusatan dan Penyebaran)",
+    "tipe": "pg_kompleks",
+    "teksSoal": "Perhatikan tabel nilai ulangan matematika kelas 9A berikut!<br><table border='1' cellpadding='6' style='border-collapse:collapse; margin:10px 0;'><thead><tr><th>Nilai</th><th>60</th><th>70</th><th>80</th><th>90</th><th>100</th></tr></thead><tbody><tr><td>Frekuensi</td><td>6</td><td>7</td><td>8</td><td>5</td><td>4</td></tr></tbody></table>Berdasarkan tabel, pilihlah lebih dari satu pernyataan berikut yang benar!",
+    "teks_soal": "Perhatikan tabel nilai ulangan matematika kelas 9A berikut!<br><table border='1' cellpadding='6' style='border-collapse:collapse; margin:10px 0;'><thead><tr><th>Nilai</th><th>60</th><th>70</th><th>80</th><th>90</th><th>100</th></tr></thead><tbody><tr><td>Frekuensi</td><td>6</td><td>7</td><td>8</td><td>5</td><td>4</td></tr></tbody></table>Berdasarkan tabel, pilihlah lebih dari satu pernyataan berikut yang benar!",
+    "soal": "Perhatikan tabel nilai ulangan matematika kelas 9A berikut!<br><table border='1' cellpadding='6' style='border-collapse:collapse; margin:10px 0;'><thead><tr><th>Nilai</th><th>60</th><th>70</th><th>80</th><th>90</th><th>100</th></tr></thead><tbody><tr><td>Frekuensi</td><td>6</td><td>7</td><td>8</td><td>5</td><td>4</td></tr></tbody></table>Berdasarkan tabel, pilihlah lebih dari satu pernyataan berikut yang benar!",
+    "gambar": null,
+    "gambarUrls": [],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [
+      {
+        "key": "1",
+        "label": "1",
+        "teks": "Jangkauan dari data tersebut adalah 40.",
+        "gambar": null
+      },
+      {
+        "key": "2",
+        "label": "2",
+        "teks": "Modus dari data tersebut adalah 80.",
+        "gambar": null
+      },
+      {
+        "key": "3",
+        "label": "3",
+        "teks": "Rata-rata data tersebut adalah 78.",
+        "gambar": null
+      },
+      {
+        "key": "4",
+        "label": "4",
+        "teks": "Banyak siswa yang memperoleh nilai di atas rata-rata adalah 13 orang.",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "1",
+        "label": "1",
+        "teks": "Jangkauan dari data tersebut adalah 40.",
+        "gambar": null
+      },
+      {
+        "key": "2",
+        "label": "2",
+        "teks": "Modus dari data tersebut adalah 80.",
+        "gambar": null
+      },
+      {
+        "key": "3",
+        "label": "3",
+        "teks": "Rata-rata data tersebut adalah 78.",
+        "gambar": null
+      },
+      {
+        "key": "4",
+        "label": "4",
+        "teks": "Banyak siswa yang memperoleh nilai di atas rata-rata adalah 13 orang.",
+        "gambar": null
+      }
+    ],
+    "pernyataan": null,
+    "kunciJawaban": "1, 2, 3",
+    "kunci_jawaban": "1, 2, 3",
+    "kunci": "1, 2, 3",
+    "pembahasan": "Total siswa $n = 6 + 7 + 8 + 5 + 4 = 30$ siswa. Jumlah nilai: $(60 \\times 6) + (70 \\times 7) + (80 \\times 8) + (90 \\times 5) + (100 \\times 4) = 360 + 490 + 640 + 450 + 400 = 2.340$. Rata-rata = $2.340 / 30 = 78$ (Pernyataan 3 Benar). Jangkauan = Nilai maks - Nilai min = $100 - 60 = 40$ (Pernyataan 1 Benar). Modus = nilai dengan frekuensi terbanyak yaitu nilai 80 dengan frekuensi 8 (Pernyataan 2 Benar). Siswa dengan nilai di atas rata-rata (> 78) adalah siswa bernilai 80, 90, dan 100 dengan total $8 + 5 + 4 = 17$ orang (Pernyataan 4 Salah, tertulis 13 orang). Jadi pernyataan yang benar adalah nomor 1, 2, dan 3."
+  },
+  {
+    "id": "tka_akbar_mtk_29",
+    "nomor": 29,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
+    "materi": "Peluang Teoretik",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Perhatikan gambar!<br>Cakram putar (spiner) terbagi menjadi 8 bagian yang ukurannya sama besar dan masing-masing diberi nomor urut 1 sampai 8 seperti pada gambar. Jika cakram diputar undi maka peluang bilangan prima berhenti pada jarum penunjuk adalah ….",
+    "teks_soal": "Perhatikan gambar!<br>Cakram putar (spiner) terbagi menjadi 8 bagian yang ukurannya sama besar dan masing-masing diberi nomor urut 1 sampai 8 seperti pada gambar. Jika cakram diputar undi maka peluang bilangan prima berhenti pada jarum penunjuk adalah ….",
+    "soal": "Perhatikan gambar!<br>Cakram putar (spiner) terbagi menjadi 8 bagian yang ukurannya sama besar dan masing-masing diberi nomor urut 1 sampai 8 seperti pada gambar. Jika cakram diputar undi maka peluang bilangan prima berhenti pada jarum penunjuk adalah ….",
+    "gambar": "/soal/tryout_tka_matematika_paket_a/q29_spinner.png",
+    "gambarUrls": [
+      "/soal/tryout_tka_matematika_paket_a/q29_spinner.png"
+    ],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "3/8",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "4/8",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "5/8",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "7/8",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "3/8",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "4/8",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "5/8",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "7/8",
+        "gambar": null
+      }
+    ],
+    "pernyataan": null,
+    "kunciJawaban": "B",
+    "kunci_jawaban": "B",
+    "kunci": "B",
+    "pembahasan": "Ruang sampel cakram putar: $S = \\{1, 2, 3, 4, 5, 6, 7, 8\\} \\implies n(S) = 8$. Kejadian muncul bilangan prima: $A = \\{2, 3, 5, 7\\} \\implies n(A) = 4$. Peluang muncul bilangan prima: $P(A) = \\frac{n(A)}{n(S)} = \\frac{4}{8}$."
+  },
+  {
+    "id": "tka_akbar_mtk_30",
+    "nomor": 30,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
+    "materi": "Peluang Empirik dan Rasio Keberhasilan",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Empat percobaan menanam biji kacang hijau dilakukan dengan tanah dan pupuk yang sama. Hasilnya sebagai berikut:<br>• Percobaan E: ditanam 20 biji kacang hijau jenis A, tumbuh 15 biji.<br>• Percobaan F: ditanam 25 biji kacang hijau jenis B, tumbuh 18 biji.<br>• Percobaan G: ditanam 30 biji kacang hijau jenis C, tumbuh 24 biji.<br>• Percobaan H: ditanam 40 biji kacang hijau jenis D, tumbuh 31 biji.<br>Berdasarkan data tersebut, jenis biji kacang apakah yang paling cocok untuk ditanam pada tanah dan pupuk seperti pada percobaan?",
+    "teks_soal": "Empat percobaan menanam biji kacang hijau dilakukan dengan tanah dan pupuk yang sama. Hasilnya sebagai berikut:<br>• Percobaan E: ditanam 20 biji kacang hijau jenis A, tumbuh 15 biji.<br>• Percobaan F: ditanam 25 biji kacang hijau jenis B, tumbuh 18 biji.<br>• Percobaan G: ditanam 30 biji kacang hijau jenis C, tumbuh 24 biji.<br>• Percobaan H: ditanam 40 biji kacang hijau jenis D, tumbuh 31 biji.<br>Berdasarkan data tersebut, jenis biji kacang apakah yang paling cocok untuk ditanam pada tanah dan pupuk seperti pada percobaan?",
+    "soal": "Empat percobaan menanam biji kacang hijau dilakukan dengan tanah dan pupuk yang sama. Hasilnya sebagai berikut:<br>• Percobaan E: ditanam 20 biji kacang hijau jenis A, tumbuh 15 biji.<br>• Percobaan F: ditanam 25 biji kacang hijau jenis B, tumbuh 18 biji.<br>• Percobaan G: ditanam 30 biji kacang hijau jenis C, tumbuh 24 biji.<br>• Percobaan H: ditanam 40 biji kacang hijau jenis D, tumbuh 31 biji.<br>Berdasarkan data tersebut, jenis biji kacang apakah yang paling cocok untuk ditanam pada tanah dan pupuk seperti pada percobaan?",
+    "gambar": null,
+    "gambarUrls": [],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Kacang hijau jenis A.",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Kacang hijau jenis B.",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Kacang hijau jenis C.",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "Kacang hijau jenis D.",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Kacang hijau jenis A.",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Kacang hijau jenis B.",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Kacang hijau jenis C.",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "Kacang hijau jenis D.",
+        "gambar": null
+      }
+    ],
+    "pernyataan": null,
+    "kunciJawaban": "C",
+    "kunci_jawaban": "C",
+    "kunci": "C",
+    "pembahasan": "Hitung rasio / persentase keberhasilan tumbuh tiap jenis biji: Jenis A = $15/20 = 75\\%$; Jenis B = $18/25 = 72\\%$; Jenis C = $24/30 = 80\\%$; Jenis D = $31/40 = 77{,}5\\%$. Biji kacang hijau jenis C memiliki persentase keberhasilan tumbuh paling tinggi yaitu $80\\%$, sehingga paling cocok ditanam."
   }
 ];
 
@@ -5274,6 +9512,3952 @@ export const SOAL_TKA_2026_SMP_BINDO_PAKET_A = [
   }
 ];
 
+export const SOAL_TKA_2026_SMP_BINDO_PAKET_B = [
+  {
+    "id": "tka26_indo_b_01",
+    "nomor": 1,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
+    "materi": "Menemukan Informasi Tersurat Teks Deskripsi",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Satwa apa yang menjadi maskot Taman Nasional Baluran?",
+    "teks_soal": "Satwa apa yang menjadi maskot Taman Nasional Baluran?",
+    "soal": "Satwa apa yang menjadi maskot Taman Nasional Baluran?",
+    "gambar": null,
+    "gambarUrls": [],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Kerbau.",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Reptilia.",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Mamalia.",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "Banteng.",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Kerbau.",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Reptilia.",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Mamalia.",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "Banteng.",
+        "gambar": null
+      }
+    ],
+    "pernyataan": null,
+    "kunciJawaban": "D",
+    "kunci_jawaban": "D",
+    "kunci": "D",
+    "pembahasan": "Berdasarkan paragraf kedua wacana: 'Satwa liar yang menjadi maskot di kawasan tersebut adalah Banteng (Bos javanicus). Banteng adalah jenis sapi liar yang besar.' Jadi, maskot Taman Nasional Baluran adalah Banteng (opsi D).",
+    "bacaan": "Pernahkah kamu mendengar tentang Taman Nasional Baluran? Tempat tersebut ada di Situbondo, Jawa Timur. Taman Nasional Baluran didirikan tahun 1980 pada lahan seluas 25.000 ha. Baluran dijuluki Afrika van Java atau Little Africa in Java. Julukan ini diberikan karena pemandangannya unik. Lanskap padang rumput didominasi oleh sabana kering dan keberadaan satwa liar besar hidup bebas di habitat tersebut. Oleh karena itu, Baluran menjadi tujuan wajib untuk kamu yang suka satwa liar.<br><br>Ciri khas Taman Nasional Baluran adalah Padang Savana Bekol. Tempat tersebut berupa hamparan padang rumput yang luas. Banyak satwa liar berkeliaran bebas mencari makanan di sana. Satwa liar yang menjadi maskot di kawasan tersebut adalah Banteng (Bos javanicus). Banteng adalah jenis sapi liar yang besar. Selain Banteng, ada pula kawanan rusa dan kerbau liar.<br><br>Taman Nasional Baluran memiliki keanekaragaman hayati. Di sana terdapat 444 jenis flora. Dari jumlah tersebut, 265 jenis dapat dijadikan obat. Taman Nasional ini juga menjadi surga bagi fauna. Ada 196 jenis burung yang cantik dan 28 jenis mamalia di sana. Berbagai jenis ikan dan reptilia juga hidup di Baluran. Bahkan, 47 jenis satwa dilindungi tinggal di kawasan tersebut.<br><br>Baluran berfungsi sebagai cagar alam dan objek wisata. Tempat tersebut menawarkan banyak objek seru. Kamu bisa mengunjungi Evergreen Forest, Pantai Bama, Gua Jepang, Curah Tangis, Dermaga, dan Candi Bang. Tak heran jika Baluran merupakan kombinasi sempurna. Kamu bisa melihat satwa, menikmati pantai, dan belajar sejarah di sana.",
+    "grup": "wacana_baluran"
+  },
+  {
+    "id": "tka26_indo_b_02",
+    "nomor": 2,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
+    "materi": "Menganalisis Rincian Informasi Teks Deskripsi",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Taman Nasional Baluran memiliki keanekaragaman hayati. Keanekaragaman apa saja yang ada di kawasan tersebut?",
+    "teks_soal": "Taman Nasional Baluran memiliki keanekaragaman hayati. Keanekaragaman apa saja yang ada di kawasan tersebut?",
+    "soal": "Taman Nasional Baluran memiliki keanekaragaman hayati. Keanekaragaman apa saja yang ada di kawasan tersebut?",
+    "gambar": null,
+    "gambarUrls": [],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Taman Nasional Baluran memiliki 265 jenis fauna yang berkhasiat sebagai bahan obat-obatan tradisional.",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Baluran memiliki 444 jenis flora sekaligus menjadi habitat berbagai jenis fauna termasuk satwa yang dilindungi.",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Cagar alam Baluran menjadi habitat asli bagi 28 jenis mamalia, 196 satwa yang dilindungi, dan berbagai reptilia.",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "Kawasan Baluran menjadi tempat tinggal 196 jenis satwa liar yang dilindungi pemerintah, seperti mamalia dan reptil.",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Taman Nasional Baluran memiliki 265 jenis fauna yang berkhasiat sebagai bahan obat-obatan tradisional.",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Baluran memiliki 444 jenis flora sekaligus menjadi habitat berbagai jenis fauna termasuk satwa yang dilindungi.",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Cagar alam Baluran menjadi habitat asli bagi 28 jenis mamalia, 196 satwa yang dilindungi, dan berbagai reptilia.",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "Kawasan Baluran menjadi tempat tinggal 196 jenis satwa liar yang dilindungi pemerintah, seperti mamalia dan reptil.",
+        "gambar": null
+      }
+    ],
+    "pernyataan": null,
+    "kunciJawaban": "B",
+    "kunci_jawaban": "B",
+    "kunci": "B",
+    "pembahasan": "Berdasarkan paragraf ketiga wacana: 'Di sana terdapat 444 jenis flora... Ada 196 jenis burung... 28 jenis mamalia... berbagai jenis ikan dan reptilia... Bahkan, 47 jenis satwa dilindungi tinggal di kawasan tersebut.' Opsi B tepat merangkum keberadaan 444 jenis flora serta habitat fauna termasuk satwa yang dilindungi.",
+    "bacaan": "Pernahkah kamu mendengar tentang Taman Nasional Baluran? Tempat tersebut ada di Situbondo, Jawa Timur. Taman Nasional Baluran didirikan tahun 1980 pada lahan seluas 25.000 ha. Baluran dijuluki Afrika van Java atau Little Africa in Java. Julukan ini diberikan karena pemandangannya unik. Lanskap padang rumput didominasi oleh sabana kering dan keberadaan satwa liar besar hidup bebas di habitat tersebut. Oleh karena itu, Baluran menjadi tujuan wajib untuk kamu yang suka satwa liar.<br><br>Ciri khas Taman Nasional Baluran adalah Padang Savana Bekol. Tempat tersebut berupa hamparan padang rumput yang luas. Banyak satwa liar berkeliaran bebas mencari makanan di sana. Satwa liar yang menjadi maskot di kawasan tersebut adalah Banteng (Bos javanicus). Banteng adalah jenis sapi liar yang besar. Selain Banteng, ada pula kawanan rusa dan kerbau liar.<br><br>Taman Nasional Baluran memiliki keanekaragaman hayati. Di sana terdapat 444 jenis flora. Dari jumlah tersebut, 265 jenis dapat dijadikan obat. Taman Nasional ini juga menjadi surga bagi fauna. Ada 196 jenis burung yang cantik dan 28 jenis mamalia di sana. Berbagai jenis ikan dan reptilia juga hidup di Baluran. Bahkan, 47 jenis satwa dilindungi tinggal di kawasan tersebut.<br><br>Baluran berfungsi sebagai cagar alam dan objek wisata. Tempat tersebut menawarkan banyak objek seru. Kamu bisa mengunjungi Evergreen Forest, Pantai Bama, Gua Jepang, Curah Tangis, Dermaga, dan Candi Bang. Tak heran jika Baluran merupakan kombinasi sempurna. Kamu bisa melihat satwa, menikmati pantai, dan belajar sejarah di sana.",
+    "grup": "wacana_baluran"
+  },
+  {
+    "id": "tka26_indo_b_03",
+    "nomor": 3,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
+    "materi": "Hubungan Antarparagraf Teks Deskripsi",
+    "tipe": "benar_salah",
+    "teksSoal": "Mengapa informasi pada paragraf keempat sesuai dengan penjelasan paragraf kedua dan ketiga?<br>Tentukan Benar atau Salah untuk setiap pernyataan berikut:",
+    "teks_soal": "Mengapa informasi pada paragraf keempat sesuai dengan penjelasan paragraf kedua dan ketiga?<br>Tentukan Benar atau Salah untuk setiap pernyataan berikut:",
+    "soal": "Mengapa informasi pada paragraf keempat sesuai dengan penjelasan paragraf kedua dan ketiga?<br>Tentukan Benar atau Salah untuk setiap pernyataan berikut:",
+    "gambar": null,
+    "gambarUrls": [],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [],
+    "opsi": [],
+    "pernyataan": [
+      {
+        "id": "p_1",
+        "teks": "A. Menyimpulkan daya tarik objek Taman Nasional Baluran secara keseluruhan.",
+        "kunci": ""
+      },
+      {
+        "id": "p_2",
+        "teks": "B. Merinci keanekaragaman flora, fauna, dan objek wisata di sekitar kawasan Baluran.",
+        "kunci": ""
+      },
+      {
+        "id": "p_3",
+        "teks": "C. Menegaskan fungsi Taman Nasional Baluran sebagai cagar alam dan destinasi wisata.",
+        "kunci": ""
+      }
+    ],
+    "kunciJawaban": "A: Benar, B: Salah, C: Benar",
+    "kunci_jawaban": "A: Benar, B: Salah, C: Benar",
+    "kunci": "A: Benar, B: Salah, C: Benar",
+    "pembahasan": "Paragraf keempat menyatakan bahwa Baluran berfungsi sebagai cagar alam dan objek wisata yang merupakan kombinasi sempurna untuk melihat satwa (paragraf 2), menikmati alam dan pantai, serta belajar sejarah (paragraf 3). Pernyataan A Benar (menyimpulkan daya tarik secara keseluruhan). Pernyataan B Salah (fungsi merinci secara detail ada pada paragraf kedua dan ketiga, bukan paragraf keempat). Pernyataan C Benar (menegaskan fungsi ganda cagar alam dan destinasi wisata).",
+    "bacaan": "Pernahkah kamu mendengar tentang Taman Nasional Baluran? Tempat tersebut ada di Situbondo, Jawa Timur. Taman Nasional Baluran didirikan tahun 1980 pada lahan seluas 25.000 ha. Baluran dijuluki Afrika van Java atau Little Africa in Java. Julukan ini diberikan karena pemandangannya unik. Lanskap padang rumput didominasi oleh sabana kering dan keberadaan satwa liar besar hidup bebas di habitat tersebut. Oleh karena itu, Baluran menjadi tujuan wajib untuk kamu yang suka satwa liar.<br><br>Ciri khas Taman Nasional Baluran adalah Padang Savana Bekol. Tempat tersebut berupa hamparan padang rumput yang luas. Banyak satwa liar berkeliaran bebas mencari makanan di sana. Satwa liar yang menjadi maskot di kawasan tersebut adalah Banteng (Bos javanicus). Banteng adalah jenis sapi liar yang besar. Selain Banteng, ada pula kawanan rusa dan kerbau liar.<br><br>Taman Nasional Baluran memiliki keanekaragaman hayati. Di sana terdapat 444 jenis flora. Dari jumlah tersebut, 265 jenis dapat dijadikan obat. Taman Nasional ini juga menjadi surga bagi fauna. Ada 196 jenis burung yang cantik dan 28 jenis mamalia di sana. Berbagai jenis ikan dan reptilia juga hidup di Baluran. Bahkan, 47 jenis satwa dilindungi tinggal di kawasan tersebut.<br><br>Baluran berfungsi sebagai cagar alam dan objek wisata. Tempat tersebut menawarkan banyak objek seru. Kamu bisa mengunjungi Evergreen Forest, Pantai Bama, Gua Jepang, Curah Tangis, Dermaga, dan Candi Bang. Tak heran jika Baluran merupakan kombinasi sempurna. Kamu bisa melihat satwa, menikmati pantai, dan belajar sejarah di sana.",
+    "grup": "wacana_baluran"
+  },
+  {
+    "id": "tka26_indo_b_04",
+    "nomor": 4,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
+    "materi": "Makna Kata / Istilah Teks Prosedur",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Apa makna kata energi yang terdapat dalam teks tersebut?",
+    "teks_soal": "Apa makna kata energi yang terdapat dalam teks tersebut?",
+    "soal": "Apa makna kata energi yang terdapat dalam teks tersebut?",
+    "gambar": null,
+    "gambarUrls": [],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Kemampuan melakukan fermentasi.",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Daya yang digunakan untuk distilasi.",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Sumber daya yang dapat dimanfaatkan.",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "Tenaga yang melekat pada limbah organik.",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Kemampuan melakukan fermentasi.",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Daya yang digunakan untuk distilasi.",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Sumber daya yang dapat dimanfaatkan.",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "Tenaga yang melekat pada limbah organik.",
+        "gambar": null
+      }
+    ],
+    "pernyataan": null,
+    "kunciJawaban": "C",
+    "kunci_jawaban": "C",
+    "kunci": "C",
+    "pembahasan": "Dalam konteks kalimat 'Bioetanol merupakan bahan bakar ramah lingkungan yang dapat digunakan sebagai energi alternatif' dan 'produk yang bermanfaat bagi kebutuhan energi', kata energi bermakna daya atau sumber daya pembangkit/tenaga yang dapat dimanfaatkan untuk menggerakkan mesin atau aktivitas manusia (opsi C).",
+    "bacaan": "Limbah kulit pisang merupakan salah satu sampah organik yang jumlahnya cukup besar dan sering tidak dimanfaatkan. Jika dibiarkan menumpuk, limbah ini dapat menimbulkan bau serta meningkatkan permasalahan lingkungan. Namun, kulit pisang sebenarnya mengandung karbohidrat yang dapat diolah menjadi bioetanol melalui proses fermentasi. Bioetanol merupakan bahan bakar ramah lingkungan yang dapat digunakan sebagai energi alternatif. Oleh karena itu, pemanfaatan limbah kulit pisang menjadi bioetanol menjadi langkah produktif dalam mengurangi sampah sekaligus mendukung energi berkelanjutan.<br><br><b>Alat dan Bahan</b><br>• Kulit pisang<br>• Gula pasir<br>• Ragi (yeast)<br>• Air bersih<br><br><b>Langkah-Langkah</b><br>1. Cuci kulit pisang, potong kecil, lalu masukkan ke blender.<br>2. Tambahkan air, lalu blender hingga halus.<br>3. Rebus campuran tersebut menggunakan panci dan kompor selama ±15 menit agar steril dan keluar karbohidratnya.<br>4. Dinginkan hingga suhu sekitar 30–35°C, cek suhunya dengan termometer.<br>5. Tambahkan gula dan ragi, lalu aduk rata.<br>6. Tuang ke dalam botol fermentasi dan tutup rapat.<br>7. Fermentasikan selama 5–7 hari di suhu ruang.<br>8. Setelah fermentasi, saring cairan menggunakan kain saring.<br>9. Distilasi cairan dengan memanaskannya pada suhu 78°C untuk memisahkan bioetanol dari air.<br>10. Tampung uap yang terkondensasi sebagai bioetanol murni dengan botol.<br><br>Pemanfaatan limbah kulit pisang sebagai bahan dasar pembuatan bioetanol merupakan cara efektif untuk mengurangi sampah organik sekaligus menghasilkan energi alternatif yang ramah lingkungan. Proses fermentasi dan distilasi memungkinkan limbah yang tidak bernilai menjadi produk yang bermanfaat bagi kebutuhan energi.<br><br><i>Glosarium:</i><br>• distilasi: proses memanaskan benda cair atau padat hingga berubah menjadi uap.<br>• kondensasi: perubahan uap air atau benda gas menjadi benda cair.",
+    "grup": "wacana_bioetanol"
+  },
+  {
+    "id": "tka26_indo_b_05",
+    "nomor": 5,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
+    "materi": "Memprediksi Kejadian Berdasarkan Prosedur",
+    "tipe": "pg_kompleks",
+    "teksSoal": "Apa yang akan terjadi jika campuran hasil blender direbus selama 5 menit?<br>Pilihlah jawaban yang benar! Jawaban benar lebih dari satu.",
+    "teks_soal": "Apa yang akan terjadi jika campuran hasil blender direbus selama 5 menit?<br>Pilihlah jawaban yang benar! Jawaban benar lebih dari satu.",
+    "soal": "Apa yang akan terjadi jika campuran hasil blender direbus selama 5 menit?<br>Pilihlah jawaban yang benar! Jawaban benar lebih dari satu.",
+    "gambar": null,
+    "gambarUrls": [],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [
+      {
+        "key": "1",
+        "label": "1",
+        "teks": "Bioetanol akan sulit dipisahkan dari campuran cairan.",
+        "gambar": null
+      },
+      {
+        "key": "2",
+        "label": "2",
+        "teks": "Campuran hasil blender akan terkontaminasi zat asing.",
+        "gambar": null
+      },
+      {
+        "key": "3",
+        "label": "3",
+        "teks": "Karbohidrat akan sulit untuk dikeluarkan dari campuran.",
+        "gambar": null
+      },
+      {
+        "key": "4",
+        "label": "4",
+        "teks": "Uap tidak akan terbentuk karena kurangnya pemanasan.",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "1",
+        "label": "1",
+        "teks": "Bioetanol akan sulit dipisahkan dari campuran cairan.",
+        "gambar": null
+      },
+      {
+        "key": "2",
+        "label": "2",
+        "teks": "Campuran hasil blender akan terkontaminasi zat asing.",
+        "gambar": null
+      },
+      {
+        "key": "3",
+        "label": "3",
+        "teks": "Karbohidrat akan sulit untuk dikeluarkan dari campuran.",
+        "gambar": null
+      },
+      {
+        "key": "4",
+        "label": "4",
+        "teks": "Uap tidak akan terbentuk karena kurangnya pemanasan.",
+        "gambar": null
+      }
+    ],
+    "pernyataan": null,
+    "kunciJawaban": "2, 3",
+    "kunci_jawaban": "2, 3",
+    "kunci": "2, 3",
+    "pembahasan": "Langkah ke-3 teks menyatakan: 'Rebus campuran tersebut menggunakan panci dan kompor selama ±15 menit agar steril dan keluar karbohidratnya.' Jika hanya direbus selama 5 menit (kurang dari waktu optimal 15 menit), maka sterilisasi belum sempurna sehingga berisiko terkontaminasi zat/mikroba asing (pernyataan 2), dan karbohidrat belum optimal keluar/diekstraksi dari serat kulit pisang (pernyataan 3). Jadi jawaban benar adalah 2 dan 3.",
+    "bacaan": "Limbah kulit pisang merupakan salah satu sampah organik yang jumlahnya cukup besar dan sering tidak dimanfaatkan. Jika dibiarkan menumpuk, limbah ini dapat menimbulkan bau serta meningkatkan permasalahan lingkungan. Namun, kulit pisang sebenarnya mengandung karbohidrat yang dapat diolah menjadi bioetanol melalui proses fermentasi. Bioetanol merupakan bahan bakar ramah lingkungan yang dapat digunakan sebagai energi alternatif. Oleh karena itu, pemanfaatan limbah kulit pisang menjadi bioetanol menjadi langkah produktif dalam mengurangi sampah sekaligus mendukung energi berkelanjutan.<br><br><b>Alat dan Bahan</b><br>• Kulit pisang<br>• Gula pasir<br>• Ragi (yeast)<br>• Air bersih<br><br><b>Langkah-Langkah</b><br>1. Cuci kulit pisang, potong kecil, lalu masukkan ke blender.<br>2. Tambahkan air, lalu blender hingga halus.<br>3. Rebus campuran tersebut menggunakan panci dan kompor selama ±15 menit agar steril dan keluar karbohidratnya.<br>4. Dinginkan hingga suhu sekitar 30–35°C, cek suhunya dengan termometer.<br>5. Tambahkan gula dan ragi, lalu aduk rata.<br>6. Tuang ke dalam botol fermentasi dan tutup rapat.<br>7. Fermentasikan selama 5–7 hari di suhu ruang.<br>8. Setelah fermentasi, saring cairan menggunakan kain saring.<br>9. Distilasi cairan dengan memanaskannya pada suhu 78°C untuk memisahkan bioetanol dari air.<br>10. Tampung uap yang terkondensasi sebagai bioetanol murni dengan botol.<br><br>Pemanfaatan limbah kulit pisang sebagai bahan dasar pembuatan bioetanol merupakan cara efektif untuk mengurangi sampah organik sekaligus menghasilkan energi alternatif yang ramah lingkungan. Proses fermentasi dan distilasi memungkinkan limbah yang tidak bernilai menjadi produk yang bermanfaat bagi kebutuhan energi.<br><br><i>Glosarium:</i><br>• distilasi: proses memanaskan benda cair atau padat hingga berubah menjadi uap.<br>• kondensasi: perubahan uap air atau benda gas menjadi benda cair.",
+    "grup": "wacana_bioetanol"
+  },
+  {
+    "id": "tka26_indo_b_06",
+    "nomor": 6,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
+    "materi": "Menilai Kelengkapan Struktur Teks Prosedur",
+    "tipe": "benar_salah",
+    "teksSoal": "Mengapa struktur dalam teks tentang cara membuat bioetanol kurang lengkap?<br>Tentukan Benar atau Salah untuk setiap pernyataan berikut:",
+    "teks_soal": "Mengapa struktur dalam teks tentang cara membuat bioetanol kurang lengkap?<br>Tentukan Benar atau Salah untuk setiap pernyataan berikut:",
+    "soal": "Mengapa struktur dalam teks tentang cara membuat bioetanol kurang lengkap?<br>Tentukan Benar atau Salah untuk setiap pernyataan berikut:",
+    "gambar": null,
+    "gambarUrls": [],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [],
+    "opsi": [],
+    "pernyataan": [
+      {
+        "id": "p_1",
+        "teks": "A. Tujuan pembuatan bioetanol dari kulit pisang tidak dijelaskan dalam teks.",
+        "kunci": ""
+      },
+      {
+        "id": "p_2",
+        "teks": "B. Alat yang digunakan dalam pembuatan bioetanol tidak dicantumkan.",
+        "kunci": ""
+      },
+      {
+        "id": "p_3",
+        "teks": "C. Langkah-langkah tidak dijabarkan dengan lengkap dan berurutan.",
+        "kunci": ""
+      }
+    ],
+    "kunciJawaban": "A: Salah, B: Benar, C: Salah",
+    "kunci_jawaban": "A: Salah, B: Benar, C: Salah",
+    "kunci": "A: Salah, B: Benar, C: Salah",
+    "pembahasan": "Pernyataan A Salah karena tujuan pembuatan bioetanol sudah dipaparkan dengan jelas di paragraf pertama (mengurangi sampah organik dan bahan bakar ramah lingkungan). Pernyataan B Benar karena pada subjudul 'Alat dan Bahan', hanya dicantumkan bahan (kulit pisang, gula, ragi, air), sedangkan alat (blender, panci, kompor, botol fermentasi, kain saring, termometer, alat distilasi) tidak dimasukkan dalam daftar alat. Pernyataan C Salah karena langkah-langkah 1 sampai 10 sudah sangat lengkap, runtut, dan berurutan.",
+    "bacaan": "Limbah kulit pisang merupakan salah satu sampah organik yang jumlahnya cukup besar dan sering tidak dimanfaatkan. Jika dibiarkan menumpuk, limbah ini dapat menimbulkan bau serta meningkatkan permasalahan lingkungan. Namun, kulit pisang sebenarnya mengandung karbohidrat yang dapat diolah menjadi bioetanol melalui proses fermentasi. Bioetanol merupakan bahan bakar ramah lingkungan yang dapat digunakan sebagai energi alternatif. Oleh karena itu, pemanfaatan limbah kulit pisang menjadi bioetanol menjadi langkah produktif dalam mengurangi sampah sekaligus mendukung energi berkelanjutan.<br><br><b>Alat dan Bahan</b><br>• Kulit pisang<br>• Gula pasir<br>• Ragi (yeast)<br>• Air bersih<br><br><b>Langkah-Langkah</b><br>1. Cuci kulit pisang, potong kecil, lalu masukkan ke blender.<br>2. Tambahkan air, lalu blender hingga halus.<br>3. Rebus campuran tersebut menggunakan panci dan kompor selama ±15 menit agar steril dan keluar karbohidratnya.<br>4. Dinginkan hingga suhu sekitar 30–35°C, cek suhunya dengan termometer.<br>5. Tambahkan gula dan ragi, lalu aduk rata.<br>6. Tuang ke dalam botol fermentasi dan tutup rapat.<br>7. Fermentasikan selama 5–7 hari di suhu ruang.<br>8. Setelah fermentasi, saring cairan menggunakan kain saring.<br>9. Distilasi cairan dengan memanaskannya pada suhu 78°C untuk memisahkan bioetanol dari air.<br>10. Tampung uap yang terkondensasi sebagai bioetanol murni dengan botol.<br><br>Pemanfaatan limbah kulit pisang sebagai bahan dasar pembuatan bioetanol merupakan cara efektif untuk mengurangi sampah organik sekaligus menghasilkan energi alternatif yang ramah lingkungan. Proses fermentasi dan distilasi memungkinkan limbah yang tidak bernilai menjadi produk yang bermanfaat bagi kebutuhan energi.<br><br><i>Glosarium:</i><br>• distilasi: proses memanaskan benda cair atau padat hingga berubah menjadi uap.<br>• kondensasi: perubahan uap air atau benda gas menjadi benda cair.",
+    "grup": "wacana_bioetanol"
+  },
+  {
+    "id": "tka26_indo_b_07",
+    "nomor": 7,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
+    "materi": "Menemukan Informasi Tersurat Teks Berita",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Berdasarkan teks 1, kebiasaan apa yang berpengaruh terhadap status gizi dan kesehatan?",
+    "teks_soal": "Berdasarkan teks 1, kebiasaan apa yang berpengaruh terhadap status gizi dan kesehatan?",
+    "soal": "Berdasarkan teks 1, kebiasaan apa yang berpengaruh terhadap status gizi dan kesehatan?",
+    "gambar": null,
+    "gambarUrls": [],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Pemberian suplemen, pola makan bergizi, dan pelayanan kesehatan.",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Pola asuh yang baik, menjaga kebersihan, dan menjaga status gizi.",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Pelayanan kesehatan, vitamin tambahan, dan menjaga kebersihan.",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "Pola makan bergizi, menjaga kebersihan, dan pola asuh yang baik.",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Pemberian suplemen, pola makan bergizi, dan pelayanan kesehatan.",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Pola asuh yang baik, menjaga kebersihan, dan menjaga status gizi.",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Pelayanan kesehatan, vitamin tambahan, dan menjaga kebersihan.",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "Pola makan bergizi, menjaga kebersihan, dan pola asuh yang baik.",
+        "gambar": null
+      }
+    ],
+    "pernyataan": null,
+    "kunciJawaban": "D",
+    "kunci_jawaban": "D",
+    "kunci": "D",
+    "pembahasan": "Berdasarkan kutipan langsung Teks 1: 'kebiasaan sederhana di rumah, seperti cara makan, menjaga kebersihan, dan pola asuh punya pengaruh langsung terhadap masa depan anak.' Maka kebiasaan yang berpengaruh adalah pola makan bergizi, menjaga kebersihan, dan pola asuh yang baik (opsi D).",
+    "bacaan": "<b>Teks 1</b><br>Kompas.com - Perilaku sehari-hari memiliki peran besar dalam menentukan kesehatan keluarga, terutama anak-anak. Penelitian pakar kesehatan masyarakat asal Amerika Serikat (AS), J Michael McGinnis menyatakan bahwa perilaku menyumbang 30-40 persen terhadap status gizi dan kesehatan seseorang. Angka ini lebih besar dibandingkan faktor pelayanan kesehatan maupun lingkungan. “Artinya, kebiasaan sederhana di rumah, seperti cara makan, menjaga kebersihan, dan pola asuh punya pengaruh langsung terhadap masa depan anak,” ujar Redaktur Lembaga Kantor Berita Nasional (LKBN) Antara, dalam rilis pers yang diterima Kompas.com, Jumat (7/11/2025). Salah satu persoalan gizi kronis yang masih banyak dialami anak-anak Indonesia adalah stunting. Persoalan tersebut tidak bisa hanya diatasi dengan memberikan suplemen vitamin secara rutin dengan takaran pas.<br><br><b>Teks 2</b><br>Kompas.com - Pendidikan anak usia dini (PAUD) sering dipandang hanya bergantung pada kualitas guru, kurikulum, atau fasilitas sekolah. Praktisi pendidikan menjelaskan bahwa keberhasilan PAUD terletak pada sinergi antara satuan PAUD dan orang tua. “Pendidikan anak usia dini tidak bisa berhasil jika rumah dan sekolah berjalan sendiri-sendiri. Anak butuh irama yang selaras antara guru dan orang tua,” ujarnya dalam keterangan resmi, Jumat (29/8/2025). Dijelaskan pula bagi orang tua, pendidikan adalah investasi jiwa, bukan sekadar proses formal. Mereka ingin setiap langkah kecil anak, entah menyapa guru, mencoba permainan baru, atau berbagi mainan, menjadi kebanggaan dan cermin nilai yang ditanamkan di rumah.",
+    "grup": "wacana_berita"
+  },
+  {
+    "id": "tka26_indo_b_08",
+    "nomor": 8,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
+    "materi": "Menyusun Bagan Alur Ide Pokok Teks Berita",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Bagan yang sesuai dengan bagian-bagian penting teks berita 2 adalah ….",
+    "teks_soal": "Bagan yang sesuai dengan bagian-bagian penting teks berita 2 adalah ….",
+    "soal": "Bagan yang sesuai dengan bagian-bagian penting teks berita 2 adalah ….",
+    "gambar": null,
+    "gambarUrls": [],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "[Pentingnya sinergi antara satuan PAUD dan orang tua dalam keberhasilan pendidikan anak usia dini] → [Pendidikan anak usia dini tidak efektif jika rumah dan sekolah berjalan sendiri-sendiri] → [Dengan menciptakan irama yang selaras antara guru dan orang tua dalam mendampingi anak]",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "[Pendidikan anak usia dini tidak efektif jika rumah dan sekolah berjalan sendiri-sendiri] → [Pentingnya kerja sama antara anak usia dini dengan guru dalam keberhasilan pendidikan anak usia dini] → [Dengan menciptakan irama yang selaras antara guru dan orang tua dalam mendampingi anak]",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "[Pentingnya kerja sama kedua orang tua dalam keberhasilan pendidikan anak usia dini] → [Pendidikan anak usia dini akan efektif jika dilakukan di sekolah] → [Dengan menciptakan irama yang selaras antara guru dan orang tua dalam mendampingi anak]",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "[Pendidikan anak usia dini efektif jika rumah dan sekolah berjalan sendiri-sendiri] → [Pentingnya sinergi antara guru dengan karyawan dalam keberhasilan pendidikan anak usia dini] → [Dengan menciptakan irama yang selaras antara guru dan orang tua dalam mendampingi anak]",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "[Pentingnya sinergi antara satuan PAUD dan orang tua dalam keberhasilan pendidikan anak usia dini] → [Pendidikan anak usia dini tidak efektif jika rumah dan sekolah berjalan sendiri-sendiri] → [Dengan menciptakan irama yang selaras antara guru dan orang tua dalam mendampingi anak]",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "[Pendidikan anak usia dini tidak efektif jika rumah dan sekolah berjalan sendiri-sendiri] → [Pentingnya kerja sama antara anak usia dini dengan guru dalam keberhasilan pendidikan anak usia dini] → [Dengan menciptakan irama yang selaras antara guru dan orang tua dalam mendampingi anak]",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "[Pentingnya kerja sama kedua orang tua dalam keberhasilan pendidikan anak usia dini] → [Pendidikan anak usia dini akan efektif jika dilakukan di sekolah] → [Dengan menciptakan irama yang selaras antara guru dan orang tua dalam mendampingi anak]",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "[Pendidikan anak usia dini efektif jika rumah dan sekolah berjalan sendiri-sendiri] → [Pentingnya sinergi antara guru dengan karyawan dalam keberhasilan pendidikan anak usia dini] → [Dengan menciptakan irama yang selaras antara guru dan orang tua dalam mendampingi anak]",
+        "gambar": null
+      }
+    ],
+    "pernyataan": null,
+    "kunciJawaban": "A",
+    "kunci_jawaban": "A",
+    "kunci": "A",
+    "pembahasan": "Alur ide pokok Teks 2 secara runtut: (1) Pernyataan umum pentingnya sinergi antara satuan PAUD dan orang tua; (2) Penjelasan bahwa PAUD tidak akan berhasil jika rumah dan sekolah berjalan sendiri-sendiri; (3) Solusi berupa menciptakan irama yang selaras antara guru dan orang tua dalam mendampingi anak. Bagan A merefleksikan urutan logis ini secara tepat.",
+    "bacaan": "<b>Teks 1</b><br>Kompas.com - Perilaku sehari-hari memiliki peran besar dalam menentukan kesehatan keluarga, terutama anak-anak. Penelitian pakar kesehatan masyarakat asal Amerika Serikat (AS), J Michael McGinnis menyatakan bahwa perilaku menyumbang 30-40 persen terhadap status gizi dan kesehatan seseorang. Angka ini lebih besar dibandingkan faktor pelayanan kesehatan maupun lingkungan. “Artinya, kebiasaan sederhana di rumah, seperti cara makan, menjaga kebersihan, dan pola asuh punya pengaruh langsung terhadap masa depan anak,” ujar Redaktur Lembaga Kantor Berita Nasional (LKBN) Antara, dalam rilis pers yang diterima Kompas.com, Jumat (7/11/2025). Salah satu persoalan gizi kronis yang masih banyak dialami anak-anak Indonesia adalah stunting. Persoalan tersebut tidak bisa hanya diatasi dengan memberikan suplemen vitamin secara rutin dengan takaran pas.<br><br><b>Teks 2</b><br>Kompas.com - Pendidikan anak usia dini (PAUD) sering dipandang hanya bergantung pada kualitas guru, kurikulum, atau fasilitas sekolah. Praktisi pendidikan menjelaskan bahwa keberhasilan PAUD terletak pada sinergi antara satuan PAUD dan orang tua. “Pendidikan anak usia dini tidak bisa berhasil jika rumah dan sekolah berjalan sendiri-sendiri. Anak butuh irama yang selaras antara guru dan orang tua,” ujarnya dalam keterangan resmi, Jumat (29/8/2025). Dijelaskan pula bagi orang tua, pendidikan adalah investasi jiwa, bukan sekadar proses formal. Mereka ingin setiap langkah kecil anak, entah menyapa guru, mencoba permainan baru, atau berbagi mainan, menjadi kebanggaan dan cermin nilai yang ditanamkan di rumah.",
+    "grup": "wacana_berita"
+  },
+  {
+    "id": "tka26_indo_b_09",
+    "nomor": 9,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
+    "materi": "Kaidah Kebahasaan Dua Teks Berita",
+    "tipe": "benar_salah",
+    "teksSoal": "Pernyataan manakah yang sesuai dengan kebahasaan pada kedua teks tersebut?<br>Pilihlah Benar atau Salah untuk pernyataan-pernyataan berikut:",
+    "teks_soal": "Pernyataan manakah yang sesuai dengan kebahasaan pada kedua teks tersebut?<br>Pilihlah Benar atau Salah untuk pernyataan-pernyataan berikut:",
+    "soal": "Pernyataan manakah yang sesuai dengan kebahasaan pada kedua teks tersebut?<br>Pilihlah Benar atau Salah untuk pernyataan-pernyataan berikut:",
+    "gambar": null,
+    "gambarUrls": [],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [],
+    "opsi": [],
+    "pernyataan": [
+      {
+        "id": "p_1",
+        "teks": "A. Konjungsi penjelas digunakan dalam kedua teks.",
+        "kunci": ""
+      },
+      {
+        "id": "p_2",
+        "teks": "B. Kedua teks menggunakan kata ganti penunjuk.",
+        "kunci": ""
+      },
+      {
+        "id": "p_3",
+        "teks": "C. Kedua teks memuat kalimat langsung dari ahli pendidikan.",
+        "kunci": ""
+      }
+    ],
+    "kunciJawaban": "A: Benar, B: Benar, C: Salah",
+    "kunci_jawaban": "A: Benar, B: Benar, C: Salah",
+    "kunci": "A: Benar, B: Benar, C: Salah",
+    "pembahasan": "Pernyataan A Benar karena kedua teks memuat konjungsi penjelas 'bahwa' (Teks 1: 'menyatakan bahwa...', Teks 2: 'menjelaskan bahwa...'). Pernyataan B Benar karena kedua teks menggunakan kata ganti penunjuk 'ini' dan 'tersebut' (Teks 1: 'Angka ini...', 'Persoalan tersebut...', Teks 2: 'Hal itu...'). Pernyataan C Salah karena Teks 1 memuat kutipan dari redaktur LKBN Antara dan pakar kesehatan masyarakat (bukan ahli pendidikan); hanya Teks 2 yang mengutip praktisi pendidikan.",
+    "bacaan": "<b>Teks 1</b><br>Kompas.com - Perilaku sehari-hari memiliki peran besar dalam menentukan kesehatan keluarga, terutama anak-anak. Penelitian pakar kesehatan masyarakat asal Amerika Serikat (AS), J Michael McGinnis menyatakan bahwa perilaku menyumbang 30-40 persen terhadap status gizi dan kesehatan seseorang. Angka ini lebih besar dibandingkan faktor pelayanan kesehatan maupun lingkungan. “Artinya, kebiasaan sederhana di rumah, seperti cara makan, menjaga kebersihan, dan pola asuh punya pengaruh langsung terhadap masa depan anak,” ujar Redaktur Lembaga Kantor Berita Nasional (LKBN) Antara, dalam rilis pers yang diterima Kompas.com, Jumat (7/11/2025). Salah satu persoalan gizi kronis yang masih banyak dialami anak-anak Indonesia adalah stunting. Persoalan tersebut tidak bisa hanya diatasi dengan memberikan suplemen vitamin secara rutin dengan takaran pas.<br><br><b>Teks 2</b><br>Kompas.com - Pendidikan anak usia dini (PAUD) sering dipandang hanya bergantung pada kualitas guru, kurikulum, atau fasilitas sekolah. Praktisi pendidikan menjelaskan bahwa keberhasilan PAUD terletak pada sinergi antara satuan PAUD dan orang tua. “Pendidikan anak usia dini tidak bisa berhasil jika rumah dan sekolah berjalan sendiri-sendiri. Anak butuh irama yang selaras antara guru dan orang tua,” ujarnya dalam keterangan resmi, Jumat (29/8/2025). Dijelaskan pula bagi orang tua, pendidikan adalah investasi jiwa, bukan sekadar proses formal. Mereka ingin setiap langkah kecil anak, entah menyapa guru, mencoba permainan baru, atau berbagi mainan, menjadi kebanggaan dan cermin nilai yang ditanamkan di rumah.",
+    "grup": "wacana_berita"
+  },
+  {
+    "id": "tka26_indo_b_10",
+    "nomor": 10,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
+    "materi": "Mengidentifikasi Kata Kunci Teks Eksposisi",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Deretan kata manakah yang menjadi pemicu munculnya fenomena pembelian impulsif?",
+    "teks_soal": "Deretan kata manakah yang menjadi pemicu munculnya fenomena pembelian impulsif?",
+    "soal": "Deretan kata manakah yang menjadi pemicu munculnya fenomena pembelian impulsif?",
+    "gambar": null,
+    "gambarUrls": [],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "penawaran diskon, promosi menarik, tergoda membeli",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "promosi menarik, belanja online, membutuhkan barang",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "meningkatnya kesadaran, tergoda membeli, promosi menarik",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "stimulus tertentu, dorongan kuat terhadap produk, keuangan stabil",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "penawaran diskon, promosi menarik, tergoda membeli",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "promosi menarik, belanja online, membutuhkan barang",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "meningkatnya kesadaran, tergoda membeli, promosi menarik",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "stimulus tertentu, dorongan kuat terhadap produk, keuangan stabil",
+        "gambar": null
+      }
+    ],
+    "pernyataan": null,
+    "kunciJawaban": "A",
+    "kunci_jawaban": "A",
+    "kunci": "A",
+    "pembahasan": "Berdasarkan paragraf pertama dan kedua teks wacana: pembelian impulsif terjadi saat konsumen 'tergoda untuk membeli sesuatu' karena adanya stimulus berupa 'penawaran diskon' atau 'promosi menarik'. Jadi deretan kata pemicu yang tepat adalah opsi A.",
+    "bacaan": "Pembelian impulsif atau impulse buying adalah tindakan konsumen membeli barang tanpa perencanaan. Fenomena ini sering kali terjadi karena adanya dorongan yang mendadak atau perasaan yang kuat terhadap suatu produk. Pembelian impulsif terjadi saat konsumen tergoda untuk membeli sesuatu hanya karena adanya stimulus tertentu, seperti penawaran diskon atau promosi yang menarik perhatian mereka. Tindakan ini dapat terjadi di mana saja, baik di toko konvensional maupun di belanja online.<br><br>Dalam buku Consumer Behavior: Concepts and Applications karya David L. Loudon dan Albert J. Della Bitta disebutkan bahwa beberapa faktor memiliki pengaruh signifikan terhadap perilaku pembelian impulsif. Faktor yang pertama mencakup karakteristik produk. Produk yang ditawarkan dengan harga diskon atau promosi menarik dapat memikat konsumen untuk melakukan pembelian impulsif. Faktor kedua berupa strategi pemasaran. Konsep self service dan iklan dapat memengaruhi keputusan pembelian konsumen secara impulsif. Faktor terakhir karakteristik individu konsumen. Dorongan untuk memberi penghargaan kepada diri sendiri dapat memicu tindakan pembelian impulsif.<br><br>Konsekuensi pembelian impulsif adalah pemborosan yang dapat mengancam kesehatan finansial seseorang. Ketika terjerumus dalam kebiasaan pembelian impulsif, mereka cenderung membeli barang yang tidak mereka butuhkan atau tidak sesuai dengan keuangan mereka. Hal ini dapat mengakibatkan akumulasi utang kartu kredit atau keuangan yang tidak stabil dalam jangka panjang.<br><br>Oleh karena itu, pembelian impulsif bukanlah sesuatu yang harus dihindari, melainkan lebih kepada kesadaran terjadinya suatu risiko. Dengan meningkatkan kesadaran di balik pembelian impulsif, konsumen dapat mengembangkan strategi untuk mengelola godaan tersebut. Misalnya, membuat daftar belanjaan sebelumnya atau memberikan batasan waktu sebelum membuat keputusan pembelian.",
+    "grup": "wacana_impulsif"
+  },
+  {
+    "id": "tka26_indo_b_11",
+    "nomor": 11,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
+    "materi": "Menentukan Tujuan Penulisan Teks",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Tujuan penulisan teks tersebut adalah ….",
+    "teks_soal": "Tujuan penulisan teks tersebut adalah ….",
+    "soal": "Tujuan penulisan teks tersebut adalah ….",
+    "gambar": null,
+    "gambarUrls": [],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "menginformasikan tentang perilaku pembelian impulsif",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "memaparkan manfaat pembelian impulsif bagi diri sendiri",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "menjelaskan kepada masyarakat tentang perilaku hidup hemat",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "menghindarkan masyarakat dari penawaran pembelian impulsif",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "menginformasikan tentang perilaku pembelian impulsif",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "memaparkan manfaat pembelian impulsif bagi diri sendiri",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "menjelaskan kepada masyarakat tentang perilaku hidup hemat",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "menghindarkan masyarakat dari penawaran pembelian impulsif",
+        "gambar": null
+      }
+    ],
+    "pernyataan": null,
+    "kunciJawaban": "A",
+    "kunci_jawaban": "A",
+    "kunci": "A",
+    "pembahasan": "Teks memaparkan pengertian impulse buying, faktor-faktor penyebab menurut literatur psikologi konsumen, risiko finansial, dan cara mengelolanya. Tujuan utamanya adalah menginformasikan kepada pembaca mengenai perilaku pembelian impulsif secara komprehensif (opsi A).",
+    "bacaan": "Pembelian impulsif atau impulse buying adalah tindakan konsumen membeli barang tanpa perencanaan. Fenomena ini sering kali terjadi karena adanya dorongan yang mendadak atau perasaan yang kuat terhadap suatu produk. Pembelian impulsif terjadi saat konsumen tergoda untuk membeli sesuatu hanya karena adanya stimulus tertentu, seperti penawaran diskon atau promosi yang menarik perhatian mereka. Tindakan ini dapat terjadi di mana saja, baik di toko konvensional maupun di belanja online.<br><br>Dalam buku Consumer Behavior: Concepts and Applications karya David L. Loudon dan Albert J. Della Bitta disebutkan bahwa beberapa faktor memiliki pengaruh signifikan terhadap perilaku pembelian impulsif. Faktor yang pertama mencakup karakteristik produk. Produk yang ditawarkan dengan harga diskon atau promosi menarik dapat memikat konsumen untuk melakukan pembelian impulsif. Faktor kedua berupa strategi pemasaran. Konsep self service dan iklan dapat memengaruhi keputusan pembelian konsumen secara impulsif. Faktor terakhir karakteristik individu konsumen. Dorongan untuk memberi penghargaan kepada diri sendiri dapat memicu tindakan pembelian impulsif.<br><br>Konsekuensi pembelian impulsif adalah pemborosan yang dapat mengancam kesehatan finansial seseorang. Ketika terjerumus dalam kebiasaan pembelian impulsif, mereka cenderung membeli barang yang tidak mereka butuhkan atau tidak sesuai dengan keuangan mereka. Hal ini dapat mengakibatkan akumulasi utang kartu kredit atau keuangan yang tidak stabil dalam jangka panjang.<br><br>Oleh karena itu, pembelian impulsif bukanlah sesuatu yang harus dihindari, melainkan lebih kepada kesadaran terjadinya suatu risiko. Dengan meningkatkan kesadaran di balik pembelian impulsif, konsumen dapat mengembangkan strategi untuk mengelola godaan tersebut. Misalnya, membuat daftar belanjaan sebelumnya atau memberikan batasan waktu sebelum membuat keputusan pembelian.",
+    "grup": "wacana_impulsif"
+  },
+  {
+    "id": "tka26_indo_b_12",
+    "nomor": 12,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
+    "materi": "Mengevaluasi Tindakan Logis Berdasarkan Teks",
+    "tipe": "benar_salah",
+    "teksSoal": "Setelah memahami risiko pembelian impulsif, apa yang sebaiknya dilakukan masyarakat dalam kehidupan sehari-hari berdasarkan isi teks tersebut?<br>Tentukan Benar atau Salah untuk setiap pernyataan berikut:",
+    "teks_soal": "Setelah memahami risiko pembelian impulsif, apa yang sebaiknya dilakukan masyarakat dalam kehidupan sehari-hari berdasarkan isi teks tersebut?<br>Tentukan Benar atau Salah untuk setiap pernyataan berikut:",
+    "soal": "Setelah memahami risiko pembelian impulsif, apa yang sebaiknya dilakukan masyarakat dalam kehidupan sehari-hari berdasarkan isi teks tersebut?<br>Tentukan Benar atau Salah untuk setiap pernyataan berikut:",
+    "gambar": null,
+    "gambarUrls": [],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [],
+    "opsi": [],
+    "pernyataan": [
+      {
+        "id": "p_1",
+        "teks": "A. Membuat daftar barang yang akan dibeli sebelum berbelanja.",
+        "kunci": ""
+      },
+      {
+        "id": "p_2",
+        "teks": "B. Mempertimbangkan kembali kebutuhan barang yang akan dibeli.",
+        "kunci": ""
+      },
+      {
+        "id": "p_3",
+        "teks": "C. Membeli barang karena ada potongan harga sebagai apresiasi diri.",
+        "kunci": ""
+      }
+    ],
+    "kunciJawaban": "A: Benar, B: Benar, C: Salah",
+    "kunci_jawaban": "A: Benar, B: Benar, C: Salah",
+    "kunci": "A: Benar, B: Benar, C: Salah",
+    "pembahasan": "Paragraf terakhir menyarankan konsumen mengelola godaan dengan 'membuat daftar belanjaan sebelumnya atau memberikan batasan waktu sebelum membuat keputusan pembelian'. Pernyataan A Benar (membuat daftar belanja). Pernyataan B Benar (mempertimbangkan kembali kebutuhan agar tidak boros). Pernyataan C Salah karena membeli barang hanya karena diskon untuk self-reward adalah bentuk pembelian impulsif yang tidak terencana.",
+    "bacaan": "Pembelian impulsif atau impulse buying adalah tindakan konsumen membeli barang tanpa perencanaan. Fenomena ini sering kali terjadi karena adanya dorongan yang mendadak atau perasaan yang kuat terhadap suatu produk. Pembelian impulsif terjadi saat konsumen tergoda untuk membeli sesuatu hanya karena adanya stimulus tertentu, seperti penawaran diskon atau promosi yang menarik perhatian mereka. Tindakan ini dapat terjadi di mana saja, baik di toko konvensional maupun di belanja online.<br><br>Dalam buku Consumer Behavior: Concepts and Applications karya David L. Loudon dan Albert J. Della Bitta disebutkan bahwa beberapa faktor memiliki pengaruh signifikan terhadap perilaku pembelian impulsif. Faktor yang pertama mencakup karakteristik produk. Produk yang ditawarkan dengan harga diskon atau promosi menarik dapat memikat konsumen untuk melakukan pembelian impulsif. Faktor kedua berupa strategi pemasaran. Konsep self service dan iklan dapat memengaruhi keputusan pembelian konsumen secara impulsif. Faktor terakhir karakteristik individu konsumen. Dorongan untuk memberi penghargaan kepada diri sendiri dapat memicu tindakan pembelian impulsif.<br><br>Konsekuensi pembelian impulsif adalah pemborosan yang dapat mengancam kesehatan finansial seseorang. Ketika terjerumus dalam kebiasaan pembelian impulsif, mereka cenderung membeli barang yang tidak mereka butuhkan atau tidak sesuai dengan keuangan mereka. Hal ini dapat mengakibatkan akumulasi utang kartu kredit atau keuangan yang tidak stabil dalam jangka panjang.<br><br>Oleh karena itu, pembelian impulsif bukanlah sesuatu yang harus dihindari, melainkan lebih kepada kesadaran terjadinya suatu risiko. Dengan meningkatkan kesadaran di balik pembelian impulsif, konsumen dapat mengembangkan strategi untuk mengelola godaan tersebut. Misalnya, membuat daftar belanjaan sebelumnya atau memberikan batasan waktu sebelum membuat keputusan pembelian.",
+    "grup": "wacana_impulsif"
+  },
+  {
+    "id": "tka26_indo_b_13",
+    "nomor": 13,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
+    "materi": "Membedakan Fakta dan Opini Teks Ulasan",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Kalimat opini yang tepat berdasarkan teks tersebut adalah …",
+    "teks_soal": "Kalimat opini yang tepat berdasarkan teks tersebut adalah …",
+    "soal": "Kalimat opini yang tepat berdasarkan teks tersebut adalah …",
+    "gambar": null,
+    "gambarUrls": [],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Saat ini film Superman sudah meraih dua nominasi.",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Film Superman menjadi penanda baru jagat perfilman.",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Nominasi Most Anticipated Film diraih oleh film Superman.",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "Film Superman meraih Best Summer 2025 Blockbuster Trailer.",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Saat ini film Superman sudah meraih dua nominasi.",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Film Superman menjadi penanda baru jagat perfilman.",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Nominasi Most Anticipated Film diraih oleh film Superman.",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "Film Superman meraih Best Summer 2025 Blockbuster Trailer.",
+        "gambar": null
+      }
+    ],
+    "pernyataan": null,
+    "kunciJawaban": "B",
+    "kunci_jawaban": "B",
+    "kunci": "B",
+    "pembahasan": "Kalimat pada opsi B: 'Film Superman menjadi penanda baru jagat perfilman' merupakan opini/pandangan subjektif pengulas. Sebaliknya, opsi A, C, dan D merupakan fakta yang mencantumkan capaian resmi nominasi penghargaan film (Golden Trailer Award dan Astra Midseason Award).",
+    "bacaan": "Film Superman terbaru tayang di bioskop Indonesia pada 9 Juli 2025. Kehadiran film bergenre superhero ini menjadi penanda baru jagat perfilman yang tengah diremajakan oleh sutradara James Gunn. Saat ini, film Superman sudah meraih dua nominasi. Pertama adalah nominasi kategori Best Summer 2025 Blockbuster Trailer dalam Golden Trailer Award. Sementara nominasi kedua adalah Most Anticipated Film dalam Astra Midseason Award.<br><br>Film ini menceritakan kisah legendaris sang manusia baja mendapatkan babak baru yang lebih emosional, lebih manusiawi, sebab lebih membumi dari sebelumnya. Adegan awal langsung dibuka dengan pertempuran kemudian dilanjutkan dengan cerita berlapis yang dijamin tidak membosankan. Dengan narasi yang mengalir antara ketegangan dan perenungan, Superman menyuguhkan perjalanan menembus krisis identitas, pengkhianatan, dan pertanyaan eksistensial yang mendalam.<br><br>Alur dalam film Superman terbilang runtut. Seperti yang diharapkan produser James Gunn dan sinematografi Henry Braham yang pernah menggarap film Guardians of The Galaxy, film ini bernuansa lebih cerah. Hal itu berbeda dengan nuansa warna gelap ala film superhero sebelumnya yang menegaskan bahwa “Superman sebagai simbol harapan”. Efek visual adegan aksi superman terbang juga sangat memukau, detail, dan memberikan efek nyata. Sayangnya, ada beberapa adegan humor yang disisipi isu serius sehingga terkesan garing.<br><br>Film Superman bukan hanya pergantian aktor semata, melainkan sebagai tonggak baru. Film ini dapat ditonton dengan nyaman tanpa harus menonton serial sebelumnya. Film Superman layak ditonton semua kalangan.",
+    "grup": "wacana_superman"
+  },
+  {
+    "id": "tka26_indo_b_14",
+    "nomor": 14,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
+    "materi": "Keterkaitan Antarparagraf Teks Ulasan",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Apa kaitan antara paragraf ketiga dengan paragraf keempat?",
+    "teks_soal": "Apa kaitan antara paragraf ketiga dengan paragraf keempat?",
+    "soal": "Apa kaitan antara paragraf ketiga dengan paragraf keempat?",
+    "gambar": null,
+    "gambarUrls": [],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Penjelasan unsur-unsur humor menjadikan film Superman layak ditonton oleh segala usia.",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Penggambaran kelebihan visual menjadi dasar film Superman direkomendasikan untuk anak-anak.",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Perincian kelebihan film menjadi salah satu alasan film ini layak ditonton meskipun terdapat kekurangan.",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "Penilaian positif pada unsur sinematografi menguatkan pendapat bahwa film ini cocok untuk penggemar superhero.",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Penjelasan unsur-unsur humor menjadikan film Superman layak ditonton oleh segala usia.",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Penggambaran kelebihan visual menjadi dasar film Superman direkomendasikan untuk anak-anak.",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Perincian kelebihan film menjadi salah satu alasan film ini layak ditonton meskipun terdapat kekurangan.",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "Penilaian positif pada unsur sinematografi menguatkan pendapat bahwa film ini cocok untuk penggemar superhero.",
+        "gambar": null
+      }
+    ],
+    "pernyataan": null,
+    "kunciJawaban": "C",
+    "kunci_jawaban": "C",
+    "kunci": "C",
+    "pembahasan": "Paragraf ketiga merinci kelebihan (alur runtut, nuansa cerah, efek visual aksi terbang memukau) dan menyebut kekurangan kecil (humor garing). Paragraf keempat menyimpulkan film tersebut merupakan tonggak baru dan layak ditonton semua kalangan. Jadi, rincian kelebihan di paragraf 3 menjadi dasar penilaian kelayakan tonton di paragraf 4 (opsi C).",
+    "bacaan": "Film Superman terbaru tayang di bioskop Indonesia pada 9 Juli 2025. Kehadiran film bergenre superhero ini menjadi penanda baru jagat perfilman yang tengah diremajakan oleh sutradara James Gunn. Saat ini, film Superman sudah meraih dua nominasi. Pertama adalah nominasi kategori Best Summer 2025 Blockbuster Trailer dalam Golden Trailer Award. Sementara nominasi kedua adalah Most Anticipated Film dalam Astra Midseason Award.<br><br>Film ini menceritakan kisah legendaris sang manusia baja mendapatkan babak baru yang lebih emosional, lebih manusiawi, sebab lebih membumi dari sebelumnya. Adegan awal langsung dibuka dengan pertempuran kemudian dilanjutkan dengan cerita berlapis yang dijamin tidak membosankan. Dengan narasi yang mengalir antara ketegangan dan perenungan, Superman menyuguhkan perjalanan menembus krisis identitas, pengkhianatan, dan pertanyaan eksistensial yang mendalam.<br><br>Alur dalam film Superman terbilang runtut. Seperti yang diharapkan produser James Gunn dan sinematografi Henry Braham yang pernah menggarap film Guardians of The Galaxy, film ini bernuansa lebih cerah. Hal itu berbeda dengan nuansa warna gelap ala film superhero sebelumnya yang menegaskan bahwa “Superman sebagai simbol harapan”. Efek visual adegan aksi superman terbang juga sangat memukau, detail, dan memberikan efek nyata. Sayangnya, ada beberapa adegan humor yang disisipi isu serius sehingga terkesan garing.<br><br>Film Superman bukan hanya pergantian aktor semata, melainkan sebagai tonggak baru. Film ini dapat ditonton dengan nyaman tanpa harus menonton serial sebelumnya. Film Superman layak ditonton semua kalangan.",
+    "grup": "wacana_superman"
+  },
+  {
+    "id": "tka26_indo_b_15",
+    "nomor": 15,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
+    "materi": "Analisis Kesalahan Konjungsi Teks Ulasan",
+    "tipe": "benar_salah",
+    "teksSoal": "Teks ulasan tersebut terdapat kesalahan penggunaan konjungsi. Alasan manakah yang mendukung pernyataan tersebut?<br>Tentukan Benar atau Salah untuk setiap pernyataan berikut:",
+    "teks_soal": "Teks ulasan tersebut terdapat kesalahan penggunaan konjungsi. Alasan manakah yang mendukung pernyataan tersebut?<br>Tentukan Benar atau Salah untuk setiap pernyataan berikut:",
+    "soal": "Teks ulasan tersebut terdapat kesalahan penggunaan konjungsi. Alasan manakah yang mendukung pernyataan tersebut?<br>Tentukan Benar atau Salah untuk setiap pernyataan berikut:",
+    "gambar": null,
+    "gambarUrls": [],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [],
+    "opsi": [],
+    "pernyataan": [
+      {
+        "id": "p_1",
+        "teks": "A. Konjungsi saat tidak menunjukkan hubungan penyebab.",
+        "kunci": ""
+      },
+      {
+        "id": "p_2",
+        "teks": "B. Konjungsi sebab tidak menyatakan hubungan penambahan.",
+        "kunci": ""
+      },
+      {
+        "id": "p_3",
+        "teks": "C. Konjungsi bahwa bukan merupakan hubungan temporal.",
+        "kunci": ""
+      }
+    ],
+    "kunciJawaban": "A: Benar, B: Benar, C: Benar",
+    "kunci_jawaban": "A: Benar, B: Benar, C: Benar",
+    "kunci": "A: Benar, B: Benar, C: Benar",
+    "pembahasan": "Pernyataan A Benar karena 'saat' adalah konjungsi temporal (waktu), bukan penyebab (kausalitas). Pernyataan B Benar karena 'sebab' adalah konjungsi kausalitas, bukan konjungsi koordinatif penambahan (aditif). Pernyataan C Benar karena 'bahwa' adalah konjungsi penjelas/komplementor, bukan konjungsi temporal. Ketiga pernyataan secara tata bahasa benar menjelaskan fungsi asli konjungsi tersebut.",
+    "bacaan": "Film Superman terbaru tayang di bioskop Indonesia pada 9 Juli 2025. Kehadiran film bergenre superhero ini menjadi penanda baru jagat perfilman yang tengah diremajakan oleh sutradara James Gunn. Saat ini, film Superman sudah meraih dua nominasi. Pertama adalah nominasi kategori Best Summer 2025 Blockbuster Trailer dalam Golden Trailer Award. Sementara nominasi kedua adalah Most Anticipated Film dalam Astra Midseason Award.<br><br>Film ini menceritakan kisah legendaris sang manusia baja mendapatkan babak baru yang lebih emosional, lebih manusiawi, sebab lebih membumi dari sebelumnya. Adegan awal langsung dibuka dengan pertempuran kemudian dilanjutkan dengan cerita berlapis yang dijamin tidak membosankan. Dengan narasi yang mengalir antara ketegangan dan perenungan, Superman menyuguhkan perjalanan menembus krisis identitas, pengkhianatan, dan pertanyaan eksistensial yang mendalam.<br><br>Alur dalam film Superman terbilang runtut. Seperti yang diharapkan produser James Gunn dan sinematografi Henry Braham yang pernah menggarap film Guardians of The Galaxy, film ini bernuansa lebih cerah. Hal itu berbeda dengan nuansa warna gelap ala film superhero sebelumnya yang menegaskan bahwa “Superman sebagai simbol harapan”. Efek visual adegan aksi superman terbang juga sangat memukau, detail, dan memberikan efek nyata. Sayangnya, ada beberapa adegan humor yang disisipi isu serius sehingga terkesan garing.<br><br>Film Superman bukan hanya pergantian aktor semata, melainkan sebagai tonggak baru. Film ini dapat ditonton dengan nyaman tanpa harus menonton serial sebelumnya. Film Superman layak ditonton semua kalangan.",
+    "grup": "wacana_superman"
+  },
+  {
+    "id": "tka26_indo_b_16",
+    "nomor": 16,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
+    "materi": "Membaca Informasi Infografis",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Berdasarkan teks 2, kegiatan yang termasuk melestarikan lingkungan adalah …",
+    "teks_soal": "Berdasarkan teks 2, kegiatan yang termasuk melestarikan lingkungan adalah …",
+    "soal": "Berdasarkan teks 2, kegiatan yang termasuk melestarikan lingkungan adalah …",
+    "gambar": null,
+    "gambarUrls": [],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Tidak membakar sampah, mendaur ulang baju baru, menghemat listrik.",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Memilah sampah, menggunakan transportasi pribadi, membawa tumbler.",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Menanam pohon, menggunakan transportasi umum, menghabiskan makanan.",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "Memakai tas belanja, makan secukupnya, mematikan peralatan yang tidak dipakai.",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Tidak membakar sampah, mendaur ulang baju baru, menghemat listrik.",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Memilah sampah, menggunakan transportasi pribadi, membawa tumbler.",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Menanam pohon, menggunakan transportasi umum, menghabiskan makanan.",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "Memakai tas belanja, makan secukupnya, mematikan peralatan yang tidak dipakai.",
+        "gambar": null
+      }
+    ],
+    "pernyataan": null,
+    "kunciJawaban": "D",
+    "kunci_jawaban": "D",
+    "kunci": "D",
+    "pembahasan": "Berdasarkan infografis Teks 2: 'Pakai tas belanja', 'Masak secukupnya... selalu habiskan makanan', dan 'AC dan lampu tak perlu dinyalakan seharian' (mematikan peralatan yang tidak dipakai). Opsi D seluruhnya memuat butir-butir yang tercantum secara akurat pada infografis.",
+    "bacaan": "<b>Teks 1</b><br>Saat ini, dunia menghadapi tiga krisis lingkungan, yaitu perubahan iklim, hilangnya keanekaragaman hayati, dan meningkatnya polusi. Tiga krisis tersebut semakin parah dengan tingginya jumlah sampah plastik. Plastik sulit terurai sehingga mempercepat kerusakan ekosistem. Indonesia termasuk salah satu negara penghasil sampah plastik terbesar. Berdasarkan data Sistem Informasi Pengelolaan Sampah Nasional (SIPSN) tahun 2024, sebanyak 19,74% dari 34,2 juta ton sampah merupakan sampah plastik. Angka ini meningkat dibandingkan tahun 2023 sebesar 19,26%. Hal ini menunjukkan bahwa masalah sampah plastik semakin mendesak untuk segera ditangani. Oleh karena itu, upaya serius berbagai pihak perlu dilakukan untuk mengurangi penggunaan plastik sekali pakai dan meningkatkan pengelolaan sampah. Pemerintah, pelaku usaha, dan masyarakat harus bekerja sama dalam menerapkan kebiasaan ramah lingkungan, seperti memilah sampah, mendaur ulang, dan mengurangi produk sekali pakai.<br><br><b>Teks 2 (Infografis Lestarikan Lingkungan Lewat Keseharian - CNN Indonesia):</b><br>Kegiatan ramah lingkungan yang dapat dilakukan sehari-hari:<br>• Pakai tas belanja dan bawa tumbler untuk mengurangi jumlah sampah plastik.<br>• Ganti tisu dengan sapu tangan untuk menekan jumlah sampah.<br>• AC dan lampu tak perlu dinyalakan seharian untuk menghemat penggunaan listrik.<br>• Bepergian pakai transportasi umum untuk mengurangi polusi udara.<br>• Masak secukupnya sesuai kebutuhan, selalu habiskan makanan agar tidak jadi sampah.<br>• Pisahkan sampah organik dan anorganik.<br>• Daur ulang baju yang sudah rusak/tak dipakai menjadi lap, keset, tatakan gelas, dll.<br>• Tidak membakar sampah untuk mengurangi polusi asap hasil pembakaran.",
+    "grup": "wacana_lingkungan"
+  },
+  {
+    "id": "tka26_indo_b_17",
+    "nomor": 17,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
+    "materi": "Menyusun Bagan Alur Pemikiran Teks Berita Lingkungan",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Bagan yang sesuai dengan bagian penting teks 1 adalah …",
+    "teks_soal": "Bagan yang sesuai dengan bagian penting teks 1 adalah …",
+    "soal": "Bagan yang sesuai dengan bagian penting teks 1 adalah …",
+    "gambar": null,
+    "gambarUrls": [],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "[Indonesia penyumbang sampah plastik] → [Kerja sama dalam penanganan sampah] → [Dunia menghadapi tiga krisis lingkungan] → [Sampah plastik memperparah krisis lingkungan]",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "[Dunia menghadapi tiga krisis lingkungan] → [Indonesia penyumbang sampah plastik] → [Sampah plastik memperparah krisis lingkungan] → [Kerja sama dalam penanganan sampah]",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "[Indonesia penyumbang sampah plastik] → [Dunia menghadapi tiga krisis lingkungan] → [Kerja sama dalam penanganan sampah] → [Sampah plastik memperparah krisis lingkungan]",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "[Dunia menghadapi tiga krisis lingkungan] → [Sampah plastik memperparah krisis lingkungan] → [Indonesia penyumbang sampah plastik] → [Kerja sama dalam penanganan sampah]",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "[Indonesia penyumbang sampah plastik] → [Kerja sama dalam penanganan sampah] → [Dunia menghadapi tiga krisis lingkungan] → [Sampah plastik memperparah krisis lingkungan]",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "[Dunia menghadapi tiga krisis lingkungan] → [Indonesia penyumbang sampah plastik] → [Sampah plastik memperparah krisis lingkungan] → [Kerja sama dalam penanganan sampah]",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "[Indonesia penyumbang sampah plastik] → [Dunia menghadapi tiga krisis lingkungan] → [Kerja sama dalam penanganan sampah] → [Sampah plastik memperparah krisis lingkungan]",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "[Dunia menghadapi tiga krisis lingkungan] → [Sampah plastik memperparah krisis lingkungan] → [Indonesia penyumbang sampah plastik] → [Kerja sama dalam penanganan sampah]",
+        "gambar": null
+      }
+    ],
+    "pernyataan": null,
+    "kunciJawaban": "D",
+    "kunci_jawaban": "D",
+    "kunci": "D",
+    "pembahasan": "Urutan pokok pikiran Teks 1: (1) Dunia menghadapi tiga krisis lingkungan (iklim, hayati, polusi); (2) Sampah plastik memperparah krisis lingkungan karena sulit terurai; (3) Indonesia termasuk negara penyumbang sampah plastik terbesar berdasarkan data SIPSN; (4) Perlunya kerja sama pemerintah, pelaku usaha, dan masyarakat dalam penanganan sampah. Alur logis ini tepat ditunjukkan oleh bagan D.",
+    "bacaan": "<b>Teks 1</b><br>Saat ini, dunia menghadapi tiga krisis lingkungan, yaitu perubahan iklim, hilangnya keanekaragaman hayati, dan meningkatnya polusi. Tiga krisis tersebut semakin parah dengan tingginya jumlah sampah plastik. Plastik sulit terurai sehingga mempercepat kerusakan ekosistem. Indonesia termasuk salah satu negara penghasil sampah plastik terbesar. Berdasarkan data Sistem Informasi Pengelolaan Sampah Nasional (SIPSN) tahun 2024, sebanyak 19,74% dari 34,2 juta ton sampah merupakan sampah plastik. Angka ini meningkat dibandingkan tahun 2023 sebesar 19,26%. Hal ini menunjukkan bahwa masalah sampah plastik semakin mendesak untuk segera ditangani. Oleh karena itu, upaya serius berbagai pihak perlu dilakukan untuk mengurangi penggunaan plastik sekali pakai dan meningkatkan pengelolaan sampah. Pemerintah, pelaku usaha, dan masyarakat harus bekerja sama dalam menerapkan kebiasaan ramah lingkungan, seperti memilah sampah, mendaur ulang, dan mengurangi produk sekali pakai.<br><br><b>Teks 2 (Infografis Lestarikan Lingkungan Lewat Keseharian - CNN Indonesia):</b><br>Kegiatan ramah lingkungan yang dapat dilakukan sehari-hari:<br>• Pakai tas belanja dan bawa tumbler untuk mengurangi jumlah sampah plastik.<br>• Ganti tisu dengan sapu tangan untuk menekan jumlah sampah.<br>• AC dan lampu tak perlu dinyalakan seharian untuk menghemat penggunaan listrik.<br>• Bepergian pakai transportasi umum untuk mengurangi polusi udara.<br>• Masak secukupnya sesuai kebutuhan, selalu habiskan makanan agar tidak jadi sampah.<br>• Pisahkan sampah organik dan anorganik.<br>• Daur ulang baju yang sudah rusak/tak dipakai menjadi lap, keset, tatakan gelas, dll.<br>• Tidak membakar sampah untuk mengurangi polusi asap hasil pembakaran.",
+    "grup": "wacana_lingkungan"
+  },
+  {
+    "id": "tka26_indo_b_18",
+    "nomor": 18,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
+    "materi": "Menilai Kredibilitas Sumber Data Teks",
+    "tipe": "benar_salah",
+    "teksSoal": "Setelah membaca kedua teks tersebut, Hasan menilai bahwa informasi teks 1 lebih terpercaya daripada teks 2. Pernyataan manakah yang mendukung penilaian Hasan?<br>Tentukan Benar atau Salah untuk setiap pernyataan!",
+    "teks_soal": "Setelah membaca kedua teks tersebut, Hasan menilai bahwa informasi teks 1 lebih terpercaya daripada teks 2. Pernyataan manakah yang mendukung penilaian Hasan?<br>Tentukan Benar atau Salah untuk setiap pernyataan!",
+    "soal": "Setelah membaca kedua teks tersebut, Hasan menilai bahwa informasi teks 1 lebih terpercaya daripada teks 2. Pernyataan manakah yang mendukung penilaian Hasan?<br>Tentukan Benar atau Salah untuk setiap pernyataan!",
+    "gambar": null,
+    "gambarUrls": [],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [],
+    "opsi": [],
+    "pernyataan": [
+      {
+        "id": "p_1",
+        "teks": "A. Terdapat pernyataan ahli.",
+        "kunci": ""
+      },
+      {
+        "id": "p_2",
+        "teks": "B. Informasi diperoleh dari karya ilmiah.",
+        "kunci": ""
+      },
+      {
+        "id": "p_3",
+        "teks": "C. Memuat data resmi dari pemerintah.",
+        "kunci": ""
+      }
+    ],
+    "kunciJawaban": "A: Salah, B: Salah, C: Benar",
+    "kunci_jawaban": "A: Salah, B: Salah, C: Benar",
+    "kunci": "A: Salah, B: Salah, C: Benar",
+    "pembahasan": "Teks 1 memuat data statistik resmi pemerintah dari Sistem Informasi Pengelolaan Sampah Nasional (SIPSN) tahun 2024 dan 2023 dengan angka persentase konkret (19,74% dari 34,2 juta ton sampah). Pernyataan A Salah karena teks 1 tidak mengutip pernyataan ahli perorangan. Pernyataan B Salah karena teks bukan berasal dari jurnal/karya ilmiah melainkan data portal berita dan kementerian. Pernyataan C Benar karena memuat data resmi instansi pemerintah.",
+    "bacaan": "<b>Teks 1</b><br>Saat ini, dunia menghadapi tiga krisis lingkungan, yaitu perubahan iklim, hilangnya keanekaragaman hayati, dan meningkatnya polusi. Tiga krisis tersebut semakin parah dengan tingginya jumlah sampah plastik. Plastik sulit terurai sehingga mempercepat kerusakan ekosistem. Indonesia termasuk salah satu negara penghasil sampah plastik terbesar. Berdasarkan data Sistem Informasi Pengelolaan Sampah Nasional (SIPSN) tahun 2024, sebanyak 19,74% dari 34,2 juta ton sampah merupakan sampah plastik. Angka ini meningkat dibandingkan tahun 2023 sebesar 19,26%. Hal ini menunjukkan bahwa masalah sampah plastik semakin mendesak untuk segera ditangani. Oleh karena itu, upaya serius berbagai pihak perlu dilakukan untuk mengurangi penggunaan plastik sekali pakai dan meningkatkan pengelolaan sampah. Pemerintah, pelaku usaha, dan masyarakat harus bekerja sama dalam menerapkan kebiasaan ramah lingkungan, seperti memilah sampah, mendaur ulang, dan mengurangi produk sekali pakai.<br><br><b>Teks 2 (Infografis Lestarikan Lingkungan Lewat Keseharian - CNN Indonesia):</b><br>Kegiatan ramah lingkungan yang dapat dilakukan sehari-hari:<br>• Pakai tas belanja dan bawa tumbler untuk mengurangi jumlah sampah plastik.<br>• Ganti tisu dengan sapu tangan untuk menekan jumlah sampah.<br>• AC dan lampu tak perlu dinyalakan seharian untuk menghemat penggunaan listrik.<br>• Bepergian pakai transportasi umum untuk mengurangi polusi udara.<br>• Masak secukupnya sesuai kebutuhan, selalu habiskan makanan agar tidak jadi sampah.<br>• Pisahkan sampah organik dan anorganik.<br>• Daur ulang baju yang sudah rusak/tak dipakai menjadi lap, keset, tatakan gelas, dll.<br>• Tidak membakar sampah untuk mengurangi polusi asap hasil pembakaran.",
+    "grup": "wacana_lingkungan"
+  },
+  {
+    "id": "tka26_indo_b_19",
+    "nomor": 19,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
+    "materi": "Menyimpulkan Nilai Keteladanan Puisi",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Keteladanan apa yang dapat kamu peroleh dari puisi “Elegi Hujan”?",
+    "teks_soal": "Keteladanan apa yang dapat kamu peroleh dari puisi “Elegi Hujan”?",
+    "soal": "Keteladanan apa yang dapat kamu peroleh dari puisi “Elegi Hujan”?",
+    "gambar": null,
+    "gambarUrls": [],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Waspada ketika bencana melanda.",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Musim hujan harus selalu disyukuri.",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Berdoalah saat cobaan yang datang.",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "Jagalah alam agar bumi tidak rusak.",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Waspada ketika bencana melanda.",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Musim hujan harus selalu disyukuri.",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Berdoalah saat cobaan yang datang.",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "Jagalah alam agar bumi tidak rusak.",
+        "gambar": null
+      }
+    ],
+    "pernyataan": null,
+    "kunciJawaban": "D",
+    "kunci_jawaban": "D",
+    "kunci": "D",
+    "pembahasan": "Puisi 'Elegi Hujan' menggambarkan bencana air bah dan duka kematian yang bermula 'Dari gunung yang kehilangan pepohonan' hingga menyebabkan 'bumi yang porak-poranda'. Nilai keteladanan yang paling mendasar adalah ajakan untuk menjaga kelestarian alam dan hutan agar bumi tidak rusak dan tidak mendatangkan petaka banjir (opsi D).",
+    "bacaan": "<b>Elegi Hujan</b><br><br>Lewat kaca jendela<br>Kutemui lembap sisa gerimis menangis<br>Merindu angin kemarau tahun lalu<br>Menitipkan salam selamat tinggal<br>Pada daun yang jatuh<br>Pada bunga yang hanyut oleh arus<br>Sebelum cikal buah menampakkan wujudnya<br>Dan bergurau bersama desau angin<br>Dari gunung yang kehilangan pepohonan<br><br>Pelan-pelan kucari dirimu di antara rengkuhan kehilangan<br>Bisu mencekam menatap bumi yang porak-poranda<br>Siang yang sepi, malam yang mati<br>Mentari dan rembulan tak mampu membangkitkan<br>Sisa tawamu yang tenggelam<br>Oleh hujan yang membawa seribu kematian",
+    "grup": "wacana_puisi"
+  },
+  {
+    "id": "tka26_indo_b_20",
+    "nomor": 20,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
+    "materi": "Memaknai Larik Puisi Bernuansa Kiasan",
+    "tipe": "pg_kompleks",
+    "teksSoal": "Apa makna yang terkandung dalam larik Oleh hujan yang membawa seribu kematian dalam puisi tersebut?<br>Pilihlah jawaban yang benar! Jawaban benar lebih dari satu.",
+    "teks_soal": "Apa makna yang terkandung dalam larik Oleh hujan yang membawa seribu kematian dalam puisi tersebut?<br>Pilihlah jawaban yang benar! Jawaban benar lebih dari satu.",
+    "soal": "Apa makna yang terkandung dalam larik Oleh hujan yang membawa seribu kematian dalam puisi tersebut?<br>Pilihlah jawaban yang benar! Jawaban benar lebih dari satu.",
+    "gambar": null,
+    "gambarUrls": [],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [
+      {
+        "key": "1",
+        "label": "1",
+        "teks": "Duka mendalam karena bencana banjir.",
+        "gambar": null
+      },
+      {
+        "key": "2",
+        "label": "2",
+        "teks": "Banjir menyebabkan kesengsaraan manusia.",
+        "gambar": null
+      },
+      {
+        "key": "3",
+        "label": "3",
+        "teks": "Banjir menimbulkan korban jiwa yang banyak.",
+        "gambar": null
+      },
+      {
+        "key": "4",
+        "label": "4",
+        "teks": "Korban jiwa dan harta benda disebabkan banjir.",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "1",
+        "label": "1",
+        "teks": "Duka mendalam karena bencana banjir.",
+        "gambar": null
+      },
+      {
+        "key": "2",
+        "label": "2",
+        "teks": "Banjir menyebabkan kesengsaraan manusia.",
+        "gambar": null
+      },
+      {
+        "key": "3",
+        "label": "3",
+        "teks": "Banjir menimbulkan korban jiwa yang banyak.",
+        "gambar": null
+      },
+      {
+        "key": "4",
+        "label": "4",
+        "teks": "Korban jiwa dan harta benda disebabkan banjir.",
+        "gambar": null
+      }
+    ],
+    "pernyataan": null,
+    "kunciJawaban": "1, 2, 3",
+    "kunci_jawaban": "1, 2, 3",
+    "kunci": "1, 2, 3",
+    "pembahasan": "Larik 'Oleh hujan yang membawa seribu kematian' menggunakan majas hiperbola ('seribu kematian') yang menggambarkan dahsyatnya musibah banjir yang merenggut banyak korban jiwa (pernyataan 3), memicu kepedihan dan kesengsaraan hidup warga yang selamat (pernyataan 2), serta melahirkan suasana duka cita mendalam atas orang-orang terkasih yang tenggelam (pernyataan 1). Jadi pernyataan 1, 2, dan 3 benar.",
+    "bacaan": "<b>Elegi Hujan</b><br><br>Lewat kaca jendela<br>Kutemui lembap sisa gerimis menangis<br>Merindu angin kemarau tahun lalu<br>Menitipkan salam selamat tinggal<br>Pada daun yang jatuh<br>Pada bunga yang hanyut oleh arus<br>Sebelum cikal buah menampakkan wujudnya<br>Dan bergurau bersama desau angin<br>Dari gunung yang kehilangan pepohonan<br><br>Pelan-pelan kucari dirimu di antara rengkuhan kehilangan<br>Bisu mencekam menatap bumi yang porak-poranda<br>Siang yang sepi, malam yang mati<br>Mentari dan rembulan tak mampu membangkitkan<br>Sisa tawamu yang tenggelam<br>Oleh hujan yang membawa seribu kematian",
+    "grup": "wacana_puisi"
+  },
+  {
+    "id": "tka26_indo_b_21",
+    "nomor": 21,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
+    "materi": "Menentukan Tanggapan Emosional Pembaca Puisi",
+    "tipe": "benar_salah",
+    "teksSoal": "Tanggapan emosional yang sesuai dengan isi puisi tersebut adalah ….<br>Tentukan Sesuai atau Tidak Sesuai untuk setiap pernyataan berikut:",
+    "teks_soal": "Tanggapan emosional yang sesuai dengan isi puisi tersebut adalah ….<br>Tentukan Sesuai atau Tidak Sesuai untuk setiap pernyataan berikut:",
+    "soal": "Tanggapan emosional yang sesuai dengan isi puisi tersebut adalah ….<br>Tentukan Sesuai atau Tidak Sesuai untuk setiap pernyataan berikut:",
+    "gambar": null,
+    "gambarUrls": [],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [],
+    "opsi": [],
+    "pernyataan": [
+      {
+        "id": "p_1",
+        "teks": "A. Empati terhadap sesama manusia.",
+        "kunci": ""
+      },
+      {
+        "id": "p_2",
+        "teks": "B. Sedih saat melihat kerusakan alam.",
+        "kunci": ""
+      },
+      {
+        "id": "p_3",
+        "teks": "C. Kesal terhadap pelaku kerusakan lingkungan.",
+        "kunci": ""
+      }
+    ],
+    "kunciJawaban": "A: Benar, B: Benar, C: Benar",
+    "kunci_jawaban": "A: Benar, B: Benar, C: Benar",
+    "kunci": "A: Benar, B: Benar, C: Benar",
+    "pembahasan": "Pembaca puisi tergerak secara emosional: empati mendalam terhadap korban yang kehilangan keluarga ('sisa tawamu yang tenggelam'), rasa sedih melihat alam yang hancur ('bumi yang porak-poranda'), serta rasa kesal/geram terhadap pihak perusak hutan di pegunungan yang menyebabkan petaka. Ketiga tanggapan emosional tersebut sesuai.",
+    "bacaan": "<b>Elegi Hujan</b><br><br>Lewat kaca jendela<br>Kutemui lembap sisa gerimis menangis<br>Merindu angin kemarau tahun lalu<br>Menitipkan salam selamat tinggal<br>Pada daun yang jatuh<br>Pada bunga yang hanyut oleh arus<br>Sebelum cikal buah menampakkan wujudnya<br>Dan bergurau bersama desau angin<br>Dari gunung yang kehilangan pepohonan<br><br>Pelan-pelan kucari dirimu di antara rengkuhan kehilangan<br>Bisu mencekam menatap bumi yang porak-poranda<br>Siang yang sepi, malam yang mati<br>Mentari dan rembulan tak mampu membangkitkan<br>Sisa tawamu yang tenggelam<br>Oleh hujan yang membawa seribu kematian",
+    "grup": "wacana_puisi"
+  },
+  {
+    "id": "tka26_indo_b_22",
+    "nomor": 22,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
+    "materi": "Menemukan Informasi Tersurat Cerita Pendek",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Apa yang sedang dilakukan Mak Inang ketika ada pesawat terbang melintas?",
+    "teks_soal": "Apa yang sedang dilakukan Mak Inang ketika ada pesawat terbang melintas?",
+    "soal": "Apa yang sedang dilakukan Mak Inang ketika ada pesawat terbang melintas?",
+    "gambar": null,
+    "gambarUrls": [],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Menyadap karet.",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Mencuci pakaian.",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Menampari pipi dan kaki.",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "Melihat rumah kontrakan.",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Menyadap karet.",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Mencuci pakaian.",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Menampari pipi dan kaki.",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "Melihat rumah kontrakan.",
+        "gambar": null
+      }
+    ],
+    "pernyataan": null,
+    "kunciJawaban": "B",
+    "kunci_jawaban": "B",
+    "kunci": "B",
+    "pembahasan": "Berdasarkan paragraf pertama cerita: 'Deru pesawat terbang itu kian nyaring begitu melewati tempatnya berjongkok. Ia menghentikan gerakan tangannya... Lalu, tangannya kembali meraih cucian pakaian yang tak kunjung habis itu.' Jadi Mak Inang sedang mencuci pakaian (opsi B).",
+    "bacaan": "Deru pesawat terbang itu kian nyaring begitu melewati tempatnya berjongkok. Ia menghentikan gerakan tangannya. Mengiringi pesawat itu lenyap dari mata lamurnya. Lalu, tangannya kembali meraih cucian pakaian yang tak kunjung habis itu. Beberapa detik sekali, tangan keriputnya berhenti, lalu ia menampari pipi dan kaki. Nyamuk di belantara beton ternyata lebih ganas ketimbang nyamuk-nyamuk rimba yang saban pagi menggigit kulitnya saat menyadap karet.<br><br>Ia adalah Mak Inang. Belum genap satu purnama perempuan tua itu tiba di Jakarta. Ia melihat rumah kontrakan yang berdesak-desakan macam jamur kuping di kebun karetnya yang mengembang bila musim hujan. Hidungnya pun belum akrab dengan bau bacin selokan berair hitam kental yang mengalir di belakang kontrakannya. Bahkan, Mak Inang masih sering terkaget-kaget bila tikus-tikus got Jakarta berseliweran. Jika bisa, saat itu juga ia ingin kembali ke kampungnya.<br><br>Sesungguhnya, ia pun masih tak percaya kalau akhirnya ia menjejakkan kaki di Jakarta yang kerap diceritakan orang-orang di kampungnya. Suatu tempat yang megah dan menakjubkan dalam cerita Mak Rifah, Mak Sangkut, dan beberapa perempuan kampung karibnya. Sesuatu yang terdengar seperti surganya dunia. Hal itu membuat Mak Inang bersemangat mengadu nasib. Serba mewah, serba manis, serba indah untuk dibayangkan, tapi kenyataannya bertolak belakang. Dengan peristiwa yang dialaminya ini, Mak Inang lebih selektif dalam menanggapi cerita orang lain.",
+    "grup": "wacana_makinang"
+  },
+  {
+    "id": "tka26_indo_b_23",
+    "nomor": 23,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
+    "materi": "Menganalisis Perubahan Karakter Tokoh",
+    "tipe": "pg_kompleks",
+    "teksSoal": "Bagaimana perubahan karakter Mak Inang sebelum dan setelah ke Jakarta?<br>Pilihlah jawaban yang benar! Jawaban benar lebih dari satu.",
+    "teks_soal": "Bagaimana perubahan karakter Mak Inang sebelum dan setelah ke Jakarta?<br>Pilihlah jawaban yang benar! Jawaban benar lebih dari satu.",
+    "soal": "Bagaimana perubahan karakter Mak Inang sebelum dan setelah ke Jakarta?<br>Pilihlah jawaban yang benar! Jawaban benar lebih dari satu.",
+    "gambar": null,
+    "gambarUrls": [],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [
+      {
+        "key": "1",
+        "label": "1",
+        "teks": "Awalnya Mak Inang mudah percaya, setelah tinggal di Jakarta Mak Inang lebih mawas diri.",
+        "gambar": null
+      },
+      {
+        "key": "2",
+        "label": "2",
+        "teks": "Sebelumnya Mak Inang sangat sederhana, sesampainya di Jakarta kehidupannya sangat mewah.",
+        "gambar": null
+      },
+      {
+        "key": "3",
+        "label": "3",
+        "teks": "Semula Mak Inang optimis dengan kehidupan Jakarta, sesampai di sana Mak Inang menjadi pesimis.",
+        "gambar": null
+      },
+      {
+        "key": "4",
+        "label": "4",
+        "teks": "Mulanya Mak Inang bersemangat untuk merantau ke Jakarta, ketika di sana ia menyerah pada kehidupan.",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "1",
+        "label": "1",
+        "teks": "Awalnya Mak Inang mudah percaya, setelah tinggal di Jakarta Mak Inang lebih mawas diri.",
+        "gambar": null
+      },
+      {
+        "key": "2",
+        "label": "2",
+        "teks": "Sebelumnya Mak Inang sangat sederhana, sesampainya di Jakarta kehidupannya sangat mewah.",
+        "gambar": null
+      },
+      {
+        "key": "3",
+        "label": "3",
+        "teks": "Semula Mak Inang optimis dengan kehidupan Jakarta, sesampai di sana Mak Inang menjadi pesimis.",
+        "gambar": null
+      },
+      {
+        "key": "4",
+        "label": "4",
+        "teks": "Mulanya Mak Inang bersemangat untuk merantau ke Jakarta, ketika di sana ia menyerah pada kehidupan.",
+        "gambar": null
+      }
+    ],
+    "pernyataan": null,
+    "kunciJawaban": "1, 3",
+    "kunci_jawaban": "1, 3",
+    "kunci": "1, 3",
+    "pembahasan": "Sebelum ke Jakarta, Mak Inang mudah percaya pada cerita manis perempuan sekampungnya dan sangat bersemangat/optimis ('sesuatu yang terdengar seperti surganya dunia'). Setelah hidup di Jakarta di tengah kontrakan kumuh, ia sadar kenyataan bertolak belakang sehingga menjadi pesimis ingin pulang ke kampung serta lebih mawas diri/selektif dalam mempercayai cerita orang lain. Pernyataan 1 dan 3 benar.",
+    "bacaan": "Deru pesawat terbang itu kian nyaring begitu melewati tempatnya berjongkok. Ia menghentikan gerakan tangannya. Mengiringi pesawat itu lenyap dari mata lamurnya. Lalu, tangannya kembali meraih cucian pakaian yang tak kunjung habis itu. Beberapa detik sekali, tangan keriputnya berhenti, lalu ia menampari pipi dan kaki. Nyamuk di belantara beton ternyata lebih ganas ketimbang nyamuk-nyamuk rimba yang saban pagi menggigit kulitnya saat menyadap karet.<br><br>Ia adalah Mak Inang. Belum genap satu purnama perempuan tua itu tiba di Jakarta. Ia melihat rumah kontrakan yang berdesak-desakan macam jamur kuping di kebun karetnya yang mengembang bila musim hujan. Hidungnya pun belum akrab dengan bau bacin selokan berair hitam kental yang mengalir di belakang kontrakannya. Bahkan, Mak Inang masih sering terkaget-kaget bila tikus-tikus got Jakarta berseliweran. Jika bisa, saat itu juga ia ingin kembali ke kampungnya.<br><br>Sesungguhnya, ia pun masih tak percaya kalau akhirnya ia menjejakkan kaki di Jakarta yang kerap diceritakan orang-orang di kampungnya. Suatu tempat yang megah dan menakjubkan dalam cerita Mak Rifah, Mak Sangkut, dan beberapa perempuan kampung karibnya. Sesuatu yang terdengar seperti surganya dunia. Hal itu membuat Mak Inang bersemangat mengadu nasib. Serba mewah, serba manis, serba indah untuk dibayangkan, tapi kenyataannya bertolak belakang. Dengan peristiwa yang dialaminya ini, Mak Inang lebih selektif dalam menanggapi cerita orang lain.",
+    "grup": "wacana_makinang"
+  },
+  {
+    "id": "tka26_indo_b_24",
+    "nomor": 24,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
+    "materi": "Penerapan Nilai Kehidupan dari Cerita",
+    "tipe": "benar_salah",
+    "teksSoal": "Setelah membaca kisah Mak Inang, apa yang bisa dilakukan seseorang untuk menerapkan nilai-nilai sesuai cerita?<br>Tentukan Benar atau Salah untuk setiap pernyataan berikut:",
+    "teks_soal": "Setelah membaca kisah Mak Inang, apa yang bisa dilakukan seseorang untuk menerapkan nilai-nilai sesuai cerita?<br>Tentukan Benar atau Salah untuk setiap pernyataan berikut:",
+    "soal": "Setelah membaca kisah Mak Inang, apa yang bisa dilakukan seseorang untuk menerapkan nilai-nilai sesuai cerita?<br>Tentukan Benar atau Salah untuk setiap pernyataan berikut:",
+    "gambar": null,
+    "gambarUrls": [],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [],
+    "opsi": [],
+    "pernyataan": [
+      {
+        "id": "p_1",
+        "teks": "A. Berbicara apa adanya tidak perlu dilebih-lebihkan.",
+        "kunci": ""
+      },
+      {
+        "id": "p_2",
+        "teks": "B. Rajin membantu mengerjakan pekerjaan orang tua.",
+        "kunci": ""
+      },
+      {
+        "id": "p_3",
+        "teks": "C. Mempercayai setiap perkataan orang lain.",
+        "kunci": ""
+      }
+    ],
+    "kunciJawaban": "A: Benar, B: Salah, C: Salah",
+    "kunci_jawaban": "A: Benar, B: Salah, C: Salah",
+    "kunci": "A: Benar, B: Salah, C: Salah",
+    "pembahasan": "Pernyataan A Benar karena cerita mengkritik sikap melebih-lebihkan keadaan kota yang menyesatkan orang lain. Pernyataan B Salah karena bukan merupakan pesan sentral cerita perantauan Mak Inang. Pernyataan C Salah karena cerita justru mengajarkan agar tidak mudah percaya begitu saja pada perkataan orang lain tanpa kroscek kenyataan.",
+    "bacaan": "Deru pesawat terbang itu kian nyaring begitu melewati tempatnya berjongkok. Ia menghentikan gerakan tangannya. Mengiringi pesawat itu lenyap dari mata lamurnya. Lalu, tangannya kembali meraih cucian pakaian yang tak kunjung habis itu. Beberapa detik sekali, tangan keriputnya berhenti, lalu ia menampari pipi dan kaki. Nyamuk di belantara beton ternyata lebih ganas ketimbang nyamuk-nyamuk rimba yang saban pagi menggigit kulitnya saat menyadap karet.<br><br>Ia adalah Mak Inang. Belum genap satu purnama perempuan tua itu tiba di Jakarta. Ia melihat rumah kontrakan yang berdesak-desakan macam jamur kuping di kebun karetnya yang mengembang bila musim hujan. Hidungnya pun belum akrab dengan bau bacin selokan berair hitam kental yang mengalir di belakang kontrakannya. Bahkan, Mak Inang masih sering terkaget-kaget bila tikus-tikus got Jakarta berseliweran. Jika bisa, saat itu juga ia ingin kembali ke kampungnya.<br><br>Sesungguhnya, ia pun masih tak percaya kalau akhirnya ia menjejakkan kaki di Jakarta yang kerap diceritakan orang-orang di kampungnya. Suatu tempat yang megah dan menakjubkan dalam cerita Mak Rifah, Mak Sangkut, dan beberapa perempuan kampung karibnya. Sesuatu yang terdengar seperti surganya dunia. Hal itu membuat Mak Inang bersemangat mengadu nasib. Serba mewah, serba manis, serba indah untuk dibayangkan, tapi kenyataannya bertolak belakang. Dengan peristiwa yang dialaminya ini, Mak Inang lebih selektif dalam menanggapi cerita orang lain.",
+    "grup": "wacana_makinang"
+  },
+  {
+    "id": "tka26_indo_b_25",
+    "nomor": 25,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
+    "materi": "Menemukan Informasi Tersurat Cerita Fantasi",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Di mana letak emas murni terbaik di jagat raya?",
+    "teks_soal": "Di mana letak emas murni terbaik di jagat raya?",
+    "soal": "Di mana letak emas murni terbaik di jagat raya?",
+    "gambar": null,
+    "gambarUrls": [],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Negara Hestina.",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Pegunungan Waturaga.",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Pusat pemerintahan Jantara.",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "Desa dekat pegunungan Waturaga.",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Negara Hestina.",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Pegunungan Waturaga.",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Pusat pemerintahan Jantara.",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "Desa dekat pegunungan Waturaga.",
+        "gambar": null
+      }
+    ],
+    "pernyataan": null,
+    "kunciJawaban": "B",
+    "kunci_jawaban": "B",
+    "kunci": "B",
+    "pembahasan": "Berdasarkan paragraf kedua: 'Puluhan ekskavator dan alat lainnya mulai diturunkan di pegunungan Waturaga. Tujuan utama mereka emas murni terbaik di jagat raya.' Letak emas murni tersebut berada di Pegunungan Waturaga (opsi B).",
+    "bacaan": "Di perbatasan negara Jantara dan Hestina, berdiri kokoh pegunungan Waturaga. Pegunungan itu berbentuk seperti wajah raksasa yang tertidur. Awalnya, pegunungan itu damai dan terjaga. Kini, mulai berubah karena modernisasi.<br><br>PT Rakusantara menerima izin dari pemerintah Jantara. Puluhan ekskavator dan alat lainnya mulai diturunkan di pegunungan Waturaga. Tujuan utama mereka emas murni terbaik di jagat raya.<br><br>Kokohnya batu di pegunungan Waturaga membuat peralatan banyak yang rusak. Akhirnya, perusahaan menciptakan ekskavator penghancur dengan bahan tungsten, yaitu logam terkuat. Dengan alat itu, sebagian pegunungan Waturaga mulai dikeruk. Waktu terus berlalu dari musim ke musim, bor tercanggih sampai dinamit terkuat digunakan untuk memecahkan batu di sekitar pegunungan Waturaga. Setiap batuan runtuh diledakkan, warga sekitar merasakan getaran aneh, bukan karena ledakan, tapi seolah gunung kesakitan.<br><br>Saat bulan purnama, lubang tambang PT Rakusantara berhasil menemukan emas di kedalaman puluhan kilometer. Mereka meledakkannya agar mudah dikeruk. Seketika, batuan Waturaga bergerak hidup.<br><br>Batu itu bangkit. Waturaga setinggi ratusan meter berdiri gagah dengan kulit bergerigi batuan karst diselimuti lumut purba. Matanya merah pertanda marah. Ia meraung sehingga menimbulkan gelombang yang merusak alat berat dan rumah warga. Kaki Waturaga mengayun menghantam area pertambangan. Alat berat diinjak-injak seperti mainan kecil. Para penambang lari kocar-kacir. Kemudian, Waturaga melompat, menimbulkan runtuhan gunung dan tanah sampai menyapu para pekerja dan beberapa desa.<br><br>Waturaga benar-benar murka karena dikhianati manusia dengan mengeksploitasinya. Ia melangkah menuju pusat pemerintahan. Segala yang dilewati hancur berantakan. Seluruh pasukan dikerahkan. Namun, Waturaga tak mempan dengan senjata apa pun. Akhirnya, porak-porandalah seluruh negara.",
+    "grup": "wacana_batumurka"
+  },
+  {
+    "id": "tka26_indo_b_26",
+    "nomor": 26,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
+    "materi": "Menyimpulkan Pesan Moral Cerita Fantasi",
+    "tipe": "pg_kompleks",
+    "teksSoal": "Pesan moral apakah yang diperoleh dari cerita “Batu Murka”?<br>Pilihlah jawaban yang benar! Jawaban benar lebih dari satu.",
+    "teks_soal": "Pesan moral apakah yang diperoleh dari cerita “Batu Murka”?<br>Pilihlah jawaban yang benar! Jawaban benar lebih dari satu.",
+    "soal": "Pesan moral apakah yang diperoleh dari cerita “Batu Murka”?<br>Pilihlah jawaban yang benar! Jawaban benar lebih dari satu.",
+    "gambar": null,
+    "gambarUrls": [],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [
+      {
+        "key": "1",
+        "label": "1",
+        "teks": "Jagalah alam agar tidak merugikan masyarakat.",
+        "gambar": null
+      },
+      {
+        "key": "2",
+        "label": "2",
+        "teks": "Manfaatkanlah kekayaan alam semaksimal mungkin.",
+        "gambar": null
+      },
+      {
+        "key": "3",
+        "label": "3",
+        "teks": "Masyarakat harus turut serta menciptakan kedamaian.",
+        "gambar": null
+      },
+      {
+        "key": "4",
+        "label": "4",
+        "teks": "Setiap perbuatan akan mendapatkan balasan setimpal.",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "1",
+        "label": "1",
+        "teks": "Jagalah alam agar tidak merugikan masyarakat.",
+        "gambar": null
+      },
+      {
+        "key": "2",
+        "label": "2",
+        "teks": "Manfaatkanlah kekayaan alam semaksimal mungkin.",
+        "gambar": null
+      },
+      {
+        "key": "3",
+        "label": "3",
+        "teks": "Masyarakat harus turut serta menciptakan kedamaian.",
+        "gambar": null
+      },
+      {
+        "key": "4",
+        "label": "4",
+        "teks": "Setiap perbuatan akan mendapatkan balasan setimpal.",
+        "gambar": null
+      }
+    ],
+    "pernyataan": null,
+    "kunciJawaban": "1, 4",
+    "kunci_jawaban": "1, 4",
+    "kunci": "1, 4",
+    "pembahasan": "Cerita 'Batu Murka' memperlihatkan bagaimana kerakusan manusia mengeksploitasi pegunungan demi emas mengakibatkan bangkitnya raksasa batu yang memorak-porandakan seluruh negara. Pesan moralnya: (1) Jagalah kelestarian alam agar tidak mendatangkan bencana bagi masyarakat; (4) Setiap tindakan serakah yang merusak alam akan menuai balasan setimpal berupa malapetaka. Jawaban benar adalah 1 dan 4.",
+    "bacaan": "Di perbatasan negara Jantara dan Hestina, berdiri kokoh pegunungan Waturaga. Pegunungan itu berbentuk seperti wajah raksasa yang tertidur. Awalnya, pegunungan itu damai dan terjaga. Kini, mulai berubah karena modernisasi.<br><br>PT Rakusantara menerima izin dari pemerintah Jantara. Puluhan ekskavator dan alat lainnya mulai diturunkan di pegunungan Waturaga. Tujuan utama mereka emas murni terbaik di jagat raya.<br><br>Kokohnya batu di pegunungan Waturaga membuat peralatan banyak yang rusak. Akhirnya, perusahaan menciptakan ekskavator penghancur dengan bahan tungsten, yaitu logam terkuat. Dengan alat itu, sebagian pegunungan Waturaga mulai dikeruk. Waktu terus berlalu dari musim ke musim, bor tercanggih sampai dinamit terkuat digunakan untuk memecahkan batu di sekitar pegunungan Waturaga. Setiap batuan runtuh diledakkan, warga sekitar merasakan getaran aneh, bukan karena ledakan, tapi seolah gunung kesakitan.<br><br>Saat bulan purnama, lubang tambang PT Rakusantara berhasil menemukan emas di kedalaman puluhan kilometer. Mereka meledakkannya agar mudah dikeruk. Seketika, batuan Waturaga bergerak hidup.<br><br>Batu itu bangkit. Waturaga setinggi ratusan meter berdiri gagah dengan kulit bergerigi batuan karst diselimuti lumut purba. Matanya merah pertanda marah. Ia meraung sehingga menimbulkan gelombang yang merusak alat berat dan rumah warga. Kaki Waturaga mengayun menghantam area pertambangan. Alat berat diinjak-injak seperti mainan kecil. Para penambang lari kocar-kacir. Kemudian, Waturaga melompat, menimbulkan runtuhan gunung dan tanah sampai menyapu para pekerja dan beberapa desa.<br><br>Waturaga benar-benar murka karena dikhianati manusia dengan mengeksploitasinya. Ia melangkah menuju pusat pemerintahan. Segala yang dilewati hancur berantakan. Seluruh pasukan dikerahkan. Namun, Waturaga tak mempan dengan senjata apa pun. Akhirnya, porak-porandalah seluruh negara.",
+    "grup": "wacana_batumurka"
+  },
+  {
+    "id": "tka26_indo_b_27",
+    "nomor": 27,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
+    "materi": "Menilai Ketepatan Karakterisasi Tokoh Cerita",
+    "tipe": "benar_salah",
+    "teksSoal": "Setelah membaca cerita, Silas, Roan, dan Gaharu berpendapat sebagai berikut:<br>• Silas: “Waturaga ternyata dendam terhadap oknum yang mengeksploitasinya sehingga ia memporak-porandakan negara.”<br>• Roan: “Kalau menurutku, PT Rakusantara mencerminkan kerakusan manusia sehingga merusak alam.”<br>• Gaharu: “Menurutku Pemerintah Jantara sudah bijak dalam mengeluarkan izin kepada perusahaan karena berdasarkan penelitian.”<br><br>Pendapat siapakah yang tepat untuk menilai karakter tokoh dalam cerita tersebut?<br>Tentukan Benar atau Salah untuk setiap pernyataan berikut:",
+    "teks_soal": "Setelah membaca cerita, Silas, Roan, dan Gaharu berpendapat sebagai berikut:<br>• Silas: “Waturaga ternyata dendam terhadap oknum yang mengeksploitasinya sehingga ia memporak-porandakan negara.”<br>• Roan: “Kalau menurutku, PT Rakusantara mencerminkan kerakusan manusia sehingga merusak alam.”<br>• Gaharu: “Menurutku Pemerintah Jantara sudah bijak dalam mengeluarkan izin kepada perusahaan karena berdasarkan penelitian.”<br><br>Pendapat siapakah yang tepat untuk menilai karakter tokoh dalam cerita tersebut?<br>Tentukan Benar atau Salah untuk setiap pernyataan berikut:",
+    "soal": "Setelah membaca cerita, Silas, Roan, dan Gaharu berpendapat sebagai berikut:<br>• Silas: “Waturaga ternyata dendam terhadap oknum yang mengeksploitasinya sehingga ia memporak-porandakan negara.”<br>• Roan: “Kalau menurutku, PT Rakusantara mencerminkan kerakusan manusia sehingga merusak alam.”<br>• Gaharu: “Menurutku Pemerintah Jantara sudah bijak dalam mengeluarkan izin kepada perusahaan karena berdasarkan penelitian.”<br><br>Pendapat siapakah yang tepat untuk menilai karakter tokoh dalam cerita tersebut?<br>Tentukan Benar atau Salah untuk setiap pernyataan berikut:",
+    "gambar": null,
+    "gambarUrls": [],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [],
+    "opsi": [],
+    "pernyataan": [
+      {
+        "id": "p_1",
+        "teks": "A. Silas karena alam yang dirusak bisa menimbulkan bencana bagi wilayah sekitar.",
+        "kunci": ""
+      },
+      {
+        "id": "p_2",
+        "teks": "B. Gaharu karena izin pertambangan sudah berdasarkan penelitian sebelumnya.",
+        "kunci": ""
+      },
+      {
+        "id": "p_3",
+        "teks": "C. Roan karena penambangan yang dilakukan oleh perusahaan untuk keuntungan sendiri.",
+        "kunci": ""
+      }
+    ],
+    "kunciJawaban": "A: Salah, B: Salah, C: Benar",
+    "kunci_jawaban": "A: Salah, B: Salah, C: Benar",
+    "kunci": "A: Salah, B: Salah, C: Benar",
+    "pembahasan": "Pernyataan C Benar karena pendapat Roan tepat menilai karakterisasi PT Rakusantara sebagai perlambang kerakusan korporasi tambang yang semata-mata mengejar keuntungan materiil sampai merusak alam. Pernyataan A Salah karena Silas menilai dari sudut dendam Waturaga (alasan di pernyataan A tidak nyambung dengan pendapat Silas). Pernyataan B Salah karena pemerintah Jantara terbukti lalai dan tidak bijak mengizinkan perusakan alam demi keuntungan sepihak.",
+    "bacaan": "Di perbatasan negara Jantara dan Hestina, berdiri kokoh pegunungan Waturaga. Pegunungan itu berbentuk seperti wajah raksasa yang tertidur. Awalnya, pegunungan itu damai dan terjaga. Kini, mulai berubah karena modernisasi.<br><br>PT Rakusantara menerima izin dari pemerintah Jantara. Puluhan ekskavator dan alat lainnya mulai diturunkan di pegunungan Waturaga. Tujuan utama mereka emas murni terbaik di jagat raya.<br><br>Kokohnya batu di pegunungan Waturaga membuat peralatan banyak yang rusak. Akhirnya, perusahaan menciptakan ekskavator penghancur dengan bahan tungsten, yaitu logam terkuat. Dengan alat itu, sebagian pegunungan Waturaga mulai dikeruk. Waktu terus berlalu dari musim ke musim, bor tercanggih sampai dinamit terkuat digunakan untuk memecahkan batu di sekitar pegunungan Waturaga. Setiap batuan runtuh diledakkan, warga sekitar merasakan getaran aneh, bukan karena ledakan, tapi seolah gunung kesakitan.<br><br>Saat bulan purnama, lubang tambang PT Rakusantara berhasil menemukan emas di kedalaman puluhan kilometer. Mereka meledakkannya agar mudah dikeruk. Seketika, batuan Waturaga bergerak hidup.<br><br>Batu itu bangkit. Waturaga setinggi ratusan meter berdiri gagah dengan kulit bergerigi batuan karst diselimuti lumut purba. Matanya merah pertanda marah. Ia meraung sehingga menimbulkan gelombang yang merusak alat berat dan rumah warga. Kaki Waturaga mengayun menghantam area pertambangan. Alat berat diinjak-injak seperti mainan kecil. Para penambang lari kocar-kacir. Kemudian, Waturaga melompat, menimbulkan runtuhan gunung dan tanah sampai menyapu para pekerja dan beberapa desa.<br><br>Waturaga benar-benar murka karena dikhianati manusia dengan mengeksploitasinya. Ia melangkah menuju pusat pemerintahan. Segala yang dilewati hancur berantakan. Seluruh pasukan dikerahkan. Namun, Waturaga tak mempan dengan senjata apa pun. Akhirnya, porak-porandalah seluruh negara.",
+    "grup": "wacana_batumurka"
+  },
+  {
+    "id": "tka26_indo_b_28",
+    "nomor": 28,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
+    "materi": "Ketepatan Penggunaan Istilah Ilmiah Lingkungan",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Istilah yang tidak sesuai dalam teks tersebut adalah ….",
+    "teks_soal": "Istilah yang tidak sesuai dalam teks tersebut adalah ….",
+    "soal": "Istilah yang tidak sesuai dalam teks tersebut adalah ….",
+    "gambar": null,
+    "gambarUrls": [],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "lestari, konstruksi",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "solusi, daur ulang",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "biogas, komposter",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "organik, anorganik",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "lestari, konstruksi",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "solusi, daur ulang",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "biogas, komposter",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "organik, anorganik",
+        "gambar": null
+      }
+    ],
+    "pernyataan": null,
+    "kunciJawaban": "C",
+    "kunci_jawaban": "C",
+    "kunci": "C",
+    "pembahasan": "Dalam teks terdapat kalimat janggal: 'membakar sampah yang dapat menghasilkan biogas' (pembakaran terbuka tidak menghasilkan biogas, melainkan karbon dioksida/polusi asap; biogas dihasilkan dari fermentasi anaerobik kotoran/sampah organik). Selain itu, 'Sampah organik dapat dimanfaatkan menjadi komposter' juga tidak tepat (komposter adalah alat/wadah pengomposan, sedangkan produk hasilnya adalah kompos). Jadi istilah yang tidak sesuai adalah biogas dan komposter (opsi C).",
+    "bacaan": "Belakangan ini sampah menjadi perhatian dunia karena permasalahan yang terus ditimbulkan. Salah satunya berdampak bagi kesehatan manusia. Hal tersebut terjadi karena masih banyak orang yang enggan mendaur ulang sampah sehingga sampah terus menumpuk. Oleh karena itu, pemanfaatan kembali sampah penting dilakukan.<br><br>Sampah organik dan anorganik yang dihasilkan masyarakat masih bisa digunakan. Pemanfaatan sampah pada dasarnya tidak memerlukan waktu lama, tetapi membutuhkan kreativitas dan ketekunan. Konsep reduce (mengurangi), reuse (menggunakan kembali), dan recycle (mendaur ulang) merupakan pengelolaan sampah yang mudah diterapkan dalam kehidupan sehari-hari yang dikenal dengan 3R.<br><br>Konsep 3R ini bertujuan untuk meminimalkan sampah dan dampak negatifnya terhadap lingkungan. Mengurangi sampah bisa dilakukan dengan membatasi penggunaan barang sekali pakai, menggunakan tas belanja yang dapat digunakan ulang, dan menggunakan barang-barang yang ramah lingkungan. Menggunakan kembali bisa dilakukan dengan menggunakan botol minum isi ulang, menggunakan baju bekas untuk lap, dan menggunakan kaleng atau kardus sebagai wadah. Upaya tersebut jauh lebih baik daripada membakar sampah yang dapat menghasilkan biogas. Mendaur ulang bisa dilakukan dengan cara memilah sampah organik dan anorganik. Sampah organik dapat dimanfaatkan menjadi komposter. Selain itu, daur ulang juga dapat dilakukan dengan memanfaatkan abu sebagai bahan konstruksi.<br><br>Sampah memang tidak terlepas dari kehidupan manusia dan seringkali menimbulkan masalah. Akan tetapi, bukan berarti tidak ada solusi untuk hal itu. Perilaku disiplin menerapkan 3R akan menciptakan lingkungan yang lestari dan asri.",
+    "grup": "wacana_3r"
+  },
+  {
+    "id": "tka26_indo_b_29",
+    "nomor": 29,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
+    "materi": "Memprediksi Dampak Sosial Penerapan Konsep 3R",
+    "tipe": "pg_kompleks",
+    "teksSoal": "Konsep 3R merupakan cara mudah untuk mengatasi masalah sampah. Jika 3R ini dilaksanakan, kemungkinan apa yang akan terjadi di masyarakat?<br>Pilihlah jawaban yang benar! Jawaban benar lebih dari satu.",
+    "teks_soal": "Konsep 3R merupakan cara mudah untuk mengatasi masalah sampah. Jika 3R ini dilaksanakan, kemungkinan apa yang akan terjadi di masyarakat?<br>Pilihlah jawaban yang benar! Jawaban benar lebih dari satu.",
+    "soal": "Konsep 3R merupakan cara mudah untuk mengatasi masalah sampah. Jika 3R ini dilaksanakan, kemungkinan apa yang akan terjadi di masyarakat?<br>Pilihlah jawaban yang benar! Jawaban benar lebih dari satu.",
+    "gambar": null,
+    "gambarUrls": [],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [
+      {
+        "key": "1",
+        "label": "1",
+        "teks": "Petugas kebersihan perlu diperhatikan kesejahteraannya oleh warga penghasil sampah.",
+        "gambar": null
+      },
+      {
+        "key": "2",
+        "label": "2",
+        "teks": "Sampah di depo-depo memerlukan penanganan yang lebih cepat dan tepat agar tidak menumpuk.",
+        "gambar": null
+      },
+      {
+        "key": "3",
+        "label": "3",
+        "teks": "Pihak pendaur ulang mendapatkan bahan produksinya berupa sampah dari masyarakat.",
+        "gambar": null
+      },
+      {
+        "key": "4",
+        "label": "4",
+        "teks": "Pemilahan sampah akan ditindaklanjuti sampai dapat dimanfaatkan kembali oleh masyarakat.",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "1",
+        "label": "1",
+        "teks": "Petugas kebersihan perlu diperhatikan kesejahteraannya oleh warga penghasil sampah.",
+        "gambar": null
+      },
+      {
+        "key": "2",
+        "label": "2",
+        "teks": "Sampah di depo-depo memerlukan penanganan yang lebih cepat dan tepat agar tidak menumpuk.",
+        "gambar": null
+      },
+      {
+        "key": "3",
+        "label": "3",
+        "teks": "Pihak pendaur ulang mendapatkan bahan produksinya berupa sampah dari masyarakat.",
+        "gambar": null
+      },
+      {
+        "key": "4",
+        "label": "4",
+        "teks": "Pemilahan sampah akan ditindaklanjuti sampai dapat dimanfaatkan kembali oleh masyarakat.",
+        "gambar": null
+      }
+    ],
+    "pernyataan": null,
+    "kunciJawaban": "3, 4",
+    "kunci_jawaban": "3, 4",
+    "kunci": "3, 4",
+    "pembahasan": "Jika konsep 3R berjalan optimal: pemilahan sampah organik dan anorganik dari rumah tangga akan terus ditindaklanjuti hingga menjadi bahan baku daur ulang dan komposting yang bermanfaat (pernyataan 4), dan pelaku industri kreatif/pendaur ulang akan memperoleh pasokan bahan baku sampah yang bersih dan terpilah secara berkelanjutan (pernyataan 3). Jadi pernyataan 3 dan 4 benar.",
+    "bacaan": "Belakangan ini sampah menjadi perhatian dunia karena permasalahan yang terus ditimbulkan. Salah satunya berdampak bagi kesehatan manusia. Hal tersebut terjadi karena masih banyak orang yang enggan mendaur ulang sampah sehingga sampah terus menumpuk. Oleh karena itu, pemanfaatan kembali sampah penting dilakukan.<br><br>Sampah organik dan anorganik yang dihasilkan masyarakat masih bisa digunakan. Pemanfaatan sampah pada dasarnya tidak memerlukan waktu lama, tetapi membutuhkan kreativitas dan ketekunan. Konsep reduce (mengurangi), reuse (menggunakan kembali), dan recycle (mendaur ulang) merupakan pengelolaan sampah yang mudah diterapkan dalam kehidupan sehari-hari yang dikenal dengan 3R.<br><br>Konsep 3R ini bertujuan untuk meminimalkan sampah dan dampak negatifnya terhadap lingkungan. Mengurangi sampah bisa dilakukan dengan membatasi penggunaan barang sekali pakai, menggunakan tas belanja yang dapat digunakan ulang, dan menggunakan barang-barang yang ramah lingkungan. Menggunakan kembali bisa dilakukan dengan menggunakan botol minum isi ulang, menggunakan baju bekas untuk lap, dan menggunakan kaleng atau kardus sebagai wadah. Upaya tersebut jauh lebih baik daripada membakar sampah yang dapat menghasilkan biogas. Mendaur ulang bisa dilakukan dengan cara memilah sampah organik dan anorganik. Sampah organik dapat dimanfaatkan menjadi komposter. Selain itu, daur ulang juga dapat dilakukan dengan memanfaatkan abu sebagai bahan konstruksi.<br><br>Sampah memang tidak terlepas dari kehidupan manusia dan seringkali menimbulkan masalah. Akan tetapi, bukan berarti tidak ada solusi untuk hal itu. Perilaku disiplin menerapkan 3R akan menciptakan lingkungan yang lestari dan asri.",
+    "grup": "wacana_3r"
+  },
+  {
+    "id": "tka26_indo_b_30",
+    "nomor": 30,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
+    "materi": "Menilai Kesesuaian Ilustrasi terhadap Teks",
+    "tipe": "benar_salah",
+    "teksSoal": "Mengapa penyajian ilustrasi kurang mendukung isi wacana?<br>Tentukan Benar atau Salah untuk setiap pernyataan berikut:",
+    "teks_soal": "Mengapa penyajian ilustrasi kurang mendukung isi wacana?<br>Tentukan Benar atau Salah untuk setiap pernyataan berikut:",
+    "soal": "Mengapa penyajian ilustrasi kurang mendukung isi wacana?<br>Tentukan Benar atau Salah untuk setiap pernyataan berikut:",
+    "gambar": null,
+    "gambarUrls": [],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [],
+    "opsi": [],
+    "pernyataan": [
+      {
+        "id": "p_1",
+        "teks": "A. Tidak menguatkan pembahasan konsep reuse dalam 3R.",
+        "kunci": ""
+      },
+      {
+        "id": "p_2",
+        "teks": "B. Belum menggambarkan konsep 3R secara menyeluruh.",
+        "kunci": ""
+      },
+      {
+        "id": "p_3",
+        "teks": "C. Kurang mencerminkan penjelasan tujuan konsep 3R.",
+        "kunci": ""
+      }
+    ],
+    "kunciJawaban": "A: Salah, B: Benar, C: Benar",
+    "kunci_jawaban": "A: Salah, B: Benar, C: Benar",
+    "kunci": "A: Salah, B: Benar, C: Benar",
+    "pembahasan": "Foto ilustrasi pada wacana hanya menampilkan kerajinan tangan dari daur ulang (recycle/reuse parsial), tetapi tidak mencakup konsep reduce (pengurangan timbulan sampah di sumbernya). Pernyataan A Salah karena kerajinan baju/wadah justru relevan dengan reuse. Pernyataan B Benar karena foto belum mencerminkan ketiga pilar 3R (reduce, reuse, recycle) secara utuh dan menyeluruh. Pernyataan C Benar karena gambar tersebut belum mencerminkan tujuan pelestarian lingkungan hidup bebas sampah secara luas sebagaimana dibahas di teks.",
+    "bacaan": "Belakangan ini sampah menjadi perhatian dunia karena permasalahan yang terus ditimbulkan. Salah satunya berdampak bagi kesehatan manusia. Hal tersebut terjadi karena masih banyak orang yang enggan mendaur ulang sampah sehingga sampah terus menumpuk. Oleh karena itu, pemanfaatan kembali sampah penting dilakukan.<br><br>Sampah organik dan anorganik yang dihasilkan masyarakat masih bisa digunakan. Pemanfaatan sampah pada dasarnya tidak memerlukan waktu lama, tetapi membutuhkan kreativitas dan ketekunan. Konsep reduce (mengurangi), reuse (menggunakan kembali), dan recycle (mendaur ulang) merupakan pengelolaan sampah yang mudah diterapkan dalam kehidupan sehari-hari yang dikenal dengan 3R.<br><br>Konsep 3R ini bertujuan untuk meminimalkan sampah dan dampak negatifnya terhadap lingkungan. Mengurangi sampah bisa dilakukan dengan membatasi penggunaan barang sekali pakai, menggunakan tas belanja yang dapat digunakan ulang, dan menggunakan barang-barang yang ramah lingkungan. Menggunakan kembali bisa dilakukan dengan menggunakan botol minum isi ulang, menggunakan baju bekas untuk lap, dan menggunakan kaleng atau kardus sebagai wadah. Upaya tersebut jauh lebih baik daripada membakar sampah yang dapat menghasilkan biogas. Mendaur ulang bisa dilakukan dengan cara memilah sampah organik dan anorganik. Sampah organik dapat dimanfaatkan menjadi komposter. Selain itu, daur ulang juga dapat dilakukan dengan memanfaatkan abu sebagai bahan konstruksi.<br><br>Sampah memang tidak terlepas dari kehidupan manusia dan seringkali menimbulkan masalah. Akan tetapi, bukan berarti tidak ada solusi untuk hal itu. Perilaku disiplin menerapkan 3R akan menciptakan lingkungan yang lestari dan asri.",
+    "grup": "wacana_3r"
+  }
+];
+
+export const SOAL_TRYOUT_AKBAR_SMP_BINDO = [
+  {
+    "id": "tka_akbar_indo_01",
+    "nomor": 1,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
+    "materi": "Menemukan Informasi Tersurat Teks Deskripsi",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Satwa apa yang menjadi maskot Taman Nasional Baluran?",
+    "teks_soal": "Satwa apa yang menjadi maskot Taman Nasional Baluran?",
+    "soal": "Satwa apa yang menjadi maskot Taman Nasional Baluran?",
+    "gambar": null,
+    "gambarUrls": [],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Kerbau.",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Reptilia.",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Mamalia.",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "Banteng.",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Kerbau.",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Reptilia.",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Mamalia.",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "Banteng.",
+        "gambar": null
+      }
+    ],
+    "pernyataan": null,
+    "kunciJawaban": "D",
+    "kunci_jawaban": "D",
+    "kunci": "D",
+    "pembahasan": "Berdasarkan paragraf kedua wacana: 'Satwa liar yang menjadi maskot di kawasan tersebut adalah Banteng (Bos javanicus). Banteng adalah jenis sapi liar yang besar.' Jadi, maskot Taman Nasional Baluran adalah Banteng (opsi D).",
+    "bacaan": "Pernahkah kamu mendengar tentang Taman Nasional Baluran? Tempat tersebut ada di Situbondo, Jawa Timur. Taman Nasional Baluran didirikan tahun 1980 pada lahan seluas 25.000 ha. Baluran dijuluki Afrika van Java atau Little Africa in Java. Julukan ini diberikan karena pemandangannya unik. Lanskap padang rumput didominasi oleh sabana kering dan keberadaan satwa liar besar hidup bebas di habitat tersebut. Oleh karena itu, Baluran menjadi tujuan wajib untuk kamu yang suka satwa liar.<br><br>Ciri khas Taman Nasional Baluran adalah Padang Savana Bekol. Tempat tersebut berupa hamparan padang rumput yang luas. Banyak satwa liar berkeliaran bebas mencari makanan di sana. Satwa liar yang menjadi maskot di kawasan tersebut adalah Banteng (Bos javanicus). Banteng adalah jenis sapi liar yang besar. Selain Banteng, ada pula kawanan rusa dan kerbau liar.<br><br>Taman Nasional Baluran memiliki keanekaragaman hayati. Di sana terdapat 444 jenis flora. Dari jumlah tersebut, 265 jenis dapat dijadikan obat. Taman Nasional ini juga menjadi surga bagi fauna. Ada 196 jenis burung yang cantik dan 28 jenis mamalia di sana. Berbagai jenis ikan dan reptilia juga hidup di Baluran. Bahkan, 47 jenis satwa dilindungi tinggal di kawasan tersebut.<br><br>Baluran berfungsi sebagai cagar alam dan objek wisata. Tempat tersebut menawarkan banyak objek seru. Kamu bisa mengunjungi Evergreen Forest, Pantai Bama, Gua Jepang, Curah Tangis, Dermaga, dan Candi Bang. Tak heran jika Baluran merupakan kombinasi sempurna. Kamu bisa melihat satwa, menikmati pantai, dan belajar sejarah di sana.",
+    "grup": "wacana_baluran"
+  },
+  {
+    "id": "tka_akbar_indo_02",
+    "nomor": 2,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
+    "materi": "Menganalisis Rincian Informasi Teks Deskripsi",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Taman Nasional Baluran memiliki keanekaragaman hayati. Keanekaragaman apa saja yang ada di kawasan tersebut?",
+    "teks_soal": "Taman Nasional Baluran memiliki keanekaragaman hayati. Keanekaragaman apa saja yang ada di kawasan tersebut?",
+    "soal": "Taman Nasional Baluran memiliki keanekaragaman hayati. Keanekaragaman apa saja yang ada di kawasan tersebut?",
+    "gambar": null,
+    "gambarUrls": [],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Taman Nasional Baluran memiliki 265 jenis fauna yang berkhasiat sebagai bahan obat-obatan tradisional.",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Baluran memiliki 444 jenis flora sekaligus menjadi habitat berbagai jenis fauna termasuk satwa yang dilindungi.",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Cagar alam Baluran menjadi habitat asli bagi 28 jenis mamalia, 196 satwa yang dilindungi, dan berbagai reptilia.",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "Kawasan Baluran menjadi tempat tinggal 196 jenis satwa liar yang dilindungi pemerintah, seperti mamalia dan reptil.",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Taman Nasional Baluran memiliki 265 jenis fauna yang berkhasiat sebagai bahan obat-obatan tradisional.",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Baluran memiliki 444 jenis flora sekaligus menjadi habitat berbagai jenis fauna termasuk satwa yang dilindungi.",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Cagar alam Baluran menjadi habitat asli bagi 28 jenis mamalia, 196 satwa yang dilindungi, dan berbagai reptilia.",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "Kawasan Baluran menjadi tempat tinggal 196 jenis satwa liar yang dilindungi pemerintah, seperti mamalia dan reptil.",
+        "gambar": null
+      }
+    ],
+    "pernyataan": null,
+    "kunciJawaban": "B",
+    "kunci_jawaban": "B",
+    "kunci": "B",
+    "pembahasan": "Berdasarkan paragraf ketiga wacana: 'Di sana terdapat 444 jenis flora... Ada 196 jenis burung... 28 jenis mamalia... berbagai jenis ikan dan reptilia... Bahkan, 47 jenis satwa dilindungi tinggal di kawasan tersebut.' Opsi B tepat merangkum keberadaan 444 jenis flora serta habitat fauna termasuk satwa yang dilindungi.",
+    "bacaan": "Pernahkah kamu mendengar tentang Taman Nasional Baluran? Tempat tersebut ada di Situbondo, Jawa Timur. Taman Nasional Baluran didirikan tahun 1980 pada lahan seluas 25.000 ha. Baluran dijuluki Afrika van Java atau Little Africa in Java. Julukan ini diberikan karena pemandangannya unik. Lanskap padang rumput didominasi oleh sabana kering dan keberadaan satwa liar besar hidup bebas di habitat tersebut. Oleh karena itu, Baluran menjadi tujuan wajib untuk kamu yang suka satwa liar.<br><br>Ciri khas Taman Nasional Baluran adalah Padang Savana Bekol. Tempat tersebut berupa hamparan padang rumput yang luas. Banyak satwa liar berkeliaran bebas mencari makanan di sana. Satwa liar yang menjadi maskot di kawasan tersebut adalah Banteng (Bos javanicus). Banteng adalah jenis sapi liar yang besar. Selain Banteng, ada pula kawanan rusa dan kerbau liar.<br><br>Taman Nasional Baluran memiliki keanekaragaman hayati. Di sana terdapat 444 jenis flora. Dari jumlah tersebut, 265 jenis dapat dijadikan obat. Taman Nasional ini juga menjadi surga bagi fauna. Ada 196 jenis burung yang cantik dan 28 jenis mamalia di sana. Berbagai jenis ikan dan reptilia juga hidup di Baluran. Bahkan, 47 jenis satwa dilindungi tinggal di kawasan tersebut.<br><br>Baluran berfungsi sebagai cagar alam dan objek wisata. Tempat tersebut menawarkan banyak objek seru. Kamu bisa mengunjungi Evergreen Forest, Pantai Bama, Gua Jepang, Curah Tangis, Dermaga, dan Candi Bang. Tak heran jika Baluran merupakan kombinasi sempurna. Kamu bisa melihat satwa, menikmati pantai, dan belajar sejarah di sana.",
+    "grup": "wacana_baluran"
+  },
+  {
+    "id": "tka_akbar_indo_03",
+    "nomor": 3,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
+    "materi": "Hubungan Antarparagraf Teks Deskripsi",
+    "tipe": "benar_salah",
+    "teksSoal": "Mengapa informasi pada paragraf keempat sesuai dengan penjelasan paragraf kedua dan ketiga?<br>Tentukan Benar atau Salah untuk setiap pernyataan berikut:",
+    "teks_soal": "Mengapa informasi pada paragraf keempat sesuai dengan penjelasan paragraf kedua dan ketiga?<br>Tentukan Benar atau Salah untuk setiap pernyataan berikut:",
+    "soal": "Mengapa informasi pada paragraf keempat sesuai dengan penjelasan paragraf kedua dan ketiga?<br>Tentukan Benar atau Salah untuk setiap pernyataan berikut:",
+    "gambar": null,
+    "gambarUrls": [],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [],
+    "opsi": [],
+    "pernyataan": [
+      {
+        "id": "p_1",
+        "teks": "A. Menyimpulkan daya tarik objek Taman Nasional Baluran secara keseluruhan.",
+        "kunci": ""
+      },
+      {
+        "id": "p_2",
+        "teks": "B. Merinci keanekaragaman flora, fauna, dan objek wisata di sekitar kawasan Baluran.",
+        "kunci": ""
+      },
+      {
+        "id": "p_3",
+        "teks": "C. Menegaskan fungsi Taman Nasional Baluran sebagai cagar alam dan destinasi wisata.",
+        "kunci": ""
+      }
+    ],
+    "kunciJawaban": "A: Benar, B: Salah, C: Benar",
+    "kunci_jawaban": "A: Benar, B: Salah, C: Benar",
+    "kunci": "A: Benar, B: Salah, C: Benar",
+    "pembahasan": "Paragraf keempat menyatakan bahwa Baluran berfungsi sebagai cagar alam dan objek wisata yang merupakan kombinasi sempurna untuk melihat satwa (paragraf 2), menikmati alam dan pantai, serta belajar sejarah (paragraf 3). Pernyataan A Benar (menyimpulkan daya tarik secara keseluruhan). Pernyataan B Salah (fungsi merinci secara detail ada pada paragraf kedua dan ketiga, bukan paragraf keempat). Pernyataan C Benar (menegaskan fungsi ganda cagar alam dan destinasi wisata).",
+    "bacaan": "Pernahkah kamu mendengar tentang Taman Nasional Baluran? Tempat tersebut ada di Situbondo, Jawa Timur. Taman Nasional Baluran didirikan tahun 1980 pada lahan seluas 25.000 ha. Baluran dijuluki Afrika van Java atau Little Africa in Java. Julukan ini diberikan karena pemandangannya unik. Lanskap padang rumput didominasi oleh sabana kering dan keberadaan satwa liar besar hidup bebas di habitat tersebut. Oleh karena itu, Baluran menjadi tujuan wajib untuk kamu yang suka satwa liar.<br><br>Ciri khas Taman Nasional Baluran adalah Padang Savana Bekol. Tempat tersebut berupa hamparan padang rumput yang luas. Banyak satwa liar berkeliaran bebas mencari makanan di sana. Satwa liar yang menjadi maskot di kawasan tersebut adalah Banteng (Bos javanicus). Banteng adalah jenis sapi liar yang besar. Selain Banteng, ada pula kawanan rusa dan kerbau liar.<br><br>Taman Nasional Baluran memiliki keanekaragaman hayati. Di sana terdapat 444 jenis flora. Dari jumlah tersebut, 265 jenis dapat dijadikan obat. Taman Nasional ini juga menjadi surga bagi fauna. Ada 196 jenis burung yang cantik dan 28 jenis mamalia di sana. Berbagai jenis ikan dan reptilia juga hidup di Baluran. Bahkan, 47 jenis satwa dilindungi tinggal di kawasan tersebut.<br><br>Baluran berfungsi sebagai cagar alam dan objek wisata. Tempat tersebut menawarkan banyak objek seru. Kamu bisa mengunjungi Evergreen Forest, Pantai Bama, Gua Jepang, Curah Tangis, Dermaga, dan Candi Bang. Tak heran jika Baluran merupakan kombinasi sempurna. Kamu bisa melihat satwa, menikmati pantai, dan belajar sejarah di sana.",
+    "grup": "wacana_baluran"
+  },
+  {
+    "id": "tka_akbar_indo_04",
+    "nomor": 4,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
+    "materi": "Makna Kata / Istilah Teks Prosedur",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Apa makna kata energi yang terdapat dalam teks tersebut?",
+    "teks_soal": "Apa makna kata energi yang terdapat dalam teks tersebut?",
+    "soal": "Apa makna kata energi yang terdapat dalam teks tersebut?",
+    "gambar": null,
+    "gambarUrls": [],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Kemampuan melakukan fermentasi.",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Daya yang digunakan untuk distilasi.",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Sumber daya yang dapat dimanfaatkan.",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "Tenaga yang melekat pada limbah organik.",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Kemampuan melakukan fermentasi.",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Daya yang digunakan untuk distilasi.",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Sumber daya yang dapat dimanfaatkan.",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "Tenaga yang melekat pada limbah organik.",
+        "gambar": null
+      }
+    ],
+    "pernyataan": null,
+    "kunciJawaban": "C",
+    "kunci_jawaban": "C",
+    "kunci": "C",
+    "pembahasan": "Dalam konteks kalimat 'Bioetanol merupakan bahan bakar ramah lingkungan yang dapat digunakan sebagai energi alternatif' dan 'produk yang bermanfaat bagi kebutuhan energi', kata energi bermakna daya atau sumber daya pembangkit/tenaga yang dapat dimanfaatkan untuk menggerakkan mesin atau aktivitas manusia (opsi C).",
+    "bacaan": "Limbah kulit pisang merupakan salah satu sampah organik yang jumlahnya cukup besar dan sering tidak dimanfaatkan. Jika dibiarkan menumpuk, limbah ini dapat menimbulkan bau serta meningkatkan permasalahan lingkungan. Namun, kulit pisang sebenarnya mengandung karbohidrat yang dapat diolah menjadi bioetanol melalui proses fermentasi. Bioetanol merupakan bahan bakar ramah lingkungan yang dapat digunakan sebagai energi alternatif. Oleh karena itu, pemanfaatan limbah kulit pisang menjadi bioetanol menjadi langkah produktif dalam mengurangi sampah sekaligus mendukung energi berkelanjutan.<br><br><b>Alat dan Bahan</b><br>• Kulit pisang<br>• Gula pasir<br>• Ragi (yeast)<br>• Air bersih<br><br><b>Langkah-Langkah</b><br>1. Cuci kulit pisang, potong kecil, lalu masukkan ke blender.<br>2. Tambahkan air, lalu blender hingga halus.<br>3. Rebus campuran tersebut menggunakan panci dan kompor selama ±15 menit agar steril dan keluar karbohidratnya.<br>4. Dinginkan hingga suhu sekitar 30–35°C, cek suhunya dengan termometer.<br>5. Tambahkan gula dan ragi, lalu aduk rata.<br>6. Tuang ke dalam botol fermentasi dan tutup rapat.<br>7. Fermentasikan selama 5–7 hari di suhu ruang.<br>8. Setelah fermentasi, saring cairan menggunakan kain saring.<br>9. Distilasi cairan dengan memanaskannya pada suhu 78°C untuk memisahkan bioetanol dari air.<br>10. Tampung uap yang terkondensasi sebagai bioetanol murni dengan botol.<br><br>Pemanfaatan limbah kulit pisang sebagai bahan dasar pembuatan bioetanol merupakan cara efektif untuk mengurangi sampah organik sekaligus menghasilkan energi alternatif yang ramah lingkungan. Proses fermentasi dan distilasi memungkinkan limbah yang tidak bernilai menjadi produk yang bermanfaat bagi kebutuhan energi.<br><br><i>Glosarium:</i><br>• distilasi: proses memanaskan benda cair atau padat hingga berubah menjadi uap.<br>• kondensasi: perubahan uap air atau benda gas menjadi benda cair.",
+    "grup": "wacana_bioetanol"
+  },
+  {
+    "id": "tka_akbar_indo_05",
+    "nomor": 5,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
+    "materi": "Memprediksi Kejadian Berdasarkan Prosedur",
+    "tipe": "pg_kompleks",
+    "teksSoal": "Apa yang akan terjadi jika campuran hasil blender direbus selama 5 menit?<br>Pilihlah jawaban yang benar! Jawaban benar lebih dari satu.",
+    "teks_soal": "Apa yang akan terjadi jika campuran hasil blender direbus selama 5 menit?<br>Pilihlah jawaban yang benar! Jawaban benar lebih dari satu.",
+    "soal": "Apa yang akan terjadi jika campuran hasil blender direbus selama 5 menit?<br>Pilihlah jawaban yang benar! Jawaban benar lebih dari satu.",
+    "gambar": null,
+    "gambarUrls": [],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [
+      {
+        "key": "1",
+        "label": "1",
+        "teks": "Bioetanol akan sulit dipisahkan dari campuran cairan.",
+        "gambar": null
+      },
+      {
+        "key": "2",
+        "label": "2",
+        "teks": "Campuran hasil blender akan terkontaminasi zat asing.",
+        "gambar": null
+      },
+      {
+        "key": "3",
+        "label": "3",
+        "teks": "Karbohidrat akan sulit untuk dikeluarkan dari campuran.",
+        "gambar": null
+      },
+      {
+        "key": "4",
+        "label": "4",
+        "teks": "Uap tidak akan terbentuk karena kurangnya pemanasan.",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "1",
+        "label": "1",
+        "teks": "Bioetanol akan sulit dipisahkan dari campuran cairan.",
+        "gambar": null
+      },
+      {
+        "key": "2",
+        "label": "2",
+        "teks": "Campuran hasil blender akan terkontaminasi zat asing.",
+        "gambar": null
+      },
+      {
+        "key": "3",
+        "label": "3",
+        "teks": "Karbohidrat akan sulit untuk dikeluarkan dari campuran.",
+        "gambar": null
+      },
+      {
+        "key": "4",
+        "label": "4",
+        "teks": "Uap tidak akan terbentuk karena kurangnya pemanasan.",
+        "gambar": null
+      }
+    ],
+    "pernyataan": null,
+    "kunciJawaban": "2, 3",
+    "kunci_jawaban": "2, 3",
+    "kunci": "2, 3",
+    "pembahasan": "Langkah ke-3 teks menyatakan: 'Rebus campuran tersebut menggunakan panci dan kompor selama ±15 menit agar steril dan keluar karbohidratnya.' Jika hanya direbus selama 5 menit (kurang dari waktu optimal 15 menit), maka sterilisasi belum sempurna sehingga berisiko terkontaminasi zat/mikroba asing (pernyataan 2), dan karbohidrat belum optimal keluar/diekstraksi dari serat kulit pisang (pernyataan 3). Jadi jawaban benar adalah 2 dan 3.",
+    "bacaan": "Limbah kulit pisang merupakan salah satu sampah organik yang jumlahnya cukup besar dan sering tidak dimanfaatkan. Jika dibiarkan menumpuk, limbah ini dapat menimbulkan bau serta meningkatkan permasalahan lingkungan. Namun, kulit pisang sebenarnya mengandung karbohidrat yang dapat diolah menjadi bioetanol melalui proses fermentasi. Bioetanol merupakan bahan bakar ramah lingkungan yang dapat digunakan sebagai energi alternatif. Oleh karena itu, pemanfaatan limbah kulit pisang menjadi bioetanol menjadi langkah produktif dalam mengurangi sampah sekaligus mendukung energi berkelanjutan.<br><br><b>Alat dan Bahan</b><br>• Kulit pisang<br>• Gula pasir<br>• Ragi (yeast)<br>• Air bersih<br><br><b>Langkah-Langkah</b><br>1. Cuci kulit pisang, potong kecil, lalu masukkan ke blender.<br>2. Tambahkan air, lalu blender hingga halus.<br>3. Rebus campuran tersebut menggunakan panci dan kompor selama ±15 menit agar steril dan keluar karbohidratnya.<br>4. Dinginkan hingga suhu sekitar 30–35°C, cek suhunya dengan termometer.<br>5. Tambahkan gula dan ragi, lalu aduk rata.<br>6. Tuang ke dalam botol fermentasi dan tutup rapat.<br>7. Fermentasikan selama 5–7 hari di suhu ruang.<br>8. Setelah fermentasi, saring cairan menggunakan kain saring.<br>9. Distilasi cairan dengan memanaskannya pada suhu 78°C untuk memisahkan bioetanol dari air.<br>10. Tampung uap yang terkondensasi sebagai bioetanol murni dengan botol.<br><br>Pemanfaatan limbah kulit pisang sebagai bahan dasar pembuatan bioetanol merupakan cara efektif untuk mengurangi sampah organik sekaligus menghasilkan energi alternatif yang ramah lingkungan. Proses fermentasi dan distilasi memungkinkan limbah yang tidak bernilai menjadi produk yang bermanfaat bagi kebutuhan energi.<br><br><i>Glosarium:</i><br>• distilasi: proses memanaskan benda cair atau padat hingga berubah menjadi uap.<br>• kondensasi: perubahan uap air atau benda gas menjadi benda cair.",
+    "grup": "wacana_bioetanol"
+  },
+  {
+    "id": "tka_akbar_indo_06",
+    "nomor": 6,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
+    "materi": "Menilai Kelengkapan Struktur Teks Prosedur",
+    "tipe": "benar_salah",
+    "teksSoal": "Mengapa struktur dalam teks tentang cara membuat bioetanol kurang lengkap?<br>Tentukan Benar atau Salah untuk setiap pernyataan berikut:",
+    "teks_soal": "Mengapa struktur dalam teks tentang cara membuat bioetanol kurang lengkap?<br>Tentukan Benar atau Salah untuk setiap pernyataan berikut:",
+    "soal": "Mengapa struktur dalam teks tentang cara membuat bioetanol kurang lengkap?<br>Tentukan Benar atau Salah untuk setiap pernyataan berikut:",
+    "gambar": null,
+    "gambarUrls": [],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [],
+    "opsi": [],
+    "pernyataan": [
+      {
+        "id": "p_1",
+        "teks": "A. Tujuan pembuatan bioetanol dari kulit pisang tidak dijelaskan dalam teks.",
+        "kunci": ""
+      },
+      {
+        "id": "p_2",
+        "teks": "B. Alat yang digunakan dalam pembuatan bioetanol tidak dicantumkan.",
+        "kunci": ""
+      },
+      {
+        "id": "p_3",
+        "teks": "C. Langkah-langkah tidak dijabarkan dengan lengkap dan berurutan.",
+        "kunci": ""
+      }
+    ],
+    "kunciJawaban": "A: Salah, B: Benar, C: Salah",
+    "kunci_jawaban": "A: Salah, B: Benar, C: Salah",
+    "kunci": "A: Salah, B: Benar, C: Salah",
+    "pembahasan": "Pernyataan A Salah karena tujuan pembuatan bioetanol sudah dipaparkan dengan jelas di paragraf pertama (mengurangi sampah organik dan bahan bakar ramah lingkungan). Pernyataan B Benar karena pada subjudul 'Alat dan Bahan', hanya dicantumkan bahan (kulit pisang, gula, ragi, air), sedangkan alat (blender, panci, kompor, botol fermentasi, kain saring, termometer, alat distilasi) tidak dimasukkan dalam daftar alat. Pernyataan C Salah karena langkah-langkah 1 sampai 10 sudah sangat lengkap, runtut, dan berurutan.",
+    "bacaan": "Limbah kulit pisang merupakan salah satu sampah organik yang jumlahnya cukup besar dan sering tidak dimanfaatkan. Jika dibiarkan menumpuk, limbah ini dapat menimbulkan bau serta meningkatkan permasalahan lingkungan. Namun, kulit pisang sebenarnya mengandung karbohidrat yang dapat diolah menjadi bioetanol melalui proses fermentasi. Bioetanol merupakan bahan bakar ramah lingkungan yang dapat digunakan sebagai energi alternatif. Oleh karena itu, pemanfaatan limbah kulit pisang menjadi bioetanol menjadi langkah produktif dalam mengurangi sampah sekaligus mendukung energi berkelanjutan.<br><br><b>Alat dan Bahan</b><br>• Kulit pisang<br>• Gula pasir<br>• Ragi (yeast)<br>• Air bersih<br><br><b>Langkah-Langkah</b><br>1. Cuci kulit pisang, potong kecil, lalu masukkan ke blender.<br>2. Tambahkan air, lalu blender hingga halus.<br>3. Rebus campuran tersebut menggunakan panci dan kompor selama ±15 menit agar steril dan keluar karbohidratnya.<br>4. Dinginkan hingga suhu sekitar 30–35°C, cek suhunya dengan termometer.<br>5. Tambahkan gula dan ragi, lalu aduk rata.<br>6. Tuang ke dalam botol fermentasi dan tutup rapat.<br>7. Fermentasikan selama 5–7 hari di suhu ruang.<br>8. Setelah fermentasi, saring cairan menggunakan kain saring.<br>9. Distilasi cairan dengan memanaskannya pada suhu 78°C untuk memisahkan bioetanol dari air.<br>10. Tampung uap yang terkondensasi sebagai bioetanol murni dengan botol.<br><br>Pemanfaatan limbah kulit pisang sebagai bahan dasar pembuatan bioetanol merupakan cara efektif untuk mengurangi sampah organik sekaligus menghasilkan energi alternatif yang ramah lingkungan. Proses fermentasi dan distilasi memungkinkan limbah yang tidak bernilai menjadi produk yang bermanfaat bagi kebutuhan energi.<br><br><i>Glosarium:</i><br>• distilasi: proses memanaskan benda cair atau padat hingga berubah menjadi uap.<br>• kondensasi: perubahan uap air atau benda gas menjadi benda cair.",
+    "grup": "wacana_bioetanol"
+  },
+  {
+    "id": "tka_akbar_indo_07",
+    "nomor": 7,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
+    "materi": "Menemukan Informasi Tersurat Teks Berita",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Berdasarkan teks 1, kebiasaan apa yang berpengaruh terhadap status gizi dan kesehatan?",
+    "teks_soal": "Berdasarkan teks 1, kebiasaan apa yang berpengaruh terhadap status gizi dan kesehatan?",
+    "soal": "Berdasarkan teks 1, kebiasaan apa yang berpengaruh terhadap status gizi dan kesehatan?",
+    "gambar": null,
+    "gambarUrls": [],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Pemberian suplemen, pola makan bergizi, dan pelayanan kesehatan.",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Pola asuh yang baik, menjaga kebersihan, dan menjaga status gizi.",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Pelayanan kesehatan, vitamin tambahan, dan menjaga kebersihan.",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "Pola makan bergizi, menjaga kebersihan, dan pola asuh yang baik.",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Pemberian suplemen, pola makan bergizi, dan pelayanan kesehatan.",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Pola asuh yang baik, menjaga kebersihan, dan menjaga status gizi.",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Pelayanan kesehatan, vitamin tambahan, dan menjaga kebersihan.",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "Pola makan bergizi, menjaga kebersihan, dan pola asuh yang baik.",
+        "gambar": null
+      }
+    ],
+    "pernyataan": null,
+    "kunciJawaban": "D",
+    "kunci_jawaban": "D",
+    "kunci": "D",
+    "pembahasan": "Berdasarkan kutipan langsung Teks 1: 'kebiasaan sederhana di rumah, seperti cara makan, menjaga kebersihan, dan pola asuh punya pengaruh langsung terhadap masa depan anak.' Maka kebiasaan yang berpengaruh adalah pola makan bergizi, menjaga kebersihan, dan pola asuh yang baik (opsi D).",
+    "bacaan": "<b>Teks 1</b><br>Kompas.com - Perilaku sehari-hari memiliki peran besar dalam menentukan kesehatan keluarga, terutama anak-anak. Penelitian pakar kesehatan masyarakat asal Amerika Serikat (AS), J Michael McGinnis menyatakan bahwa perilaku menyumbang 30-40 persen terhadap status gizi dan kesehatan seseorang. Angka ini lebih besar dibandingkan faktor pelayanan kesehatan maupun lingkungan. “Artinya, kebiasaan sederhana di rumah, seperti cara makan, menjaga kebersihan, dan pola asuh punya pengaruh langsung terhadap masa depan anak,” ujar Redaktur Lembaga Kantor Berita Nasional (LKBN) Antara, dalam rilis pers yang diterima Kompas.com, Jumat (7/11/2025). Salah satu persoalan gizi kronis yang masih banyak dialami anak-anak Indonesia adalah stunting. Persoalan tersebut tidak bisa hanya diatasi dengan memberikan suplemen vitamin secara rutin dengan takaran pas.<br><br><b>Teks 2</b><br>Kompas.com - Pendidikan anak usia dini (PAUD) sering dipandang hanya bergantung pada kualitas guru, kurikulum, atau fasilitas sekolah. Praktisi pendidikan menjelaskan bahwa keberhasilan PAUD terletak pada sinergi antara satuan PAUD dan orang tua. “Pendidikan anak usia dini tidak bisa berhasil jika rumah dan sekolah berjalan sendiri-sendiri. Anak butuh irama yang selaras antara guru dan orang tua,” ujarnya dalam keterangan resmi, Jumat (29/8/2025). Dijelaskan pula bagi orang tua, pendidikan adalah investasi jiwa, bukan sekadar proses formal. Mereka ingin setiap langkah kecil anak, entah menyapa guru, mencoba permainan baru, atau berbagi mainan, menjadi kebanggaan dan cermin nilai yang ditanamkan di rumah.",
+    "grup": "wacana_berita"
+  },
+  {
+    "id": "tka_akbar_indo_08",
+    "nomor": 8,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
+    "materi": "Menyusun Bagan Alur Ide Pokok Teks Berita",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Bagan yang sesuai dengan bagian-bagian penting teks berita 2 adalah ….",
+    "teks_soal": "Bagan yang sesuai dengan bagian-bagian penting teks berita 2 adalah ….",
+    "soal": "Bagan yang sesuai dengan bagian-bagian penting teks berita 2 adalah ….",
+    "gambar": null,
+    "gambarUrls": [],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "[Pentingnya sinergi antara satuan PAUD dan orang tua dalam keberhasilan pendidikan anak usia dini] → [Pendidikan anak usia dini tidak efektif jika rumah dan sekolah berjalan sendiri-sendiri] → [Dengan menciptakan irama yang selaras antara guru dan orang tua dalam mendampingi anak]",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "[Pendidikan anak usia dini tidak efektif jika rumah dan sekolah berjalan sendiri-sendiri] → [Pentingnya kerja sama antara anak usia dini dengan guru dalam keberhasilan pendidikan anak usia dini] → [Dengan menciptakan irama yang selaras antara guru dan orang tua dalam mendampingi anak]",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "[Pentingnya kerja sama kedua orang tua dalam keberhasilan pendidikan anak usia dini] → [Pendidikan anak usia dini akan efektif jika dilakukan di sekolah] → [Dengan menciptakan irama yang selaras antara guru dan orang tua dalam mendampingi anak]",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "[Pendidikan anak usia dini efektif jika rumah dan sekolah berjalan sendiri-sendiri] → [Pentingnya sinergi antara guru dengan karyawan dalam keberhasilan pendidikan anak usia dini] → [Dengan menciptakan irama yang selaras antara guru dan orang tua dalam mendampingi anak]",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "[Pentingnya sinergi antara satuan PAUD dan orang tua dalam keberhasilan pendidikan anak usia dini] → [Pendidikan anak usia dini tidak efektif jika rumah dan sekolah berjalan sendiri-sendiri] → [Dengan menciptakan irama yang selaras antara guru dan orang tua dalam mendampingi anak]",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "[Pendidikan anak usia dini tidak efektif jika rumah dan sekolah berjalan sendiri-sendiri] → [Pentingnya kerja sama antara anak usia dini dengan guru dalam keberhasilan pendidikan anak usia dini] → [Dengan menciptakan irama yang selaras antara guru dan orang tua dalam mendampingi anak]",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "[Pentingnya kerja sama kedua orang tua dalam keberhasilan pendidikan anak usia dini] → [Pendidikan anak usia dini akan efektif jika dilakukan di sekolah] → [Dengan menciptakan irama yang selaras antara guru dan orang tua dalam mendampingi anak]",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "[Pendidikan anak usia dini efektif jika rumah dan sekolah berjalan sendiri-sendiri] → [Pentingnya sinergi antara guru dengan karyawan dalam keberhasilan pendidikan anak usia dini] → [Dengan menciptakan irama yang selaras antara guru dan orang tua dalam mendampingi anak]",
+        "gambar": null
+      }
+    ],
+    "pernyataan": null,
+    "kunciJawaban": "A",
+    "kunci_jawaban": "A",
+    "kunci": "A",
+    "pembahasan": "Alur ide pokok Teks 2 secara runtut: (1) Pernyataan umum pentingnya sinergi antara satuan PAUD dan orang tua; (2) Penjelasan bahwa PAUD tidak akan berhasil jika rumah dan sekolah berjalan sendiri-sendiri; (3) Solusi berupa menciptakan irama yang selaras antara guru dan orang tua dalam mendampingi anak. Bagan A merefleksikan urutan logis ini secara tepat.",
+    "bacaan": "<b>Teks 1</b><br>Kompas.com - Perilaku sehari-hari memiliki peran besar dalam menentukan kesehatan keluarga, terutama anak-anak. Penelitian pakar kesehatan masyarakat asal Amerika Serikat (AS), J Michael McGinnis menyatakan bahwa perilaku menyumbang 30-40 persen terhadap status gizi dan kesehatan seseorang. Angka ini lebih besar dibandingkan faktor pelayanan kesehatan maupun lingkungan. “Artinya, kebiasaan sederhana di rumah, seperti cara makan, menjaga kebersihan, dan pola asuh punya pengaruh langsung terhadap masa depan anak,” ujar Redaktur Lembaga Kantor Berita Nasional (LKBN) Antara, dalam rilis pers yang diterima Kompas.com, Jumat (7/11/2025). Salah satu persoalan gizi kronis yang masih banyak dialami anak-anak Indonesia adalah stunting. Persoalan tersebut tidak bisa hanya diatasi dengan memberikan suplemen vitamin secara rutin dengan takaran pas.<br><br><b>Teks 2</b><br>Kompas.com - Pendidikan anak usia dini (PAUD) sering dipandang hanya bergantung pada kualitas guru, kurikulum, atau fasilitas sekolah. Praktisi pendidikan menjelaskan bahwa keberhasilan PAUD terletak pada sinergi antara satuan PAUD dan orang tua. “Pendidikan anak usia dini tidak bisa berhasil jika rumah dan sekolah berjalan sendiri-sendiri. Anak butuh irama yang selaras antara guru dan orang tua,” ujarnya dalam keterangan resmi, Jumat (29/8/2025). Dijelaskan pula bagi orang tua, pendidikan adalah investasi jiwa, bukan sekadar proses formal. Mereka ingin setiap langkah kecil anak, entah menyapa guru, mencoba permainan baru, atau berbagi mainan, menjadi kebanggaan dan cermin nilai yang ditanamkan di rumah.",
+    "grup": "wacana_berita"
+  },
+  {
+    "id": "tka_akbar_indo_09",
+    "nomor": 9,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
+    "materi": "Kaidah Kebahasaan Dua Teks Berita",
+    "tipe": "benar_salah",
+    "teksSoal": "Pernyataan manakah yang sesuai dengan kebahasaan pada kedua teks tersebut?<br>Pilihlah Benar atau Salah untuk pernyataan-pernyataan berikut:",
+    "teks_soal": "Pernyataan manakah yang sesuai dengan kebahasaan pada kedua teks tersebut?<br>Pilihlah Benar atau Salah untuk pernyataan-pernyataan berikut:",
+    "soal": "Pernyataan manakah yang sesuai dengan kebahasaan pada kedua teks tersebut?<br>Pilihlah Benar atau Salah untuk pernyataan-pernyataan berikut:",
+    "gambar": null,
+    "gambarUrls": [],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [],
+    "opsi": [],
+    "pernyataan": [
+      {
+        "id": "p_1",
+        "teks": "A. Konjungsi penjelas digunakan dalam kedua teks.",
+        "kunci": ""
+      },
+      {
+        "id": "p_2",
+        "teks": "B. Kedua teks menggunakan kata ganti penunjuk.",
+        "kunci": ""
+      },
+      {
+        "id": "p_3",
+        "teks": "C. Kedua teks memuat kalimat langsung dari ahli pendidikan.",
+        "kunci": ""
+      }
+    ],
+    "kunciJawaban": "A: Benar, B: Benar, C: Salah",
+    "kunci_jawaban": "A: Benar, B: Benar, C: Salah",
+    "kunci": "A: Benar, B: Benar, C: Salah",
+    "pembahasan": "Pernyataan A Benar karena kedua teks memuat konjungsi penjelas 'bahwa' (Teks 1: 'menyatakan bahwa...', Teks 2: 'menjelaskan bahwa...'). Pernyataan B Benar karena kedua teks menggunakan kata ganti penunjuk 'ini' dan 'tersebut' (Teks 1: 'Angka ini...', 'Persoalan tersebut...', Teks 2: 'Hal itu...'). Pernyataan C Salah karena Teks 1 memuat kutipan dari redaktur LKBN Antara dan pakar kesehatan masyarakat (bukan ahli pendidikan); hanya Teks 2 yang mengutip praktisi pendidikan.",
+    "bacaan": "<b>Teks 1</b><br>Kompas.com - Perilaku sehari-hari memiliki peran besar dalam menentukan kesehatan keluarga, terutama anak-anak. Penelitian pakar kesehatan masyarakat asal Amerika Serikat (AS), J Michael McGinnis menyatakan bahwa perilaku menyumbang 30-40 persen terhadap status gizi dan kesehatan seseorang. Angka ini lebih besar dibandingkan faktor pelayanan kesehatan maupun lingkungan. “Artinya, kebiasaan sederhana di rumah, seperti cara makan, menjaga kebersihan, dan pola asuh punya pengaruh langsung terhadap masa depan anak,” ujar Redaktur Lembaga Kantor Berita Nasional (LKBN) Antara, dalam rilis pers yang diterima Kompas.com, Jumat (7/11/2025). Salah satu persoalan gizi kronis yang masih banyak dialami anak-anak Indonesia adalah stunting. Persoalan tersebut tidak bisa hanya diatasi dengan memberikan suplemen vitamin secara rutin dengan takaran pas.<br><br><b>Teks 2</b><br>Kompas.com - Pendidikan anak usia dini (PAUD) sering dipandang hanya bergantung pada kualitas guru, kurikulum, atau fasilitas sekolah. Praktisi pendidikan menjelaskan bahwa keberhasilan PAUD terletak pada sinergi antara satuan PAUD dan orang tua. “Pendidikan anak usia dini tidak bisa berhasil jika rumah dan sekolah berjalan sendiri-sendiri. Anak butuh irama yang selaras antara guru dan orang tua,” ujarnya dalam keterangan resmi, Jumat (29/8/2025). Dijelaskan pula bagi orang tua, pendidikan adalah investasi jiwa, bukan sekadar proses formal. Mereka ingin setiap langkah kecil anak, entah menyapa guru, mencoba permainan baru, atau berbagi mainan, menjadi kebanggaan dan cermin nilai yang ditanamkan di rumah.",
+    "grup": "wacana_berita"
+  },
+  {
+    "id": "tka_akbar_indo_10",
+    "nomor": 10,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
+    "materi": "Mengidentifikasi Kata Kunci Teks Eksposisi",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Deretan kata manakah yang menjadi pemicu munculnya fenomena pembelian impulsif?",
+    "teks_soal": "Deretan kata manakah yang menjadi pemicu munculnya fenomena pembelian impulsif?",
+    "soal": "Deretan kata manakah yang menjadi pemicu munculnya fenomena pembelian impulsif?",
+    "gambar": null,
+    "gambarUrls": [],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "penawaran diskon, promosi menarik, tergoda membeli",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "promosi menarik, belanja online, membutuhkan barang",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "meningkatnya kesadaran, tergoda membeli, promosi menarik",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "stimulus tertentu, dorongan kuat terhadap produk, keuangan stabil",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "penawaran diskon, promosi menarik, tergoda membeli",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "promosi menarik, belanja online, membutuhkan barang",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "meningkatnya kesadaran, tergoda membeli, promosi menarik",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "stimulus tertentu, dorongan kuat terhadap produk, keuangan stabil",
+        "gambar": null
+      }
+    ],
+    "pernyataan": null,
+    "kunciJawaban": "A",
+    "kunci_jawaban": "A",
+    "kunci": "A",
+    "pembahasan": "Berdasarkan paragraf pertama dan kedua teks wacana: pembelian impulsif terjadi saat konsumen 'tergoda untuk membeli sesuatu' karena adanya stimulus berupa 'penawaran diskon' atau 'promosi menarik'. Jadi deretan kata pemicu yang tepat adalah opsi A.",
+    "bacaan": "Pembelian impulsif atau impulse buying adalah tindakan konsumen membeli barang tanpa perencanaan. Fenomena ini sering kali terjadi karena adanya dorongan yang mendadak atau perasaan yang kuat terhadap suatu produk. Pembelian impulsif terjadi saat konsumen tergoda untuk membeli sesuatu hanya karena adanya stimulus tertentu, seperti penawaran diskon atau promosi yang menarik perhatian mereka. Tindakan ini dapat terjadi di mana saja, baik di toko konvensional maupun di belanja online.<br><br>Dalam buku Consumer Behavior: Concepts and Applications karya David L. Loudon dan Albert J. Della Bitta disebutkan bahwa beberapa faktor memiliki pengaruh signifikan terhadap perilaku pembelian impulsif. Faktor yang pertama mencakup karakteristik produk. Produk yang ditawarkan dengan harga diskon atau promosi menarik dapat memikat konsumen untuk melakukan pembelian impulsif. Faktor kedua berupa strategi pemasaran. Konsep self service dan iklan dapat memengaruhi keputusan pembelian konsumen secara impulsif. Faktor terakhir karakteristik individu konsumen. Dorongan untuk memberi penghargaan kepada diri sendiri dapat memicu tindakan pembelian impulsif.<br><br>Konsekuensi pembelian impulsif adalah pemborosan yang dapat mengancam kesehatan finansial seseorang. Ketika terjerumus dalam kebiasaan pembelian impulsif, mereka cenderung membeli barang yang tidak mereka butuhkan atau tidak sesuai dengan keuangan mereka. Hal ini dapat mengakibatkan akumulasi utang kartu kredit atau keuangan yang tidak stabil dalam jangka panjang.<br><br>Oleh karena itu, pembelian impulsif bukanlah sesuatu yang harus dihindari, melainkan lebih kepada kesadaran terjadinya suatu risiko. Dengan meningkatkan kesadaran di balik pembelian impulsif, konsumen dapat mengembangkan strategi untuk mengelola godaan tersebut. Misalnya, membuat daftar belanjaan sebelumnya atau memberikan batasan waktu sebelum membuat keputusan pembelian.",
+    "grup": "wacana_impulsif"
+  },
+  {
+    "id": "tka_akbar_indo_11",
+    "nomor": 11,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
+    "materi": "Menentukan Tujuan Penulisan Teks",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Tujuan penulisan teks tersebut adalah ….",
+    "teks_soal": "Tujuan penulisan teks tersebut adalah ….",
+    "soal": "Tujuan penulisan teks tersebut adalah ….",
+    "gambar": null,
+    "gambarUrls": [],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "menginformasikan tentang perilaku pembelian impulsif",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "memaparkan manfaat pembelian impulsif bagi diri sendiri",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "menjelaskan kepada masyarakat tentang perilaku hidup hemat",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "menghindarkan masyarakat dari penawaran pembelian impulsif",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "menginformasikan tentang perilaku pembelian impulsif",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "memaparkan manfaat pembelian impulsif bagi diri sendiri",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "menjelaskan kepada masyarakat tentang perilaku hidup hemat",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "menghindarkan masyarakat dari penawaran pembelian impulsif",
+        "gambar": null
+      }
+    ],
+    "pernyataan": null,
+    "kunciJawaban": "A",
+    "kunci_jawaban": "A",
+    "kunci": "A",
+    "pembahasan": "Teks memaparkan pengertian impulse buying, faktor-faktor penyebab menurut literatur psikologi konsumen, risiko finansial, dan cara mengelolanya. Tujuan utamanya adalah menginformasikan kepada pembaca mengenai perilaku pembelian impulsif secara komprehensif (opsi A).",
+    "bacaan": "Pembelian impulsif atau impulse buying adalah tindakan konsumen membeli barang tanpa perencanaan. Fenomena ini sering kali terjadi karena adanya dorongan yang mendadak atau perasaan yang kuat terhadap suatu produk. Pembelian impulsif terjadi saat konsumen tergoda untuk membeli sesuatu hanya karena adanya stimulus tertentu, seperti penawaran diskon atau promosi yang menarik perhatian mereka. Tindakan ini dapat terjadi di mana saja, baik di toko konvensional maupun di belanja online.<br><br>Dalam buku Consumer Behavior: Concepts and Applications karya David L. Loudon dan Albert J. Della Bitta disebutkan bahwa beberapa faktor memiliki pengaruh signifikan terhadap perilaku pembelian impulsif. Faktor yang pertama mencakup karakteristik produk. Produk yang ditawarkan dengan harga diskon atau promosi menarik dapat memikat konsumen untuk melakukan pembelian impulsif. Faktor kedua berupa strategi pemasaran. Konsep self service dan iklan dapat memengaruhi keputusan pembelian konsumen secara impulsif. Faktor terakhir karakteristik individu konsumen. Dorongan untuk memberi penghargaan kepada diri sendiri dapat memicu tindakan pembelian impulsif.<br><br>Konsekuensi pembelian impulsif adalah pemborosan yang dapat mengancam kesehatan finansial seseorang. Ketika terjerumus dalam kebiasaan pembelian impulsif, mereka cenderung membeli barang yang tidak mereka butuhkan atau tidak sesuai dengan keuangan mereka. Hal ini dapat mengakibatkan akumulasi utang kartu kredit atau keuangan yang tidak stabil dalam jangka panjang.<br><br>Oleh karena itu, pembelian impulsif bukanlah sesuatu yang harus dihindari, melainkan lebih kepada kesadaran terjadinya suatu risiko. Dengan meningkatkan kesadaran di balik pembelian impulsif, konsumen dapat mengembangkan strategi untuk mengelola godaan tersebut. Misalnya, membuat daftar belanjaan sebelumnya atau memberikan batasan waktu sebelum membuat keputusan pembelian.",
+    "grup": "wacana_impulsif"
+  },
+  {
+    "id": "tka_akbar_indo_12",
+    "nomor": 12,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
+    "materi": "Mengevaluasi Tindakan Logis Berdasarkan Teks",
+    "tipe": "benar_salah",
+    "teksSoal": "Setelah memahami risiko pembelian impulsif, apa yang sebaiknya dilakukan masyarakat dalam kehidupan sehari-hari berdasarkan isi teks tersebut?<br>Tentukan Benar atau Salah untuk setiap pernyataan berikut:",
+    "teks_soal": "Setelah memahami risiko pembelian impulsif, apa yang sebaiknya dilakukan masyarakat dalam kehidupan sehari-hari berdasarkan isi teks tersebut?<br>Tentukan Benar atau Salah untuk setiap pernyataan berikut:",
+    "soal": "Setelah memahami risiko pembelian impulsif, apa yang sebaiknya dilakukan masyarakat dalam kehidupan sehari-hari berdasarkan isi teks tersebut?<br>Tentukan Benar atau Salah untuk setiap pernyataan berikut:",
+    "gambar": null,
+    "gambarUrls": [],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [],
+    "opsi": [],
+    "pernyataan": [
+      {
+        "id": "p_1",
+        "teks": "A. Membuat daftar barang yang akan dibeli sebelum berbelanja.",
+        "kunci": ""
+      },
+      {
+        "id": "p_2",
+        "teks": "B. Mempertimbangkan kembali kebutuhan barang yang akan dibeli.",
+        "kunci": ""
+      },
+      {
+        "id": "p_3",
+        "teks": "C. Membeli barang karena ada potongan harga sebagai apresiasi diri.",
+        "kunci": ""
+      }
+    ],
+    "kunciJawaban": "A: Benar, B: Benar, C: Salah",
+    "kunci_jawaban": "A: Benar, B: Benar, C: Salah",
+    "kunci": "A: Benar, B: Benar, C: Salah",
+    "pembahasan": "Paragraf terakhir menyarankan konsumen mengelola godaan dengan 'membuat daftar belanjaan sebelumnya atau memberikan batasan waktu sebelum membuat keputusan pembelian'. Pernyataan A Benar (membuat daftar belanja). Pernyataan B Benar (mempertimbangkan kembali kebutuhan agar tidak boros). Pernyataan C Salah karena membeli barang hanya karena diskon untuk self-reward adalah bentuk pembelian impulsif yang tidak terencana.",
+    "bacaan": "Pembelian impulsif atau impulse buying adalah tindakan konsumen membeli barang tanpa perencanaan. Fenomena ini sering kali terjadi karena adanya dorongan yang mendadak atau perasaan yang kuat terhadap suatu produk. Pembelian impulsif terjadi saat konsumen tergoda untuk membeli sesuatu hanya karena adanya stimulus tertentu, seperti penawaran diskon atau promosi yang menarik perhatian mereka. Tindakan ini dapat terjadi di mana saja, baik di toko konvensional maupun di belanja online.<br><br>Dalam buku Consumer Behavior: Concepts and Applications karya David L. Loudon dan Albert J. Della Bitta disebutkan bahwa beberapa faktor memiliki pengaruh signifikan terhadap perilaku pembelian impulsif. Faktor yang pertama mencakup karakteristik produk. Produk yang ditawarkan dengan harga diskon atau promosi menarik dapat memikat konsumen untuk melakukan pembelian impulsif. Faktor kedua berupa strategi pemasaran. Konsep self service dan iklan dapat memengaruhi keputusan pembelian konsumen secara impulsif. Faktor terakhir karakteristik individu konsumen. Dorongan untuk memberi penghargaan kepada diri sendiri dapat memicu tindakan pembelian impulsif.<br><br>Konsekuensi pembelian impulsif adalah pemborosan yang dapat mengancam kesehatan finansial seseorang. Ketika terjerumus dalam kebiasaan pembelian impulsif, mereka cenderung membeli barang yang tidak mereka butuhkan atau tidak sesuai dengan keuangan mereka. Hal ini dapat mengakibatkan akumulasi utang kartu kredit atau keuangan yang tidak stabil dalam jangka panjang.<br><br>Oleh karena itu, pembelian impulsif bukanlah sesuatu yang harus dihindari, melainkan lebih kepada kesadaran terjadinya suatu risiko. Dengan meningkatkan kesadaran di balik pembelian impulsif, konsumen dapat mengembangkan strategi untuk mengelola godaan tersebut. Misalnya, membuat daftar belanjaan sebelumnya atau memberikan batasan waktu sebelum membuat keputusan pembelian.",
+    "grup": "wacana_impulsif"
+  },
+  {
+    "id": "tka_akbar_indo_13",
+    "nomor": 13,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
+    "materi": "Membedakan Fakta dan Opini Teks Ulasan",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Kalimat opini yang tepat berdasarkan teks tersebut adalah …",
+    "teks_soal": "Kalimat opini yang tepat berdasarkan teks tersebut adalah …",
+    "soal": "Kalimat opini yang tepat berdasarkan teks tersebut adalah …",
+    "gambar": null,
+    "gambarUrls": [],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Saat ini film Superman sudah meraih dua nominasi.",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Film Superman menjadi penanda baru jagat perfilman.",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Nominasi Most Anticipated Film diraih oleh film Superman.",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "Film Superman meraih Best Summer 2025 Blockbuster Trailer.",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Saat ini film Superman sudah meraih dua nominasi.",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Film Superman menjadi penanda baru jagat perfilman.",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Nominasi Most Anticipated Film diraih oleh film Superman.",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "Film Superman meraih Best Summer 2025 Blockbuster Trailer.",
+        "gambar": null
+      }
+    ],
+    "pernyataan": null,
+    "kunciJawaban": "B",
+    "kunci_jawaban": "B",
+    "kunci": "B",
+    "pembahasan": "Kalimat pada opsi B: 'Film Superman menjadi penanda baru jagat perfilman' merupakan opini/pandangan subjektif pengulas. Sebaliknya, opsi A, C, dan D merupakan fakta yang mencantumkan capaian resmi nominasi penghargaan film (Golden Trailer Award dan Astra Midseason Award).",
+    "bacaan": "Film Superman terbaru tayang di bioskop Indonesia pada 9 Juli 2025. Kehadiran film bergenre superhero ini menjadi penanda baru jagat perfilman yang tengah diremajakan oleh sutradara James Gunn. Saat ini, film Superman sudah meraih dua nominasi. Pertama adalah nominasi kategori Best Summer 2025 Blockbuster Trailer dalam Golden Trailer Award. Sementara nominasi kedua adalah Most Anticipated Film dalam Astra Midseason Award.<br><br>Film ini menceritakan kisah legendaris sang manusia baja mendapatkan babak baru yang lebih emosional, lebih manusiawi, sebab lebih membumi dari sebelumnya. Adegan awal langsung dibuka dengan pertempuran kemudian dilanjutkan dengan cerita berlapis yang dijamin tidak membosankan. Dengan narasi yang mengalir antara ketegangan dan perenungan, Superman menyuguhkan perjalanan menembus krisis identitas, pengkhianatan, dan pertanyaan eksistensial yang mendalam.<br><br>Alur dalam film Superman terbilang runtut. Seperti yang diharapkan produser James Gunn dan sinematografi Henry Braham yang pernah menggarap film Guardians of The Galaxy, film ini bernuansa lebih cerah. Hal itu berbeda dengan nuansa warna gelap ala film superhero sebelumnya yang menegaskan bahwa “Superman sebagai simbol harapan”. Efek visual adegan aksi superman terbang juga sangat memukau, detail, dan memberikan efek nyata. Sayangnya, ada beberapa adegan humor yang disisipi isu serius sehingga terkesan garing.<br><br>Film Superman bukan hanya pergantian aktor semata, melainkan sebagai tonggak baru. Film ini dapat ditonton dengan nyaman tanpa harus menonton serial sebelumnya. Film Superman layak ditonton semua kalangan.",
+    "grup": "wacana_superman"
+  },
+  {
+    "id": "tka_akbar_indo_14",
+    "nomor": 14,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
+    "materi": "Keterkaitan Antarparagraf Teks Ulasan",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Apa kaitan antara paragraf ketiga dengan paragraf keempat?",
+    "teks_soal": "Apa kaitan antara paragraf ketiga dengan paragraf keempat?",
+    "soal": "Apa kaitan antara paragraf ketiga dengan paragraf keempat?",
+    "gambar": null,
+    "gambarUrls": [],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Penjelasan unsur-unsur humor menjadikan film Superman layak ditonton oleh segala usia.",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Penggambaran kelebihan visual menjadi dasar film Superman direkomendasikan untuk anak-anak.",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Perincian kelebihan film menjadi salah satu alasan film ini layak ditonton meskipun terdapat kekurangan.",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "Penilaian positif pada unsur sinematografi menguatkan pendapat bahwa film ini cocok untuk penggemar superhero.",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Penjelasan unsur-unsur humor menjadikan film Superman layak ditonton oleh segala usia.",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Penggambaran kelebihan visual menjadi dasar film Superman direkomendasikan untuk anak-anak.",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Perincian kelebihan film menjadi salah satu alasan film ini layak ditonton meskipun terdapat kekurangan.",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "Penilaian positif pada unsur sinematografi menguatkan pendapat bahwa film ini cocok untuk penggemar superhero.",
+        "gambar": null
+      }
+    ],
+    "pernyataan": null,
+    "kunciJawaban": "C",
+    "kunci_jawaban": "C",
+    "kunci": "C",
+    "pembahasan": "Paragraf ketiga merinci kelebihan (alur runtut, nuansa cerah, efek visual aksi terbang memukau) dan menyebut kekurangan kecil (humor garing). Paragraf keempat menyimpulkan film tersebut merupakan tonggak baru dan layak ditonton semua kalangan. Jadi, rincian kelebihan di paragraf 3 menjadi dasar penilaian kelayakan tonton di paragraf 4 (opsi C).",
+    "bacaan": "Film Superman terbaru tayang di bioskop Indonesia pada 9 Juli 2025. Kehadiran film bergenre superhero ini menjadi penanda baru jagat perfilman yang tengah diremajakan oleh sutradara James Gunn. Saat ini, film Superman sudah meraih dua nominasi. Pertama adalah nominasi kategori Best Summer 2025 Blockbuster Trailer dalam Golden Trailer Award. Sementara nominasi kedua adalah Most Anticipated Film dalam Astra Midseason Award.<br><br>Film ini menceritakan kisah legendaris sang manusia baja mendapatkan babak baru yang lebih emosional, lebih manusiawi, sebab lebih membumi dari sebelumnya. Adegan awal langsung dibuka dengan pertempuran kemudian dilanjutkan dengan cerita berlapis yang dijamin tidak membosankan. Dengan narasi yang mengalir antara ketegangan dan perenungan, Superman menyuguhkan perjalanan menembus krisis identitas, pengkhianatan, dan pertanyaan eksistensial yang mendalam.<br><br>Alur dalam film Superman terbilang runtut. Seperti yang diharapkan produser James Gunn dan sinematografi Henry Braham yang pernah menggarap film Guardians of The Galaxy, film ini bernuansa lebih cerah. Hal itu berbeda dengan nuansa warna gelap ala film superhero sebelumnya yang menegaskan bahwa “Superman sebagai simbol harapan”. Efek visual adegan aksi superman terbang juga sangat memukau, detail, dan memberikan efek nyata. Sayangnya, ada beberapa adegan humor yang disisipi isu serius sehingga terkesan garing.<br><br>Film Superman bukan hanya pergantian aktor semata, melainkan sebagai tonggak baru. Film ini dapat ditonton dengan nyaman tanpa harus menonton serial sebelumnya. Film Superman layak ditonton semua kalangan.",
+    "grup": "wacana_superman"
+  },
+  {
+    "id": "tka_akbar_indo_15",
+    "nomor": 15,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
+    "materi": "Analisis Kesalahan Konjungsi Teks Ulasan",
+    "tipe": "benar_salah",
+    "teksSoal": "Teks ulasan tersebut terdapat kesalahan penggunaan konjungsi. Alasan manakah yang mendukung pernyataan tersebut?<br>Tentukan Benar atau Salah untuk setiap pernyataan berikut:",
+    "teks_soal": "Teks ulasan tersebut terdapat kesalahan penggunaan konjungsi. Alasan manakah yang mendukung pernyataan tersebut?<br>Tentukan Benar atau Salah untuk setiap pernyataan berikut:",
+    "soal": "Teks ulasan tersebut terdapat kesalahan penggunaan konjungsi. Alasan manakah yang mendukung pernyataan tersebut?<br>Tentukan Benar atau Salah untuk setiap pernyataan berikut:",
+    "gambar": null,
+    "gambarUrls": [],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [],
+    "opsi": [],
+    "pernyataan": [
+      {
+        "id": "p_1",
+        "teks": "A. Konjungsi saat tidak menunjukkan hubungan penyebab.",
+        "kunci": ""
+      },
+      {
+        "id": "p_2",
+        "teks": "B. Konjungsi sebab tidak menyatakan hubungan penambahan.",
+        "kunci": ""
+      },
+      {
+        "id": "p_3",
+        "teks": "C. Konjungsi bahwa bukan merupakan hubungan temporal.",
+        "kunci": ""
+      }
+    ],
+    "kunciJawaban": "A: Benar, B: Benar, C: Benar",
+    "kunci_jawaban": "A: Benar, B: Benar, C: Benar",
+    "kunci": "A: Benar, B: Benar, C: Benar",
+    "pembahasan": "Pernyataan A Benar karena 'saat' adalah konjungsi temporal (waktu), bukan penyebab (kausalitas). Pernyataan B Benar karena 'sebab' adalah konjungsi kausalitas, bukan konjungsi koordinatif penambahan (aditif). Pernyataan C Benar karena 'bahwa' adalah konjungsi penjelas/komplementor, bukan konjungsi temporal. Ketiga pernyataan secara tata bahasa benar menjelaskan fungsi asli konjungsi tersebut.",
+    "bacaan": "Film Superman terbaru tayang di bioskop Indonesia pada 9 Juli 2025. Kehadiran film bergenre superhero ini menjadi penanda baru jagat perfilman yang tengah diremajakan oleh sutradara James Gunn. Saat ini, film Superman sudah meraih dua nominasi. Pertama adalah nominasi kategori Best Summer 2025 Blockbuster Trailer dalam Golden Trailer Award. Sementara nominasi kedua adalah Most Anticipated Film dalam Astra Midseason Award.<br><br>Film ini menceritakan kisah legendaris sang manusia baja mendapatkan babak baru yang lebih emosional, lebih manusiawi, sebab lebih membumi dari sebelumnya. Adegan awal langsung dibuka dengan pertempuran kemudian dilanjutkan dengan cerita berlapis yang dijamin tidak membosankan. Dengan narasi yang mengalir antara ketegangan dan perenungan, Superman menyuguhkan perjalanan menembus krisis identitas, pengkhianatan, dan pertanyaan eksistensial yang mendalam.<br><br>Alur dalam film Superman terbilang runtut. Seperti yang diharapkan produser James Gunn dan sinematografi Henry Braham yang pernah menggarap film Guardians of The Galaxy, film ini bernuansa lebih cerah. Hal itu berbeda dengan nuansa warna gelap ala film superhero sebelumnya yang menegaskan bahwa “Superman sebagai simbol harapan”. Efek visual adegan aksi superman terbang juga sangat memukau, detail, dan memberikan efek nyata. Sayangnya, ada beberapa adegan humor yang disisipi isu serius sehingga terkesan garing.<br><br>Film Superman bukan hanya pergantian aktor semata, melainkan sebagai tonggak baru. Film ini dapat ditonton dengan nyaman tanpa harus menonton serial sebelumnya. Film Superman layak ditonton semua kalangan.",
+    "grup": "wacana_superman"
+  },
+  {
+    "id": "tka_akbar_indo_16",
+    "nomor": 16,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
+    "materi": "Membaca Informasi Infografis",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Berdasarkan teks 2, kegiatan yang termasuk melestarikan lingkungan adalah …",
+    "teks_soal": "Berdasarkan teks 2, kegiatan yang termasuk melestarikan lingkungan adalah …",
+    "soal": "Berdasarkan teks 2, kegiatan yang termasuk melestarikan lingkungan adalah …",
+    "gambar": null,
+    "gambarUrls": [],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Tidak membakar sampah, mendaur ulang baju baru, menghemat listrik.",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Memilah sampah, menggunakan transportasi pribadi, membawa tumbler.",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Menanam pohon, menggunakan transportasi umum, menghabiskan makanan.",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "Memakai tas belanja, makan secukupnya, mematikan peralatan yang tidak dipakai.",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Tidak membakar sampah, mendaur ulang baju baru, menghemat listrik.",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Memilah sampah, menggunakan transportasi pribadi, membawa tumbler.",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Menanam pohon, menggunakan transportasi umum, menghabiskan makanan.",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "Memakai tas belanja, makan secukupnya, mematikan peralatan yang tidak dipakai.",
+        "gambar": null
+      }
+    ],
+    "pernyataan": null,
+    "kunciJawaban": "D",
+    "kunci_jawaban": "D",
+    "kunci": "D",
+    "pembahasan": "Berdasarkan infografis Teks 2: 'Pakai tas belanja', 'Masak secukupnya... selalu habiskan makanan', dan 'AC dan lampu tak perlu dinyalakan seharian' (mematikan peralatan yang tidak dipakai). Opsi D seluruhnya memuat butir-butir yang tercantum secara akurat pada infografis.",
+    "bacaan": "<b>Teks 1</b><br>Saat ini, dunia menghadapi tiga krisis lingkungan, yaitu perubahan iklim, hilangnya keanekaragaman hayati, dan meningkatnya polusi. Tiga krisis tersebut semakin parah dengan tingginya jumlah sampah plastik. Plastik sulit terurai sehingga mempercepat kerusakan ekosistem. Indonesia termasuk salah satu negara penghasil sampah plastik terbesar. Berdasarkan data Sistem Informasi Pengelolaan Sampah Nasional (SIPSN) tahun 2024, sebanyak 19,74% dari 34,2 juta ton sampah merupakan sampah plastik. Angka ini meningkat dibandingkan tahun 2023 sebesar 19,26%. Hal ini menunjukkan bahwa masalah sampah plastik semakin mendesak untuk segera ditangani. Oleh karena itu, upaya serius berbagai pihak perlu dilakukan untuk mengurangi penggunaan plastik sekali pakai dan meningkatkan pengelolaan sampah. Pemerintah, pelaku usaha, dan masyarakat harus bekerja sama dalam menerapkan kebiasaan ramah lingkungan, seperti memilah sampah, mendaur ulang, dan mengurangi produk sekali pakai.<br><br><b>Teks 2 (Infografis Lestarikan Lingkungan Lewat Keseharian - CNN Indonesia):</b><br>Kegiatan ramah lingkungan yang dapat dilakukan sehari-hari:<br>• Pakai tas belanja dan bawa tumbler untuk mengurangi jumlah sampah plastik.<br>• Ganti tisu dengan sapu tangan untuk menekan jumlah sampah.<br>• AC dan lampu tak perlu dinyalakan seharian untuk menghemat penggunaan listrik.<br>• Bepergian pakai transportasi umum untuk mengurangi polusi udara.<br>• Masak secukupnya sesuai kebutuhan, selalu habiskan makanan agar tidak jadi sampah.<br>• Pisahkan sampah organik dan anorganik.<br>• Daur ulang baju yang sudah rusak/tak dipakai menjadi lap, keset, tatakan gelas, dll.<br>• Tidak membakar sampah untuk mengurangi polusi asap hasil pembakaran.",
+    "grup": "wacana_lingkungan"
+  },
+  {
+    "id": "tka_akbar_indo_17",
+    "nomor": 17,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
+    "materi": "Menyusun Bagan Alur Pemikiran Teks Berita Lingkungan",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Bagan yang sesuai dengan bagian penting teks 1 adalah …",
+    "teks_soal": "Bagan yang sesuai dengan bagian penting teks 1 adalah …",
+    "soal": "Bagan yang sesuai dengan bagian penting teks 1 adalah …",
+    "gambar": null,
+    "gambarUrls": [],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "[Indonesia penyumbang sampah plastik] → [Kerja sama dalam penanganan sampah] → [Dunia menghadapi tiga krisis lingkungan] → [Sampah plastik memperparah krisis lingkungan]",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "[Dunia menghadapi tiga krisis lingkungan] → [Indonesia penyumbang sampah plastik] → [Sampah plastik memperparah krisis lingkungan] → [Kerja sama dalam penanganan sampah]",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "[Indonesia penyumbang sampah plastik] → [Dunia menghadapi tiga krisis lingkungan] → [Kerja sama dalam penanganan sampah] → [Sampah plastik memperparah krisis lingkungan]",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "[Dunia menghadapi tiga krisis lingkungan] → [Sampah plastik memperparah krisis lingkungan] → [Indonesia penyumbang sampah plastik] → [Kerja sama dalam penanganan sampah]",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "[Indonesia penyumbang sampah plastik] → [Kerja sama dalam penanganan sampah] → [Dunia menghadapi tiga krisis lingkungan] → [Sampah plastik memperparah krisis lingkungan]",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "[Dunia menghadapi tiga krisis lingkungan] → [Indonesia penyumbang sampah plastik] → [Sampah plastik memperparah krisis lingkungan] → [Kerja sama dalam penanganan sampah]",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "[Indonesia penyumbang sampah plastik] → [Dunia menghadapi tiga krisis lingkungan] → [Kerja sama dalam penanganan sampah] → [Sampah plastik memperparah krisis lingkungan]",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "[Dunia menghadapi tiga krisis lingkungan] → [Sampah plastik memperparah krisis lingkungan] → [Indonesia penyumbang sampah plastik] → [Kerja sama dalam penanganan sampah]",
+        "gambar": null
+      }
+    ],
+    "pernyataan": null,
+    "kunciJawaban": "D",
+    "kunci_jawaban": "D",
+    "kunci": "D",
+    "pembahasan": "Urutan pokok pikiran Teks 1: (1) Dunia menghadapi tiga krisis lingkungan (iklim, hayati, polusi); (2) Sampah plastik memperparah krisis lingkungan karena sulit terurai; (3) Indonesia termasuk negara penyumbang sampah plastik terbesar berdasarkan data SIPSN; (4) Perlunya kerja sama pemerintah, pelaku usaha, dan masyarakat dalam penanganan sampah. Alur logis ini tepat ditunjukkan oleh bagan D.",
+    "bacaan": "<b>Teks 1</b><br>Saat ini, dunia menghadapi tiga krisis lingkungan, yaitu perubahan iklim, hilangnya keanekaragaman hayati, dan meningkatnya polusi. Tiga krisis tersebut semakin parah dengan tingginya jumlah sampah plastik. Plastik sulit terurai sehingga mempercepat kerusakan ekosistem. Indonesia termasuk salah satu negara penghasil sampah plastik terbesar. Berdasarkan data Sistem Informasi Pengelolaan Sampah Nasional (SIPSN) tahun 2024, sebanyak 19,74% dari 34,2 juta ton sampah merupakan sampah plastik. Angka ini meningkat dibandingkan tahun 2023 sebesar 19,26%. Hal ini menunjukkan bahwa masalah sampah plastik semakin mendesak untuk segera ditangani. Oleh karena itu, upaya serius berbagai pihak perlu dilakukan untuk mengurangi penggunaan plastik sekali pakai dan meningkatkan pengelolaan sampah. Pemerintah, pelaku usaha, dan masyarakat harus bekerja sama dalam menerapkan kebiasaan ramah lingkungan, seperti memilah sampah, mendaur ulang, dan mengurangi produk sekali pakai.<br><br><b>Teks 2 (Infografis Lestarikan Lingkungan Lewat Keseharian - CNN Indonesia):</b><br>Kegiatan ramah lingkungan yang dapat dilakukan sehari-hari:<br>• Pakai tas belanja dan bawa tumbler untuk mengurangi jumlah sampah plastik.<br>• Ganti tisu dengan sapu tangan untuk menekan jumlah sampah.<br>• AC dan lampu tak perlu dinyalakan seharian untuk menghemat penggunaan listrik.<br>• Bepergian pakai transportasi umum untuk mengurangi polusi udara.<br>• Masak secukupnya sesuai kebutuhan, selalu habiskan makanan agar tidak jadi sampah.<br>• Pisahkan sampah organik dan anorganik.<br>• Daur ulang baju yang sudah rusak/tak dipakai menjadi lap, keset, tatakan gelas, dll.<br>• Tidak membakar sampah untuk mengurangi polusi asap hasil pembakaran.",
+    "grup": "wacana_lingkungan"
+  },
+  {
+    "id": "tka_akbar_indo_18",
+    "nomor": 18,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
+    "materi": "Menilai Kredibilitas Sumber Data Teks",
+    "tipe": "benar_salah",
+    "teksSoal": "Setelah membaca kedua teks tersebut, Hasan menilai bahwa informasi teks 1 lebih terpercaya daripada teks 2. Pernyataan manakah yang mendukung penilaian Hasan?<br>Tentukan Benar atau Salah untuk setiap pernyataan!",
+    "teks_soal": "Setelah membaca kedua teks tersebut, Hasan menilai bahwa informasi teks 1 lebih terpercaya daripada teks 2. Pernyataan manakah yang mendukung penilaian Hasan?<br>Tentukan Benar atau Salah untuk setiap pernyataan!",
+    "soal": "Setelah membaca kedua teks tersebut, Hasan menilai bahwa informasi teks 1 lebih terpercaya daripada teks 2. Pernyataan manakah yang mendukung penilaian Hasan?<br>Tentukan Benar atau Salah untuk setiap pernyataan!",
+    "gambar": null,
+    "gambarUrls": [],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [],
+    "opsi": [],
+    "pernyataan": [
+      {
+        "id": "p_1",
+        "teks": "A. Terdapat pernyataan ahli.",
+        "kunci": ""
+      },
+      {
+        "id": "p_2",
+        "teks": "B. Informasi diperoleh dari karya ilmiah.",
+        "kunci": ""
+      },
+      {
+        "id": "p_3",
+        "teks": "C. Memuat data resmi dari pemerintah.",
+        "kunci": ""
+      }
+    ],
+    "kunciJawaban": "A: Salah, B: Salah, C: Benar",
+    "kunci_jawaban": "A: Salah, B: Salah, C: Benar",
+    "kunci": "A: Salah, B: Salah, C: Benar",
+    "pembahasan": "Teks 1 memuat data statistik resmi pemerintah dari Sistem Informasi Pengelolaan Sampah Nasional (SIPSN) tahun 2024 dan 2023 dengan angka persentase konkret (19,74% dari 34,2 juta ton sampah). Pernyataan A Salah karena teks 1 tidak mengutip pernyataan ahli perorangan. Pernyataan B Salah karena teks bukan berasal dari jurnal/karya ilmiah melainkan data portal berita dan kementerian. Pernyataan C Benar karena memuat data resmi instansi pemerintah.",
+    "bacaan": "<b>Teks 1</b><br>Saat ini, dunia menghadapi tiga krisis lingkungan, yaitu perubahan iklim, hilangnya keanekaragaman hayati, dan meningkatnya polusi. Tiga krisis tersebut semakin parah dengan tingginya jumlah sampah plastik. Plastik sulit terurai sehingga mempercepat kerusakan ekosistem. Indonesia termasuk salah satu negara penghasil sampah plastik terbesar. Berdasarkan data Sistem Informasi Pengelolaan Sampah Nasional (SIPSN) tahun 2024, sebanyak 19,74% dari 34,2 juta ton sampah merupakan sampah plastik. Angka ini meningkat dibandingkan tahun 2023 sebesar 19,26%. Hal ini menunjukkan bahwa masalah sampah plastik semakin mendesak untuk segera ditangani. Oleh karena itu, upaya serius berbagai pihak perlu dilakukan untuk mengurangi penggunaan plastik sekali pakai dan meningkatkan pengelolaan sampah. Pemerintah, pelaku usaha, dan masyarakat harus bekerja sama dalam menerapkan kebiasaan ramah lingkungan, seperti memilah sampah, mendaur ulang, dan mengurangi produk sekali pakai.<br><br><b>Teks 2 (Infografis Lestarikan Lingkungan Lewat Keseharian - CNN Indonesia):</b><br>Kegiatan ramah lingkungan yang dapat dilakukan sehari-hari:<br>• Pakai tas belanja dan bawa tumbler untuk mengurangi jumlah sampah plastik.<br>• Ganti tisu dengan sapu tangan untuk menekan jumlah sampah.<br>• AC dan lampu tak perlu dinyalakan seharian untuk menghemat penggunaan listrik.<br>• Bepergian pakai transportasi umum untuk mengurangi polusi udara.<br>• Masak secukupnya sesuai kebutuhan, selalu habiskan makanan agar tidak jadi sampah.<br>• Pisahkan sampah organik dan anorganik.<br>• Daur ulang baju yang sudah rusak/tak dipakai menjadi lap, keset, tatakan gelas, dll.<br>• Tidak membakar sampah untuk mengurangi polusi asap hasil pembakaran.",
+    "grup": "wacana_lingkungan"
+  },
+  {
+    "id": "tka_akbar_indo_19",
+    "nomor": 19,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
+    "materi": "Menyimpulkan Nilai Keteladanan Puisi",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Keteladanan apa yang dapat kamu peroleh dari puisi “Elegi Hujan”?",
+    "teks_soal": "Keteladanan apa yang dapat kamu peroleh dari puisi “Elegi Hujan”?",
+    "soal": "Keteladanan apa yang dapat kamu peroleh dari puisi “Elegi Hujan”?",
+    "gambar": null,
+    "gambarUrls": [],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Waspada ketika bencana melanda.",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Musim hujan harus selalu disyukuri.",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Berdoalah saat cobaan yang datang.",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "Jagalah alam agar bumi tidak rusak.",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Waspada ketika bencana melanda.",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Musim hujan harus selalu disyukuri.",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Berdoalah saat cobaan yang datang.",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "Jagalah alam agar bumi tidak rusak.",
+        "gambar": null
+      }
+    ],
+    "pernyataan": null,
+    "kunciJawaban": "D",
+    "kunci_jawaban": "D",
+    "kunci": "D",
+    "pembahasan": "Puisi 'Elegi Hujan' menggambarkan bencana air bah dan duka kematian yang bermula 'Dari gunung yang kehilangan pepohonan' hingga menyebabkan 'bumi yang porak-poranda'. Nilai keteladanan yang paling mendasar adalah ajakan untuk menjaga kelestarian alam dan hutan agar bumi tidak rusak dan tidak mendatangkan petaka banjir (opsi D).",
+    "bacaan": "<b>Elegi Hujan</b><br><br>Lewat kaca jendela<br>Kutemui lembap sisa gerimis menangis<br>Merindu angin kemarau tahun lalu<br>Menitipkan salam selamat tinggal<br>Pada daun yang jatuh<br>Pada bunga yang hanyut oleh arus<br>Sebelum cikal buah menampakkan wujudnya<br>Dan bergurau bersama desau angin<br>Dari gunung yang kehilangan pepohonan<br><br>Pelan-pelan kucari dirimu di antara rengkuhan kehilangan<br>Bisu mencekam menatap bumi yang porak-poranda<br>Siang yang sepi, malam yang mati<br>Mentari dan rembulan tak mampu membangkitkan<br>Sisa tawamu yang tenggelam<br>Oleh hujan yang membawa seribu kematian",
+    "grup": "wacana_puisi"
+  },
+  {
+    "id": "tka_akbar_indo_20",
+    "nomor": 20,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
+    "materi": "Memaknai Larik Puisi Bernuansa Kiasan",
+    "tipe": "pg_kompleks",
+    "teksSoal": "Apa makna yang terkandung dalam larik Oleh hujan yang membawa seribu kematian dalam puisi tersebut?<br>Pilihlah jawaban yang benar! Jawaban benar lebih dari satu.",
+    "teks_soal": "Apa makna yang terkandung dalam larik Oleh hujan yang membawa seribu kematian dalam puisi tersebut?<br>Pilihlah jawaban yang benar! Jawaban benar lebih dari satu.",
+    "soal": "Apa makna yang terkandung dalam larik Oleh hujan yang membawa seribu kematian dalam puisi tersebut?<br>Pilihlah jawaban yang benar! Jawaban benar lebih dari satu.",
+    "gambar": null,
+    "gambarUrls": [],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [
+      {
+        "key": "1",
+        "label": "1",
+        "teks": "Duka mendalam karena bencana banjir.",
+        "gambar": null
+      },
+      {
+        "key": "2",
+        "label": "2",
+        "teks": "Banjir menyebabkan kesengsaraan manusia.",
+        "gambar": null
+      },
+      {
+        "key": "3",
+        "label": "3",
+        "teks": "Banjir menimbulkan korban jiwa yang banyak.",
+        "gambar": null
+      },
+      {
+        "key": "4",
+        "label": "4",
+        "teks": "Korban jiwa dan harta benda disebabkan banjir.",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "1",
+        "label": "1",
+        "teks": "Duka mendalam karena bencana banjir.",
+        "gambar": null
+      },
+      {
+        "key": "2",
+        "label": "2",
+        "teks": "Banjir menyebabkan kesengsaraan manusia.",
+        "gambar": null
+      },
+      {
+        "key": "3",
+        "label": "3",
+        "teks": "Banjir menimbulkan korban jiwa yang banyak.",
+        "gambar": null
+      },
+      {
+        "key": "4",
+        "label": "4",
+        "teks": "Korban jiwa dan harta benda disebabkan banjir.",
+        "gambar": null
+      }
+    ],
+    "pernyataan": null,
+    "kunciJawaban": "1, 2, 3",
+    "kunci_jawaban": "1, 2, 3",
+    "kunci": "1, 2, 3",
+    "pembahasan": "Larik 'Oleh hujan yang membawa seribu kematian' menggunakan majas hiperbola ('seribu kematian') yang menggambarkan dahsyatnya musibah banjir yang merenggut banyak korban jiwa (pernyataan 3), memicu kepedihan dan kesengsaraan hidup warga yang selamat (pernyataan 2), serta melahirkan suasana duka cita mendalam atas orang-orang terkasih yang tenggelam (pernyataan 1). Jadi pernyataan 1, 2, dan 3 benar.",
+    "bacaan": "<b>Elegi Hujan</b><br><br>Lewat kaca jendela<br>Kutemui lembap sisa gerimis menangis<br>Merindu angin kemarau tahun lalu<br>Menitipkan salam selamat tinggal<br>Pada daun yang jatuh<br>Pada bunga yang hanyut oleh arus<br>Sebelum cikal buah menampakkan wujudnya<br>Dan bergurau bersama desau angin<br>Dari gunung yang kehilangan pepohonan<br><br>Pelan-pelan kucari dirimu di antara rengkuhan kehilangan<br>Bisu mencekam menatap bumi yang porak-poranda<br>Siang yang sepi, malam yang mati<br>Mentari dan rembulan tak mampu membangkitkan<br>Sisa tawamu yang tenggelam<br>Oleh hujan yang membawa seribu kematian",
+    "grup": "wacana_puisi"
+  },
+  {
+    "id": "tka_akbar_indo_21",
+    "nomor": 21,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
+    "materi": "Menentukan Tanggapan Emosional Pembaca Puisi",
+    "tipe": "benar_salah",
+    "teksSoal": "Tanggapan emosional yang sesuai dengan isi puisi tersebut adalah ….<br>Tentukan Sesuai atau Tidak Sesuai untuk setiap pernyataan berikut:",
+    "teks_soal": "Tanggapan emosional yang sesuai dengan isi puisi tersebut adalah ….<br>Tentukan Sesuai atau Tidak Sesuai untuk setiap pernyataan berikut:",
+    "soal": "Tanggapan emosional yang sesuai dengan isi puisi tersebut adalah ….<br>Tentukan Sesuai atau Tidak Sesuai untuk setiap pernyataan berikut:",
+    "gambar": null,
+    "gambarUrls": [],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [],
+    "opsi": [],
+    "pernyataan": [
+      {
+        "id": "p_1",
+        "teks": "A. Empati terhadap sesama manusia.",
+        "kunci": ""
+      },
+      {
+        "id": "p_2",
+        "teks": "B. Sedih saat melihat kerusakan alam.",
+        "kunci": ""
+      },
+      {
+        "id": "p_3",
+        "teks": "C. Kesal terhadap pelaku kerusakan lingkungan.",
+        "kunci": ""
+      }
+    ],
+    "kunciJawaban": "A: Benar, B: Benar, C: Benar",
+    "kunci_jawaban": "A: Benar, B: Benar, C: Benar",
+    "kunci": "A: Benar, B: Benar, C: Benar",
+    "pembahasan": "Pembaca puisi tergerak secara emosional: empati mendalam terhadap korban yang kehilangan keluarga ('sisa tawamu yang tenggelam'), rasa sedih melihat alam yang hancur ('bumi yang porak-poranda'), serta rasa kesal/geram terhadap pihak perusak hutan di pegunungan yang menyebabkan petaka. Ketiga tanggapan emosional tersebut sesuai.",
+    "bacaan": "<b>Elegi Hujan</b><br><br>Lewat kaca jendela<br>Kutemui lembap sisa gerimis menangis<br>Merindu angin kemarau tahun lalu<br>Menitipkan salam selamat tinggal<br>Pada daun yang jatuh<br>Pada bunga yang hanyut oleh arus<br>Sebelum cikal buah menampakkan wujudnya<br>Dan bergurau bersama desau angin<br>Dari gunung yang kehilangan pepohonan<br><br>Pelan-pelan kucari dirimu di antara rengkuhan kehilangan<br>Bisu mencekam menatap bumi yang porak-poranda<br>Siang yang sepi, malam yang mati<br>Mentari dan rembulan tak mampu membangkitkan<br>Sisa tawamu yang tenggelam<br>Oleh hujan yang membawa seribu kematian",
+    "grup": "wacana_puisi"
+  },
+  {
+    "id": "tka_akbar_indo_22",
+    "nomor": 22,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
+    "materi": "Menemukan Informasi Tersurat Cerita Pendek",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Apa yang sedang dilakukan Mak Inang ketika ada pesawat terbang melintas?",
+    "teks_soal": "Apa yang sedang dilakukan Mak Inang ketika ada pesawat terbang melintas?",
+    "soal": "Apa yang sedang dilakukan Mak Inang ketika ada pesawat terbang melintas?",
+    "gambar": null,
+    "gambarUrls": [],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Menyadap karet.",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Mencuci pakaian.",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Menampari pipi dan kaki.",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "Melihat rumah kontrakan.",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Menyadap karet.",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Mencuci pakaian.",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Menampari pipi dan kaki.",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "Melihat rumah kontrakan.",
+        "gambar": null
+      }
+    ],
+    "pernyataan": null,
+    "kunciJawaban": "B",
+    "kunci_jawaban": "B",
+    "kunci": "B",
+    "pembahasan": "Berdasarkan paragraf pertama cerita: 'Deru pesawat terbang itu kian nyaring begitu melewati tempatnya berjongkok. Ia menghentikan gerakan tangannya... Lalu, tangannya kembali meraih cucian pakaian yang tak kunjung habis itu.' Jadi Mak Inang sedang mencuci pakaian (opsi B).",
+    "bacaan": "Deru pesawat terbang itu kian nyaring begitu melewati tempatnya berjongkok. Ia menghentikan gerakan tangannya. Mengiringi pesawat itu lenyap dari mata lamurnya. Lalu, tangannya kembali meraih cucian pakaian yang tak kunjung habis itu. Beberapa detik sekali, tangan keriputnya berhenti, lalu ia menampari pipi dan kaki. Nyamuk di belantara beton ternyata lebih ganas ketimbang nyamuk-nyamuk rimba yang saban pagi menggigit kulitnya saat menyadap karet.<br><br>Ia adalah Mak Inang. Belum genap satu purnama perempuan tua itu tiba di Jakarta. Ia melihat rumah kontrakan yang berdesak-desakan macam jamur kuping di kebun karetnya yang mengembang bila musim hujan. Hidungnya pun belum akrab dengan bau bacin selokan berair hitam kental yang mengalir di belakang kontrakannya. Bahkan, Mak Inang masih sering terkaget-kaget bila tikus-tikus got Jakarta berseliweran. Jika bisa, saat itu juga ia ingin kembali ke kampungnya.<br><br>Sesungguhnya, ia pun masih tak percaya kalau akhirnya ia menjejakkan kaki di Jakarta yang kerap diceritakan orang-orang di kampungnya. Suatu tempat yang megah dan menakjubkan dalam cerita Mak Rifah, Mak Sangkut, dan beberapa perempuan kampung karibnya. Sesuatu yang terdengar seperti surganya dunia. Hal itu membuat Mak Inang bersemangat mengadu nasib. Serba mewah, serba manis, serba indah untuk dibayangkan, tapi kenyataannya bertolak belakang. Dengan peristiwa yang dialaminya ini, Mak Inang lebih selektif dalam menanggapi cerita orang lain.",
+    "grup": "wacana_makinang"
+  },
+  {
+    "id": "tka_akbar_indo_23",
+    "nomor": 23,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
+    "materi": "Menganalisis Perubahan Karakter Tokoh",
+    "tipe": "pg_kompleks",
+    "teksSoal": "Bagaimana perubahan karakter Mak Inang sebelum dan setelah ke Jakarta?<br>Pilihlah jawaban yang benar! Jawaban benar lebih dari satu.",
+    "teks_soal": "Bagaimana perubahan karakter Mak Inang sebelum dan setelah ke Jakarta?<br>Pilihlah jawaban yang benar! Jawaban benar lebih dari satu.",
+    "soal": "Bagaimana perubahan karakter Mak Inang sebelum dan setelah ke Jakarta?<br>Pilihlah jawaban yang benar! Jawaban benar lebih dari satu.",
+    "gambar": null,
+    "gambarUrls": [],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [
+      {
+        "key": "1",
+        "label": "1",
+        "teks": "Awalnya Mak Inang mudah percaya, setelah tinggal di Jakarta Mak Inang lebih mawas diri.",
+        "gambar": null
+      },
+      {
+        "key": "2",
+        "label": "2",
+        "teks": "Sebelumnya Mak Inang sangat sederhana, sesampainya di Jakarta kehidupannya sangat mewah.",
+        "gambar": null
+      },
+      {
+        "key": "3",
+        "label": "3",
+        "teks": "Semula Mak Inang optimis dengan kehidupan Jakarta, sesampai di sana Mak Inang menjadi pesimis.",
+        "gambar": null
+      },
+      {
+        "key": "4",
+        "label": "4",
+        "teks": "Mulanya Mak Inang bersemangat untuk merantau ke Jakarta, ketika di sana ia menyerah pada kehidupan.",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "1",
+        "label": "1",
+        "teks": "Awalnya Mak Inang mudah percaya, setelah tinggal di Jakarta Mak Inang lebih mawas diri.",
+        "gambar": null
+      },
+      {
+        "key": "2",
+        "label": "2",
+        "teks": "Sebelumnya Mak Inang sangat sederhana, sesampainya di Jakarta kehidupannya sangat mewah.",
+        "gambar": null
+      },
+      {
+        "key": "3",
+        "label": "3",
+        "teks": "Semula Mak Inang optimis dengan kehidupan Jakarta, sesampai di sana Mak Inang menjadi pesimis.",
+        "gambar": null
+      },
+      {
+        "key": "4",
+        "label": "4",
+        "teks": "Mulanya Mak Inang bersemangat untuk merantau ke Jakarta, ketika di sana ia menyerah pada kehidupan.",
+        "gambar": null
+      }
+    ],
+    "pernyataan": null,
+    "kunciJawaban": "1, 3",
+    "kunci_jawaban": "1, 3",
+    "kunci": "1, 3",
+    "pembahasan": "Sebelum ke Jakarta, Mak Inang mudah percaya pada cerita manis perempuan sekampungnya dan sangat bersemangat/optimis ('sesuatu yang terdengar seperti surganya dunia'). Setelah hidup di Jakarta di tengah kontrakan kumuh, ia sadar kenyataan bertolak belakang sehingga menjadi pesimis ingin pulang ke kampung serta lebih mawas diri/selektif dalam mempercayai cerita orang lain. Pernyataan 1 dan 3 benar.",
+    "bacaan": "Deru pesawat terbang itu kian nyaring begitu melewati tempatnya berjongkok. Ia menghentikan gerakan tangannya. Mengiringi pesawat itu lenyap dari mata lamurnya. Lalu, tangannya kembali meraih cucian pakaian yang tak kunjung habis itu. Beberapa detik sekali, tangan keriputnya berhenti, lalu ia menampari pipi dan kaki. Nyamuk di belantara beton ternyata lebih ganas ketimbang nyamuk-nyamuk rimba yang saban pagi menggigit kulitnya saat menyadap karet.<br><br>Ia adalah Mak Inang. Belum genap satu purnama perempuan tua itu tiba di Jakarta. Ia melihat rumah kontrakan yang berdesak-desakan macam jamur kuping di kebun karetnya yang mengembang bila musim hujan. Hidungnya pun belum akrab dengan bau bacin selokan berair hitam kental yang mengalir di belakang kontrakannya. Bahkan, Mak Inang masih sering terkaget-kaget bila tikus-tikus got Jakarta berseliweran. Jika bisa, saat itu juga ia ingin kembali ke kampungnya.<br><br>Sesungguhnya, ia pun masih tak percaya kalau akhirnya ia menjejakkan kaki di Jakarta yang kerap diceritakan orang-orang di kampungnya. Suatu tempat yang megah dan menakjubkan dalam cerita Mak Rifah, Mak Sangkut, dan beberapa perempuan kampung karibnya. Sesuatu yang terdengar seperti surganya dunia. Hal itu membuat Mak Inang bersemangat mengadu nasib. Serba mewah, serba manis, serba indah untuk dibayangkan, tapi kenyataannya bertolak belakang. Dengan peristiwa yang dialaminya ini, Mak Inang lebih selektif dalam menanggapi cerita orang lain.",
+    "grup": "wacana_makinang"
+  },
+  {
+    "id": "tka_akbar_indo_24",
+    "nomor": 24,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
+    "materi": "Penerapan Nilai Kehidupan dari Cerita",
+    "tipe": "benar_salah",
+    "teksSoal": "Setelah membaca kisah Mak Inang, apa yang bisa dilakukan seseorang untuk menerapkan nilai-nilai sesuai cerita?<br>Tentukan Benar atau Salah untuk setiap pernyataan berikut:",
+    "teks_soal": "Setelah membaca kisah Mak Inang, apa yang bisa dilakukan seseorang untuk menerapkan nilai-nilai sesuai cerita?<br>Tentukan Benar atau Salah untuk setiap pernyataan berikut:",
+    "soal": "Setelah membaca kisah Mak Inang, apa yang bisa dilakukan seseorang untuk menerapkan nilai-nilai sesuai cerita?<br>Tentukan Benar atau Salah untuk setiap pernyataan berikut:",
+    "gambar": null,
+    "gambarUrls": [],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [],
+    "opsi": [],
+    "pernyataan": [
+      {
+        "id": "p_1",
+        "teks": "A. Berbicara apa adanya tidak perlu dilebih-lebihkan.",
+        "kunci": ""
+      },
+      {
+        "id": "p_2",
+        "teks": "B. Rajin membantu mengerjakan pekerjaan orang tua.",
+        "kunci": ""
+      },
+      {
+        "id": "p_3",
+        "teks": "C. Mempercayai setiap perkataan orang lain.",
+        "kunci": ""
+      }
+    ],
+    "kunciJawaban": "A: Benar, B: Salah, C: Salah",
+    "kunci_jawaban": "A: Benar, B: Salah, C: Salah",
+    "kunci": "A: Benar, B: Salah, C: Salah",
+    "pembahasan": "Pernyataan A Benar karena cerita mengkritik sikap melebih-lebihkan keadaan kota yang menyesatkan orang lain. Pernyataan B Salah karena bukan merupakan pesan sentral cerita perantauan Mak Inang. Pernyataan C Salah karena cerita justru mengajarkan agar tidak mudah percaya begitu saja pada perkataan orang lain tanpa kroscek kenyataan.",
+    "bacaan": "Deru pesawat terbang itu kian nyaring begitu melewati tempatnya berjongkok. Ia menghentikan gerakan tangannya. Mengiringi pesawat itu lenyap dari mata lamurnya. Lalu, tangannya kembali meraih cucian pakaian yang tak kunjung habis itu. Beberapa detik sekali, tangan keriputnya berhenti, lalu ia menampari pipi dan kaki. Nyamuk di belantara beton ternyata lebih ganas ketimbang nyamuk-nyamuk rimba yang saban pagi menggigit kulitnya saat menyadap karet.<br><br>Ia adalah Mak Inang. Belum genap satu purnama perempuan tua itu tiba di Jakarta. Ia melihat rumah kontrakan yang berdesak-desakan macam jamur kuping di kebun karetnya yang mengembang bila musim hujan. Hidungnya pun belum akrab dengan bau bacin selokan berair hitam kental yang mengalir di belakang kontrakannya. Bahkan, Mak Inang masih sering terkaget-kaget bila tikus-tikus got Jakarta berseliweran. Jika bisa, saat itu juga ia ingin kembali ke kampungnya.<br><br>Sesungguhnya, ia pun masih tak percaya kalau akhirnya ia menjejakkan kaki di Jakarta yang kerap diceritakan orang-orang di kampungnya. Suatu tempat yang megah dan menakjubkan dalam cerita Mak Rifah, Mak Sangkut, dan beberapa perempuan kampung karibnya. Sesuatu yang terdengar seperti surganya dunia. Hal itu membuat Mak Inang bersemangat mengadu nasib. Serba mewah, serba manis, serba indah untuk dibayangkan, tapi kenyataannya bertolak belakang. Dengan peristiwa yang dialaminya ini, Mak Inang lebih selektif dalam menanggapi cerita orang lain.",
+    "grup": "wacana_makinang"
+  },
+  {
+    "id": "tka_akbar_indo_25",
+    "nomor": 25,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
+    "materi": "Menemukan Informasi Tersurat Cerita Fantasi",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Di mana letak emas murni terbaik di jagat raya?",
+    "teks_soal": "Di mana letak emas murni terbaik di jagat raya?",
+    "soal": "Di mana letak emas murni terbaik di jagat raya?",
+    "gambar": null,
+    "gambarUrls": [],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Negara Hestina.",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Pegunungan Waturaga.",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Pusat pemerintahan Jantara.",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "Desa dekat pegunungan Waturaga.",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Negara Hestina.",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Pegunungan Waturaga.",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Pusat pemerintahan Jantara.",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "Desa dekat pegunungan Waturaga.",
+        "gambar": null
+      }
+    ],
+    "pernyataan": null,
+    "kunciJawaban": "B",
+    "kunci_jawaban": "B",
+    "kunci": "B",
+    "pembahasan": "Berdasarkan paragraf kedua: 'Puluhan ekskavator dan alat lainnya mulai diturunkan di pegunungan Waturaga. Tujuan utama mereka emas murni terbaik di jagat raya.' Letak emas murni tersebut berada di Pegunungan Waturaga (opsi B).",
+    "bacaan": "Di perbatasan negara Jantara dan Hestina, berdiri kokoh pegunungan Waturaga. Pegunungan itu berbentuk seperti wajah raksasa yang tertidur. Awalnya, pegunungan itu damai dan terjaga. Kini, mulai berubah karena modernisasi.<br><br>PT Rakusantara menerima izin dari pemerintah Jantara. Puluhan ekskavator dan alat lainnya mulai diturunkan di pegunungan Waturaga. Tujuan utama mereka emas murni terbaik di jagat raya.<br><br>Kokohnya batu di pegunungan Waturaga membuat peralatan banyak yang rusak. Akhirnya, perusahaan menciptakan ekskavator penghancur dengan bahan tungsten, yaitu logam terkuat. Dengan alat itu, sebagian pegunungan Waturaga mulai dikeruk. Waktu terus berlalu dari musim ke musim, bor tercanggih sampai dinamit terkuat digunakan untuk memecahkan batu di sekitar pegunungan Waturaga. Setiap batuan runtuh diledakkan, warga sekitar merasakan getaran aneh, bukan karena ledakan, tapi seolah gunung kesakitan.<br><br>Saat bulan purnama, lubang tambang PT Rakusantara berhasil menemukan emas di kedalaman puluhan kilometer. Mereka meledakkannya agar mudah dikeruk. Seketika, batuan Waturaga bergerak hidup.<br><br>Batu itu bangkit. Waturaga setinggi ratusan meter berdiri gagah dengan kulit bergerigi batuan karst diselimuti lumut purba. Matanya merah pertanda marah. Ia meraung sehingga menimbulkan gelombang yang merusak alat berat dan rumah warga. Kaki Waturaga mengayun menghantam area pertambangan. Alat berat diinjak-injak seperti mainan kecil. Para penambang lari kocar-kacir. Kemudian, Waturaga melompat, menimbulkan runtuhan gunung dan tanah sampai menyapu para pekerja dan beberapa desa.<br><br>Waturaga benar-benar murka karena dikhianati manusia dengan mengeksploitasinya. Ia melangkah menuju pusat pemerintahan. Segala yang dilewati hancur berantakan. Seluruh pasukan dikerahkan. Namun, Waturaga tak mempan dengan senjata apa pun. Akhirnya, porak-porandalah seluruh negara.",
+    "grup": "wacana_batumurka"
+  },
+  {
+    "id": "tka_akbar_indo_26",
+    "nomor": 26,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
+    "materi": "Menyimpulkan Pesan Moral Cerita Fantasi",
+    "tipe": "pg_kompleks",
+    "teksSoal": "Pesan moral apakah yang diperoleh dari cerita “Batu Murka”?<br>Pilihlah jawaban yang benar! Jawaban benar lebih dari satu.",
+    "teks_soal": "Pesan moral apakah yang diperoleh dari cerita “Batu Murka”?<br>Pilihlah jawaban yang benar! Jawaban benar lebih dari satu.",
+    "soal": "Pesan moral apakah yang diperoleh dari cerita “Batu Murka”?<br>Pilihlah jawaban yang benar! Jawaban benar lebih dari satu.",
+    "gambar": null,
+    "gambarUrls": [],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [
+      {
+        "key": "1",
+        "label": "1",
+        "teks": "Jagalah alam agar tidak merugikan masyarakat.",
+        "gambar": null
+      },
+      {
+        "key": "2",
+        "label": "2",
+        "teks": "Manfaatkanlah kekayaan alam semaksimal mungkin.",
+        "gambar": null
+      },
+      {
+        "key": "3",
+        "label": "3",
+        "teks": "Masyarakat harus turut serta menciptakan kedamaian.",
+        "gambar": null
+      },
+      {
+        "key": "4",
+        "label": "4",
+        "teks": "Setiap perbuatan akan mendapatkan balasan setimpal.",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "1",
+        "label": "1",
+        "teks": "Jagalah alam agar tidak merugikan masyarakat.",
+        "gambar": null
+      },
+      {
+        "key": "2",
+        "label": "2",
+        "teks": "Manfaatkanlah kekayaan alam semaksimal mungkin.",
+        "gambar": null
+      },
+      {
+        "key": "3",
+        "label": "3",
+        "teks": "Masyarakat harus turut serta menciptakan kedamaian.",
+        "gambar": null
+      },
+      {
+        "key": "4",
+        "label": "4",
+        "teks": "Setiap perbuatan akan mendapatkan balasan setimpal.",
+        "gambar": null
+      }
+    ],
+    "pernyataan": null,
+    "kunciJawaban": "1, 4",
+    "kunci_jawaban": "1, 4",
+    "kunci": "1, 4",
+    "pembahasan": "Cerita 'Batu Murka' memperlihatkan bagaimana kerakusan manusia mengeksploitasi pegunungan demi emas mengakibatkan bangkitnya raksasa batu yang memorak-porandakan seluruh negara. Pesan moralnya: (1) Jagalah kelestarian alam agar tidak mendatangkan bencana bagi masyarakat; (4) Setiap tindakan serakah yang merusak alam akan menuai balasan setimpal berupa malapetaka. Jawaban benar adalah 1 dan 4.",
+    "bacaan": "Di perbatasan negara Jantara dan Hestina, berdiri kokoh pegunungan Waturaga. Pegunungan itu berbentuk seperti wajah raksasa yang tertidur. Awalnya, pegunungan itu damai dan terjaga. Kini, mulai berubah karena modernisasi.<br><br>PT Rakusantara menerima izin dari pemerintah Jantara. Puluhan ekskavator dan alat lainnya mulai diturunkan di pegunungan Waturaga. Tujuan utama mereka emas murni terbaik di jagat raya.<br><br>Kokohnya batu di pegunungan Waturaga membuat peralatan banyak yang rusak. Akhirnya, perusahaan menciptakan ekskavator penghancur dengan bahan tungsten, yaitu logam terkuat. Dengan alat itu, sebagian pegunungan Waturaga mulai dikeruk. Waktu terus berlalu dari musim ke musim, bor tercanggih sampai dinamit terkuat digunakan untuk memecahkan batu di sekitar pegunungan Waturaga. Setiap batuan runtuh diledakkan, warga sekitar merasakan getaran aneh, bukan karena ledakan, tapi seolah gunung kesakitan.<br><br>Saat bulan purnama, lubang tambang PT Rakusantara berhasil menemukan emas di kedalaman puluhan kilometer. Mereka meledakkannya agar mudah dikeruk. Seketika, batuan Waturaga bergerak hidup.<br><br>Batu itu bangkit. Waturaga setinggi ratusan meter berdiri gagah dengan kulit bergerigi batuan karst diselimuti lumut purba. Matanya merah pertanda marah. Ia meraung sehingga menimbulkan gelombang yang merusak alat berat dan rumah warga. Kaki Waturaga mengayun menghantam area pertambangan. Alat berat diinjak-injak seperti mainan kecil. Para penambang lari kocar-kacir. Kemudian, Waturaga melompat, menimbulkan runtuhan gunung dan tanah sampai menyapu para pekerja dan beberapa desa.<br><br>Waturaga benar-benar murka karena dikhianati manusia dengan mengeksploitasinya. Ia melangkah menuju pusat pemerintahan. Segala yang dilewati hancur berantakan. Seluruh pasukan dikerahkan. Namun, Waturaga tak mempan dengan senjata apa pun. Akhirnya, porak-porandalah seluruh negara.",
+    "grup": "wacana_batumurka"
+  },
+  {
+    "id": "tka_akbar_indo_27",
+    "nomor": 27,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
+    "materi": "Menilai Ketepatan Karakterisasi Tokoh Cerita",
+    "tipe": "benar_salah",
+    "teksSoal": "Setelah membaca cerita, Silas, Roan, dan Gaharu berpendapat sebagai berikut:<br>• Silas: “Waturaga ternyata dendam terhadap oknum yang mengeksploitasinya sehingga ia memporak-porandakan negara.”<br>• Roan: “Kalau menurutku, PT Rakusantara mencerminkan kerakusan manusia sehingga merusak alam.”<br>• Gaharu: “Menurutku Pemerintah Jantara sudah bijak dalam mengeluarkan izin kepada perusahaan karena berdasarkan penelitian.”<br><br>Pendapat siapakah yang tepat untuk menilai karakter tokoh dalam cerita tersebut?<br>Tentukan Benar atau Salah untuk setiap pernyataan berikut:",
+    "teks_soal": "Setelah membaca cerita, Silas, Roan, dan Gaharu berpendapat sebagai berikut:<br>• Silas: “Waturaga ternyata dendam terhadap oknum yang mengeksploitasinya sehingga ia memporak-porandakan negara.”<br>• Roan: “Kalau menurutku, PT Rakusantara mencerminkan kerakusan manusia sehingga merusak alam.”<br>• Gaharu: “Menurutku Pemerintah Jantara sudah bijak dalam mengeluarkan izin kepada perusahaan karena berdasarkan penelitian.”<br><br>Pendapat siapakah yang tepat untuk menilai karakter tokoh dalam cerita tersebut?<br>Tentukan Benar atau Salah untuk setiap pernyataan berikut:",
+    "soal": "Setelah membaca cerita, Silas, Roan, dan Gaharu berpendapat sebagai berikut:<br>• Silas: “Waturaga ternyata dendam terhadap oknum yang mengeksploitasinya sehingga ia memporak-porandakan negara.”<br>• Roan: “Kalau menurutku, PT Rakusantara mencerminkan kerakusan manusia sehingga merusak alam.”<br>• Gaharu: “Menurutku Pemerintah Jantara sudah bijak dalam mengeluarkan izin kepada perusahaan karena berdasarkan penelitian.”<br><br>Pendapat siapakah yang tepat untuk menilai karakter tokoh dalam cerita tersebut?<br>Tentukan Benar atau Salah untuk setiap pernyataan berikut:",
+    "gambar": null,
+    "gambarUrls": [],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [],
+    "opsi": [],
+    "pernyataan": [
+      {
+        "id": "p_1",
+        "teks": "A. Silas karena alam yang dirusak bisa menimbulkan bencana bagi wilayah sekitar.",
+        "kunci": ""
+      },
+      {
+        "id": "p_2",
+        "teks": "B. Gaharu karena izin pertambangan sudah berdasarkan penelitian sebelumnya.",
+        "kunci": ""
+      },
+      {
+        "id": "p_3",
+        "teks": "C. Roan karena penambangan yang dilakukan oleh perusahaan untuk keuntungan sendiri.",
+        "kunci": ""
+      }
+    ],
+    "kunciJawaban": "A: Salah, B: Salah, C: Benar",
+    "kunci_jawaban": "A: Salah, B: Salah, C: Benar",
+    "kunci": "A: Salah, B: Salah, C: Benar",
+    "pembahasan": "Pernyataan C Benar karena pendapat Roan tepat menilai karakterisasi PT Rakusantara sebagai perlambang kerakusan korporasi tambang yang semata-mata mengejar keuntungan materiil sampai merusak alam. Pernyataan A Salah karena Silas menilai dari sudut dendam Waturaga (alasan di pernyataan A tidak nyambung dengan pendapat Silas). Pernyataan B Salah karena pemerintah Jantara terbukti lalai dan tidak bijak mengizinkan perusakan alam demi keuntungan sepihak.",
+    "bacaan": "Di perbatasan negara Jantara dan Hestina, berdiri kokoh pegunungan Waturaga. Pegunungan itu berbentuk seperti wajah raksasa yang tertidur. Awalnya, pegunungan itu damai dan terjaga. Kini, mulai berubah karena modernisasi.<br><br>PT Rakusantara menerima izin dari pemerintah Jantara. Puluhan ekskavator dan alat lainnya mulai diturunkan di pegunungan Waturaga. Tujuan utama mereka emas murni terbaik di jagat raya.<br><br>Kokohnya batu di pegunungan Waturaga membuat peralatan banyak yang rusak. Akhirnya, perusahaan menciptakan ekskavator penghancur dengan bahan tungsten, yaitu logam terkuat. Dengan alat itu, sebagian pegunungan Waturaga mulai dikeruk. Waktu terus berlalu dari musim ke musim, bor tercanggih sampai dinamit terkuat digunakan untuk memecahkan batu di sekitar pegunungan Waturaga. Setiap batuan runtuh diledakkan, warga sekitar merasakan getaran aneh, bukan karena ledakan, tapi seolah gunung kesakitan.<br><br>Saat bulan purnama, lubang tambang PT Rakusantara berhasil menemukan emas di kedalaman puluhan kilometer. Mereka meledakkannya agar mudah dikeruk. Seketika, batuan Waturaga bergerak hidup.<br><br>Batu itu bangkit. Waturaga setinggi ratusan meter berdiri gagah dengan kulit bergerigi batuan karst diselimuti lumut purba. Matanya merah pertanda marah. Ia meraung sehingga menimbulkan gelombang yang merusak alat berat dan rumah warga. Kaki Waturaga mengayun menghantam area pertambangan. Alat berat diinjak-injak seperti mainan kecil. Para penambang lari kocar-kacir. Kemudian, Waturaga melompat, menimbulkan runtuhan gunung dan tanah sampai menyapu para pekerja dan beberapa desa.<br><br>Waturaga benar-benar murka karena dikhianati manusia dengan mengeksploitasinya. Ia melangkah menuju pusat pemerintahan. Segala yang dilewati hancur berantakan. Seluruh pasukan dikerahkan. Namun, Waturaga tak mempan dengan senjata apa pun. Akhirnya, porak-porandalah seluruh negara.",
+    "grup": "wacana_batumurka"
+  },
+  {
+    "id": "tka_akbar_indo_28",
+    "nomor": 28,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
+    "materi": "Ketepatan Penggunaan Istilah Ilmiah Lingkungan",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Istilah yang tidak sesuai dalam teks tersebut adalah ….",
+    "teks_soal": "Istilah yang tidak sesuai dalam teks tersebut adalah ….",
+    "soal": "Istilah yang tidak sesuai dalam teks tersebut adalah ….",
+    "gambar": null,
+    "gambarUrls": [],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "lestari, konstruksi",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "solusi, daur ulang",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "biogas, komposter",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "organik, anorganik",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "lestari, konstruksi",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "solusi, daur ulang",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "biogas, komposter",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "organik, anorganik",
+        "gambar": null
+      }
+    ],
+    "pernyataan": null,
+    "kunciJawaban": "C",
+    "kunci_jawaban": "C",
+    "kunci": "C",
+    "pembahasan": "Dalam teks terdapat kalimat janggal: 'membakar sampah yang dapat menghasilkan biogas' (pembakaran terbuka tidak menghasilkan biogas, melainkan karbon dioksida/polusi asap; biogas dihasilkan dari fermentasi anaerobik kotoran/sampah organik). Selain itu, 'Sampah organik dapat dimanfaatkan menjadi komposter' juga tidak tepat (komposter adalah alat/wadah pengomposan, sedangkan produk hasilnya adalah kompos). Jadi istilah yang tidak sesuai adalah biogas dan komposter (opsi C).",
+    "bacaan": "Belakangan ini sampah menjadi perhatian dunia karena permasalahan yang terus ditimbulkan. Salah satunya berdampak bagi kesehatan manusia. Hal tersebut terjadi karena masih banyak orang yang enggan mendaur ulang sampah sehingga sampah terus menumpuk. Oleh karena itu, pemanfaatan kembali sampah penting dilakukan.<br><br>Sampah organik dan anorganik yang dihasilkan masyarakat masih bisa digunakan. Pemanfaatan sampah pada dasarnya tidak memerlukan waktu lama, tetapi membutuhkan kreativitas dan ketekunan. Konsep reduce (mengurangi), reuse (menggunakan kembali), dan recycle (mendaur ulang) merupakan pengelolaan sampah yang mudah diterapkan dalam kehidupan sehari-hari yang dikenal dengan 3R.<br><br>Konsep 3R ini bertujuan untuk meminimalkan sampah dan dampak negatifnya terhadap lingkungan. Mengurangi sampah bisa dilakukan dengan membatasi penggunaan barang sekali pakai, menggunakan tas belanja yang dapat digunakan ulang, dan menggunakan barang-barang yang ramah lingkungan. Menggunakan kembali bisa dilakukan dengan menggunakan botol minum isi ulang, menggunakan baju bekas untuk lap, dan menggunakan kaleng atau kardus sebagai wadah. Upaya tersebut jauh lebih baik daripada membakar sampah yang dapat menghasilkan biogas. Mendaur ulang bisa dilakukan dengan cara memilah sampah organik dan anorganik. Sampah organik dapat dimanfaatkan menjadi komposter. Selain itu, daur ulang juga dapat dilakukan dengan memanfaatkan abu sebagai bahan konstruksi.<br><br>Sampah memang tidak terlepas dari kehidupan manusia dan seringkali menimbulkan masalah. Akan tetapi, bukan berarti tidak ada solusi untuk hal itu. Perilaku disiplin menerapkan 3R akan menciptakan lingkungan yang lestari dan asri.",
+    "grup": "wacana_3r"
+  },
+  {
+    "id": "tka_akbar_indo_29",
+    "nomor": 29,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
+    "materi": "Memprediksi Dampak Sosial Penerapan Konsep 3R",
+    "tipe": "pg_kompleks",
+    "teksSoal": "Konsep 3R merupakan cara mudah untuk mengatasi masalah sampah. Jika 3R ini dilaksanakan, kemungkinan apa yang akan terjadi di masyarakat?<br>Pilihlah jawaban yang benar! Jawaban benar lebih dari satu.",
+    "teks_soal": "Konsep 3R merupakan cara mudah untuk mengatasi masalah sampah. Jika 3R ini dilaksanakan, kemungkinan apa yang akan terjadi di masyarakat?<br>Pilihlah jawaban yang benar! Jawaban benar lebih dari satu.",
+    "soal": "Konsep 3R merupakan cara mudah untuk mengatasi masalah sampah. Jika 3R ini dilaksanakan, kemungkinan apa yang akan terjadi di masyarakat?<br>Pilihlah jawaban yang benar! Jawaban benar lebih dari satu.",
+    "gambar": null,
+    "gambarUrls": [],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [
+      {
+        "key": "1",
+        "label": "1",
+        "teks": "Petugas kebersihan perlu diperhatikan kesejahteraannya oleh warga penghasil sampah.",
+        "gambar": null
+      },
+      {
+        "key": "2",
+        "label": "2",
+        "teks": "Sampah di depo-depo memerlukan penanganan yang lebih cepat dan tepat agar tidak menumpuk.",
+        "gambar": null
+      },
+      {
+        "key": "3",
+        "label": "3",
+        "teks": "Pihak pendaur ulang mendapatkan bahan produksinya berupa sampah dari masyarakat.",
+        "gambar": null
+      },
+      {
+        "key": "4",
+        "label": "4",
+        "teks": "Pemilahan sampah akan ditindaklanjuti sampai dapat dimanfaatkan kembali oleh masyarakat.",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "1",
+        "label": "1",
+        "teks": "Petugas kebersihan perlu diperhatikan kesejahteraannya oleh warga penghasil sampah.",
+        "gambar": null
+      },
+      {
+        "key": "2",
+        "label": "2",
+        "teks": "Sampah di depo-depo memerlukan penanganan yang lebih cepat dan tepat agar tidak menumpuk.",
+        "gambar": null
+      },
+      {
+        "key": "3",
+        "label": "3",
+        "teks": "Pihak pendaur ulang mendapatkan bahan produksinya berupa sampah dari masyarakat.",
+        "gambar": null
+      },
+      {
+        "key": "4",
+        "label": "4",
+        "teks": "Pemilahan sampah akan ditindaklanjuti sampai dapat dimanfaatkan kembali oleh masyarakat.",
+        "gambar": null
+      }
+    ],
+    "pernyataan": null,
+    "kunciJawaban": "3, 4",
+    "kunci_jawaban": "3, 4",
+    "kunci": "3, 4",
+    "pembahasan": "Jika konsep 3R berjalan optimal: pemilahan sampah organik dan anorganik dari rumah tangga akan terus ditindaklanjuti hingga menjadi bahan baku daur ulang dan komposting yang bermanfaat (pernyataan 4), dan pelaku industri kreatif/pendaur ulang akan memperoleh pasokan bahan baku sampah yang bersih dan terpilah secara berkelanjutan (pernyataan 3). Jadi pernyataan 3 dan 4 benar.",
+    "bacaan": "Belakangan ini sampah menjadi perhatian dunia karena permasalahan yang terus ditimbulkan. Salah satunya berdampak bagi kesehatan manusia. Hal tersebut terjadi karena masih banyak orang yang enggan mendaur ulang sampah sehingga sampah terus menumpuk. Oleh karena itu, pemanfaatan kembali sampah penting dilakukan.<br><br>Sampah organik dan anorganik yang dihasilkan masyarakat masih bisa digunakan. Pemanfaatan sampah pada dasarnya tidak memerlukan waktu lama, tetapi membutuhkan kreativitas dan ketekunan. Konsep reduce (mengurangi), reuse (menggunakan kembali), dan recycle (mendaur ulang) merupakan pengelolaan sampah yang mudah diterapkan dalam kehidupan sehari-hari yang dikenal dengan 3R.<br><br>Konsep 3R ini bertujuan untuk meminimalkan sampah dan dampak negatifnya terhadap lingkungan. Mengurangi sampah bisa dilakukan dengan membatasi penggunaan barang sekali pakai, menggunakan tas belanja yang dapat digunakan ulang, dan menggunakan barang-barang yang ramah lingkungan. Menggunakan kembali bisa dilakukan dengan menggunakan botol minum isi ulang, menggunakan baju bekas untuk lap, dan menggunakan kaleng atau kardus sebagai wadah. Upaya tersebut jauh lebih baik daripada membakar sampah yang dapat menghasilkan biogas. Mendaur ulang bisa dilakukan dengan cara memilah sampah organik dan anorganik. Sampah organik dapat dimanfaatkan menjadi komposter. Selain itu, daur ulang juga dapat dilakukan dengan memanfaatkan abu sebagai bahan konstruksi.<br><br>Sampah memang tidak terlepas dari kehidupan manusia dan seringkali menimbulkan masalah. Akan tetapi, bukan berarti tidak ada solusi untuk hal itu. Perilaku disiplin menerapkan 3R akan menciptakan lingkungan yang lestari dan asri.",
+    "grup": "wacana_3r"
+  },
+  {
+    "id": "tka_akbar_indo_30",
+    "nomor": 30,
+    "jenjang": "SMP",
+    "kelas": "9",
+    "tingkatKelas": "9 SMP",
+    "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
+    "materi": "Menilai Kesesuaian Ilustrasi terhadap Teks",
+    "tipe": "benar_salah",
+    "teksSoal": "Mengapa penyajian ilustrasi kurang mendukung isi wacana?<br>Tentukan Benar atau Salah untuk setiap pernyataan berikut:",
+    "teks_soal": "Mengapa penyajian ilustrasi kurang mendukung isi wacana?<br>Tentukan Benar atau Salah untuk setiap pernyataan berikut:",
+    "soal": "Mengapa penyajian ilustrasi kurang mendukung isi wacana?<br>Tentukan Benar atau Salah untuk setiap pernyataan berikut:",
+    "gambar": null,
+    "gambarUrls": [],
+    "tabel": null,
+    "tabelSoal": null,
+    "opsiJawaban": [],
+    "opsi": [],
+    "pernyataan": [
+      {
+        "id": "p_1",
+        "teks": "A. Tidak menguatkan pembahasan konsep reuse dalam 3R.",
+        "kunci": ""
+      },
+      {
+        "id": "p_2",
+        "teks": "B. Belum menggambarkan konsep 3R secara menyeluruh.",
+        "kunci": ""
+      },
+      {
+        "id": "p_3",
+        "teks": "C. Kurang mencerminkan penjelasan tujuan konsep 3R.",
+        "kunci": ""
+      }
+    ],
+    "kunciJawaban": "A: Salah, B: Benar, C: Benar",
+    "kunci_jawaban": "A: Salah, B: Benar, C: Benar",
+    "kunci": "A: Salah, B: Benar, C: Benar",
+    "pembahasan": "Foto ilustrasi pada wacana hanya menampilkan kerajinan tangan dari daur ulang (recycle/reuse parsial), tetapi tidak mencakup konsep reduce (pengurangan timbulan sampah di sumbernya). Pernyataan A Salah karena kerajinan baju/wadah justru relevan dengan reuse. Pernyataan B Benar karena foto belum mencerminkan ketiga pilar 3R (reduce, reuse, recycle) secara utuh dan menyeluruh. Pernyataan C Benar karena gambar tersebut belum mencerminkan tujuan pelestarian lingkungan hidup bebas sampah secara luas sebagaimana dibahas di teks.",
+    "bacaan": "Belakangan ini sampah menjadi perhatian dunia karena permasalahan yang terus ditimbulkan. Salah satunya berdampak bagi kesehatan manusia. Hal tersebut terjadi karena masih banyak orang yang enggan mendaur ulang sampah sehingga sampah terus menumpuk. Oleh karena itu, pemanfaatan kembali sampah penting dilakukan.<br><br>Sampah organik dan anorganik yang dihasilkan masyarakat masih bisa digunakan. Pemanfaatan sampah pada dasarnya tidak memerlukan waktu lama, tetapi membutuhkan kreativitas dan ketekunan. Konsep reduce (mengurangi), reuse (menggunakan kembali), dan recycle (mendaur ulang) merupakan pengelolaan sampah yang mudah diterapkan dalam kehidupan sehari-hari yang dikenal dengan 3R.<br><br>Konsep 3R ini bertujuan untuk meminimalkan sampah dan dampak negatifnya terhadap lingkungan. Mengurangi sampah bisa dilakukan dengan membatasi penggunaan barang sekali pakai, menggunakan tas belanja yang dapat digunakan ulang, dan menggunakan barang-barang yang ramah lingkungan. Menggunakan kembali bisa dilakukan dengan menggunakan botol minum isi ulang, menggunakan baju bekas untuk lap, dan menggunakan kaleng atau kardus sebagai wadah. Upaya tersebut jauh lebih baik daripada membakar sampah yang dapat menghasilkan biogas. Mendaur ulang bisa dilakukan dengan cara memilah sampah organik dan anorganik. Sampah organik dapat dimanfaatkan menjadi komposter. Selain itu, daur ulang juga dapat dilakukan dengan memanfaatkan abu sebagai bahan konstruksi.<br><br>Sampah memang tidak terlepas dari kehidupan manusia dan seringkali menimbulkan masalah. Akan tetapi, bukan berarti tidak ada solusi untuk hal itu. Perilaku disiplin menerapkan 3R akan menciptakan lingkungan yang lestari dan asri.",
+    "grup": "wacana_3r"
+  }
+];
+
 export const PAKET_RESMI_TKA_2026_SMP_MTK_PAKET_B = {
   id: "paket_tka_2026_smp_mtk_paket_b",
   judul: "TKA 2026: MATEMATIKA WAJIB & NUMERASI (PAKET B MKKS DIY)",
@@ -5295,6 +13479,29 @@ export const PAKET_RESMI_TKA_2026_SMP_MTK_PAKET_B = {
     }
   ],
   daftarSoal: SOAL_TKA_2026_SMP_MTK_PAKET_B
+};
+
+export const PAKET_RESMI_TKA_2026_SMP_MTK_PAKET_A = {
+  id: "paket_tka_2026_smp_mtk_paket_a",
+  judul: "TKA 2026: MATEMATIKA WAJIB & NUMERASI (PAKET A MKKS DIY)",
+  kategori: "TKA SMP / SMA",
+  formatUjian: "TKA_2026_MTK",
+  totalSoal: 30,
+  durasiMenit: 75,
+  jedaTransisiDetik: 60,
+  modeTimer: "per-subtes",
+  subtes: [
+    {
+      id: "subtes_tka_mtk_a",
+      kode: "MTK-A",
+      nama: "TKA Matematika Paket A (MKKS DIY)",
+      durasiMenit: 75,
+      targetSoal: 30,
+      estimasiDetik: 150,
+      soal: SOAL_TKA_2026_SMP_MTK_PAKET_A
+    }
+  ],
+  daftarSoal: SOAL_TKA_2026_SMP_MTK_PAKET_A
 };
 
 export const PAKET_RESMI_TKA_2026_SMP_BINDO_PAKET_A = {

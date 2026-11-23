@@ -823,7 +823,9 @@ export function butirNaskahHtml(soal, nomor, lebarKolom, rasioGambar = {}, opsiB
   // butir menerima opsiButir.tanpaBacaan supaya teks tidak TERULANG per nomor.
   const bacaanHtml = opsiButir.tanpaBacaan ? '' : bacaanNaskahHtml(soal, nomor, lebarKolom, rasioGambar);
   const teksBersih = teksSoalDari(soal)
-    .replace(/^(?:Soal\s*\d+\s*[·•\-]\s*Unit\s*[\d.]+\s*(?:\([^)]+\))?|Unit\s*[\d.]+\s*(?:\([^)]+\))?)\s*/i, '');
+    .replace(/^(?:Soal\s*\d+\s*[·•\-]\s*Unit\s*[\d.]+\s*(?:\([^)]+\))?|Unit\s*[\d.]+\s*(?:\([^)]+\))?)\s*/i, '')
+    .replace(/^\s*\[[^\]]*(?:big book|contoh|latihan|soal|bab\s*\d+|hal\.\s*\d+|no\.\s*\d+|halaman)[^\]]*\]\s*/i, '')
+    .replace(/\s*\[[^\]]*(?:big book|contoh|latihan|soal|bab\s*\d+|hal\.\s*\d+|no\.\s*\d+|halaman)[^\]]*\]\s*$/i, '');
   const kodeSrc = pisahKodeSumber(teksBersih);
   const kodeHtml = kodeSrc.kode ? `<div class="nsk-kode">${escapeHtml(kodeSrc.kode)}</div>` : '';
   // 🔥 2026-10-29: gambar yang sudah diangkat ke blok stimulus grup TIDAK boleh

@@ -66,8 +66,13 @@ export function teksSoalDari(soal) {
   // alias pertama yang benar-benar punya isi setelah dipangkas.
   const kandidat = [soal?.soal, soal?.teksSoal, soal?.teks_soal, soal?.pertanyaan, soal?.question, soal?.teks];
   for (const nilai of kandidat) {
-    const teks = String(nilai ?? '').trim();
-    if (teks) return teks;
+    let teks = String(nilai ?? '').trim();
+    if (teks) {
+      // Hapus header tag referensi buku/arsip di awal atau akhir: [Contoh Soal Big Book...], [Big Book...], [Latihan Soal...]
+      teks = teks.replace(/^\s*\[[^\]]*(?:big book|contoh|latihan|soal|bab\s*\d+|hal\.\s*\d+|no\.\s*\d+|halaman)[^\]]*\]\s*/i, '')
+                 .replace(/\s*\[[^\]]*(?:big book|contoh|latihan|soal|bab\s*\d+|hal\.\s*\d+|no\.\s*\d+|halaman)[^\]]*\]\s*$/i, '');
+      if (teks) return teks;
+    }
   }
   return '';
 }

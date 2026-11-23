@@ -1,15 +1,31 @@
 import json
 import os
 
-MTK_PATH = "/Users/macbook/.gemini/antigravity/scratch/bimbel-gemilang-app/public/ekstraksi-buku/tryout_tka_matematika_paket_b_30soal.json"
-BINDO_PATH = "/Users/macbook/.gemini/antigravity/scratch/bimbel-gemilang-app/public/ekstraksi-buku/tryout_tpm_bindo_paket_a_30soal.json"
-OUT_JS = "/Users/macbook/.gemini/antigravity/scratch/bimbel-gemilang-app/src/data/tka2026DiyData.js"
+BASE_DIR = "/Users/macbook/.gemini/antigravity/scratch/bimbel-gemilang-app"
+MTK_B_PATH = os.path.join(BASE_DIR, "public/ekstraksi-buku/tryout_tka_matematika_paket_b_30soal.json")
+MTK_A_PATH = os.path.join(BASE_DIR, "public/ekstraksi-buku/tryout_tka_matematika_paket_a_30soal.json")
+BINDO_A_PATH = os.path.join(BASE_DIR, "public/ekstraksi-buku/tryout_tpm_bindo_paket_a_30soal.json")
+BINDO_B_PATH = os.path.join(BASE_DIR, "public/ekstraksi-buku/tryout_tpm_bindo_paket_b_30soal.json")
+AKBAR_PATH = os.path.join(BASE_DIR, "public/ekstraksi-buku/tryout_akbar_smp_tka_mat_bindo_60soal.json")
+OUT_JS = os.path.join(BASE_DIR, "src/data/tka2026DiyData.js")
 
-with open(MTK_PATH, "r", encoding="utf-8") as f:
-    raw_mtk = json.load(f)
+with open(MTK_B_PATH, "r", encoding="utf-8") as f:
+    raw_mtk_b = json.load(f)
 
-with open(BINDO_PATH, "r", encoding="utf-8") as f:
-    raw_indo = json.load(f)
+with open(MTK_A_PATH, "r", encoding="utf-8") as f:
+    raw_mtk_a = json.load(f)
+
+with open(BINDO_A_PATH, "r", encoding="utf-8") as f:
+    raw_indo_a = json.load(f)
+
+with open(BINDO_B_PATH, "r", encoding="utf-8") as f:
+    raw_indo_b = json.load(f)
+
+with open(AKBAR_PATH, "r", encoding="utf-8") as f:
+    raw_akbar = json.load(f)
+
+raw_akbar_mtk = [q for q in raw_akbar if q.get("mapel") == "Matematika"]
+raw_akbar_indo = [q for q in raw_akbar if q.get("mapel") == "Bahasa Indonesia"]
 
 def add_url(urls, val):
     if not val:
@@ -18,15 +34,23 @@ def add_url(urls, val):
         for item in val:
             if isinstance(item, str) and item.strip():
                 urls.append(item.strip())
+            elif isinstance(item, dict):
+                u = item.get("url") or item.get("src") or item.get("uploadedUrl")
+                if u and isinstance(u, str) and u.strip():
+                    urls.append(u.strip())
     elif isinstance(val, str) and val.strip():
         urls.append(val.strip())
+    elif isinstance(val, dict):
+        u = val.get("url") or val.get("src") or val.get("uploadedUrl")
+        if u and isinstance(u, str) and u.strip():
+            urls.append(u.strip())
 
-def normalize_soal(q, prefix):
+def normalize_soal(q, prefix, default_mapel="Matematika"):
     nomor = q.get("nomor", 1)
     q_id = f"{prefix}_{str(nomor).zfill(2)}"
-    teks = q.get("teks_soal") or q.get("teksSoal") or ""
+    teks = q.get("teks_soal") or q.get("teksSoal") or q.get("soal") or ""
     materi = q.get("materi") or ""
-    mapel = q.get("mapel") or ""
+    mapel = q.get("mapel") or default_mapel
     tipe = q.get("tipe") or "pg_sederhana"
     kunci = q.get("kunci_jawaban") or q.get("kunci") or ""
     pembahasan = q.get("pembahasan") or ""
@@ -86,7 +110,7 @@ def normalize_soal(q, prefix):
         "teksSoal": teks,
         "teks_soal": teks,
         "soal": teks,
-        "gambar": q.get("gambar") or (gambar_urls[0] if gambar_urls else None),
+        "gambar": (gambar_urls[0] if gambar_urls else None) or q.get("gambar"),
         "gambarUrls": list(dict.fromkeys(gambar_urls)),
         "tabel": q.get("tabel") or None,
         "tabelSoal": q.get("tabel") or None,
@@ -108,21 +132,38 @@ def normalize_soal(q, prefix):
 
     return item
 
-mtk_soal_list = [normalize_soal(q, "tka26_mtk_b") for q in raw_mtk]
-indo_soal_list = [normalize_soal(q, "tka26_indo_a") for q in raw_indo]
+mtk_b_list = [normalize_soal(q, "tka26_mtk_b", "Matematika") for q in raw_mtk_b]
+mtk_a_list = [normalize_soal(q, "tka26_mtk_a", "Matematika") for q in raw_mtk_a]
+akbar_mtk_list = [normalize_soal(q, "tka_akbar_mtk", "Matematika") for q in raw_akbar_mtk]
+
+indo_a_list = [normalize_soal(q, "tka26_indo_a", "Bahasa Indonesia") for q in raw_indo_a]
+indo_b_list = [normalize_soal(q, "tka26_indo_b", "Bahasa Indonesia") for q in raw_indo_b]
+akbar_indo_list = [normalize_soal(q, "tka_akbar_indo", "Bahasa Indonesia") for q in raw_akbar_indo]
 
 content = f"""// src/data/tka2026DiyData.js
 // ============================================================
 // BANK SOAL RESMI TKA SMP/MTS DIY 2025/2026 (MKKS DIY)
 // 100% PRESISI BERDASARKAN NASKAH RESMI UJIAN
 // - PAKET B: MATEMATIKA (30 Butir Soal, Durasi 75 Menit)
+// - PAKET A: MATEMATIKA (30 Butir Soal, Durasi 75 Menit)
+// - TRY OUT AKBAR: MATEMATIKA (30 Butir Soal)
 // - PAKET A: BAHASA INDONESIA (30 Butir Soal, Durasi 75 Menit)
+// - PAKET B: BAHASA INDONESIA (30 Butir Soal, Durasi 75 Menit)
+// - TRY OUT AKBAR: BAHASA INDONESIA (30 Butir Soal)
 // Dilengkapi Crop Gambar Diagram 300 DPI, Tabel Presisi, Diagram Opsi
 // ============================================================
 
-export const SOAL_TKA_2026_SMP_MTK_PAKET_B = {json.dumps(mtk_soal_list, ensure_ascii=False, indent=2)};
+export const SOAL_TKA_2026_SMP_MTK_PAKET_B = {json.dumps(mtk_b_list, ensure_ascii=False, indent=2)};
 
-export const SOAL_TKA_2026_SMP_BINDO_PAKET_A = {json.dumps(indo_soal_list, ensure_ascii=False, indent=2)};
+export const SOAL_TKA_2026_SMP_MTK_PAKET_A = {json.dumps(mtk_a_list, ensure_ascii=False, indent=2)};
+
+export const SOAL_TRYOUT_AKBAR_SMP_MTK = {json.dumps(akbar_mtk_list, ensure_ascii=False, indent=2)};
+
+export const SOAL_TKA_2026_SMP_BINDO_PAKET_A = {json.dumps(indo_a_list, ensure_ascii=False, indent=2)};
+
+export const SOAL_TKA_2026_SMP_BINDO_PAKET_B = {json.dumps(indo_b_list, ensure_ascii=False, indent=2)};
+
+export const SOAL_TRYOUT_AKBAR_SMP_BINDO = {json.dumps(akbar_indo_list, ensure_ascii=False, indent=2)};
 
 export const PAKET_RESMI_TKA_2026_SMP_MTK_PAKET_B = {{
   id: "paket_tka_2026_smp_mtk_paket_b",
@@ -145,6 +186,29 @@ export const PAKET_RESMI_TKA_2026_SMP_MTK_PAKET_B = {{
     }}
   ],
   daftarSoal: SOAL_TKA_2026_SMP_MTK_PAKET_B
+}};
+
+export const PAKET_RESMI_TKA_2026_SMP_MTK_PAKET_A = {{
+  id: "paket_tka_2026_smp_mtk_paket_a",
+  judul: "TKA 2026: MATEMATIKA WAJIB & NUMERASI (PAKET A MKKS DIY)",
+  kategori: "TKA SMP / SMA",
+  formatUjian: "TKA_2026_MTK",
+  totalSoal: 30,
+  durasiMenit: 75,
+  jedaTransisiDetik: 60,
+  modeTimer: "per-subtes",
+  subtes: [
+    {{
+      id: "subtes_tka_mtk_a",
+      kode: "MTK-A",
+      nama: "TKA Matematika Paket A (MKKS DIY)",
+      durasiMenit: 75,
+      targetSoal: 30,
+      estimasiDetik: 150,
+      soal: SOAL_TKA_2026_SMP_MTK_PAKET_A
+    }}
+  ],
+  daftarSoal: SOAL_TKA_2026_SMP_MTK_PAKET_A
 }};
 
 export const PAKET_RESMI_TKA_2026_SMP_BINDO_PAKET_A = {{

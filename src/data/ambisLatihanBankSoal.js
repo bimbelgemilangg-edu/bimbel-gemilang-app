@@ -20,7 +20,11 @@ import {
 } from './tkaSmpModulData.js';
 import {
   SOAL_TKA_2026_SMP_MTK_PAKET_B,
+  SOAL_TKA_2026_SMP_MTK_PAKET_A,
+  SOAL_TRYOUT_AKBAR_SMP_MTK,
   SOAL_TKA_2026_SMP_BINDO_PAKET_A,
+  SOAL_TKA_2026_SMP_BINDO_PAKET_B,
+  SOAL_TRYOUT_AKBAR_SMP_BINDO,
 } from './tka2026DiyData.js';
 import {
   SOAL_TKA_2026_SD_MTK,
@@ -315,6 +319,9 @@ export function cleanStatementText(text) {
   let s = bersihkanHtmlDanArtefak(String(text).trim());
   // 0. Hapus header label modul/unit internal: "Soal 5 · Unit 2.6 (PGK Kategori — SPLDV Parkir)", "Soal 1 · Unit 1.6 (Promo Belanja)", "Unit 1.6 (...)"
   s = s.replace(/^(?:Soal\s*\d+\s*[·•\-]\s*Unit\s*[\d.]+\s*(?:\([^)]+\))?|Unit\s*[\d.]+\s*(?:\([^)]+\))?)\s*/i, '');
+  // 0b. Hapus tag referensi buku/arsip dalam kurung siku: "[Contoh Soal Big Book Bab 08 No. 5 Hal. 162]", "[Big Book Bab 03/Contoh/04]", "[Latihan Soal ...]"
+  s = s.replace(/^\s*\[[^\]]*(?:big book|contoh|latihan|soal|bab\s*\d+|hal\.\s*\d+|no\.\s*\d+|halaman)[^\]]*\]\s*/i, '');
+  s = s.replace(/\s*\[[^\]]*(?:big book|contoh|latihan|soal|bab\s*\d+|hal\.\s*\d+|no\.\s*\d+|halaman)[^\]]*\]\s*$/i, '');
   // 1. Hapus abjad opsi di awal: "A. ", "A) ", "(A) ", "A - ", "(B) "
   s = s.replace(/^\s*(?:\(?[a-eA-E][.)\]:-]|\([a-eA-E0-9]{1,2}\))\s+/, '');
   // 2. Hapus nomor urut di awal HANYA jika berupa butir daftar bertanda baca: "1. ", "1) ", "(1) ", "[1] "
@@ -581,6 +588,25 @@ export function aiGuardPolicingAndHeal(butir) {
     butir.kunci = 'A';
     butir.kunciTeks = 'A';
     butir.pembahasan = `Diketahui:\n• Jumlah pemuda mula-mula ($n_1$) = 10 orang\n• Iuran per orang awal ($x_1$) = $\\text{Rp}300.000,00$\n• 2 orang batal ikut $\\implies$ Sisa orang ($n_2$) = $10 - 2 = 8$ orang\n\n📌 **Konsep:** Total harga sewa villa tetap (Konstanta), sehingga ini merupakan **Perbandingan Berbalik Nilai**:\n\n📐 **Langkah Perhitungan:**\n1. Hitung total harga sewa villa:\n$$\\text{Total Sewa} = n_1 \\times x_1 = 10 \\times \\text{Rp}300.000,00 = \\text{Rp}3.000.000,00$$\n\n2. Hitung iuran per orang yang tersisa (8 orang):\n$$x_2 = \\frac{\\text{Total Sewa}}{n_2} = \\frac{\\text{Rp}3.000.000,00}{8} = \\text{Rp}375.000,00$$\n\n✅ **Kesimpulan:** Biaya patungan setiap orang yang tersisa adalah **Rp375.000,00** (Pilihan A).`;
+  }
+
+  // F. Soal Rasionalisasi Bentuk Akar (8 / (5 - √3))
+  if (
+    teksLengkap.includes('bentuk rasional') &&
+    (teksLengkap.includes('8/5') || teksLengkap.includes('8 / 5') || teksLengkap.includes('8/(5-√3)') || teksLengkap.includes('8/(5 - √3)') || teksLengkap.includes('(8/5-√3)'))
+  ) {
+    butir.soal = 'Bentuk rasional dari $\\frac{8}{5 - \\sqrt{3}}$ adalah ....';
+    butir.tipeSoal = 'pg_sederhana';
+    butir.opsi = [
+      { label: 'A', text: '$\\frac{4}{11}(5 + \\sqrt{3})$' },
+      { label: 'B', text: '$\\frac{4}{11}(5 - \\sqrt{3})$' },
+      { label: 'C', text: '$\\frac{8}{11}(5 + \\sqrt{3})$' },
+      { label: 'D', text: '$\\frac{8}{22}(5 - \\sqrt{3})$' },
+    ];
+    butir.pernyataan = [];
+    butir.kunci = 'A';
+    butir.kunciTeks = 'A';
+    butir.pembahasan = `📌 **Merasionalkan Penyebut Bentuk Akar:**\n\nUntuk merasionalkan pecahan bentuk akar $\\frac{8}{5 - \\sqrt{3}}$, kalikan pembilang dan penyebut dengan bentuk sekawan dari penyebutnya, yaitu $(5 + \\sqrt{3})$:\n\n$$\\frac{8}{5 - \\sqrt{3}} = \\frac{8}{5 - \\sqrt{3}} \\times \\frac{5 + \\sqrt{3}}{5 + \\sqrt{3}}$$\n\n📐 **Langkah Perhitungan:**\n$$\\frac{8(5 + \\sqrt{3})}{5^2 - (\\sqrt{3})^2} = \\frac{8(5 + \\sqrt{3})}{25 - 3} = \\frac{8(5 + \\sqrt{3})}{22}$$\n\nSederhanakan pembilang dan penyebut dengan membagi keduanya dengan FPB-nya ($2$):\n$$= \\frac{4}{11}(5 + \\sqrt{3})$$\n\n✅ **Kesimpulan:** Bentuk rasional yang benar adalah **$\\frac{4}{11}(5 + \\sqrt{3})$** (Pilihan A).`;
   }
 
   // -------------------------------------------------------------
@@ -1007,6 +1033,7 @@ export function normalisasiButir(item, fallbackSubtes = 'PU', fallbackTopik = 'U
     pembahasan,
     gambar: gambarList,
     gambarUrls: gambarList,
+    isTkaAutentik: Boolean(item.isTkaAutentik),
     tingkatKesulitan: item.tingkatKesulitan || (idx % 3 === 0 ? 'sulit' : idx % 2 === 0 ? 'sedang' : 'mudah'),
   };
 
@@ -1096,12 +1123,16 @@ export function tentukanBabDanTopik(subtesKode, item, jenjang = 'SMP') {
       return { babNomor: 3, namaBab: 'Bab 3 · Geometri & Pengukuran (Sudut, Pythagoras, Ruang & Transformasi)', ringkas: 'Bab 3: Geometri & Ruang' };
     }
 
-    // 3. Aljabar, Barisan & Deret, Aritmetika Sosial
+    // 3. Aljabar, Barisan & Deret, Aritmetika Sosial, Himpunan & Relasi
     if (
       teks.includes('aljabar') || teks.includes('persamaan') || teks.includes('fungsi') || teks.includes('pola') ||
       teks.includes('barisan') || teks.includes('deret') || teks.includes('spldv') || teks.includes('kuadrat') ||
       teks.includes('aritmetika sosial') || teks.includes('diskon') || teks.includes('bruto') || teks.includes('tara') ||
       teks.includes('netto') || teks.includes('pertidaksamaan') || teks.includes('skala') || teks.includes('perbandingan') ||
+      teks.includes('himpunan') || teks.includes('irisan') || teks.includes('gabungan') || teks.includes('diagram venn') ||
+      teks.includes('semesta') || teks.includes('komplemen') || teks.includes('∩') || teks.includes('∪') ||
+      teks.includes('\\cap') || teks.includes('\\cup') || teks.includes('{\\cap}') || teks.includes('{\\cup}') ||
+      teks.includes('bilangan asli kurang dari') || teks.includes('bilangan prima kurang dari') || teks.includes('bilangan cacah kurang dari') ||
       teks.includes('mesin') || teks.includes('laundry') || teks.includes('harga') || teks.includes('uang') ||
       teks.includes('ongkos') || teks.includes('tarif') || teks.includes('biaya') || teks.includes('berbalik nilai') ||
       teks.includes('senilai') || teks.includes('pekerja') || teks.includes('variabel') || teks.includes('linear') ||
@@ -1354,31 +1385,40 @@ export function susunBankSoalLatihanSmp(bankSoalFirestore = []) {
     });
   }
 
-  // 2. Tambahkan Master Bank Soal TKA SMP DIY 2026 (Dipetakan ke Bab Kurikulum Resmi)
-  if (Array.isArray(SOAL_TKA_2026_SMP_MTK_PAKET_B)) {
-    SOAL_TKA_2026_SMP_MTK_PAKET_B.forEach((s) => {
-      const babInfo = tentukanBabDanTopik('MTK', s, 'SMP');
-      tambahSoalUnik({
-        ...s,
-        subtesKode: 'MTK',
-        babNomor: babInfo.babNomor,
-        namaBab: babInfo.namaBab,
-        topik: babInfo.namaBab,
-      }, 'MTK', babInfo.namaBab);
-    });
-  }
-  if (Array.isArray(SOAL_TKA_2026_SMP_BINDO_PAKET_A)) {
-    SOAL_TKA_2026_SMP_BINDO_PAKET_A.forEach((s) => {
-      const babInfo = tentukanBabDanTopik('BIN', s, 'SMP');
-      tambahSoalUnik({
-        ...s,
-        subtesKode: 'BIN',
-        babNomor: babInfo.babNomor,
-        namaBab: babInfo.namaBab,
-        topik: babInfo.namaBab,
-      }, 'BIN', babInfo.namaBab);
-    });
-  }
+  // 2. Tambahkan Master Bank Soal TKA SMP DIY 2026 (Paket A, Paket B, & Tryout Akbar)
+  const masterTkaSmpMtk = [
+    ...(Array.isArray(SOAL_TKA_2026_SMP_MTK_PAKET_A) ? SOAL_TKA_2026_SMP_MTK_PAKET_A : []),
+    ...(Array.isArray(SOAL_TKA_2026_SMP_MTK_PAKET_B) ? SOAL_TKA_2026_SMP_MTK_PAKET_B : []),
+    ...(Array.isArray(SOAL_TRYOUT_AKBAR_SMP_MTK) ? SOAL_TRYOUT_AKBAR_SMP_MTK : []),
+  ];
+  masterTkaSmpMtk.forEach((s) => {
+    const babInfo = tentukanBabDanTopik('MTK', s, 'SMP');
+    tambahSoalUnik({
+      ...s,
+      isTkaAutentik: true,
+      subtesKode: 'MTK',
+      babNomor: babInfo.babNomor,
+      namaBab: babInfo.namaBab,
+      topik: babInfo.namaBab,
+    }, 'MTK', babInfo.namaBab);
+  });
+
+  const masterTkaSmpBindo = [
+    ...(Array.isArray(SOAL_TKA_2026_SMP_BINDO_PAKET_A) ? SOAL_TKA_2026_SMP_BINDO_PAKET_A : []),
+    ...(Array.isArray(SOAL_TKA_2026_SMP_BINDO_PAKET_B) ? SOAL_TKA_2026_SMP_BINDO_PAKET_B : []),
+    ...(Array.isArray(SOAL_TRYOUT_AKBAR_SMP_BINDO) ? SOAL_TRYOUT_AKBAR_SMP_BINDO : []),
+  ];
+  masterTkaSmpBindo.forEach((s) => {
+    const babInfo = tentukanBabDanTopik('BIN', s, 'SMP');
+    tambahSoalUnik({
+      ...s,
+      isTkaAutentik: true,
+      subtesKode: 'BIN',
+      babNomor: babInfo.babNomor,
+      namaBab: babInfo.namaBab,
+      topik: babInfo.namaBab,
+    }, 'BIN', babInfo.namaBab);
+  });
 
   // 3. Tambahkan Kuis Pemahaman Master dari 16 Bab Modul SMP 2027
   const mapelSmpList = [
@@ -1614,6 +1654,40 @@ export function auditKesesuaianMateriMtk(soal, targetMateri = '') {
 
   const tm = String(targetMateri || '').toLowerCase();
   const isTargetBilangan = tm.includes('bilangan') || babTarget.babNomor === 1;
+
+  if (isTargetBilangan) {
+    const teksSemua = (
+      String(soal?.materi || '') + ' ' +
+      String(soal?.namaBab || '') + ' ' +
+      String(soal?.topik || '') + ' ' +
+      String(soal?.soalTeksBersih || soal?.soal || soal?.teksSoal || '') + ' ' +
+      String(soal?.pembahasan || '')
+    ).toLowerCase();
+
+    // Saring dan tolak konsep Himpunan / Diagram Venn / Teori Irisan dari Bab 1 Bilangan
+    if (
+      teksSemua.includes('himpunan') ||
+      teksSemua.includes('diagram venn') ||
+      teksSemua.includes('irisan') ||
+      teksSemua.includes('gabungan') ||
+      teksSemua.includes('komplemen') ||
+      teksSemua.includes('semesta') ||
+      teksSemua.includes('∩') ||
+      teksSemua.includes('∪') ||
+      teksSemua.includes('\\cap') ||
+      teksSemua.includes('\\cup') ||
+      teksSemua.includes('{\\cap}') ||
+      teksSemua.includes('{\\cup}') ||
+      /\{[^}]*(?:bilangan|kurang dari|lebih dari)[^}]*\}/i.test(teksSemua)
+    ) {
+      return {
+        cocok: false,
+        alasan: 'Soal terdeteksi Himpunan / Irisan Logika (bukan Operasi Bilangan murni)',
+        babAktual: 2,
+        namaBabAktual: 'Bab 2 · Aljabar & Himpunan',
+      };
+    }
+  }
 
   if (isTargetBilangan && babAktual.babNomor !== 1) {
     return {

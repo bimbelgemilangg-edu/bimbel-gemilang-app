@@ -49,6 +49,7 @@ import {
   auditKesesuaianMateriMtk,
   susunBankSoalLatihanSmp,
   susunSemuaBankSoalLatihan,
+  normalisasiButir,
 } from '../../data/ambisLatihanBankSoal';
 // 🔥 2026-10-08 (Fase 1 cetak biru bank soal): keranjang yang BERTAHAN.
 // Dulu `tercentang` berisi id dan DIHAPUS setiap ganti filter
@@ -538,6 +539,9 @@ export default function CetakPaketLatihan() {
         if (teksPembahasan.includes(tok)) skor += 3;
       });
 
+      // 🔥 Prioritas tertinggi (+25) untuk Bank Soal Autentik TKA DIY / ASPD resmi
+      if (s.isTkaAutentik) skor += 25;
+
       return { soal: s, skor };
     }).filter((item) => item.skor > 0)
       .sort((a, b) => b.skor - a.skor)
@@ -651,12 +655,17 @@ export default function CetakPaketLatihan() {
           }
 
           const final10 = terpilih.slice(0, 10);
+          const final10Healed = final10.map((s, idx) => {
+            const sub = targetMapel === 'Matematika' ? 'MTK' : targetMapel.toLowerCase().includes('indonesia') ? 'BIN' : 'MTK';
+            const norm = normalisasiButir(s, sub, targetBab, idx + 1);
+            return norm || s;
+          });
 
           // Langkah 5: Finalisasi & Ringkasan Laporan Kurasi
           setTimeout(() => {
             setAstroStep(5);
             setAstroSedangBekerja(false);
-            setKeranjang(final10);
+            setKeranjang(final10Healed);
             setPesanKeranjang(`✨ Astro Gemilang berhasil mengkurasi 10 butir soal pilihan untuk ${targetBab}!`);
             setModeTampil('preview');
             setIndeksPreview(0);
@@ -666,7 +675,7 @@ export default function CetakPaketLatihan() {
               dieliminasiSalahMateri: salahSilabus.length,
               dieliminasiKloning: kloningTereliminasi.length,
               totalLolos: poolTahap3.length,
-              terpilih: final10,
+              terpilih: final10Healed,
               bab: targetBab,
             });
           }, 600);
