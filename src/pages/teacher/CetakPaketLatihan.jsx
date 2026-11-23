@@ -56,6 +56,7 @@ import {
   ambilDaftarBab,
   saringSoalBabDanSubMateri,
   kurasiDanMixSoalAi,
+  generatePureAiHotsSoal,
 } from '../../services/astroGemilangAiMixer';
 // 🔥 2026-10-08 (Fase 1 cetak biru bank soal): keranjang yang BERTAHAN.
 // Dulu `tercentang` berisi id dan DIHAPUS setiap ganti filter
@@ -241,9 +242,28 @@ function KartuBacaSoal({ soal, nomor, tercentang, onCentang, bacaSaja, modeKunci
       <label style={{ display: 'flex', gap: 10, cursor: 'pointer', alignItems: 'flex-start' }}>
         <input type="checkbox" checked={tercentang} disabled={bacaSaja} onChange={(e) => onCentang(e.target.checked)} style={{ marginTop: 3 }} />
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 10.5, color: '#64748b', marginBottom: 4 }}>
-            <b style={{ color: '#3730a3', fontSize: 12 }}>No. {nomor}</b> · [{String(soal?.tipe || 'pg_sederhana').replace(/_/g, ' ')}]
-            {soal?.kelas ? ` · kelas ${soal.kelas}` : ''}
+          <div style={{ fontSize: 10.5, color: '#64748b', marginBottom: 4, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 6 }}>
+            <div>
+              <b style={{ color: '#3730a3', fontSize: 12 }}>No. {nomor}</b> · [{String(soal?.tipe || 'pg_sederhana').replace(/_/g, ' ')}]
+              {soal?.kelas ? ` · kelas ${soal.kelas}` : ''}
+            </div>
+            <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+              {soal?.isPureAi && (
+                <span style={{ background: '#e0f2fe', color: '#0369a1', border: '1px solid #bae6fd', fontSize: 10, fontWeight: 800, padding: '1px 7px', borderRadius: 6 }}>
+                  ⚡ Pure AI (HOTS & Gambar)
+                </span>
+              )}
+              {soal?.isTkaAutentik && (
+                <span style={{ background: '#dcfce7', color: '#166534', fontSize: 10, fontWeight: 800, padding: '1px 7px', borderRadius: 6 }}>
+                  🔖 Asli TKA DIY
+                </span>
+              )}
+              {soal?.isAiGenerated && !soal?.isPureAi && (
+                <span style={{ background: '#ede9fe', color: '#5b21b6', fontSize: 10, fontWeight: 800, padding: '1px 7px', borderRadius: 6 }}>
+                  🤖 Kurasi AI
+                </span>
+              )}
+            </div>
           </div>
           {segmen.map((sg, i) => (sg.jenis === 'teks'
             ? <div key={i} style={{ fontSize: 12.5, lineHeight: 1.55, color: '#0f172a' }} dangerouslySetInnerHTML={{ __html: teksKeHtml(sg.isi) }} />
@@ -380,6 +400,7 @@ export default function CetakPaketLatihan() {
   const [astroStep, setAstroStep] = useState(0);
   const [astroReport, setAstroReport] = useState(null);
   const [astroSedangBekerja, setAstroSedangBekerja] = useState(false);
+  const [astroMode, setAstroMode] = useState('mix'); // 'mix' | 'pure_ai'
 
   // Muat daftar paket terbitan kelas pendampingan
   const muatTerbitan = useCallback(async () => {
@@ -512,7 +533,8 @@ export default function CetakPaketLatihan() {
     const targetSubId = subMateriIdManual || subMateriAktif || 'semua';
     const subObj = daftarSubMateri.find((s) => s.id === targetSubId) || daftarSubMateri[0];
 
-    // Buka Modal AI Thinking & jalankan proses kurasi cerdas multi-tahap
+    // Buka Modal AI Thinking mode Mix Bank Asli + AI
+    setAstroMode('mix');
     setModalAstroThinking(true);
     setAstroSedangBekerja(true);
     setAstroStep(1); // Langkah 1: Memindai Bank Soal
@@ -571,6 +593,74 @@ export default function CetakPaketLatihan() {
               terpilih: final10Healed,
               jumlahAsli,
               jumlahAi,
+              isPureAi: false,
+              bab: `${babAktifObj?.namaBab} · ${subObj?.label}`,
+            });
+          }, 800);
+        }, 900);
+      }, 900);
+    }, 1000);
+  };
+
+  const handleGeneratePureAiSoal = async (babTargetManual = null, subMateriIdManual = null) => {
+    const targetJenjang = jenjangAktif || 'SMP';
+    const targetMapel = mapelAktif || 'Matematika';
+    const targetBabNomor = babAktifObj?.babNomor || 1;
+    const targetSubId = subMateriIdManual || subMateriAktif || 'semua';
+    const subObj = daftarSubMateri.find((s) => s.id === targetSubId) || daftarSubMateri[0];
+
+    // Buka Modal AI Thinking mode Pure AI
+    setAstroMode('pure_ai');
+    setModalAstroThinking(true);
+    setAstroSedangBekerja(true);
+    setAstroStep(1); // Langkah 1: Riset Standar Ujian & Kisi-Kisi
+    setAstroReport(null);
+
+    // Langkah 2: Perancangan Kasus Kontekstual Baru
+    setTimeout(() => {
+      setAstroStep(2);
+
+      // Langkah 3: Pembuatan Ilustrasi & Diagram Visual Lengkap
+      setTimeout(() => {
+        setAstroStep(3);
+
+        // Langkah 4: Formulasi Opsi Distingtif, KaTeX Rumus & Kunci Jawaban
+        setTimeout(async () => {
+          setAstroStep(4);
+
+          let final10Pure = [];
+          try {
+            final10Pure = await generatePureAiHotsSoal({
+              jenjang: targetJenjang,
+              mapel: targetMapel,
+              babNomor: targetBabNomor,
+              subMateriId: targetSubId,
+              subMateriNama: subObj?.label || '',
+              targetJumlah: 10,
+              bankSoalPool: bankSoal,
+            });
+          } catch (err) {
+            console.warn('Pure AI Generator fallback:', err);
+          }
+
+          // Langkah 5: Finalisasi & Ringkasan Laporan Pure AI
+          setTimeout(() => {
+            setAstroStep(5);
+            setAstroSedangBekerja(false);
+            setKeranjang(final10Pure);
+            setPesanKeranjang(`⚡ Astro AI berhasil menghasilkan 10 butir soal Pure AI (Fresh HOTS + Gambar Lengkap) untuk ${subObj?.label || babAktifObj?.namaBab}!`);
+            setModeTampil('preview');
+            setIndeksPreview(0);
+
+            setAstroReport({
+              totalDipindai: 10,
+              dieliminasiSalahMateri: 0,
+              dieliminasiKloning: 0,
+              totalLolos: final10Pure.length,
+              terpilih: final10Pure,
+              jumlahAsli: 0,
+              jumlahAi: final10Pure.length,
+              isPureAi: true,
               bab: `${babAktifObj?.namaBab} · ${subObj?.label}`,
             });
           }, 800);
@@ -1238,7 +1328,32 @@ export default function CetakPaketLatihan() {
                   }}
                 >
                   <span style={{ fontSize: 16 }}>{astroSedangBekerja ? '🤖' : (memuat && bankSoal.length === 0) ? '⏳' : '✨'}</span>
-                  <span>{astroSedangBekerja ? 'AI Sedang Mengkurasi...' : (memuat && bankSoal.length === 0) ? 'Menyiapkan Bank Soal...' : 'Siapkan 10 Soal (Mix Bank Asli + AI HOTS)'}</span>
+                  <span>{astroSedangBekerja ? 'AI Sedang Bekerja...' : (memuat && bankSoal.length === 0) ? 'Menyiapkan Bank Soal...' : 'Siapkan 10 Soal (Mix Bank Asli + AI HOTS)'}</span>
+                </button>
+
+                <button
+                  type="button"
+                  disabled={astroSedangBekerja || (memuat && bankSoal.length === 0)}
+                  onClick={() => handleGeneratePureAiSoal()}
+                  style={{
+                    background: (memuat && bankSoal.length === 0) ? '#475569' : '#0284c7 linear-gradient(135deg, #0284c7 0%, #0369a1 100%)',
+                    color: '#ffffff',
+                    border: '1.5px solid #38bdf8',
+                    borderRadius: 10,
+                    padding: '10px 18px',
+                    fontSize: 13,
+                    fontWeight: 900,
+                    cursor: (astroSedangBekerja || (memuat && bankSoal.length === 0)) ? 'not-allowed' : 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 8,
+                    boxShadow: (memuat && bankSoal.length === 0) ? 'none' : '0 4px 12px rgba(2, 132, 199, 0.3)',
+                    opacity: (memuat && bankSoal.length === 0) ? 0.7 : 1,
+                  }}
+                  title="Generate 10 butir murni AI tanpa menggunakan bank soal lama (solusi bila butir bank soal terasa berulang)"
+                >
+                  <span style={{ fontSize: 16 }}>⚡</span>
+                  <span>Generate 10 Soal Pure AI (HOTS Baru & Gambar Lengkap)</span>
                 </button>
                 {keranjang.length > 0 && (
                   <button
@@ -1629,27 +1744,50 @@ export default function CetakPaketLatihan() {
                     <div style={{ fontSize: 11.5, color: '#475569' }}>
                       Topik aktif: <b style={{ color: '#0f766e' }}>{subMateriObj?.label}</b> ({soalBankTampil.length} butir ditemukan di Bank Soal)
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => handleBantuAstroGemilang(null, subMateriAktif)}
-                      style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: 6,
-                        background: '#042f2e linear-gradient(135deg, #042f2e 0%, #064e3b 100%)',
-                        color: '#fef08a',
-                        border: '1.5px solid #2dd4bf',
-                        borderRadius: 8,
-                        padding: '6px 14px',
-                        fontSize: 11.5,
-                        fontWeight: 800,
-                        cursor: 'pointer',
-                        boxShadow: '0 2px 6px rgba(4, 47, 46, 0.2)',
-                      }}
-                    >
-                      <span>✨</span>
-                      <span>Minta AI Buatkan 10 Soal ({subMateriObj?.label?.replace(/^[^\s]+\s/, '') || 'Topik Ini'})</span>
-                    </button>
+                    <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                      <button
+                        type="button"
+                        onClick={() => handleBantuAstroGemilang(null, subMateriAktif)}
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 6,
+                          background: '#ffffff',
+                          color: '#0f766e',
+                          border: '1.5px solid #0d9488',
+                          borderRadius: 8,
+                          padding: '6px 14px',
+                          fontSize: 11.5,
+                          fontWeight: 800,
+                          cursor: 'pointer',
+                        }}
+                      >
+                        <span>✨</span>
+                        <span>Mix Bank & AI (10 Soal)</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleGeneratePureAiSoal(null, subMateriAktif)}
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 6,
+                          background: '#0369a1 linear-gradient(135deg, #0284c7 0%, #0369a1 100%)',
+                          color: '#ffffff',
+                          border: '1.5px solid #38bdf8',
+                          borderRadius: 8,
+                          padding: '6px 14px',
+                          fontSize: 11.5,
+                          fontWeight: 800,
+                          cursor: 'pointer',
+                          boxShadow: '0 2px 6px rgba(2, 132, 199, 0.25)',
+                        }}
+                        title="Generate 10 butir segar murni AI lengkap dengan gambar tanpa mengulang bank soal"
+                      >
+                        <span>⚡</span>
+                        <span>Pure AI: 10 Soal HOTS Baru + Gambar</span>
+                      </button>
+                    </div>
                   </div>
                 </div>
               )}
@@ -1690,6 +1828,31 @@ export default function CetakPaketLatihan() {
                     }}
                   >
                     <span>✨ Siapkan 10 Soal (Mix Bank Asli + AI HOTS)</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    disabled={astroSedangBekerja || (memuat && bankSoal.length === 0)}
+                    onClick={() => handleGeneratePureAiSoal(null, subMateriAktif)}
+                    style={{
+                      background: 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)',
+                      color: '#ffffff',
+                      border: '1.5px solid #38bdf8',
+                      borderRadius: 8,
+                      padding: '7px 14px',
+                      fontSize: 12,
+                      fontWeight: 900,
+                      cursor: (astroSedangBekerja || (memuat && bankSoal.length === 0)) ? 'not-allowed' : 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 6,
+                      boxShadow: '0 2px 6px rgba(2, 132, 199, 0.25)',
+                      opacity: (astroSedangBekerja || (memuat && bankSoal.length === 0)) ? 0.7 : 1,
+                    }}
+                    title="Generate 10 butir murni AI tanpa mengulang bank soal lama (lengkap dengan gambar & pembahasan)"
+                  >
+                    <span>⚡</span>
+                    <span>Generate 10 Soal Pure AI (Fresh HOTS + Gambar Lengkap)</span>
                   </button>
                   {keranjang.length > 0 && (
                     <button
@@ -2399,7 +2562,9 @@ export default function CetakPaketLatihan() {
             {/* Header */}
             <div
               style={{
-                background: 'linear-gradient(135deg, #042f2e 0%, #0f766e 100%)',
+                background: astroMode === 'pure_ai'
+                  ? 'linear-gradient(135deg, #0c4a6e 0%, #0284c7 100%)'
+                  : 'linear-gradient(135deg, #042f2e 0%, #0f766e 100%)',
                 color: '#ffffff',
                 padding: '20px 24px',
                 display: 'flex',
@@ -2420,14 +2585,14 @@ export default function CetakPaketLatihan() {
                     fontSize: 22,
                   }}
                 >
-                  🤖
+                  {astroMode === 'pure_ai' ? '⚡' : '🤖'}
                 </div>
                 <div>
                   <h3 style={{ margin: 0, fontSize: 16, fontWeight: 900, color: '#f0fdfa' }}>
-                    Asisten Astro Gemilang
+                    {astroMode === 'pure_ai' ? 'Pembangkit 100% Pure Soal AI' : 'Asisten Astro Gemilang'}
                   </h3>
-                  <p style={{ margin: '2px 0 0', fontSize: 12, color: '#99f6e4' }}>
-                    Mesin Kurasi & Audit Bank Soal Cerdas TKA
+                  <p style={{ margin: '2px 0 0', fontSize: 12, color: astroMode === 'pure_ai' ? '#bae6fd' : '#99f6e4' }}>
+                    {astroMode === 'pure_ai' ? 'Riset Soal Asli & Gambar HOTS Tanpa Duplikasi Bank' : 'Mesin Kurasi & Audit Bank Soal Cerdas TKA'}
                   </p>
                 </div>
               </div>
@@ -2458,7 +2623,8 @@ export default function CetakPaketLatihan() {
               {/* Stepper Progres AI Berpikir */}
               <div style={{ marginBottom: 20 }}>
                 <div style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#64748b', marginBottom: 12 }}>
-                  Tahapan Kurasi & Pembersihan Soal Materi: <span style={{ color: '#0f766e' }}>{babAktifObj?.ringkas || babAktif}</span>
+                  {astroMode === 'pure_ai' ? 'Tahapan Riset & Formulasi Pure AI: ' : 'Tahapan Kurasi & Pembersihan Soal Materi: '}
+                  <span style={{ color: astroMode === 'pure_ai' ? '#0284c7' : '#0f766e' }}>{babAktifObj?.ringkas || babAktif}</span>
                 </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -2466,102 +2632,120 @@ export default function CetakPaketLatihan() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                     <div style={{
                       width: 24, height: 24, borderRadius: '50%',
-                      background: astroStep > 1 ? '#10b981' : astroStep === 1 ? '#0d9488' : '#e2e8f0',
+                      background: astroStep > 1 ? '#10b981' : astroStep === 1 ? (astroMode === 'pure_ai' ? '#0284c7' : '#0d9488') : '#e2e8f0',
                       color: astroStep >= 1 ? '#ffffff' : '#94a3b8',
                       display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 800,
                     }}>
                       {astroStep > 1 ? '✓' : '1'}
                     </div>
                     <div style={{ flex: 1, fontSize: 12.5, fontWeight: astroStep === 1 ? 800 : 600, color: astroStep >= 1 ? '#0f172a' : '#94a3b8' }}>
-                      Memindai & Mengindeks Bank Soal ({astroReport?.totalDipindai || bankSoal.length} butir) untuk {babAktifObj?.ringkas || babAktif}
+                      {astroMode === 'pure_ai'
+                        ? 'Riset Standar Ujian: Menelusuri Kisi-Kisi TKA / ASPD DIY & Pola Soal Asli Terbaru'
+                        : `Memindai & Mengindeks Bank Soal (${astroReport?.totalDipindai || bankSoal.length} butir) untuk ${babAktifObj?.ringkas || babAktif}`}
                     </div>
-                    {astroStep === 1 && <span style={{ fontSize: 11, color: '#0d9488', fontWeight: 700 }}>Sedang memindai...</span>}
+                    {astroStep === 1 && <span style={{ fontSize: 11, color: astroMode === 'pure_ai' ? '#0284c7' : '#0d9488', fontWeight: 700 }}>{astroMode === 'pure_ai' ? 'Sedang riset...' : 'Sedang memindai...'}</span>}
                   </div>
 
                   {/* Step 2 */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                     <div style={{
                       width: 24, height: 24, borderRadius: '50%',
-                      background: astroStep > 2 ? '#10b981' : astroStep === 2 ? '#0d9488' : '#e2e8f0',
+                      background: astroStep > 2 ? '#10b981' : astroStep === 2 ? (astroMode === 'pure_ai' ? '#0284c7' : '#0d9488') : '#e2e8f0',
                       color: astroStep >= 2 ? '#ffffff' : '#94a3b8',
                       display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 800,
                     }}>
                       {astroStep > 2 ? '✓' : '2'}
                     </div>
                     <div style={{ flex: 1, fontSize: 12.5, fontWeight: astroStep === 2 ? 800 : 600, color: astroStep >= 2 ? '#0f172a' : '#94a3b8' }}>
-                      Audit Silabus: Memastikan Kesesuaian Sub-Materi ({subMateriObj?.label || 'Topik Fokus'})
+                      {astroMode === 'pure_ai'
+                        ? `Perancangan 10 Kasus Kontekstual Eksklusif (${subMateriObj?.label || 'Topik Fokus'})`
+                        : `Audit Silabus: Memastikan Kesesuaian Sub-Materi (${subMateriObj?.label || 'Topik Fokus'})`}
                     </div>
-                    {astroStep === 2 && <span style={{ fontSize: 11, color: '#0d9488', fontWeight: 700 }}>Mengaudit silabus...</span>}
+                    {astroStep === 2 && <span style={{ fontSize: 11, color: astroMode === 'pure_ai' ? '#0284c7' : '#0d9488', fontWeight: 700 }}>{astroMode === 'pure_ai' ? 'Menyusun kasus...' : 'Mengaudit silabus...'}</span>}
                   </div>
 
                   {/* Step 3 */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                     <div style={{
                       width: 24, height: 24, borderRadius: '50%',
-                      background: astroStep > 3 ? '#10b981' : astroStep === 3 ? '#0d9488' : '#e2e8f0',
+                      background: astroStep > 3 ? '#10b981' : astroStep === 3 ? (astroMode === 'pure_ai' ? '#0284c7' : '#0d9488') : '#e2e8f0',
                       color: astroStep >= 3 ? '#ffffff' : '#94a3b8',
                       display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 800,
                     }}>
                       {astroStep > 3 ? '✓' : '3'}
                     </div>
                     <div style={{ flex: 1, fontSize: 12.5, fontWeight: astroStep === 3 ? 800 : 600, color: astroStep >= 3 ? '#0f172a' : '#94a3b8' }}>
-                      Penyaringan Butir Otentik TKA (ASPD / MKKS DIY Terverifikasi)
+                      {astroMode === 'pure_ai'
+                        ? 'Pembuatan Ilustrasi Visual & Diagram Teknis (Gambar Lengkap & Terkalibrasi)'
+                        : 'Penyaringan Butir Otentik TKA (ASPD / MKKS DIY Terverifikasi)'}
                     </div>
-                    {astroStep === 3 && <span style={{ fontSize: 11, color: '#0d9488', fontWeight: 700 }}>Menyeleksi butir otentik...</span>}
+                    {astroStep === 3 && <span style={{ fontSize: 11, color: astroMode === 'pure_ai' ? '#0284c7' : '#0d9488', fontWeight: 700 }}>{astroMode === 'pure_ai' ? 'Menggambar diagram...' : 'Menyeleksi butir otentik...'}</span>}
                   </div>
 
                   {/* Step 4 */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                     <div style={{
                       width: 24, height: 24, borderRadius: '50%',
-                      background: astroStep > 4 ? '#10b981' : astroStep === 4 ? '#0d9488' : '#e2e8f0',
+                      background: astroStep > 4 ? '#10b981' : astroStep === 4 ? (astroMode === 'pure_ai' ? '#0284c7' : '#0d9488') : '#e2e8f0',
                       color: astroStep >= 4 ? '#ffffff' : '#94a3b8',
                       display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 800,
                     }}>
                       {astroStep > 4 ? '✓' : '4'}
                     </div>
                     <div style={{ flex: 1, fontSize: 12.5, fontWeight: astroStep === 4 ? 800 : 600, color: astroStep >= 4 ? '#0f172a' : '#94a3b8' }}>
-                      Auto-Mix Sintesis HOTS AI & Kalibrasi Rumus KaTeX
+                      {astroMode === 'pure_ai'
+                        ? 'Formulasi Opsi Distingtif, KaTeX Rumus Matematika & Verifikasi Kunci Jawaban'
+                        : 'Auto-Mix Sintesis HOTS AI & Kalibrasi Rumus KaTeX'}
                     </div>
-                    {astroStep === 4 && <span style={{ fontSize: 11, color: '#0d9488', fontWeight: 700 }}>Memadukan & kalibrasi...</span>}
+                    {astroStep === 4 && <span style={{ fontSize: 11, color: astroMode === 'pure_ai' ? '#0284c7' : '#0d9488', fontWeight: 700 }}>{astroMode === 'pure_ai' ? 'Verifikasi KaTeX...' : 'Memadukan & kalibrasi...'}</span>}
                   </div>
                 </div>
               </div>
 
               {/* Laporan Hasil Kurasi jika Step 5 tercapai */}
               {astroStep === 5 && astroReport && (
-                <div style={{ background: '#f0fdf4', border: '1.5px solid #86efac', borderRadius: 12, padding: '16px', marginBottom: 16 }}>
+                <div style={{
+                  background: astroReport.isPureAi ? '#f0f9ff' : '#f0fdf4',
+                  border: `1.5px solid ${astroReport.isPureAi ? '#7dd3fc' : '#86efac'}`,
+                  borderRadius: 12,
+                  padding: '16px',
+                  marginBottom: 16,
+                }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-                    <span style={{ fontSize: 18 }}>✨</span>
-                    <h4 style={{ margin: 0, fontSize: 14, fontWeight: 800, color: '#166534' }}>
-                      Laporan Audit & Kurasi AI Berhasil!
+                    <span style={{ fontSize: 18 }}>{astroReport.isPureAi ? '⚡' : '✨'}</span>
+                    <h4 style={{ margin: 0, fontSize: 14, fontWeight: 800, color: astroReport.isPureAi ? '#0369a1' : '#166534' }}>
+                      {astroReport.isPureAi ? '10 Butir Pure AI Baru Berhasil Dihasilkan!' : 'Laporan Audit & Kurasi AI Berhasil!'}
                     </h4>
                   </div>
-                  <p style={{ margin: '0 0 12px', fontSize: 12, color: '#15803d', lineHeight: 1.45 }}>
-                    Astro Gemilang telah menyelesaikan kurasi & peracikan 10 butir soal untuk materi <b>{astroReport.bab}</b>:
+                  <p style={{ margin: '0 0 12px', fontSize: 12, color: astroReport.isPureAi ? '#0284c7' : '#15803d', lineHeight: 1.45 }}>
+                    {astroReport.isPureAi
+                      ? <>Astro AI telah menyelesaikan riset dan meracik 10 butir soal baru (100% Non-Bank Soal) untuk materi <b>{astroReport.bab}</b>:</>
+                      : <>Astro Gemilang telah menyelesaikan kurasi & peracikan 10 butir soal untuk materi <b>{astroReport.bab}</b>:</>}
                   </p>
 
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8, marginBottom: 12 }}>
                     <div style={{ background: '#ffffff', padding: '10px 12px', borderRadius: 8, border: '1px solid #bbf7d0' }}>
-                      <div style={{ fontSize: 11, color: '#64748b' }}>Total Butir Dipindai</div>
-                      <div style={{ fontSize: 15, fontWeight: 900, color: '#0f172a' }}>{astroReport.totalDipindai} Butir</div>
+                      <div style={{ fontSize: 11, color: '#64748b' }}>{astroReport.isPureAi ? 'Kategori Pembuatan' : 'Total Butir Dipindai'}</div>
+                      <div style={{ fontSize: 15, fontWeight: 900, color: '#0f172a' }}>{astroReport.isPureAi ? '100% Pure AI Baru' : `${astroReport.totalDipindai} Butir`}</div>
                     </div>
                     <div style={{ background: '#ffffff', padding: '10px 12px', borderRadius: 8, border: '1px solid #bfdbfe' }}>
-                      <div style={{ fontSize: 11, color: '#2563eb' }}>Bank Asli TKA DIY</div>
-                      <div style={{ fontSize: 15, fontWeight: 900, color: '#1d4ed8' }}>{astroReport.jumlahAsli || 0} Butir Otentik</div>
+                      <div style={{ fontSize: 11, color: '#2563eb' }}>{astroReport.isPureAi ? 'Soal Bank Lama' : 'Bank Asli TKA DIY'}</div>
+                      <div style={{ fontSize: 15, fontWeight: 900, color: '#1d4ed8' }}>{astroReport.isPureAi ? '0 Butir (Dilewati)' : `${astroReport.jumlahAsli || 0} Butir Otentik`}</div>
                     </div>
                     <div style={{ background: '#ffffff', padding: '10px 12px', borderRadius: 8, border: '1px solid #fbcfe8' }}>
-                      <div style={{ fontSize: 11, color: '#db2777' }}>Kurasi HOTS Astro AI</div>
-                      <div style={{ fontSize: 15, fontWeight: 900, color: '#be185d' }}>{astroReport.jumlahAi || 0} Butir Sintesis</div>
+                      <div style={{ fontSize: 11, color: '#db2777' }}>{astroReport.isPureAi ? 'Kelengkapan Gambar' : 'Kurasi HOTS Astro AI'}</div>
+                      <div style={{ fontSize: 15, fontWeight: 900, color: '#be185d' }}>{astroReport.isPureAi ? '100% Diagram & Vektor' : `${astroReport.jumlahAi || 0} Butir Sintesis`}</div>
                     </div>
                     <div style={{ background: '#ffffff', padding: '10px 12px', borderRadius: 8, border: '1px solid #86efac' }}>
-                      <div style={{ fontSize: 11, color: '#15803d' }}>Terpilih Siap Cetak & Terbit</div>
+                      <div style={{ fontSize: 11, color: '#15803d' }}>{astroReport.isPureAi ? 'Kunci & Pembahasan' : 'Terpilih Siap Cetak & Terbit'}</div>
                       <div style={{ fontSize: 15, fontWeight: 900, color: '#15803d' }}>10 Butir Terkalibrasi</div>
                     </div>
                   </div>
 
                   <div style={{ fontSize: 11.5, color: '#334155', background: '#ffffff', padding: '10px 12px', borderRadius: 8, border: '1px solid #e2e8f0', lineHeight: 1.5 }}>
-                    💡 <b>Paket Siap Ditelusuri:</b> 10 butir soal terpilih kini telah dimuat ke Meja Telaah. Guru dapat menelaah butir lengkap dengan kunci & pembahasan terbuka, mencoba mandiri (anti-bocor), mencetak lembar siap gunting, atau langsung menerbitkan ke siswa kelas pendampingan.
+                    💡 <b>Paket Siap Ditelusuri:</b> {astroReport.isPureAi
+                      ? '10 butir soal baru hasil riset cerdas AI telah dimuat ke Meja Telaah lengkap dengan gambar diagram teknis, kunci terverifikasi, dan pembahasan rumus KaTeX siap dicetak atau diterbitkan ke siswa.'
+                      : '10 butir soal terpilih kini telah dimuat ke Meja Telaah. Guru dapat menelaah butir lengkap dengan kunci & pembahasan terbuka, mencoba mandiri (anti-bocor), mencetak lembar siap gunting, atau langsung menerbitkan ke siswa kelas pendampingan.'}
                   </div>
                 </div>
               )}

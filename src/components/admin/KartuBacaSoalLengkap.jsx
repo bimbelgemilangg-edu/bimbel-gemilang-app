@@ -90,12 +90,17 @@ export default function KartuBacaSoalLengkap({ soal, tanpaKunci = false }) {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6, flexWrap: 'wrap', gap: 6 }}>
         <div style={gaya.label}>Soal</div>
         <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+          {soal?.isPureAi && (
+            <span style={{ background: '#e0f2fe', color: '#0369a1', border: '1px solid #bae6fd', fontSize: 10.5, fontWeight: 800, padding: '2px 8px', borderRadius: 6 }}>
+              ⚡ 100% Pure AI HOTS (Riset Baru & Gambar)
+            </span>
+          )}
           {soal?.isTkaAutentik && (
             <span style={{ background: '#dcfce7', color: '#166534', fontSize: 10.5, fontWeight: 800, padding: '2px 8px', borderRadius: 6 }}>
               🔖 Asli TKA MKKS DIY
             </span>
           )}
-          {soal?.isAiGenerated && (
+          {soal?.isAiGenerated && !soal?.isPureAi && (
             <span style={{ background: '#ede9fe', color: '#5b21b6', fontSize: 10.5, fontWeight: 800, padding: '2px 8px', borderRadius: 6 }}>
               🤖 Kurasi HOTS Astro AI
             </span>
