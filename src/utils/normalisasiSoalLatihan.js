@@ -148,9 +148,19 @@ export function normalisasiButirSoal(rawSoal, idx = 0) {
     rawSoal.optionImages || []
   );
 
+  const pernyataan = Array.isArray(rawSoal.pernyataan)
+    ? rawSoal.pernyataan
+    : (Array.isArray(rawSoal.baris)
+      ? rawSoal.baris
+      : (Array.isArray(rawSoal.tabel_benar_salah) ? rawSoal.tabel_benar_salah : []));
+
+  const tipe = rawSoal.tipe || rawSoal.jenis || (pernyataan.length > 0 ? 'benar_salah' : 'pg');
+
   const rawKunci = rawSoal.kunciJawaban ?? rawSoal.kunci ?? rawSoal.jawaban ?? rawSoal.jawabanBenar ?? rawSoal.correctAnswer ?? rawSoal.correct ?? 'A';
   let kunci;
-  if (Array.isArray(rawKunci)) {
+  if (['isian_singkat', 'numerik', 'isian', 'uraian', 'esai'].includes(tipe)) {
+    kunci = String(rawKunci ?? '').trim();
+  } else if (Array.isArray(rawKunci)) {
     kunci = rawKunci;
   } else if (typeof rawKunci === 'boolean') {
     kunci = rawKunci;
@@ -162,12 +172,6 @@ export function normalisasiButirSoal(rawSoal, idx = 0) {
     }
   }
 
-  const pernyataan = Array.isArray(rawSoal.pernyataan)
-    ? rawSoal.pernyataan
-    : (Array.isArray(rawSoal.baris)
-      ? rawSoal.baris
-      : (Array.isArray(rawSoal.tabel_benar_salah) ? rawSoal.tabel_benar_salah : []));
-
   const tabelSoal = rawSoal.tabelSoal || rawSoal.tabel_soal || rawSoal.tabel || rawSoal.bacaan?.tabelSoal || null;
   const bacaan = bacaanDari(rawSoal);
 
@@ -175,7 +179,7 @@ export function normalisasiButirSoal(rawSoal, idx = 0) {
     id: rawSoal.id || `soal-${idx + 1}`,
     nomor: rawSoal.nomor || idx + 1,
     teksSoal: teks,
-    tipe: rawSoal.tipe || rawSoal.jenis || (pernyataan.length > 0 ? 'benar_salah' : 'pg'),
+    tipe,
     tabelSoal,
     pernyataan,
     kolom: Array.isArray(rawSoal.kolom) && rawSoal.kolom.length > 0 ? rawSoal.kolom : ['Benar', 'Salah'],

@@ -960,7 +960,7 @@ export function kunciButirNaskahHtml(soal, nomor, opsiButir = {}) {
   const kunci = String(soal?.tipe || '') === 'pg_kompleks'
     ? escapeHtml(kunciHurufPgKompleks(soal).join(', ') || '-')
     : Array.isArray(soal?.kunciJawaban)
-      ? soal.kunciJawaban.map((k) => String.fromCharCode(65 + Number(k))).join(', ')
+      ? soal.kunciJawaban.map((k) => (/^\d+$/.test(String(k).trim()) ? String.fromCharCode(65 + Number(k)) : String(k))).join(', ')
       : escapeHtml(String(soal?.kunci ?? soal?.kunciJawaban ?? '-'));
   const pembahasan = soal?.pembahasan
     ? htmlBlokPembahasan(

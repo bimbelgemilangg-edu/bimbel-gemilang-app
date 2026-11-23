@@ -1377,11 +1377,16 @@ function optionIsEmpty(opt) {
 // NORMALIZE ANSWER KEY
 // ============================================================
 
-function normalizeAnswerKey(value) {
+function normalizeAnswerKey(value, tipe = '') {
   if (Array.isArray(value)) {
-    return value.map(item => safeString(item).trim().toUpperCase()).filter(Boolean);
+    return value.map(item => safeString(item).trim()).filter(Boolean);
   }
-  const str = safeString(value).trim().toUpperCase();
+  const str = safeString(value).trim();
+  // 🔥 Untuk uraian / esai atau jawaban teks panjang, pertahankan casing asli kalimat
+  if (['uraian', 'esai', 'essay'].includes(tipe) || str.length > 50 || (str.includes(' ') && !/^[A-Z](\s*[,\s]\s*[A-Z])+$/i.test(str))) {
+    return str;
+  }
+  const upper = str.toUpperCase();
   // 🔥 BARU (BUG SERIUS DITEMUKAN): kunci PG Kompleks dari HTML ditulis
   // sebagai string "A,C" (satu string, koma sebagai pemisah). Dulu
   // string ini DIBIARKAN UTUH (gak dipecah di sini) -- akibatnya di
@@ -1393,10 +1398,10 @@ function normalizeAnswerKey(value) {
   // polanya "huruf dipisah koma/spasi" (mis. "A,C" atau "A, C, D"),
   // pecah jadi ARRAY YANG BENAR di sini juga -- sumbernya, bukan
   // nunggu ketauan pas skoring.
-  if (/^[A-Z](\s*[,\s]\s*[A-Z])+$/.test(str)) {
-    return str.split(/[,\s]+/).filter(Boolean);
+  if (/^[A-Z](\s*[,\s]\s*[A-Z])+$/.test(upper)) {
+    return upper.split(/[,\s]+/).filter(Boolean);
   }
-  return str;
+  return upper;
 }
 
 function getCorrectAnswerIndexes(opsi, kunci) {
@@ -1575,7 +1580,7 @@ export function normalizeSoal(qMasuk, idx) {
     q.kunci_jawaban ?? q.kunciJawaban ?? q.kunci ?? q.jawaban_benar ?? q.jawabanBenar ??
     q.correctAnswer ?? q.correct_answer ?? q.answer ?? '';
 
-  const kunciJawaban = normalizeAnswerKey(rawKey);
+  const kunciJawaban = normalizeAnswerKey(rawKey, tipe);
   const opsiBenar = getCorrectAnswerIndexes(opsiJawaban, kunciJawaban);
 
   // ----------------------------------------------------------
@@ -1736,6 +1741,16 @@ export function normalizeSoal(qMasuk, idx) {
     tipe = 'isian_singkat';
   }
 
+  // 🔥 AUTO-RECOVERY PERNYATAAN TUNGGAL BENAR/SALAH:
+  // Jika tipe="benar_salah" tapi pernyataan & tabelBenarSalah kosong,
+  // dan kunci_jawaban bernilai B/S/Benar/Salah dan teksSoal ada,
+  // maka buat pernyataan tunggal dari teksSoal agar soal tidak tertolak sia-sia!
+  if (['benar_salah', 'pg_kategori'].includes(tipe) && !pernyataan.length && !tabelBenarSalah.length && /^(b|s|benar|salah|true|false)$/i.test(String(rawKey).trim()) && teksSoal.trim()) {
+    const jwb = /^(b|benar|true)$/i.test(String(rawKey).trim()) ? 'Benar' : 'Salah';
+    pernyataan.push({ teks: teksSoal.trim(), jawaban: jwb, gambar: [] });
+    peringatanLunak.push('Pernyataan Benar/Salah dibuat otomatis dari teks soal dengan kunci jawaban resmi.');
+  }
+
   if (!teksSoal.trim()) errors.push('Teks soal kosong.');
 
   if (['pg_sederhana', 'pg_kompleks'].includes(tipe) && opsiJawaban.length < 2) {
@@ -1750,7 +1765,7 @@ export function normalizeSoal(qMasuk, idx) {
     errors.push('Pernyataan kategori/Benar-Salah belum ditemukan.');
   }
 
-  if (['isian_singkat', 'numerik', 'uraian'].includes(tipe) && !kunciJawaban) {
+  if (['isian_singkat', 'numerik', 'uraian', 'esai'].includes(tipe) && !kunciJawaban) {
     errors.push('Jawaban model atau kunci belum ditemukan.');
   }
 
@@ -2452,25 +2467,27 @@ function parseHTMLStatements(container) {
 
   return rows.map(row => {
     const cells = Array.from(row.querySelectorAll(':scope > th, :scope > td'));
-    if (cells.length < 2) return null;
+    if (cells.length < 1) return null;
 
     const teksSel = cells.map(c => htmlNodeText(c).trim());
 
     // Deteksi baris header secara akurat:
     // 1) Baris didominasi tag <th>
     const thCount = cells.filter(c => c.tagName && c.tagName.toLowerCase() === 'th').length;
-    if (thCount >= 2 || thCount === cells.length) return null;
+    if (cells.length > 1 && (thCount >= 2 || thCount === cells.length)) return null;
+    if (cells.length === 1 && thCount === 1 && /^(pernyataan|statement|keterangan|no\.?|nomor)$/i.test(teksSel[0])) return null;
 
     // 2) Teks sel pertama atau kedua secara eksplisit bertuliskan kata kolom header
     const sel0 = (teksSel[0] || '').toLowerCase();
     const sel1 = (teksSel[1] || '').toLowerCase();
-    if (/^(pernyataan|statement|keterangan|prediksi peristiwa)$/i.test(sel0)) return null;
-    if (/^(no\.?|nomor)$/i.test(sel0) && /^(pernyataan|statement|keterangan|prediksi peristiwa)$/i.test(sel1)) return null;
+    if (cells.length >= 2 && /^(pernyataan|statement|keterangan|prediksi peristiwa)$/i.test(sel0)) return null;
+    if (cells.length >= 2 && /^(no\.?|nomor)$/i.test(sel0) && /^(pernyataan|statement|keterangan|prediksi peristiwa)$/i.test(sel1)) return null;
+    if (cells.length === 1 && /^(pernyataan|statement|keterangan|prediksi peristiwa)$/i.test(sel0)) return null;
 
     // 3) Kolom Benar dan Salah berdampingan di sel-sel pendek sebagai label header
     const hasBenarCol = teksSel.some(t => /^(benar|true|sesuai)$/i.test(t));
     const hasSalahCol = teksSel.some(t => /^(salah|false|tidak sesuai)$/i.test(t));
-    if (hasBenarCol && hasSalahCol && sel0.length < 20 && sel1.length < 20) return null;
+    if (cells.length >= 2 && hasBenarCol && hasSalahCol && sel0.length < 20 && sel1.length < 20) return null;
 
     let text, answer;
     let targetCell = null;
@@ -2505,11 +2522,30 @@ function parseHTMLStatements(container) {
         else if (salahDicentang && !benarDicentang) answer = labelNegatif;
         else answer = rowAttrAns;
       }
+    } else if (cells.length === 2) {
+      // Format 2 kolom: Pernyataan | Jawaban langsung sebagai teks (atau No | Pernyataan)
+      if (/^\d+[.)]?$/.test(teksSel[0]) && teksSel[1].length > 5) {
+        targetCell = cells[1];
+        text = teksSel[1];
+        answer = rowAttrAns;
+      } else {
+        targetCell = cells[0];
+        text = teksSel[0];
+        answer = safeString(rowAttrAns || teksSel[1]).trim();
+      }
     } else {
-      // Format 2 kolom: Pernyataan | Jawaban langsung sebagai teks
+      // Format 1 kolom: cells.length === 1 (Pernyataan tunggal per baris tabel)
       targetCell = cells[0];
       text = teksSel[0];
-      answer = safeString(rowAttrAns || teksSel[1]).trim();
+      answer = rowAttrAns;
+      const m = text.match(/\s*(?:\(|\[)?(benar|salah|sesuai|tidak sesuai|true|false|b|s)(?:\)|\])?\s*$/i);
+      if (m && !answer) {
+        const low = m[1].toLowerCase();
+        if (low === 'sesuai') answer = 'Sesuai';
+        else if (low === 'tidak sesuai') answer = 'Tidak Sesuai';
+        else answer = /^(b|benar|true)$/i.test(low) ? 'Benar' : 'Salah';
+        text = text.slice(0, m.index).trim();
+      }
     }
 
     const imgs = targetCell ? parseHTMLImages(targetCell) : [];
@@ -2820,7 +2856,7 @@ function parseHTMLMaster(raw) {
       bacaan,
       teks_soal: bersihTeksSoal.teks,
       opsi_jawaban,
-      kunci_jawaban: normalizeAnswerKey(keyRaw),
+      kunci_jawaban: normalizeAnswerKey(keyRaw, tipe),
       // 🔥 BARU: default TRUE kalau AI gak nulis field ini sama sekali
       // (konsisten sama instruksi prompt: "true adalah default"). Cuma
       // jadi false kalau AI eksplisit nulis data-value="false".
@@ -7526,6 +7562,37 @@ function QuestionPreview({ question, mathReady, onCropImage, imageStatus = {}, d
             <div style={{ background: '#ecfdf5', border: '1.5px solid #6ee7b7', borderRadius: '10px', padding: '8px 14px', minWidth: '160px' }}>
               <div style={{ fontSize: '11px', fontWeight: 700, color: '#047857' }}>KUNCI RESMI SISTEM</div>
               <div style={{ fontSize: '16px', fontWeight: 800, color: '#065f46', fontFamily: 'monospace', marginTop: '2px' }}>
+                {q.kunci_jawaban || '—'}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* KOTAK URAIAN / ESAI (JAWABAN MODEL & RUBRIK GURU) */}
+      {['uraian', 'esai'].includes(q.tipe) && (
+        <div style={{ marginTop: '16px', borderRadius: '12px', padding: '14px 16px', background: '#fdf4ff', border: '1.5px dashed #c084fc' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+            <span style={{ fontSize: '11px', fontWeight: 800, color: '#7e22ce', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+              📝 FORMAT SOAL: URAIAN / ESAI (JAWABAN MODEL & RUBRIK GURU)
+            </span>
+            <span style={{ fontSize: '11px', background: '#fae8ff', color: '#9333ea', padding: '2px 8px', borderRadius: '6px', fontWeight: 700 }}>
+              Uraian Bebas
+            </span>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <div>
+              <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '4px' }}>Lembar jawaban terbuka siswa:</div>
+              <textarea
+                disabled
+                rows={3}
+                placeholder="Siswa menuliskan uraian atau langkah pengerjaan mandiri di sini..."
+                style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid #cbd5e1', background: '#ffffff', color: '#94a3b8', fontStyle: 'italic', fontSize: '13.5px', resize: 'none' }}
+              />
+            </div>
+            <div style={{ background: '#f0fdf4', border: '1.5px solid #86efac', borderRadius: '10px', padding: '10px 14px' }}>
+              <div style={{ fontSize: '11px', fontWeight: 700, color: '#15803d', textTransform: 'uppercase' }}>KUNCI / RUBRIK MODEL JAWABAN GURU:</div>
+              <div style={{ fontSize: '13.5px', fontWeight: 600, color: '#166534', marginTop: '4px', lineHeight: 1.5 }}>
                 {q.kunci_jawaban || '—'}
               </div>
             </div>

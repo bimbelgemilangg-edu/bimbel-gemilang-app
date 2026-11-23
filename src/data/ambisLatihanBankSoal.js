@@ -646,6 +646,14 @@ export function aiGuardPolicingAndHeal(butir) {
     }
     butir.kunci = [...new Set(kunciArray)];
     butir.kunciTeks = butir.kunci.join(', ');
+  } else if (['isian_singkat', 'numerik', 'isian'].includes(butir.tipeSoal)) {
+    // Soal isian: pertahankan teks kunci jawaban resmi
+    butir.kunci = String(butir.kunci || '').trim();
+    butir.kunciTeks = butir.kunci;
+  } else if (['uraian', 'esai'].includes(butir.tipeSoal)) {
+    // Soal uraian/esai: pertahankan teks rubrik / model jawaban
+    butir.kunci = String(butir.kunci || '').trim();
+    butir.kunciTeks = butir.kunci;
   } else {
     // pg_sederhana
     let k = String(butir.kunci || '').toUpperCase().trim();
@@ -783,6 +791,18 @@ export function normalisasiButir(item, fallbackSubtes = 'PU', fallbackTopik = 'U
     /^[A-E]\s*[,;\s]\s*[A-E]/i.test(rawKunci)
   );
 
+  const isIsianFormat = !isBenarSalahFormat && !isPgKompleksFormat && (
+    ['isian_singkat', 'numerik', 'isian', 'short_answer', 'shortanswer'].includes(tipeSoal) ||
+    /^(isian|numerik)/i.test(tipeSoal) ||
+    (opsiArray.length === 0 && rawKunci && rawKunci.length <= 40 && !rawKunci.includes('\n') && !/^[A-E]$/i.test(rawKunci))
+  );
+
+  const isUraianFormat = !isBenarSalahFormat && !isPgKompleksFormat && !isIsianFormat && (
+    ['uraian', 'esai', 'essay'].includes(tipeSoal) ||
+    /^(uraian|esai|essay)/i.test(tipeSoal) ||
+    (opsiArray.length === 0 && rawKunci && (rawKunci.length > 40 || rawKunci.includes('\n') || rawKunci.includes(' ')))
+  );
+
   // Rekonstruksi teks pertanyaan yang terpotong / hilang dari hasil scan/impor OCR
   let finalSoal = teksPertanyaan;
   const lowerSoal = finalSoal.toLowerCase().trim();
@@ -852,6 +872,16 @@ export function normalisasiButir(item, fallbackSubtes = 'PU', fallbackTopik = 'U
     cleanKunci = [...new Set(keysFound)];
     if (cleanKunci.length === 0) cleanKunci = ['A'];
     kunciTeks = cleanKunci.join(', ');
+
+  } else if (isIsianFormat) {
+    tipeSoal = 'isian_singkat';
+    cleanKunci = rawKunci;
+    kunciTeks = rawKunci;
+
+  } else if (isUraianFormat) {
+    tipeSoal = 'uraian';
+    cleanKunci = rawKunci;
+    kunciTeks = rawKunci;
 
   } else {
     tipeSoal = 'pg_sederhana';

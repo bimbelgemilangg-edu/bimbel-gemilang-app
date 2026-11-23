@@ -346,7 +346,10 @@ export default function AmbisPracticePlayer({
     if (tipe === 'pg_kompleks') {
       return Array.isArray(jawabanKompleks) && jawabanKompleks.length > 0;
     }
-    if (tipe === 'isian_singkat') {
+    if (['isian_singkat', 'numerik', 'isian', 'short_answer', 'shortanswer'].includes(tipe)) {
+      return Boolean(jawabanIsian && jawabanIsian.trim().length > 0);
+    }
+    if (['uraian', 'esai', 'essay'].includes(tipe)) {
       return Boolean(jawabanIsian && jawabanIsian.trim().length > 0);
     }
     return Boolean(jawabanTerpilih);
@@ -377,10 +380,16 @@ export default function AmbisPracticePlayer({
       return [...kunciSet].every((k) => siswaSet.has(k));
     }
 
-    if (tipe === 'isian_singkat') {
-      const k = String(soalSekarang.kunci || '').trim().toLowerCase();
+    if (['isian_singkat', 'numerik', 'isian', 'short_answer', 'shortanswer'].includes(tipe)) {
+      const k = String(soalSekarang.kunci || soalSekarang.kunciJawaban || '').trim().toLowerCase();
       const j = String(jawabanIsian || '').trim().toLowerCase();
-      return k === j;
+      const kAlts = k.split(/\s*[/;]\s*/).map(x => x.trim().toLowerCase());
+      return kAlts.includes(j) || k === j;
+    }
+
+    if (['uraian', 'esai', 'essay'].includes(tipe)) {
+      // Uraian dievaluasi mandiri oleh siswa setelah membuka rubrik/kunci model
+      return Boolean(jawabanIsian && jawabanIsian.trim().length > 0);
     }
 
     // Default pg_sederhana
@@ -1155,9 +1164,104 @@ export default function AmbisPracticePlayer({
               })}
             </div>
           </div>
+        ) : ['isian_singkat', 'numerik', 'isian', 'short_answer', 'shortanswer'].includes(soalSekarang.tipeSoal) ? (
+          /* ================================================================ */
+          /* 3. TIPE SOAL: ISIAN SINGKAT / NUMERIK                            */
+          /* ================================================================ */
+          <div style={{ marginBottom: 16 }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '5px 12px', background: '#f0fdfa', border: '1px solid #99f6e4', borderRadius: 999, fontSize: 12, fontWeight: 700, color: '#0f766e', marginBottom: 14 }}>
+              <span>✍️ Isian Singkat (Ketikkan jawaban Anda secara langsung)</span>
+            </div>
+            <div style={{ background: '#f8fafc', border: '1.5px solid #cbd5e1', borderRadius: 12, padding: '16px' }}>
+              <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: '#334155', marginBottom: 8 }}>
+                Jawaban Anda:
+              </label>
+              <input
+                type="text"
+                disabled={sudahDiperiksa}
+                value={jawabanIsian}
+                onChange={(e) => setJawabanIsian(e.target.value)}
+                placeholder="Ketik jawaban Anda di sini..."
+                style={{
+                  width: '100%',
+                  padding: '12px 16px',
+                  borderRadius: 10,
+                  border: sudahDiperiksa
+                    ? evaluasiJawaban()
+                      ? '2px solid #10b981'
+                      : '2px solid #ef4444'
+                    : '2px solid #0d9488',
+                  background: sudahDiperiksa
+                    ? evaluasiJawaban()
+                      ? '#ecfdf5'
+                      : '#fef2f2'
+                    : '#ffffff',
+                  fontSize: 15,
+                  fontWeight: 600,
+                  color: '#0f172a',
+                  outline: 'none',
+                  boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+                  boxSizing: 'border-box',
+                }}
+              />
+              {sudahDiperiksa && (
+                <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: '#64748b' }}>Kunci Resmi:</span>
+                  <span style={{ fontSize: 14, fontWeight: 800, color: '#0f766e', background: '#ccfbf1', padding: '4px 10px', borderRadius: 6 }}>
+                    {String(soalSekarang.kunci || soalSekarang.kunciJawaban || '—')}
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+        ) : ['uraian', 'esai', 'essay'].includes(soalSekarang.tipeSoal) ? (
+          /* ================================================================ */
+          /* 4. TIPE SOAL: URAIAN / ESAI                                       */
+          /* ================================================================ */
+          <div style={{ marginBottom: 16 }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '5px 12px', background: '#fdf4ff', border: '1px solid #f0abfc', borderRadius: 999, fontSize: 12, fontWeight: 700, color: '#86198f', marginBottom: 14 }}>
+              <span>📝 Soal Uraian / Esai (Tuliskan uraian atau langkah pengerjaan Anda)</span>
+            </div>
+            <div style={{ background: '#f8fafc', border: '1.5px solid #cbd5e1', borderRadius: 12, padding: '16px' }}>
+              <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: '#334155', marginBottom: 8 }}>
+                Lembar Jawaban Siswa:
+              </label>
+              <textarea
+                disabled={sudahDiperiksa}
+                rows={5}
+                value={jawabanIsian}
+                onChange={(e) => setJawabanIsian(e.target.value)}
+                placeholder="Tuliskan jawaban atau langkah pengerjaan Anda secara lengkap di sini..."
+                style={{
+                  width: '100%',
+                  padding: '12px 16px',
+                  borderRadius: 10,
+                  border: sudahDiperiksa ? '2px solid #86efac' : '2px solid #a855f7',
+                  background: sudahDiperiksa ? '#f0fdf4' : '#ffffff',
+                  fontSize: 14,
+                  lineHeight: 1.6,
+                  color: '#0f172a',
+                  outline: 'none',
+                  boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+                  resize: 'vertical',
+                  boxSizing: 'border-box',
+                }}
+              />
+              {sudahDiperiksa && (
+                <div style={{ marginTop: 14, background: '#ecfdf5', border: '1.5px solid #6ee7b7', borderRadius: 10, padding: '12px 14px' }}>
+                  <div style={{ fontSize: 11, fontWeight: 800, color: '#047857', textTransform: 'uppercase', marginBottom: 4 }}>
+                    📌 Rubrik & Model Jawaban Resmi:
+                  </div>
+                  <div style={{ fontSize: 13.5, fontWeight: 600, color: '#065f46', lineHeight: 1.6 }}>
+                    {renderMath(String(soalSekarang.kunci || soalSekarang.kunciJawaban || soalSekarang.pembahasan || '—'))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
         ) : (
           /* ================================================================ */
-          /* 3. TIPE SOAL: PILIHAN GANDA SEDERHANA (SINGLE RADIO)              */
+          /* 5. TIPE SOAL: PILIHAN GANDA SEDERHANA (SINGLE RADIO)              */
           /* ================================================================ */
           <div style={st.listOpsi}>
             {(soalSekarang.opsi || []).map((opsi) => {
