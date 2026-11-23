@@ -56,7 +56,14 @@ export function normalisasiTeksMatematika(teks) {
     .replace(/\ue075\ue094/g, '4. ')
     .replace(/\ue076\ue094/g, '5. ')
     .replace(/\ue077\ue094/g, '6. ')
-    .replace(/[\uE000-\uF8FF]/g, '');
+    .replace(/[\uE000-\uF8FF]/g, '')
+    // Auto-heal tipografi LaTeX yang rusak akibat karakter escape tab/string JS
+    .replace(/extRp\s*([0-9.,]+)/gi, '\\text{Rp$1}')
+    .replace(/(\d+)\s*extcm/gi, '$1\\text{ cm}')
+    .replace(/(\d+)\s*extm/gi, '$1\\text{ m}')
+    .replace(/(\d+)\s*extkg/gi, '$1\\text{ kg}')
+    .replace(/(^|[^\\])\bext\{/g, '$1\\text{')
+    .replace(/([0-9a-zA-Z\)\}\]])\s*imes\s*([0-9a-zA-Z\(\{\\])/g, '$1 \\times $2');
 
   // Peta pecahan vulgar unicode (miring) ke pecahan bertingkat tegak
   const PETA_PECAHAN_VULGAR = {
@@ -245,7 +252,14 @@ export function adaMatematika(teks) {
  * @returns {string}
  */
 export function sumberKaTeX(segmen) {
-  const isi = String(segmen?.isi ?? '').trim();
+  let isi = String(segmen?.isi ?? '').trim();
+  // Auto-heal perintah KaTeX yang kehilangan backslash akibat karakter escape
+  isi = isi
+    .replace(/(^|[^\\])\bext\{/g, '$1\\text{')
+    .replace(/(^|[^\\])\bimes\b/g, '$1\\times')
+    .replace(/(^|[^\\])\bdiv\b/g, '$1\\div')
+    .replace(/(^|[^\\])\bfrac\{/g, '$1\\frac{')
+    .replace(/(^|[^\\])\bsqrt\{/g, '$1\\sqrt{');
   if (segmen?.jenis === 'blok') return `\\displaystyle ${isi}`;
   return RE_BERTINGKAT.test(isi) ? `\\displaystyle ${isi}` : isi;
 }

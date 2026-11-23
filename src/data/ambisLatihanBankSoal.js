@@ -1094,57 +1094,65 @@ export function tentukanBabDanTopik(subtesKode, item, jenjang = 'SMP') {
   const sk = String(subtesKode || '').toUpperCase();
 
   // === TKA SMP ===
+  // === TKA SMP ===
   if (sk === 'MTK') {
-    // 1. Prioritas Utama: Data & Peluang (Statistika, Diagram, Modus, Median, Mean)
+    // 1. Data & Peluang (Statistika, Diagram, Modus, Median, Mean, Peluang)
     if (
-      teks.includes('statistika') || teks.includes('peluang') || teks.includes('diagram') ||
-      teks.includes('rata-rata') || teks.includes('median') || teks.includes('modus') ||
-      teks.includes('frekuensi') || teks.includes('kuartil') || teks.includes('jangkauan') ||
-      teks.includes('tinggi badan') || teks.includes('nilai siswa') || teks.includes('tabel data') ||
-      teks.includes('kejadian') || teks.includes('dadu') || teks.includes('koin') ||
-      teks.includes('titik sampel') || teks.includes('ruang sampel')
+      teks.includes('statistika') || teks.includes('peluang') || teks.includes('diagram batang') ||
+      teks.includes('diagram lingkaran') || teks.includes('median') || teks.includes('modus') ||
+      teks.includes('kuartil') || teks.includes('jangkauan') || teks.includes('frekuensi') ||
+      teks.includes('dadu') || teks.includes('koin') || teks.includes('titik sampel') ||
+      teks.includes('ruang sampel') || teks.includes('papan putar') || teks.includes('spinner')
     ) {
       return { babNomor: 4, namaBab: 'Bab 4 · Data & Peluang (Statistika, Diagram & Peluang Teoretik)', ringkas: 'Bab 4: Data & Peluang' };
     }
 
-    // 2. Geometri & Pengukuran
+    // 2. Bab 1: Bilangan (Bulat, Pecahan, Pangkat, Bentuk Akar, FPB/KPK, Penskoran, Aritmetika Sosial & Perbandingan)
+    if (
+      teks.includes('garis bilangan') || teks.includes('bilangan bulat') || teks.includes('bilangan rasional') ||
+      teks.includes('bilangan real') || teks.includes('pecahan') || teks.includes('kabataku') ||
+      teks.includes('fpb') || teks.includes('kpk') || teks.includes('faktor persekutuan') ||
+      teks.includes('faktorisasi prima') || teks.includes('bentuk akar') || teks.includes('merasionalkan penyebut') ||
+      teks.includes('berpangkat') || teks.includes('eksponen') || teks.includes('notasi ilmiah') ||
+      teks.includes('penskoran') || teks.includes('pedoman penskoran') || teks.includes('skor olimpiade') ||
+      teks.includes('suhu') || teks.includes('termometer') || teks.includes('freezer') ||
+      teks.includes('diskon') || teks.includes('potongan harga') || teks.includes('promo') ||
+      teks.includes('aritmetika sosial') || teks.includes('bruto') || teks.includes('tara') ||
+      teks.includes('netto') || teks.includes('bunga tunggal') || teks.includes('pajak') ||
+      teks.includes('perbandingan senilai') || teks.includes('perbandingan berbalik nilai') ||
+      teks.includes('berbalik nilai') || teks.includes('skala peta') || teks.includes('skala 1 :') ||
+      (teks.includes('skala') && !teks.includes('skala likert'))
+    ) {
+      return { babNomor: 1, namaBab: 'Bab 1 · Bilangan (Operasi, Pecahan, Pangkat & Notasi Ilmiah)', ringkas: 'Bab 1: Bilangan & Bentuk Akar' };
+    }
+
+    // 3. Geometri & Pengukuran (Sudut, Pythagoras, Bangun Datar, Bangun Ruang, Transformasi)
     if (
       teks.includes('geometri') || teks.includes('sudut') || teks.includes('pythagoras') || teks.includes('pitagoras') ||
       teks.includes('bangun ruang') || teks.includes('bangun datar') || teks.includes('transformasi') ||
       teks.includes('lingkaran') || teks.includes('luas') || teks.includes('keliling') || teks.includes('volume') ||
       teks.includes('kesebangunan') || teks.includes('kongruen') || teks.includes('balok') || teks.includes('kubus') ||
       teks.includes('tabung') || teks.includes('kerucut') || teks.includes('bola') || teks.includes('limas') ||
-      teks.includes('trapesium') || teks.includes('jaring') || teks.includes('segiempat') || teks.includes('segitiga') ||
+      teks.includes('trapesium') || teks.includes('jaring-jaring') || teks.includes('segiempat') || teks.includes('segitiga') ||
       teks.includes('persegi') || teks.includes('persegi panjang') || teks.includes('jajar genjang') ||
-      teks.includes('jajargenjang') || teks.includes('belah ketupat') || teks.includes('layang-layang') ||
-      teks.includes('prisma') || teks.includes('diagonal') || teks.includes('rusuk') || teks.includes('garis') ||
+      teks.includes('belah ketupat') || teks.includes('layang-layang') ||
+      teks.includes('prisma') || teks.includes('diagonal') || teks.includes('rusuk') || teks.includes('garis sejajar') ||
       teks.includes('refleksi') || teks.includes('translasi') || teks.includes('rotasi') || teks.includes('dilatasi')
     ) {
       return { babNomor: 3, namaBab: 'Bab 3 · Geometri & Pengukuran (Sudut, Pythagoras, Ruang & Transformasi)', ringkas: 'Bab 3: Geometri & Ruang' };
     }
 
-    // 3. Aljabar, Barisan & Deret, Aritmetika Sosial, Himpunan & Relasi
+    // 4. Aljabar, SPLDV, Fungsi, Pola & Barisan
     if (
       teks.includes('aljabar') || teks.includes('persamaan') || teks.includes('fungsi') || teks.includes('pola') ||
       teks.includes('barisan') || teks.includes('deret') || teks.includes('spldv') || teks.includes('kuadrat') ||
-      teks.includes('aritmetika sosial') || teks.includes('diskon') || teks.includes('bruto') || teks.includes('tara') ||
-      teks.includes('netto') || teks.includes('pertidaksamaan') || teks.includes('skala') || teks.includes('perbandingan') ||
-      teks.includes('himpunan') || teks.includes('irisan') || teks.includes('gabungan') || teks.includes('diagram venn') ||
-      teks.includes('semesta') || teks.includes('komplemen') || teks.includes('∩') || teks.includes('∪') ||
-      teks.includes('\\cap') || teks.includes('\\cup') || teks.includes('{\\cap}') || teks.includes('{\\cup}') ||
-      teks.includes('bilangan asli kurang dari') || teks.includes('bilangan prima kurang dari') || teks.includes('bilangan cacah kurang dari') ||
-      teks.includes('mesin') || teks.includes('laundry') || teks.includes('harga') || teks.includes('uang') ||
-      teks.includes('ongkos') || teks.includes('tarif') || teks.includes('biaya') || teks.includes('berbalik nilai') ||
-      teks.includes('senilai') || teks.includes('pekerja') || teks.includes('variabel') || teks.includes('linear') ||
-      teks.includes('substitusi') || teks.includes('eliminasi') || teks.includes('secara tetap') ||
-      teks.includes('gaji bertambah') || teks.includes('masa training') || teks.includes('bertambah secara tetap') ||
-      teks.includes('jumlah tas yang diproduksi') || teks.includes('bunga tunggal') || teks.includes('pajak') ||
-      teks.includes('keuntungan') || teks.includes('kerugian')
+      teks.includes('pertidaksamaan') || teks.includes('himpunan') || teks.includes('korek api') ||
+      teks.includes('variabel') || teks.includes('linear') || teks.includes('substitusi') || teks.includes('eliminasi')
     ) {
       return { babNomor: 2, namaBab: 'Bab 2 · Aljabar (SPLDV, Persamaan Kuadrat, Fungsi & Pola Bilangan)', ringkas: 'Bab 2: Aljabar & Persamaan' };
     }
 
-    // 4. Bilangan Murni
+    // 5. Bilangan Murni
     return { babNomor: 1, namaBab: 'Bab 1 · Bilangan (Operasi, Pecahan, Pangkat & Notasi Ilmiah)', ringkas: 'Bab 1: Bilangan & Bentuk Akar' };
   }
 

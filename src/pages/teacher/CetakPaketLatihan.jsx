@@ -278,18 +278,136 @@ function KartuBacaSoal({ soal, nomor, tercentang, onCentang, bacaSaja, modeKunci
           {segmen.map((sg, i) => (sg.jenis === 'teks'
             ? <div key={i} style={{ fontSize: 12.5, lineHeight: 1.55, color: '#0f172a' }} dangerouslySetInnerHTML={{ __html: teksKeHtml(sg.isi) }} />
             : <img key={i} src={sg.url} alt={`Gambar soal ${nomor}`} style={{ maxHeight: 140, maxWidth: '100%', border: '1px solid #cbd5e1', borderRadius: 6, margin: '4px 0' }} />))}
-          {opsi.length > 0 && (
+          {/* Tabel Soal jika ada */}
+          {(soal?.tabelSoal || soal?.tabel) && (
+            <div style={{ margin: '8px 0', overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', border: '1px solid #cbd5e1', fontSize: 11 }}>
+                {(soal?.tabelSoal?.headers || soal?.tabel?.headers) && (
+                  <thead>
+                    <tr style={{ background: '#f1f5f9' }}>
+                      {(soal?.tabelSoal?.headers || soal?.tabel?.headers).map((h, hIdx) => (
+                        <th key={hIdx} style={{ border: '1px solid #cbd5e1', padding: '4px 8px', fontWeight: 700, textAlign: 'center' }}>
+                          {h}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                )}
+                <tbody>
+                  {(soal?.tabelSoal?.rows || soal?.tabel?.rows || []).map((row, rIdx) => (
+                    <tr key={rIdx} style={{ background: rIdx % 2 === 0 ? '#ffffff' : '#f8fafc' }}>
+                      {Array.isArray(row) ? row.map((cell, cIdx) => (
+                        <td key={cIdx} style={{ border: '1px solid #cbd5e1', padding: '4px 8px', textAlign: cIdx === 0 ? 'left' : 'center' }}>
+                          {cell}
+                        </td>
+                      )) : <td style={{ border: '1px solid #cbd5e1', padding: '4px 8px' }}>{String(row)}</td>}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {/* Opsi Jawaban PG Sederhana & PG Kompleks */}
+          {soal?.tipe !== 'benar_salah' && soal?.tipe !== 'pg_kategori' && opsi.length > 0 && (
             <div style={{ marginTop: 6, display: 'grid', gap: 3 }}>
+              {soal?.tipe === 'pg_kompleks' && (
+                <div style={{ fontSize: 11, fontWeight: 700, color: '#0369a1', marginBottom: 2 }}>
+                  ☑️ Pilihan Ganda Kompleks (Jawaban benar lebih dari satu):
+                </div>
+              )}
               {opsi.map((o, i) => {
                 const huruf = String.fromCharCode(65 + i);
-                const teks = typeof o === 'string' ? o : o?.teks || '';
+                const teks = typeof o === 'string' ? o : o?.teks || o?.pernyataan || '';
                 const gbr = (o && typeof o === 'object' && Array.isArray(o.gambar)) ? o.gambar : [];
+                const isKunci = Array.isArray(soal?.kunciJawaban)
+                  ? soal.kunciJawaban.includes(huruf) || soal.kunciJawaban.includes(String(i + 1))
+                  : String(soal?.kunciJawaban || '').includes(huruf);
+
                 return (
-                  <div key={i} style={{ fontSize: 12, color: '#1e293b' }}>
-                    <b>({huruf})</b> <span dangerouslySetInnerHTML={{ __html: teksKeHtml(teks) }} />
-                    {gbr.map((g, j) => (g?.uploadedUrl || g?.url
-                      ? <img key={j} src={g.uploadedUrl || g.url} alt={`Gambar pilihan ${huruf}`} style={{ maxHeight: 90, border: '1px solid #cbd5e1', borderRadius: 6, marginLeft: 6, verticalAlign: 'middle' }} />
-                      : null))}
+                  <div key={i} style={{ fontSize: 12, color: '#1e293b', display: 'flex', alignItems: 'flex-start', gap: 6 }}>
+                    {soal?.tipe === 'pg_kompleks' && (
+                      <span style={{
+                        display: 'inline-block',
+                        width: 15,
+                        height: 15,
+                        marginTop: 1,
+                        border: '1.5px solid #0284c7',
+                        borderRadius: 3,
+                        textAlign: 'center',
+                        fontSize: 10,
+                        lineHeight: '14px',
+                        background: (modeKunciGuru && isKunci) ? '#bae6fd' : 'white',
+                        color: '#0369a1',
+                        fontWeight: 900,
+                        flexShrink: 0,
+                      }}>
+                        {(modeKunciGuru && isKunci) ? '✓' : ''}
+                      </span>
+                    )}
+                    <div>
+                      <b>({huruf})</b> <span dangerouslySetInnerHTML={{ __html: teksKeHtml(teks) }} />
+                      {gbr.map((g, j) => (g?.uploadedUrl || g?.url
+                        ? <img key={j} src={g.uploadedUrl || g.url} alt={`Gambar pilihan ${huruf}`} style={{ maxHeight: 90, border: '1px solid #cbd5e1', borderRadius: 6, marginLeft: 6, verticalAlign: 'middle' }} />
+                        : null))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Tabel Soal Benar/Salah (PGK Kategori) */}
+          {(soal?.tipe === 'benar_salah' || soal?.tipe === 'pg_kategori' || (Array.isArray(soal?.tabelBenarSalah) && soal.tabelBenarSalah.length > 0) || (Array.isArray(soal?.pernyataan) && soal.tipe !== 'pg_kompleks')) && (
+            <div style={{ marginTop: 8, border: '1px solid #cbd5e1', borderRadius: 6, overflow: 'hidden' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 65px 65px', background: '#f1f5f9', fontWeight: 800, fontSize: 11, padding: '5px 8px', borderBottom: '1px solid #cbd5e1' }}>
+                <span>Pernyataan</span>
+                <span style={{ textAlign: 'center', color: '#15803d' }}>Benar</span>
+                <span style={{ textAlign: 'center', color: '#b91c1c' }}>Salah</span>
+              </div>
+              {(soal?.tabelBenarSalah || soal?.pernyataan || []).map((b, idx) => {
+                const teksPernyataan = typeof b === 'string' ? b : (b?.pernyataan || b?.teks || '');
+                const kunciB = typeof b === 'object' ? String(b?.jawaban || b?.kunci || '').toLowerCase() : '';
+                const isBenar = kunciB === 'benar' || kunciB === 'b' || kunciB === 'true';
+                const isSalah = kunciB === 'salah' || kunciB === 's' || kunciB === 'false';
+
+                return (
+                  <div key={idx} style={{ display: 'grid', gridTemplateColumns: '1fr 65px 65px', padding: '6px 8px', borderBottom: '1px solid #f1f5f9', fontSize: 11.5, alignItems: 'center', background: idx % 2 === 0 ? '#ffffff' : '#fafafa' }}>
+                    <span><b>{idx + 1}.</b> <span dangerouslySetInnerHTML={{ __html: teksKeHtml(teksPernyataan) }} /></span>
+                    <span style={{ textAlign: 'center' }}>
+                      <span style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        width: 16,
+                        height: 16,
+                        border: isBenar && modeKunciGuru ? '1.5px solid #16a34a' : '1.5px solid #94a3b8',
+                        borderRadius: 3,
+                        background: (modeKunciGuru && isBenar) ? '#dcfce7' : 'white',
+                        color: '#15803d',
+                        fontWeight: 900,
+                        fontSize: 11,
+                      }}>
+                        {(modeKunciGuru && isBenar) ? '✓' : ''}
+                      </span>
+                    </span>
+                    <span style={{ textAlign: 'center' }}>
+                      <span style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        width: 16,
+                        height: 16,
+                        border: isSalah && modeKunciGuru ? '1.5px solid #dc2626' : '1.5px solid #94a3b8',
+                        borderRadius: 3,
+                        background: (modeKunciGuru && isSalah) ? '#fee2e2' : 'white',
+                        color: '#b91c1c',
+                        fontWeight: 900,
+                        fontSize: 11,
+                      }}>
+                        {(modeKunciGuru && isSalah) ? '✓' : ''}
+                      </span>
+                    </span>
                   </div>
                 );
               })}

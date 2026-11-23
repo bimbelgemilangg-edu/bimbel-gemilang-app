@@ -56,7 +56,9 @@ const RE_PLACEHOLDER = /\{\{GAMBAR(?:_(\d+))?\}\}/g;
  * @returns {Array<{jenis:'teks',isi:string}|{jenis:'gambar',url:string,indeks:number}>}
  */
 export function pisahTeksDanGambar(teks, gambarUrls = [], opts = {}) {
-  const gambar = Array.isArray(gambarUrls) ? gambarUrls.filter(Boolean) : [];
+  const gambar = Array.isArray(gambarUrls)
+    ? gambarUrls.map((g) => (typeof g === 'string' ? g : (g?.url || g?.uploadedUrl || g?.src || ''))).filter(Boolean)
+    : [];
   const meta = Array.isArray(opts?.meta) ? opts.meta : null;
   const region = opts?.region || 'badan';
   const lewati = opts?.lewati instanceof Set

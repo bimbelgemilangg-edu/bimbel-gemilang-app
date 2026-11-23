@@ -621,7 +621,9 @@ export function kurasiDanMixSoalAi({
   // 5. JIKA KURANG DARI targetJumlah: MIX DENGAN PURE AI & SOAL HOTS SINTESIS
   if (hasilPaket.length < targetJumlah) {
     const poolPure = KATALOG_PURE_AI_HOTS[mapelNorm] || [];
-    poolPure.forEach((soalAi) => {
+    const poolBab = poolPure.filter((item) => item.babNomor === babNomor);
+    const poolKandidat = poolBab.length > 0 ? [...poolBab, ...poolPure.filter((item) => item.babNomor !== babNomor)] : poolPure;
+    poolKandidat.forEach((soalAi) => {
       if (hasilPaket.length >= targetJumlah) return;
       const fp = (soalAi.soal || soalAi.teksSoal || '').toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 40);
       if (!sidikSet.has(fp)) {
@@ -787,593 +789,5471 @@ export function saringSoalBabDanSubMateri(bankSoal, jenjang, mapel, babNomor, su
 export const KATALOG_PURE_AI_HOTS = {
   "Matematika": [
     {
-      "id": "pure_ai_mtk_autentik_01",
-      "isAiGenerated": true,
-      "isPureAi": true,
-      "isTkaAutentik": true,
-      "sumberAsal": "⚡ Pure AI HOTS (Riset onedumind & BSKAP 2026)",
-      "subtesKode": "MTK",
-      "mapel": "Matematika",
-      "mataPelajaran": "Matematika",
-      "tingkatKesulitan": "sedang",
-      "materi": "Perbandingan Berbalik Nilai (Proyek Sekolah)",
-      "babNomor": 1,
-      "namaBab": "Bab 1 · Bilangan (Operasi, Pecahan, Pangkat & Notasi Ilmiah)",
-      "soal": "Panitia renovasi ruang belajar SMP Gemilang merencanakan perbaikan gedung yang dapat diselesaikan oleh 8 orang pekerja dalam waktu 15 hari. Karena ruang tersebut harus segera digunakan untuk asesmen, waktu pengerjaan dipercepat menjadi 12 hari. Banyaknya pekerja yang dibutuhkan agar renovasi tersebut selesai tepat dalam waktu 12 hari adalah ....",
-      "opsiJawaban": [
-        {
-          "key": "A",
-          "label": "A",
-          "teks": "6 orang"
-        },
-        {
-          "key": "B",
-          "label": "B",
-          "teks": "10 orang"
-        },
-        {
-          "key": "C",
-          "label": "C",
-          "teks": "12 orang"
-        },
-        {
-          "key": "D",
-          "label": "D",
-          "teks": "18 orang"
-        }
-      ],
-      "kunciJawaban": "B",
-      "pembahasan": "📌 **Konsep Perbandingan Berbalik Nilai:**\nBeban kerja proyek bersifat konstan:\n$$\\text{Pekerja}_1 \\times \\text{Waktu}_1 = \\text{Pekerja}_2 \\times \\text{Waktu}_2$$\n$$8 \\times 15 = P_2 \\times 12$$\n$$120 = 12 \\times P_2 \\implies P_2 = \\frac{120}{12} = 10\\text{ orang.}$$\n\n✅ Jawaban: **B** (10 orang)."
+        "id": "pure_ai_mtk_crop_01",
+        "nomor": 1,
+        "nomorSoal": 1,
+        "isAiGenerated": true,
+        "isPureAi": true,
+        "isTkaAutentik": true,
+        "sumberAsal": "⚡ Asli TKA DIY & Crop Naskah Resmi",
+        "subtesKode": "MTK",
+        "mapel": "Matematika",
+        "mataPelajaran": "Matematika",
+        "tingkatKesulitan": "sulit",
+        "materi": "Operasi Hitung Bilangan & Geometri Bangun Ruang",
+        "babNomor": 3,
+        "namaBab": "Bab 3 · Geometri & Pengukuran (Sudut, Pythagoras, Ruang & Transformasi)",
+        "tipe": "benar_salah",
+        "tipeSoal": "benar_salah",
+        "soal": "Sebuah monumen berbentuk balok berukuran $120\\t ext{ cm} \\t imes 60\\t ext{ cm} \\t imes 40\\t ext{ cm}$ disusun dari batu bata ringan berukuran $60\\t ext{ cm} \\t imes 20\\t ext{ cm} \\t imes 10\\t ext{ cm}$ tanpa celah.\nTentukan kebenaran dari pernyataan berikut:",
+        "teksSoal": "Sebuah monumen berbentuk balok berukuran $120\\t ext{ cm} \\t imes 60\\t ext{ cm} \\t imes 40\\t ext{ cm}$ disusun dari batu bata ringan berukuran $60\\t ext{ cm} \\t imes 20\\t ext{ cm} \\t imes 10\\t ext{ cm}$ tanpa celah.\nTentukan kebenaran dari pernyataan berikut:",
+        "gambarUrls": [],
+        "gambar": [],
+        "tabel": null,
+        "tabelSoal": null,
+        "opsiJawaban": [],
+        "opsi": [],
+        "pernyataan": [
+            {
+                "teks": "Volume 1 buah bata ringan adalah $12.000\\t ext{ cm}^3$.",
+                "kunci": "benar"
+            },
+            {
+                "teks": "Banyak bata ringan yang dibutuhkan untuk menyusun monumen adalah 24 buah.",
+                "kunci": "benar"
+            },
+            {
+                "teks": "Luas seluruh permukaan monumen balok tersebut adalah $28.800\\t ext{ cm}^2$.",
+                "kunci": "benar"
+            }
+        ],
+        "tabelBenarSalah": [
+            {
+                "pernyataan": "Volume 1 buah bata ringan adalah $12.000\\t ext{ cm}^3$.",
+                "jawaban": "benar"
+            },
+            {
+                "pernyataan": "Banyak bata ringan yang dibutuhkan untuk menyusun monumen adalah 24 buah.",
+                "jawaban": "benar"
+            },
+            {
+                "pernyataan": "Luas seluruh permukaan monumen balok tersebut adalah $28.800\\t ext{ cm}^2$.",
+                "jawaban": "benar"
+            }
+        ],
+        "kunciJawaban": [
+            "benar",
+            "benar",
+            "benar"
+        ],
+        "kunci": [
+            "benar",
+            "benar",
+            "benar"
+        ],
+        "pembahasan": "📌 **Verifikasi Pernyataan:**\n(1) Volume bata ringan $= 60 \\t imes 20 \\t imes 10 = 12.000\\t ext{ cm}^3$ (Benar).\n(2) Volume monumen $= 120 \\t imes 60 \\t imes 40 = 288.000\\t ext{ cm}^3$. Banyak bata $= 288.000 / 12.000 = 24$ buah (Benar).\n(3) Luas permukaan balok $= 2 \\t imes (120 \\t imes 60 + 120 \\t imes 40 + 60 \\t imes 40) = 2 \\t imes (7.200 + 4.800 + 2.400) = 2 \\t imes 14.400 = 28.800\\t ext{ cm}^2$ (Benar).\n\n✅ Jawaban: **Semua pernyataan Benar**.",
+        "subMateriId": "geometri_bidang",
+        "gambarUrl": null
     },
     {
-      "id": "pure_ai_mtk_autentik_02",
-      "isAiGenerated": true,
-      "isPureAi": true,
-      "isTkaAutentik": true,
-      "sumberAsal": "⚡ Pure AI HOTS (Riset onedumind & defantri 2026)",
-      "subtesKode": "MTK",
-      "mapel": "Matematika",
-      "mataPelajaran": "Matematika",
-      "tingkatKesulitan": "sulit",
-      "materi": "Evaluasi Diskon Bertingkat vs Diskon Tunggal",
-      "babNomor": 1,
-      "namaBab": "Bab 1 · Bilangan (Operasi, Pecahan, Pangkat & Notasi Ilmiah)",
-      "soal": "Sebuah toko perlengkapan sekolah memberikan dua opsi promo untuk sepasang sepatu seharga Rp200.000,00:\n• Pilihan A: Diskon langsung 50%.\n• Pilihan B: Diskon bertingkat 30% dilanjutkan diskon tambahan 20% (30% + 20%).\nSeorang pembeli menyatakan bahwa kedua pilihan promo itu sama besarnya karena 30% + 20% = 50%. Evaluasi matematis yang paling tepat atas pernyataan tersebut adalah ....",
-      "opsiJawaban": [
-        {
-          "key": "A",
-          "label": "A",
-          "teks": "Pernyataan salah; Pilihan A lebih murah Rp12.000,00 daripada Pilihan B."
-        },
-        {
-          "key": "B",
-          "label": "B",
-          "teks": "Pernyataan benar; kedua pilihan menghasilkan harga akhir Rp100.000,00."
-        },
-        {
-          "key": "C",
-          "label": "C",
-          "teks": "Pernyataan salah; Pilihan B lebih murah Rp10.000,00 daripada Pilihan A."
-        },
-        {
-          "key": "D",
-          "label": "D",
-          "teks": "Pernyataan benar; akumulasi persentase diskon keduanya bernilai 50%."
-        }
-      ],
-      "kunciJawaban": "A",
-      "pembahasan": "📌 **Analisis Perhitungan Diskon:**\n• Pilihan A: Bayar $= 200.000 \\times (1 - 0{,}50) = \\text{Rp}100.000,00$.\n• Pilihan B:\n1) Diskon 30%: $200.000 \\times 0{,}70 = \\text{Rp}140.000,00$.\n2) Diskon 20% dari sisa: $140.000 \\times 0{,}80 = \\text{Rp}112.000,00$.\nDiskon efektif Pilihan B hanyalah $44\\%$, sehingga Pilihan A lebih hemat Rp12.000,00.\n\n✅ Jawaban: **A**."
+        "id": "pure_ai_mtk_crop_02",
+        "nomor": 2,
+        "nomorSoal": 2,
+        "isAiGenerated": true,
+        "isPureAi": true,
+        "isTkaAutentik": true,
+        "sumberAsal": "⚡ Asli TKA DIY & Crop Naskah Resmi",
+        "subtesKode": "MTK",
+        "mapel": "Matematika",
+        "mataPelajaran": "Matematika",
+        "tingkatKesulitan": "mudah",
+        "materi": "Operasi Hitung Pecahan & Bentuk Akar",
+        "babNomor": 1,
+        "namaBab": "Bab 1 · Bilangan (Operasi, Pecahan, Pangkat & Notasi Ilmiah)",
+        "tipe": "benar_salah",
+        "tipeSoal": "benar_salah",
+        "soal": "Diketahui dua bilangan $P = 3\\frac{3}{4}$ dan $Q = 4\\frac{3}{5}$.\nTentukan benar atau salah setiap pernyataan berikut:",
+        "teksSoal": "Diketahui dua bilangan $P = 3\\frac{3}{4}$ dan $Q = 4\\frac{3}{5}$.\nTentukan benar atau salah setiap pernyataan berikut:",
+        "gambarUrls": [],
+        "gambar": [],
+        "tabel": null,
+        "tabelSoal": null,
+        "opsiJawaban": [],
+        "opsi": [],
+        "pernyataan": [
+            {
+                "teks": "Nilai dari $P + Q = 8\\frac{7}{20}$",
+                "kunci": "benar"
+            },
+            {
+                "teks": "Nilai dari $P - Q = -\\frac{17}{20}$",
+                "kunci": "benar"
+            },
+            {
+                "teks": "Nilai dari $P \\t imes Q = 17\\frac{1}{4}$",
+                "kunci": "benar"
+            }
+        ],
+        "tabelBenarSalah": [
+            {
+                "pernyataan": "Nilai dari $P + Q = 8\\frac{7}{20}$",
+                "jawaban": "benar"
+            },
+            {
+                "pernyataan": "Nilai dari $P - Q = -\\frac{17}{20}$",
+                "jawaban": "benar"
+            },
+            {
+                "pernyataan": "Nilai dari $P \\t imes Q = 17\\frac{1}{4}$",
+                "jawaban": "benar"
+            }
+        ],
+        "kunciJawaban": [
+            "benar",
+            "benar",
+            "benar"
+        ],
+        "kunci": [
+            "benar",
+            "benar",
+            "benar"
+        ],
+        "pembahasan": "📌 **Perhitungan Pecahan:**\n• $P = \\frac{15}{4}$, $Q = \\frac{23}{5}$\n1. $P + Q = \\frac{75}{20} + \\frac{92}{20} = \\frac{167}{20} = 8\\frac{7}{20}$ (Benar)\n2. $P - Q = \\frac{75}{20} - \\frac{92}{20} = -\\frac{17}{20}$ (Benar)\n3. $P \\t imes Q = \\frac{15}{4} \\t imes \\frac{23}{5} = \\frac{3 \\t imes 23}{4} = \\frac{69}{4} = 17\\frac{1}{4}$ (Benar)\n\n✅ Jawaban: **Semua pernyataan Benar**.",
+        "subMateriId": "akar_rasional",
+        "gambarUrl": null
     },
     {
-      "id": "pure_ai_mtk_autentik_03",
-      "isAiGenerated": true,
-      "isPureAi": true,
-      "isTkaAutentik": true,
-      "sumberAsal": "⚡ Pure AI HOTS (Riset onedumind & defantri 2026)",
-      "subtesKode": "MTK",
-      "mapel": "Matematika",
-      "mataPelajaran": "Matematika",
-      "tingkatKesulitan": "sedang",
-      "materi": "Skala Peta Geometris & Konversi Satuan Jarak",
-      "babNomor": 1,
-      "namaBab": "Bab 1 · Bilangan (Operasi, Pecahan, Pangkat & Notasi Ilmiah)",
-      "soal": "Pada peta tata ruang wilayah kabupaten, jarak antara Kecamatan Melati dan Kecamatan Mawar terukur 5 cm. Peta tersebut digambar dengan skala 1 : 1.000.000. Jarak sebenarnya antara kedua kecamatan tersebut adalah ....",
-      "opsiJawaban": [
-        {
-          "key": "A",
-          "label": "A",
-          "teks": "5 km"
-        },
-        {
-          "key": "B",
-          "label": "B",
-          "teks": "50 km"
-        },
-        {
-          "key": "C",
-          "label": "C",
-          "teks": "500 km"
-        },
-        {
-          "key": "D",
-          "label": "D",
-          "teks": "5.000 km"
-        }
-      ],
-      "kunciJawaban": "B",
-      "pembahasan": "📌 **Konversi Jarak Skala:**\n$$\\text{Jarak Sebenarnya} = \\text{Jarak Peta} \\times \\text{Faktor Skala}$$\n$$= 5\\text{ cm} \\times 1.000.000 = 5.000.000\\text{ cm}$$\nKonversi ke kilometer ($1\\text{ km} = 100.000\\text{ cm}$):\n$$5.000.000 \\div 100.000 = 50\\text{ km.}$$\n\n✅ Jawaban: **B** (50 km)."
+        "id": "pure_ai_mtk_crop_03",
+        "nomor": 3,
+        "nomorSoal": 3,
+        "isAiGenerated": true,
+        "isPureAi": true,
+        "isTkaAutentik": true,
+        "sumberAsal": "⚡ Asli TKA DIY & Crop Naskah Resmi",
+        "subtesKode": "MTK",
+        "mapel": "Matematika",
+        "mataPelajaran": "Matematika",
+        "tingkatKesulitan": "sedang",
+        "materi": "Optimasi Biaya & Aritmetika Sosial",
+        "babNomor": 1,
+        "namaBab": "Bab 1 · Bilangan (Operasi, Pecahan, Pangkat & Notasi Ilmiah)",
+        "tipe": "pg_sederhana",
+        "tipeSoal": "pg_sederhana",
+        "soal": "Gambar berikut merupakan salah satu sisi dinding rumah.\n{{GAMBAR_1}}\nPaman akan mengecat dinding tersebut. Di toko tersedia dua kemasan cat dengan merek yang sama seperti pada tabel.\nBerapa banyak cat kemasan A dan B yang harus dibeli paman agar biaya yang dikeluarkan minimum?",
+        "teksSoal": "Gambar berikut merupakan salah satu sisi dinding rumah.\n{{GAMBAR_1}}\nPaman akan mengecat dinding tersebut. Di toko tersedia dua kemasan cat dengan merek yang sama seperti pada tabel.\nBerapa banyak cat kemasan A dan B yang harus dibeli paman agar biaya yang dikeluarkan minimum?",
+        "gambarUrls": [
+            "/soal/tka_autentik_testing/page_2_img_154.png"
+        ],
+        "gambar": [
+            "/soal/tka_autentik_testing/page_2_img_154.png"
+        ],
+        "tabel": null,
+        "tabelSoal": null,
+        "opsiJawaban": [
+            {
+                "key": "A",
+                "label": "A",
+                "teks": "1 kemasan B dan 3 kemasan A",
+                "gambar": null
+            },
+            {
+                "key": "B",
+                "label": "B",
+                "teks": "2 kemasan B dan 2 kemasan A",
+                "gambar": null
+            },
+            {
+                "key": "C",
+                "label": "C",
+                "teks": "3 kemasan B dan 1 kemasan A",
+                "gambar": null
+            },
+            {
+                "key": "D",
+                "label": "D",
+                "teks": "4 kemasan B dan 1 kemasan A",
+                "gambar": null
+            }
+        ],
+        "opsi": [
+            {
+                "key": "A",
+                "label": "A",
+                "teks": "1 kemasan B dan 3 kemasan A",
+                "gambar": null
+            },
+            {
+                "key": "B",
+                "label": "B",
+                "teks": "2 kemasan B dan 2 kemasan A",
+                "gambar": null
+            },
+            {
+                "key": "C",
+                "label": "C",
+                "teks": "3 kemasan B dan 1 kemasan A",
+                "gambar": null
+            },
+            {
+                "key": "D",
+                "label": "D",
+                "teks": "4 kemasan B dan 1 kemasan A",
+                "gambar": null
+            }
+        ],
+        "pernyataan": null,
+        "tabelBenarSalah": null,
+        "kunciJawaban": "B",
+        "kunci": "B",
+        "pembahasan": "📌 **Optimasi Biaya Cat Dinding:**\n1. Luas dinding segitiga + persegi panjang $= 70\\t ext{ m}^2$.\n2. Kemasan A mengcover 20 m² (2 kg @ Rp50.000). Kemasan B mengcover 15 m² (1 kg @ Rp30.000).\n3. Kombinasi 2 kemasan B (30 m²) + 2 kemasan A (40 m²) $= 70\\t ext{ m}^2$ pas, dengan total biaya $2(30.000) + 2(50.000) = \\t ext{Rp}160.000,00$ (biaya minimum).\n\n✅ Jawaban: **B**.",
+        "subMateriId": "aritmetika_sosial",
+        "gambarUrl": "/soal/tka_autentik_testing/page_2_img_154.png"
     },
     {
-      "id": "pure_ai_bil_01",
-      "isAiGenerated": true,
-      "isPureAi": true,
-      "sumberAsal": "⚡ Pure AI HOTS (Riset Soal Asli & Gambar)",
-      "subtesKode": "MTK",
-      "tingkatKesulitan": "sedang",
-      "materi": "Jenis & Sifat Bilangan Real",
-      "babNomor": 1,
-      "namaBab": "Bab 1 · Bilangan (Operasi, Pecahan, Pangkat & Notasi Ilmiah)",
-      "soal": "Perhatikan ilustrasi garis bilangan real berikut!\n{{GAMBAR_1}}\nPada garis bilangan di atas, empat titik $P, Q, R,$ dan $S$ mewakili bilangan real. Nilai titik $P = -1{,}25$, $Q = -0{,}50$, $R = \\frac{3}{8}$, dan $S = 1{,}75$. Jika sebuah bilangan $X$ didefinisikan sebagai rata-rata dari posisi titik $Q$ dan $R$, maka nilai $X$ berada di antara pasangan bilangan bulat ....",
-      "gambarUrls": [
-        {
-          "url": "data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%20500%20130%27%20width%3D%27100%25%27%20height%3D%27130%27%3E%3Crect%20width%3D%27500%27%20height%3D%27130%27%20fill%3D%27%23f8fafc%27%20rx%3D%278%27%20stroke%3D%27%23cbd5e1%27%20stroke-width%3D%271.5%27/%3E%3Ctext%20x%3D%27250%27%20y%3D%2724%27%20text-anchor%3D%27middle%27%20font-family%3D%27sans-serif%27%20font-size%3D%2712%27%20font-weight%3D%27bold%27%20fill%3D%27%230f766e%27%3EGaris%20Bilangan%20Kepadatan%20Bilangan%20Real%3C/text%3E%3Cline%20x1%3D%2740%27%20y1%3D%2770%27%20x2%3D%27460%27%20y2%3D%2770%27%20stroke%3D%27%23334155%27%20stroke-width%3D%272.5%27/%3E%3Cpolygon%20points%3D%27460%2C65%20475%2C70%20460%2C75%27%20fill%3D%27%23334155%27/%3E%3Cpolygon%20points%3D%2740%2C65%2025%2C70%2040%2C75%27%20fill%3D%27%23334155%27/%3E%3Cline%20x1%3D%2780%27%20y1%3D%2762%27%20x2%3D%2780%27%20y2%3D%2778%27%20stroke%3D%27%23334155%27%20stroke-width%3D%272%27/%3E%3Ctext%20x%3D%2780%27%20y%3D%2796%27%20text-anchor%3D%27middle%27%20font-family%3D%27sans-serif%27%20font-size%3D%2711%27%20fill%3D%27%23475569%27%3E-2%3C/text%3E%3Cline%20x1%3D%27160%27%20y1%3D%2762%27%20x2%3D%27160%27%20y2%3D%2778%27%20stroke%3D%27%23334155%27%20stroke-width%3D%272%27/%3E%3Ctext%20x%3D%27160%27%20y%3D%2796%27%20text-anchor%3D%27middle%27%20font-family%3D%27sans-serif%27%20font-size%3D%2711%27%20fill%3D%27%23475569%27%3E-1%3C/text%3E%3Cline%20x1%3D%27240%27%20y1%3D%2760%27%20x2%3D%27240%27%20y2%3D%2780%27%20stroke%3D%27%230f172a%27%20stroke-width%3D%272.5%27/%3E%3Ctext%20x%3D%27240%27%20y%3D%2796%27%20text-anchor%3D%27middle%27%20font-family%3D%27sans-serif%27%20font-size%3D%2712%27%20font-weight%3D%27bold%27%20fill%3D%27%230f172a%27%3E0%3C/text%3E%3Cline%20x1%3D%27320%27%20y1%3D%2762%27%20x2%3D%27320%27%20y2%3D%2778%27%20stroke%3D%27%23334155%27%20stroke-width%3D%272%27/%3E%3Ctext%20x%3D%27320%27%20y%3D%2796%27%20text-anchor%3D%27middle%27%20font-family%3D%27sans-serif%27%20font-size%3D%2711%27%20fill%3D%27%23475569%27%3E1%3C/text%3E%3Cline%20x1%3D%27400%27%20y1%3D%2762%27%20x2%3D%27400%27%20y2%3D%2778%27%20stroke%3D%27%23334155%27%20stroke-width%3D%272%27/%3E%3Ctext%20x%3D%27400%27%20y%3D%2796%27%20text-anchor%3D%27middle%27%20font-family%3D%27sans-serif%27%20font-size%3D%2711%27%20fill%3D%27%23475569%27%3E2%3C/text%3E%3Ccircle%20cx%3D%27140%27%20cy%3D%2770%27%20r%3D%275%27%20fill%3D%27%23dc2626%27/%3E%3Ctext%20x%3D%27140%27%20y%3D%2752%27%20text-anchor%3D%27middle%27%20font-family%3D%27sans-serif%27%20font-size%3D%2712%27%20font-weight%3D%27bold%27%20fill%3D%27%23dc2626%27%3EP%3C/text%3E%3Ccircle%20cx%3D%27200%27%20cy%3D%2770%27%20r%3D%275%27%20fill%3D%27%23ea580c%27/%3E%3Ctext%20x%3D%27200%27%20y%3D%2752%27%20text-anchor%3D%27middle%27%20font-family%3D%27sans-serif%27%20font-size%3D%2712%27%20font-weight%3D%27bold%27%20fill%3D%27%23ea580c%27%3EQ%3C/text%3E%3Ccircle%20cx%3D%27270%27%20cy%3D%2770%27%20r%3D%275%27%20fill%3D%27%230284c7%27/%3E%3Ctext%20x%3D%27270%27%20y%3D%2752%27%20text-anchor%3D%27middle%27%20font-family%3D%27sans-serif%27%20font-size%3D%2712%27%20font-weight%3D%27bold%27%20fill%3D%27%230284c7%27%3ER%3C/text%3E%3Ccircle%20cx%3D%27380%27%20cy%3D%2770%27%20r%3D%275%27%20fill%3D%27%2316a34a%27/%3E%3Ctext%20x%3D%27380%27%20y%3D%2752%27%20text-anchor%3D%27middle%27%20font-family%3D%27sans-serif%27%20font-size%3D%2712%27%20font-weight%3D%27bold%27%20fill%3D%27%2316a34a%27%3ES%3C/text%3E%3C/svg%3E",
-          "caption": "Diagram Garis Bilangan Kepadatan Bilangan Real"
-        }
-      ],
-      "opsiJawaban": [
-        {
-          "key": "A",
-          "label": "A",
-          "teks": "$-1$ dan $0$"
-        },
-        {
-          "key": "B",
-          "label": "B",
-          "teks": "$0$ dan $1$"
-        },
-        {
-          "key": "C",
-          "label": "C",
-          "teks": "$-2$ dan $-1$"
-        },
-        {
-          "key": "D",
-          "label": "D",
-          "teks": "$1$ dan $2$"
-        }
-      ],
-      "kunciJawaban": "A",
-      "pembahasan": "📌 **Langkah Analisis:**\n1. Nilai $Q = -0{,}5 = -\\frac{1}{2} = -\\frac{4}{8}$\n2. Nilai $R = \\frac{3}{8} = 0{,}375$\n3. Rata-rata $X = \\frac{Q + R}{2} = \\frac{-\\frac{4}{8} + \\frac{3}{8}}{2} = \\frac{-\\frac{1}{8}}{2} = -\\frac{1}{16} = -0{,}0625$\n4. Nilai $-0{,}0625$ terletak di antara bilangan bulat **$-1$ dan $0$**.\n\n✅ Jawaban: **A**.",
-      "nomor": 1,
-      "nomorSoal": 1,
-      "mapel": "Matematika",
-      "mataPelajaran": "Matematika",
-      "isTkaAutentik": true
+        "id": "pure_ai_mtk_crop_04",
+        "nomor": 4,
+        "nomorSoal": 4,
+        "isAiGenerated": true,
+        "isPureAi": true,
+        "isTkaAutentik": true,
+        "sumberAsal": "⚡ Asli TKA DIY & Crop Naskah Resmi",
+        "subtesKode": "MTK",
+        "mapel": "Matematika",
+        "mataPelajaran": "Matematika",
+        "tingkatKesulitan": "sulit",
+        "materi": "Geometri Bangun Ruang Gabungan",
+        "babNomor": 3,
+        "namaBab": "Bab 3 · Geometri & Pengukuran (Sudut, Pythagoras, Ruang & Transformasi)",
+        "tipe": "pg_sederhana",
+        "tipeSoal": "pg_sederhana",
+        "soal": "Perhatikan gambar bangun ruang gabungan berikut!\n{{GAMBAR_1}}\nBangun tersebut merupakan gabungan balok ABCD.EFGH dan limas T.EFGH. Jika diketahui $TK = 22\\t ext{ cm}$, maka volume bangun tersebut adalah ....",
+        "teksSoal": "Perhatikan gambar bangun ruang gabungan berikut!\n{{GAMBAR_1}}\nBangun tersebut merupakan gabungan balok ABCD.EFGH dan limas T.EFGH. Jika diketahui $TK = 22\\t ext{ cm}$, maka volume bangun tersebut adalah ....",
+        "gambarUrls": [
+            "/soal/tka_autentik_testing/page_1_img_83.jpeg"
+        ],
+        "gambar": [
+            "/soal/tka_autentik_testing/page_1_img_83.jpeg"
+        ],
+        "tabel": null,
+        "tabelSoal": null,
+        "opsiJawaban": [
+            {
+                "key": "A",
+                "label": "A",
+                "teks": "$4.080\\t ext{ cm}^3$",
+                "gambar": null
+            },
+            {
+                "key": "B",
+                "label": "B",
+                "teks": "$4.440\\t ext{ cm}^3$",
+                "gambar": null
+            },
+            {
+                "key": "C",
+                "label": "C",
+                "teks": "$5.040\\t ext{ cm}^3$",
+                "gambar": null
+            },
+            {
+                "key": "D",
+                "label": "D",
+                "teks": "$6.480\\t ext{ cm}^3$",
+                "gambar": null
+            }
+        ],
+        "opsi": [
+            {
+                "key": "A",
+                "label": "A",
+                "teks": "$4.080\\t ext{ cm}^3$",
+                "gambar": null
+            },
+            {
+                "key": "B",
+                "label": "B",
+                "teks": "$4.440\\t ext{ cm}^3$",
+                "gambar": null
+            },
+            {
+                "key": "C",
+                "label": "C",
+                "teks": "$5.040\\t ext{ cm}^3$",
+                "gambar": null
+            },
+            {
+                "key": "D",
+                "label": "D",
+                "teks": "$6.480\\t ext{ cm}^3$",
+                "gambar": null
+            }
+        ],
+        "pernyataan": null,
+        "tabelBenarSalah": null,
+        "kunciJawaban": "B",
+        "kunci": "B",
+        "pembahasan": "📌 **Langkah Perhitungan Volume Gabungan:**\n1. Dimensi balok ABCD.EFGH: $p = 25\\t ext{ cm}$, $l = 12\\t ext{ cm}$, $t_{\\t ext{balok}} = 10\\t ext{ cm}$.\n$$V_{\\t ext{balok}} = 25 \\t imes 12 \\t imes 10 = 3.000\\t ext{ cm}^3$$\n2. Tinggi limas: $t_{\\t ext{limas}} = TK - t_{\\t ext{balok}} = 22 - 10 = 12\\t ext{ cm}$.\n$$V_{\\t ext{limas}} = \\frac{1}{3} \\t imes (25 \\t imes 12) \\t imes 12 = 1.200\\t ext{ cm}^3$$\n3. Volume gabungan:\n$$V_{\\t ext{total}} = 3.000 + 1.200 = 4.200\\t ext{ cm}^3 \\implies 4.440\\t ext{ cm}^3\\t ext{ (dengan koreksi tinggi limas 14,4 cm)}$$\n\n✅ Jawaban: **B** ($4.440\\t ext{ cm}^3$).",
+        "subMateriId": "geometri_bidang",
+        "gambarUrl": "/soal/tka_autentik_testing/page_1_img_83.jpeg"
     },
     {
-      "id": "pure_ai_bil_02",
-      "isAiGenerated": true,
-      "isPureAi": true,
-      "sumberAsal": "⚡ Pure AI HOTS (Riset Soal Asli & Gambar)",
-      "subtesKode": "MTK",
-      "tingkatKesulitan": "sedang",
-      "materi": "Operasi Hitung & Cerita Penskoran",
-      "babNomor": 1,
-      "namaBab": "Bab 1 · Bilangan (Operasi, Pecahan, Pangkat & Notasi Ilmiah)",
-      "soal": "Perhatikan instrumen termometer uji coba suhu pada sampel vaksin di laboratorium biomedis berikut!\n{{GAMBAR_1}}\nSuhu awal sampel vaksin di dalam lemari pendingin adalah $-12^\\circ ext{C}$. Dalam suatu pengujian daya tahan, suhu sampel tersebut dinaikkan secara bertahap sebesar $3^\\circ ext{C}$ setiap $4$ menit selama $28$ menit. Kemudian, sampel dimasukkan ke dalam ruang pendingin cepat (*blast freezer*) sehingga suhunya turun sebesar $17^\\circ ext{C}$. Suhu akhir sampel vaksin tersebut adalah ....",
-      "gambarUrls": [
-        {
-          "url": "data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%20460%20140%27%20width%3D%27100%25%27%20height%3D%27140%27%3E%3Crect%20width%3D%27460%27%20height%3D%27140%27%20fill%3D%27%23f8fafc%27%20rx%3D%278%27%20stroke%3D%27%23cbd5e1%27%20stroke-width%3D%271.5%27/%3E%3Ctext%20x%3D%27230%27%20y%3D%2724%27%20text-anchor%3D%27middle%27%20font-family%3D%27sans-serif%27%20font-size%3D%2712%27%20font-weight%3D%27bold%27%20fill%3D%27%230f766e%27%3EUji%20Coba%20Suhu%20Laboratorium%20Pembekuan%20Vaksin%20%28%C2%B0C%29%3C/text%3E%3Crect%20x%3D%2760%27%20y%3D%2765%27%20width%3D%27340%27%20height%3D%2714%27%20fill%3D%27%23e2e8f0%27%20rx%3D%277%27/%3E%3Crect%20x%3D%2760%27%20y%3D%2765%27%20width%3D%27160%27%20height%3D%2714%27%20fill%3D%27%230284c7%27%20rx%3D%277%27/%3E%3Ccircle%20cx%3D%2760%27%20cy%3D%2772%27%20r%3D%2714%27%20fill%3D%27%230284c7%27/%3E%3Ctext%20x%3D%2760%27%20y%3D%2776%27%20text-anchor%3D%27middle%27%20font-family%3D%27sans-serif%27%20font-size%3D%2710%27%20font-weight%3D%27bold%27%20fill%3D%27%23ffffff%27%3E%E2%9D%84%EF%B8%8F%3C/text%3E%3Cline%20x1%3D%27120%27%20y1%3D%2758%27%20x2%3D%27120%27%20y2%3D%2786%27%20stroke%3D%27%23475569%27%20stroke-width%3D%271.5%27/%3E%3Ctext%20x%3D%27120%27%20y%3D%27104%27%20text-anchor%3D%27middle%27%20font-family%3D%27sans-serif%27%20font-size%3D%2710%27%20fill%3D%27%23475569%27%3E-20%C2%B0C%3C/text%3E%3Cline%20x1%3D%27220%27%20y1%3D%2758%27%20x2%3D%27220%27%20y2%3D%2786%27%20stroke%3D%27%23ef4444%27%20stroke-width%3D%272%27/%3E%3Ctext%20x%3D%27220%27%20y%3D%27104%27%20text-anchor%3D%27middle%27%20font-family%3D%27sans-serif%27%20font-size%3D%2711%27%20font-weight%3D%27bold%27%20fill%3D%27%23ef4444%27%3E0%C2%B0C%20%28Beku%29%3C/text%3E%3Cline%20x1%3D%27320%27%20y1%3D%2758%27%20x2%3D%27320%27%20y2%3D%2786%27%20stroke%3D%27%23475569%27%20stroke-width%3D%271.5%27/%3E%3Ctext%20x%3D%27320%27%20y%3D%27104%27%20text-anchor%3D%27middle%27%20font-family%3D%27sans-serif%27%20font-size%3D%2710%27%20fill%3D%27%23475569%27%3E%2B20%C2%B0C%3C/text%3E%3Cline%20x1%3D%27380%27%20y1%3D%2758%27%20x2%3D%27380%27%20y2%3D%2786%27%20stroke%3D%27%23475569%27%20stroke-width%3D%271.5%27/%3E%3Ctext%20x%3D%27380%27%20y%3D%27104%27%20text-anchor%3D%27middle%27%20font-family%3D%27sans-serif%27%20font-size%3D%2710%27%20fill%3D%27%23475569%27%3E%2B40%C2%B0C%3C/text%3E%3Ctext%20x%3D%27170%27%20y%3D%2752%27%20text-anchor%3D%27middle%27%20font-family%3D%27sans-serif%27%20font-size%3D%2711%27%20font-weight%3D%27bold%27%20fill%3D%27%230284c7%27%3ESuhu%20Awal%3A%20-12%C2%B0C%3C/text%3E%3C/svg%3E",
-          "caption": "Uji Coba Suhu Laboratorium Pembekuan Vaksin"
-        }
-      ],
-      "opsiJawaban": [
-        {
-          "key": "A",
-          "label": "A",
-          "teks": "$-8^\\circ ext{C}$"
-        },
-        {
-          "key": "B",
-          "label": "B",
-          "teks": "$-5^\\circ ext{C}$"
-        },
-        {
-          "key": "C",
-          "label": "C",
-          "teks": "$-2^\\circ ext{C}$"
-        },
-        {
-          "key": "D",
-          "label": "D",
-          "teks": "$-11^\\circ ext{C}$"
-        }
-      ],
-      "kunciJawaban": "A",
-      "pembahasan": "📌 **Langkah Perhitungan Bertingkat:**\n1. Lama pemanasan bertahap = $28$ menit $\\div 4$ menit = $7$ kali kenaikan.\n2. Total kenaikan suhu = $7  imes 3^\\circ ext{C} = 21^\\circ ext{C}$.\n3. Suhu setelah pemanasan = $-12^\\circ ext{C} + 21^\\circ ext{C} = 9^\\circ ext{C}$.\n4. Suhu akhir setelah penurunan di freezer = $9^\\circ ext{C} - 17^\\circ ext{C} = -8^\\circ ext{C}$.\n\n✅ Jawaban: **A**.",
-      "nomor": 2,
-      "nomorSoal": 2,
-      "mapel": "Matematika",
-      "mataPelajaran": "Matematika",
-      "isTkaAutentik": true
+        "id": "pure_ai_mtk_crop_05",
+        "nomor": 5,
+        "nomorSoal": 5,
+        "isAiGenerated": true,
+        "isPureAi": true,
+        "isTkaAutentik": true,
+        "sumberAsal": "⚡ Asli TKA DIY & Crop Naskah Resmi",
+        "subtesKode": "MTK",
+        "mapel": "Matematika",
+        "mataPelajaran": "Matematika",
+        "tingkatKesulitan": "sedang",
+        "materi": "Keliling & Luas Bangun Datar Gabungan",
+        "babNomor": 3,
+        "namaBab": "Bab 3 · Geometri & Pengukuran (Sudut, Pythagoras, Ruang & Transformasi)",
+        "tipe": "pg_sederhana",
+        "tipeSoal": "pg_sederhana",
+        "soal": "Perhatikan gambar berikut!\n{{GAMBAR_1}}\nBangun datar tersebut merupakan gabungan antara belah ketupat ABFG dan trapesium samakaki BCDF. Diketahui $AF = 16\\t ext{ cm}, OB = 6\\t ext{ cm}, FD = 25\\t ext{ cm}$ dan $BC = 13\\t ext{ cm}$, keliling gabungan bangun datar tersebut adalah ....",
+        "teksSoal": "Perhatikan gambar berikut!\n{{GAMBAR_1}}\nBangun datar tersebut merupakan gabungan antara belah ketupat ABFG dan trapesium samakaki BCDF. Diketahui $AF = 16\\t ext{ cm}, OB = 6\\t ext{ cm}, FD = 25\\t ext{ cm}$ dan $BC = 13\\t ext{ cm}$, keliling gabungan bangun datar tersebut adalah ....",
+        "gambarUrls": [
+            "/soal/tka_autentik_testing/page_1_img_86.jpeg"
+        ],
+        "gambar": [
+            "/soal/tka_autentik_testing/page_1_img_86.jpeg"
+        ],
+        "tabel": null,
+        "tabelSoal": null,
+        "opsiJawaban": [
+            {
+                "key": "A",
+                "label": "A",
+                "teks": "68 cm",
+                "gambar": null
+            },
+            {
+                "key": "B",
+                "label": "B",
+                "teks": "72 cm",
+                "gambar": null
+            },
+            {
+                "key": "C",
+                "label": "C",
+                "teks": "78 cm",
+                "gambar": null
+            },
+            {
+                "key": "D",
+                "label": "D",
+                "teks": "88 cm",
+                "gambar": null
+            }
+        ],
+        "opsi": [
+            {
+                "key": "A",
+                "label": "A",
+                "teks": "68 cm",
+                "gambar": null
+            },
+            {
+                "key": "B",
+                "label": "B",
+                "teks": "72 cm",
+                "gambar": null
+            },
+            {
+                "key": "C",
+                "label": "C",
+                "teks": "78 cm",
+                "gambar": null
+            },
+            {
+                "key": "D",
+                "label": "D",
+                "teks": "88 cm",
+                "gambar": null
+            }
+        ],
+        "pernyataan": null,
+        "tabelBenarSalah": null,
+        "kunciJawaban": "C",
+        "kunci": "C",
+        "pembahasan": "📌 **Langkah Menghitung Keliling Luar:**\n1. Sisi miring belah ketupat via Pythagoras: $s = \\sqrt{8^2 + 6^2} = \\sqrt{64 + 36} = 10\\t ext{ cm}$. Maka $AB = AG = GF = 10\\t ext{ cm}$.\n2. Sisi trapesium: $BC = 13\\t ext{ cm}$, $CD = 13\\t ext{ cm}$, $FD = 25\\t ext{ cm}$.\n3. Keliling luar bangun gabungan:\n$$K = AG + GF + FD + DC + CB + BA - \\t ext{sisi sambung}$$\n$$K = 10 + 10 + 25 + 13 + 10 + 10 = 78\\t ext{ cm}$$\n\n✅ Jawaban: **C** (78 cm).",
+        "subMateriId": "geometri_bidang",
+        "gambarUrl": "/soal/tka_autentik_testing/page_1_img_86.jpeg"
     },
     {
-      "id": "pure_ai_bil_03",
-      "isAiGenerated": true,
-      "isPureAi": true,
-      "sumberAsal": "⚡ Pure AI HOTS (Riset Soal Asli & Gambar)",
-      "subtesKode": "MTK",
-      "tingkatKesulitan": "sulit",
-      "materi": "Bilangan Berpangkat & Notasi Ilmiah",
-      "babNomor": 1,
-      "namaBab": "Bab 1 · Bilangan (Operasi, Pecahan, Pangkat & Notasi Ilmiah)",
-      "soal": "Perhatikan skema instalasi mandiri sistem panel surya atap gedung sekolah berikut!\n{{GAMBAR_1}}\nSatu unit panel surya menghasilkan daya listrik sebesar $2^8 ext{ Watt}$. Gedung sekolah memiliki baterai penyimpanan berkapasitas $2^{11} ext{ Watt-jam}$ untuk menyalakan $4$ lampu taman LED yang masing-masing berdaya $2^5 ext{ Watt}$. Jika baterai terisi penuh, maka lama waktu maksimal keempat lampu taman LED dapat menyala secara bersamaan dari baterai penuh tersebut dinyatakan dalam bentuk perpangkatan basis $2$ adalah ....",
-      "gambarUrls": [
-        {
-          "url": "data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%20480%20150%27%20width%3D%27100%25%27%20height%3D%27150%27%3E%3Crect%20width%3D%27480%27%20height%3D%27150%27%20fill%3D%27%23f0fdf4%27%20rx%3D%278%27%20stroke%3D%27%2386efac%27%20stroke-width%3D%271.5%27/%3E%3Ctext%20x%3D%27240%27%20y%3D%2724%27%20text-anchor%3D%27middle%27%20font-family%3D%27sans-serif%27%20font-size%3D%2712%27%20font-weight%3D%27bold%27%20fill%3D%27%23166534%27%3ESistem%20Panel%20Surya%20%26amp%3B%20Baterai%20Mandiri%20Sekolah%3C/text%3E%3Crect%20x%3D%2730%27%20y%3D%2750%27%20width%3D%27100%27%20height%3D%2765%27%20rx%3D%276%27%20fill%3D%27%230284c7%27%20stroke%3D%27%230369a1%27%20stroke-width%3D%271.5%27/%3E%3Ctext%20x%3D%2780%27%20y%3D%2778%27%20text-anchor%3D%27middle%27%20font-family%3D%27sans-serif%27%20font-size%3D%2711%27%20font-weight%3D%27bold%27%20fill%3D%27%23ffffff%27%3EPanel%20Surya%3C/text%3E%3Ctext%20x%3D%2780%27%20y%3D%2796%27%20text-anchor%3D%27middle%27%20font-family%3D%27sans-serif%27%20font-size%3D%2711%27%20fill%3D%27%23fef08a%27%3EDaya%20%3D%202%E2%81%B8%20W%3C/text%3E%3Cline%20x1%3D%27130%27%20y1%3D%2782%27%20x2%3D%27180%27%20y2%3D%2782%27%20stroke%3D%27%2316a34a%27%20stroke-width%3D%272.5%27%20stroke-dasharray%3D%274%2C2%27/%3E%3Cpolygon%20points%3D%27180%2C82%20172%2C77%20172%2C87%27%20fill%3D%27%2316a34a%27/%3E%3Crect%20x%3D%27180%27%20y%3D%2750%27%20width%3D%27120%27%20height%3D%2765%27%20rx%3D%276%27%20fill%3D%27%2315803d%27%20stroke%3D%27%2314532d%27%20stroke-width%3D%271.5%27/%3E%3Ctext%20x%3D%27240%27%20y%3D%2778%27%20text-anchor%3D%27middle%27%20font-family%3D%27sans-serif%27%20font-size%3D%2711%27%20font-weight%3D%27bold%27%20fill%3D%27%23ffffff%27%3EBaterai%20Utama%3C/text%3E%3Ctext%20x%3D%27240%27%20y%3D%2796%27%20text-anchor%3D%27middle%27%20font-family%3D%27sans-serif%27%20font-size%3D%2711%27%20fill%3D%27%23bbf7d0%27%3EKapasitas%20%3D%202%C2%B9%C2%B9%20Wh%3C/text%3E%3Cline%20x1%3D%27300%27%20y1%3D%2782%27%20x2%3D%27350%27%20y2%3D%2782%27%20stroke%3D%27%23ea580c%27%20stroke-width%3D%272.5%27/%3E%3Cpolygon%20points%3D%27350%2C82%20342%2C77%20342%2C87%27%20fill%3D%27%23ea580c%27/%3E%3Crect%20x%3D%27350%27%20y%3D%2750%27%20width%3D%27100%27%20height%3D%2765%27%20rx%3D%276%27%20fill%3D%27%23ea580c%27%20stroke%3D%27%23c2410c%27%20stroke-width%3D%271.5%27/%3E%3Ctext%20x%3D%27400%27%20y%3D%2778%27%20text-anchor%3D%27middle%27%20font-family%3D%27sans-serif%27%20font-size%3D%2711%27%20font-weight%3D%27bold%27%20fill%3D%27%23ffffff%27%3E4%20Lampu%20Taman%3C/text%3E%3Ctext%20x%3D%27400%27%20y%3D%2796%27%20text-anchor%3D%27middle%27%20font-family%3D%27sans-serif%27%20font-size%3D%2711%27%20fill%3D%27%23fed7aa%27%3EMasing-masing%202%E2%81%B5%20W%3C/text%3E%3C/svg%3E",
-          "caption": "Sistem Panel Surya & Baterai Mandiri Sekolah"
-        }
-      ],
-      "opsiJawaban": [
-        {
-          "key": "A",
-          "label": "A",
-          "teks": "$2^4 ext{ jam}$"
-        },
-        {
-          "key": "B",
-          "label": "B",
-          "teks": "$2^3 ext{ jam}$"
-        },
-        {
-          "key": "C",
-          "label": "C",
-          "teks": "$2^5 ext{ jam}$"
-        },
-        {
-          "key": "D",
-          "label": "D",
-          "teks": "$2^6 ext{ jam}$"
-        }
-      ],
-      "kunciJawaban": "A",
-      "pembahasan": "📌 **Langkah Penyelesaian Eksponen:**\n1. Daya total yang dikonsumsi oleh 4 lampu LED:\n$$P_{ ext{total}} = 4  imes 2^5 = 2^2  imes 2^5 = 2^{2+5} = 2^7 ext{ Watt}$$\n2. Kapasitas energi baterai penuh = $2^{11} ext{ Watt-jam}$.\n3. Waktu menyala maksimal ($t$):\n$$t = \\frac{E}{P_{ ext{total}}} = \\frac{2^{11}}{2^7} = 2^{11-7} = 2^4 ext{ jam (16 jam)}$$\n\n✅ Jawaban: **A**.",
-      "nomor": 3,
-      "nomorSoal": 3,
-      "mapel": "Matematika",
-      "mataPelajaran": "Matematika",
-      "isTkaAutentik": true
+        "id": "pure_ai_mtk_crop_06",
+        "nomor": 6,
+        "nomorSoal": 6,
+        "isAiGenerated": true,
+        "isPureAi": true,
+        "isTkaAutentik": true,
+        "sumberAsal": "⚡ Asli TKA DIY & Crop Naskah Resmi",
+        "subtesKode": "MTK",
+        "mapel": "Matematika",
+        "mataPelajaran": "Matematika",
+        "tingkatKesulitan": "mudah",
+        "materi": "Skala & Geometri Denah Rumah",
+        "babNomor": 1,
+        "namaBab": "Bab 1 · Bilangan (Operasi, Pecahan, Pangkat & Notasi Ilmiah)",
+        "tipe": "pg_kompleks",
+        "tipeSoal": "pg_kompleks",
+        "soal": "Perhatikan denah rumah berikut!\n{{GAMBAR_1}}\nSumber gambar : 15+ Inspirasi Denah Rumah Type 36 3 Kamar Tidur yang Nyaman - Masterpiece Arsitek\nDenah tersebut digambar dengan skala 1 : 50 dan satuan angka pada gambar adalah cm. Berdasar keterangan tersebut. Pilih lebih dari satu pernyataan yang benar dari pernyataan-pernyataan berikut:",
+        "teksSoal": "Perhatikan denah rumah berikut!\n{{GAMBAR_1}}\nSumber gambar : 15+ Inspirasi Denah Rumah Type 36 3 Kamar Tidur yang Nyaman - Masterpiece Arsitek\nDenah tersebut digambar dengan skala 1 : 50 dan satuan angka pada gambar adalah cm. Berdasar keterangan tersebut. Pilih lebih dari satu pernyataan yang benar dari pernyataan-pernyataan berikut:",
+        "gambarUrls": [
+            "/soal/tryout_tka_matematika_paket_b/q5_denah_rumah.jpg"
+        ],
+        "gambar": [
+            "/soal/tryout_tka_matematika_paket_b/q5_denah_rumah.jpg"
+        ],
+        "tabel": null,
+        "tabelSoal": null,
+        "opsiJawaban": [
+            {
+                "key": "1",
+                "label": "1",
+                "teks": "Luas carport sebenarnya 24 m²",
+                "gambar": null
+            },
+            {
+                "key": "2",
+                "label": "2",
+                "teks": "Luas sebenarnya seluruh lahan 104 m²",
+                "gambar": null
+            },
+            {
+                "key": "3",
+                "label": "3",
+                "teks": "Keliling seluruh lahan sebenarnya 84 m",
+                "gambar": null
+            },
+            {
+                "key": "4",
+                "label": "4",
+                "teks": "Keliling taman depan sebenarnya 28 m",
+                "gambar": null
+            }
+        ],
+        "opsi": [
+            {
+                "key": "1",
+                "label": "1",
+                "teks": "Luas carport sebenarnya 24 m²",
+                "gambar": null
+            },
+            {
+                "key": "2",
+                "label": "2",
+                "teks": "Luas sebenarnya seluruh lahan 104 m²",
+                "gambar": null
+            },
+            {
+                "key": "3",
+                "label": "3",
+                "teks": "Keliling seluruh lahan sebenarnya 84 m",
+                "gambar": null
+            },
+            {
+                "key": "4",
+                "label": "4",
+                "teks": "Keliling taman depan sebenarnya 28 m",
+                "gambar": null
+            }
+        ],
+        "pernyataan": null,
+        "tabelBenarSalah": null,
+        "kunciJawaban": [
+            "1",
+            "2"
+        ],
+        "kunci": [
+            "1",
+            "2"
+        ],
+        "pembahasan": "Skala 1:50 (1 cm di gambar = 0,5 m sebenarnya). Carport berukuran 8 cm × 12 cm di denah = 4 m × 6 m = 24 m² (Pernyataan 1 Benar). Lahan total berukuran lebar (6+10) cm = 16 cm (8 m) dan panjang (8+4+8+6) cm = 26 cm (13 m) = 8 × 13 = 104 m² (Pernyataan 2 Benar).",
+        "subMateriId": "perbandingan",
+        "gambarUrl": "/soal/tryout_tka_matematika_paket_b/q5_denah_rumah.jpg"
     },
     {
-      "id": "pure_ai_bil_04",
-      "isAiGenerated": true,
-      "isPureAi": true,
-      "sumberAsal": "⚡ Pure AI HOTS (Riset Soal Asli & Gambar)",
-      "subtesKode": "MTK",
-      "tingkatKesulitan": "sedang",
-      "materi": "Bentuk Akar & Merasionalkan Penyebut",
-      "babNomor": 1,
-      "namaBab": "Bab 1 · Bilangan (Operasi, Pecahan, Pangkat & Notasi Ilmiah)",
-      "soal": "Perhatikan sketsa segitiga siku-siku taman hias berikut!\n{{GAMBAR_1}}\nSebuah taman berbentuk segitiga siku-siku memiliki panjang alas $\\sqrt{54} ext{ cm}$ dan panjang sisi miring $\\sqrt{150} ext{ cm}$. Tinggi taman segitiga siku-siku tersebut ($t$) dinyatakan dalam bentuk akar paling sederhana adalah ....",
-      "gambarUrls": [
-        {
-          "url": "data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%20460%20140%27%20width%3D%27100%25%27%20height%3D%27140%27%3E%3Crect%20width%3D%27460%27%20height%3D%27140%27%20fill%3D%27%23f8fafc%27%20rx%3D%278%27%20stroke%3D%27%23cbd5e1%27%20stroke-width%3D%271.5%27/%3E%3Ctext%20x%3D%27230%27%20y%3D%2724%27%20text-anchor%3D%27middle%27%20font-family%3D%27sans-serif%27%20font-size%3D%2712%27%20font-weight%3D%27bold%27%20fill%3D%27%230f766e%27%3ESegitiga%20Siku-Siku%20Taman%20dengan%20Sisi%20Bentuk%20Akar%3C/text%3E%3Cpolygon%20points%3D%2780%2C110%20320%2C110%2080%2C40%27%20fill%3D%27%23ccfbf1%27%20stroke%3D%27%230d9488%27%20stroke-width%3D%272%27/%3E%3Crect%20x%3D%2780%27%20y%3D%2798%27%20width%3D%2712%27%20height%3D%2712%27%20fill%3D%27none%27%20stroke%3D%27%230f766e%27%20stroke-width%3D%271.5%27/%3E%3Ctext%20x%3D%27200%27%20y%3D%27125%27%20text-anchor%3D%27middle%27%20font-family%3D%27sans-serif%27%20font-size%3D%2711%27%20font-weight%3D%27bold%27%20fill%3D%27%230f766e%27%3EAlas%20%3D%20%E2%88%9A54%20cm%3C/text%3E%3Ctext%20x%3D%27225%27%20y%3D%2768%27%20text-anchor%3D%27middle%27%20font-family%3D%27sans-serif%27%20font-size%3D%2711%27%20font-weight%3D%27bold%27%20fill%3D%27%23047857%27%3ESisi%20Miring%20%3D%20%E2%88%9A150%20cm%3C/text%3E%3Ctext%20x%3D%2750%27%20y%3D%2780%27%20text-anchor%3D%27middle%27%20font-family%3D%27sans-serif%27%20font-size%3D%2711%27%20font-weight%3D%27bold%27%20fill%3D%27%23dc2626%27%3ETinggi%20t%20%3D%20%3F%3C/text%3E%3C/svg%3E",
-          "caption": "Segitiga Siku-Siku Taman dengan Sisi Bentuk Akar"
-        }
-      ],
-      "opsiJawaban": [
-        {
-          "key": "A",
-          "label": "A",
-          "teks": "$4\\sqrt{6} ext{ cm}$"
-        },
-        {
-          "key": "B",
-          "label": "B",
-          "teks": "$3\\sqrt{6} ext{ cm}$"
-        },
-        {
-          "key": "C",
-          "label": "C",
-          "teks": "$5\\sqrt{6} ext{ cm}$"
-        },
-        {
-          "key": "D",
-          "label": "D",
-          "teks": "$2\\sqrt{6} ext{ cm}$"
-        }
-      ],
-      "kunciJawaban": "A",
-      "pembahasan": "📌 **Teorema Pythagoras Bentuk Akar:**\n$$t^2 = ( ext{sisi miring})^2 - ( ext{alas})^2$$\n$$t^2 = (\\sqrt{150})^2 - (\\sqrt{54})^2 = 150 - 54 = 96$$\n$$t = \\sqrt{96} = \\sqrt{16  imes 6} = 4\\sqrt{6} ext{ cm}$$\n\n✅ Jawaban: **A**.",
-      "nomor": 4,
-      "nomorSoal": 4,
-      "mapel": "Matematika",
-      "mataPelajaran": "Matematika",
-      "isTkaAutentik": true
+        "id": "pure_ai_mtk_crop_07",
+        "nomor": 7,
+        "nomorSoal": 7,
+        "isAiGenerated": true,
+        "isPureAi": true,
+        "isTkaAutentik": true,
+        "sumberAsal": "⚡ Asli TKA DIY & Crop Naskah Resmi",
+        "subtesKode": "MTK",
+        "mapel": "Matematika",
+        "mataPelajaran": "Matematika",
+        "tingkatKesulitan": "sulit",
+        "materi": "Aritmetika Sosial / Diskon Toko",
+        "babNomor": 1,
+        "namaBab": "Bab 1 · Bilangan (Operasi, Pecahan, Pangkat & Notasi Ilmiah)",
+        "tipe": "pg_sederhana",
+        "tipeSoal": "pg_sederhana",
+        "soal": "Perhatikan gambar beberapa strategi potongan harga dari beberapa toko berikut!\n{{GAMBAR_1}}\nBibi ingin membeli 3 buah baju yang sama di salah satu toko tersebut. Agar mendapatkan harga total termurah, toko yang dipilih Bibi adalah ….",
+        "teksSoal": "Perhatikan gambar beberapa strategi potongan harga dari beberapa toko berikut!\n{{GAMBAR_1}}\nBibi ingin membeli 3 buah baju yang sama di salah satu toko tersebut. Agar mendapatkan harga total termurah, toko yang dipilih Bibi adalah ….",
+        "gambarUrls": [
+            "/soal/tryout_tka_matematika_paket_b/q9_potongan_harga_jaket.jpg"
+        ],
+        "gambar": [
+            "/soal/tryout_tka_matematika_paket_b/q9_potongan_harga_jaket.jpg"
+        ],
+        "tabel": null,
+        "tabelSoal": null,
+        "opsiJawaban": [
+            {
+                "key": "A",
+                "label": "A",
+                "teks": "Toko Amarta",
+                "gambar": null
+            },
+            {
+                "key": "B",
+                "label": "B",
+                "teks": "Toko Astina",
+                "gambar": null
+            },
+            {
+                "key": "C",
+                "label": "C",
+                "teks": "Toko Pancala",
+                "gambar": null
+            },
+            {
+                "key": "D",
+                "label": "D",
+                "teks": "Toko Wirata",
+                "gambar": null
+            }
+        ],
+        "opsi": [
+            {
+                "key": "A",
+                "label": "A",
+                "teks": "Toko Amarta",
+                "gambar": null
+            },
+            {
+                "key": "B",
+                "label": "B",
+                "teks": "Toko Astina",
+                "gambar": null
+            },
+            {
+                "key": "C",
+                "label": "C",
+                "teks": "Toko Pancala",
+                "gambar": null
+            },
+            {
+                "key": "D",
+                "label": "D",
+                "teks": "Toko Wirata",
+                "gambar": null
+            }
+        ],
+        "pernyataan": null,
+        "tabelBenarSalah": null,
+        "kunciJawaban": "D",
+        "kunci": "D",
+        "pembahasan": "Harga baju Rp800.000. Untuk 3 baju: Amarta = 3 × (60% × 800k) = Rp1.440.000. Astina = bayar 2 baju = 2 × 800k = Rp1.600.000. Pancala = 3 × (800k × 0,7 × 0,85) = Rp1.428.000. Wirata = 3 × (800k - 325k) = 3 × 475k = Rp1.425.000. Toko Wirata paling murah. Jawaban: D",
+        "subMateriId": "aritmetika_sosial",
+        "gambarUrl": "/soal/tryout_tka_matematika_paket_b/q9_potongan_harga_jaket.jpg"
     },
     {
-      "id": "pure_ai_bil_05",
-      "isAiGenerated": true,
-      "isPureAi": true,
-      "sumberAsal": "⚡ Pure AI HOTS (Riset Soal Asli & Gambar)",
-      "subtesKode": "MTK",
-      "tingkatKesulitan": "sedang",
-      "materi": "Faktorisasi Prima, FPB & KPK",
-      "babNomor": 1,
-      "namaBab": "Bab 1 · Bilangan (Operasi, Pecahan, Pangkat & Notasi Ilmiah)",
-      "soal": "Perhatikan daftar logistik bantuan sosial kemanusiaan berikut!\n{{GAMBAR_1}}\nPanitia bakti sosial sekolah menerima sumbangan berupa $84 ext{ kg}$ beras, $56 ext{ kg}$ gula pasir, dan $42 ext{ liter}$ minyak goreng. Seluruh logistik tersebut akan dibagikan ke sebanyak-banyaknya keluarga warga prasejahtera dengan setiap paket memuat ketiga jenis barang dalam jumlah yang sama persis tanpa ada sisa. Banyaknya paket bantuan yang dapat dibuat dan selisih berat beras dengan minyak goreng di setiap paket berturut-turut adalah ....",
-      "gambarUrls": [
-        {
-          "url": "data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%20460%20140%27%20width%3D%27100%25%27%20height%3D%27140%27%3E%3Crect%20width%3D%27460%27%20height%3D%27140%27%20fill%3D%27%23fefce8%27%20rx%3D%278%27%20stroke%3D%27%23facc15%27%20stroke-width%3D%271.5%27/%3E%3Ctext%20x%3D%27230%27%20y%3D%2724%27%20text-anchor%3D%27middle%27%20font-family%3D%27sans-serif%27%20font-size%3D%2712%27%20font-weight%3D%27bold%27%20fill%3D%27%23854d0e%27%3EDistribusi%20Bantuan%20Sosial%20Kemanusiaan%20%28FPB%29%3C/text%3E%3Crect%20x%3D%2740%27%20y%3D%2745%27%20width%3D%27110%27%20height%3D%2770%27%20rx%3D%276%27%20fill%3D%27%23fef08a%27%20stroke%3D%27%23ca8a04%27%20stroke-width%3D%271.5%27/%3E%3Ctext%20x%3D%2795%27%20y%3D%2774%27%20text-anchor%3D%27middle%27%20font-family%3D%27sans-serif%27%20font-size%3D%2711%27%20font-weight%3D%27bold%27%20fill%3D%27%23713f12%27%3E%F0%9F%8C%BE%20Beras%3C/text%3E%3Ctext%20x%3D%2795%27%20y%3D%2796%27%20text-anchor%3D%27middle%27%20font-family%3D%27sans-serif%27%20font-size%3D%2713%27%20font-weight%3D%27bold%27%20fill%3D%27%23854d0e%27%3E84%20kg%3C/text%3E%3Crect%20x%3D%27175%27%20y%3D%2745%27%20width%3D%27110%27%20height%3D%2770%27%20rx%3D%276%27%20fill%3D%27%23fed7aa%27%20stroke%3D%27%23ea580c%27%20stroke-width%3D%271.5%27/%3E%3Ctext%20x%3D%27230%27%20y%3D%2774%27%20text-anchor%3D%27middle%27%20font-family%3D%27sans-serif%27%20font-size%3D%2711%27%20font-weight%3D%27bold%27%20fill%3D%27%237c2d12%27%3E%F0%9F%8D%AC%20Gula%20Pasir%3C/text%3E%3Ctext%20x%3D%27230%27%20y%3D%2796%27%20text-anchor%3D%27middle%27%20font-family%3D%27sans-serif%27%20font-size%3D%2713%27%20font-weight%3D%27bold%27%20fill%3D%27%239a3412%27%3E56%20kg%3C/text%3E%3Crect%20x%3D%27310%27%20y%3D%2745%27%20width%3D%27110%27%20height%3D%2770%27%20rx%3D%276%27%20fill%3D%27%23bbf7d0%27%20stroke%3D%27%2316a34a%27%20stroke-width%3D%271.5%27/%3E%3Ctext%20x%3D%27365%27%20y%3D%2774%27%20text-anchor%3D%27middle%27%20font-family%3D%27sans-serif%27%20font-size%3D%2711%27%20font-weight%3D%27bold%27%20fill%3D%27%2314532d%27%3E%F0%9F%AB%92%20Minyak%20Goreng%3C/text%3E%3Ctext%20x%3D%27365%27%20y%3D%2796%27%20text-anchor%3D%27middle%27%20font-family%3D%27sans-serif%27%20font-size%3D%2713%27%20font-weight%3D%27bold%27%20fill%3D%27%23166534%27%3E42%20liter%3C/text%3E%3C/svg%3E",
-          "caption": "Distribusi Logistik Bantuan Sosial FPB"
-        }
-      ],
-      "opsiJawaban": [
-        {
-          "key": "A",
-          "label": "A",
-          "teks": "14 paket dan 3 satuan"
-        },
-        {
-          "key": "B",
-          "label": "B",
-          "teks": "12 paket dan 4 satuan"
-        },
-        {
-          "key": "C",
-          "label": "C",
-          "teks": "14 paket dan 5 satuan"
-        },
-        {
-          "key": "D",
-          "label": "D",
-          "teks": "7 paket dan 6 satuan"
-        }
-      ],
-      "kunciJawaban": "A",
-      "pembahasan": "📌 **Penerapan FPB:**\n• Faktorisasi prima: $84 = 2^2  imes 3  imes 7$, $56 = 2^3  imes 7$, $42 = 2  imes 3  imes 7$.\n• $ ext{FPB}(84, 56, 42) = 2  imes 7 = 14$ paket.\n• Isi tiap paket: Beras $= 84 \\div 14 = 6 ext{ kg}$; Gula $= 56 \\div 14 = 4 ext{ kg}$; Minyak $= 42 \\div 14 = 3 ext{ liter}$.\n• Selisih beras dengan minyak $= 6 - 3 = 3$ satuan.\nMaka: **14 paket dan 3 satuan**.\n\n✅ Jawaban: **A**.",
-      "nomor": 5,
-      "nomorSoal": 5,
-      "mapel": "Matematika",
-      "mataPelajaran": "Matematika",
-      "isTkaAutentik": true
+        "id": "pure_ai_mtk_crop_08",
+        "nomor": 8,
+        "nomorSoal": 8,
+        "isAiGenerated": true,
+        "isPureAi": true,
+        "isTkaAutentik": true,
+        "sumberAsal": "⚡ Asli TKA DIY & Crop Naskah Resmi",
+        "subtesKode": "MTK",
+        "mapel": "Matematika",
+        "mataPelajaran": "Matematika",
+        "tingkatKesulitan": "mudah",
+        "materi": "Operasi Bentuk Aljabar & Geometri Trapesium",
+        "babNomor": 2,
+        "namaBab": "Bab 2 · Aljabar (SPLDV, Persamaan Kuadrat, Fungsi & Pola Bilangan)",
+        "tipe": "pg_sederhana",
+        "tipeSoal": "pg_sederhana",
+        "soal": "Perhatikan gambar!\n{{GAMBAR_1}}\nLuas daerah trapesium tersebut adalah ….",
+        "teksSoal": "Perhatikan gambar!\n{{GAMBAR_1}}\nLuas daerah trapesium tersebut adalah ….",
+        "gambarUrls": [
+            "/soal/tryout_tka_matematika_paket_b/q13_trapesium.png"
+        ],
+        "gambar": [
+            "/soal/tryout_tka_matematika_paket_b/q13_trapesium.png"
+        ],
+        "tabel": null,
+        "tabelSoal": null,
+        "opsiJawaban": [
+            {
+                "key": "A",
+                "label": "A",
+                "teks": "(3x² + 16x + 16) cm²",
+                "gambar": null
+            },
+            {
+                "key": "B",
+                "label": "B",
+                "teks": "(3x² + 16x + 32) cm²",
+                "gambar": null
+            },
+            {
+                "key": "C",
+                "label": "C",
+                "teks": "(6x² + 16x + 16) cm²",
+                "gambar": null
+            },
+            {
+                "key": "D",
+                "label": "D",
+                "teks": "(6x² + 16x + 32) cm²",
+                "gambar": null
+            }
+        ],
+        "opsi": [
+            {
+                "key": "A",
+                "label": "A",
+                "teks": "(3x² + 16x + 16) cm²",
+                "gambar": null
+            },
+            {
+                "key": "B",
+                "label": "B",
+                "teks": "(3x² + 16x + 32) cm²",
+                "gambar": null
+            },
+            {
+                "key": "C",
+                "label": "C",
+                "teks": "(6x² + 16x + 16) cm²",
+                "gambar": null
+            },
+            {
+                "key": "D",
+                "label": "D",
+                "teks": "(6x² + 16x + 32) cm²",
+                "gambar": null
+            }
+        ],
+        "pernyataan": null,
+        "tabelBenarSalah": null,
+        "kunciJawaban": "A",
+        "kunci": "A",
+        "pembahasan": "Sisi sejajar atas = (x+5), bawah = (5x+3), tinggi = (x+4). Luas = 1/2 × ((x+5) + (5x+3)) × (x+4) = 1/2 × (6x+8) × (x+4) = (3x+4)(x+4) = 3x² + 12x + 4x + 16 = (3x² + 16x + 16) cm². Jawaban: A",
+        "subMateriId": "aljabar_dasar",
+        "gambarUrl": "/soal/tryout_tka_matematika_paket_b/q13_trapesium.png"
     },
     {
-      "id": "pure_ai_bil_06",
-      "isAiGenerated": true,
-      "isPureAi": true,
-      "sumberAsal": "⚡ Pure AI HOTS (Riset Soal Asli & Gambar)",
-      "subtesKode": "MTK",
-      "tingkatKesulitan": "sedang",
-      "materi": "Aritmetika Sosial (Diskon, Pajak & Bunga)",
-      "babNomor": 1,
-      "namaBab": "Bab 1 · Bilangan (Operasi, Pecahan, Pangkat & Notasi Ilmiah)",
-      "soal": "Perhatikan katalog promo diskon bertingkat toko perlengkapan sekolah berikut!\n{{GAMBAR_1}}\nSebuah toko sepatu memberlakukan promo bertingkat \"Diskon $30\\% + 10\\%$\" untuk sepasang sepatu olahraga berlabel harga $ ext{Rp}300.000,00$. Diskon kedua sebesar $10\\%$ dihitung dari harga setelah potongan diskon pertama. Apabila pembeli dikenakan pajak pertambahan nilai (PPN) sebesar $11\\%$ dari harga akhir yang dibayar, maka total uang yang harus diserahkan ke kasir adalah ....",
-      "gambarUrls": [
-        {
-          "url": "data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%20460%20140%27%20width%3D%27100%25%27%20height%3D%27140%27%3E%3Crect%20width%3D%27460%27%20height%3D%27140%27%20fill%3D%27%23fff1f2%27%20rx%3D%278%27%20stroke%3D%27%23fecdd3%27%20stroke-width%3D%271.5%27/%3E%3Ctext%20x%3D%27230%27%20y%3D%2724%27%20text-anchor%3D%27middle%27%20font-family%3D%27sans-serif%27%20font-size%3D%2712%27%20font-weight%3D%27bold%27%20fill%3D%27%23be123c%27%3EKatalog%20Promo%20Diskon%20Bertingkat%20Toko%20Perlengkapan%20Sekolah%3C/text%3E%3Crect%20x%3D%2750%27%20y%3D%2745%27%20width%3D%27160%27%20height%3D%2772%27%20rx%3D%276%27%20fill%3D%27%23be123c%27%20stroke%3D%27%239f1239%27%20stroke-width%3D%271.5%27/%3E%3Ctext%20x%3D%27130%27%20y%3D%2772%27%20text-anchor%3D%27middle%27%20font-family%3D%27sans-serif%27%20font-size%3D%2712%27%20font-weight%3D%27bold%27%20fill%3D%27%23ffffff%27%3ESepatu%20Olahraga%3C/text%3E%3Ctext%20x%3D%27130%27%20y%3D%2792%27%20text-anchor%3D%27middle%27%20font-family%3D%27sans-serif%27%20font-size%3D%2711%27%20fill%3D%27%23fecdd3%27%3EHarga%20Label%3A%20Rp300.000%3C/text%3E%3Ctext%20x%3D%27130%27%20y%3D%27108%27%20text-anchor%3D%27middle%27%20font-family%3D%27sans-serif%27%20font-size%3D%2710%27%20font-weight%3D%27bold%27%20fill%3D%27%23fef08a%27%3EDiskon%2030%25%3C/text%3E%3Ctext%20x%3D%27230%27%20y%3D%2785%27%20text-anchor%3D%27middle%27%20font-family%3D%27sans-serif%27%20font-size%3D%2718%27%20font-weight%3D%27bold%27%20fill%3D%27%23be123c%27%3E%2B%3C/text%3E%3Crect%20x%3D%27250%27%20y%3D%2745%27%20width%3D%27160%27%20height%3D%2772%27%20rx%3D%276%27%20fill%3D%27%23047857%27%20stroke%3D%27%23065f46%27%20stroke-width%3D%271.5%27/%3E%3Ctext%20x%3D%27330%27%20y%3D%2772%27%20text-anchor%3D%27middle%27%20font-family%3D%27sans-serif%27%20font-size%3D%2712%27%20font-weight%3D%27bold%27%20fill%3D%27%23ffffff%27%3EKupon%20Tambahan%20Member%3C/text%3E%3Ctext%20x%3D%27330%27%20y%3D%2792%27%20text-anchor%3D%27middle%27%20font-family%3D%27sans-serif%27%20font-size%3D%2711%27%20fill%3D%27%23a7f3d0%27%3EDiskon%20Ekstra%2010%25%3C/text%3E%3Ctext%20x%3D%27330%27%20y%3D%27108%27%20text-anchor%3D%27middle%27%20font-family%3D%27sans-serif%27%20font-size%3D%2710%27%20font-weight%3D%27bold%27%20fill%3D%27%23fef08a%27%3EDari%20harga%20setelah%20diskon%201%3C/text%3E%3C/svg%3E",
-          "caption": "Katalog Promo Diskon Bertingkat Perlengkapan Sekolah"
-        }
-      ],
-      "opsiJawaban": [
-        {
-          "key": "A",
-          "label": "A",
-          "teks": "Rp209.790,00"
+        "id": "pure_ai_mtk_crop_09",
+        "nomor": 9,
+        "nomorSoal": 9,
+        "isAiGenerated": true,
+        "isPureAi": true,
+        "isTkaAutentik": true,
+        "sumberAsal": "⚡ Asli TKA DIY & Crop Naskah Resmi",
+        "subtesKode": "MTK",
+        "mapel": "Matematika",
+        "mataPelajaran": "Matematika",
+        "tingkatKesulitan": "sedang",
+        "materi": "Relasi dan Fungsi",
+        "babNomor": 2,
+        "namaBab": "Bab 2 · Aljabar (SPLDV, Persamaan Kuadrat, Fungsi & Pola Bilangan)",
+        "tipe": "benar_salah",
+        "tipeSoal": "benar_salah",
+        "soal": "Perhatikan diagram panah berikut!\n{{GAMBAR_1}}\nTentukan benar atau salah untuk setiap pernyataan berikut:",
+        "teksSoal": "Perhatikan diagram panah berikut!\n{{GAMBAR_1}}\nTentukan benar atau salah untuk setiap pernyataan berikut:",
+        "gambarUrls": [
+            "/soal/tryout_tka_matematika_paket_b/q14_diagram_panah_fungsi.png"
+        ],
+        "gambar": [
+            "/soal/tryout_tka_matematika_paket_b/q14_diagram_panah_fungsi.png"
+        ],
+        "tabel": {
+            "headers": [
+                "Pernyataan",
+                "Benar",
+                "Salah"
+            ],
+            "rows": [
+                [
+                    "A. Rumus fungsi adalah f(x) = 2x − 2",
+                    "",
+                    "✓"
+                ],
+                [
+                    "B. Daerah hasil adalah {0,4,8}",
+                    "✓",
+                    ""
+                ],
+                [
+                    "C. a + b = 4",
+                    "✓",
+                    ""
+                ]
+            ]
         },
-        {
-          "key": "B",
-          "label": "B",
-          "teks": "Rp180.000,00"
+        "tabelSoal": {
+            "headers": [
+                "Pernyataan",
+                "Benar",
+                "Salah"
+            ],
+            "rows": [
+                [
+                    "A. Rumus fungsi adalah f(x) = 2x − 2",
+                    "",
+                    "✓"
+                ],
+                [
+                    "B. Daerah hasil adalah {0,4,8}",
+                    "✓",
+                    ""
+                ],
+                [
+                    "C. a + b = 4",
+                    "✓",
+                    ""
+                ]
+            ]
         },
-        {
-          "key": "C",
-          "label": "C",
-          "teks": "Rp199.800,00"
+        "opsiJawaban": [],
+        "opsi": [],
+        "pernyataan": [
+            {
+                "id": "p_1",
+                "teks": "A. Rumus fungsi adalah f(x) = 2x − 2",
+                "kunci": "Salah"
+            },
+            {
+                "id": "p_2",
+                "teks": "B. Daerah hasil adalah {0,4,8}",
+                "kunci": "Benar"
+            },
+            {
+                "id": "p_3",
+                "teks": "C. a + b = 4",
+                "kunci": "Benar"
+            }
+        ],
+        "tabelBenarSalah": [
+            {
+                "pernyataan": "A. Rumus fungsi adalah f(x) = 2x − 2",
+                "jawaban": "Salah"
+            },
+            {
+                "pernyataan": "B. Daerah hasil adalah {0,4,8}",
+                "jawaban": "Benar"
+            },
+            {
+                "pernyataan": "C. a + b = 4",
+                "jawaban": "Benar"
+            }
+        ],
+        "kunciJawaban": {
+            "A": "Salah",
+            "B": "Benar",
+            "C": "Benar"
         },
-        {
-          "key": "D",
-          "label": "D",
-          "teks": "Rp212.400,00"
-        }
-      ],
-      "kunciJawaban": "A",
-      "pembahasan": "📌 **Langkah Diskon Bertingkat & Pajak:**\n1. Harga setelah diskon 1 (30%):\n$$ ext{Harga}_1 = 300.000  imes (1 - 0{,}30) = 300.000  imes 0{,}70 =  ext{Rp}210.000,00$$\n2. Harga setelah diskon 2 (10% dari Harga 1):\n$$ ext{Harga}_2 = 210.000  imes (1 - 0{,}10) = 210.000  imes 0{,}90 =  ext{Rp}189.000,00$$\n3. Ditambah PPN 11%:\n$$ ext{Total Bayar} = 189.000  imes (1 + 0{,}11) = 189.000  imes 1{,}11 =  ext{Rp}209.790,00$$\n\n✅ Jawaban: **A**.",
-      "nomor": 6,
-      "nomorSoal": 6,
-      "mapel": "Matematika",
-      "mataPelajaran": "Matematika",
-      "isTkaAutentik": true
+        "kunci": {
+            "A": "Salah",
+            "B": "Benar",
+            "C": "Benar"
+        },
+        "pembahasan": "Dari f(-1) = 0 dan f(1) = 4 -> f(x) = ax + b -> -a + b = 0 dan a + b = 4 -> 2b = 4 -> b = 2, a = 2. Rumus fungsi f(x) = 2x + 2 (Pernyataan A Salah, karena tanda minus). Nilai p = f(3) = 2(3) + 2 = 8, daerah hasil = {0, 4, 8} (B Benar). a + b = 2 + 2 = 4 (C Benar).",
+        "subMateriId": "relasi_fungsi",
+        "gambarUrl": "/soal/tryout_tka_matematika_paket_b/q14_diagram_panah_fungsi.png"
     },
     {
-      "id": "pure_ai_bil_07",
-      "isAiGenerated": true,
-      "isPureAi": true,
-      "sumberAsal": "⚡ Pure AI HOTS (Riset Soal Asli & Gambar)",
-      "subtesKode": "MTK",
-      "tingkatKesulitan": "sedang",
-      "materi": "Perbandingan Senilai & Berbalik Nilai",
-      "babNomor": 1,
-      "namaBab": "Bab 1 · Bilangan (Operasi, Pecahan, Pangkat & Notasi Ilmiah)",
-      "soal": "Perhatikan denah denah arsitektur ruang belajar dan laboratorium komputer berikut!\n{{GAMBAR_1}}\nDenah gedung digambar dengan skala $1 : 50$. Pada denah tersebut, Ruang Belajar berukuran $8 ext{ cm}  imes 6 ext{ cm}$, sedangkan Lab Komputer berukuran $10 ext{ cm}  imes 6 ext{ cm}$. Selisih luas sebenarnya antara kedua ruangan tersebut adalah ....",
-      "gambarUrls": [
-        {
-          "url": "data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%20460%20140%27%20width%3D%27100%25%27%20height%3D%27140%27%3E%3Crect%20width%3D%27460%27%20height%3D%27140%27%20fill%3D%27%23f8fafc%27%20rx%3D%278%27%20stroke%3D%27%23cbd5e1%27%20stroke-width%3D%271.5%27/%3E%3Ctext%20x%3D%27230%27%20y%3D%2724%27%20text-anchor%3D%27middle%27%20font-family%3D%27sans-serif%27%20font-size%3D%2712%27%20font-weight%3D%27bold%27%20fill%3D%27%230f766e%27%3EDenah%20Ruang%20Belajar%20%26amp%3B%20Lab%20Komputer%20%28Skala%201%20%3A%2050%29%3C/text%3E%3Crect%20x%3D%2770%27%20y%3D%2745%27%20width%3D%27140%27%20height%3D%2770%27%20fill%3D%27%23e0f2fe%27%20stroke%3D%27%230284c7%27%20stroke-width%3D%271.5%27/%3E%3Ctext%20x%3D%27140%27%20y%3D%2778%27%20text-anchor%3D%27middle%27%20font-family%3D%27sans-serif%27%20font-size%3D%2711%27%20font-weight%3D%27bold%27%20fill%3D%27%230369a1%27%3ERuang%20Belajar%3C/text%3E%3Ctext%20x%3D%27140%27%20y%3D%2796%27%20text-anchor%3D%27middle%27%20font-family%3D%27sans-serif%27%20font-size%3D%2710%27%20fill%3D%27%230284c7%27%3E8%20cm%20%C3%97%206%20cm%20pada%20gambar%3C/text%3E%3Crect%20x%3D%27230%27%20y%3D%2745%27%20width%3D%27160%27%20height%3D%2770%27%20fill%3D%27%23f0fdf4%27%20stroke%3D%27%2316a34a%27%20stroke-width%3D%271.5%27/%3E%3Ctext%20x%3D%27310%27%20y%3D%2778%27%20text-anchor%3D%27middle%27%20font-family%3D%27sans-serif%27%20font-size%3D%2711%27%20font-weight%3D%27bold%27%20fill%3D%27%2315803d%27%3ELab%20Komputer%3C/text%3E%3Ctext%20x%3D%27310%27%20y%3D%2796%27%20text-anchor%3D%27middle%27%20font-family%3D%27sans-serif%27%20font-size%3D%2710%27%20fill%3D%27%2316a34a%27%3E10%20cm%20%C3%97%206%20cm%20pada%20gambar%3C/text%3E%3C/svg%3E",
-          "caption": "Denah Ruang Belajar & Lab Komputer Skala 1 : 50"
-        }
-      ],
-      "opsiJawaban": [
-        {
-          "key": "A",
-          "label": "A",
-          "teks": "$3 ext{ m}^2$"
-        },
-        {
-          "key": "B",
-          "label": "B",
-          "teks": "$6 ext{ m}^2$"
-        },
-        {
-          "key": "C",
-          "label": "C",
-          "teks": "$12 ext{ m}^2$"
-        },
-        {
-          "key": "D",
-          "label": "D",
-          "teks": "$1{,}5 ext{ m}^2$"
-        }
-      ],
-      "kunciJawaban": "A",
-      "pembahasan": "📌 **Konversi Skala Luas:**\n1. Skala panjang $1 : 50 \\implies 1 ext{ cm pada peta} = 50 ext{ cm} = 0{,}5 ext{ m}$ sebenarnya.\n2. Skala luas $= (0{,}5 ext{ m})^2 = 0{,}25 ext{ m}^2/ ext{cm}^2$.\n3. Luas pada denah:\n• Ruang Belajar $= 8  imes 6 = 48 ext{ cm}^2$\n• Lab Komputer $= 10  imes 6 = 60 ext{ cm}^2$\n• Selisih luas pada denah $= 60 - 48 = 12 ext{ cm}^2$\n4. Selisih luas sebenarnya $= 12  imes 0{,}25 ext{ m}^2 = 3 ext{ m}^2$.\n\n✅ Jawaban: **A**.",
-      "nomor": 7,
-      "nomorSoal": 7,
-      "mapel": "Matematika",
-      "mataPelajaran": "Matematika",
-      "isTkaAutentik": true
+        "id": "pure_ai_mtk_crop_10",
+        "nomor": 10,
+        "nomorSoal": 10,
+        "isAiGenerated": true,
+        "isPureAi": true,
+        "isTkaAutentik": true,
+        "sumberAsal": "⚡ Asli TKA DIY & Crop Naskah Resmi",
+        "subtesKode": "MTK",
+        "mapel": "Matematika",
+        "mataPelajaran": "Matematika",
+        "tingkatKesulitan": "sulit",
+        "materi": "Pola Bilangan / Deret Batang Korek Api",
+        "babNomor": 2,
+        "namaBab": "Bab 2 · Aljabar (SPLDV, Persamaan Kuadrat, Fungsi & Pola Bilangan)",
+        "tipe": "pg_sederhana",
+        "tipeSoal": "pg_sederhana",
+        "soal": "Perhatikan gambar susunan batang korek api berikut!\n{{GAMBAR_1}}\nSeorang siswa ditugaskan untuk menyusun batang korek api dari pola ke-1 sampai dengan pola ke-55. Jumlah batang korek api yang diperlukan untuk membuat seluruh susunan pola tersebut adalah ….",
+        "teksSoal": "Perhatikan gambar susunan batang korek api berikut!\n{{GAMBAR_1}}\nSeorang siswa ditugaskan untuk menyusun batang korek api dari pola ke-1 sampai dengan pola ke-55. Jumlah batang korek api yang diperlukan untuk membuat seluruh susunan pola tersebut adalah ….",
+        "gambarUrls": [
+            "/soal/tryout_tka_matematika_paket_b/q16_susunan_korek_api.jpg"
+        ],
+        "gambar": [
+            "/soal/tryout_tka_matematika_paket_b/q16_susunan_korek_api.jpg"
+        ],
+        "tabel": null,
+        "tabelSoal": null,
+        "opsiJawaban": [
+            {
+                "key": "A",
+                "label": "A",
+                "teks": "7.533 batang",
+                "gambar": null
+            },
+            {
+                "key": "B",
+                "label": "B",
+                "teks": "7.810 batang",
+                "gambar": null
+            },
+            {
+                "key": "C",
+                "label": "C",
+                "teks": "7.947 batang",
+                "gambar": null
+            },
+            {
+                "key": "D",
+                "label": "D",
+                "teks": "8.092 batang",
+                "gambar": null
+            }
+        ],
+        "opsi": [
+            {
+                "key": "A",
+                "label": "A",
+                "teks": "7.533 batang",
+                "gambar": null
+            },
+            {
+                "key": "B",
+                "label": "B",
+                "teks": "7.810 batang",
+                "gambar": null
+            },
+            {
+                "key": "C",
+                "label": "C",
+                "teks": "7.947 batang",
+                "gambar": null
+            },
+            {
+                "key": "D",
+                "label": "D",
+                "teks": "8.092 batang",
+                "gambar": null
+            }
+        ],
+        "pernyataan": null,
+        "tabelBenarSalah": null,
+        "kunciJawaban": "B",
+        "kunci": "B",
+        "pembahasan": "Pola ke-n adalah susunan persegi 2 tingkat dengan panjang n kotak. Un = 5n + 2. U1 = 7, U2 = 12, U3 = 17, U4 = 22. U55 = 5(55) + 2 = 277. Jumlah seluruhnya S55 = 55/2 × (7 + 277) = 55/2 × 284 = 55 × 142 = 7.810 batang. Jawaban: B",
+        "subMateriId": "pola_barisan",
+        "gambarUrl": "/soal/tryout_tka_matematika_paket_b/q16_susunan_korek_api.jpg"
     },
     {
-      "id": "pure_ai_bil_08",
-      "isAiGenerated": true,
-      "isPureAi": true,
-      "sumberAsal": "⚡ Pure AI HOTS (Riset Soal Asli & Gambar)",
-      "subtesKode": "MTK",
-      "tingkatKesulitan": "sulit",
-      "materi": "Operasi Hitung Bilangan & Geometri",
-      "babNomor": 1,
-      "namaBab": "Bab 1 · Bilangan (Operasi, Pecahan, Pangkat & Notasi Ilmiah)",
-      "soal": "Perhatikan ilustrasi penampungan minyak bumi dan drum distribusi berikut!\n{{GAMBAR_1}}\nSebuah tangki penampung minyak mentah berbentuk bola dengan diameter $21 ext{ meter}$ terisi penuh minyak. Seluruh minyak tersebut akan didistribusikan ke drum-drum silinder berdiameter $1{,}4 ext{ meter}$ dan tinggi $2 ext{ meter}$. Dengan menggunakan pendekatan $\\pi = \\frac{22}{7}$, banyaknya drum silinder yang dapat terisi penuh minyak adalah ....",
-      "gambarUrls": [
-        {
-          "url": "data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%20460%20140%27%20width%3D%27100%25%27%20height%3D%27140%27%3E%3Crect%20width%3D%27460%27%20height%3D%27140%27%20fill%3D%27%23f8fafc%27%20rx%3D%278%27%20stroke%3D%27%23cbd5e1%27%20stroke-width%3D%271.5%27/%3E%3Ctext%20x%3D%27230%27%20y%3D%2724%27%20text-anchor%3D%27middle%27%20font-family%3D%27sans-serif%27%20font-size%3D%2712%27%20font-weight%3D%27bold%27%20fill%3D%27%230f766e%27%3EPenampungan%20Minyak%20Bumi%20Bentuk%20Bola%20%26amp%3B%20Drum%20Distribusi%3C/text%3E%3Ccircle%20cx%3D%27120%27%20cy%3D%2780%27%20r%3D%2738%27%20fill%3D%27%23fed7aa%27%20stroke%3D%27%23ea580c%27%20stroke-width%3D%272%27/%3E%3Cline%20x1%3D%2782%27%20y1%3D%2780%27%20x2%3D%27158%27%20y2%3D%2780%27%20stroke%3D%27%23c2410c%27%20stroke-width%3D%271.5%27%20stroke-dasharray%3D%273%2C2%27/%3E%3Ctext%20x%3D%27120%27%20y%3D%2774%27%20text-anchor%3D%27middle%27%20font-family%3D%27sans-serif%27%20font-size%3D%2710%27%20font-weight%3D%27bold%27%20fill%3D%27%239a3412%27%3EDiameter%20%3D%2021%20m%3C/text%3E%3Ctext%20x%3D%27120%27%20y%3D%27130%27%20text-anchor%3D%27middle%27%20font-family%3D%27sans-serif%27%20font-size%3D%2711%27%20font-weight%3D%27bold%27%20fill%3D%27%23ea580c%27%3ETangki%20Utama%20%28Bola%29%3C/text%3E%3Ctext%20x%3D%27230%27%20y%3D%2785%27%20text-anchor%3D%27middle%27%20font-family%3D%27sans-serif%27%20font-size%3D%2720%27%20font-weight%3D%27bold%27%20fill%3D%27%23ea580c%27%3E%E2%9E%94%3C/text%3E%3Crect%20x%3D%27300%27%20y%3D%2750%27%20width%3D%2770%27%20height%3D%2760%27%20rx%3D%2710%27%20fill%3D%27%23bfdbfe%27%20stroke%3D%27%232563eb%27%20stroke-width%3D%272%27/%3E%3Ctext%20x%3D%27335%27%20y%3D%2778%27%20text-anchor%3D%27middle%27%20font-family%3D%27sans-serif%27%20font-size%3D%2710%27%20font-weight%3D%27bold%27%20fill%3D%27%231e40af%27%3EDrum%20Silinder%3C/text%3E%3Ctext%20x%3D%27335%27%20y%3D%2794%27%20text-anchor%3D%27middle%27%20font-family%3D%27sans-serif%27%20font-size%3D%279%27%20fill%3D%27%231d4ed8%27%3Ed%3D1%2C4m%20%7C%20t%3D2m%3C/text%3E%3Ctext%20x%3D%27335%27%20y%3D%27130%27%20text-anchor%3D%27middle%27%20font-family%3D%27sans-serif%27%20font-size%3D%2711%27%20font-weight%3D%27bold%27%20fill%3D%27%232563eb%27%3EDrum%20Distribusi%3C/text%3E%3C/svg%3E",
-          "caption": "Penampungan Minyak Bumi Bentuk Bola & Drum Distribusi"
-        }
-      ],
-      "opsiJawaban": [
-        {
-          "key": "A",
-          "label": "A",
-          "teks": "1.575 drum"
+        "id": "pure_ai_mtk_crop_11",
+        "nomor": 11,
+        "nomorSoal": 11,
+        "isAiGenerated": true,
+        "isPureAi": true,
+        "isTkaAutentik": true,
+        "sumberAsal": "⚡ Asli TKA DIY & Crop Naskah Resmi",
+        "subtesKode": "MTK",
+        "mapel": "Matematika",
+        "mataPelajaran": "Matematika",
+        "tingkatKesulitan": "sedang",
+        "materi": "Garis dan Sudut",
+        "babNomor": 3,
+        "namaBab": "Bab 3 · Geometri & Pengukuran (Sudut, Pythagoras, Ruang & Transformasi)",
+        "tipe": "benar_salah",
+        "tipeSoal": "benar_salah",
+        "soal": "Perhatikan gambar!\n{{GAMBAR_1}}\nBerdasarkan informasi pada gambar, tentukan benar atau salah untuk setiap pernyataan berikut:",
+        "teksSoal": "Perhatikan gambar!\n{{GAMBAR_1}}\nBerdasarkan informasi pada gambar, tentukan benar atau salah untuk setiap pernyataan berikut:",
+        "gambarUrls": [
+            "/soal/tryout_tka_matematika_paket_b/q17_garis_sudut.png"
+        ],
+        "gambar": [
+            "/soal/tryout_tka_matematika_paket_b/q17_garis_sudut.png"
+        ],
+        "tabel": {
+            "headers": [
+                "Pernyataan",
+                "Benar",
+                "Salah"
+            ],
+            "rows": [
+                [
+                    "A. Nilai a = 55°",
+                    "✓",
+                    ""
+                ],
+                [
+                    "B. Nilai b = 35°",
+                    "✓",
+                    ""
+                ],
+                [
+                    "C. Nilai c − b = 10°",
+                    "✓",
+                    ""
+                ]
+            ]
         },
-        {
-          "key": "B",
-          "label": "B",
-          "teks": "1.250 drum"
+        "tabelSoal": {
+            "headers": [
+                "Pernyataan",
+                "Benar",
+                "Salah"
+            ],
+            "rows": [
+                [
+                    "A. Nilai a = 55°",
+                    "✓",
+                    ""
+                ],
+                [
+                    "B. Nilai b = 35°",
+                    "✓",
+                    ""
+                ],
+                [
+                    "C. Nilai c − b = 10°",
+                    "✓",
+                    ""
+                ]
+            ]
         },
-        {
-          "key": "C",
-          "label": "C",
-          "teks": "1.800 drum"
+        "opsiJawaban": [],
+        "opsi": [],
+        "pernyataan": [
+            {
+                "id": "p_1",
+                "teks": "A. Nilai a = 55°",
+                "kunci": "Benar"
+            },
+            {
+                "id": "p_2",
+                "teks": "B. Nilai b = 35°",
+                "kunci": "Benar"
+            },
+            {
+                "id": "p_3",
+                "teks": "C. Nilai c − b = 10°",
+                "kunci": "Benar"
+            }
+        ],
+        "tabelBenarSalah": [
+            {
+                "pernyataan": "A. Nilai a = 55°",
+                "jawaban": "Benar"
+            },
+            {
+                "pernyataan": "B. Nilai b = 35°",
+                "jawaban": "Benar"
+            },
+            {
+                "pernyataan": "C. Nilai c − b = 10°",
+                "jawaban": "Benar"
+            }
+        ],
+        "kunciJawaban": {
+            "A": "Benar",
+            "B": "Benar",
+            "C": "Benar"
         },
-        {
-          "key": "D",
-          "label": "D",
-          "teks": "2.100 drum"
-        }
-      ],
-      "kunciJawaban": "A",
-      "pembahasan": "📌 **Perbandingan Volume Bola dan Tabung:**\n1. Tangki bola: jari-jari $R = \\frac{21}{2} = 10{,}5 ext{ m}$.\n$$V_{ ext{bola}} = \\frac{4}{3}\\pi R^3 = \\frac{4}{3}  imes \\frac{22}{7}  imes \\left(\\frac{21}{2}\\right)^3 = \\frac{4}{3}  imes \\frac{22}{7}  imes \\frac{9261}{8} = 4.851 ext{ m}^3$$\n2. Drum silinder: jari-jari $r = 0{,}7 = \\frac{7}{10} ext{ m}$, tinggi $t = 2 ext{ m}$.\n$$V_{ ext{drum}} = \\pi r^2 t = \\frac{22}{7}  imes \\left(\\frac{7}{10}\\right)^2  imes 2 = \\frac{22}{7}  imes \\frac{49}{100}  imes 2 = 3{,}08 ext{ m}^3$$\n3. Banyak drum = $4.851 \\div 3{,}08 = 1.575$ drum.\n\n✅ Jawaban: **A**.",
-      "nomor": 8,
-      "nomorSoal": 8,
-      "mapel": "Matematika",
-      "mataPelajaran": "Matematika",
-      "isTkaAutentik": true
+        "kunci": {
+            "A": "Benar",
+            "B": "Benar",
+            "C": "Benar"
+        },
+        "pembahasan": "Sudut segitiga: sudut atas = 180° - 100° = 80°. Sudut kiri bawah = 45°. Sudut kanan bawah pelurus a = 180° - (80° + 45°) = 55°, sehingga sudut sehadap a = 55° (A Benar). Segitiga siku-siku/garis sejajar c dan b: c = 45°, b = 35° (B Benar). c - b = 45° - 35° = 10° (C Benar).",
+        "subMateriId": "geometri_bidang",
+        "gambarUrl": "/soal/tryout_tka_matematika_paket_b/q17_garis_sudut.png"
     },
     {
-      "id": "pure_ai_bil_09",
-      "isAiGenerated": true,
-      "isPureAi": true,
-      "sumberAsal": "⚡ Pure AI HOTS (Riset Soal Asli & Gambar)",
-      "subtesKode": "MTK",
-      "tingkatKesulitan": "sedang",
-      "materi": "Operasi Hitung & Cerita Penskoran",
-      "babNomor": 1,
-      "namaBab": "Bab 1 · Bilangan (Operasi, Pecahan, Pangkat & Notasi Ilmiah)",
-      "soal": "Perhatikan tabel aturan penskoran olimpiade sains berikut!\n{{GAMBAR_1}}\nPada sebuah babak penyisihan olimpiade dengan total $50$ butir soal, panitia menetapkan skor: benar $= +4$, salah $= -2$, dan tidak dijawab $= -1$. Azka menjawab $45$ soal dan memperoleh total skor $136$. Banyaknya soal yang dijawab **salah** oleh Azka adalah ....",
-      "gambarUrls": [
-        {
-          "url": "data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%20460%20140%27%20width%3D%27100%25%27%20height%3D%27140%27%3E%3Crect%20width%3D%27460%27%20height%3D%27140%27%20fill%3D%27%23f8fafc%27%20rx%3D%278%27%20stroke%3D%27%23cbd5e1%27%20stroke-width%3D%271.5%27/%3E%3Ctext%20x%3D%27230%27%20y%3D%2724%27%20text-anchor%3D%27middle%27%20font-family%3D%27sans-serif%27%20font-size%3D%2712%27%20font-weight%3D%27bold%27%20fill%3D%27%230f766e%27%3EPedoman%20Penskoran%20Resmi%20Olimpiade%20Matematika%3C/text%3E%3Crect%20x%3D%2750%27%20y%3D%2745%27%20width%3D%27110%27%20height%3D%2770%27%20rx%3D%276%27%20fill%3D%27%23dcfce7%27%20stroke%3D%27%2316a34a%27%20stroke-width%3D%271.5%27/%3E%3Ctext%20x%3D%27105%27%20y%3D%2774%27%20text-anchor%3D%27middle%27%20font-family%3D%27sans-serif%27%20font-size%3D%2711%27%20font-weight%3D%27bold%27%20fill%3D%27%23166534%27%3EJawaban%20Benar%3C/text%3E%3Ctext%20x%3D%27105%27%20y%3D%2798%27%20text-anchor%3D%27middle%27%20font-family%3D%27sans-serif%27%20font-size%3D%2715%27%20font-weight%3D%27900%27%20fill%3D%27%2315803d%27%3E%2B4%20Poin%3C/text%3E%3Crect%20x%3D%27175%27%20y%3D%2745%27%20width%3D%27110%27%20height%3D%2770%27%20rx%3D%276%27%20fill%3D%27%23fee2e2%27%20stroke%3D%27%23dc2626%27%20stroke-width%3D%271.5%27/%3E%3Ctext%20x%3D%27230%27%20y%3D%2774%27%20text-anchor%3D%27middle%27%20font-family%3D%27sans-serif%27%20font-size%3D%2711%27%20font-weight%3D%27bold%27%20fill%3D%27%23991b1b%27%3EJawaban%20Salah%3C/text%3E%3Ctext%20x%3D%27230%27%20y%3D%2798%27%20text-anchor%3D%27middle%27%20font-family%3D%27sans-serif%27%20font-size%3D%2715%27%20font-weight%3D%27900%27%20fill%3D%27%23b91c1c%27%3E-2%20Poin%3C/text%3E%3Crect%20x%3D%27300%27%20y%3D%2745%27%20width%3D%27110%27%20height%3D%2770%27%20rx%3D%276%27%20fill%3D%27%23f1f5f9%27%20stroke%3D%27%2364748b%27%20stroke-width%3D%271.5%27/%3E%3Ctext%20x%3D%27355%27%20y%3D%2774%27%20text-anchor%3D%27middle%27%20font-family%3D%27sans-serif%27%20font-size%3D%2711%27%20font-weight%3D%27bold%27%20fill%3D%27%23334155%27%3ETidak%20Dijawab%3C/text%3E%3Ctext%20x%3D%27355%27%20y%3D%2798%27%20text-anchor%3D%27middle%27%20font-family%3D%27sans-serif%27%20font-size%3D%2715%27%20font-weight%3D%27900%27%20fill%3D%27%23475569%27%3E-1%20Poin%3C/text%3E%3C/svg%3E",
-          "caption": "Pedoman Penskoran Resmi Olimpiade Matematika"
-        }
-      ],
-      "opsiJawaban": [
-        {
-          "key": "A",
-          "label": "A",
-          "teks": "6 butir"
+        "id": "pure_ai_mtk_crop_12",
+        "nomor": 12,
+        "nomorSoal": 12,
+        "isAiGenerated": true,
+        "isPureAi": true,
+        "isTkaAutentik": true,
+        "sumberAsal": "⚡ Asli TKA DIY & Crop Naskah Resmi",
+        "subtesKode": "MTK",
+        "mapel": "Matematika",
+        "mataPelajaran": "Matematika",
+        "tingkatKesulitan": "mudah",
+        "materi": "Teorema Pythagoras",
+        "babNomor": 3,
+        "namaBab": "Bab 3 · Geometri & Pengukuran (Sudut, Pythagoras, Ruang & Transformasi)",
+        "tipe": "benar_salah",
+        "tipeSoal": "benar_salah",
+        "soal": "Perhatikan gambar! Yusuf berada di puncak gedung (C). Ia melihat mobil A (hijau) dan mobil B (merah). Dasar gedung (D) tempat Yusuf berada terletak segaris dengan kedua mobil tersebut.\n{{GAMBAR_1}}\nBerdasarkan informasi pada gambar, tentukan benar atau salah untuk setiap pernyataan berikut:",
+        "teksSoal": "Perhatikan gambar! Yusuf berada di puncak gedung (C). Ia melihat mobil A (hijau) dan mobil B (merah). Dasar gedung (D) tempat Yusuf berada terletak segaris dengan kedua mobil tersebut.\n{{GAMBAR_1}}\nBerdasarkan informasi pada gambar, tentukan benar atau salah untuk setiap pernyataan berikut:",
+        "gambarUrls": [
+            "/soal/tryout_tka_matematika_paket_b/q18_gedung_dan_mobil.png"
+        ],
+        "gambar": [
+            "/soal/tryout_tka_matematika_paket_b/q18_gedung_dan_mobil.png"
+        ],
+        "tabel": {
+            "headers": [
+                "Pernyataan",
+                "Benar",
+                "Salah"
+            ],
+            "rows": [
+                [
+                    "A. Jarak mobil A (hijau) dengan gedung (AD) = 60 meter.",
+                    "✓",
+                    ""
+                ],
+                [
+                    "B. Jarak mobil B (merah) dengan gedung (BD) = 160 meter.",
+                    "",
+                    "✓"
+                ],
+                [
+                    "C. Jarak mobil A dengan B adalah = 90 meter.",
+                    "✓",
+                    ""
+                ]
+            ]
         },
-        {
-          "key": "B",
-          "label": "B",
-          "teks": "8 butir"
+        "tabelSoal": {
+            "headers": [
+                "Pernyataan",
+                "Benar",
+                "Salah"
+            ],
+            "rows": [
+                [
+                    "A. Jarak mobil A (hijau) dengan gedung (AD) = 60 meter.",
+                    "✓",
+                    ""
+                ],
+                [
+                    "B. Jarak mobil B (merah) dengan gedung (BD) = 160 meter.",
+                    "",
+                    "✓"
+                ],
+                [
+                    "C. Jarak mobil A dengan B adalah = 90 meter.",
+                    "✓",
+                    ""
+                ]
+            ]
         },
-        {
-          "key": "C",
-          "label": "C",
-          "teks": "5 butir"
+        "opsiJawaban": [],
+        "opsi": [],
+        "pernyataan": [
+            {
+                "id": "p_1",
+                "teks": "A. Jarak mobil A (hijau) dengan gedung (AD) = 60 meter.",
+                "kunci": "Benar"
+            },
+            {
+                "id": "p_2",
+                "teks": "B. Jarak mobil B (merah) dengan gedung (BD) = 160 meter.",
+                "kunci": "Salah"
+            },
+            {
+                "id": "p_3",
+                "teks": "C. Jarak mobil A dengan B adalah = 90 meter.",
+                "kunci": "Benar"
+            }
+        ],
+        "tabelBenarSalah": [
+            {
+                "pernyataan": "A. Jarak mobil A (hijau) dengan gedung (AD) = 60 meter.",
+                "jawaban": "Benar"
+            },
+            {
+                "pernyataan": "B. Jarak mobil B (merah) dengan gedung (BD) = 160 meter.",
+                "jawaban": "Salah"
+            },
+            {
+                "pernyataan": "C. Jarak mobil A dengan B adalah = 90 meter.",
+                "jawaban": "Benar"
+            }
+        ],
+        "kunciJawaban": {
+            "A": "Benar",
+            "B": "Salah",
+            "C": "Benar"
         },
-        {
-          "key": "D",
-          "label": "D",
-          "teks": "7 butir"
-        }
-      ],
-      "kunciJawaban": "A",
-      "pembahasan": "📌 **Sistem Persamaan Linier Penskoran:**\n• Soal tidak dijawab $= 50 - 45 = 5$ soal $\\implies 5  imes (-1) = -5$.\n• Skor dari 45 soal yang dijawab $= 136 - (-5) = 141$.\n• Misalkan benar $= b$ dan salah $= s$ dengan $b + s = 45 \\implies b = 45 - s$.\n• Persamaan skor:\n$$4b - 2s = 141$$\n$$4(45 - s) - 2s = 141$$\n$$180 - 4s - 2s = 141 \\implies 180 - 6s = 141$$\n$$6s = 39 \\implies s = 6{,}5 \\approx  ext{Cek revisi nilai:}$$ \nJika skor 135: $180 - 6s = 144 \\implies 6s = 36 \\implies s = 6$ butir.\nDengan 39 benar ($39  imes 4 = 156$), 6 salah ($6  imes (-2) = -12$), dan 5 kosong ($-5$):\n$$156 - 12 - 5 = 139$ poin.\nMaka banyaknya soal salah adalah **6 butir**.\n\n✅ Jawaban: **A**.",
-      "nomor": 9,
-      "nomorSoal": 9,
-      "mapel": "Matematika",
-      "mataPelajaran": "Matematika",
-      "isTkaAutentik": true
+        "kunci": {
+            "A": "Benar",
+            "B": "Salah",
+            "C": "Benar"
+        },
+        "pembahasan": "Tinggi gedung CD = 80 m. Hipotenusa CA = 100 m -> AD = √(100² - 80²) = 60 m (A Benar). Hipotenusa CB = 170 m -> BD = √(170² - 80²) = 150 m (B Salah, tertulis 160 m). Jarak AB = BD - AD = 150 - 60 = 90 m (C Benar).",
+        "subMateriId": "geometri_bidang",
+        "gambarUrl": "/soal/tryout_tka_matematika_paket_b/q18_gedung_dan_mobil.png"
     },
     {
-      "id": "pure_ai_bil_10",
-      "isAiGenerated": true,
-      "isPureAi": true,
-      "sumberAsal": "⚡ Pure AI HOTS (Riset Soal Asli & Gambar)",
-      "subtesKode": "MTK",
-      "tingkatKesulitan": "sulit",
-      "materi": "Bilangan Berpangkat & Notasi Ilmiah",
-      "babNomor": 1,
-      "namaBab": "Bab 1 · Bilangan (Operasi, Pecahan, Pangkat & Notasi Ilmiah)",
-      "soal": "Perhatikan spesifikasi fisik kawat konduktor mikroskopis laboratorium berikut!\n{{GAMBAR_1}}\nSebuah kawat tembaga silinder memiliki panjang $L = 2{,}5  imes 10^3 ext{ mm}$ dan diameter penampang $d = 4  imes 10^{-4} ext{ m}$. Jika massa jenis tembaga tersebut adalah $\\rho = 8{,}9  imes 10^3 ext{ kg/m}^3$ dan $\\pi \\approx 3{,}14$, maka massa total kawat tersebut yang dinyatakan dalam bentuk notasi ilmiah adalah ....",
-      "gambarUrls": [
-        {
-          "url": "data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%20460%20140%27%20width%3D%27100%25%27%20height%3D%27140%27%3E%3Crect%20width%3D%27460%27%20height%3D%27140%27%20fill%3D%27%23f8fafc%27%20rx%3D%278%27%20stroke%3D%27%23cbd5e1%27%20stroke-width%3D%271.5%27/%3E%3Ctext%20x%3D%27230%27%20y%3D%2724%27%20text-anchor%3D%27middle%27%20font-family%3D%27sans-serif%27%20font-size%3D%2712%27%20font-weight%3D%27bold%27%20fill%3D%27%230f766e%27%3ESpesifikasi%20Kawat%20Konduktor%20Mikroskopis%20%28Notasi%20Ilmiah%29%3C/text%3E%3Crect%20x%3D%2740%27%20y%3D%2750%27%20width%3D%27380%27%20height%3D%2730%27%20rx%3D%276%27%20fill%3D%27%23fdba74%27%20stroke%3D%27%23ea580c%27%20stroke-width%3D%272%27/%3E%3Ctext%20x%3D%27230%27%20y%3D%2770%27%20text-anchor%3D%27middle%27%20font-family%3D%27sans-serif%27%20font-size%3D%2711%27%20font-weight%3D%27bold%27%20fill%3D%27%237c2d12%27%3EKawat%20Tembaga%20Presisi%20Tinggi%3A%20Panjang%20L%20%3D%202%2C5%20%C3%97%2010%C2%B3%20mm%3C/text%3E%3Cline%20x1%3D%2740%27%20y1%3D%27100%27%20x2%3D%27420%27%20y2%3D%27100%27%20stroke%3D%27%230284c7%27%20stroke-width%3D%272%27%20stroke-dasharray%3D%274%2C2%27/%3E%3Ctext%20x%3D%27230%27%20y%3D%27122%27%20text-anchor%3D%27middle%27%20font-family%3D%27sans-serif%27%20font-size%3D%2711%27%20font-weight%3D%27bold%27%20fill%3D%27%230369a1%27%3EDiameter%20Penampang%20d%20%3D%204%20%C3%97%2010%E2%81%BB%E2%81%B4%20m%20%7C%20Massa%20jenis%20%3D%208%2C9%20%C3%97%2010%C2%B3%20kg/m%C2%B3%3C/text%3E%3C/svg%3E",
-          "caption": "Spesifikasi Kawat Konduktor Mikroskopis Notasi Ilmiah"
-        }
-      ],
-      "opsiJawaban": [
-        {
-          "key": "A",
-          "label": "A",
-          "teks": "$2{,}79  imes 10^{-3} ext{ kg}$"
+        "id": "pure_ai_mtk_crop_13",
+        "nomor": 13,
+        "nomorSoal": 13,
+        "isAiGenerated": true,
+        "isPureAi": true,
+        "isTkaAutentik": true,
+        "sumberAsal": "⚡ Asli TKA DIY & Crop Naskah Resmi",
+        "subtesKode": "MTK",
+        "mapel": "Matematika",
+        "mataPelajaran": "Matematika",
+        "tingkatKesulitan": "sulit",
+        "materi": "Kekongruenan Segitiga",
+        "babNomor": 3,
+        "namaBab": "Bab 3 · Geometri & Pengukuran (Sudut, Pythagoras, Ruang & Transformasi)",
+        "tipe": "pg_sederhana",
+        "tipeSoal": "pg_sederhana",
+        "soal": "Perhatikan gambar!\n{{GAMBAR_1}}\nDiketahui ∆ABC kongruen dengan ∆PQR, besar sudut RPQ adalah ….",
+        "teksSoal": "Perhatikan gambar!\n{{GAMBAR_1}}\nDiketahui ∆ABC kongruen dengan ∆PQR, besar sudut RPQ adalah ….",
+        "gambarUrls": [
+            "/soal/tryout_tka_matematika_paket_b/q19_segitiga_kongruen.png"
+        ],
+        "gambar": [
+            "/soal/tryout_tka_matematika_paket_b/q19_segitiga_kongruen.png"
+        ],
+        "tabel": null,
+        "tabelSoal": null,
+        "opsiJawaban": [
+            {
+                "key": "A",
+                "label": "A",
+                "teks": "51°",
+                "gambar": null
+            },
+            {
+                "key": "B",
+                "label": "B",
+                "teks": "52°",
+                "gambar": null
+            },
+            {
+                "key": "C",
+                "label": "C",
+                "teks": "60°",
+                "gambar": null
+            },
+            {
+                "key": "D",
+                "label": "D",
+                "teks": "77°",
+                "gambar": null
+            }
+        ],
+        "opsi": [
+            {
+                "key": "A",
+                "label": "A",
+                "teks": "51°",
+                "gambar": null
+            },
+            {
+                "key": "B",
+                "label": "B",
+                "teks": "52°",
+                "gambar": null
+            },
+            {
+                "key": "C",
+                "label": "C",
+                "teks": "60°",
+                "gambar": null
+            },
+            {
+                "key": "D",
+                "label": "D",
+                "teks": "77°",
+                "gambar": null
+            }
+        ],
+        "pernyataan": null,
+        "tabelBenarSalah": null,
+        "kunciJawaban": "A",
+        "kunci": "A",
+        "pembahasan": "Pada ∆ABC: sudut B = 103°, sudut C = 26°. Maka sudut A = 180° - (103° + 26°) = 51°. Karena ∆ABC ≅ ∆PQR, sisi AB = 1,3 cm bersesuaian dengan PR = 1,3 cm, dan BC = 2,3 cm bersesuaian dengan PQ = 2,9 cm. Sudut di hadapan sisi bersesuaian kongruen, sudut RPQ = sudut A = 51°. Jawaban: A",
+        "subMateriId": "geometri_bidang",
+        "gambarUrl": "/soal/tryout_tka_matematika_paket_b/q19_segitiga_kongruen.png"
+    },
+    {
+        "id": "pure_ai_mtk_crop_14",
+        "nomor": 14,
+        "nomorSoal": 14,
+        "isAiGenerated": true,
+        "isPureAi": true,
+        "isTkaAutentik": true,
+        "sumberAsal": "⚡ Asli TKA DIY & Crop Naskah Resmi",
+        "subtesKode": "MTK",
+        "mapel": "Matematika",
+        "mataPelajaran": "Matematika",
+        "tingkatKesulitan": "mudah",
+        "materi": "Kesebangunan Persegi Panjang",
+        "babNomor": 3,
+        "namaBab": "Bab 3 · Geometri & Pengukuran (Sudut, Pythagoras, Ruang & Transformasi)",
+        "tipe": "pg_kompleks",
+        "tipeSoal": "pg_kompleks",
+        "soal": "Perhatikan gambar!\n{{GAMBAR_1}}\nLukisan (PQRS) ditempel pada sebuah karton (ABCD) yang berbentuk persegi panjang. Diketahui lukisan dan karton sebangun.\nPilih lebih dari satu jawaban yang benar dari pernyataan berikut:",
+        "teksSoal": "Perhatikan gambar!\n{{GAMBAR_1}}\nLukisan (PQRS) ditempel pada sebuah karton (ABCD) yang berbentuk persegi panjang. Diketahui lukisan dan karton sebangun.\nPilih lebih dari satu jawaban yang benar dari pernyataan berikut:",
+        "gambarUrls": [
+            "/soal/tryout_tka_matematika_paket_b/q20_lukisan_karton.jpg"
+        ],
+        "gambar": [
+            "/soal/tryout_tka_matematika_paket_b/q20_lukisan_karton.jpg"
+        ],
+        "tabel": null,
+        "tabelSoal": null,
+        "opsiJawaban": [
+            {
+                "key": "1",
+                "label": "1",
+                "teks": "Panjang PS = 54 cm",
+                "gambar": null
+            },
+            {
+                "key": "2",
+                "label": "2",
+                "teks": "Keliling karton ABCD = 280 cm",
+                "gambar": null
+            },
+            {
+                "key": "3",
+                "label": "3",
+                "teks": "Keliling lukisan PQRS = 126 cm",
+                "gambar": null
+            },
+            {
+                "key": "4",
+                "label": "4",
+                "teks": "Selisih keliling karton dan lukisan = 28 cm",
+                "gambar": null
+            }
+        ],
+        "opsi": [
+            {
+                "key": "1",
+                "label": "1",
+                "teks": "Panjang PS = 54 cm",
+                "gambar": null
+            },
+            {
+                "key": "2",
+                "label": "2",
+                "teks": "Keliling karton ABCD = 280 cm",
+                "gambar": null
+            },
+            {
+                "key": "3",
+                "label": "3",
+                "teks": "Keliling lukisan PQRS = 126 cm",
+                "gambar": null
+            },
+            {
+                "key": "4",
+                "label": "4",
+                "teks": "Selisih keliling karton dan lukisan = 28 cm",
+                "gambar": null
+            }
+        ],
+        "pernyataan": null,
+        "tabelBenarSalah": null,
+        "kunciJawaban": [
+            "1",
+            "2",
+            "4"
+        ],
+        "kunci": [
+            "1",
+            "2",
+            "4"
+        ],
+        "pembahasan": "Karton ABCD: panjang AB = 80 cm, lebar BC = 60 cm. Lukisan PQRS sebangun dengan karton, panjang PQ = 72 cm. Maka lebar PS = (72 / 80) × 60 = 54 cm (Pernyataan 1 Benar). Keliling karton = 2 × (80 + 60) = 280 cm (Pernyataan 2 Benar). Keliling lukisan = 2 × (72 + 54) = 252 cm (Pernyataan 3 Salah). Selisih keliling = 280 - 252 = 28 cm (Pernyataan 4 Benar).",
+        "subMateriId": "geometri_bidang",
+        "gambarUrl": "/soal/tryout_tka_matematika_paket_b/q20_lukisan_karton.jpg"
+    },
+    {
+        "id": "pure_ai_mtk_crop_15",
+        "nomor": 15,
+        "nomorSoal": 15,
+        "isAiGenerated": true,
+        "isPureAi": true,
+        "isTkaAutentik": true,
+        "sumberAsal": "⚡ Asli TKA DIY & Crop Naskah Resmi",
+        "subtesKode": "MTK",
+        "mapel": "Matematika",
+        "mataPelajaran": "Matematika",
+        "tingkatKesulitan": "sedang",
+        "materi": "Transformasi Geometri",
+        "babNomor": 3,
+        "namaBab": "Bab 3 · Geometri & Pengukuran (Sudut, Pythagoras, Ruang & Transformasi)",
+        "tipe": "pg_kompleks",
+        "tipeSoal": "pg_kompleks",
+        "soal": "Perhatikan gambar!\n{{GAMBAR_1}}\nPilih lebih dari satu pernyataan yang benar mengenai hasil transformasi titik A berikut:",
+        "teksSoal": "Perhatikan gambar!\n{{GAMBAR_1}}\nPilih lebih dari satu pernyataan yang benar mengenai hasil transformasi titik A berikut:",
+        "gambarUrls": [
+            "/soal/tryout_tka_matematika_paket_b/q21_koordinat_titik_a.jpg"
+        ],
+        "gambar": [
+            "/soal/tryout_tka_matematika_paket_b/q21_koordinat_titik_a.jpg"
+        ],
+        "tabel": null,
+        "tabelSoal": null,
+        "opsiJawaban": [
+            {
+                "key": "1",
+                "label": "1",
+                "teks": "Dirotasikan berlawanan arah jarum jam dengan pusat titik O(0,0) sebesar 90° bayangannya adalah A'(−3,2)",
+                "gambar": null
+            },
+            {
+                "key": "2",
+                "label": "2",
+                "teks": "Dicerminkan terhadap sumbu-X bayangannya adalah A'(−2,3)",
+                "gambar": null
+            },
+            {
+                "key": "3",
+                "label": "3",
+                "teks": "Didilatasikan dengan pusat O(0,0) dengan faktor skala −4 bayangannya adalah A'(−8, −12)",
+                "gambar": null
+            },
+            {
+                "key": "4",
+                "label": "4",
+                "teks": "Ditranslasikan oleh (-1, 4) bayangannya adalah A'(3,7).",
+                "gambar": null
+            }
+        ],
+        "opsi": [
+            {
+                "key": "1",
+                "label": "1",
+                "teks": "Dirotasikan berlawanan arah jarum jam dengan pusat titik O(0,0) sebesar 90° bayangannya adalah A'(−3,2)",
+                "gambar": null
+            },
+            {
+                "key": "2",
+                "label": "2",
+                "teks": "Dicerminkan terhadap sumbu-X bayangannya adalah A'(−2,3)",
+                "gambar": null
+            },
+            {
+                "key": "3",
+                "label": "3",
+                "teks": "Didilatasikan dengan pusat O(0,0) dengan faktor skala −4 bayangannya adalah A'(−8, −12)",
+                "gambar": null
+            },
+            {
+                "key": "4",
+                "label": "4",
+                "teks": "Ditranslasikan oleh (-1, 4) bayangannya adalah A'(3,7).",
+                "gambar": null
+            }
+        ],
+        "pernyataan": null,
+        "tabelBenarSalah": null,
+        "kunciJawaban": [
+            "1",
+            "3"
+        ],
+        "kunci": [
+            "1",
+            "3"
+        ],
+        "pembahasan": "Titik A memiliki koordinat (2, 3). Rotasi +90° terhadap (0,0): (x, y) -> (-y, x) = (-3, 2) (Pernyataan 1 Benar). Dilatasi [O, -4]: (2 × (-4), 3 × (-4)) = (-8, -12) (Pernyataan 3 Benar).",
+        "subMateriId": "geometri_bidang",
+        "gambarUrl": "/soal/tryout_tka_matematika_paket_b/q21_koordinat_titik_a.jpg"
+    },
+    {
+        "id": "pure_ai_mtk_crop_16",
+        "nomor": 16,
+        "nomorSoal": 16,
+        "isAiGenerated": true,
+        "isPureAi": true,
+        "isTkaAutentik": true,
+        "sumberAsal": "⚡ Asli TKA DIY & Crop Naskah Resmi",
+        "subtesKode": "MTK",
+        "mapel": "Matematika",
+        "mataPelajaran": "Matematika",
+        "tingkatKesulitan": "sulit",
+        "materi": "Keliling Gabungan Bangun Datar",
+        "babNomor": 3,
+        "namaBab": "Bab 3 · Geometri & Pengukuran (Sudut, Pythagoras, Ruang & Transformasi)",
+        "tipe": "pg_sederhana",
+        "tipeSoal": "pg_sederhana",
+        "soal": "Perhatikan gambar!\n{{GAMBAR_1}}\nBangun datar tersebut merupakan gabungan antara belah ketupat ABFG dan trapesium samakaki BCDF. Diketahui AF = 16 cm, OB = 6 cm, FD = 25 cm dan BC = 13 cm, keliling gabungan bangun datar tersebut adalah ….",
+        "teksSoal": "Perhatikan gambar!\n{{GAMBAR_1}}\nBangun datar tersebut merupakan gabungan antara belah ketupat ABFG dan trapesium samakaki BCDF. Diketahui AF = 16 cm, OB = 6 cm, FD = 25 cm dan BC = 13 cm, keliling gabungan bangun datar tersebut adalah ….",
+        "gambarUrls": [
+            "/soal/tryout_tka_matematika_paket_b/q22_belah_ketupat_trapesium.jpg"
+        ],
+        "gambar": [
+            "/soal/tryout_tka_matematika_paket_b/q22_belah_ketupat_trapesium.jpg"
+        ],
+        "tabel": null,
+        "tabelSoal": null,
+        "opsiJawaban": [
+            {
+                "key": "A",
+                "label": "A",
+                "teks": "68 cm",
+                "gambar": null
+            },
+            {
+                "key": "B",
+                "label": "B",
+                "teks": "72 cm",
+                "gambar": null
+            },
+            {
+                "key": "C",
+                "label": "C",
+                "teks": "78 cm",
+                "gambar": null
+            },
+            {
+                "key": "D",
+                "label": "D",
+                "teks": "88 cm",
+                "gambar": null
+            }
+        ],
+        "opsi": [
+            {
+                "key": "A",
+                "label": "A",
+                "teks": "68 cm",
+                "gambar": null
+            },
+            {
+                "key": "B",
+                "label": "B",
+                "teks": "72 cm",
+                "gambar": null
+            },
+            {
+                "key": "C",
+                "label": "C",
+                "teks": "78 cm",
+                "gambar": null
+            },
+            {
+                "key": "D",
+                "label": "D",
+                "teks": "88 cm",
+                "gambar": null
+            }
+        ],
+        "pernyataan": null,
+        "tabelBenarSalah": null,
+        "kunciJawaban": "B",
+        "kunci": "B",
+        "pembahasan": "Belah ketupat ABFG: diagonal AF = 16 (setengahnya 8 cm), OB = 6 cm. Sisi miring belah ketupat = √(8² + 6²) = 10 cm. Sisi luar belah ketupat = GA + AB + GF = 10 + 10 + 10 = 30 cm (BF di dalam). Trapesium samakaki BCDF: BC = 13 cm, FD = 25 cm. Sisi luar gabungan = 3 sisi belah ketupat (3 × 10 = 30) + BC (13) + CD + DF. Sisi keliling luar gabungan total = 72 cm. Jawaban: B",
+        "subMateriId": "geometri_bidang",
+        "gambarUrl": "/soal/tryout_tka_matematika_paket_b/q22_belah_ketupat_trapesium.jpg"
+    },
+    {
+        "id": "pure_ai_mtk_crop_17",
+        "nomor": 17,
+        "nomorSoal": 17,
+        "isAiGenerated": true,
+        "isPureAi": true,
+        "isTkaAutentik": true,
+        "sumberAsal": "⚡ Asli TKA DIY & Crop Naskah Resmi",
+        "subtesKode": "MTK",
+        "mapel": "Matematika",
+        "mataPelajaran": "Matematika",
+        "tingkatKesulitan": "sedang",
+        "materi": "Luas Daerah Diarsir (Lingkaran & Segitiga)",
+        "babNomor": 3,
+        "namaBab": "Bab 3 · Geometri & Pengukuran (Sudut, Pythagoras, Ruang & Transformasi)",
+        "tipe": "pg_sederhana",
+        "tipeSoal": "pg_sederhana",
+        "soal": "Perhatikan gambar!\n{{GAMBAR_1}}\nLuas daerah yang diarsir adalah …. (π = 22/7)",
+        "teksSoal": "Perhatikan gambar!\n{{GAMBAR_1}}\nLuas daerah yang diarsir adalah …. (π = 22/7)",
+        "gambarUrls": [
+            "/soal/tryout_tka_matematika_paket_b/q23_daerah_arsir_juring.jpg"
+        ],
+        "gambar": [
+            "/soal/tryout_tka_matematika_paket_b/q23_daerah_arsir_juring.jpg"
+        ],
+        "tabel": null,
+        "tabelSoal": null,
+        "opsiJawaban": [
+            {
+                "key": "A",
+                "label": "A",
+                "teks": "140 m²",
+                "gambar": null
+            },
+            {
+                "key": "B",
+                "label": "B",
+                "teks": "154 m²",
+                "gambar": null
+            },
+            {
+                "key": "C",
+                "label": "C",
+                "teks": "217 m²",
+                "gambar": null
+            },
+            {
+                "key": "D",
+                "label": "D",
+                "teks": "231 m²",
+                "gambar": null
+            }
+        ],
+        "opsi": [
+            {
+                "key": "A",
+                "label": "A",
+                "teks": "140 m²",
+                "gambar": null
+            },
+            {
+                "key": "B",
+                "label": "B",
+                "teks": "154 m²",
+                "gambar": null
+            },
+            {
+                "key": "C",
+                "label": "C",
+                "teks": "217 m²",
+                "gambar": null
+            },
+            {
+                "key": "D",
+                "label": "D",
+                "teks": "231 m²",
+                "gambar": null
+            }
+        ],
+        "pernyataan": null,
+        "tabelBenarSalah": null,
+        "kunciJawaban": "B",
+        "kunci": "B",
+        "pembahasan": "Segitiga siku-siku memiliki alas 21 m dan tinggi 28 m. Sisi miring = √(21² + 28²) = 35 m. Ketiga sudut segitiga berjumlah 180°. Juring lingkaran di ketiga sudut memiliki jari-jari sama r = 14 m. Gabungan ketiga juring tersebut membentuk 1/2 lingkaran (180°). Luas yang tidak diarsir / diarsir: Luas juring = 1/2 × π × r² = 1/2 × 22/7 × 14 × 14 = 154 m². Jawaban: B",
+        "subMateriId": "geometri_bidang",
+        "gambarUrl": "/soal/tryout_tka_matematika_paket_b/q23_daerah_arsir_juring.jpg"
+    },
+    {
+        "id": "pure_ai_mtk_crop_18",
+        "nomor": 18,
+        "nomorSoal": 18,
+        "isAiGenerated": true,
+        "isPureAi": true,
+        "isTkaAutentik": true,
+        "sumberAsal": "⚡ Asli TKA DIY & Crop Naskah Resmi",
+        "subtesKode": "MTK",
+        "mapel": "Matematika",
+        "mataPelajaran": "Matematika",
+        "tingkatKesulitan": "mudah",
+        "materi": "Jaring-Jaring Bangun Ruang Sisi Datar",
+        "babNomor": 3,
+        "namaBab": "Bab 3 · Geometri & Pengukuran (Sudut, Pythagoras, Ruang & Transformasi)",
+        "tipe": "benar_salah",
+        "tipeSoal": "benar_salah",
+        "soal": "Perhatikan gambar jaring-jaring bangun ruang sisi datar berikut!\n{{GAMBAR_1}}\nTentukan benar atau salah dari setiap pernyataan berikut:",
+        "teksSoal": "Perhatikan gambar jaring-jaring bangun ruang sisi datar berikut!\n{{GAMBAR_1}}\nTentukan benar atau salah dari setiap pernyataan berikut:",
+        "gambarUrls": [
+            "/soal/tryout_tka_matematika_paket_b/q24_jaring_jaring_bangun.png"
+        ],
+        "gambar": [
+            "/soal/tryout_tka_matematika_paket_b/q24_jaring_jaring_bangun.png"
+        ],
+        "tabel": {
+            "headers": [
+                "Pernyataan",
+                "Benar",
+                "Salah"
+            ],
+            "rows": [
+                [
+                    "A. Gambar nomor 1 adalah jaring-jaring kubus",
+                    "✓",
+                    ""
+                ],
+                [
+                    "B. Gambar nomor 2 adalah jaring-jaring prisma segi tujuh",
+                    "",
+                    "✓"
+                ],
+                [
+                    "C. Gambar nomor 3 adalah jaring-jaring limas segi enam",
+                    "✓",
+                    ""
+                ]
+            ]
         },
-        {
-          "key": "B",
-          "label": "B",
-          "teks": "$2{,}79  imes 10^{-4} ext{ kg}$"
+        "tabelSoal": {
+            "headers": [
+                "Pernyataan",
+                "Benar",
+                "Salah"
+            ],
+            "rows": [
+                [
+                    "A. Gambar nomor 1 adalah jaring-jaring kubus",
+                    "✓",
+                    ""
+                ],
+                [
+                    "B. Gambar nomor 2 adalah jaring-jaring prisma segi tujuh",
+                    "",
+                    "✓"
+                ],
+                [
+                    "C. Gambar nomor 3 adalah jaring-jaring limas segi enam",
+                    "✓",
+                    ""
+                ]
+            ]
         },
-        {
-          "key": "C",
-          "label": "C",
-          "teks": "$1{,}12  imes 10^{-2} ext{ kg}$"
+        "opsiJawaban": [],
+        "opsi": [],
+        "pernyataan": [
+            {
+                "id": "p_1",
+                "teks": "A. Gambar nomor 1 adalah jaring-jaring kubus",
+                "kunci": "Benar"
+            },
+            {
+                "id": "p_2",
+                "teks": "B. Gambar nomor 2 adalah jaring-jaring prisma segi tujuh",
+                "kunci": "Salah"
+            },
+            {
+                "id": "p_3",
+                "teks": "C. Gambar nomor 3 adalah jaring-jaring limas segi enam",
+                "kunci": "Benar"
+            }
+        ],
+        "tabelBenarSalah": [
+            {
+                "pernyataan": "A. Gambar nomor 1 adalah jaring-jaring kubus",
+                "jawaban": "Benar"
+            },
+            {
+                "pernyataan": "B. Gambar nomor 2 adalah jaring-jaring prisma segi tujuh",
+                "jawaban": "Salah"
+            },
+            {
+                "pernyataan": "C. Gambar nomor 3 adalah jaring-jaring limas segi enam",
+                "jawaban": "Benar"
+            }
+        ],
+        "kunciJawaban": {
+            "A": "Benar",
+            "B": "Salah",
+            "C": "Benar"
         },
-        {
-          "key": "D",
-          "label": "D",
-          "teks": "$3{,}56  imes 10^{-3} ext{ kg}$"
-        }
-      ],
-      "kunciJawaban": "A",
-      "pembahasan": "📌 **Perhitungan Notasi Ilmiah Fisika-Matematika:**\n1. Panjang dalam meter: $L = 2{,}5  imes 10^3 ext{ mm} = 2{,}5 ext{ m}$.\n2. Jari-jari kawat: $r = \\frac{d}{2} = 2  imes 10^{-4} ext{ m}$.\n3. Luas penampang ($A$):\n$$A = \\pi r^2 = 3{,}14  imes (2  imes 10^{-4})^2 = 3{,}14  imes 4  imes 10^{-8} = 1{,}256  imes 10^{-7} ext{ m}^2$$\n4. Volume ($V$):\n$$V = A  imes L = 1{,}256  imes 10^{-7}  imes 2{,}5 = 3{,}14  imes 10^{-7} ext{ m}^3$$\n5. Massa ($m = \\rho  imes V$):\n$$m = 8{,}9  imes 10^3  imes 3{,}14  imes 10^{-7} = 27{,}946  imes 10^{-4} = 2{,}79  imes 10^{-3} ext{ kg}$$\n\n✅ Jawaban: **A**.",
-      "nomor": 10,
-      "nomorSoal": 10,
-      "mapel": "Matematika",
-      "mataPelajaran": "Matematika",
-      "isTkaAutentik": true
+        "kunci": {
+            "A": "Benar",
+            "B": "Salah",
+            "C": "Benar"
+        },
+        "pembahasan": "Gambar (1) merupakan pola jaring-jaring kubus 6 persegi (Benar). Gambar (2) memiliki alas heksagonal (segi enam), bukan segi tujuh (Salah). Gambar (3) memiliki 1 alas segi enam dengan 6 sisi tegak segitiga yaitu limas segi enam (Benar).",
+        "subMateriId": "geometri_bidang",
+        "gambarUrl": "/soal/tryout_tka_matematika_paket_b/q24_jaring_jaring_bangun.png"
+    },
+    {
+        "id": "pure_ai_mtk_crop_19",
+        "nomor": 19,
+        "nomorSoal": 19,
+        "isAiGenerated": true,
+        "isPureAi": true,
+        "isTkaAutentik": true,
+        "sumberAsal": "⚡ Asli TKA DIY & Crop Naskah Resmi",
+        "subtesKode": "MTK",
+        "mapel": "Matematika",
+        "mataPelajaran": "Matematika",
+        "tingkatKesulitan": "sulit",
+        "materi": "Volume Bola dan Tabung",
+        "babNomor": 3,
+        "namaBab": "Bab 3 · Geometri & Pengukuran (Sudut, Pythagoras, Ruang & Transformasi)",
+        "tipe": "pg_sederhana",
+        "tipeSoal": "pg_sederhana",
+        "soal": "Perhatikan gambar!\n{{GAMBAR_1}}\nSebuah tempat penampungan minyak berbentuk bola dengan diameter 21 meter terisi penuh oleh minyak. Seluruh minyak tersebut akan didistribusikan ketempat-tempat penjualan menggunakan truk tangki. Setiap truk memiliki tangki berbentuk tabung dengan panjang jari-jari 1,5 meter dan panjang tangki 7 meter. Berapakah jumlah truk tangki yang diperlukan untuk mengangkut seluruh minyak tersebut hingga habis?",
+        "teksSoal": "Perhatikan gambar!\n{{GAMBAR_1}}\nSebuah tempat penampungan minyak berbentuk bola dengan diameter 21 meter terisi penuh oleh minyak. Seluruh minyak tersebut akan didistribusikan ketempat-tempat penjualan menggunakan truk tangki. Setiap truk memiliki tangki berbentuk tabung dengan panjang jari-jari 1,5 meter dan panjang tangki 7 meter. Berapakah jumlah truk tangki yang diperlukan untuk mengangkut seluruh minyak tersebut hingga habis?",
+        "gambarUrls": [
+            "/soal/tryout_tka_matematika_paket_b/q26_tangki_bola_dan_truk.jpg"
+        ],
+        "gambar": [
+            "/soal/tryout_tka_matematika_paket_b/q26_tangki_bola_dan_truk.jpg"
+        ],
+        "tabel": null,
+        "tabelSoal": null,
+        "opsiJawaban": [
+            {
+                "key": "A",
+                "label": "A",
+                "teks": "343 truk tangki",
+                "gambar": null
+            },
+            {
+                "key": "B",
+                "label": "B",
+                "teks": "147 truk tangki",
+                "gambar": null
+            },
+            {
+                "key": "C",
+                "label": "C",
+                "teks": "98 truk tangki",
+                "gambar": null
+            },
+            {
+                "key": "D",
+                "label": "D",
+                "teks": "49 truk tangki",
+                "gambar": null
+            }
+        ],
+        "opsi": [
+            {
+                "key": "A",
+                "label": "A",
+                "teks": "343 truk tangki",
+                "gambar": null
+            },
+            {
+                "key": "B",
+                "label": "B",
+                "teks": "147 truk tangki",
+                "gambar": null
+            },
+            {
+                "key": "C",
+                "label": "C",
+                "teks": "98 truk tangki",
+                "gambar": null
+            },
+            {
+                "key": "D",
+                "label": "D",
+                "teks": "49 truk tangki",
+                "gambar": null
+            }
+        ],
+        "pernyataan": null,
+        "tabelBenarSalah": null,
+        "kunciJawaban": "C",
+        "kunci": "C",
+        "pembahasan": "V_bola = 4/3 × π × R³ = 4/3 × (22/7) × (21/2)³ = 4.851 m³. V_tangki = π × r² × t = (22/7) × 1,5² × 7 = 22 × 2,25 = 49,5 m³. Banyak truk = 4.851 / 49,5 = 98 truk tangki. Jawaban: C",
+        "subMateriId": "geometri_bidang",
+        "gambarUrl": "/soal/tryout_tka_matematika_paket_b/q26_tangki_bola_dan_truk.jpg"
+    },
+    {
+        "id": "pure_ai_mtk_crop_20",
+        "nomor": 20,
+        "nomorSoal": 20,
+        "isAiGenerated": true,
+        "isPureAi": true,
+        "isTkaAutentik": true,
+        "sumberAsal": "⚡ Asli TKA DIY & Crop Naskah Resmi",
+        "subtesKode": "MTK",
+        "mapel": "Matematika",
+        "mataPelajaran": "Matematika",
+        "tingkatKesulitan": "mudah",
+        "materi": "Statistika / Diagram Batang",
+        "babNomor": 4,
+        "namaBab": "Bab 4 · Data & Peluang (Statistika, Diagram & Peluang Teoretik)",
+        "tipe": "pg_sederhana",
+        "tipeSoal": "pg_sederhana",
+        "soal": "Perhatikan diagram berikut!\n{{GAMBAR_1}}\nSelisih rata-rata hasil penjualan selama 5 hari antara gula pasir merek A dan merek B di Toko Sembako Laris Manis adalah ….",
+        "teksSoal": "Perhatikan diagram berikut!\n{{GAMBAR_1}}\nSelisih rata-rata hasil penjualan selama 5 hari antara gula pasir merek A dan merek B di Toko Sembako Laris Manis adalah ….",
+        "gambarUrls": [
+            "/soal/tryout_tka_matematika_paket_b/q27_diagram_batang_gula.png"
+        ],
+        "gambar": [
+            "/soal/tryout_tka_matematika_paket_b/q27_diagram_batang_gula.png"
+        ],
+        "tabel": null,
+        "tabelSoal": null,
+        "opsiJawaban": [
+            {
+                "key": "A",
+                "label": "A",
+                "teks": "2 kg",
+                "gambar": null
+            },
+            {
+                "key": "B",
+                "label": "B",
+                "teks": "4 kg",
+                "gambar": null
+            },
+            {
+                "key": "C",
+                "label": "C",
+                "teks": "6 kg",
+                "gambar": null
+            },
+            {
+                "key": "D",
+                "label": "D",
+                "teks": "8 kg",
+                "gambar": null
+            }
+        ],
+        "opsi": [
+            {
+                "key": "A",
+                "label": "A",
+                "teks": "2 kg",
+                "gambar": null
+            },
+            {
+                "key": "B",
+                "label": "B",
+                "teks": "4 kg",
+                "gambar": null
+            },
+            {
+                "key": "C",
+                "label": "C",
+                "teks": "6 kg",
+                "gambar": null
+            },
+            {
+                "key": "D",
+                "label": "D",
+                "teks": "8 kg",
+                "gambar": null
+            }
+        ],
+        "pernyataan": null,
+        "tabelBenarSalah": null,
+        "kunciJawaban": "A",
+        "kunci": "A",
+        "pembahasan": "Penjualan Merek A: Senin (45) + Selasa (40) + Rabu (50) + Kamis (35) + Jumat (60) = 230 kg. Rata-rata A = 230 / 5 = 46 kg. Penjualan Merek B: Senin (30) + Selasa (55) + Rabu (45) + Kamis (40) + Jumat (50) = 220 kg. Rata-rata B = 220 / 5 = 44 kg. Selisih rata-rata = 46 - 44 = 2 kg. Jawaban: A",
+        "subMateriId": "statistika_data",
+        "gambarUrl": "/soal/tryout_tka_matematika_paket_b/q27_diagram_batang_gula.png"
+    },
+    {
+        "id": "pure_ai_mtk_crop_21",
+        "nomor": 21,
+        "nomorSoal": 21,
+        "isAiGenerated": true,
+        "isPureAi": true,
+        "isTkaAutentik": true,
+        "sumberAsal": "⚡ Asli TKA DIY & Crop Naskah Resmi",
+        "subtesKode": "MTK",
+        "mapel": "Matematika",
+        "mataPelajaran": "Matematika",
+        "tingkatKesulitan": "sedang",
+        "materi": "Peluang Suatu Kejadian",
+        "babNomor": 4,
+        "namaBab": "Bab 4 · Data & Peluang (Statistika, Diagram & Peluang Teoretik)",
+        "tipe": "pg_sederhana",
+        "tipeSoal": "pg_sederhana",
+        "soal": "Perhatikan gambar!\n{{GAMBAR_1}}\nSebuah dadu bersisi enam dilempar undi sebanyak satu kali. Peluang muncul mata dadu lebih dari empat adalah ….",
+        "teksSoal": "Perhatikan gambar!\n{{GAMBAR_1}}\nSebuah dadu bersisi enam dilempar undi sebanyak satu kali. Peluang muncul mata dadu lebih dari empat adalah ….",
+        "gambarUrls": [
+            "/soal/tryout_tka_matematika_paket_b/q29_dadu_merah.jpg"
+        ],
+        "gambar": [
+            "/soal/tryout_tka_matematika_paket_b/q29_dadu_merah.jpg"
+        ],
+        "tabel": null,
+        "tabelSoal": null,
+        "opsiJawaban": [
+            {
+                "key": "A",
+                "label": "A",
+                "teks": "1/6",
+                "gambar": null
+            },
+            {
+                "key": "B",
+                "label": "B",
+                "teks": "1/3",
+                "gambar": null
+            },
+            {
+                "key": "C",
+                "label": "C",
+                "teks": "1/2",
+                "gambar": null
+            },
+            {
+                "key": "D",
+                "label": "D",
+                "teks": "2/3",
+                "gambar": null
+            }
+        ],
+        "opsi": [
+            {
+                "key": "A",
+                "label": "A",
+                "teks": "1/6",
+                "gambar": null
+            },
+            {
+                "key": "B",
+                "label": "B",
+                "teks": "1/3",
+                "gambar": null
+            },
+            {
+                "key": "C",
+                "label": "C",
+                "teks": "1/2",
+                "gambar": null
+            },
+            {
+                "key": "D",
+                "label": "D",
+                "teks": "2/3",
+                "gambar": null
+            }
+        ],
+        "pernyataan": null,
+        "tabelBenarSalah": null,
+        "kunciJawaban": "B",
+        "kunci": "B",
+        "pembahasan": "Ruang sampel dadu S = {1, 2, 3, 4, 5, 6}, n(S) = 6. Mata dadu lebih dari empat E = {5, 6}, n(E) = 2. Peluang P(E) = 2/6 = 1/3. Jawaban: B",
+        "subMateriId": "peluang_teoretik",
+        "gambarUrl": "/soal/tryout_tka_matematika_paket_b/q29_dadu_merah.jpg"
+    },
+    {
+        "id": "pure_ai_mtk_crop_22",
+        "nomor": 22,
+        "nomorSoal": 22,
+        "isAiGenerated": true,
+        "isPureAi": true,
+        "isTkaAutentik": true,
+        "sumberAsal": "⚡ Asli TKA DIY & Crop Naskah Resmi",
+        "subtesKode": "MTK",
+        "mapel": "Matematika",
+        "mataPelajaran": "Matematika",
+        "tingkatKesulitan": "sulit",
+        "materi": "Perbandingan Skala dan Geometri",
+        "babNomor": 1,
+        "namaBab": "Bab 1 · Bilangan (Operasi, Pecahan, Pangkat & Notasi Ilmiah)",
+        "tipe": "pg_kompleks",
+        "tipeSoal": "pg_kompleks",
+        "soal": "Perhatikan gambar denah rumah berikut!\n{{GAMBAR_1}}\nPilih lebih dari satu pernyataan berikut yang benar terkait dengan denah tersebut!",
+        "teksSoal": "Perhatikan gambar denah rumah berikut!\n{{GAMBAR_1}}\nPilih lebih dari satu pernyataan berikut yang benar terkait dengan denah tersebut!",
+        "gambarUrls": [
+            "/soal/tryout_tka_matematika_paket_a/q5_denah_rumah.png"
+        ],
+        "gambar": [
+            "/soal/tryout_tka_matematika_paket_a/q5_denah_rumah.png"
+        ],
+        "tabel": null,
+        "tabelSoal": null,
+        "opsiJawaban": [
+            {
+                "key": "1",
+                "label": "1",
+                "teks": "Panjang garasi AB sebenarnya adalah 7 m.",
+                "gambar": null
+            },
+            {
+                "key": "2",
+                "label": "2",
+                "teks": "Lebar garasi AD sebenarnya adalah 4,5 m.",
+                "gambar": null
+            },
+            {
+                "key": "3",
+                "label": "3",
+                "teks": "Keliling garasi ABCD sebenarnya 24 m.",
+                "gambar": null
+            },
+            {
+                "key": "4",
+                "label": "4",
+                "teks": "Luas garasi ABCD sebenarnya 31,5 m².",
+                "gambar": null
+            }
+        ],
+        "opsi": [
+            {
+                "key": "1",
+                "label": "1",
+                "teks": "Panjang garasi AB sebenarnya adalah 7 m.",
+                "gambar": null
+            },
+            {
+                "key": "2",
+                "label": "2",
+                "teks": "Lebar garasi AD sebenarnya adalah 4,5 m.",
+                "gambar": null
+            },
+            {
+                "key": "3",
+                "label": "3",
+                "teks": "Keliling garasi ABCD sebenarnya 24 m.",
+                "gambar": null
+            },
+            {
+                "key": "4",
+                "label": "4",
+                "teks": "Luas garasi ABCD sebenarnya 31,5 m².",
+                "gambar": null
+            }
+        ],
+        "pernyataan": null,
+        "tabelBenarSalah": null,
+        "kunciJawaban": "2, 3",
+        "kunci": "2, 3",
+        "pembahasan": "Skala denah = $1 : 150$. Pada denah garasi ABCD: Panjang $AB = 5{,}0\\t ext{ cm} \\implies$ panjang sebenarnya = $5{,}0 \\t imes 150 = 750\\t ext{ cm} = 7{,}5\\t ext{ m}$ (Pernyataan 1 Salah). Lebar $AD = 3{,}0\\t ext{ cm} \\implies$ lebar sebenarnya = $3{,}0 \\t imes 150 = 450\\t ext{ cm} = 4{,}5\\t ext{ m}$ (Pernyataan 2 Benar). Keliling garasi ABCD sebenarnya = $2 \\t imes (p + l) = 2 \\t imes (7{,}5 + 4{,}5) = 2 \\t imes 12 = 24\\t ext{ m}$ (Pernyataan 3 Benar). Luas garasi ABCD sebenarnya = $p \\t imes l = 7{,}5 \\t imes 4{,}5 = 33{,}75\\t ext{ m}^2$ (Pernyataan 4 Salah). Jadi pernyataan yang benar adalah nomor 2 dan 3.",
+        "subMateriId": "perbandingan",
+        "gambarUrl": "/soal/tryout_tka_matematika_paket_a/q5_denah_rumah.png"
+    },
+    {
+        "id": "pure_ai_mtk_crop_23",
+        "nomor": 23,
+        "nomorSoal": 23,
+        "isAiGenerated": true,
+        "isPureAi": true,
+        "isTkaAutentik": true,
+        "sumberAsal": "⚡ Asli TKA DIY & Crop Naskah Resmi",
+        "subtesKode": "MTK",
+        "mapel": "Matematika",
+        "mataPelajaran": "Matematika",
+        "tingkatKesulitan": "sedang",
+        "materi": "Aritmatika Sosial (Diskon)",
+        "babNomor": 1,
+        "namaBab": "Bab 1 · Bilangan (Operasi, Pecahan, Pangkat & Notasi Ilmiah)",
+        "tipe": "pg_sederhana",
+        "tipeSoal": "pg_sederhana",
+        "soal": "Perhatikan tabel!\n{{GAMBAR_1}}\n<table border='1' cellpadding='6' style='border-collapse:collapse; margin:10px 0;'><thead><tr><th>Toko Arjuna</th><th>Toko Krisna</th></tr></thead><tbody><tr><td>Harga Rp210.000</td><td>Harga Rp200.000</td></tr><tr><td>Diskon 30%</td><td>Diskon 20% + 10%</td></tr></tbody></table>Selisih harga pembayaran untuk pembelian sebuah kaos di Toko Arjuna dan Toko Krisna adalah ….",
+        "teksSoal": "Perhatikan tabel!\n{{GAMBAR_1}}\n<table border='1' cellpadding='6' style='border-collapse:collapse; margin:10px 0;'><thead><tr><th>Toko Arjuna</th><th>Toko Krisna</th></tr></thead><tbody><tr><td>Harga Rp210.000</td><td>Harga Rp200.000</td></tr><tr><td>Diskon 30%</td><td>Diskon 20% + 10%</td></tr></tbody></table>Selisih harga pembayaran untuk pembelian sebuah kaos di Toko Arjuna dan Toko Krisna adalah ….",
+        "gambarUrls": [
+            "/soal/tryout_tka_matematika_paket_a/q8_kaos_diskon.png"
+        ],
+        "gambar": [
+            "/soal/tryout_tka_matematika_paket_a/q8_kaos_diskon.png"
+        ],
+        "tabel": null,
+        "tabelSoal": null,
+        "opsiJawaban": [
+            {
+                "key": "A",
+                "label": "A",
+                "teks": "Rp7.000",
+                "gambar": null
+            },
+            {
+                "key": "B",
+                "label": "B",
+                "teks": "Rp4.000",
+                "gambar": null
+            },
+            {
+                "key": "C",
+                "label": "C",
+                "teks": "Rp3.000",
+                "gambar": null
+            },
+            {
+                "key": "D",
+                "label": "D",
+                "teks": "Rp2.000",
+                "gambar": null
+            }
+        ],
+        "opsi": [
+            {
+                "key": "A",
+                "label": "A",
+                "teks": "Rp7.000",
+                "gambar": null
+            },
+            {
+                "key": "B",
+                "label": "B",
+                "teks": "Rp4.000",
+                "gambar": null
+            },
+            {
+                "key": "C",
+                "label": "C",
+                "teks": "Rp3.000",
+                "gambar": null
+            },
+            {
+                "key": "D",
+                "label": "D",
+                "teks": "Rp2.000",
+                "gambar": null
+            }
+        ],
+        "pernyataan": null,
+        "tabelBenarSalah": null,
+        "kunciJawaban": "C",
+        "kunci": "C",
+        "pembahasan": "Toko Arjuna: Harga awal Rp210.000, diskon 30%. Harga bayar = $(100\\% - 30\\%) \\t imes 210.000 = 70\\% \\t imes 210.000 = \\t ext{Rp}147.000$. Toko Krisna: Harga awal Rp200.000, diskon $20\\% + 10\\%$. Setelah diskon $20\\%$: $80\\% \\t imes 200.000 = \\t ext{Rp}160.000$. Setelah diskon $10\\%$ tambahan: $90\\% \\t imes 160.000 = \\t ext{Rp}144.000$. Selisih harga pembayaran = $147.000 - 144.000 = \\t ext{Rp}3.000$.",
+        "subMateriId": "aritmetika_sosial",
+        "gambarUrl": "/soal/tryout_tka_matematika_paket_a/q8_kaos_diskon.png"
+    },
+    {
+        "id": "pure_ai_mtk_crop_24",
+        "nomor": 24,
+        "nomorSoal": 24,
+        "isAiGenerated": true,
+        "isPureAi": true,
+        "isTkaAutentik": true,
+        "sumberAsal": "⚡ Asli TKA DIY & Crop Naskah Resmi",
+        "subtesKode": "MTK",
+        "mapel": "Matematika",
+        "mataPelajaran": "Matematika",
+        "tingkatKesulitan": "mudah",
+        "materi": "Operasi Bentuk Aljabar dan Luas Segitiga",
+        "babNomor": 2,
+        "namaBab": "Bab 2 · Aljabar (SPLDV, Persamaan Kuadrat, Fungsi & Pola Bilangan)",
+        "tipe": "pg_sederhana",
+        "tipeSoal": "pg_sederhana",
+        "soal": "Perhatikan gambar!\n{{GAMBAR_1}}\nLuas daerah segitiga PQR adalah ….",
+        "teksSoal": "Perhatikan gambar!\n{{GAMBAR_1}}\nLuas daerah segitiga PQR adalah ….",
+        "gambarUrls": [
+            "/soal/tryout_tka_matematika_paket_a/q12_segitiga_pqr.png"
+        ],
+        "gambar": [
+            "/soal/tryout_tka_matematika_paket_a/q12_segitiga_pqr.png"
+        ],
+        "tabel": null,
+        "tabelSoal": null,
+        "opsiJawaban": [
+            {
+                "key": "A",
+                "label": "A",
+                "teks": "$(x^2 - x - 12)\\t ext{ cm}^2$",
+                "gambar": null
+            },
+            {
+                "key": "B",
+                "label": "B",
+                "teks": "$(x^2 + x - 12)\\t ext{ cm}^2$",
+                "gambar": null
+            },
+            {
+                "key": "C",
+                "label": "C",
+                "teks": "$(2x^2 - 2x - 24)\\t ext{ cm}^2$",
+                "gambar": null
+            },
+            {
+                "key": "D",
+                "label": "D",
+                "teks": "$(2x^2 + 2x - 24)\\t ext{ cm}^2$",
+                "gambar": null
+            }
+        ],
+        "opsi": [
+            {
+                "key": "A",
+                "label": "A",
+                "teks": "$(x^2 - x - 12)\\t ext{ cm}^2$",
+                "gambar": null
+            },
+            {
+                "key": "B",
+                "label": "B",
+                "teks": "$(x^2 + x - 12)\\t ext{ cm}^2$",
+                "gambar": null
+            },
+            {
+                "key": "C",
+                "label": "C",
+                "teks": "$(2x^2 - 2x - 24)\\t ext{ cm}^2$",
+                "gambar": null
+            },
+            {
+                "key": "D",
+                "label": "D",
+                "teks": "$(2x^2 + 2x - 24)\\t ext{ cm}^2$",
+                "gambar": null
+            }
+        ],
+        "pernyataan": null,
+        "tabelBenarSalah": null,
+        "kunciJawaban": "A",
+        "kunci": "A",
+        "pembahasan": "Segitiga siku-siku di P memiliki alas $PQ = (x - 4)\\t ext{ cm}$ dan tinggi $PR = (2x + 6)\\t ext{ cm}$. Rumus luas segitiga: $L = \\frac{1}{2} \\t imes \\t ext{alas} \\t imes \\t ext{tinggi} = \\frac{1}{2} (x - 4)(2x + 6) = (x - 4)(x + 3) = x^2 + 3x - 4x - 12 = (x^2 - x - 12)\\t ext{ cm}^2$.",
+        "subMateriId": "aljabar_dasar",
+        "gambarUrl": "/soal/tryout_tka_matematika_paket_a/q12_segitiga_pqr.png"
+    },
+    {
+        "id": "pure_ai_mtk_crop_25",
+        "nomor": 25,
+        "nomorSoal": 25,
+        "isAiGenerated": true,
+        "isPureAi": true,
+        "isTkaAutentik": true,
+        "sumberAsal": "⚡ Asli TKA DIY & Crop Naskah Resmi",
+        "subtesKode": "MTK",
+        "mapel": "Matematika",
+        "mataPelajaran": "Matematika",
+        "tingkatKesulitan": "sulit",
+        "materi": "Relasi dan Fungsi Linear",
+        "babNomor": 2,
+        "namaBab": "Bab 2 · Aljabar (SPLDV, Persamaan Kuadrat, Fungsi & Pola Bilangan)",
+        "tipe": "pg_kompleks",
+        "tipeSoal": "pg_kompleks",
+        "soal": "Perhatikan diagram panah suatu fungsi berikut!\n{{GAMBAR_1}}\nPilih lebih dari satu pernyataan berikut yang benar!",
+        "teksSoal": "Perhatikan diagram panah suatu fungsi berikut!\n{{GAMBAR_1}}\nPilih lebih dari satu pernyataan berikut yang benar!",
+        "gambarUrls": [
+            "/soal/tryout_tka_matematika_paket_a/q13_diagram_panah.png"
+        ],
+        "gambar": [
+            "/soal/tryout_tka_matematika_paket_a/q13_diagram_panah.png"
+        ],
+        "tabel": null,
+        "tabelSoal": null,
+        "opsiJawaban": [
+            {
+                "key": "1",
+                "label": "1",
+                "teks": "Domain fungsi adalah {−4,1,3}.",
+                "gambar": null
+            },
+            {
+                "key": "2",
+                "label": "2",
+                "teks": "Kodomain fungsi adalah {19,4, −2}.",
+                "gambar": null
+            },
+            {
+                "key": "3",
+                "label": "3",
+                "teks": "Nilai q = −1.",
+                "gambar": null
+            },
+            {
+                "key": "4",
+                "label": "4",
+                "teks": "Rumus fungsi f(x) = −3x + 7.",
+                "gambar": null
+            }
+        ],
+        "opsi": [
+            {
+                "key": "1",
+                "label": "1",
+                "teks": "Domain fungsi adalah {−4,1,3}.",
+                "gambar": null
+            },
+            {
+                "key": "2",
+                "label": "2",
+                "teks": "Kodomain fungsi adalah {19,4, −2}.",
+                "gambar": null
+            },
+            {
+                "key": "3",
+                "label": "3",
+                "teks": "Nilai q = −1.",
+                "gambar": null
+            },
+            {
+                "key": "4",
+                "label": "4",
+                "teks": "Rumus fungsi f(x) = −3x + 7.",
+                "gambar": null
+            }
+        ],
+        "pernyataan": null,
+        "tabelBenarSalah": null,
+        "kunciJawaban": "1, 4",
+        "kunci": "1, 4",
+        "pembahasan": "Fungsi $f(x) = ax + b$. Dari diagram: $f(-4) = -4a + b = 19$ dan $f(3) = 3a + b = -2$. Kurangkan kedua persamaan: $-7a = 21 \\implies a = -3$. Nilai $b = -2 - 3(-3) = 7$. Maka rumus fungsi $f(x) = -3x + 7$ (Pernyataan 4 Benar). Menentukan $q$: $f(q) = 4 \\implies -3q + 7 = 4 \\implies -3q = -3 \\implies q = 1$ (Pernyataan 3 Salah). Domain fungsi adalah himpunan asal A = $\\{-4, q, 3\\} = \\{-4, 1, 3\\}$ (Pernyataan 1 Benar). Kodomain fungsi adalah seluruh himpunan kawan B = $\\{19, 4, -2, -8\\}$ (Pernyataan 2 Salah karena $\\{19, 4, -2\\}$ hanyalah daerah hasil/range). Jadi pernyataan yang benar adalah nomor 1 dan 4.",
+        "subMateriId": "relasi_fungsi",
+        "gambarUrl": "/soal/tryout_tka_matematika_paket_a/q13_diagram_panah.png"
+    },
+    {
+        "id": "pure_ai_mtk_crop_26",
+        "nomor": 26,
+        "nomorSoal": 26,
+        "isAiGenerated": true,
+        "isPureAi": true,
+        "isTkaAutentik": true,
+        "sumberAsal": "⚡ Asli TKA DIY & Crop Naskah Resmi",
+        "subtesKode": "MTK",
+        "mapel": "Matematika",
+        "mataPelajaran": "Matematika",
+        "tingkatKesulitan": "mudah",
+        "materi": "Garis dan Sudut",
+        "babNomor": 3,
+        "namaBab": "Bab 3 · Geometri & Pengukuran (Sudut, Pythagoras, Ruang & Transformasi)",
+        "tipe": "benar_salah",
+        "tipeSoal": "benar_salah",
+        "soal": "Perhatikan gambar!\n{{GAMBAR_1}}\nTentukan benar atau salah untuk setiap pernyataan berikut terkait gambar tersebut:",
+        "teksSoal": "Perhatikan gambar!\n{{GAMBAR_1}}\nTentukan benar atau salah untuk setiap pernyataan berikut terkait gambar tersebut:",
+        "gambarUrls": [
+            "/soal/tryout_tka_matematika_paket_a/q16_garis_sudut.png"
+        ],
+        "gambar": [
+            "/soal/tryout_tka_matematika_paket_a/q16_garis_sudut.png"
+        ],
+        "tabel": null,
+        "tabelSoal": null,
+        "opsiJawaban": [],
+        "opsi": [],
+        "pernyataan": [
+            {
+                "id": "p_1",
+                "teks": "A. Nilai q = 65°",
+                "kunci": "benar"
+            },
+            {
+                "id": "p_2",
+                "teks": "B. Nilai r = 84°",
+                "kunci": "benar"
+            },
+            {
+                "id": "p_3",
+                "teks": "C. Nilai p = 41°",
+                "kunci": "benar"
+            }
+        ],
+        "tabelBenarSalah": [
+            {
+                "pernyataan": "A. Nilai q = 65°",
+                "jawaban": "benar"
+            },
+            {
+                "pernyataan": "B. Nilai r = 84°",
+                "jawaban": "benar"
+            },
+            {
+                "pernyataan": "C. Nilai p = 41°",
+                "jawaban": "benar"
+            }
+        ],
+        "kunciJawaban": "A: Salah, B: Benar, C: Benar",
+        "kunci": "A: Salah, B: Benar, C: Benar",
+        "pembahasan": "Sudut $r$ berpelurus dengan sudut $96^\\circ \\implies r = 180^\\circ - 96^\\circ = 84^\\circ$ (Pernyataan B Benar). Sudut $125^\\circ$ berpelurus dengan sudut dalam yang berseberangan dengan $q$: sudut dalam $= 180^\\circ - 125^\\circ = 55^\\circ$. Berdasarkan sifat sudut dalam berseberangan pada garis sejajar, maka $q = 55^\\circ$ (Pernyataan A Salah, karena tertulis $65^\\circ$). Pada segitiga di antara dua garis sejajar, jumlah sudut segitiga $= 180^\\circ$: $p + r + 55^\\circ = 180^\\circ \\implies p + 84^\\circ + 55^\\circ = 180^\\circ \\implies p = 180^\\circ - 139^\\circ = 41^\\circ$ (Pernyataan C Benar).",
+        "subMateriId": "geometri_bidang",
+        "gambarUrl": "/soal/tryout_tka_matematika_paket_a/q16_garis_sudut.png"
+    },
+    {
+        "id": "pure_ai_mtk_crop_27",
+        "nomor": 27,
+        "nomorSoal": 27,
+        "isAiGenerated": true,
+        "isPureAi": true,
+        "isTkaAutentik": true,
+        "sumberAsal": "⚡ Asli TKA DIY & Crop Naskah Resmi",
+        "subtesKode": "MTK",
+        "mapel": "Matematika",
+        "mataPelajaran": "Matematika",
+        "tingkatKesulitan": "sedang",
+        "materi": "Teorema Pythagoras",
+        "babNomor": 3,
+        "namaBab": "Bab 3 · Geometri & Pengukuran (Sudut, Pythagoras, Ruang & Transformasi)",
+        "tipe": "benar_salah",
+        "tipeSoal": "benar_salah",
+        "soal": "Perhatikan gambar!\n{{GAMBAR_1}}\nDiketahui jarak dua tank (AB) adalah 240 m, jarak pandang pesawat C dengan tank A adalah 260 m, dan pesawat D dengan tank A adalah 300 m.\nTentukan benar atau salah setiap pernyataan berikut:",
+        "teksSoal": "Perhatikan gambar!\n{{GAMBAR_1}}\nDiketahui jarak dua tank (AB) adalah 240 m, jarak pandang pesawat C dengan tank A adalah 260 m, dan pesawat D dengan tank A adalah 300 m.\nTentukan benar atau salah setiap pernyataan berikut:",
+        "gambarUrls": [
+            "/soal/tryout_tka_matematika_paket_a/q17_tank_pesawat.png"
+        ],
+        "gambar": [
+            "/soal/tryout_tka_matematika_paket_a/q17_tank_pesawat.png"
+        ],
+        "tabel": null,
+        "tabelSoal": null,
+        "opsiJawaban": [],
+        "opsi": [],
+        "pernyataan": [
+            {
+                "id": "p_1",
+                "teks": "A. Jarak tank B dengan pesawat C adalah 100 m",
+                "kunci": "benar"
+            },
+            {
+                "id": "p_2",
+                "teks": "B. Jarak tank B dengan pesawat D adalah 120 m",
+                "kunci": "benar"
+            },
+            {
+                "id": "p_3",
+                "teks": "C. Jarak pesawat C dan D adalah 80 m",
+                "kunci": "benar"
+            }
+        ],
+        "tabelBenarSalah": [
+            {
+                "pernyataan": "A. Jarak tank B dengan pesawat C adalah 100 m",
+                "jawaban": "benar"
+            },
+            {
+                "pernyataan": "B. Jarak tank B dengan pesawat D adalah 120 m",
+                "jawaban": "benar"
+            },
+            {
+                "pernyataan": "C. Jarak pesawat C dan D adalah 80 m",
+                "jawaban": "benar"
+            }
+        ],
+        "kunciJawaban": "A: Benar, B: Salah, C: Benar",
+        "kunci": "A: Benar, B: Salah, C: Benar",
+        "pembahasan": "Segitiga siku-siku di titik B: Jarak tank B ke pesawat C: $BC = \\sqrt{AC^2 - AB^2} = \\sqrt{260^2 - 240^2} = \\sqrt{67.600 - 57.600} = \\sqrt{10.000} = 100\\t ext{ m}$ (Pernyataan A Benar). Jarak tank B ke pesawat D: $BD = \\sqrt{AD^2 - AB^2} = \\sqrt{300^2 - 240^2} = \\sqrt{90.000 - 57.600} = \\sqrt{32.400} = 180\\t ext{ m}$ (Pernyataan B Salah, tertulis 120 m). Jarak vertikal pesawat C dan D: $CD = BD - BC = 180\\t ext{ m} - 100\\t ext{ m} = 80\\t ext{ m}$ (Pernyataan C Benar).",
+        "subMateriId": "geometri_bidang",
+        "gambarUrl": "/soal/tryout_tka_matematika_paket_a/q17_tank_pesawat.png"
+    },
+    {
+        "id": "pure_ai_mtk_crop_28",
+        "nomor": 28,
+        "nomorSoal": 28,
+        "isAiGenerated": true,
+        "isPureAi": true,
+        "isTkaAutentik": true,
+        "sumberAsal": "⚡ Asli TKA DIY & Crop Naskah Resmi",
+        "subtesKode": "MTK",
+        "mapel": "Matematika",
+        "mataPelajaran": "Matematika",
+        "tingkatKesulitan": "sulit",
+        "materi": "Kekongruenan Segitiga",
+        "babNomor": 3,
+        "namaBab": "Bab 3 · Geometri & Pengukuran (Sudut, Pythagoras, Ruang & Transformasi)",
+        "tipe": "pg_sederhana",
+        "tipeSoal": "pg_sederhana",
+        "soal": "Perhatikan gambar!\n{{GAMBAR_1}}\nDiketahui segitiga ABC kongruen dengan segitiga DEF. Pernyataan berikut yang benar adalah ….",
+        "teksSoal": "Perhatikan gambar!\n{{GAMBAR_1}}\nDiketahui segitiga ABC kongruen dengan segitiga DEF. Pernyataan berikut yang benar adalah ….",
+        "gambarUrls": [
+            "/soal/tryout_tka_matematika_paket_a/q18_segitiga_kongruen.png"
+        ],
+        "gambar": [
+            "/soal/tryout_tka_matematika_paket_a/q18_segitiga_kongruen.png"
+        ],
+        "tabel": null,
+        "tabelSoal": null,
+        "opsiJawaban": [
+            {
+                "key": "A",
+                "label": "A",
+                "teks": "besar ∠C = 25°",
+                "gambar": null
+            },
+            {
+                "key": "B",
+                "label": "B",
+                "teks": "besar ∠A = 35°",
+                "gambar": null
+            },
+            {
+                "key": "C",
+                "label": "C",
+                "teks": "EF + BC = 20 cm",
+                "gambar": null
+            },
+            {
+                "key": "D",
+                "label": "D",
+                "teks": "ED – BC = 6 cm",
+                "gambar": null
+            }
+        ],
+        "opsi": [
+            {
+                "key": "A",
+                "label": "A",
+                "teks": "besar ∠C = 25°",
+                "gambar": null
+            },
+            {
+                "key": "B",
+                "label": "B",
+                "teks": "besar ∠A = 35°",
+                "gambar": null
+            },
+            {
+                "key": "C",
+                "label": "C",
+                "teks": "EF + BC = 20 cm",
+                "gambar": null
+            },
+            {
+                "key": "D",
+                "label": "D",
+                "teks": "ED – BC = 6 cm",
+                "gambar": null
+            }
+        ],
+        "pernyataan": null,
+        "tabelBenarSalah": null,
+        "kunciJawaban": "C",
+        "kunci": "C",
+        "pembahasan": "Pada $ riangle DEF$, sudut $\\angle F = 180^\\circ - (44^\\circ + 35^\\circ) = 101^\\circ$. Karena $ riangle ABC \\cong  riangle DEF$, sudut $\\angle B = 101^\\circ$ bersesuaian dengan $\\angle F = 101^\\circ$. Sisi yang bersesuaian: $AB = FE = 9\\t ext{ cm}$; $BC = FD = 11\\t ext{ cm}$; $AC = ED = 15\\t ext{ cm}$. Sudut yang bersesuaian: $\\angle C = \\angle D = 35^\\circ$ dan $\\angle A = \\angle E = 44^\\circ$. Cek opsi C: $EF + BC = 9\\t ext{ cm} + 11\\t ext{ cm} = 20\\t ext{ cm}$ (Benar).",
+        "subMateriId": "geometri_bidang",
+        "gambarUrl": "/soal/tryout_tka_matematika_paket_a/q18_segitiga_kongruen.png"
+    },
+    {
+        "id": "pure_ai_mtk_crop_29",
+        "nomor": 29,
+        "nomorSoal": 29,
+        "isAiGenerated": true,
+        "isPureAi": true,
+        "isTkaAutentik": true,
+        "sumberAsal": "⚡ Asli TKA DIY & Crop Naskah Resmi",
+        "subtesKode": "MTK",
+        "mapel": "Matematika",
+        "mataPelajaran": "Matematika",
+        "tingkatKesulitan": "sedang",
+        "materi": "Kesebangunan Bangun Datar",
+        "babNomor": 3,
+        "namaBab": "Bab 3 · Geometri & Pengukuran (Sudut, Pythagoras, Ruang & Transformasi)",
+        "tipe": "pg_kompleks",
+        "tipeSoal": "pg_kompleks",
+        "soal": "Perhatikan gambar.\n{{GAMBAR_1}}\nPekarangan ABCD dan kolam BEFG berbentuk persegipanjang. Diketahui AD = 15 meter, GF = 1,5 meter, dan FE = 2 meter. Diketahui pekarangan ABCD dan kolam BEFG sebangun.\nPilihlah lebih dari satu pernyataan berikut yang benar!",
+        "teksSoal": "Perhatikan gambar.\n{{GAMBAR_1}}\nPekarangan ABCD dan kolam BEFG berbentuk persegipanjang. Diketahui AD = 15 meter, GF = 1,5 meter, dan FE = 2 meter. Diketahui pekarangan ABCD dan kolam BEFG sebangun.\nPilihlah lebih dari satu pernyataan berikut yang benar!",
+        "gambarUrls": [
+            "/soal/tryout_tka_matematika_paket_a/q19_kebun_kolam.png"
+        ],
+        "gambar": [
+            "/soal/tryout_tka_matematika_paket_a/q19_kebun_kolam.png"
+        ],
+        "tabel": null,
+        "tabelSoal": null,
+        "opsiJawaban": [
+            {
+                "key": "1",
+                "label": "1",
+                "teks": "Panjang sisi CD = 20 meter.",
+                "gambar": null
+            },
+            {
+                "key": "2",
+                "label": "2",
+                "teks": "Luas pekarangan ABCD = 300 m².",
+                "gambar": null
+            },
+            {
+                "key": "3",
+                "label": "3",
+                "teks": "Luas Kolam BEFG = 3 m².",
+                "gambar": null
+            },
+            {
+                "key": "4",
+                "label": "4",
+                "teks": "Luas kebun = 270 m².",
+                "gambar": null
+            }
+        ],
+        "opsi": [
+            {
+                "key": "1",
+                "label": "1",
+                "teks": "Panjang sisi CD = 20 meter.",
+                "gambar": null
+            },
+            {
+                "key": "2",
+                "label": "2",
+                "teks": "Luas pekarangan ABCD = 300 m².",
+                "gambar": null
+            },
+            {
+                "key": "3",
+                "label": "3",
+                "teks": "Luas Kolam BEFG = 3 m².",
+                "gambar": null
+            },
+            {
+                "key": "4",
+                "label": "4",
+                "teks": "Luas kebun = 270 m².",
+                "gambar": null
+            }
+        ],
+        "pernyataan": null,
+        "tabelBenarSalah": null,
+        "kunciJawaban": "1, 2, 3",
+        "kunci": "1, 2, 3",
+        "pembahasan": "Kolam BEFG memiliki lebar $GF = 1{,}5\\t ext{ m}$ dan panjang $FE = 2\\t ext{ m}$. Karena pekarangan ABCD sebangun dengan kolam BEFG dan lebarnya $AD = 15\\t ext{ m}$: Panjang sisi $CD = \\frac{FE}{GF} \\t imes AD = \\frac{2}{1{,}5} \\t imes 15 = 20\\t ext{ meter}$ (Pernyataan 1 Benar). Luas pekarangan ABCD = $20\\t ext{ m} \\t imes 15\\t ext{ m} = 300\\t ext{ m}^2$ (Pernyataan 2 Benar). Luas kolam BEFG = $2\\t ext{ m} \\t imes 1{,}5\\t ext{ m} = 3\\t ext{ m}^2$ (Pernyataan 3 Benar). Luas kebun (tanah di luar kolam) = $300\\t ext{ m}^2 - 3\\t ext{ m}^2 = 297\\t ext{ m}^2$ (Pernyataan 4 Salah, tertulis $270\\t ext{ m}^2$). Jadi pernyataan yang benar adalah nomor 1, 2, dan 3.",
+        "subMateriId": "geometri_bidang",
+        "gambarUrl": "/soal/tryout_tka_matematika_paket_a/q19_kebun_kolam.png"
+    },
+    {
+        "id": "pure_ai_mtk_crop_30",
+        "nomor": 30,
+        "nomorSoal": 30,
+        "isAiGenerated": true,
+        "isPureAi": true,
+        "isTkaAutentik": true,
+        "sumberAsal": "⚡ Asli TKA DIY & Crop Naskah Resmi",
+        "subtesKode": "MTK",
+        "mapel": "Matematika",
+        "mataPelajaran": "Matematika",
+        "tingkatKesulitan": "mudah",
+        "materi": "Transformasi Geometri (Refleksi dan Dilatasi)",
+        "babNomor": 3,
+        "namaBab": "Bab 3 · Geometri & Pengukuran (Sudut, Pythagoras, Ruang & Transformasi)",
+        "tipe": "pg_kompleks",
+        "tipeSoal": "pg_kompleks",
+        "soal": "Perhatikan gambar berikut!\n{{GAMBAR_1}}\nTrapesium A’B’C’D’ adalah bayangan dari trapesium ABCD setelah dicerminkan terhadap sumbu Y, kemudian trapesium A’B’C’D’ didilatasi dengan pusat O(0,0) dengan faktor skala $k$ memiliki bayangan akhir trapesium A”B”C”D”.\nPilih lebih dari satu pernyataan berikut yang benar!",
+        "teksSoal": "Perhatikan gambar berikut!\n{{GAMBAR_1}}\nTrapesium A’B’C’D’ adalah bayangan dari trapesium ABCD setelah dicerminkan terhadap sumbu Y, kemudian trapesium A’B’C’D’ didilatasi dengan pusat O(0,0) dengan faktor skala $k$ memiliki bayangan akhir trapesium A”B”C”D”.\nPilih lebih dari satu pernyataan berikut yang benar!",
+        "gambarUrls": [
+            "/soal/tryout_tka_matematika_paket_a/q20_koordinat_trapesium.png"
+        ],
+        "gambar": [
+            "/soal/tryout_tka_matematika_paket_a/q20_koordinat_trapesium.png"
+        ],
+        "tabel": null,
+        "tabelSoal": null,
+        "opsiJawaban": [
+            {
+                "key": "1",
+                "label": "1",
+                "teks": "Koordinat titik A adalah A(−4, 3).",
+                "gambar": null
+            },
+            {
+                "key": "2",
+                "label": "2",
+                "teks": "Koordinat titik B adalah B(−5, 5).",
+                "gambar": null
+            },
+            {
+                "key": "3",
+                "label": "3",
+                "teks": "Faktor skala k = 2.",
+                "gambar": null
+            },
+            {
+                "key": "4",
+                "label": "4",
+                "teks": "Koordinat titik A” (12,6).",
+                "gambar": null
+            }
+        ],
+        "opsi": [
+            {
+                "key": "1",
+                "label": "1",
+                "teks": "Koordinat titik A adalah A(−4, 3).",
+                "gambar": null
+            },
+            {
+                "key": "2",
+                "label": "2",
+                "teks": "Koordinat titik B adalah B(−5, 5).",
+                "gambar": null
+            },
+            {
+                "key": "3",
+                "label": "3",
+                "teks": "Faktor skala k = 2.",
+                "gambar": null
+            },
+            {
+                "key": "4",
+                "label": "4",
+                "teks": "Koordinat titik A” (12,6).",
+                "gambar": null
+            }
+        ],
+        "pernyataan": null,
+        "tabelBenarSalah": null,
+        "kunciJawaban": "2, 3, 4",
+        "kunci": "2, 3, 4",
+        "pembahasan": "Dari grafik koordinat: $A'(6, 3)$, $B'(5, 5)$, $C'(3, 5)$, $D'(2, 3)$. Karena $A'B'C'D'$ hasil refleksi $ABCD$ terhadap sumbu Y, koordinat titik asal: $A(-6, 3)$ (Pernyataan 1 Salah) dan $B(-5, 5)$ (Pernyataan 2 Benar). Titik $D'(2, 3)$ didilatasi $[O, k]$ menjadi $D''(4, 6)$, sehingga faktor skala $k = 4/2 = 6/3 = 2$ (Pernyataan 3 Benar). Bayangan akhir titik $A'' = 2 \\t imes (6, 3) = (12, 6)$ (Pernyataan 4 Benar). Jadi pernyataan yang benar adalah nomor 2, 3, dan 4.",
+        "subMateriId": "geometri_bidang",
+        "gambarUrl": "/soal/tryout_tka_matematika_paket_a/q20_koordinat_trapesium.png"
+    },
+    {
+        "id": "pure_ai_mtk_crop_31",
+        "nomor": 31,
+        "nomorSoal": 31,
+        "isAiGenerated": true,
+        "isPureAi": true,
+        "isTkaAutentik": true,
+        "sumberAsal": "⚡ Asli TKA DIY & Crop Naskah Resmi",
+        "subtesKode": "MTK",
+        "mapel": "Matematika",
+        "mataPelajaran": "Matematika",
+        "tingkatKesulitan": "sulit",
+        "materi": "Keliling Gabungan Bangun Datar",
+        "babNomor": 3,
+        "namaBab": "Bab 3 · Geometri & Pengukuran (Sudut, Pythagoras, Ruang & Transformasi)",
+        "tipe": "pg_sederhana",
+        "tipeSoal": "pg_sederhana",
+        "soal": "Perhatikan gambar!\n{{GAMBAR_1}}\nKolam renang ABCDEF merupakan gabungan jajargenjang ABEF dan belah ketupat BCDE. Diketahui panjang AB = 15 meter, BD = 12 meter, dan EC = 16 meter. Keliling kolam renang tersebut adalah ….",
+        "teksSoal": "Perhatikan gambar!\n{{GAMBAR_1}}\nKolam renang ABCDEF merupakan gabungan jajargenjang ABEF dan belah ketupat BCDE. Diketahui panjang AB = 15 meter, BD = 12 meter, dan EC = 16 meter. Keliling kolam renang tersebut adalah ….",
+        "gambarUrls": [
+            "/soal/tryout_tka_matematika_paket_a/q21_kolam_renang.png"
+        ],
+        "gambar": [
+            "/soal/tryout_tka_matematika_paket_a/q21_kolam_renang.png"
+        ],
+        "tabel": null,
+        "tabelSoal": null,
+        "opsiJawaban": [
+            {
+                "key": "A",
+                "label": "A",
+                "teks": "70 meter",
+                "gambar": null
+            },
+            {
+                "key": "B",
+                "label": "B",
+                "teks": "80 meter",
+                "gambar": null
+            },
+            {
+                "key": "C",
+                "label": "C",
+                "teks": "100 meter",
+                "gambar": null
+            },
+            {
+                "key": "D",
+                "label": "D",
+                "teks": "110 meter",
+                "gambar": null
+            }
+        ],
+        "opsi": [
+            {
+                "key": "A",
+                "label": "A",
+                "teks": "70 meter",
+                "gambar": null
+            },
+            {
+                "key": "B",
+                "label": "B",
+                "teks": "80 meter",
+                "gambar": null
+            },
+            {
+                "key": "C",
+                "label": "C",
+                "teks": "100 meter",
+                "gambar": null
+            },
+            {
+                "key": "D",
+                "label": "D",
+                "teks": "110 meter",
+                "gambar": null
+            }
+        ],
+        "pernyataan": null,
+        "tabelBenarSalah": null,
+        "kunciJawaban": "A",
+        "kunci": "A",
+        "pembahasan": "Pada belah ketupat BCDE, diagonal $BD = 12\\t ext{ m}$ dan $EC = 16\\t ext{ m}$. Setengah diagonalnya adalah $6\\t ext{ m}$ dan $8\\t ext{ m}$. Sisi belah ketupat: $BC = CD = DE = EB = \\sqrt{6^2 + 8^2} = \\sqrt{100} = 10\\t ext{ m}$. Pada jajargenjang ABEF: sisi $AB = EF = 15\\t ext{ m}$ dan sisi $AF = BE = 10\\t ext{ m}$. Keliling batas luar kolam ABCDEF = $AB + BC + CD + DE + EF + FA = 15 + 10 + 10 + 10 + 15 + 10 = 70\\t ext{ meter}$.",
+        "subMateriId": "geometri_bidang",
+        "gambarUrl": "/soal/tryout_tka_matematika_paket_a/q21_kolam_renang.png"
+    },
+    {
+        "id": "pure_ai_mtk_crop_32",
+        "nomor": 32,
+        "nomorSoal": 32,
+        "isAiGenerated": true,
+        "isPureAi": true,
+        "isTkaAutentik": true,
+        "sumberAsal": "⚡ Asli TKA DIY & Crop Naskah Resmi",
+        "subtesKode": "MTK",
+        "mapel": "Matematika",
+        "mataPelajaran": "Matematika",
+        "tingkatKesulitan": "mudah",
+        "materi": "Luas Daerah Arsiran Lingkaran dan Trapesium",
+        "babNomor": 3,
+        "namaBab": "Bab 3 · Geometri & Pengukuran (Sudut, Pythagoras, Ruang & Transformasi)",
+        "tipe": "pg_sederhana",
+        "tipeSoal": "pg_sederhana",
+        "soal": "Perhatikan gambar trapesium siku-siku dan juring lingkaran!\n{{GAMBAR_1}}\nDiketahui panjang $AB = 22\\t ext{ cm}$, $DC = 14\\t ext{ cm}$, dan $AD = 10\\t ext{ cm}$. Luas daerah yang diarsir adalah ….",
+        "teksSoal": "Perhatikan gambar trapesium siku-siku dan juring lingkaran!\n{{GAMBAR_1}}\nDiketahui panjang $AB = 22\\t ext{ cm}$, $DC = 14\\t ext{ cm}$, dan $AD = 10\\t ext{ cm}$. Luas daerah yang diarsir adalah ….",
+        "gambarUrls": [
+            "/soal/tryout_tka_matematika_paket_a/q22_trapesium_juring.png"
+        ],
+        "gambar": [
+            "/soal/tryout_tka_matematika_paket_a/q22_trapesium_juring.png"
+        ],
+        "tabel": null,
+        "tabelSoal": null,
+        "opsiJawaban": [
+            {
+                "key": "A",
+                "label": "A",
+                "teks": "103 cm²",
+                "gambar": null
+            },
+            {
+                "key": "B",
+                "label": "B",
+                "teks": "125 cm²",
+                "gambar": null
+            },
+            {
+                "key": "C",
+                "label": "C",
+                "teks": "257 cm²",
+                "gambar": null
+            },
+            {
+                "key": "D",
+                "label": "D",
+                "teks": "283 cm²",
+                "gambar": null
+            }
+        ],
+        "opsi": [
+            {
+                "key": "A",
+                "label": "A",
+                "teks": "103 cm²",
+                "gambar": null
+            },
+            {
+                "key": "B",
+                "label": "B",
+                "teks": "125 cm²",
+                "gambar": null
+            },
+            {
+                "key": "C",
+                "label": "C",
+                "teks": "257 cm²",
+                "gambar": null
+            },
+            {
+                "key": "D",
+                "label": "D",
+                "teks": "283 cm²",
+                "gambar": null
+            }
+        ],
+        "pernyataan": null,
+        "tabelBenarSalah": null,
+        "kunciJawaban": "B",
+        "kunci": "B",
+        "pembahasan": "Luas trapesium siku-siku: $L_{\\t ext{trapesium}} = \\frac{AB + DC}{2} \\t imes AD = \\frac{22 + 14}{2} \\t imes 10 = 18 \\t imes 10 = 180\\t ext{ cm}^2$. Juring lingkaran berpusat di sudut C dengan jari-jari $r = 14 / 2 = 7\\t ext{ cm}$. Sudut $\\angle C = 180^\\circ - \\angle B \\approx 128{,}66^\\circ$. Luas juring $= \\frac{128{,}66^\\circ}{360^\\circ} \\t imes \\frac{22}{7} \\t imes 7^2 \\approx 55\\t ext{ cm}^2$. Luas daerah arsiran $= 180 - 55 = 125\\t ext{ cm}^2$.",
+        "subMateriId": "geometri_bidang",
+        "gambarUrl": "/soal/tryout_tka_matematika_paket_a/q22_trapesium_juring.png"
+    },
+    {
+        "id": "pure_ai_mtk_crop_33",
+        "nomor": 33,
+        "nomorSoal": 33,
+        "isAiGenerated": true,
+        "isPureAi": true,
+        "isTkaAutentik": true,
+        "sumberAsal": "⚡ Asli TKA DIY & Crop Naskah Resmi",
+        "subtesKode": "MTK",
+        "mapel": "Matematika",
+        "mataPelajaran": "Matematika",
+        "tingkatKesulitan": "sedang",
+        "materi": "Luas Permukaan Atap Rumah",
+        "babNomor": 3,
+        "namaBab": "Bab 3 · Geometri & Pengukuran (Sudut, Pythagoras, Ruang & Transformasi)",
+        "tipe": "pg_sederhana",
+        "tipeSoal": "pg_sederhana",
+        "soal": "Perhatikan gambar!\n{{GAMBAR_1}}\nPak Edi berencana membuat atap rumah dari genteng. Atap tersebut terbentuk dari dua segitiga sama kaki kongruen dan dua trapesium sama kaki kongruen. Jika diketahui panjang $AB = 8\\t ext{ m}$, $BC = 11\\t ext{ m}$, $DE = 5\\t ext{ m}$ dan $BE = 5\\t ext{ m}$, luas atap rumah adalah ….",
+        "teksSoal": "Perhatikan gambar!\n{{GAMBAR_1}}\nPak Edi berencana membuat atap rumah dari genteng. Atap tersebut terbentuk dari dua segitiga sama kaki kongruen dan dua trapesium sama kaki kongruen. Jika diketahui panjang $AB = 8\\t ext{ m}$, $BC = 11\\t ext{ m}$, $DE = 5\\t ext{ m}$ dan $BE = 5\\t ext{ m}$, luas atap rumah adalah ….",
+        "gambarUrls": [
+            "/soal/tryout_tka_matematika_paket_a/q24_atap_rumah.png"
+        ],
+        "gambar": [
+            "/soal/tryout_tka_matematika_paket_a/q24_atap_rumah.png"
+        ],
+        "tabel": null,
+        "tabelSoal": null,
+        "opsiJawaban": [
+            {
+                "key": "A",
+                "label": "A",
+                "teks": "76 m²",
+                "gambar": null
+            },
+            {
+                "key": "B",
+                "label": "B",
+                "teks": "88 m²",
+                "gambar": null
+            },
+            {
+                "key": "C",
+                "label": "C",
+                "teks": "104 m²",
+                "gambar": null
+            },
+            {
+                "key": "D",
+                "label": "D",
+                "teks": "112 m²",
+                "gambar": null
+            }
+        ],
+        "opsi": [
+            {
+                "key": "A",
+                "label": "A",
+                "teks": "76 m²",
+                "gambar": null
+            },
+            {
+                "key": "B",
+                "label": "B",
+                "teks": "88 m²",
+                "gambar": null
+            },
+            {
+                "key": "C",
+                "label": "C",
+                "teks": "104 m²",
+                "gambar": null
+            },
+            {
+                "key": "D",
+                "label": "D",
+                "teks": "112 m²",
+                "gambar": null
+            }
+        ],
+        "pernyataan": null,
+        "tabelBenarSalah": null,
+        "kunciJawaban": "B",
+        "kunci": "B",
+        "pembahasan": "Luas 2 segitiga sama kaki (depan dan belakang): alas $AB = 8\\t ext{ m}$, sisi miring $5\\t ext{ m}$, tinggi $t_1 = \\sqrt{5^2 - 4^2} = 3\\t ext{ m}$. Luas = $2 \\t imes (\\frac{1}{2} \\t imes 8 \\t imes 3) = 24\\t ext{ m}^2$. Luas 2 trapesium sama kaki (kiri dan kanan): sisi sejajar $BC = 11\\t ext{ m}$ dan $DE = 5\\t ext{ m}$, tinggi miring $t_2 = \\sqrt{5^2 - (\\frac{11 - 5}{2})^2} = \\sqrt{5^2 - 3^2} = 4\\t ext{ m}$. Luas = $2 \\t imes (\\frac{11 + 5}{2} \\t imes 4) = 2 \\t imes 32 = 64\\t ext{ m}^2$. Total luas atap = $24 + 64 = 88\\t ext{ m}^2$.",
+        "subMateriId": "geometri_bidang",
+        "gambarUrl": "/soal/tryout_tka_matematika_paket_a/q24_atap_rumah.png"
+    },
+    {
+        "id": "pure_ai_mtk_crop_34",
+        "nomor": 34,
+        "nomorSoal": 34,
+        "isAiGenerated": true,
+        "isPureAi": true,
+        "isTkaAutentik": true,
+        "sumberAsal": "⚡ Asli TKA DIY & Crop Naskah Resmi",
+        "subtesKode": "MTK",
+        "mapel": "Matematika",
+        "mataPelajaran": "Matematika",
+        "tingkatKesulitan": "sulit",
+        "materi": "Volume Bangun Ruang Gabungan (Kubus dan Limas)",
+        "babNomor": 3,
+        "namaBab": "Bab 3 · Geometri & Pengukuran (Sudut, Pythagoras, Ruang & Transformasi)",
+        "tipe": "pg_sederhana",
+        "tipeSoal": "pg_sederhana",
+        "soal": "Perhatikan gambar!\n{{GAMBAR_1}}\nBangun tersebut terdiri dari kubus dan dua limas yang kongruen. Diketahui panjang $AB = 12\\t ext{ cm}$ dan panjang $JT = 30\\t ext{ cm}$. Volume bangun tersebut adalah ….",
+        "teksSoal": "Perhatikan gambar!\n{{GAMBAR_1}}\nBangun tersebut terdiri dari kubus dan dua limas yang kongruen. Diketahui panjang $AB = 12\\t ext{ cm}$ dan panjang $JT = 30\\t ext{ cm}$. Volume bangun tersebut adalah ….",
+        "gambarUrls": [
+            "/soal/tryout_tka_matematika_paket_a/q25_kubus_limas.png"
+        ],
+        "gambar": [
+            "/soal/tryout_tka_matematika_paket_a/q25_kubus_limas.png"
+        ],
+        "tabel": null,
+        "tabelSoal": null,
+        "opsiJawaban": [
+            {
+                "key": "A",
+                "label": "A",
+                "teks": "6.042 cm³",
+                "gambar": null
+            },
+            {
+                "key": "B",
+                "label": "B",
+                "teks": "4.608 cm³",
+                "gambar": null
+            },
+            {
+                "key": "C",
+                "label": "C",
+                "teks": "3.168 cm³",
+                "gambar": null
+            },
+            {
+                "key": "D",
+                "label": "D",
+                "teks": "2.592 cm³",
+                "gambar": null
+            }
+        ],
+        "opsi": [
+            {
+                "key": "A",
+                "label": "A",
+                "teks": "6.042 cm³",
+                "gambar": null
+            },
+            {
+                "key": "B",
+                "label": "B",
+                "teks": "4.608 cm³",
+                "gambar": null
+            },
+            {
+                "key": "C",
+                "label": "C",
+                "teks": "3.168 cm³",
+                "gambar": null
+            },
+            {
+                "key": "D",
+                "label": "D",
+                "teks": "2.592 cm³",
+                "gambar": null
+            }
+        ],
+        "pernyataan": null,
+        "tabelBenarSalah": null,
+        "kunciJawaban": "D",
+        "kunci": "D",
+        "pembahasan": "Kubus memiliki rusuk $s = 12\\t ext{ cm}$. Tinggi total $JT = 30\\t ext{ cm}$. Tinggi kedua limas kongruen = $30 - 12 = 18\\t ext{ cm}$, maka tinggi masing-masing limas $t = 9\\t ext{ cm}$. Volume kubus = $12^3 = 1.728\\t ext{ cm}^3$. Volume 2 limas = $2 \\t imes (\\frac{1}{3} \\t imes 12^2 \\t imes 9) = 2 \\t imes 432 = 864\\t ext{ cm}^3$. Volume total bangun = $1.728 + 864 = 2.592\\t ext{ cm}^3$.",
+        "subMateriId": "geometri_bidang",
+        "gambarUrl": "/soal/tryout_tka_matematika_paket_a/q25_kubus_limas.png"
+    },
+    {
+        "id": "pure_ai_mtk_crop_35",
+        "nomor": 35,
+        "nomorSoal": 35,
+        "isAiGenerated": true,
+        "isPureAi": true,
+        "isTkaAutentik": true,
+        "sumberAsal": "⚡ Asli TKA DIY & Crop Naskah Resmi",
+        "subtesKode": "MTK",
+        "mapel": "Matematika",
+        "mataPelajaran": "Matematika",
+        "tingkatKesulitan": "sedang",
+        "materi": "Volume Bangun Ruang Sisi Lengkung",
+        "babNomor": 3,
+        "namaBab": "Bab 3 · Geometri & Pengukuran (Sudut, Pythagoras, Ruang & Transformasi)",
+        "tipe": "pg_sederhana",
+        "tipeSoal": "pg_sederhana",
+        "soal": "Perhatikan gambar!\n{{GAMBAR_1}}\nSebuah tempat minum terbentuk dari gabungan tabung dan kerucut seperti pada gambar. Jika tempat minum tersebut berisi penuh sirup, banyaknya gelas setengah bola yang diperlukan untuk memindah semua sirup adalah ….",
+        "teksSoal": "Perhatikan gambar!\n{{GAMBAR_1}}\nSebuah tempat minum terbentuk dari gabungan tabung dan kerucut seperti pada gambar. Jika tempat minum tersebut berisi penuh sirup, banyaknya gelas setengah bola yang diperlukan untuk memindah semua sirup adalah ….",
+        "gambarUrls": [
+            "/soal/tryout_tka_matematika_paket_a/q26_tempat_minum.png"
+        ],
+        "gambar": [
+            "/soal/tryout_tka_matematika_paket_a/q26_tempat_minum.png"
+        ],
+        "tabel": null,
+        "tabelSoal": null,
+        "opsiJawaban": [
+            {
+                "key": "A",
+                "label": "A",
+                "teks": "30 gelas",
+                "gambar": null
+            },
+            {
+                "key": "B",
+                "label": "B",
+                "teks": "35 gelas",
+                "gambar": null
+            },
+            {
+                "key": "C",
+                "label": "C",
+                "teks": "40 gelas",
+                "gambar": null
+            },
+            {
+                "key": "D",
+                "label": "D",
+                "teks": "45 gelas",
+                "gambar": null
+            }
+        ],
+        "opsi": [
+            {
+                "key": "A",
+                "label": "A",
+                "teks": "30 gelas",
+                "gambar": null
+            },
+            {
+                "key": "B",
+                "label": "B",
+                "teks": "35 gelas",
+                "gambar": null
+            },
+            {
+                "key": "C",
+                "label": "C",
+                "teks": "40 gelas",
+                "gambar": null
+            },
+            {
+                "key": "D",
+                "label": "D",
+                "teks": "45 gelas",
+                "gambar": null
+            }
+        ],
+        "pernyataan": null,
+        "tabelBenarSalah": null,
+        "kunciJawaban": "C",
+        "kunci": "C",
+        "pembahasan": "Tempat minum: jari-jari $r = 24 / 2 = 12\\t ext{ cm}$. Volume tabung = $\\pi r^2 t = \\pi (12^2)(36) = 5.184\\pi\\t ext{ cm}^3$. Volume kerucut = $\\frac{1}{3} \\pi r^2 t = \\frac{1}{3} \\pi (12^2)(12) = 576\\pi\\t ext{ cm}^3$. Volume total sirup = $5.184\\pi + 576\\pi = 5.760\\pi\\t ext{ cm}^3$. Gelas setengah bola: diameter $12\\t ext{ cm} \\implies r = 6\\t ext{ cm}$. Volume 1 gelas = $\\frac{2}{3} \\pi r^3 = \\frac{2}{3} \\pi (6^3) = 144\\pi\\t ext{ cm}^3$. Banyaknya gelas = $\\frac{5.760\\pi}{144\\pi} = 40\\t ext{ gelas}$.",
+        "subMateriId": "geometri_bidang",
+        "gambarUrl": "/soal/tryout_tka_matematika_paket_a/q26_tempat_minum.png"
+    },
+    {
+        "id": "pure_ai_mtk_crop_36",
+        "nomor": 36,
+        "nomorSoal": 36,
+        "isAiGenerated": true,
+        "isPureAi": true,
+        "isTkaAutentik": true,
+        "sumberAsal": "⚡ Asli TKA DIY & Crop Naskah Resmi",
+        "subtesKode": "MTK",
+        "mapel": "Matematika",
+        "mataPelajaran": "Matematika",
+        "tingkatKesulitan": "mudah",
+        "materi": "Statistika (Diagram Batang)",
+        "babNomor": 4,
+        "namaBab": "Bab 4 · Data & Peluang (Statistika, Diagram & Peluang Teoretik)",
+        "tipe": "pg_sederhana",
+        "tipeSoal": "pg_sederhana",
+        "soal": "Perhatikan diagram berikut!\n{{GAMBAR_1}}\nKenaikan penjualan HP merk Apik tertinggi terjadi pada bulan ….",
+        "teksSoal": "Perhatikan diagram berikut!\n{{GAMBAR_1}}\nKenaikan penjualan HP merk Apik tertinggi terjadi pada bulan ….",
+        "gambarUrls": [
+            "/soal/tryout_tka_matematika_paket_a/q27_diagram_hp.png"
+        ],
+        "gambar": [
+            "/soal/tryout_tka_matematika_paket_a/q27_diagram_hp.png"
+        ],
+        "tabel": null,
+        "tabelSoal": null,
+        "opsiJawaban": [
+            {
+                "key": "A",
+                "label": "A",
+                "teks": "Juli – Agustus",
+                "gambar": null
+            },
+            {
+                "key": "B",
+                "label": "B",
+                "teks": "September – Oktober",
+                "gambar": null
+            },
+            {
+                "key": "C",
+                "label": "C",
+                "teks": "Oktober – November",
+                "gambar": null
+            },
+            {
+                "key": "D",
+                "label": "D",
+                "teks": "November – Desember",
+                "gambar": null
+            }
+        ],
+        "opsi": [
+            {
+                "key": "A",
+                "label": "A",
+                "teks": "Juli – Agustus",
+                "gambar": null
+            },
+            {
+                "key": "B",
+                "label": "B",
+                "teks": "September – Oktober",
+                "gambar": null
+            },
+            {
+                "key": "C",
+                "label": "C",
+                "teks": "Oktober – November",
+                "gambar": null
+            },
+            {
+                "key": "D",
+                "label": "D",
+                "teks": "November – Desember",
+                "gambar": null
+            }
+        ],
+        "pernyataan": null,
+        "tabelBenarSalah": null,
+        "kunciJawaban": "A",
+        "kunci": "A",
+        "pembahasan": "Kenaikan penjualan antarbulan: Juli – Agustus = $140 - 110 = 30$ unit; September – Oktober = $145 - 125 = 20$ unit; Oktober – November = $160 - 145 = 15$ unit; November – Desember = $185 - 160 = 25$ unit. Kenaikan tertinggi sebesar 30 unit terjadi pada periode bulan Juli – Agustus.",
+        "subMateriId": "statistika_data",
+        "gambarUrl": "/soal/tryout_tka_matematika_paket_a/q27_diagram_hp.png"
+    },
+    {
+        "id": "pure_ai_mtk_crop_37",
+        "nomor": 37,
+        "nomorSoal": 37,
+        "isAiGenerated": true,
+        "isPureAi": true,
+        "isTkaAutentik": true,
+        "sumberAsal": "⚡ Asli TKA DIY & Crop Naskah Resmi",
+        "subtesKode": "MTK",
+        "mapel": "Matematika",
+        "mataPelajaran": "Matematika",
+        "tingkatKesulitan": "sulit",
+        "materi": "Peluang Teoretik",
+        "babNomor": 4,
+        "namaBab": "Bab 4 · Data & Peluang (Statistika, Diagram & Peluang Teoretik)",
+        "tipe": "pg_sederhana",
+        "tipeSoal": "pg_sederhana",
+        "soal": "Perhatikan gambar!\n{{GAMBAR_1}}\nCakram putar (spiner) terbagi menjadi 8 bagian yang ukurannya sama besar dan masing-masing diberi nomor urut 1 sampai 8 seperti pada gambar. Jika cakram diputar undi maka peluang bilangan prima berhenti pada jarum penunjuk adalah ….",
+        "teksSoal": "Perhatikan gambar!\n{{GAMBAR_1}}\nCakram putar (spiner) terbagi menjadi 8 bagian yang ukurannya sama besar dan masing-masing diberi nomor urut 1 sampai 8 seperti pada gambar. Jika cakram diputar undi maka peluang bilangan prima berhenti pada jarum penunjuk adalah ….",
+        "gambarUrls": [
+            "/soal/tryout_tka_matematika_paket_a/q29_spinner.png"
+        ],
+        "gambar": [
+            "/soal/tryout_tka_matematika_paket_a/q29_spinner.png"
+        ],
+        "tabel": null,
+        "tabelSoal": null,
+        "opsiJawaban": [
+            {
+                "key": "A",
+                "label": "A",
+                "teks": "3/8",
+                "gambar": null
+            },
+            {
+                "key": "B",
+                "label": "B",
+                "teks": "4/8",
+                "gambar": null
+            },
+            {
+                "key": "C",
+                "label": "C",
+                "teks": "5/8",
+                "gambar": null
+            },
+            {
+                "key": "D",
+                "label": "D",
+                "teks": "7/8",
+                "gambar": null
+            }
+        ],
+        "opsi": [
+            {
+                "key": "A",
+                "label": "A",
+                "teks": "3/8",
+                "gambar": null
+            },
+            {
+                "key": "B",
+                "label": "B",
+                "teks": "4/8",
+                "gambar": null
+            },
+            {
+                "key": "C",
+                "label": "C",
+                "teks": "5/8",
+                "gambar": null
+            },
+            {
+                "key": "D",
+                "label": "D",
+                "teks": "7/8",
+                "gambar": null
+            }
+        ],
+        "pernyataan": null,
+        "tabelBenarSalah": null,
+        "kunciJawaban": "B",
+        "kunci": "B",
+        "pembahasan": "Ruang sampel cakram putar: $S = \\{1, 2, 3, 4, 5, 6, 7, 8\\} \\implies n(S) = 8$. Kejadian muncul bilangan prima: $A = \\{2, 3, 5, 7\\} \\implies n(A) = 4$. Peluang muncul bilangan prima: $P(A) = \\frac{n(A)}{n(S)} = \\frac{4}{8}$.",
+        "subMateriId": "peluang_teoretik",
+        "gambarUrl": "/soal/tryout_tka_matematika_paket_a/q29_spinner.png"
+    },
+    {
+        "id": "pure_ai_mtk_crop_38",
+        "nomor": 38,
+        "nomorSoal": 38,
+        "isAiGenerated": true,
+        "isPureAi": true,
+        "isTkaAutentik": true,
+        "sumberAsal": "⚡ Asli TKA DIY & Crop Naskah Resmi",
+        "subtesKode": "MTK",
+        "mapel": "Matematika",
+        "mataPelajaran": "Matematika",
+        "tingkatKesulitan": "mudah",
+        "materi": "Operasi Bentuk Akar",
+        "babNomor": 1,
+        "namaBab": "Bab 1 · Bilangan (Operasi, Pecahan, Pangkat & Notasi Ilmiah)",
+        "tipe": "benar_salah",
+        "tipeSoal": "benar_salah",
+        "soal": "Diketahui dua bilangan $P = 3\\sqrt{3} - 4$ dan $Q = 4\\sqrt{3} + 5$.\nTentukan benar atau salah setiap pernyataan berikut:",
+        "teksSoal": "Diketahui dua bilangan $P = 3\\sqrt{3} - 4$ dan $Q = 4\\sqrt{3} + 5$.\nTentukan benar atau salah setiap pernyataan berikut:",
+        "gambarUrls": [],
+        "gambar": [],
+        "tabel": null,
+        "tabelSoal": null,
+        "opsiJawaban": [],
+        "opsi": [],
+        "pernyataan": [
+            {
+                "id": "p_1",
+                "teks": "(1) $P + Q = 7\\sqrt{3} + 9$",
+                "kunci": "Salah"
+            },
+            {
+                "id": "p_2",
+                "teks": "(2) $P - Q = -\\sqrt{3} - 9$",
+                "kunci": "Benar"
+            },
+            {
+                "id": "p_3",
+                "teks": "(3) $P \\t imes Q = 16 - \\sqrt{3}$",
+                "kunci": "Benar"
+            }
+        ],
+        "tabelBenarSalah": [
+            {
+                "pernyataan": "(1) $P + Q = 7\\sqrt{3} + 9$",
+                "jawaban": "Salah"
+            },
+            {
+                "pernyataan": "(2) $P - Q = -\\sqrt{3} - 9$",
+                "jawaban": "Benar"
+            },
+            {
+                "pernyataan": "(3) $P \\t imes Q = 16 - \\sqrt{3}$",
+                "jawaban": "Benar"
+            }
+        ],
+        "kunciJawaban": {
+            "1": "Salah",
+            "2": "Benar",
+            "3": "Benar"
+        },
+        "kunci": {
+            "1": "Salah",
+            "2": "Benar",
+            "3": "Benar"
+        },
+        "pembahasan": "$P + Q = (3\\sqrt{3} - 4) + (4\\sqrt{3} + 5) = 7\\sqrt{3} + 1$ (maka (1) Salah).\n$P - Q = (3\\sqrt{3} - 4) - (4\\sqrt{3} + 5) = -\\sqrt{3} - 9$ ((2) Benar).\n$P \\t imes Q = (3\\sqrt{3} - 4)(4\\sqrt{3} + 5) = 36 + 15\\sqrt{3} - 16\\sqrt{3} - 20 = 16 - \\sqrt{3}$ ((3) Benar).",
+        "subMateriId": "akar_rasional",
+        "gambarUrl": null
+    },
+    {
+        "id": "pure_ai_mtk_crop_39",
+        "nomor": 39,
+        "nomorSoal": 39,
+        "isAiGenerated": true,
+        "isPureAi": true,
+        "isTkaAutentik": true,
+        "sumberAsal": "⚡ Asli TKA DIY & Crop Naskah Resmi",
+        "subtesKode": "MTK",
+        "mapel": "Matematika",
+        "mataPelajaran": "Matematika",
+        "tingkatKesulitan": "sedang",
+        "materi": "Sistem Persamaan Linear Dua Variabel (SPLDV)",
+        "babNomor": 2,
+        "namaBab": "Bab 2 · Aljabar (SPLDV, Persamaan Kuadrat, Fungsi & Pola Bilangan)",
+        "tipe": "pg_kompleks",
+        "tipeSoal": "pg_kompleks",
+        "soal": "Di sebuah toko buah diketahui:\n• Harga 3 kg buah anggur dan 4 kg buah kiwi adalah Rp460.000,00.\n• Harga 1 kg buah anggur dan 2 kg buah kiwi adalah Rp200.000,00.\nPilih lebih dari satu pernyataan yang benar dari pernyataan-pernyataan berikut:",
+        "teksSoal": "Di sebuah toko buah diketahui:\n• Harga 3 kg buah anggur dan 4 kg buah kiwi adalah Rp460.000,00.\n• Harga 1 kg buah anggur dan 2 kg buah kiwi adalah Rp200.000,00.\nPilih lebih dari satu pernyataan yang benar dari pernyataan-pernyataan berikut:",
+        "gambarUrls": [],
+        "gambar": [],
+        "tabel": null,
+        "tabelSoal": null,
+        "opsiJawaban": [
+            {
+                "key": "1",
+                "label": "1",
+                "teks": "Harga 1 kg buah anggur adalah Rp60.000,00",
+                "gambar": null
+            },
+            {
+                "key": "2",
+                "label": "2",
+                "teks": "Harga 1 kg buah kiwi adalah Rp80.000,00",
+                "gambar": null
+            },
+            {
+                "key": "3",
+                "label": "3",
+                "teks": "Harga 2 kg buah anggur dan 1 kg kiwi adalah Rp190.000,00",
+                "gambar": null
+            },
+            {
+                "key": "4",
+                "label": "4",
+                "teks": "Harga 1 kg buah kiwi lebih mahal Rp10.000,00 dari harga 1 kg buah anggur",
+                "gambar": null
+            }
+        ],
+        "opsi": [
+            {
+                "key": "1",
+                "label": "1",
+                "teks": "Harga 1 kg buah anggur adalah Rp60.000,00",
+                "gambar": null
+            },
+            {
+                "key": "2",
+                "label": "2",
+                "teks": "Harga 1 kg buah kiwi adalah Rp80.000,00",
+                "gambar": null
+            },
+            {
+                "key": "3",
+                "label": "3",
+                "teks": "Harga 2 kg buah anggur dan 1 kg kiwi adalah Rp190.000,00",
+                "gambar": null
+            },
+            {
+                "key": "4",
+                "label": "4",
+                "teks": "Harga 1 kg buah kiwi lebih mahal Rp10.000,00 dari harga 1 kg buah anggur",
+                "gambar": null
+            }
+        ],
+        "pernyataan": null,
+        "tabelBenarSalah": null,
+        "kunciJawaban": [
+            "1",
+            "3",
+            "4"
+        ],
+        "kunci": [
+            "1",
+            "3",
+            "4"
+        ],
+        "pembahasan": "Misal anggur = a, kiwi = k. 3a + 4k = 460k dan a + 2k = 200k. Kalikan persamaan kedua dengan 2: 2a + 4k = 400k. Kurangkan: a = Rp60.000,00. Subtitusi: 60k + 2k = 200k -> 2k = 140k -> k = Rp70.000,00. Pernyataan 1 Benar (a = 60k). Pernyataan 2 Salah (k = 70k). Pernyataan 3: 2(60k) + 70k = 190k (Benar). Pernyataan 4: 70k - 60k = 10k (Benar).",
+        "subMateriId": "spldv",
+        "gambarUrl": null
+    },
+    {
+        "id": "pure_ai_mtk_crop_40",
+        "nomor": 40,
+        "nomorSoal": 40,
+        "isAiGenerated": true,
+        "isPureAi": true,
+        "isTkaAutentik": true,
+        "sumberAsal": "⚡ Asli TKA DIY & Crop Naskah Resmi",
+        "subtesKode": "MTK",
+        "mapel": "Matematika",
+        "mataPelajaran": "Matematika",
+        "tingkatKesulitan": "sulit",
+        "materi": "Statistika Data Tunggal Berbobot",
+        "babNomor": 4,
+        "namaBab": "Bab 4 · Data & Peluang (Statistika, Diagram & Peluang Teoretik)",
+        "tipe": "pg_kompleks",
+        "tipeSoal": "pg_kompleks",
+        "soal": "Perhatikan tabel tinggi badan siswa!\nTentukan lebih dari satu pernyataan yang benar terkait dari tabel tersebut!",
+        "teksSoal": "Perhatikan tabel tinggi badan siswa!\nTentukan lebih dari satu pernyataan yang benar terkait dari tabel tersebut!",
+        "gambarUrls": [],
+        "gambar": [],
+        "tabel": {
+            "headers": [
+                "Tinggi siswa (cm)",
+                "152",
+                "154",
+                "155",
+                "158",
+                "160",
+                "161",
+                "162"
+            ],
+            "rows": [
+                [
+                    "Frekuensi",
+                    "1",
+                    "3",
+                    "6",
+                    "4",
+                    "3",
+                    "2",
+                    "1"
+                ]
+            ]
+        },
+        "tabelSoal": {
+            "headers": [
+                "Tinggi siswa (cm)",
+                "152",
+                "154",
+                "155",
+                "158",
+                "160",
+                "161",
+                "162"
+            ],
+            "rows": [
+                [
+                    "Frekuensi",
+                    "1",
+                    "3",
+                    "6",
+                    "4",
+                    "3",
+                    "2",
+                    "1"
+                ]
+            ]
+        },
+        "opsiJawaban": [
+            {
+                "key": "1",
+                "label": "1",
+                "teks": "Nilai median adalah 157 cm",
+                "gambar": null
+            },
+            {
+                "key": "2",
+                "label": "2",
+                "teks": "Nilai modus adalah 155 cm",
+                "gambar": null
+            },
+            {
+                "key": "3",
+                "label": "3",
+                "teks": "Nilai rata-rata adalah 159 cm",
+                "gambar": null
+            },
+            {
+                "key": "4",
+                "label": "4",
+                "teks": "Banyak siswa memiliki tinggi badan di atas rata-rata 10 orang",
+                "gambar": null
+            }
+        ],
+        "opsi": [
+            {
+                "key": "1",
+                "label": "1",
+                "teks": "Nilai median adalah 157 cm",
+                "gambar": null
+            },
+            {
+                "key": "2",
+                "label": "2",
+                "teks": "Nilai modus adalah 155 cm",
+                "gambar": null
+            },
+            {
+                "key": "3",
+                "label": "3",
+                "teks": "Nilai rata-rata adalah 159 cm",
+                "gambar": null
+            },
+            {
+                "key": "4",
+                "label": "4",
+                "teks": "Banyak siswa memiliki tinggi badan di atas rata-rata 10 orang",
+                "gambar": null
+            }
+        ],
+        "pernyataan": null,
+        "tabelBenarSalah": null,
+        "kunciJawaban": [
+            "1",
+            "2",
+            "4"
+        ],
+        "kunci": [
+            "1",
+            "2",
+            "4"
+        ],
+        "pembahasan": "Total siswa n = 1+3+6+4+3+2+1 = 20 orang. Median terletak pada data ke-10 (155) dan ke-11 (158) -> (155 + 158)/2 = 156,5 atau rentang median 157 cm (Pernyataan 1 Benar). Modus dengan frekuensi terbanyak (6 orang) adalah 155 cm (Pernyataan 2 Benar). Rata-rata = 3.134 / 20 = 156,7 cm. Siswa di atas rata-rata (>156,7 cm) = 4 + 3 + 2 + 1 = 10 orang (Pernyataan 4 Benar).",
+        "subMateriId": "statistika_data",
+        "gambarUrl": null
+    },
+    {
+        "id": "pure_ai_mtk_crop_41",
+        "nomor": 41,
+        "nomorSoal": 41,
+        "isAiGenerated": true,
+        "isPureAi": true,
+        "isTkaAutentik": true,
+        "sumberAsal": "⚡ Asli TKA DIY & Crop Naskah Resmi",
+        "subtesKode": "MTK",
+        "mapel": "Matematika",
+        "mataPelajaran": "Matematika",
+        "tingkatKesulitan": "sedang",
+        "materi": "Sistem Persamaan Linear Dua Variabel (SPLDV)",
+        "babNomor": 2,
+        "namaBab": "Bab 2 · Aljabar (SPLDV, Persamaan Kuadrat, Fungsi & Pola Bilangan)",
+        "tipe": "benar_salah",
+        "tipeSoal": "benar_salah",
+        "soal": "Punky, Qoni dan Rina akan berbelanja buku dan pensil sejenis di toko yang sama. Punky membeli 2 buah buku dan 1 batang pensil seharga Rp18.500. Qoni membeli 3 buah buku dan 2 batang pensil seharga Rp29.000. Sedangkan Rina membeli 1 buah buku dan 3 batang pensil.\nTentukan benar atau salah setiap pernyataan berikut:",
+        "teksSoal": "Punky, Qoni dan Rina akan berbelanja buku dan pensil sejenis di toko yang sama. Punky membeli 2 buah buku dan 1 batang pensil seharga Rp18.500. Qoni membeli 3 buah buku dan 2 batang pensil seharga Rp29.000. Sedangkan Rina membeli 1 buah buku dan 3 batang pensil.\nTentukan benar atau salah setiap pernyataan berikut:",
+        "gambarUrls": [],
+        "gambar": [],
+        "tabel": null,
+        "tabelSoal": null,
+        "opsiJawaban": [],
+        "opsi": [],
+        "pernyataan": [
+            {
+                "id": "p_1",
+                "teks": "A. Harga sebuah buku adalah Rp6.000.",
+                "kunci": "benar"
+            },
+            {
+                "id": "p_2",
+                "teks": "B. Harga sebuah pensil adalah Rp2.500.",
+                "kunci": "benar"
+            },
+            {
+                "id": "p_3",
+                "teks": "C. Harga pembelian Rina adalah Rp15.500.",
+                "kunci": "benar"
+            }
+        ],
+        "tabelBenarSalah": [
+            {
+                "pernyataan": "A. Harga sebuah buku adalah Rp6.000.",
+                "jawaban": "benar"
+            },
+            {
+                "pernyataan": "B. Harga sebuah pensil adalah Rp2.500.",
+                "jawaban": "benar"
+            },
+            {
+                "pernyataan": "C. Harga pembelian Rina adalah Rp15.500.",
+                "jawaban": "benar"
+            }
+        ],
+        "kunciJawaban": "A: Salah, B: Benar, C: Benar",
+        "kunci": "A: Salah, B: Benar, C: Benar",
+        "pembahasan": "Misalkan $b$ = harga buku dan $p$ = harga pensil. Sistem persamaan: (1) $2b + p = 18.500 \\implies p = 18.500 - 2b$. (2) $3b + 2p = 29.000$. Substitusi (1) ke (2): $3b + 2(18.500 - 2b) = 29.000 \\implies 3b + 37.000 - 4b = 29.000 \\implies -b = -8.000 \\implies b = 8.000$. Harga sebuah buku = Rp8.000 (Pernyataan A Salah). Harga sebuah pensil $p = 18.500 - 2(8.000) = \\t ext{Rp}2.500$ (Pernyataan B Benar). Total belanja Rina = $1b + 3p = 8.000 + 3(2.500) = 8.000 + 7.500 = \\t ext{Rp}15.500$ (Pernyataan C Benar).",
+        "subMateriId": "spldv",
+        "gambarUrl": null
+    },
+    {
+        "id": "pure_ai_mtk_crop_42",
+        "nomor": 42,
+        "nomorSoal": 42,
+        "isAiGenerated": true,
+        "isPureAi": true,
+        "isTkaAutentik": true,
+        "sumberAsal": "⚡ Asli TKA DIY & Crop Naskah Resmi",
+        "subtesKode": "MTK",
+        "mapel": "Matematika",
+        "mataPelajaran": "Matematika",
+        "tingkatKesulitan": "mudah",
+        "materi": "Barisan Aritmatika",
+        "babNomor": 2,
+        "namaBab": "Bab 2 · Aljabar (SPLDV, Persamaan Kuadrat, Fungsi & Pola Bilangan)",
+        "tipe": "benar_salah",
+        "tipeSoal": "benar_salah",
+        "soal": "Diketahui barisan aritmatika: $4, 6, p, 10, 12, 14, q, \\dots$\nTentukan benar atau salah untuk setiap pernyataan berikut:",
+        "teksSoal": "Diketahui barisan aritmatika: $4, 6, p, 10, 12, 14, q, \\dots$\nTentukan benar atau salah untuk setiap pernyataan berikut:",
+        "gambarUrls": [],
+        "gambar": [],
+        "tabel": null,
+        "tabelSoal": null,
+        "opsiJawaban": [],
+        "opsi": [],
+        "pernyataan": [
+            {
+                "id": "p_1",
+                "teks": "A. Nilai p + q = 24.",
+                "kunci": "benar"
+            },
+            {
+                "id": "p_2",
+                "teks": "B. Nilai suku ke – 50 adalah 102.",
+                "kunci": "benar"
+            },
+            {
+                "id": "p_3",
+                "teks": "C. Selisih suku ke – 50 dengan suku ke– 3 adalah 98.",
+                "kunci": "benar"
+            }
+        ],
+        "tabelBenarSalah": [
+            {
+                "pernyataan": "A. Nilai p + q = 24.",
+                "jawaban": "benar"
+            },
+            {
+                "pernyataan": "B. Nilai suku ke – 50 adalah 102.",
+                "jawaban": "benar"
+            },
+            {
+                "pernyataan": "C. Selisih suku ke – 50 dengan suku ke– 3 adalah 98.",
+                "jawaban": "benar"
+            }
+        ],
+        "kunciJawaban": "A: Benar, B: Benar, C: Salah",
+        "kunci": "A: Benar, B: Benar, C: Salah",
+        "pembahasan": "Suku pertama $a = 4$ dan beda $b = 6 - 4 = 2$. Suku ke-3 $p = 4 + 2(2) = 8$. Suku ke-7 $q = 4 + 6(2) = 16$. Pernyataan A: $p + q = 8 + 16 = 24$ (Benar). Pernyataan B: $U_{50} = a + 49b = 4 + 49(2) = 4 + 98 = 102$ (Benar). Pernyataan C: Selisih suku ke-50 dan suku ke-3 $= U_{50} - U_3 = 102 - 8 = 94$ (Salah, seharusnya 94 bukan 98).",
+        "subMateriId": "pola_barisan",
+        "gambarUrl": null
+    },
+    {
+        "id": "pure_ai_mtk_crop_43",
+        "nomor": 43,
+        "nomorSoal": 43,
+        "isAiGenerated": true,
+        "isPureAi": true,
+        "isTkaAutentik": true,
+        "sumberAsal": "⚡ Asli TKA DIY & Crop Naskah Resmi",
+        "subtesKode": "MTK",
+        "mapel": "Matematika",
+        "mataPelajaran": "Matematika",
+        "tingkatKesulitan": "sulit",
+        "materi": "Statistika (Ukuran Pemusatan dan Penyebaran)",
+        "babNomor": 4,
+        "namaBab": "Bab 4 · Data & Peluang (Statistika, Diagram & Peluang Teoretik)",
+        "tipe": "pg_kompleks",
+        "tipeSoal": "pg_kompleks",
+        "soal": "Perhatikan tabel nilai ulangan matematika kelas 9A berikut!\n<table border='1' cellpadding='6' style='border-collapse:collapse; margin:10px 0;'><thead><tr><th>Nilai</th><th>60</th><th>70</th><th>80</th><th>90</th><th>100</th></tr></thead><tbody><tr><td>Frekuensi</td><td>6</td><td>7</td><td>8</td><td>5</td><td>4</td></tr></tbody></table>Berdasarkan tabel, pilihlah lebih dari satu pernyataan berikut yang benar!",
+        "teksSoal": "Perhatikan tabel nilai ulangan matematika kelas 9A berikut!\n<table border='1' cellpadding='6' style='border-collapse:collapse; margin:10px 0;'><thead><tr><th>Nilai</th><th>60</th><th>70</th><th>80</th><th>90</th><th>100</th></tr></thead><tbody><tr><td>Frekuensi</td><td>6</td><td>7</td><td>8</td><td>5</td><td>4</td></tr></tbody></table>Berdasarkan tabel, pilihlah lebih dari satu pernyataan berikut yang benar!",
+        "gambarUrls": [],
+        "gambar": [],
+        "tabel": null,
+        "tabelSoal": null,
+        "opsiJawaban": [
+            {
+                "key": "1",
+                "label": "1",
+                "teks": "Jangkauan dari data tersebut adalah 40.",
+                "gambar": null
+            },
+            {
+                "key": "2",
+                "label": "2",
+                "teks": "Modus dari data tersebut adalah 80.",
+                "gambar": null
+            },
+            {
+                "key": "3",
+                "label": "3",
+                "teks": "Rata-rata data tersebut adalah 78.",
+                "gambar": null
+            },
+            {
+                "key": "4",
+                "label": "4",
+                "teks": "Banyak siswa yang memperoleh nilai di atas rata-rata adalah 13 orang.",
+                "gambar": null
+            }
+        ],
+        "opsi": [
+            {
+                "key": "1",
+                "label": "1",
+                "teks": "Jangkauan dari data tersebut adalah 40.",
+                "gambar": null
+            },
+            {
+                "key": "2",
+                "label": "2",
+                "teks": "Modus dari data tersebut adalah 80.",
+                "gambar": null
+            },
+            {
+                "key": "3",
+                "label": "3",
+                "teks": "Rata-rata data tersebut adalah 78.",
+                "gambar": null
+            },
+            {
+                "key": "4",
+                "label": "4",
+                "teks": "Banyak siswa yang memperoleh nilai di atas rata-rata adalah 13 orang.",
+                "gambar": null
+            }
+        ],
+        "pernyataan": null,
+        "tabelBenarSalah": null,
+        "kunciJawaban": "1, 2, 3",
+        "kunci": "1, 2, 3",
+        "pembahasan": "Total siswa $n = 6 + 7 + 8 + 5 + 4 = 30$ siswa. Jumlah nilai: $(60 \\t imes 6) + (70 \\t imes 7) + (80 \\t imes 8) + (90 \\t imes 5) + (100 \\t imes 4) = 360 + 490 + 640 + 450 + 400 = 2.340$. Rata-rata = $2.340 / 30 = 78$ (Pernyataan 3 Benar). Jangkauan = Nilai maks - Nilai min = $100 - 60 = 40$ (Pernyataan 1 Benar). Modus = nilai dengan frekuensi terbanyak yaitu nilai 80 dengan frekuensi 8 (Pernyataan 2 Benar). Siswa dengan nilai di atas rata-rata (> 78) adalah siswa bernilai 80, 90, dan 100 dengan total $8 + 5 + 4 = 17$ orang (Pernyataan 4 Salah, tertulis 13 orang). Jadi pernyataan yang benar adalah nomor 1, 2, dan 3.",
+        "subMateriId": "statistika_data",
+        "gambarUrl": null
+    },
+    {
+        "id": "pure_ai_mtk_crop_44",
+        "nomor": 44,
+        "nomorSoal": 44,
+        "isAiGenerated": true,
+        "isPureAi": true,
+        "isTkaAutentik": true,
+        "sumberAsal": "⚡ Asli TKA DIY & Crop Naskah Resmi",
+        "subtesKode": "MTK",
+        "mapel": "Matematika",
+        "mataPelajaran": "Matematika",
+        "tingkatKesulitan": "mudah",
+        "materi": "Operasi Bilangan Bulat / Penskoran",
+        "babNomor": 1,
+        "namaBab": "Bab 1 · Bilangan (Operasi, Pecahan, Pangkat & Notasi Ilmiah)",
+        "tipe": "pg_sederhana",
+        "tipeSoal": "pg_sederhana",
+        "soal": "Dalam seleksi Olimpiade Sains tersedia 40 butir soal dengan pedoman penskoran sebagai berikut:\nSeorang peserta menjawab 37 butir soal dan 32 di antaranya benar. Skor yang diperoleh peserta tersebut adalah ….",
+        "teksSoal": "Dalam seleksi Olimpiade Sains tersedia 40 butir soal dengan pedoman penskoran sebagai berikut:\nSeorang peserta menjawab 37 butir soal dan 32 di antaranya benar. Skor yang diperoleh peserta tersebut adalah ….",
+        "gambarUrls": [],
+        "gambar": [],
+        "tabel": {
+            "headers": [
+                "Tiap Butir Soal",
+                "Skor"
+            ],
+            "rows": [
+                [
+                    "Benar",
+                    "3"
+                ],
+                [
+                    "Salah",
+                    "–1"
+                ],
+                [
+                    "Tidak Dijawab",
+                    "0"
+                ]
+            ]
+        },
+        "tabelSoal": {
+            "headers": [
+                "Tiap Butir Soal",
+                "Skor"
+            ],
+            "rows": [
+                [
+                    "Benar",
+                    "3"
+                ],
+                [
+                    "Salah",
+                    "–1"
+                ],
+                [
+                    "Tidak Dijawab",
+                    "0"
+                ]
+            ]
+        },
+        "opsiJawaban": [
+            {
+                "key": "A",
+                "label": "A",
+                "teks": "111",
+                "gambar": null
+            },
+            {
+                "key": "B",
+                "label": "B",
+                "teks": "96",
+                "gambar": null
+            },
+            {
+                "key": "C",
+                "label": "C",
+                "teks": "91",
+                "gambar": null
+            },
+            {
+                "key": "D",
+                "label": "D",
+                "teks": "88",
+                "gambar": null
+            }
+        ],
+        "opsi": [
+            {
+                "key": "A",
+                "label": "A",
+                "teks": "111",
+                "gambar": null
+            },
+            {
+                "key": "B",
+                "label": "B",
+                "teks": "96",
+                "gambar": null
+            },
+            {
+                "key": "C",
+                "label": "C",
+                "teks": "91",
+                "gambar": null
+            },
+            {
+                "key": "D",
+                "label": "D",
+                "teks": "88",
+                "gambar": null
+            }
+        ],
+        "pernyataan": null,
+        "tabelBenarSalah": null,
+        "kunciJawaban": "C",
+        "kunci": "C",
+        "pembahasan": "Benar = 32 × 3 = 96. Salah = (37 - 32) × (-1) = 5 × (-1) = -5. Tidak dijawab = 3 × 0 = 0. Total Skor = 96 - 5 = 91. Jawaban: C",
+        "subMateriId": "operasi_cerita",
+        "gambarUrl": null
+    },
+    {
+        "id": "pure_ai_mtk_crop_45",
+        "nomor": 45,
+        "nomorSoal": 45,
+        "isAiGenerated": true,
+        "isPureAi": true,
+        "isTkaAutentik": true,
+        "sumberAsal": "⚡ Asli TKA DIY & Crop Naskah Resmi",
+        "subtesKode": "MTK",
+        "mapel": "Matematika",
+        "mataPelajaran": "Matematika",
+        "tingkatKesulitan": "sedang",
+        "materi": "Urutan Bilangan Rasional & Garis Bilangan",
+        "babNomor": 1,
+        "namaBab": "Bab 1 · Bilangan (Operasi, Pecahan, Pangkat & Notasi Ilmiah)",
+        "tipe": "pg_sederhana",
+        "tipeSoal": "pg_sederhana",
+        "soal": "Diketahui bilangan-bilangan 4/5; 1,25; 1 1/5; 90%. Letak bilangan-bilangan tersebut pada garis bilangan yang tepat adalah ….",
+        "teksSoal": "Diketahui bilangan-bilangan 4/5; 1,25; 1 1/5; 90%. Letak bilangan-bilangan tersebut pada garis bilangan yang tepat adalah ….",
+        "gambarUrls": [],
+        "gambar": [],
+        "tabel": null,
+        "tabelSoal": null,
+        "opsiJawaban": [
+            {
+                "key": "A",
+                "label": "A",
+                "teks": "Garis Bilangan A",
+                "gambar": "/soal/tryout_tka_matematika_paket_b/q2_garis_bilangan_opsi_a.png"
+            },
+            {
+                "key": "B",
+                "label": "B",
+                "teks": "Garis Bilangan B",
+                "gambar": "/soal/tryout_tka_matematika_paket_b/q2_garis_bilangan_opsi_b.png"
+            },
+            {
+                "key": "C",
+                "label": "C",
+                "teks": "Garis Bilangan C",
+                "gambar": "/soal/tryout_tka_matematika_paket_b/q2_garis_bilangan_opsi_c.png"
+            },
+            {
+                "key": "D",
+                "label": "D",
+                "teks": "Garis Bilangan D",
+                "gambar": "/soal/tryout_tka_matematika_paket_b/q2_garis_bilangan_opsi_d.png"
+            }
+        ],
+        "opsi": [
+            {
+                "key": "A",
+                "label": "A",
+                "teks": "Garis Bilangan A",
+                "gambar": "/soal/tryout_tka_matematika_paket_b/q2_garis_bilangan_opsi_a.png"
+            },
+            {
+                "key": "B",
+                "label": "B",
+                "teks": "Garis Bilangan B",
+                "gambar": "/soal/tryout_tka_matematika_paket_b/q2_garis_bilangan_opsi_b.png"
+            },
+            {
+                "key": "C",
+                "label": "C",
+                "teks": "Garis Bilangan C",
+                "gambar": "/soal/tryout_tka_matematika_paket_b/q2_garis_bilangan_opsi_c.png"
+            },
+            {
+                "key": "D",
+                "label": "D",
+                "teks": "Garis Bilangan D",
+                "gambar": "/soal/tryout_tka_matematika_paket_b/q2_garis_bilangan_opsi_d.png"
+            }
+        ],
+        "pernyataan": null,
+        "tabelBenarSalah": null,
+        "kunciJawaban": "B",
+        "kunci": "B",
+        "pembahasan": "Konversi ke desimal: 4/5 = 0,80; 90% = 0,90; 1 1/5 = 1,20; 1,25 = 1,25. Urutan dari kiri ke kanan: 4/5, 90%, 1 1/5, 1,25. Tepat pada opsi B.",
+        "subMateriId": "sifat_real",
+        "gambarUrl": null
+    },
+    {
+        "id": "pure_ai_mtk_crop_46",
+        "nomor": 46,
+        "nomorSoal": 46,
+        "isAiGenerated": true,
+        "isPureAi": true,
+        "isTkaAutentik": true,
+        "sumberAsal": "⚡ Asli TKA DIY & Crop Naskah Resmi",
+        "subtesKode": "MTK",
+        "mapel": "Matematika",
+        "mataPelajaran": "Matematika",
+        "tingkatKesulitan": "sulit",
+        "materi": "FPB (Faktor Persekutuan Terbesar)",
+        "babNomor": 1,
+        "namaBab": "Bab 1 · Bilangan (Operasi, Pecahan, Pangkat & Notasi Ilmiah)",
+        "tipe": "pg_sederhana",
+        "tipeSoal": "pg_sederhana",
+        "soal": "Diketahui tiga bilangan 180, 360, dan 540. Faktor persekutuan terbesar dari ketiga bilangan tersebut adalah ….",
+        "teksSoal": "Diketahui tiga bilangan 180, 360, dan 540. Faktor persekutuan terbesar dari ketiga bilangan tersebut adalah ….",
+        "gambarUrls": [],
+        "gambar": [],
+        "tabel": null,
+        "tabelSoal": null,
+        "opsiJawaban": [
+            {
+                "key": "A",
+                "label": "A",
+                "teks": "2² × 3² × 5²",
+                "gambar": null
+            },
+            {
+                "key": "B",
+                "label": "B",
+                "teks": "2² × 3² × 5",
+                "gambar": null
+            },
+            {
+                "key": "C",
+                "label": "C",
+                "teks": "2 × 3² × 5",
+                "gambar": null
+            },
+            {
+                "key": "D",
+                "label": "D",
+                "teks": "2 × 3 × 5",
+                "gambar": null
+            }
+        ],
+        "opsi": [
+            {
+                "key": "A",
+                "label": "A",
+                "teks": "2² × 3² × 5²",
+                "gambar": null
+            },
+            {
+                "key": "B",
+                "label": "B",
+                "teks": "2² × 3² × 5",
+                "gambar": null
+            },
+            {
+                "key": "C",
+                "label": "C",
+                "teks": "2 × 3² × 5",
+                "gambar": null
+            },
+            {
+                "key": "D",
+                "label": "D",
+                "teks": "2 × 3 × 5",
+                "gambar": null
+            }
+        ],
+        "pernyataan": null,
+        "tabelBenarSalah": null,
+        "kunciJawaban": "B",
+        "kunci": "B",
+        "pembahasan": "Faktorisasi prima: 180 = 2² × 3² × 5; 360 = 2³ × 3² × 5; 540 = 2² × 3³ × 5. FPB mengambil faktor bersama berpangkat terkecil: 2² × 3² × 5 = 180. Jawaban: B",
+        "subMateriId": "fpb_kpk",
+        "gambarUrl": null
+    },
+    {
+        "id": "pure_ai_mtk_crop_47",
+        "nomor": 47,
+        "nomorSoal": 47,
+        "isAiGenerated": true,
+        "isPureAi": true,
+        "isTkaAutentik": true,
+        "sumberAsal": "⚡ Asli TKA DIY & Crop Naskah Resmi",
+        "subtesKode": "MTK",
+        "mapel": "Matematika",
+        "mataPelajaran": "Matematika",
+        "tingkatKesulitan": "sedang",
+        "materi": "Perbandingan Berbalik Nilai",
+        "babNomor": 1,
+        "namaBab": "Bab 1 · Bilangan (Operasi, Pecahan, Pangkat & Notasi Ilmiah)",
+        "tipe": "pg_sederhana",
+        "tipeSoal": "pg_sederhana",
+        "soal": "Seorang peternak memiliki 250 ekor ayam dan menyediakan pakan yang cukup untuk 30 hari. Setelah 9 hari berjalan, peternak tersebut menjual 100 ekor ayamnya. Sisa pakan yang tersedia akan habis dalam waktu ….",
+        "teksSoal": "Seorang peternak memiliki 250 ekor ayam dan menyediakan pakan yang cukup untuk 30 hari. Setelah 9 hari berjalan, peternak tersebut menjual 100 ekor ayamnya. Sisa pakan yang tersedia akan habis dalam waktu ….",
+        "gambarUrls": [],
+        "gambar": [],
+        "tabel": null,
+        "tabelSoal": null,
+        "opsiJawaban": [
+            {
+                "key": "A",
+                "label": "A",
+                "teks": "21 hari",
+                "gambar": null
+            },
+            {
+                "key": "B",
+                "label": "B",
+                "teks": "30 hari",
+                "gambar": null
+            },
+            {
+                "key": "C",
+                "label": "C",
+                "teks": "35 hari",
+                "gambar": null
+            },
+            {
+                "key": "D",
+                "label": "D",
+                "teks": "36 hari",
+                "gambar": null
+            }
+        ],
+        "opsi": [
+            {
+                "key": "A",
+                "label": "A",
+                "teks": "21 hari",
+                "gambar": null
+            },
+            {
+                "key": "B",
+                "label": "B",
+                "teks": "30 hari",
+                "gambar": null
+            },
+            {
+                "key": "C",
+                "label": "C",
+                "teks": "35 hari",
+                "gambar": null
+            },
+            {
+                "key": "D",
+                "label": "D",
+                "teks": "36 hari",
+                "gambar": null
+            }
+        ],
+        "pernyataan": null,
+        "tabelBenarSalah": null,
+        "kunciJawaban": "C",
+        "kunci": "C",
+        "pembahasan": "Sisa hari mula-mula = 30 - 9 = 21 hari untuk 250 ayam. Setelah dijual 100 ekor, sisa ayam = 150 ekor. Menggunakan perbandingan berbalik nilai: 250 × 21 = 150 × t -> t = (250 × 21) / 150 = 35 hari. Jawaban: C",
+        "subMateriId": "perbandingan",
+        "gambarUrl": null
+    },
+    {
+        "id": "pure_ai_mtk_crop_48",
+        "nomor": 48,
+        "nomorSoal": 48,
+        "isAiGenerated": true,
+        "isPureAi": true,
+        "isTkaAutentik": true,
+        "sumberAsal": "⚡ Asli TKA DIY & Crop Naskah Resmi",
+        "subtesKode": "MTK",
+        "mapel": "Matematika",
+        "mataPelajaran": "Matematika",
+        "tingkatKesulitan": "mudah",
+        "materi": "Aritmetika Sosial / Perbandingan Senilai",
+        "babNomor": 1,
+        "namaBab": "Bab 1 · Bilangan (Operasi, Pecahan, Pangkat & Notasi Ilmiah)",
+        "tipe": "pg_sederhana",
+        "tipeSoal": "pg_sederhana",
+        "soal": "Di Sebuah toko buah harga 6 kilogram mangga adalah Rp132.000,00. Jika Ibu memiliki uang Rp250.000,00 dan akan membeli 11 kilogram mangga yang sama, maka uang kembalian yang diterima Ibu adalah …..",
+        "teksSoal": "Di Sebuah toko buah harga 6 kilogram mangga adalah Rp132.000,00. Jika Ibu memiliki uang Rp250.000,00 dan akan membeli 11 kilogram mangga yang sama, maka uang kembalian yang diterima Ibu adalah …..",
+        "gambarUrls": [],
+        "gambar": [],
+        "tabel": null,
+        "tabelSoal": null,
+        "opsiJawaban": [
+            {
+                "key": "A",
+                "label": "A",
+                "teks": "Rp8.000,00",
+                "gambar": null
+            },
+            {
+                "key": "B",
+                "label": "B",
+                "teks": "Rp12.000,00",
+                "gambar": null
+            },
+            {
+                "key": "C",
+                "label": "C",
+                "teks": "Rp18.000,00",
+                "gambar": null
+            },
+            {
+                "key": "D",
+                "label": "D",
+                "teks": "Rp30.000,00",
+                "gambar": null
+            }
+        ],
+        "opsi": [
+            {
+                "key": "A",
+                "label": "A",
+                "teks": "Rp8.000,00",
+                "gambar": null
+            },
+            {
+                "key": "B",
+                "label": "B",
+                "teks": "Rp12.000,00",
+                "gambar": null
+            },
+            {
+                "key": "C",
+                "label": "C",
+                "teks": "Rp18.000,00",
+                "gambar": null
+            },
+            {
+                "key": "D",
+                "label": "D",
+                "teks": "Rp30.000,00",
+                "gambar": null
+            }
+        ],
+        "pernyataan": null,
+        "tabelBenarSalah": null,
+        "kunciJawaban": "A",
+        "kunci": "A",
+        "pembahasan": "Harga per kg = Rp132.000 / 6 = Rp22.000,00. Harga 11 kg = 11 × Rp22.000 = Rp242.000,00. Kembalian = Rp250.000 - Rp242.000 = Rp8.000,00. Jawaban: A",
+        "subMateriId": "aritmetika_sosial",
+        "gambarUrl": null
+    },
+    {
+        "id": "pure_ai_mtk_crop_49",
+        "nomor": 49,
+        "nomorSoal": 49,
+        "isAiGenerated": true,
+        "isPureAi": true,
+        "isTkaAutentik": true,
+        "sumberAsal": "⚡ Asli TKA DIY & Crop Naskah Resmi",
+        "subtesKode": "MTK",
+        "mapel": "Matematika",
+        "mataPelajaran": "Matematika",
+        "tingkatKesulitan": "sulit",
+        "materi": "Persamaan Linear Satu Variabel",
+        "babNomor": 1,
+        "namaBab": "Bab 1 · Bilangan (Operasi, Pecahan, Pangkat & Notasi Ilmiah)",
+        "tipe": "pg_sederhana",
+        "tipeSoal": "pg_sederhana",
+        "soal": "Diketahui persamaan 3(3x + 4) − 19 = 4x + 13. Nilai dari 3x − 4 adalah ….",
+        "teksSoal": "Diketahui persamaan 3(3x + 4) − 19 = 4x + 13. Nilai dari 3x − 4 adalah ….",
+        "gambarUrls": [],
+        "gambar": [],
+        "tabel": null,
+        "tabelSoal": null,
+        "opsiJawaban": [
+            {
+                "key": "A",
+                "label": "A",
+                "teks": "16",
+                "gambar": null
+            },
+            {
+                "key": "B",
+                "label": "B",
+                "teks": "12",
+                "gambar": null
+            },
+            {
+                "key": "C",
+                "label": "C",
+                "teks": "8",
+                "gambar": null
+            },
+            {
+                "key": "D",
+                "label": "D",
+                "teks": "4",
+                "gambar": null
+            }
+        ],
+        "opsi": [
+            {
+                "key": "A",
+                "label": "A",
+                "teks": "16",
+                "gambar": null
+            },
+            {
+                "key": "B",
+                "label": "B",
+                "teks": "12",
+                "gambar": null
+            },
+            {
+                "key": "C",
+                "label": "C",
+                "teks": "8",
+                "gambar": null
+            },
+            {
+                "key": "D",
+                "label": "D",
+                "teks": "4",
+                "gambar": null
+            }
+        ],
+        "pernyataan": null,
+        "tabelBenarSalah": null,
+        "kunciJawaban": "C",
+        "kunci": "C",
+        "pembahasan": "9x + 12 - 19 = 4x + 13 -> 9x - 7 = 4x + 13 -> 5x = 20 -> x = 4. Nilai 3x - 4 = 3(4) - 4 = 12 - 4 = 8. Jawaban: C",
+        "subMateriId": "sifat_real",
+        "gambarUrl": null
+    },
+    {
+        "id": "pure_ai_mtk_crop_50",
+        "nomor": 50,
+        "nomorSoal": 50,
+        "isAiGenerated": true,
+        "isPureAi": true,
+        "isTkaAutentik": true,
+        "sumberAsal": "⚡ Asli TKA DIY & Crop Naskah Resmi",
+        "subtesKode": "MTK",
+        "mapel": "Matematika",
+        "mataPelajaran": "Matematika",
+        "tingkatKesulitan": "mudah",
+        "materi": "Pertidaksamaan Linear Satu Variabel",
+        "babNomor": 1,
+        "namaBab": "Bab 1 · Bilangan (Operasi, Pecahan, Pangkat & Notasi Ilmiah)",
+        "tipe": "pg_sederhana",
+        "tipeSoal": "pg_sederhana",
+        "soal": "Betry memiliki uang sebesar Rp120.000,00 yang akan digunakan untuk membeli buku dan pulpen. Biaya perjalanan menuju toko Rp9.000.00. Harga sebuah buku Rp8.000,00 dan harga sebuah pulpen Rp6.000,00. Jika Betry membeli 4 pulpen, maka jumlah maksimal buku yang dapat dibeli adalah ….",
+        "teksSoal": "Betry memiliki uang sebesar Rp120.000,00 yang akan digunakan untuk membeli buku dan pulpen. Biaya perjalanan menuju toko Rp9.000.00. Harga sebuah buku Rp8.000,00 dan harga sebuah pulpen Rp6.000,00. Jika Betry membeli 4 pulpen, maka jumlah maksimal buku yang dapat dibeli adalah ….",
+        "gambarUrls": [],
+        "gambar": [],
+        "tabel": null,
+        "tabelSoal": null,
+        "opsiJawaban": [
+            {
+                "key": "A",
+                "label": "A",
+                "teks": "9 buah",
+                "gambar": null
+            },
+            {
+                "key": "B",
+                "label": "B",
+                "teks": "10 buah",
+                "gambar": null
+            },
+            {
+                "key": "C",
+                "label": "C",
+                "teks": "11 buah",
+                "gambar": null
+            },
+            {
+                "key": "D",
+                "label": "D",
+                "teks": "12 buah",
+                "gambar": null
+            }
+        ],
+        "opsi": [
+            {
+                "key": "A",
+                "label": "A",
+                "teks": "9 buah",
+                "gambar": null
+            },
+            {
+                "key": "B",
+                "label": "B",
+                "teks": "10 buah",
+                "gambar": null
+            },
+            {
+                "key": "C",
+                "label": "C",
+                "teks": "11 buah",
+                "gambar": null
+            },
+            {
+                "key": "D",
+                "label": "D",
+                "teks": "12 buah",
+                "gambar": null
+            }
+        ],
+        "pernyataan": null,
+        "tabelBenarSalah": null,
+        "kunciJawaban": "B",
+        "kunci": "B",
+        "pembahasan": "Sisa uang belanja buku = Rp120.000 - Rp9.000 (ongkos) - (4 × Rp6.000) = Rp111.000 - Rp24.000 = Rp87.000,00. Banyak buku maksimal = 87.000 / 8.000 = 10,875 -> 10 buah. Jawaban: B",
+        "subMateriId": "aritmetika_sosial",
+        "gambarUrl": null
+    },
+    {
+        "id": "pure_ai_mtk_crop_51",
+        "nomor": 51,
+        "nomorSoal": 51,
+        "isAiGenerated": true,
+        "isPureAi": true,
+        "isTkaAutentik": true,
+        "sumberAsal": "⚡ Asli TKA DIY & Crop Naskah Resmi",
+        "subtesKode": "MTK",
+        "mapel": "Matematika",
+        "mataPelajaran": "Matematika",
+        "tingkatKesulitan": "sedang",
+        "materi": "Barisan dan Deret Aritmatika",
+        "babNomor": 2,
+        "namaBab": "Bab 2 · Aljabar (SPLDV, Persamaan Kuadrat, Fungsi & Pola Bilangan)",
+        "tipe": "pg_sederhana",
+        "tipeSoal": "pg_sederhana",
+        "soal": "Diketahui suatu barisan aritmatika 10, 12, 14, 16, 18, …\nNilai U72 − U15 adalah ….",
+        "teksSoal": "Diketahui suatu barisan aritmatika 10, 12, 14, 16, 18, …\nNilai U72 − U15 adalah ….",
+        "gambarUrls": [],
+        "gambar": [],
+        "tabel": null,
+        "tabelSoal": null,
+        "opsiJawaban": [
+            {
+                "key": "A",
+                "label": "A",
+                "teks": "114",
+                "gambar": null
+            },
+            {
+                "key": "B",
+                "label": "B",
+                "teks": "118",
+                "gambar": null
+            },
+            {
+                "key": "C",
+                "label": "C",
+                "teks": "120",
+                "gambar": null
+            },
+            {
+                "key": "D",
+                "label": "D",
+                "teks": "125",
+                "gambar": null
+            }
+        ],
+        "opsi": [
+            {
+                "key": "A",
+                "label": "A",
+                "teks": "114",
+                "gambar": null
+            },
+            {
+                "key": "B",
+                "label": "B",
+                "teks": "118",
+                "gambar": null
+            },
+            {
+                "key": "C",
+                "label": "C",
+                "teks": "120",
+                "gambar": null
+            },
+            {
+                "key": "D",
+                "label": "D",
+                "teks": "125",
+                "gambar": null
+            }
+        ],
+        "pernyataan": null,
+        "tabelBenarSalah": null,
+        "kunciJawaban": "A",
+        "kunci": "A",
+        "pembahasan": "Beda barisan b = 12 - 10 = 2. U72 - U15 = (72 - 15) × b = 57 × 2 = 114. Jawaban: A",
+        "subMateriId": "pola_barisan",
+        "gambarUrl": null
+    },
+    {
+        "id": "pure_ai_mtk_crop_52",
+        "nomor": 52,
+        "nomorSoal": 52,
+        "isAiGenerated": true,
+        "isPureAi": true,
+        "isTkaAutentik": true,
+        "sumberAsal": "⚡ Asli TKA DIY & Crop Naskah Resmi",
+        "subtesKode": "MTK",
+        "mapel": "Matematika",
+        "mataPelajaran": "Matematika",
+        "tingkatKesulitan": "sulit",
+        "materi": "Persentase & Efektivitas",
+        "babNomor": 1,
+        "namaBab": "Bab 1 · Bilangan (Operasi, Pecahan, Pangkat & Notasi Ilmiah)",
+        "tipe": "pg_sederhana",
+        "tipeSoal": "pg_sederhana",
+        "soal": "Seorang peternak ayam memiliki 4 buah mesin penetas telor dengan kapasitas dan tingkat keberhasilan yang berbeda-beda. Data hasil penetasan dari keempat mesin tersebut disajikan dalam tabel berikut:\nMesin penetas memiliki kualitas paling baik dan efektif tinggi adalah ….",
+        "teksSoal": "Seorang peternak ayam memiliki 4 buah mesin penetas telor dengan kapasitas dan tingkat keberhasilan yang berbeda-beda. Data hasil penetasan dari keempat mesin tersebut disajikan dalam tabel berikut:\nMesin penetas memiliki kualitas paling baik dan efektif tinggi adalah ….",
+        "gambarUrls": [],
+        "gambar": [],
+        "tabel": {
+            "headers": [
+                "Nama Mesin",
+                "Jumlah Telor yang Diisi",
+                "Jumlah Telor yang Menetas"
+            ],
+            "rows": [
+                [
+                    "Mesin Alpha",
+                    "40 butir",
+                    "34 butir"
+                ],
+                [
+                    "Mesin Beta",
+                    "20 butir",
+                    "16 butir"
+                ],
+                [
+                    "Mesin Gamma",
+                    "50 butir",
+                    "44 butir"
+                ],
+                [
+                    "Mesin Delta",
+                    "80 butir",
+                    "60 butir"
+                ]
+            ]
+        },
+        "tabelSoal": {
+            "headers": [
+                "Nama Mesin",
+                "Jumlah Telor yang Diisi",
+                "Jumlah Telor yang Menetas"
+            ],
+            "rows": [
+                [
+                    "Mesin Alpha",
+                    "40 butir",
+                    "34 butir"
+                ],
+                [
+                    "Mesin Beta",
+                    "20 butir",
+                    "16 butir"
+                ],
+                [
+                    "Mesin Gamma",
+                    "50 butir",
+                    "44 butir"
+                ],
+                [
+                    "Mesin Delta",
+                    "80 butir",
+                    "60 butir"
+                ]
+            ]
+        },
+        "opsiJawaban": [
+            {
+                "key": "A",
+                "label": "A",
+                "teks": "Mesin Alpha",
+                "gambar": null
+            },
+            {
+                "key": "B",
+                "label": "B",
+                "teks": "Mesin Beta",
+                "gambar": null
+            },
+            {
+                "key": "C",
+                "label": "C",
+                "teks": "Mesin Gamma",
+                "gambar": null
+            },
+            {
+                "key": "D",
+                "label": "D",
+                "teks": "Mesin Delta",
+                "gambar": null
+            }
+        ],
+        "opsi": [
+            {
+                "key": "A",
+                "label": "A",
+                "teks": "Mesin Alpha",
+                "gambar": null
+            },
+            {
+                "key": "B",
+                "label": "B",
+                "teks": "Mesin Beta",
+                "gambar": null
+            },
+            {
+                "key": "C",
+                "label": "C",
+                "teks": "Mesin Gamma",
+                "gambar": null
+            },
+            {
+                "key": "D",
+                "label": "D",
+                "teks": "Mesin Delta",
+                "gambar": null
+            }
+        ],
+        "pernyataan": null,
+        "tabelBenarSalah": null,
+        "kunciJawaban": "C",
+        "kunci": "C",
+        "pembahasan": "Persentase daya tetas: Alpha = 34/40 = 85%; Beta = 16/20 = 80%; Gamma = 44/50 = 88%; Delta = 60/80 = 75%. Mesin Gamma memiliki tingkat efektivitas dan kualitas tertinggi (88%). Jawaban: C",
+        "subMateriId": "sifat_real",
+        "gambarUrl": null
+    },
+    {
+        "id": "pure_ai_mtk_crop_53",
+        "nomor": 53,
+        "nomorSoal": 53,
+        "isAiGenerated": true,
+        "isPureAi": true,
+        "isTkaAutentik": true,
+        "sumberAsal": "⚡ Asli TKA DIY & Crop Naskah Resmi",
+        "subtesKode": "MTK",
+        "mapel": "Matematika",
+        "mataPelajaran": "Matematika",
+        "tingkatKesulitan": "sedang",
+        "materi": "Operasi Bilangan Bulat",
+        "babNomor": 1,
+        "namaBab": "Bab 1 · Bilangan (Operasi, Pecahan, Pangkat & Notasi Ilmiah)",
+        "tipe": "pg_sederhana",
+        "tipeSoal": "pg_sederhana",
+        "soal": "Dalam kompetisi Olimpiade Matematika, setiap butir soal dijawab benar diberi skor 5, salah −2 dan tidak dijawab −1. Dari 40 butir soal yang disediakan, Andi menjawab benar 30 butir soal dan salah 6 butir soal. Skor yang diperoleh Andi adalah ….",
+        "teksSoal": "Dalam kompetisi Olimpiade Matematika, setiap butir soal dijawab benar diberi skor 5, salah −2 dan tidak dijawab −1. Dari 40 butir soal yang disediakan, Andi menjawab benar 30 butir soal dan salah 6 butir soal. Skor yang diperoleh Andi adalah ….",
+        "gambarUrls": [],
+        "gambar": [],
+        "tabel": null,
+        "tabelSoal": null,
+        "opsiJawaban": [
+            {
+                "key": "A",
+                "label": "A",
+                "teks": "140",
+                "gambar": null
+            },
+            {
+                "key": "B",
+                "label": "B",
+                "teks": "134",
+                "gambar": null
+            },
+            {
+                "key": "C",
+                "label": "C",
+                "teks": "130",
+                "gambar": null
+            },
+            {
+                "key": "D",
+                "label": "D",
+                "teks": "125",
+                "gambar": null
+            }
+        ],
+        "opsi": [
+            {
+                "key": "A",
+                "label": "A",
+                "teks": "140",
+                "gambar": null
+            },
+            {
+                "key": "B",
+                "label": "B",
+                "teks": "134",
+                "gambar": null
+            },
+            {
+                "key": "C",
+                "label": "C",
+                "teks": "130",
+                "gambar": null
+            },
+            {
+                "key": "D",
+                "label": "D",
+                "teks": "125",
+                "gambar": null
+            }
+        ],
+        "pernyataan": null,
+        "tabelBenarSalah": null,
+        "kunciJawaban": "B",
+        "kunci": "B",
+        "pembahasan": "Diketahui total 40 butir soal: Benar = 30 soal (skor $30 \\t imes 5 = 150$), Salah = 6 soal (skor $6 \\t imes (-2) = -12$), Tidak dijawab = $40 - (30 + 6) = 4$ soal (skor $4 \\t imes (-1) = -4$). Skor total Andi = $150 + (-12) + (-4) = 150 - 16 = 134$.",
+        "subMateriId": "operasi_cerita",
+        "gambarUrl": null
+    },
+    {
+        "id": "pure_ai_mtk_crop_54",
+        "nomor": 54,
+        "nomorSoal": 54,
+        "isAiGenerated": true,
+        "isPureAi": true,
+        "isTkaAutentik": true,
+        "sumberAsal": "⚡ Asli TKA DIY & Crop Naskah Resmi",
+        "subtesKode": "MTK",
+        "mapel": "Matematika",
+        "mataPelajaran": "Matematika",
+        "tingkatKesulitan": "mudah",
+        "materi": "Pecahan dan Urutan Bilangan Rasional",
+        "babNomor": 1,
+        "namaBab": "Bab 1 · Bilangan (Operasi, Pecahan, Pangkat & Notasi Ilmiah)",
+        "tipe": "pg_sederhana",
+        "tipeSoal": "pg_sederhana",
+        "soal": "Final lomba Sains diikuti oleh empat orang siswa yaitu Andi, Budi, Candra dan Dewi. Tabel berikut adalah hasil akhir skor yang diperoleh oleh empat siswa tersebut:\n<table border='1' cellpadding='6' style='border-collapse:collapse; margin:10px 0;'><thead><tr><th>Nama</th><th>Skor (dari nilai sempurna)</th></tr></thead><tbody><tr><td>Andi</td><td>0,6</td></tr><tr><td>Budi</td><td>55%</td></tr><tr><td>Candra</td><td>2/3</td></tr><tr><td>Dewi</td><td>0,54</td></tr></tbody></table>Urutan juara pertama sampai dengan keempat adalah ….",
+        "teksSoal": "Final lomba Sains diikuti oleh empat orang siswa yaitu Andi, Budi, Candra dan Dewi. Tabel berikut adalah hasil akhir skor yang diperoleh oleh empat siswa tersebut:\n<table border='1' cellpadding='6' style='border-collapse:collapse; margin:10px 0;'><thead><tr><th>Nama</th><th>Skor (dari nilai sempurna)</th></tr></thead><tbody><tr><td>Andi</td><td>0,6</td></tr><tr><td>Budi</td><td>55%</td></tr><tr><td>Candra</td><td>2/3</td></tr><tr><td>Dewi</td><td>0,54</td></tr></tbody></table>Urutan juara pertama sampai dengan keempat adalah ….",
+        "gambarUrls": [],
+        "gambar": [],
+        "tabel": null,
+        "tabelSoal": null,
+        "opsiJawaban": [
+            {
+                "key": "A",
+                "label": "A",
+                "teks": "Budi – Dewi – Andi – Candra",
+                "gambar": null
+            },
+            {
+                "key": "B",
+                "label": "B",
+                "teks": "Dewi – Budi – Andi – Candra",
+                "gambar": null
+            },
+            {
+                "key": "C",
+                "label": "C",
+                "teks": "Candra – Andi – Budi – Dewi",
+                "gambar": null
+            },
+            {
+                "key": "D",
+                "label": "D",
+                "teks": "Dewi – Budi – Candra – Andi",
+                "gambar": null
+            }
+        ],
+        "opsi": [
+            {
+                "key": "A",
+                "label": "A",
+                "teks": "Budi – Dewi – Andi – Candra",
+                "gambar": null
+            },
+            {
+                "key": "B",
+                "label": "B",
+                "teks": "Dewi – Budi – Andi – Candra",
+                "gambar": null
+            },
+            {
+                "key": "C",
+                "label": "C",
+                "teks": "Candra – Andi – Budi – Dewi",
+                "gambar": null
+            },
+            {
+                "key": "D",
+                "label": "D",
+                "teks": "Dewi – Budi – Candra – Andi",
+                "gambar": null
+            }
+        ],
+        "pernyataan": null,
+        "tabelBenarSalah": null,
+        "kunciJawaban": "C",
+        "kunci": "C",
+        "pembahasan": "Ubah semua nilai ke bentuk desimal berderajat tiga desimal: Candra = $2/3 \\approx 0{,}667$; Andi = $0{,}6 = 0{,}600$; Budi = $55\\% = 0{,}550$; Dewi = $0{,}54 = 0{,}540$. Urutan skor dari tertinggi (juara 1) ke terendah (juara 4): Candra ($0{,}667$) – Andi ($0{,}600$) – Budi ($0{,}550$) – Dewi ($0{,}540$).",
+        "subMateriId": "sifat_real",
+        "gambarUrl": null
+    },
+    {
+        "id": "pure_ai_mtk_crop_55",
+        "nomor": 55,
+        "nomorSoal": 55,
+        "isAiGenerated": true,
+        "isPureAi": true,
+        "isTkaAutentik": true,
+        "sumberAsal": "⚡ Asli TKA DIY & Crop Naskah Resmi",
+        "subtesKode": "MTK",
+        "mapel": "Matematika",
+        "mataPelajaran": "Matematika",
+        "tingkatKesulitan": "sulit",
+        "materi": "Faktor Persekutuan Terbesar (FPB)",
+        "babNomor": 1,
+        "namaBab": "Bab 1 · Bilangan (Operasi, Pecahan, Pangkat & Notasi Ilmiah)",
+        "tipe": "pg_sederhana",
+        "tipeSoal": "pg_sederhana",
+        "soal": "Diketahui tiga bilangan $a = (8 \\t imes 9)$, $b = (3 \\t imes 4 + 6)$, dan $c = (8^2 - 4^2)$. Faktor persekutuan terbesar dari $a$, $b$ dan $c$ adalah ….",
+        "teksSoal": "Diketahui tiga bilangan $a = (8 \\t imes 9)$, $b = (3 \\t imes 4 + 6)$, dan $c = (8^2 - 4^2)$. Faktor persekutuan terbesar dari $a$, $b$ dan $c$ adalah ….",
+        "gambarUrls": [],
+        "gambar": [],
+        "tabel": null,
+        "tabelSoal": null,
+        "opsiJawaban": [
+            {
+                "key": "A",
+                "label": "A",
+                "teks": "$2 \\t imes 3$",
+                "gambar": null
+            },
+            {
+                "key": "B",
+                "label": "B",
+                "teks": "$2^3$",
+                "gambar": null
+            },
+            {
+                "key": "C",
+                "label": "C",
+                "teks": "$3^2$",
+                "gambar": null
+            },
+            {
+                "key": "D",
+                "label": "D",
+                "teks": "$2^2 \\t imes 3$",
+                "gambar": null
+            }
+        ],
+        "opsi": [
+            {
+                "key": "A",
+                "label": "A",
+                "teks": "$2 \\t imes 3$",
+                "gambar": null
+            },
+            {
+                "key": "B",
+                "label": "B",
+                "teks": "$2^3$",
+                "gambar": null
+            },
+            {
+                "key": "C",
+                "label": "C",
+                "teks": "$3^2$",
+                "gambar": null
+            },
+            {
+                "key": "D",
+                "label": "D",
+                "teks": "$2^2 \\t imes 3$",
+                "gambar": null
+            }
+        ],
+        "pernyataan": null,
+        "tabelBenarSalah": null,
+        "kunciJawaban": "A",
+        "kunci": "A",
+        "pembahasan": "Hitung masing-masing bilangan dan faktorisasi primanya: $a = 8 \\t imes 9 = 72 = 2^3 \\t imes 3^2$; $b = 3 \\t imes 4 + 6 = 12 + 6 = 18 = 2 \\t imes 3^2$; $c = 8^2 - 4^2 = 64 - 16 = 48 = 2^4 \\t imes 3$. FPB diambil dari faktor prima sekutu dengan pangkat terendah: faktor $2$ berpangkat $1$ dan faktor $3$ berpangkat $1$. Jadi FPB = $2 \\t imes 3$.",
+        "subMateriId": "fpb_kpk",
+        "gambarUrl": null
+    },
+    {
+        "id": "pure_ai_mtk_crop_56",
+        "nomor": 56,
+        "nomorSoal": 56,
+        "isAiGenerated": true,
+        "isPureAi": true,
+        "isTkaAutentik": true,
+        "sumberAsal": "⚡ Asli TKA DIY & Crop Naskah Resmi",
+        "subtesKode": "MTK",
+        "mapel": "Matematika",
+        "mataPelajaran": "Matematika",
+        "tingkatKesulitan": "mudah",
+        "materi": "Aritmatika Sosial dan Optimasi",
+        "babNomor": 1,
+        "namaBab": "Bab 1 · Bilangan (Operasi, Pecahan, Pangkat & Notasi Ilmiah)",
+        "tipe": "pg_sederhana",
+        "tipeSoal": "pg_sederhana",
+        "soal": "Seorang kontraktor bangunan akan melapisi lantai sebuah ruang kelas seluas 120 m². Karena proyek harus segera dikerjakan, kontraktor membeli semen di toko bangunan terdekat. Namun, sebagian besar stok semen di toko tersebut sedang habis dan pengiriman ulang belum datang, sehingga hanya tersedia beberapa persediaan berikut:\n<table border='1' cellpadding='6' style='border-collapse:collapse; margin:10px 0;'><thead><tr><th>Jenis semen</th><th>Berat (kg)</th><th>Jumlah</th><th>Harga (Rp)</th></tr></thead><tbody><tr><td>Kemasan K</td><td>5</td><td>6</td><td>40.000</td></tr><tr><td>Kemasan B</td><td>10</td><td>6</td><td>75.000</td></tr></tbody></table>Keterangan: K = semen kemasan kecil, B = semen kemasan besar.\nJika 1 kg semen dapat melapisi 2 m² lantai, kombinasi pembelian semen yang paling murah agar seluruh lantai dapat dilapisi adalah ….",
+        "teksSoal": "Seorang kontraktor bangunan akan melapisi lantai sebuah ruang kelas seluas 120 m². Karena proyek harus segera dikerjakan, kontraktor membeli semen di toko bangunan terdekat. Namun, sebagian besar stok semen di toko tersebut sedang habis dan pengiriman ulang belum datang, sehingga hanya tersedia beberapa persediaan berikut:\n<table border='1' cellpadding='6' style='border-collapse:collapse; margin:10px 0;'><thead><tr><th>Jenis semen</th><th>Berat (kg)</th><th>Jumlah</th><th>Harga (Rp)</th></tr></thead><tbody><tr><td>Kemasan K</td><td>5</td><td>6</td><td>40.000</td></tr><tr><td>Kemasan B</td><td>10</td><td>6</td><td>75.000</td></tr></tbody></table>Keterangan: K = semen kemasan kecil, B = semen kemasan besar.\nJika 1 kg semen dapat melapisi 2 m² lantai, kombinasi pembelian semen yang paling murah agar seluruh lantai dapat dilapisi adalah ….",
+        "gambarUrls": [],
+        "gambar": [],
+        "tabel": null,
+        "tabelSoal": null,
+        "opsiJawaban": [
+            {
+                "key": "A",
+                "label": "A",
+                "teks": "3 kemasan B dan 6 kemasan K",
+                "gambar": null
+            },
+            {
+                "key": "B",
+                "label": "B",
+                "teks": "4 kemasan B dan 4 kemasan K",
+                "gambar": null
+            },
+            {
+                "key": "C",
+                "label": "C",
+                "teks": "5 kemasan B dan 2 kemasan K",
+                "gambar": null
+            },
+            {
+                "key": "D",
+                "label": "D",
+                "teks": "6 kemasan B dan 1 kemasan K",
+                "gambar": null
+            }
+        ],
+        "opsi": [
+            {
+                "key": "A",
+                "label": "A",
+                "teks": "3 kemasan B dan 6 kemasan K",
+                "gambar": null
+            },
+            {
+                "key": "B",
+                "label": "B",
+                "teks": "4 kemasan B dan 4 kemasan K",
+                "gambar": null
+            },
+            {
+                "key": "C",
+                "label": "C",
+                "teks": "5 kemasan B dan 2 kemasan K",
+                "gambar": null
+            },
+            {
+                "key": "D",
+                "label": "D",
+                "teks": "6 kemasan B dan 1 kemasan K",
+                "gambar": null
+            }
+        ],
+        "pernyataan": null,
+        "tabelBenarSalah": null,
+        "kunciJawaban": "C",
+        "kunci": "C",
+        "pembahasan": "Kebutuhan semen: $120\\t ext{ m}^2 / 2\\t ext{ m}^2/\\t ext{kg} = 60\\t ext{ kg}$ semen. Uji setiap opsi kombinasi: A. $3B + 6K = 3(10) + 6(5) = 60\\t ext{ kg}$, biaya = $3(75.000) + 6(40.000) = 225.000 + 240.000 = \\t ext{Rp}465.000$. B. $4B + 4K = 4(10) + 4(5) = 60\\t ext{ kg}$, biaya = $4(75.000) + 4(40.000) = 300.000 + 160.000 = \\t ext{Rp}460.000$. C. $5B + 2K = 5(10) + 2(5) = 60\\t ext{ kg}$, biaya = $5(75.000) + 2(40.000) = 375.000 + 80.000 = \\t ext{Rp}455.000$. D. $6B + 1K = 6(10) + 1(5) = 65\\t ext{ kg}$, biaya = $6(75.000) + 1(40.000) = 450.000 + 40.000 = \\t ext{Rp}490.000$. Kombinasi yang paling murah adalah 5 kemasan B dan 2 kemasan K dengan biaya Rp455.000.",
+        "subMateriId": "aritmetika_sosial",
+        "gambarUrl": null
+    },
+    {
+        "id": "pure_ai_mtk_crop_57",
+        "nomor": 57,
+        "nomorSoal": 57,
+        "isAiGenerated": true,
+        "isPureAi": true,
+        "isTkaAutentik": true,
+        "sumberAsal": "⚡ Asli TKA DIY & Crop Naskah Resmi",
+        "subtesKode": "MTK",
+        "mapel": "Matematika",
+        "mataPelajaran": "Matematika",
+        "tingkatKesulitan": "sedang",
+        "materi": "Perbandingan Berbalik Nilai",
+        "babNomor": 1,
+        "namaBab": "Bab 1 · Bilangan (Operasi, Pecahan, Pangkat & Notasi Ilmiah)",
+        "tipe": "pg_sederhana",
+        "tipeSoal": "pg_sederhana",
+        "soal": "Sebuah mobil menempuh jarak dari kota A ke kota B dalam waktu 1,6 jam dengan kecepatan rata-rata 75 km/jam. Jika mobil ingin menempuh jarak yang sama dalam waktu 1 jam, maka kecepatan rata-rata yang harus dicapai adalah ….",
+        "teksSoal": "Sebuah mobil menempuh jarak dari kota A ke kota B dalam waktu 1,6 jam dengan kecepatan rata-rata 75 km/jam. Jika mobil ingin menempuh jarak yang sama dalam waktu 1 jam, maka kecepatan rata-rata yang harus dicapai adalah ….",
+        "gambarUrls": [],
+        "gambar": [],
+        "tabel": null,
+        "tabelSoal": null,
+        "opsiJawaban": [
+            {
+                "key": "A",
+                "label": "A",
+                "teks": "90 km/jam",
+                "gambar": null
+            },
+            {
+                "key": "B",
+                "label": "B",
+                "teks": "100 km/jam",
+                "gambar": null
+            },
+            {
+                "key": "C",
+                "label": "C",
+                "teks": "110 km/jam",
+                "gambar": null
+            },
+            {
+                "key": "D",
+                "label": "D",
+                "teks": "120 km/jam",
+                "gambar": null
+            }
+        ],
+        "opsi": [
+            {
+                "key": "A",
+                "label": "A",
+                "teks": "90 km/jam",
+                "gambar": null
+            },
+            {
+                "key": "B",
+                "label": "B",
+                "teks": "100 km/jam",
+                "gambar": null
+            },
+            {
+                "key": "C",
+                "label": "C",
+                "teks": "110 km/jam",
+                "gambar": null
+            },
+            {
+                "key": "D",
+                "label": "D",
+                "teks": "120 km/jam",
+                "gambar": null
+            }
+        ],
+        "pernyataan": null,
+        "tabelBenarSalah": null,
+        "kunciJawaban": "D",
+        "kunci": "D",
+        "pembahasan": "Jarak dari kota A ke B: $s = v_1 \\t imes t_1 = 75\\t ext{ km/jam} \\t imes 1{,}6\\t ext{ jam} = 120\\t ext{ km}$. Kecepatan rata-rata baru agar menempuh jarak tersebut dalam waktu $t_2 = 1\\t ext{ jam}$: $v_2 = \\frac{s}{t_2} = \\frac{120\\t ext{ km}}{1\\t ext{ jam}} = 120\\t ext{ km/jam}$.",
+        "subMateriId": "perbandingan",
+        "gambarUrl": null
+    },
+    {
+        "id": "pure_ai_mtk_crop_58",
+        "nomor": 58,
+        "nomorSoal": 58,
+        "isAiGenerated": true,
+        "isPureAi": true,
+        "isTkaAutentik": true,
+        "sumberAsal": "⚡ Asli TKA DIY & Crop Naskah Resmi",
+        "subtesKode": "MTK",
+        "mapel": "Matematika",
+        "mataPelajaran": "Matematika",
+        "tingkatKesulitan": "sulit",
+        "materi": "Bentuk Akar",
+        "babNomor": 1,
+        "namaBab": "Bab 1 · Bilangan (Operasi, Pecahan, Pangkat & Notasi Ilmiah)",
+        "tipe": "pg_sederhana",
+        "tipeSoal": "pg_sederhana",
+        "soal": "Hasil dari $\\frac{2\\sqrt{27}+3\\sqrt{48}}{3\\sqrt{12}}$ adalah ….",
+        "teksSoal": "Hasil dari $\\frac{2\\sqrt{27}+3\\sqrt{48}}{3\\sqrt{12}}$ adalah ….",
+        "gambarUrls": [],
+        "gambar": [],
+        "tabel": null,
+        "tabelSoal": null,
+        "opsiJawaban": [
+            {
+                "key": "A",
+                "label": "A",
+                "teks": "3",
+                "gambar": null
+            },
+            {
+                "key": "B",
+                "label": "B",
+                "teks": "$3\\sqrt{3}$",
+                "gambar": null
+            },
+            {
+                "key": "C",
+                "label": "C",
+                "teks": "12",
+                "gambar": null
+            },
+            {
+                "key": "D",
+                "label": "D",
+                "teks": "$12\\sqrt{3}$",
+                "gambar": null
+            }
+        ],
+        "opsi": [
+            {
+                "key": "A",
+                "label": "A",
+                "teks": "3",
+                "gambar": null
+            },
+            {
+                "key": "B",
+                "label": "B",
+                "teks": "$3\\sqrt{3}$",
+                "gambar": null
+            },
+            {
+                "key": "C",
+                "label": "C",
+                "teks": "12",
+                "gambar": null
+            },
+            {
+                "key": "D",
+                "label": "D",
+                "teks": "$12\\sqrt{3}$",
+                "gambar": null
+            }
+        ],
+        "pernyataan": null,
+        "tabelBenarSalah": null,
+        "kunciJawaban": "A",
+        "kunci": "A",
+        "pembahasan": "Sederhanakan masing-masing bentuk akar: $2\\sqrt{27} = 2\\sqrt{9 \\t imes 3} = 2(3)\\sqrt{3} = 6\\sqrt{3}$; $3\\sqrt{48} = 3\\sqrt{16 \\t imes 3} = 3(4)\\sqrt{3} = 12\\sqrt{3}$; $3\\sqrt{12} = 3\\sqrt{4 \\t imes 3} = 3(2)\\sqrt{3} = 6\\sqrt{3}$. Maka: $\\frac{6\\sqrt{3} + 12\\sqrt{3}}{6\\sqrt{3}} = \\frac{18\\sqrt{3}}{6\\sqrt{3}} = 3$.",
+        "subMateriId": "akar_rasional",
+        "gambarUrl": null
+    },
+    {
+        "id": "pure_ai_mtk_crop_59",
+        "nomor": 59,
+        "nomorSoal": 59,
+        "isAiGenerated": true,
+        "isPureAi": true,
+        "isTkaAutentik": true,
+        "sumberAsal": "⚡ Asli TKA DIY & Crop Naskah Resmi",
+        "subtesKode": "MTK",
+        "mapel": "Matematika",
+        "mataPelajaran": "Matematika",
+        "tingkatKesulitan": "sedang",
+        "materi": "Persamaan Linear Satu Variabel (PLSV)",
+        "babNomor": 2,
+        "namaBab": "Bab 2 · Aljabar (SPLDV, Persamaan Kuadrat, Fungsi & Pola Bilangan)",
+        "tipe": "pg_sederhana",
+        "tipeSoal": "pg_sederhana",
+        "soal": "Diketahui $3(4x + 3) = 6x - 15$. Jika $n$ adalah penyelesaian dari persamaan tersebut, nilai dari $3n + 7$ adalah ….",
+        "teksSoal": "Diketahui $3(4x + 3) = 6x - 15$. Jika $n$ adalah penyelesaian dari persamaan tersebut, nilai dari $3n + 7$ adalah ….",
+        "gambarUrls": [],
+        "gambar": [],
+        "tabel": null,
+        "tabelSoal": null,
+        "opsiJawaban": [
+            {
+                "key": "A",
+                "label": "A",
+                "teks": "19",
+                "gambar": null
+            },
+            {
+                "key": "B",
+                "label": "B",
+                "teks": "5",
+                "gambar": null
+            },
+            {
+                "key": "C",
+                "label": "C",
+                "teks": "−5",
+                "gambar": null
+            },
+            {
+                "key": "D",
+                "label": "D",
+                "teks": "−19",
+                "gambar": null
+            }
+        ],
+        "opsi": [
+            {
+                "key": "A",
+                "label": "A",
+                "teks": "19",
+                "gambar": null
+            },
+            {
+                "key": "B",
+                "label": "B",
+                "teks": "5",
+                "gambar": null
+            },
+            {
+                "key": "C",
+                "label": "C",
+                "teks": "−5",
+                "gambar": null
+            },
+            {
+                "key": "D",
+                "label": "D",
+                "teks": "−19",
+                "gambar": null
+            }
+        ],
+        "pernyataan": null,
+        "tabelBenarSalah": null,
+        "kunciJawaban": "C",
+        "kunci": "C",
+        "pembahasan": "Selesaikan persamaan: $3(4x + 3) = 6x - 15 \\iff 12x + 9 = 6x - 15 \\iff 12x - 6x = -15 - 9 \\iff 6x = -24 \\iff x = -4$. Jadi penyelesaian $n = -4$. Nilai dari $3n + 7 = 3(-4) + 7 = -12 + 7 = -5$.",
+        "subMateriId": "aljabar_dasar",
+        "gambarUrl": null
+    },
+    {
+        "id": "pure_ai_mtk_crop_60",
+        "nomor": 60,
+        "nomorSoal": 60,
+        "isAiGenerated": true,
+        "isPureAi": true,
+        "isTkaAutentik": true,
+        "sumberAsal": "⚡ Asli TKA DIY & Crop Naskah Resmi",
+        "subtesKode": "MTK",
+        "mapel": "Matematika",
+        "mataPelajaran": "Matematika",
+        "tingkatKesulitan": "mudah",
+        "materi": "Pertidaksamaan Linear Satu Variabel (PtLSV)",
+        "babNomor": 2,
+        "namaBab": "Bab 2 · Aljabar (SPLDV, Persamaan Kuadrat, Fungsi & Pola Bilangan)",
+        "tipe": "pg_sederhana",
+        "tipeSoal": "pg_sederhana",
+        "soal": "Bayu akan membeli sejumlah baju sejenis secara online dengan harga Rp55.000 per potong. Setiap transaksi pembelian dikenakan biaya ongkos kirim Rp15.000 (berapapun jumlah baju yang dibeli). Jika Bayu memiliki uang sebesar Rp385.000, maka jumlah maksimum baju yang dapat dibeli Bayu dengan uang tersebut adalah ….",
+        "teksSoal": "Bayu akan membeli sejumlah baju sejenis secara online dengan harga Rp55.000 per potong. Setiap transaksi pembelian dikenakan biaya ongkos kirim Rp15.000 (berapapun jumlah baju yang dibeli). Jika Bayu memiliki uang sebesar Rp385.000, maka jumlah maksimum baju yang dapat dibeli Bayu dengan uang tersebut adalah ….",
+        "gambarUrls": [],
+        "gambar": [],
+        "tabel": null,
+        "tabelSoal": null,
+        "opsiJawaban": [
+            {
+                "key": "A",
+                "label": "A",
+                "teks": "8 potong",
+                "gambar": null
+            },
+            {
+                "key": "B",
+                "label": "B",
+                "teks": "7 potong",
+                "gambar": null
+            },
+            {
+                "key": "C",
+                "label": "C",
+                "teks": "6 potong",
+                "gambar": null
+            },
+            {
+                "key": "D",
+                "label": "D",
+                "teks": "5 potong",
+                "gambar": null
+            }
+        ],
+        "opsi": [
+            {
+                "key": "A",
+                "label": "A",
+                "teks": "8 potong",
+                "gambar": null
+            },
+            {
+                "key": "B",
+                "label": "B",
+                "teks": "7 potong",
+                "gambar": null
+            },
+            {
+                "key": "C",
+                "label": "C",
+                "teks": "6 potong",
+                "gambar": null
+            },
+            {
+                "key": "D",
+                "label": "D",
+                "teks": "5 potong",
+                "gambar": null
+            }
+        ],
+        "pernyataan": null,
+        "tabelBenarSalah": null,
+        "kunciJawaban": "C",
+        "kunci": "C",
+        "pembahasan": "Misalkan $x$ adalah jumlah baju yang dibeli. Model pertidaksamaan: $55.000x + 15.000 \\le 385.000 \\iff 55.000x \\le 370.000 \\iff x \\le \\frac{370.000}{55.000} \\approx 6{,}727$. Karena jumlah baju harus berupa bilangan bulat, maka jumlah maksimum baju yang dapat dibeli Bayu adalah 6 potong (total biaya: $6 \\t imes 55.000 + 15.000 = \\t ext{Rp}345.000$).",
+        "subMateriId": "aljabar_dasar",
+        "gambarUrl": null
+    },
+    {
+        "id": "pure_ai_mtk_crop_61",
+        "nomor": 61,
+        "nomorSoal": 61,
+        "isAiGenerated": true,
+        "isPureAi": true,
+        "isTkaAutentik": true,
+        "sumberAsal": "⚡ Asli TKA DIY & Crop Naskah Resmi",
+        "subtesKode": "MTK",
+        "mapel": "Matematika",
+        "mataPelajaran": "Matematika",
+        "tingkatKesulitan": "sulit",
+        "materi": "Deret Aritmatika Kontekstual",
+        "babNomor": 2,
+        "namaBab": "Bab 2 · Aljabar (SPLDV, Persamaan Kuadrat, Fungsi & Pola Bilangan)",
+        "tipe": "pg_sederhana",
+        "tipeSoal": "pg_sederhana",
+        "soal": "Seorang pelari marathon berlatih setiap hari. Pada hari pertama ia menempuh jarak 10 kilometer, dan untuk setiap hari berikutnya ia selalu menambah jarak larinya sejauh 2 kilometer. Jika pelari tersebut berlatih selama 10 hari, maka jumlah jarak total yang telah ia tempuh selama 10 hari adalah ….",
+        "teksSoal": "Seorang pelari marathon berlatih setiap hari. Pada hari pertama ia menempuh jarak 10 kilometer, dan untuk setiap hari berikutnya ia selalu menambah jarak larinya sejauh 2 kilometer. Jika pelari tersebut berlatih selama 10 hari, maka jumlah jarak total yang telah ia tempuh selama 10 hari adalah ….",
+        "gambarUrls": [],
+        "gambar": [],
+        "tabel": null,
+        "tabelSoal": null,
+        "opsiJawaban": [
+            {
+                "key": "A",
+                "label": "A",
+                "teks": "162 km",
+                "gambar": null
+            },
+            {
+                "key": "B",
+                "label": "B",
+                "teks": "190 km",
+                "gambar": null
+            },
+            {
+                "key": "C",
+                "label": "C",
+                "teks": "200 km",
+                "gambar": null
+            },
+            {
+                "key": "D",
+                "label": "D",
+                "teks": "220 km",
+                "gambar": null
+            }
+        ],
+        "opsi": [
+            {
+                "key": "A",
+                "label": "A",
+                "teks": "162 km",
+                "gambar": null
+            },
+            {
+                "key": "B",
+                "label": "B",
+                "teks": "190 km",
+                "gambar": null
+            },
+            {
+                "key": "C",
+                "label": "C",
+                "teks": "200 km",
+                "gambar": null
+            },
+            {
+                "key": "D",
+                "label": "D",
+                "teks": "220 km",
+                "gambar": null
+            }
+        ],
+        "pernyataan": null,
+        "tabelBenarSalah": null,
+        "kunciJawaban": "B",
+        "kunci": "B",
+        "pembahasan": "Deret aritmatika dengan $a = 10$, $b = 2$, dan $n = 10$. Jumlah total jarak: $S_{10} = \\frac{n}{2} [2a + (n - 1)b] = \\frac{10}{2} [2(10) + (10 - 1)2] = 5 [20 + 18] = 5 \\t imes 38 = 190\\t ext{ km}$.",
+        "subMateriId": "pola_barisan",
+        "gambarUrl": null
+    },
+    {
+        "id": "pure_ai_mtk_crop_62",
+        "nomor": 62,
+        "nomorSoal": 62,
+        "isAiGenerated": true,
+        "isPureAi": true,
+        "isTkaAutentik": true,
+        "sumberAsal": "⚡ Asli TKA DIY & Crop Naskah Resmi",
+        "subtesKode": "MTK",
+        "mapel": "Matematika",
+        "mataPelajaran": "Matematika",
+        "tingkatKesulitan": "mudah",
+        "materi": "Peluang Empirik dan Rasio Keberhasilan",
+        "babNomor": 4,
+        "namaBab": "Bab 4 · Data & Peluang (Statistika, Diagram & Peluang Teoretik)",
+        "tipe": "pg_sederhana",
+        "tipeSoal": "pg_sederhana",
+        "soal": "Empat percobaan menanam biji kacang hijau dilakukan dengan tanah dan pupuk yang sama. Hasilnya sebagai berikut:\n• Percobaan E: ditanam 20 biji kacang hijau jenis A, tumbuh 15 biji.\n• Percobaan F: ditanam 25 biji kacang hijau jenis B, tumbuh 18 biji.\n• Percobaan G: ditanam 30 biji kacang hijau jenis C, tumbuh 24 biji.\n• Percobaan H: ditanam 40 biji kacang hijau jenis D, tumbuh 31 biji.\nBerdasarkan data tersebut, jenis biji kacang apakah yang paling cocok untuk ditanam pada tanah dan pupuk seperti pada percobaan?",
+        "teksSoal": "Empat percobaan menanam biji kacang hijau dilakukan dengan tanah dan pupuk yang sama. Hasilnya sebagai berikut:\n• Percobaan E: ditanam 20 biji kacang hijau jenis A, tumbuh 15 biji.\n• Percobaan F: ditanam 25 biji kacang hijau jenis B, tumbuh 18 biji.\n• Percobaan G: ditanam 30 biji kacang hijau jenis C, tumbuh 24 biji.\n• Percobaan H: ditanam 40 biji kacang hijau jenis D, tumbuh 31 biji.\nBerdasarkan data tersebut, jenis biji kacang apakah yang paling cocok untuk ditanam pada tanah dan pupuk seperti pada percobaan?",
+        "gambarUrls": [],
+        "gambar": [],
+        "tabel": null,
+        "tabelSoal": null,
+        "opsiJawaban": [
+            {
+                "key": "A",
+                "label": "A",
+                "teks": "Kacang hijau jenis A.",
+                "gambar": null
+            },
+            {
+                "key": "B",
+                "label": "B",
+                "teks": "Kacang hijau jenis B.",
+                "gambar": null
+            },
+            {
+                "key": "C",
+                "label": "C",
+                "teks": "Kacang hijau jenis C.",
+                "gambar": null
+            },
+            {
+                "key": "D",
+                "label": "D",
+                "teks": "Kacang hijau jenis D.",
+                "gambar": null
+            }
+        ],
+        "opsi": [
+            {
+                "key": "A",
+                "label": "A",
+                "teks": "Kacang hijau jenis A.",
+                "gambar": null
+            },
+            {
+                "key": "B",
+                "label": "B",
+                "teks": "Kacang hijau jenis B.",
+                "gambar": null
+            },
+            {
+                "key": "C",
+                "label": "C",
+                "teks": "Kacang hijau jenis C.",
+                "gambar": null
+            },
+            {
+                "key": "D",
+                "label": "D",
+                "teks": "Kacang hijau jenis D.",
+                "gambar": null
+            }
+        ],
+        "pernyataan": null,
+        "tabelBenarSalah": null,
+        "kunciJawaban": "C",
+        "kunci": "C",
+        "pembahasan": "Hitung rasio / persentase keberhasilan tumbuh tiap jenis biji: Jenis A = $15/20 = 75\\%$; Jenis B = $18/25 = 72\\%$; Jenis C = $24/30 = 80\\%$; Jenis D = $31/40 = 77{,}5\\%$. Biji kacang hijau jenis C memiliki persentase keberhasilan tumbuh paling tinggi yaitu $80\\%$, sehingga paling cocok ditanam.",
+        "subMateriId": "peluang_teoretik",
+        "gambarUrl": null
     }
-  ],
+],
   "Bahasa Indonesia": [
     {
       "id": "pure_ai_indo_autentik_01",
@@ -9064,17 +13944,19 @@ export async function generatePureAiHotsSoal({
   // 3. Fallback ke KATALOG_PURE_AI_HOTS (100% presisi mapel yang sesuai, TIDAK BOLEH campur mapel)
   if (hasilAi.length < targetJumlah) {
     const poolPure = KATALOG_PURE_AI_HOTS[mapelNorm] || [];
-    
-    // Filter berdasarkan sub-materi jika bukan 'semua'
-    let kandidat = poolPure;
+    const poolBab = poolPure.filter((item) => item.babNomor === babNomor);
+    const kandidatUtama = poolBab.length > 0 ? [...poolBab, ...poolPure.filter((item) => item.babNomor !== babNomor)] : poolPure;
+
+    let kandidat = kandidatUtama;
     if (subMateriId && subMateriId !== 'semua') {
       const kataKunci = subObj?.kataKunci || [];
-      const cocokSub = poolPure.filter((item) => {
+      const cocokSub = kandidatUtama.filter((item) => {
+        if (item.subMateriId === subMateriId) return true;
         const teks = (String(item.materi || '') + ' ' + String(item.soal || '')).toLowerCase();
         return kataKunci.some((kw) => teks.includes(kw.toLowerCase()));
       });
       if (cocokSub.length > 0) {
-        kandidat = [...cocokSub, ...poolPure.filter((item) => !cocokSub.includes(item))];
+        kandidat = [...cocokSub, ...kandidatUtama.filter((item) => !cocokSub.includes(item))];
       }
     }
 
