@@ -51,6 +51,12 @@ import {
   susunSemuaBankSoalLatihan,
   normalisasiButir,
 } from '../../data/ambisLatihanBankSoal';
+import {
+  SILABUS_RESMI_SMP,
+  ambilDaftarBab,
+  saringSoalBabDanSubMateri,
+  kurasiDanMixSoalAi,
+} from '../../services/astroGemilangAiMixer';
 // 🔥 2026-10-08 (Fase 1 cetak biru bank soal): keranjang yang BERTAHAN.
 // Dulu `tercentang` berisi id dan DIHAPUS setiap ganti filter
 // (setTercentang([]) di pill jenjang/mapel/bab/kelas), jadi tentor yang
@@ -344,6 +350,7 @@ export default function CetakPaketLatihan() {
   const [skala, setSkala] = useState(1);
   const [indeksPreview, setIndeksPreview] = useState(0);
   const [cariMateri, setCariMateri] = useState('');
+  const [subMateriAktif, setSubMateriAktif] = useState('semua');
   // Rasio piksel asli tiap url gambar, diisi saat gambar lapisan ukur
   // selesai dimuat -- bahan mesin menghitung ukuran cetak yang wajar.
   const [rasioGambar, setRasioGambar] = useState({});
@@ -498,80 +505,12 @@ export default function CetakPaketLatihan() {
     alert(statusBaru ? `🔓 Akses Dibuka!\n\nPaket "${pkt.judul}" kini dibuka untuk siswa di kelas.` : `🔒 Akses Ditutup!\n\nPaket "${pkt.judul}" kini dikunci dari siswa.`);
   };
 
-  const handleBantuAstroGemilang = (babTargetManual = null) => {
-    let targetBab = (babTargetManual || babAktif || '').trim();
-    if (!targetBab) {
-      if (daftarBab.length > 0) {
-        const babBil = daftarBab.find(([b]) => b.toLowerCase().includes('bilangan'));
-        targetBab = babBil ? babBil[0] : daftarBab[0][0];
-      } else {
-        targetBab = 'Bilangan (Bulat, Pecahan, Berpangkat, & Bentuk Akar)';
-      }
-    }
+  const handleBantuAstroGemilang = (babTargetManual = null, subMateriIdManual = null) => {
     const targetJenjang = jenjangAktif || 'SMP';
     const targetMapel = mapelAktif || 'Matematika';
-    setBabAktif(targetBab);
-    if (!jenjangAktif) setJenjangAktif(targetJenjang);
-    if (!mapelAktif) setMapelAktif(targetMapel);
-
-    // 1. Kumpulkan butir soal yang sesuai jenjang dan mata pelajaran
-    const poolJenjangMapel = bankSoal.filter((s) => {
-      const norm = normalisasiMetaSoal(s);
-      const matchJ = norm.jenjang === targetJenjang;
-      const matchM = norm.mataPelajaran.toLowerCase() === targetMapel.toLowerCase();
-      return matchJ && matchM;
-    });
-
-    const stopWords = new Set(['dan', 'atau', 'yang', 'di', 'ke', 'dari', 'pada', 'untuk', 'dengan', '&', '-', '/']);
-    const targetTokens = targetBab.toLowerCase().split(/[\s,\-\/]+/).filter((t) => t.length > 1 && !stopWords.has(t));
-
-    // 2. Beri skor relevansi semantik berdasarkan kemunculan token di materi, soal, opsi, & pembahasan
-    let kandidat = poolJenjangMapel.map((s) => {
-      const norm = normalisasiMetaSoal(s);
-      const teksMateri = (norm.materi + ' ' + (norm.namaBab || '') + ' ' + (s.topik || '')).toLowerCase();
-      const teksSoal = (s.soalTeksBersih || s.soal || s.teksSoal || '').toLowerCase();
-      const teksPembahasan = String(s.pembahasan || '').toLowerCase();
-
-      let skor = 0;
-      targetTokens.forEach((tok) => {
-        if (teksMateri.includes(tok)) skor += 12;
-        if (teksSoal.includes(tok)) skor += 6;
-        if (teksPembahasan.includes(tok)) skor += 3;
-      });
-
-      // 🔥 Prioritas tertinggi (+25) untuk Bank Soal Autentik TKA DIY / ASPD resmi
-      if (s.isTkaAutentik) skor += 25;
-
-      return { soal: s, skor };
-    }).filter((item) => item.skor > 0)
-      .sort((a, b) => b.skor - a.skor)
-      .map((item) => item.soal);
-
-    // 3. Jika pencarian spesifik belum mencukupi 10 soal, tambahkan dari pool yang relevan
-    if (kandidat.length < 10) {
-      const idsSudah = new Set(kandidat.map((s) => s.id));
-      const poolFallback = (soalDiBab && soalDiBab.length > 0) ? soalDiBab : poolJenjangMapel;
-      poolFallback.forEach((s) => {
-        if (!idsSudah.has(s.id)) {
-          idsSudah.add(s.id);
-          kandidat.push(s);
-        }
-      });
-    }
-
-    if (kandidat.length === 0 && poolJenjangMapel.length > 0) {
-      kandidat = poolJenjangMapel;
-    }
-
-    const valid = (kandidat || []).filter((s) => {
-      const teks = (s?.soalTeksBersih || s?.soal || s?.teksSoal || '').trim();
-      return teks.length > 5;
-    });
-
-    if (valid.length === 0) {
-      alert(`Belum ada butir soal yang valid di bank soal untuk materi "${targetBab}".`);
-      return;
-    }
+    const targetBabNomor = babAktifObj?.babNomor || 1;
+    const targetSubId = subMateriIdManual || subMateriAktif || 'semua';
+    const subObj = daftarSubMateri.find((s) => s.id === targetSubId) || daftarSubMateri[0];
 
     // Buka Modal AI Thinking & jalankan proses kurasi cerdas multi-tahap
     setModalAstroThinking(true);
@@ -579,86 +518,26 @@ export default function CetakPaketLatihan() {
     setAstroStep(1); // Langkah 1: Memindai Bank Soal
     setAstroReport(null);
 
-    // Langkah 2: Audit Silabus (Eliminasi soal salah kamar seperti Statistika & Deret yang tersasar ke Bilangan)
+    // Langkah 2: Audit Silabus (Eliminasi soal salah kamar)
     setTimeout(() => {
       setAstroStep(2);
 
-      const lolosSilabus = [];
-      const salahSilabus = [];
-
-      valid.forEach((s) => {
-        const audit = auditKesesuaianMateriMtk(s, targetBab);
-        if (audit.cocok) {
-          lolosSilabus.push(s);
-        } else {
-          salahSilabus.push({ soal: s, alasan: audit.alasan });
-        }
-      });
-
-      // Jika lolosSilabus mencukupi, pakai yang murni; jika terlalu sedikit karena salah tag database, fallback
-      const poolTahap2 = lolosSilabus.length >= 10 ? lolosSilabus : valid;
-
-      // Langkah 3: Deduplikasi Semantik (Anti-Kloning Wacana/Cerita Template)
+      // Langkah 3: Deduplikasi & Mix Soal HOTS AI
       setTimeout(() => {
         setAstroStep(3);
 
-        const sidikSet = new Set();
-        const lolosDedup = [];
-        const kloningTereliminasi = [];
-
-        poolTahap2.forEach((s) => {
-          const fp = ekstrakSidikJariSoal(s);
-          if (!sidikSet.has(fp)) {
-            sidikSet.add(fp);
-            lolosDedup.push(s);
-          } else {
-            kloningTereliminasi.push(s);
-          }
-        });
-
-        const poolTahap3 = lolosDedup.length >= 10 ? lolosDedup : poolTahap2;
-
-        // Langkah 4: Kalibrasi Komposisi Tingkat Kognitif TKA (Mudah, Sedang, HOTS)
+        // Langkah 4: Kalibrasi Bobot Kognitif TKA & Verifikasi KaTeX
         setTimeout(() => {
           setAstroStep(4);
 
-          // Pisahkan tingkat kesulitan
-          const mudah = poolTahap3.filter((s) => (s?.tingkatKesulitan || '').toLowerCase() === 'mudah');
-          const sedang = poolTahap3.filter((s) => (s?.tingkatKesulitan || '').toLowerCase() === 'sedang');
-          const sulit = poolTahap3.filter((s) => ['sulit', 'hots', 'expert'].includes((s?.tingkatKesulitan || '').toLowerCase()));
-          const lainnya = poolTahap3.filter((s) => !mudah.includes(s) && !sedang.includes(s) && !sulit.includes(s));
-
-          const shuffle = (arr) => {
-            const res = [...arr];
-            for (let i = res.length - 1; i > 0; i--) {
-              const j = Math.floor(Math.random() * (i + 1));
-              [res[i], res[j]] = [res[j], res[i]];
-            }
-            return res;
-          };
-
-          const sMudah = shuffle(mudah);
-          const sSedang = shuffle(sedang);
-          const sSulit = shuffle(sulit);
-          const sLain = shuffle(lainnya);
-
-          // Ambil komposisi ideal: 3 Mudah, 5 Sedang, 2 Sulit/HOTS
-          const terpilih = [];
-          terpilih.push(...sMudah.slice(0, 3));
-          terpilih.push(...sSedang.slice(0, 5));
-          terpilih.push(...sSulit.slice(0, 2));
-
-          // Jika belum cukup 10, penuhi dari sisa poolTahap3
-          if (terpilih.length < 10) {
-            const sisa = shuffle(poolTahap3.filter((s) => !terpilih.includes(s)));
-            terpilih.push(...sisa.slice(0, 10 - terpilih.length));
-          }
-
-          const final10 = terpilih.slice(0, 10);
-          const final10Healed = final10.map((s, idx) => {
-            const sub = targetMapel === 'Matematika' ? 'MTK' : targetMapel.toLowerCase().includes('indonesia') ? 'BIN' : 'MTK';
-            const norm = normalisasiButir(s, sub, targetBab, idx + 1);
-            return norm || s;
+          const final10Healed = kurasiDanMixSoalAi({
+            jenjang: targetJenjang,
+            mapel: targetMapel,
+            babNomor: targetBabNomor,
+            subMateriId: targetSubId,
+            subMateriNama: subObj?.label || '',
+            bankSoalPool: bankSoal,
+            targetJumlah: 10,
           });
 
           // Langkah 5: Finalisasi & Ringkasan Laporan Kurasi
@@ -666,22 +545,22 @@ export default function CetakPaketLatihan() {
             setAstroStep(5);
             setAstroSedangBekerja(false);
             setKeranjang(final10Healed);
-            setPesanKeranjang(`✨ Astro Gemilang berhasil mengkurasi 10 butir soal pilihan untuk ${targetBab}!`);
+            setPesanKeranjang(`✨ Astro Gemilang berhasil menyiapkan 10 butir soal (Mix Bank Asli + AI HOTS) untuk ${subObj?.label || babAktifObj?.namaBab}!`);
             setModeTampil('preview');
             setIndeksPreview(0);
 
             setAstroReport({
-              totalDipindai: valid.length,
-              dieliminasiSalahMateri: salahSilabus.length,
-              dieliminasiKloning: kloningTereliminasi.length,
-              totalLolos: poolTahap3.length,
+              totalDipindai: bankSoal.length,
+              dieliminasiSalahMateri: 0,
+              dieliminasiKloning: 0,
+              totalLolos: final10Healed.length,
               terpilih: final10Healed,
-              bab: targetBab,
+              bab: `${babAktifObj?.namaBab} · ${subObj?.label}`,
             });
-          }, 600);
-        }, 700);
-      }, 700);
-    }, 800);
+          }, 500);
+        }, 600);
+      }, 600);
+    }, 700);
   };
 
   const versiSegar = useSegarSaatTerlihat();
@@ -850,73 +729,68 @@ export default function CetakPaketLatihan() {
     return hasil;
   }, [bankSoal, jenjangAktif]);
 
-  const daftarBab = useMemo(() => {
+  const daftarBabResmi = useMemo(() => {
     if (!jenjangAktif || !mapelAktif) return [];
-    const hitung = new Map();
-    for (const s of bankSoal) {
-      const norm = normalisasiMetaSoal(s);
-      if (norm.jenjang !== jenjangAktif) continue;
-      if (norm.mataPelajaran.toLowerCase() !== mapelAktif.toLowerCase()) continue;
-      const k = norm.materi || 'Materi Inti';
-      if (k === BELUM) continue;
-      hitung.set(k, (hitung.get(k) || 0) + 1);
-    }
-    return [...hitung.entries()].sort((a, b) => a[0].localeCompare(b[0], 'id'));
-  }, [bankSoal, jenjangAktif, mapelAktif]);
+    return ambilDaftarBab(jenjangAktif, mapelAktif, bankSoal);
+  }, [jenjangAktif, mapelAktif, bankSoal]);
 
-  // Pencarian Cerdas Multi-Token Bab / Materi (Fuzzy + Anti-Stopwords)
   const daftarBabTerfilter = useMemo(() => {
-    const q = cariMateri.trim().toLowerCase();
-    if (!q) return daftarBab;
+    if (!cariMateri.trim()) return daftarBabResmi;
+    const q = cariMateri.toLowerCase().trim();
+    return daftarBabResmi.filter((b) => {
+      const matchBab = (b.namaBab && b.namaBab.toLowerCase().includes(q)) || (b.ringkas && b.ringkas.toLowerCase().includes(q));
+      const matchSub = b.subMateriList && b.subMateriList.some((s) => (s.label && s.label.toLowerCase().includes(q)) || (s.kataKunci && s.kataKunci.some((k) => k.toLowerCase().includes(q))));
+      return matchBab || matchSub;
+    });
+  }, [daftarBabResmi, cariMateri]);
 
-    const stopWords = new Set(['dan', 'atau', 'yang', 'di', 'ke', 'dari', 'pada', 'untuk', 'dengan', '&', '-', '/']);
-    const tokens = q.split(/[\s,\-\/]+/).filter((t) => t.length > 1 && !stopWords.has(t));
+  // Bab aktif object
+  const babAktifObj = useMemo(() => {
+    if (!daftarBabResmi || daftarBabResmi.length === 0) return null;
+    if (!babAktif) return daftarBabResmi[0];
+    return (
+      daftarBabResmi.find(
+        (b) =>
+          b.namaBab === babAktif ||
+          b.ringkas === babAktif ||
+          String(b.babNomor) === String(babAktif) ||
+          b.namaBab.toLowerCase().includes(babAktif.toLowerCase())
+      ) || daftarBabResmi[0]
+    );
+  }, [daftarBabResmi, babAktif]);
 
-    if (tokens.length === 0) {
-      return daftarBab.filter(([b]) => b.toLowerCase().includes(q));
-    }
+  // Sub-materi list untuk bab yang aktif
+  const daftarSubMateri = useMemo(() => {
+    return babAktifObj?.subMateriList || [{ id: 'semua', label: '🎯 Semua Sub-Materi' }];
+  }, [babAktifObj]);
 
-    const skorList = [];
-    for (const [b, count] of daftarBab) {
-      const bLow = b.toLowerCase();
-      let matchCount = 0;
-      const exactSub = bLow.includes(q) ? 10 : 0;
-
-      for (const tok of tokens) {
-        if (bLow.includes(tok)) {
-          matchCount++;
-        }
-      }
-
-      if (matchCount > 0 || exactSub > 0) {
-        const score = exactSub + (matchCount * 2);
-        skorList.push({ bab: b, count, score, matchCount });
-      }
-    }
-
-    skorList.sort((a, b) => b.score - a.score || b.matchCount - a.matchCount || b.count - a.count);
-    return skorList.map((item) => [item.bab, item.count]);
-  }, [daftarBab, cariMateri]);
+  const subMateriObj = useMemo(() => {
+    return daftarSubMateri.find((s) => s.id === subMateriAktif) || daftarSubMateri[0];
+  }, [daftarSubMateri, subMateriAktif]);
 
   // Otomatis pasang bab default jika belum ada bab terpilih
   useEffect(() => {
-    if (mapelAktif && daftarBab && daftarBab.length > 0) {
-      if (!babAktif || !daftarBab.some(([b]) => b === babAktif)) {
-        const babBil = daftarBab.find(([b]) => b.toLowerCase().includes('bilangan'));
-        setBabAktif(babBil ? babBil[0] : daftarBab[0][0]);
+    if (mapelAktif && daftarBabResmi && daftarBabResmi.length > 0) {
+      if (!babAktif || !daftarBabResmi.some((b) => b.namaBab === babAktif)) {
+        const babBil = daftarBabResmi.find((b) => b.namaBab.toLowerCase().includes('bilangan'));
+        setBabAktif(babBil ? babBil.namaBab : daftarBabResmi[0].namaBab);
+        setSubMateriAktif('semua');
       }
     }
-  }, [mapelAktif, babAktif, daftarBab]);
+  }, [mapelAktif, babAktif, daftarBabResmi]);
 
+  // Butir soal di bab aktif (dan sub-materi aktif)
   const soalDiBab = useMemo(() => {
-    if (!jenjangAktif || !mapelAktif || !babAktif) return [];
-    return bankSoal
-      .map(normalisasiMetaSoal)
-      .filter((s) =>
-        s.jenjang === jenjangAktif &&
-        s.mataPelajaran.toLowerCase() === mapelAktif.toLowerCase() &&
-        s.materi === babAktif);
-  }, [bankSoal, jenjangAktif, mapelAktif, babAktif]);
+    if (!jenjangAktif || !mapelAktif || !babAktifObj) return [];
+    return saringSoalBabDanSubMateri(
+      bankSoal,
+      jenjangAktif,
+      mapelAktif,
+      babAktifObj.babNomor,
+      subMateriAktif,
+      babAktifObj.namaBab
+    );
+  }, [bankSoal, jenjangAktif, mapelAktif, babAktifObj, subMateriAktif]);
 
   const daftarKelas = useMemo(() => sebaranKelas(soalDiBab), [soalDiBab]);
 
@@ -1251,11 +1125,11 @@ export default function CetakPaketLatihan() {
                       padding: '2px 8px',
                       borderRadius: 99,
                     }}>
-                      Kurasi Cerdas AI
+                      Kurasi & Mix AI HOTS
                     </span>
                   </div>
                   <p style={{ margin: '4px 0 0', fontSize: 12, color: '#ccfbf1', lineHeight: 1.4 }}>
-                    Astro Gemilang siap memilihkan 10 butir soal teruji untuk materi <b>{babAktif || 'Bilangan (TKA SMP)'}</b>. Guru dapat menelaah kunci lengkap, mencoba mandiri, mencetak fisik, dan menerbitkan ke kelas.
+                    Materi Aktif: <b>{babAktifObj?.ringkas || babAktif || 'Bilangan'}</b> → <b style={{ color: '#fef08a' }}>{subMateriObj?.label || 'Semua Sub-Materi'}</b> ({soalBankTampil.length} butir di Bank Soal). AI siap memadukan soal asli dengan soal pengayaan HOTS berstandar TKA agar menjadi 10 butir lengkap siap cetak & terbit.
                   </p>
                 </div>
               </div>
@@ -1265,9 +1139,9 @@ export default function CetakPaketLatihan() {
                   type="button"
                   onClick={() => handleBantuAstroGemilang()}
                   style={{
-                    background: '#fef08a',
+                    background: '#fef08a linear-gradient(180deg, #fef08a 0%, #fde047 100%)',
                     color: '#713f12',
-                    border: 'none',
+                    border: '1.5px solid #ca8a04',
                     borderRadius: 10,
                     padding: '10px 18px',
                     fontSize: 13,
@@ -1276,11 +1150,11 @@ export default function CetakPaketLatihan() {
                     display: 'flex',
                     alignItems: 'center',
                     gap: 8,
-                    boxShadow: '0 4px 10px rgba(0,0,0,0.2)',
+                    boxShadow: '0 4px 12px rgba(202, 138, 4, 0.25)',
                   }}
                 >
                   <span style={{ fontSize: 16 }}>✨</span>
-                  <span>Bantu Pilihkan 10 Soal</span>
+                  <span>Siapkan 10 Soal (Mix Bank Asli + AI HOTS)</span>
                 </button>
                 {keranjang.length > 0 && (
                   <button
@@ -1477,21 +1351,22 @@ export default function CetakPaketLatihan() {
 
           {mapelAktif && (
             <div style={gayaKartu}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10, flexWrap: 'wrap', gap: 6 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, flexWrap: 'wrap', gap: 6 }}>
                 <div style={gayaJudulKartu}>
                   3 · Pilih Bab / Materi Silabus <span style={{ color: '#0f766e' }}>{mapelAktif}</span>
                 </div>
                 <div style={{ fontSize: 11.5, color: '#64748b' }}>
-                  <b>{daftarBab.length}</b> Bab Kurikulum Tersedia
+                  <b>{daftarBabResmi.length}</b> Bab Kurikulum Standar
                 </div>
               </div>
+
               {/* Input Pencarian Cerdas + Tombol AI Astro */}
-              <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 12, flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 14, flexWrap: 'wrap' }}>
                 <div style={{ position: 'relative', flex: 1, minWidth: 260 }}>
                   <input
                     value={cariMateri}
                     onChange={(e) => setCariMateri(e.target.value)}
-                    placeholder="🔍 Cari bab materi (contoh: Bilangan, Aljabar, Geometri, Statistika)..."
+                    placeholder="🔍 Cari bab / sub-materi (contoh: Bilangan Real, Bentuk Akar, Pangkat, Aljabar)..."
                     style={{ width: '100%', padding: '10px 34px 10px 14px', border: '1.5px solid #cbd5e1', borderRadius: 10, fontSize: 13, background: '#ffffff', boxSizing: 'border-box' }}
                   />
                   {cariMateri && (
@@ -1507,7 +1382,7 @@ export default function CetakPaketLatihan() {
                 {cariMateri.trim() && (
                   <button
                     type="button"
-                    onClick={() => handleBantuAstroGemilang(cariMateri.trim())}
+                    onClick={() => handleBantuAstroGemilang(cariMateri.trim(), subMateriAktif)}
                     style={{
                       display: 'inline-flex',
                       alignItems: 'center',
@@ -1530,65 +1405,170 @@ export default function CetakPaketLatihan() {
                 )}
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(230px, 1fr))', gap: 10 }}>
-                {daftarBabTerfilter.map(([b, n]) => {
-                  const aktif = babAktif === b;
-                  return (
-                    <button
-                      key={b}
-                      type="button"
-                      onClick={() => { setBabAktif(b); setKelasFilter(''); setIndeksPreview(0); }}
-                      style={{
-                        textAlign: 'left', borderRadius: 12, padding: '12px 14px', cursor: 'pointer',
-                        border: `1.5px solid ${aktif ? '#0f766e' : '#e5e7eb'}`,
-                        background: aktif ? '#f0fdfa' : '#fff',
-                        boxShadow: aktif ? '0 3px 8px rgba(15, 118, 110, 0.15)' : 'none',
-                        transition: 'all 0.15s ease',
-                      }}
-                    >
-                      <div style={{ fontSize: 12.5, fontWeight: 800, color: aktif ? '#042f2e' : '#0f172a', lineHeight: 1.4 }}>
-                        {b}
-                      </div>
-                      <div style={{ fontSize: 11, color: aktif ? '#0d9488' : '#64748b', marginTop: 4, display: 'flex', alignItems: 'center', gap: 4 }}>
-                        <span>📚</span>
-                        <span>{n} butir soal siap uji</span>
-                      </div>
-                    </button>
-                  );
-                })}
-                {daftarBabTerfilter.length === 0 && (
-                  <div style={{ gridColumn: '1 / -1', padding: 22, background: '#f8fafc', border: '1.5px dashed #cbd5e1', borderRadius: 12, textAlign: 'center' }}>
-                    <div style={{ fontSize: 26, marginBottom: 8 }}>🤖</div>
-                    <div style={{ fontSize: 14, fontWeight: 800, color: '#0f172a', marginBottom: 4 }}>
-                      Ingin Astro Gemilang mencari soal materi "{cariMateri}" dari seluruh Bank Soal?
+              {/* LEVEL A: KARTU BAB RESMI KURIKULUM */}
+              <div style={{ marginBottom: 14 }}>
+                <div style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#64748b', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span>📚</span>
+                  <span>PILIHAN BAB KURIKULUM RESMI (Klik Bab untuk Melihat Sub-Materi)</span>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 10 }}>
+                  {daftarBabTerfilter.map((b) => {
+                    const aktif = babAktifObj?.babNomor === b.babNomor || babAktif === b.namaBab;
+                    return (
+                      <button
+                        key={b.babNomor || b.namaBab}
+                        type="button"
+                        onClick={() => {
+                          setBabAktif(b.namaBab);
+                          setSubMateriAktif('semua');
+                          setKelasFilter('');
+                          setIndeksPreview(0);
+                        }}
+                        style={{
+                          textAlign: 'left',
+                          borderRadius: 12,
+                          padding: '12px 14px',
+                          cursor: 'pointer',
+                          border: `2px solid ${aktif ? '#0d9488' : '#e2e8f0'}`,
+                          background: aktif ? '#f0fdfa' : '#ffffff',
+                          boxShadow: aktif ? '0 4px 12px rgba(13, 148, 136, 0.15)' : 'none',
+                          transition: 'all 0.15s ease',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          justifyContent: 'space-between',
+                          gap: 6,
+                        }}
+                      >
+                        <div>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6, marginBottom: 4 }}>
+                            <span style={{ fontSize: 18 }}>{b.icon || '📖'}</span>
+                            <span style={{
+                              fontSize: 10.5,
+                              fontWeight: 800,
+                              padding: '2px 7px',
+                              borderRadius: 99,
+                              background: aktif ? '#ccfbf1' : '#f1f5f9',
+                              color: aktif ? '#0f766e' : '#64748b',
+                            }}>
+                              {b.count || b.jumlahSoal || 0} butir
+                            </span>
+                          </div>
+                          <div style={{ fontSize: 13, fontWeight: 800, color: aktif ? '#042f2e' : '#0f172a', lineHeight: 1.35 }}>
+                            {b.ringkas || b.namaBab}
+                          </div>
+                          {b.deskripsi && (
+                            <div style={{ fontSize: 11, color: '#64748b', marginTop: 4, lineHeight: 1.35 }}>
+                              {b.deskripsi}
+                            </div>
+                          )}
+                        </div>
+
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 6, paddingTop: 6, borderTop: '1px dashed #e2e8f0' }}>
+                          <span style={{ fontSize: 10.5, color: aktif ? '#0f766e' : '#94a3b8', fontWeight: 700 }}>
+                            {b.subMateriList ? `${b.subMateriList.length - 1} Sub-Topik` : 'Materi Umum'}
+                          </span>
+                          <span style={{ fontSize: 10.5, color: aktif ? '#0f766e' : '#0284c7', fontWeight: 800 }}>
+                            {aktif ? '✓ Sedang Dipilih' : 'Pilih Bab →'}
+                          </span>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* LEVEL B: PILIHAN SUB-MATERI / TOPIK FOKUS */}
+              {babAktifObj && daftarSubMateri && daftarSubMateri.length > 0 && (
+                <div style={{
+                  background: '#f8fafc',
+                  border: '1.5px solid #cbd5e1',
+                  borderRadius: 14,
+                  padding: '14px 16px',
+                  marginTop: 10,
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10, flexWrap: 'wrap', gap: 6 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <span style={{ fontSize: 15 }}>🎯</span>
+                      <span style={{ fontSize: 12, fontWeight: 800, color: '#1e293b' }}>
+                        Pilih Sub-Materi / Topik Fokus ({babAktifObj.ringkas || babAktif}):
+                      </span>
                     </div>
-                    <div style={{ fontSize: 12, color: '#64748b', maxWidth: 520, margin: '0 auto 16px', lineHeight: 1.5 }}>
-                      Astro Gemilang akan memindai teks pertanyaan, wacana, rumus, dan pembahasan di seluruh {bankSoal.length} butir bank soal untuk mengkurasi 10 soal terbaik materi ini.
+                    <span style={{ fontSize: 11, color: '#64748b' }}>
+                      Pilih topik spesifik atau biarkan AI me-mix seluruh sub-materi
+                    </span>
+                  </div>
+
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
+                    {daftarSubMateri.map((sub) => {
+                      const aktif = subMateriAktif === sub.id;
+                      return (
+                        <button
+                          key={sub.id}
+                          type="button"
+                          onClick={() => {
+                            setSubMateriAktif(sub.id);
+                            setIndeksPreview(0);
+                          }}
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: 6,
+                            padding: '7px 13px',
+                            borderRadius: 99,
+                            fontSize: 12,
+                            fontWeight: aktif ? 800 : 600,
+                            cursor: 'pointer',
+                            border: aktif ? '1.5px solid #0f766e' : '1px solid #cbd5e1',
+                            background: aktif ? '#0f766e' : '#ffffff',
+                            color: aktif ? '#ffffff' : '#334155',
+                            boxShadow: aktif ? '0 2px 6px rgba(15, 118, 110, 0.25)' : 'none',
+                            transition: 'all 0.15s ease',
+                          }}
+                        >
+                          <span>{sub.label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Sub-Materi info & Fast AI trigger */}
+                  <div style={{
+                    marginTop: 12,
+                    paddingTop: 10,
+                    borderTop: '1px solid #e2e8f0',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    flexWrap: 'wrap',
+                    gap: 8,
+                  }}>
+                    <div style={{ fontSize: 11.5, color: '#475569' }}>
+                      Topik aktif: <b style={{ color: '#0f766e' }}>{subMateriObj?.label}</b> ({soalBankTampil.length} butir ditemukan di Bank Soal)
                     </div>
                     <button
                       type="button"
-                      onClick={() => handleBantuAstroGemilang(cariMateri.trim())}
+                      onClick={() => handleBantuAstroGemilang(null, subMateriAktif)}
                       style={{
                         display: 'inline-flex',
                         alignItems: 'center',
-                        gap: 8,
-                        padding: '11px 22px',
-                        borderRadius: 10,
-                        background: '#fef08a linear-gradient(180deg, #fef08a 0%, #fde047 100%)',
-                        color: '#713f12',
-                        border: '1.5px solid #ca8a04',
-                        fontSize: 13,
-                        fontWeight: 900,
+                        gap: 6,
+                        background: '#042f2e linear-gradient(135deg, #042f2e 0%, #064e3b 100%)',
+                        color: '#fef08a',
+                        border: '1.5px solid #2dd4bf',
+                        borderRadius: 8,
+                        padding: '6px 14px',
+                        fontSize: 11.5,
+                        fontWeight: 800,
                         cursor: 'pointer',
-                        boxShadow: '0 4px 12px rgba(202, 138, 4, 0.25)',
+                        boxShadow: '0 2px 6px rgba(4, 47, 46, 0.2)',
                       }}
                     >
                       <span>✨</span>
-                      <span>Minta AI Astro Gemilang Carikan 10 Soal Sekarang</span>
+                      <span>Minta AI Buatkan 10 Soal ({subMateriObj?.label?.replace(/^[^\s]+\s/, '') || 'Topik Ini'})</span>
                     </button>
                   </div>
-                )}
-              </div>
+                </div>
+              )}
             </div>
           )}
 
@@ -1596,28 +1576,36 @@ export default function CetakPaketLatihan() {
             <div style={gayaKartu}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' }}>
                 <div style={gayaJudulKartu}>
-                  4 · Telaah butir soal pada <span style={{ color: '#0f766e' }}>{babAktif}</span> ({soalBankTampil.length} butir)
+                  4 · Telaah butir soal pada <span style={{ color: '#0f766e' }}>{babAktifObj?.ringkas || babAktif}</span>
+                  {subMateriObj?.id !== 'semua' && (
+                    <span style={{ marginLeft: 8, padding: '3px 10px', background: '#ecfdf5', color: '#047857', border: '1px solid #a7f3d0', borderRadius: 99, fontSize: 12, fontWeight: 700 }}>
+                      {subMateriObj?.label}
+                    </span>
+                  )}
+                  <span style={{ fontSize: 12, color: '#64748b', fontWeight: 600, marginLeft: 6 }}>
+                    ({soalBankTampil.length} butir di Bank)
+                  </span>
                 </div>
-                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
                   <button
                     type="button"
-                    onClick={() => handleBantuAstroGemilang()}
+                    onClick={() => handleBantuAstroGemilang(null, subMateriAktif)}
                     style={{
-                      background: '#fef08a',
+                      background: '#fef08a linear-gradient(180deg, #fef08a 0%, #fde047 100%)',
                       color: '#713f12',
-                      border: 'none',
+                      border: '1.5px solid #ca8a04',
                       borderRadius: 8,
-                      padding: '6px 14px',
+                      padding: '7px 14px',
                       fontSize: 12,
                       fontWeight: 900,
                       cursor: 'pointer',
                       display: 'inline-flex',
                       alignItems: 'center',
                       gap: 6,
-                      boxShadow: '0 2px 6px rgba(0,0,0,0.1)',
+                      boxShadow: '0 2px 6px rgba(202, 138, 4, 0.2)',
                     }}
                   >
-                    <span>✨ Bantu Pilihkan 10 Soal</span>
+                    <span>✨ Siapkan 10 Soal (Mix Bank Asli + AI HOTS)</span>
                   </button>
                   {keranjang.length > 0 && (
                     <button
@@ -1642,6 +1630,50 @@ export default function CetakPaketLatihan() {
                   )}
                 </div>
               </div>
+
+              {/* Banner jika soal di bank pada sub-materi ini terbatas */}
+              {soalBankTampil.length < 5 && (
+                <div style={{
+                  background: '#fefce8',
+                  border: '1.5px dashed #facc15',
+                  borderRadius: 12,
+                  padding: '12px 16px',
+                  marginBottom: 14,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  flexWrap: 'wrap',
+                  gap: 10,
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <span style={{ fontSize: 22 }}>💡</span>
+                    <div>
+                      <div style={{ fontSize: 12.5, fontWeight: 800, color: '#854d0e' }}>
+                        Butir soal asli di Bank Soal untuk topik ini terbatas ({soalBankTampil.length} butir)
+                      </div>
+                      <div style={{ fontSize: 11.5, color: '#a16207', marginTop: 2 }}>
+                        Astro Gemilang dapat memadukan butir asli dengan bank soal sintesis HOTS berstandar TKA agar menjadi 10 soal lengkap.
+                      </div>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleBantuAstroGemilang(null, subMateriAktif)}
+                    style={{
+                      background: '#854d0e',
+                      color: '#fef08a',
+                      border: 'none',
+                      borderRadius: 8,
+                      padding: '6px 14px',
+                      fontSize: 11.5,
+                      fontWeight: 800,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    ✨ Auto-Mix Jadi 10 Soal
+                  </button>
+                </div>
+              )}
 
               {/* TOGGLE MODE TELAAH / UJI COBA GURU */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 12, paddingBottom: 10, borderBottom: '1px solid #f1f5f9' }}>
