@@ -72,6 +72,7 @@ import {
   judulDariKeranjang,
   teksRincianMasuk,
   teksSoalDari,
+  bacaanDari,
 } from '../../utils/keranjangSoalGuru';
 import KartuKeranjangSoal from '../../components/guru/KartuKeranjangSoal';
 import KartuBacaSoalLengkap from '../../components/admin/KartuBacaSoalLengkap';
@@ -232,6 +233,7 @@ const PX_PER_MM = 96 / 25.4;
 function KartuBacaSoal({ soal, nomor, tercentang, onCentang, bacaSaja, modeKunciGuru = true }) {
   // 17 Okt: JSON owner membawa varian TEKS BERSIH (tanpa latex) — PDF
   // tidak merender KaTeX, maka cetak memakai varian itu bila ada.
+  const bacaan = bacaanDari(soal);
   const segmen = pisahTeksDanGambar(soal?.soalTeksBersih || teksSoalMentah(soal), soal?.gambarUrls);
   const opsi = Array.isArray(soal?.opsiTeksBersih) && soal.opsiTeksBersih.length ? soal.opsiTeksBersih : (Array.isArray(soal?.opsiJawaban) ? soal.opsiJawaban : []);
   const kunci = Array.isArray(soal?.kunciJawaban) ? soal.kunciJawaban.join(', ') : String(soal?.kunciJawaban ?? '');
@@ -265,6 +267,14 @@ function KartuBacaSoal({ soal, nomor, tercentang, onCentang, bacaSaja, modeKunci
               )}
             </div>
           </div>
+          {bacaan && (
+            <div style={{ borderLeft: '3px solid #6366f1', background: '#f8fafc', padding: '8px 10px', borderRadius: '0 8px 8px 0', marginBottom: 8, fontSize: 12, lineHeight: 1.6, color: '#1e293b' }}>
+              <div style={{ fontSize: 11, fontWeight: 800, color: '#4f46e5', marginBottom: 4 }}>
+                📖 Wacana Stimulus{bacaan.judul ? `: ${bacaan.judul}` : ''}{bacaan.rentang ? ` (untuk soal ${bacaan.rentang.dari}–${bacaan.rentang.sampai})` : ''}
+              </div>
+              <div dangerouslySetInnerHTML={{ __html: teksKeHtml(bacaan.teks) }} />
+            </div>
+          )}
           {segmen.map((sg, i) => (sg.jenis === 'teks'
             ? <div key={i} style={{ fontSize: 12.5, lineHeight: 1.55, color: '#0f172a' }} dangerouslySetInnerHTML={{ __html: teksKeHtml(sg.isi) }} />
             : <img key={i} src={sg.url} alt={`Gambar soal ${nomor}`} style={{ maxHeight: 140, maxWidth: '100%', border: '1px solid #cbd5e1', borderRadius: 6, margin: '4px 0' }} />))}
@@ -648,7 +658,7 @@ export default function CetakPaketLatihan() {
             setAstroStep(5);
             setAstroSedangBekerja(false);
             setKeranjang(final10Pure);
-            setPesanKeranjang(`⚡ Astro AI berhasil menghasilkan 10 butir soal Pure AI (Fresh HOTS + Gambar Lengkap) untuk ${subObj?.label || babAktifObj?.namaBab}!`);
+            setPesanKeranjang(`⚡ Astro AI berhasil menghasilkan 10 butir soal Pure AI (Fresh HOTS + Gambar Lengkap) untuk ${targetMapel} (${subObj?.label || babAktifObj?.namaBab || 'Materi'})!`);
             setModeTampil('preview');
             setIndeksPreview(0);
 

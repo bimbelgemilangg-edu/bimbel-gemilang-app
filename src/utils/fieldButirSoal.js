@@ -68,6 +68,8 @@ export function teksSoalDari(soal) {
   for (const nilai of kandidat) {
     let teks = String(nilai ?? '').trim();
     if (teks) {
+      // Netralkan karakter escape literal ganda (\n, \r\n, \t) yang sering terbawa dari parser JSON / AI
+      teks = teks.replace(/\\r\\n/g, '\n').replace(/\\n/g, '\n').replace(/\\t/g, ' ');
       // Hapus header tag referensi buku/arsip di awal atau akhir: [Contoh Soal Big Book...], [Big Book...], [Latihan Soal...]
       teks = teks.replace(/^\s*\[[^\]]*(?:big book|contoh|latihan|soal|bab\s*\d+|hal\.\s*\d+|no\.\s*\d+|halaman)[^\]]*\]\s*/i, '')
                  .replace(/\s*\[[^\]]*(?:big book|contoh|latihan|soal|bab\s*\d+|hal\.\s*\d+|no\.\s*\d+|halaman)[^\]]*\]\s*$/i, '');

@@ -31,11 +31,12 @@ class MathSafe extends React.Component {
 
 export function MathText({ text }) {
   if (!text) return null;
+  const tClean = String(text).replace(/\\r\\n/g, '\n').replace(/\\n/g, '\n').replace(/\\t/g, ' ');
   // pre-line: ganti baris dari naskah sumber (bullet/step buku) tampil
   // sebagai baris, bukan terlem jadi satu paragraf (insiden 2026-10-27).
   return (
     <span style={{ whiteSpace: 'pre-line' }}>
-      {pecahSegmenMatematika(text).map((seg, i) => {
+      {pecahSegmenMatematika(tClean).map((seg, i) => {
         if (seg.jenis === 'teks') return <React.Fragment key={i}>{seg.isi}</React.Fragment>;
         const math = sumberKaTeX(seg);
         return seg.jenis === 'blok'

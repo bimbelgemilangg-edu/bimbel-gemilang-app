@@ -472,6 +472,9 @@ export function escapeHtml(s) {
 export function teksKeHtml(teks) {
   if (!teks) return '';
   let str = String(teks)
+    .replace(/\\r\\n/g, '\n')
+    .replace(/\\n/g, '\n')
+    .replace(/\\t/g, ' ')
     .replace(/\{\{GAMBAR(?:_\d+)?\}\}/g, ' ')
     .replace(/&quot;/g, '"')
     .replace(/&#39;/g, "'")
