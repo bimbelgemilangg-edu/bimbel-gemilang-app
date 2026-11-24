@@ -1058,19 +1058,34 @@ export default function CetakPaketLatihan() {
   // KENAPA useMemo: objek meta ikut jadi dependencia memo blok naskah;
   // tanpa ini objek baru tiap render membuat lapisan ukur disusun ulang
   // tanpa henti (eslint react-hooks/exhaustive-deps).
-  // Judul naskah diambil dari ISI KERANJANG, bukan dari filter yang sedang
-  // aktif. Keranjang lintas bab tidak boleh mengaku satu bab -- lembar
-  // cetak yang berbohong soal isinya lebih berbahaya daripada lembar yang
-  // judulnya kurang cantik.
-  const meta = useMemo(() => (sumber === 'bank'
-    ? {
-      judul: judulDariKeranjang(keranjang),
-      mapel: ringkasanKeranjang.perMapel.length === 1 ? ringkasanKeranjang.perMapel[0].nama : `${ringkasanKeranjang.perMapel.length} mapel`,
-      targetKelas: ringkasanKeranjang.perJenjang.length === 1 ? ringkasanKeranjang.perJenjang[0].nama : `${ringkasanKeranjang.perJenjang.length} jenjang`,
-      bab: ringkasanKeranjang.perMateri.length === 1 ? ringkasanKeranjang.perMateri[0].nama : `${ringkasanKeranjang.perMateri.length} materi`,
+  const meta = useMemo(() => {
+    if (sumber === 'bank') {
+      const jenjangNama = jenjangAktif || (ringkasanKeranjang.perJenjang.length === 1 ? ringkasanKeranjang.perJenjang[0].nama : 'SMP / MTs');
+      const mapelNama = mapelAktif || (ringkasanKeranjang.perMapel.length === 1 ? ringkasanKeranjang.perMapel[0].nama : 'Matematika');
+      const babNama = babAktifObj?.namaBab || (ringkasanKeranjang.perMateri.length === 1 ? ringkasanKeranjang.perMateri[0].nama : (babAktif || 'Bab 1 · Bilangan'));
+      const subMateriNama = (subMateriAktif && subMateriAktif !== 'semua' && subMateriObj?.label) ? subMateriObj.label : '';
+      const judulBersih = [jenjangNama, mapelNama, babAktifObj?.ringkas || babNama].filter(Boolean).join(' · ');
+      return {
+        judul: judulBersih,
+        mapel: mapelNama,
+        targetKelas: jenjangNama,
+        bab: babNama,
+        subMateri: subMateriNama,
+        subTopik: subMateriNama,
+        jumlahSoal: keranjang.length,
+        gayaLembar,
+      };
     }
-    : { judul: paket?.judul || '', mapel: paket?.targetKategori || '', targetKelas: paket?.targetKelas || '', bab: paket?.babJudul || '' }),
-  [sumber, keranjang, ringkasanKeranjang, paket]);
+    return {
+      judul: paket?.judul || 'Paket Latihan Siswa',
+      mapel: paket?.targetKategori || paket?.mapel || mapelAktif || 'Matematika',
+      targetKelas: paket?.targetKelas || jenjangAktif || 'SMP / MTs',
+      bab: paket?.babJudul || paket?.bab || 'Bab 1 · Bilangan',
+      subMateri: paket?.subMateri || '',
+      jumlahSoal: paket?.daftarSoal?.length || 0,
+      gayaLembar,
+    };
+  }, [sumber, keranjang, ringkasanKeranjang, paket, jenjangAktif, mapelAktif, babAktifObj, babAktif, subMateriAktif, subMateriObj, gayaLembar]);
 
   const inKeranjang = (id) => keranjang.some((s) => String(s?.id) === String(id));
 
@@ -1102,12 +1117,12 @@ export default function CetakPaketLatihan() {
   const kapasitasMm = useMemo(() => kapasitasKolomMm(kertas), [kertas]);
 
   const blokSiswa = useMemo(
-    () => (siap.length ? daftarBlokNaskah('siswa', meta, siap, lebarKolom, rasioGambar, kapasitasMm, jumlahKolom) : []),
-    [siap, meta, lebarKolom, rasioGambar, kapasitasMm, jumlahKolom]
+    () => (siap.length ? daftarBlokNaskah('siswa', meta, siap, lebarKolom, rasioGambar, kapasitasMm, jumlahKolom, { gayaLembar }) : []),
+    [siap, meta, lebarKolom, rasioGambar, kapasitasMm, jumlahKolom, gayaLembar]
   );
   const blokKunci = useMemo(
-    () => (siap.length ? daftarBlokNaskah('kunci', meta, siap, lebarKolom, rasioGambar, kapasitasMm, jumlahKolom) : []),
-    [siap, meta, lebarKolom, rasioGambar, kapasitasMm, jumlahKolom]
+    () => (siap.length ? daftarBlokNaskah('kunci', meta, siap, lebarKolom, rasioGambar, kapasitasMm, jumlahKolom, { gayaLembar }) : []),
+    [siap, meta, lebarKolom, rasioGambar, kapasitasMm, jumlahKolom, gayaLembar]
   );
   // 🔥 2026-10-09 (owner: "khusus bacaan panjang gausah kanan kiri"):
   // blok berwacana panjang ditandai supaya (a) diukur pada lebar kertas penuh,
@@ -1212,12 +1227,12 @@ export default function CetakPaketLatihan() {
   }, [blokSiswa, blokKunci]);
 
   const perkiraanSiswa = useMemo(
-    () => daftarTinggiPerkiraan('siswa', meta, siap, lebarKolom, rasioGambar, kapasitasMm, jumlahKolom),
-    [meta, siap, lebarKolom, rasioGambar, kapasitasMm, jumlahKolom]
+    () => daftarTinggiPerkiraan('siswa', meta, siap, lebarKolom, rasioGambar, kapasitasMm, jumlahKolom, { gayaLembar }),
+    [meta, siap, lebarKolom, rasioGambar, kapasitasMm, jumlahKolom, gayaLembar]
   );
   const perkiraanKunci = useMemo(
-    () => daftarTinggiPerkiraan('kunci', meta, siap, lebarKolom, rasioGambar, kapasitasMm, jumlahKolom),
-    [meta, siap, lebarKolom, rasioGambar, kapasitasMm, jumlahKolom]
+    () => daftarTinggiPerkiraan('kunci', meta, siap, lebarKolom, rasioGambar, kapasitasMm, jumlahKolom, { gayaLembar }),
+    [meta, siap, lebarKolom, rasioGambar, kapasitasMm, jumlahKolom, gayaLembar]
   );
 
   const naskahSiswa = useMemo(() => (blokSiswa.length
@@ -2334,24 +2349,26 @@ export default function CetakPaketLatihan() {
                 {DAFTAR_KERTAS.map((k) => <option key={k.kode} value={k.kode}>{k.label}</option>)}
               </select>
             </label>
-            {gayaLembar === 'naskah' && (
-              <label style={{ fontSize: 11.5, color: '#475569', display: 'flex', gap: 6, alignItems: 'center' }}>
-                kolom
-                <select value={kolomPaksa} onChange={(e) => setKolomPaksa(e.target.value === 'catatan' ? 'catatan' : Number(e.target.value))} style={gayaSelect}>
-                  <option value={0}>otomatis ({kolomOtomatis(kertas)} kolom)</option>
-                  <option value={1}>1 kolom (lebar penuh)</option>
-                  <option value={2}>2 kolom (standar ujian)</option>
-                  <option value="catatan">1 kolom + kolom catatan (coretan siswa)</option>
-                </select>
-              </label>
-            )}
+            <label style={{ fontSize: 11.5, color: '#475569', display: 'flex', gap: 6, alignItems: 'center' }}>
+              kolom
+              <select value={kolomPaksa} onChange={(e) => setKolomPaksa(e.target.value === 'catatan' ? 'catatan' : Number(e.target.value))} style={gayaSelect}>
+                <option value={0}>otomatis ({kolomOtomatis(kertas)} kolom)</option>
+                <option value={1}>1 kolom (lebar penuh)</option>
+                <option value={2}>2 kolom (standar ujian / kliping)</option>
+                <option value="catatan">1 kolom + kolom catatan (coretan siswa)</option>
+              </select>
+            </label>
           </div>
 
-          {gayaLembar === 'naskah' && siap.length > 0 && naskahSiswa && (
+          {siap.length > 0 && naskahSiswa && (
             <>
               <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 8 }}>
-                <button style={gayaPill(tabPratinjau === 'siswa')} onClick={() => setTabPratinjau('siswa')}>👀 pratinjau lembar siswa</button>
-                <button style={gayaPill(tabPratinjau === 'kunci')} onClick={() => setTabPratinjau('kunci')}>🔑 pratinjau kunci guru</button>
+                <button style={gayaPill(tabPratinjau === 'siswa')} onClick={() => setTabPratinjau('siswa')}>
+                  {gayaLembar === 'kotak' ? '✂️ pratinjau kotak siswa (siap gunting)' : '👀 pratinjau lembar naskah siswa'}
+                </button>
+                <button style={gayaPill(tabPratinjau === 'kunci')} onClick={() => setTabPratinjau('kunci')}>
+                  🔑 pratinjau kunci guru
+                </button>
                 <span style={{ fontSize: 11, color: '#64748b' }}>
                   {naskahSiswa.jumlahHalaman} halaman · {isCatatan ? '1 kolom + catatan' : `${jumlahKolom} kolom`} · lebar kolom {naskahSiswa.lebarKolomMm}mm
                 </span>
@@ -2384,26 +2401,23 @@ export default function CetakPaketLatihan() {
                 >
                   🚀 TERBITKAN KE KELAS SISWA ({siap.length} SOAL)
                 </button>
-                <button style={gayaTombol('#2563eb', false)} onClick={() => cetakNaskah('siswa')}>📄 CETAK NASKAH SISWA</button>
-                <button style={gayaTombol('#b91c1c', false)} onClick={() => cetakNaskah('kunci')}>🔑 CETAK KUNCI (PEGANGAN GURU)</button>
-                <button style={gayaTombol('#15803d', false)} onClick={() => cetakLewatIframe(htmlLembarCatatan(meta, siap, { kertas: kodeKertas }), 'Lembar Catatan')}>📝 LEMBAR-CATATAN</button>
+                {gayaLembar === 'kotak' ? (
+                  <button style={gayaTombol('#2563eb', false)} onClick={() => cetakNaskah('siswa')}>
+                    ✂️ CETAK KOTAK SIAP GUNTING (SISWA)
+                  </button>
+                ) : (
+                  <button style={gayaTombol('#2563eb', false)} onClick={() => cetakNaskah('siswa')}>
+                    📄 CETAK NASKAH SISWA
+                  </button>
+                )}
+                <button style={gayaTombol('#b91c1c', false)} onClick={() => cetakNaskah('kunci')}>
+                  🔑 CETAK KUNCI (PEGANGAN GURU)
+                </button>
+                <button style={gayaTombol('#15803d', false)} onClick={() => cetakLewatIframe(htmlLembarCatatan(meta, siap, { kertas: kodeKertas }), 'Lembar Catatan')}>
+                  📝 LEMBAR-CATATAN
+                </button>
               </div>
             </>
-          )}
-
-          {gayaLembar === 'kotak' && (
-            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-              <button
-                style={{ ...gayaTombol('#0d9488', siap.length === 0), fontWeight: 800 }}
-                disabled={siap.length === 0}
-                onClick={handleBukaModalTerbitkan}
-              >
-                🚀 TERBITKAN KE KELAS SISWA ({siap.length} SOAL)
-              </button>
-              <button style={gayaTombol('#2563eb', siap.length === 0)} disabled={siap.length === 0} onClick={() => cetakLewatIframe(htmlPaketSiswa(meta, siap, { kertas: kodeKertas }), 'Paket Siswa')}>✂️ PAKET-SISWA</button>
-              <button style={gayaTombol('#b91c1c', siap.length === 0)} disabled={siap.length === 0} onClick={() => cetakLewatIframe(htmlKunciTentor(meta, siap, { kertas: kodeKertas }), 'Kunci Tentor')}>🔑 KUNCI-TENTOR</button>
-              <button style={gayaTombol('#15803d', siap.length === 0)} disabled={siap.length === 0} onClick={() => cetakLewatIframe(htmlLembarCatatan(meta, siap, { kertas: kodeKertas }), 'Lembar Catatan')}>📝 LEMBAR-CATATAN</button>
-            </div>
           )}
 
           <div style={{ fontSize: 11, color: '#64748b', marginTop: 10, lineHeight: 1.6 }}>

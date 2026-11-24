@@ -584,28 +584,197 @@ export const GAYA_NASKAH = `
   border-radius: 1mm;
   opacity: 0.65;
 }
-.naskah .nsk-kop { border-bottom: 0.8mm solid #000; padding-bottom: 1.5mm; margin-bottom: 2mm; break-inside: avoid; }
-.naskah .nsk-kop h1 { font-size: 14px; margin: 0 0 1mm; letter-spacing: 0.4px; }
-.naskah .nsk-kop .nsk-meta { font-size: 10.5px; color: #000; }
-/* 🔥 BARU (2026-10-12, arahan owner): kode paket + logo di POJOK ATAS setiap
-   naskah, dan chip logo+kode di setiap kepala seksi/subtes -- supaya lembar
-   yang terlepas dari tumpukan tetap tahu asal paketnya. Posisi absolute/
-   float TIDAK mengubah kotak blok, jadi estimasi tinggi kolom tetap sah. */
-.naskah .nsk-kop { position: relative; }
-.naskah .nsk-kop-kode { position: absolute; top: 0; right: 0; display: flex; align-items: center; gap: 1.2mm; font-size: 8.5px; font-weight: 800; color: #334155; border: 0.3mm solid #94a3b8; border-radius: 1mm; padding: 0.8mm 1.6mm; background: #fff; }
-.naskah .nsk-kop-kode img { width: 5mm; height: 5mm; object-fit: contain; }
-.naskah .nsk-seksi-kode { float: right; display: inline-flex; align-items: center; gap: 1mm; font-size: 8px; font-weight: 800; letter-spacing: 0.3px; color: #334155; text-transform: none; }
-.naskah .nsk-seksi-kode img { width: 4mm; height: 4mm; object-fit: contain; }
-.naskah .nsk-identitas { display: flex; gap: 8mm; font-size: 10.5px; margin-top: 1.5mm; }
-.naskah .nsk-identitas span { border-bottom: 0.35mm solid #000; min-width: 45mm; padding-bottom: 2.5mm; }
+.naskah .nsk-kop {
+  border-bottom: 0.7mm solid #0f172a;
+  padding-bottom: 2mm;
+  margin-bottom: 2.5mm;
+  break-inside: avoid;
+  position: relative;
+}
+.naskah .nsk-kop-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 0.3mm solid #cbd5e1;
+  padding-bottom: 1.5mm;
+  margin-bottom: 1.8mm;
+}
+.naskah .nsk-kop-brand {
+  display: flex;
+  align-items: center;
+  gap: 2mm;
+}
+.naskah .nsk-kop-brand img {
+  width: 6mm;
+  height: 6mm;
+  object-fit: contain;
+}
+.naskah .nsk-kop-instansi {
+  font-size: 8.5pt;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: 0.3px;
+}
+.naskah .nsk-kop-sub {
+  font-size: 6.8pt;
+  color: #64748b;
+}
+.naskah .nsk-kop-kode-box {
+  display: inline-flex;
+  align-items: center;
+  gap: 1.2mm;
+  font-size: 7.5pt;
+  font-weight: 800;
+  color: #0369a1;
+  background: #f0f9ff;
+  border: 0.4mm solid #bae6fd;
+  border-radius: 1mm;
+  padding: 0.8mm 2mm;
+  white-space: nowrap;
+}
+.naskah .nsk-kop-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin: 1mm 0 1.5mm;
+  gap: 2mm;
+}
+.naskah .nsk-kop h1 {
+  font-size: 13pt;
+  font-weight: 900;
+  margin: 0;
+  letter-spacing: 0.5px;
+  color: #0f172a;
+}
+.naskah .nsk-kop-badge-tipe {
+  font-size: 7pt;
+  font-weight: 700;
+  color: #047857;
+  background: #ecfdf5;
+  border: 0.4mm solid #a7f3d0;
+  border-radius: 1mm;
+  padding: 0.6mm 1.8mm;
+  white-space: nowrap;
+}
+.naskah .nsk-kop-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(40mm, 1fr));
+  gap: 1mm 3mm;
+  font-size: 8pt;
+  color: #334155;
+  background: #f8fafc;
+  border: 0.3mm solid #e2e8f0;
+  border-radius: 1mm;
+  padding: 1.5mm 2.5mm;
+  margin-bottom: 2mm;
+}
+.naskah .nsk-kop-grid-item strong {
+  color: #0f172a;
+}
+.naskah .nsk-identitas-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: 3mm;
+  font-size: 8pt;
+  margin-top: 1.5mm;
+}
+.naskah .nsk-identitas-cell {
+  border-bottom: 0.35mm solid #000;
+  padding-bottom: 2mm;
+  color: #475569;
+}
+.naskah .nsk-identitas-cell b {
+  color: #000;
+}
 .naskah .nsk-peringatan { border: 0.7mm solid #000; padding: 1.5mm 3mm; font-size: 11.5px; font-weight: 800; text-align: center; margin-bottom: 3mm; letter-spacing: 0.5px; break-inside: avoid; }
-/* 🔥 BARU (2026-10-08): kepala seksi subtes di naskah try out (lihat
-   seksiNaskahTryOut.js) -- pita tipis berbingkai, tidak boleh terbelah
-   kolom, dan terpisah jelas dari butir pertama seksinya. */
 .naskah .nsk-seksi { border: 0.4mm solid #000; padding: 1mm 2.5mm; font-size: 11.5px; font-weight: 800; letter-spacing: 0.6px; text-transform: uppercase; margin: 0 0 2.5mm; break-inside: avoid; }
-.naskah .nsk-butir { margin: 0 0 2.2mm; break-inside: avoid; display: flex; gap: 2mm; clear: both; }
+.naskah .nsk-butir { margin: 0 0 2.2mm; break-inside: avoid; display: flex; gap: 2mm; align-items: flex-start; clear: both; }
 .naskah .nsk-butir > .nsk-no { flex: 0 0 5.5mm; font-weight: 800; text-align: left; }
 .naskah .nsk-butir > .nsk-isi { flex: 1 1 auto; min-width: 0; }
+
+/* 🔥 Mode Kotak Siap Gunting (Buku Progres Kliping) */
+.naskah .nsk-kotak-gunting {
+  border: 1.4pt dashed #334155;
+  border-radius: 4px;
+  padding: 2.5mm 3mm 3mm;
+  margin: 0 0 3.2mm 0;
+  background: #ffffff;
+  position: relative;
+  page-break-inside: avoid;
+  break-inside: avoid;
+  box-sizing: border-box;
+  clear: both;
+}
+.naskah .nsk-kotak-gunting::before {
+  content: '✂️ Potong di garis putus-putus';
+  position: absolute;
+  top: -2.7mm;
+  right: 3mm;
+  background: #ffffff;
+  padding: 0 2mm;
+  font-size: 6.8pt;
+  font-weight: 700;
+  color: #475569;
+  letter-spacing: 0.2px;
+}
+.naskah .nsk-kotak-gunting-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 0.4pt solid #cbd5e1;
+  padding-bottom: 1.2mm;
+  margin-bottom: 1.8mm;
+  gap: 2mm;
+}
+.naskah .nsk-kotak-kiri {
+  display: flex;
+  align-items: center;
+  gap: 1.5mm;
+}
+.naskah .nsk-kotak-nomor {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 5mm;
+  height: 5mm;
+  background: #0f172a;
+  color: #ffffff;
+  font-size: 7.5pt;
+  font-weight: 800;
+  border-radius: 50%;
+}
+.naskah .nsk-kotak-materi-tag {
+  font-size: 7pt;
+  color: #475569;
+  font-weight: 700;
+}
+.naskah .nsk-kotak-badge {
+  font-size: 7pt;
+  font-weight: 700;
+  color: #0369a1;
+  background: #f0f9ff;
+  border: 0.5pt solid #bae6fd;
+  border-radius: 3px;
+  padding: 0.5pt 3.5pt;
+  white-space: nowrap;
+}
+.naskah .nsk-kotak-ruang-kerja {
+  margin-top: 2.5mm;
+  border-top: 0.5pt dashed #cbd5e1;
+  padding-top: 1.5mm;
+  min-height: 14mm;
+  background-image: radial-gradient(#cbd5e1 0.75px, transparent 0.75px);
+  background-size: 4mm 4mm;
+  border-radius: 2px;
+}
+.naskah .nsk-kotak-ruang-kerja-label {
+  font-size: 6.5pt;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  margin-bottom: 1mm;
+}
 .naskah .nsk-gbr-samping { float: left; margin: 0 3mm 1.5mm 0; max-width: 45%; }
 .naskah .nsk-gbr-blok { display: block; margin: 2mm auto; max-width: 100%; clear: both; }
 .naskah .nsk-opsi { display: grid; gap: 0.4mm 4mm; margin: 1mm 0 0 7.5mm; clear: both; }
@@ -680,7 +849,7 @@ export const GAYA_NASKAH = `
    cetak, MathML ikut tergambar dan menumpuk di dasar halaman (matematika
    menggunung jauh dari kalimatnya). */
 .naskah .katex-mathml { display: none !important; }
-.naskah .nsk-kodesoal { display: inline-block; margin: 0 0 3px 26px; font-size: 8.5px; font-weight: 700; color: #9a3412; background: #ffedd5; border: 1px solid #fdba74; border-radius: 999px; padding: 1px 7px; }
+.naskah .nsk-kodesoal { float: right; margin: 0 0 1.2mm 2.5mm; font-size: 7.2pt; font-weight: 700; color: #0369a1; background: #f0f9ff; border: 0.5pt solid #bae6fd; border-radius: 3px; padding: 0.5pt 3.5pt; letter-spacing: 0.2px; white-space: nowrap; }
 `;
 
 function imgNaskahHtml(src, alt, ukuran) {
@@ -938,21 +1107,73 @@ export function butirNaskahHtml(soal, nomor, lebarKolom, rasioGambar = {}, opsiB
   // yang tidak tercetak.
   const tabelHtml = tabelNaskahHtml(soal?.tabelSoal || soal?.tabel_soal);
   const isiJawaban = isiJawabanNaskah(soal, nomor, lebarKolom, rasioGambar);
-  return `<div class="nsk-butir">${opsiButir.kode ? `<div class="nsk-kodesoal">🔖 ${escapeHtml(opsiButir.kode)}</div>` : ''}<div class="nsk-no">${nomor}.</div><div class="nsk-isi">${bacaanHtml}${kodeHtml}${badan}${tabelHtml}${opsiHtml ? `<div class="nsk-opsi" style="grid-template-columns:repeat(${nKolomOpsi},1fr);">${opsiHtml}</div>` : ''}${isiJawaban}</div></div>`;
+  const isKotak = opsiButir.gayaLembar === 'kotak';
+
+  if (isKotak) {
+    const topikTag = soal?.materi || soal?.topik || '';
+    return `<div class="nsk-kotak-gunting">
+      <div class="nsk-kotak-gunting-head">
+        <div class="nsk-kotak-kiri">
+          <span class="nsk-kotak-nomor">${nomor}</span>
+          ${topikTag ? `<span class="nsk-kotak-materi-tag">${escapeHtml(topikTag)}</span>` : ''}
+        </div>
+        ${opsiButir.kode ? `<span class="nsk-kotak-badge">[${escapeHtml(opsiButir.kode)}]</span>` : ''}
+      </div>
+      <div class="nsk-isi">${bacaanHtml}${kodeHtml}${badan}${tabelHtml}${opsiHtml ? `<div class="nsk-opsi" style="grid-template-columns:repeat(${nKolomOpsi},1fr);">${opsiHtml}</div>` : ''}${isiJawaban}</div>
+      <div class="nsk-kotak-ruang-kerja">
+        <div class="nsk-kotak-ruang-kerja-label">✏️ Ruang Pengerjaan / Coretan Siswa (Buku Progres)</div>
+      </div>
+    </div>`;
+  }
+
+  return `<div class="nsk-butir"><div class="nsk-no">${nomor}.</div><div class="nsk-isi">${opsiButir.kode ? `<span class="nsk-kodesoal">[${escapeHtml(opsiButir.kode)}]</span>` : ''}${bacaanHtml}${kodeHtml}${badan}${tabelHtml}${opsiHtml ? `<div class="nsk-opsi" style="grid-template-columns:repeat(${nKolomOpsi},1fr);">${opsiHtml}</div>` : ''}${isiJawaban}</div></div>`;
 }
 
-export function kopNaskahHtml(paket, judulDok, denganIdentitas) {
-  const bagianMeta = [paket?.mapel || paket?.targetKategori || '', paket?.targetKelas || '', paket?.bab || '']
-    .filter(Boolean);
-  const judulPaket = String(paket?.judul || '');
-  // 🔥 2026-10-09: judul keranjang sudah berbentuk "jenjang · mapel · materi".
-  // Menambah baris meta yang sama = identitas tertulis dua kali dan memakan
-  // ruang kertas yang menurut owner "kedepannya bakal dipotong". Meta hanya
-  // ditulis bila ia membawa informasi BARU di luar judul.
-  const meta = bagianMeta.filter((b) => !judulPaket.includes(String(b))).map(escapeHtml).join(' · ');
-  return `<div class="nsk-kop"><div class="nsk-kop-kode"><img src="${WATERMARK.logo}" alt="" />${escapeHtml(kodePaketTampil(paket))}</div><h1>${escapeHtml(judulDok)}</h1>
-    <div class="nsk-meta">${escapeHtml(judulPaket || 'Naskah Soal')}${meta ? ` — ${meta}` : ''}</div>
-    ${denganIdentitas ? '<div class="nsk-identitas"><span>Nama:</span><span>Kelas:</span><span>No. Absen:</span></div>' : ''}
+export function kopNaskahHtml(paket, judulDok, denganIdentitas, gayaLembar = 'naskah') {
+  const isKotak = gayaLembar === 'kotak' || paket?.gayaLembar === 'kotak';
+  const kodeTampil = kodePaketTampil(paket);
+  const jenjang = paket?.targetKelas || 'SMP / MTs';
+  const mapel = paket?.mapel || paket?.targetKategori || 'Matematika';
+  const bab = paket?.bab || paket?.babJudul || 'Bab 1 · Bilangan';
+  const subMateri = paket?.subMateri || paket?.subTopik || '';
+  const jumlahSoal = paket?.jumlahSoal ? `${paket.jumlahSoal} Butir` : '';
+
+  const tipeBadge = isKotak
+    ? '<span class="nsk-kop-badge-tipe">✂️ LEMBAR KOTAK SIAP GUNTING (BUKU PROGRES)</span>'
+    : '<span class="nsk-kop-badge-tipe">📄 FORMAT STANDAR UJIAN RESMI</span>';
+
+  return `<div class="nsk-kop">
+    <div class="nsk-kop-top">
+      <div class="nsk-kop-brand">
+        <img src="${WATERMARK.logo}" alt="Gemilang Edu" />
+        <div>
+          <div class="nsk-kop-instansi">BIMBEL GEMILANG EDU · PENDAMPINGAN BELAJAR</div>
+          <div class="nsk-kop-sub">Sistem Bank Soal &amp; Kurasi Terpadu Asisten Astro Gemilang</div>
+        </div>
+      </div>
+      <div class="nsk-kop-kode-box">
+        <span>KODE:</span><strong>${escapeHtml(kodeTampil)}</strong>
+      </div>
+    </div>
+    <div class="nsk-kop-title-row">
+      <h1>${escapeHtml(judulDok)}</h1>
+      ${tipeBadge}
+    </div>
+    <div class="nsk-kop-grid">
+      <div class="nsk-kop-grid-item"><strong>Jenjang:</strong> ${escapeHtml(jenjang)}</div>
+      <div class="nsk-kop-grid-item"><strong>Mapel:</strong> ${escapeHtml(mapel)}</div>
+      <div class="nsk-kop-grid-item"><strong>Bab / Materi:</strong> ${escapeHtml(bab)}</div>
+      ${subMateri ? `<div class="nsk-kop-grid-item"><strong>Sub-Topik:</strong> ${escapeHtml(subMateri)}</div>` : ''}
+      ${jumlahSoal ? `<div class="nsk-kop-grid-item"><strong>Jumlah:</strong> ${escapeHtml(jumlahSoal)}</div>` : ''}
+    </div>
+    ${denganIdentitas ? `
+    <div class="nsk-identitas-grid">
+      <div class="nsk-identitas-cell"><b>Nama:</b> </div>
+      <div class="nsk-identitas-cell"><b>Kelas / Sesi:</b> </div>
+      <div class="nsk-identitas-cell"><b>Tanggal:</b> </div>
+      <div class="nsk-identitas-cell"><b>Nilai / Paraf:</b> </div>
+    </div>
+    ` : ''}
   </div>`;
 }
 
@@ -1031,7 +1252,22 @@ export function kunciButirNaskahHtml(soal, nomor, opsiButir = {}) {
     : '';
   const perBaris = kunciPerBaris(soal);
   const kunciTampil = perBaris ? `${kunci}${kunci ? ' · ' : ''}${perBaris}` : kunci;
-  return `<div class="nsk-butir">${opsiButir.kode ? `<div class="nsk-kodesoal">🔖 ${escapeHtml(opsiButir.kode)}</div>` : ''}<div class="nsk-no">${nomor}.</div><div class="nsk-isi nsk-kunci-baris"><b>Kunci:</b> ${kunciTampil || '-'}${pembahasan ? `<div class="nsk-bhs">${pembahasan}</div>` : ''}</div></div>`;
+  const isKotak = opsiButir.gayaLembar === 'kotak';
+
+  if (isKotak) {
+    return `<div class="nsk-kotak-gunting">
+      <div class="nsk-kotak-gunting-head">
+        <div class="nsk-kotak-kiri">
+          <span class="nsk-kotak-nomor">${nomor}</span>
+          <span class="nsk-kotak-materi-tag">KUNCI &amp; PEMBAHASAN</span>
+        </div>
+        ${opsiButir.kode ? `<span class="nsk-kotak-badge">[${escapeHtml(opsiButir.kode)}]</span>` : ''}
+      </div>
+      <div class="nsk-isi nsk-kunci-baris"><b>Kunci:</b> ${kunciTampil || '-'}${pembahasan ? `<div class="nsk-bhs">${pembahasan}</div>` : ''}</div>
+    </div>`;
+  }
+
+  return `<div class="nsk-butir"><div class="nsk-no">${nomor}.</div><div class="nsk-isi nsk-kunci-baris">${opsiButir.kode ? `<span class="nsk-kodesoal">[${escapeHtml(opsiButir.kode)}]</span>` : ''}<b>Kunci:</b> ${kunciTampil || '-'}${pembahasan ? `<div class="nsk-bhs">${pembahasan}</div>` : ''}</div></div>`;
 }
 
 /**
@@ -1311,20 +1547,29 @@ export function blokBacaanNaskah(unit, lebarKolom, rasioGambar = {}, kapasitasMm
   return chunks;
 }
 
-export function daftarBlokNaskah(mode, paket, soalList, lebarKolom, rasioGambar = {}, kapasitasMm = 0, kolomPerHalaman = 2) {
+export function daftarBlokNaskah(mode, paket, soalList, lebarKolom, rasioGambar = {}, kapasitasMm = 0, kolomPerHalaman = 2, opsi = {}) {
   const daftar = Array.isArray(soalList) ? soalList : [];
+  const gayaLembar = opsi.gayaLembar || paket?.gayaLembar || 'naskah';
+  const judul = mode === 'kunci'
+    ? 'KUNCI & PEMBAHASAN'
+    : (gayaLembar === 'kotak' ? 'LEMBAR LATIHAN SISWA (SIAP GUNTING)' : 'NASKAH SOAL');
   const kop = mode === 'kunci'
-    ? `<div class="nsk-peringatan">PEGANGAN GURU — JANGAN DICETAK UNTUK SISWA</div>${kopNaskahHtml(paket, 'KUNCI & PEMBAHASAN', false)}`
-    : kopNaskahHtml(paket, 'NASKAH SOAL', true);
+    ? `<div class="nsk-peringatan">PEGANGAN GURU — JANGAN DICETAK UNTUK SISWA</div>${kopNaskahHtml(paket, judul, false, gayaLembar)}`
+    : kopNaskahHtml(paket, judul, true, gayaLembar);
   if (mode === 'kunci') {
-    return [kop, ...daftar.map((s, i) => kunciButirNaskahHtml(s, i + 1, { kode: kodeSoalSiswa({ paket, nomor: i + 1 }) }))];
+    return [kop, ...daftar.map((s, i) => kunciButirNaskahHtml(s, i + 1, { kode: kodeSoalSiswa({ paket, nomor: i + 1 }), gayaLembar }))];
   }
   const blok = [kop];
   for (const unit of kelompokkanStimulus(daftar)) {
     if (unit.jenis === 'bacaan') {
       for (const chunk of blokBacaanNaskah(unit, lebarKolom, rasioGambar, kapasitasMm, kolomPerHalaman)) blok.push(chunk.html);
     } else {
-      blok.push(butirNaskahHtml(unit.soal, unit.nomor, lebarKolom, rasioGambar, { tanpaBacaan: unit.tanpaBacaan, gambarAngkat: unit.gambarAngkat, kode: kodeSoalSiswa({ paket, nomor: unit.nomor }) }));
+      blok.push(butirNaskahHtml(unit.soal, unit.nomor, lebarKolom, rasioGambar, {
+        tanpaBacaan: unit.tanpaBacaan,
+        gambarAngkat: unit.gambarAngkat,
+        kode: kodeSoalSiswa({ paket, nomor: unit.nomor }),
+        gayaLembar,
+      }));
     }
   }
   return blok;
@@ -1363,18 +1608,20 @@ export function daftarBlokPenuh(mode, paket, soalList, lebarKolom, rasioGambar =
   return tanda;
 }
 
-export function daftarTinggiPerkiraan(mode, paket, soalList, lebarKolom, rasioGambar = {}, kapasitasMm = 0, kolomPerHalaman = 2) {
+export function daftarTinggiPerkiraan(mode, paket, soalList, lebarKolom, rasioGambar = {}, kapasitasMm = 0, kolomPerHalaman = 2, opsi = {}) {
   const daftar = Array.isArray(soalList) ? soalList : [];
-  const tinggi = [mode === 'kunci' ? 30 : 26];
+  const gayaLembar = opsi.gayaLembar || paket?.gayaLembar || 'naskah';
+  const ekstraKotak = gayaLembar === 'kotak' ? 22 : 0;
+  const tinggi = [mode === 'kunci' ? 32 : (gayaLembar === 'kotak' ? 36 : 28)];
   if (mode === 'kunci') {
-    for (const s of daftar) tinggi.push(estimasiTinggiBlokMm('kunci', s, lebarKolom, rasioGambar));
+    for (const s of daftar) tinggi.push(estimasiTinggiBlokMm('kunci', s, lebarKolom, rasioGambar) + ekstraKotak);
     return tinggi;
   }
   for (const unit of kelompokkanStimulus(daftar)) {
     if (unit.jenis === 'bacaan') {
       for (const chunk of blokBacaanNaskah(unit, lebarKolom, rasioGambar, kapasitasMm, kolomPerHalaman)) tinggi.push(chunk.tinggi);
     } else {
-      tinggi.push(estimasiTinggiBlokMm('siswa', unit.soal, lebarKolom, rasioGambar, { tanpaBacaan: unit.tanpaBacaan, gambarAngkat: unit.gambarAngkat }));
+      tinggi.push(estimasiTinggiBlokMm('siswa', unit.soal, lebarKolom, rasioGambar, { tanpaBacaan: unit.tanpaBacaan, gambarAngkat: unit.gambarAngkat }) + ekstraKotak);
     }
   }
   return tinggi;

@@ -69,19 +69,17 @@ function tanggalDari(v) {
  */
 export function kodePaketTampil(paket = {}) {
   if (String(paket.kodePaket || '').trim()) return String(paket.kodePaket).trim();
-  // 21 Okt: jenjang sering hanya terbawa di targetKelas ('9 SMP SMP')
-  // pada paket lama -> turunkan token jenjang dari sana supaya kode
-  // arsip tidak lagi 'UMU' dan kode soal tersambung lintas permukaan.
   paket = { ...paket };
   if (!paket.jenjang && !paket.jenjangTemplate) {
-    const mjen = /(SD|SMP|SMA|SMK)/i.exec(String(paket.targetKelas || '') + ' ' + String(paket.judul || ''));
+    const mjen = /(SD|SMP|SMA|SMK|UTBK)/i.exec(String(paket.targetKelas || '') + ' ' + String(paket.judul || ''));
     if (mjen) paket.jenjang = mjen[1];
   }
-  const d = tanggalDari(paket.createdAt ?? paket.waktuBuka);
-  const id = String(paket.id || '').replace(/[^a-zA-Z0-9]/g, '').slice(0, 4).toUpperCase() || '0000';
-  if (!d) return `GM-ARSIP-${tokenJenjang(paket.jenjangTemplate || paket.jenjang)}-${id}`;
+  const jen = tokenJenjang(paket.jenjangTemplate || paket.jenjang || 'SMP');
+  const d = tanggalDari(paket.createdAt ?? paket.waktuBuka) || new Date();
+  const id = String(paket.id || '').replace(/[^a-zA-Z0-9]/g, '').slice(0, 4).toUpperCase() || '01';
   const ymd = `${d.getFullYear()}${dua(d.getMonth() + 1)}${dua(d.getDate())}`;
-  return `GM-ARSIP-${tokenJenjang(paket.jenjangTemplate || paket.jenjang)}-${tokenJenis(paket.jenisUjian)}-${ymd}-${id}`;
+  const jenis = tokenJenis(paket.jenisUjian || 'TKA');
+  return `GM-ARSIP-${jen}-${jenis}-${ymd}-${id}`;
 }
 
 /**
@@ -89,9 +87,16 @@ export function kodePaketTampil(paket = {}) {
  * @returns {{jenjang:string, jenis:string, ymd:string, suffix:string}|null}
  */
 export function parseKodePaket(kode) {
-  const m = /^GM-(ARSIP-)?([A-Z]{2,4})-([A-Z]{2,4})-(\d{8})-(\w{2,4})$/i.exec(String(kode || '').trim());
-  if (!m) return null;
-  return { arsip: Boolean(m[1]), jenjang: m[2].toUpperCase(), jenis: m[3].toUpperCase(), ymd: m[4], suffix: m[5] };
+  const str = String(kode || '').trim();
+  let m = /^GM-(?:ARSIP-)?([A-Z]{2,4})-([A-Z]{2,4})-(\d{8})-(\w{2,4})$/i.exec(str);
+  if (m) {
+    return { arsip: str.includes('ARSIP'), jenjang: m[1].toUpperCase(), jenis: m[2].toUpperCase(), ymd: m[3], suffix: m[4] };
+  }
+  m = /^GM-(?:ARSIP-)?([A-Z]{2,4})-(\w{2,6})$/i.exec(str);
+  if (m) {
+    return { arsip: str.includes('ARSIP'), jenjang: m[1].toUpperCase(), jenis: 'UMUM', ymd: '', suffix: m[2] };
+  }
+  return null;
 }
 
 /** True bila kode/dokumen cocok dengan kueri pencarian (kode, ymd, atau jenjang). */

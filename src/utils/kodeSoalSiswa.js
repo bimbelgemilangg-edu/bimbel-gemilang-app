@@ -55,7 +55,7 @@ export function tanggalKeyPaket(paket = {}) {
 }
 
 /**
- * Kode pendek satu soal — TERSEMBUNG dengan kode paket di kop naskah:
+ * Kode pendek satu soal — TERHUBUNG dengan kode paket di kop naskah:
  * diambil dari kodePaketTampil (GM-<JEN>-<JENIS>-<YYYYMMDD>-<SUFFIX>)
  * menjadi `<JEN>-<SUFFIX>-<NN>` mis. SMP-0800-07. Nomor = posisi soal
  * di paket (stabil walau urutan tampil diacak). Paket lama tanpa
@@ -64,8 +64,8 @@ export function tanggalKeyPaket(paket = {}) {
  */
 export function kodeSoalSiswa({ paket = {}, nomor = 0 } = {}) {
   const u = parseKodePaket(kodePaketTampil(paket));
-  const jen = u ? u.jenjang : 'UMU';
-  const suf = u ? u.suffix : (String(paket.id || '').replace(/[^a-zA-Z0-9]/g, '').slice(0, 4).toUpperCase() || '0000');
+  const jen = u ? u.jenjang : 'SMP';
+  const suf = u ? u.suffix : (String(paket.id || '').replace(/[^a-zA-Z0-9]/g, '').slice(0, 4).toUpperCase() || '01');
   return `${jen}-${suf}-${String(Number(nomor) || 0).padStart(2, '0')}`;
 }
 
