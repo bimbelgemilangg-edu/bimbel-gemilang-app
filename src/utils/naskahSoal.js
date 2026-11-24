@@ -1087,17 +1087,25 @@ export function butirNaskahHtml(soal, nomor, lebarKolom, rasioGambar = {}, opsiB
   const opsiHtml = teksOpsi
     .map((t, i) => {
       const huruf = String.fromCharCode(65 + i);
-      const gbr = (opsi[i] && typeof opsi[i] === 'object' && Array.isArray(opsi[i].gambar))
-        ? opsi[i].gambar
-          .map((g) => {
-            const src = g?.uploadedUrl || g?.url || '';
-            if (!src) return '';
-            const r = ambilRasioGambar(src, rasioGambar);
-            const ukuran = ukuranGambarNaskah(r, 1, lebarKolom * 0.5) || { mode: 'blok', lebarMm: 30, tinggiMm: 22 };
-            return imgNaskahHtml(src, `Gambar pilihan ${huruf}`, ukuran);
-          })
-          .join('')
-        : '';
+      let listGambarOpsi = [];
+      const itemOpsi = opsi[i];
+      if (itemOpsi && typeof itemOpsi === 'object') {
+        const rawGbr = itemOpsi.gambar || itemOpsi.gambarUrl || itemOpsi.image;
+        if (typeof rawGbr === 'string' && rawGbr.trim()) {
+          listGambarOpsi = [rawGbr.trim()];
+        } else if (Array.isArray(rawGbr)) {
+          listGambarOpsi = rawGbr
+            .map((g) => (typeof g === 'string' ? g : (g?.uploadedUrl || g?.url || '')))
+            .filter(Boolean);
+        }
+      }
+      const gbr = listGambarOpsi
+        .map((src) => {
+          const r = ambilRasioGambar(src, rasioGambar);
+          const ukuran = ukuranGambarNaskah(r, 1, lebarKolom * 0.5) || { mode: 'blok', lebarMm: 45, tinggiMm: 22 };
+          return imgNaskahHtml(src, `Gambar pilihan ${huruf}`, ukuran);
+        })
+        .join('');
       return `<span>${kotakCentang}(${huruf}) ${teksKeHtml(t)}${gbr}</span>`;
     })
     .join('');
