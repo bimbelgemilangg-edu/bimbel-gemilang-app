@@ -17,7 +17,7 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../../../firebase';
-import { collection, getDocs, query, where, doc, deleteDoc } from 'firebase/firestore';
+import { collection, getDocs, query, where, doc, deleteDoc, addDoc } from 'firebase/firestore';
 import {
   Rocket, Lock, CheckCircle2, Star, Sparkles, Brain, Trophy,
   ChevronLeft, AlertCircle, Play, ShieldAlert, Timer, Award,
