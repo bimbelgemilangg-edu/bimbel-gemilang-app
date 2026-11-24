@@ -619,10 +619,11 @@ export function kurasiDanMixSoalAi({
   hasilPaket.push(...bankLolosDedup.slice(0, kuotaBank));
 
   // 5. JIKA KURANG DARI targetJumlah: MIX DENGAN PURE AI & SOAL HOTS SINTESIS
+  // PENTING: Isolasi ketat bab — JANGAN PERNAH mengambil soal dari bab lain!
   if (hasilPaket.length < targetJumlah) {
     const poolPure = KATALOG_PURE_AI_HOTS[mapelNorm] || [];
     const poolBab = poolPure.filter((item) => item.babNomor === babNomor);
-    const poolKandidat = poolBab.length > 0 ? [...poolBab, ...poolPure.filter((item) => item.babNomor !== babNomor)] : poolPure;
+    const poolKandidat = poolBab.length > 0 ? poolBab : poolPure;
     poolKandidat.forEach((soalAi) => {
       if (hasilPaket.length >= targetJumlah) return;
       const fp = (soalAi.soal || soalAi.teksSoal || '').toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 40);
@@ -14423,11 +14424,11 @@ export async function generatePureAiHotsSoal({
     }
   }
 
-  // 3. Fallback ke KATALOG_PURE_AI_HOTS (100% presisi mapel yang sesuai, TIDAK BOLEH campur mapel)
+  // 3. Fallback ke KATALOG_PURE_AI_HOTS (100% presisi mapel dan bab yang sesuai, TIDAK BOLEH campur bab lain)
   if (hasilAi.length < targetJumlah) {
     const poolPure = KATALOG_PURE_AI_HOTS[mapelNorm] || [];
     const poolBab = poolPure.filter((item) => item.babNomor === babNomor);
-    const kandidatUtama = poolBab.length > 0 ? [...poolBab, ...poolPure.filter((item) => item.babNomor !== babNomor)] : poolPure;
+    const kandidatUtama = poolBab.length > 0 ? poolBab : poolPure;
 
     let kandidat = kandidatUtama;
     if (subMateriId && subMateriId !== 'semua') {

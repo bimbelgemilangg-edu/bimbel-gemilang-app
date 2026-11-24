@@ -1412,7 +1412,7 @@ export default function CetakPaketLatihan() {
             border: '1.5px solid #2dd4bf',
             boxShadow: '0 4px 14px rgba(13, 148, 136, 0.15)',
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 14, flexWrap: 'wrap' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                 <div style={{
                   width: 46,
@@ -1431,7 +1431,7 @@ export default function CetakPaketLatihan() {
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                     <h4 style={{ margin: 0, fontSize: 15, fontWeight: 900, color: '#f0fdfa' }}>
-                      Asisten Astro Gemilang — Siapkan Paket Soal Kelas
+                      Asisten Astro Gemilang — Pembuatan & Kurasi Paket Soal
                     </h4>
                     <span style={{
                       background: '#2dd4bf',
@@ -1445,135 +1445,40 @@ export default function CetakPaketLatihan() {
                     </span>
                   </div>
                   <p style={{ margin: '4px 0 0', fontSize: 12, color: '#ccfbf1', lineHeight: 1.4 }}>
-                    Materi Aktif: <b>{babAktifObj?.ringkas || babAktif || 'Bilangan'}</b> → <b style={{ color: '#fef08a' }}>{subMateriObj?.label || 'Semua Sub-Materi'}</b> ({soalBankTampil.length} butir di Bank Soal). AI siap memadukan soal asli dengan soal pengayaan HOTS berstandar TKA/SNBT dengan volume sesuai kebutuhan pengayaan maupun drill remedial.
+                    Materi Aktif: <b>{babAktifObj?.ringkas || babAktif || 'Bilangan'}</b> → <b style={{ color: '#fef08a' }}>{subMateriObj?.label || 'Semua Sub-Materi'}</b> ({soalBankTampil.length} butir di Bank Soal).
+                    <span style={{ marginLeft: 6, opacity: 0.9 }}>
+                      Tentukan target butir & mode di <b>Pusat Kendali AI (Langkah 4)</b> di bawah.
+                    </span>
                   </p>
                 </div>
               </div>
 
-              {/* Selector Target Jumlah Butir Soal (Kuis, Pengayaan, Drill Remedial) */}
-              <div style={{
-                background: 'rgba(15, 23, 42, 0.5)',
-                border: '1px solid rgba(45, 212, 191, 0.35)',
-                borderRadius: 12,
-                padding: '10px 14px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                flexWrap: 'wrap',
-                gap: 10,
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span style={{ fontSize: 13, color: '#fef08a', fontWeight: 800 }}>🎯 Target Jumlah Butir:</span>
-                  <span style={{ fontSize: 11.5, color: '#99f6e4' }}>
-                    Pilih porsi latihan (remedial/drill bab pertama butuh lebih banyak butir latihan):
-                  </span>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-                  {[
-                    { jml: 10, label: '10 Soal (Kuis Harian)' },
-                    { jml: 15, label: '15 Soal (Pengayaan)' },
-                    { jml: 20, label: '🔥 20 Soal (Drill Remedial)' },
-                    { jml: 30, label: '📚 30 Soal (Simulasi Lengkap)' },
-                  ].map((preset) => {
-                    const isSelected = targetJumlahSoal === preset.jml;
-                    return (
-                      <button
-                        key={preset.jml}
-                        type="button"
-                        onClick={() => setTargetJumlahSoal(preset.jml)}
-                        style={{
-                          background: isSelected ? '#fde047' : 'rgba(255, 255, 255, 0.12)',
-                          color: isSelected ? '#713f12' : '#ffffff',
-                          border: isSelected ? '1.5px solid #ca8a04' : '1px solid rgba(255, 255, 255, 0.25)',
-                          borderRadius: 8,
-                          padding: '5px 11px',
-                          fontSize: 11.5,
-                          fontWeight: isSelected ? 900 : 700,
-                          cursor: 'pointer',
-                          transition: 'all 0.15s ease',
-                        }}
-                      >
-                        {preset.label}
-                      </button>
-                    );
-                  })}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginLeft: 4 }}>
-                    <span style={{ fontSize: 11, color: '#99f6e4', fontWeight: 700 }}>Custom:</span>
-                    <input
-                      type="number"
-                      min={5}
-                      max={50}
-                      value={targetJumlahSoal}
-                      onChange={(e) => {
-                        const val = parseInt(e.target.value, 10);
-                        if (!isNaN(val) && val >= 1 && val <= 100) setTargetJumlahSoal(val);
-                      }}
-                      style={{
-                        width: 54,
-                        padding: '4px 6px',
-                        borderRadius: 6,
-                        border: '1.5px solid #2dd4bf',
-                        background: '#042f2e',
-                        color: '#fef08a',
-                        fontWeight: 900,
-                        fontSize: 12,
-                        textAlign: 'center',
-                      }}
-                    />
-                    <span style={{ fontSize: 11, color: '#ccfbf1' }}>butir</span>
-                  </div>
-                </div>
-              </div>
-
-              <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-                <button
-                  type="button"
-                  disabled={astroSedangBekerja || (memuat && bankSoal.length === 0)}
-                  onClick={() => handleBantuAstroGemilang()}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                <a
+                  href="#pusat-kendali-ai"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    document.getElementById('pusat-kendali-ai')?.scrollIntoView({ behavior: 'smooth' });
+                  }}
                   style={{
-                    background: (memuat && bankSoal.length === 0) ? '#64748b' : '#fef08a linear-gradient(180deg, #fef08a 0%, #fde047 100%)',
-                    color: (memuat && bankSoal.length === 0) ? '#ffffff' : '#713f12',
-                    border: (memuat && bankSoal.length === 0) ? '1.5px solid #475569' : '1.5px solid #ca8a04',
+                    background: '#fef08a linear-gradient(180deg, #fef08a 0%, #fde047 100%)',
+                    color: '#713f12',
+                    border: '1.5px solid #ca8a04',
                     borderRadius: 10,
-                    padding: '10px 18px',
-                    fontSize: 13,
+                    padding: '8px 16px',
+                    fontSize: 12,
                     fontWeight: 900,
-                    cursor: (astroSedangBekerja || (memuat && bankSoal.length === 0)) ? 'not-allowed' : 'pointer',
-                    display: 'flex',
+                    cursor: 'pointer',
+                    display: 'inline-flex',
                     alignItems: 'center',
-                    gap: 8,
-                    boxShadow: (memuat && bankSoal.length === 0) ? 'none' : '0 4px 12px rgba(202, 138, 4, 0.25)',
-                    opacity: (memuat && bankSoal.length === 0) ? 0.7 : 1,
+                    gap: 6,
+                    textDecoration: 'none',
+                    boxShadow: '0 2px 8px rgba(202, 138, 4, 0.25)',
                   }}
                 >
-                  <span style={{ fontSize: 16 }}>{astroSedangBekerja ? '🤖' : (memuat && bankSoal.length === 0) ? '⏳' : '✨'}</span>
-                  <span>{astroSedangBekerja ? 'AI Sedang Bekerja...' : (memuat && bankSoal.length === 0) ? 'Menyiapkan Bank Soal...' : `Siapkan ${targetJumlahSoal} Soal (Mix Bank Asli + AI HOTS)`}</span>
-                </button>
-
-                <button
-                  type="button"
-                  disabled={astroSedangBekerja || (memuat && bankSoal.length === 0)}
-                  onClick={() => handleGeneratePureAiSoal()}
-                  style={{
-                    background: (memuat && bankSoal.length === 0) ? '#475569' : '#0284c7 linear-gradient(135deg, #0284c7 0%, #0369a1 100%)',
-                    color: '#ffffff',
-                    border: '1.5px solid #38bdf8',
-                    borderRadius: 10,
-                    padding: '10px 18px',
-                    fontSize: 13,
-                    fontWeight: 900,
-                    cursor: (astroSedangBekerja || (memuat && bankSoal.length === 0)) ? 'not-allowed' : 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 8,
-                    boxShadow: (memuat && bankSoal.length === 0) ? 'none' : '0 4px 12px rgba(2, 132, 199, 0.3)',
-                    opacity: (memuat && bankSoal.length === 0) ? 0.7 : 1,
-                  }}
-                  title={`Generate ${targetJumlahSoal} butir murni AI tanpa menggunakan bank soal lama (solusi bila butir bank soal terasa berulang)`}
-                >
-                  <span style={{ fontSize: 16 }}>⚡</span>
-                  <span>Generate {targetJumlahSoal} Soal Pure AI (HOTS Baru & Gambar Lengkap)</span>
-                </button>
+                  <span>⚡ Ke Pusat Kendali AI (Langkah 4)</span>
+                  <span>↓</span>
+                </a>
                 {keranjang.length > 0 && (
                   <button
                     type="button"
@@ -1964,48 +1869,30 @@ export default function CetakPaketLatihan() {
                       Topik aktif: <b style={{ color: '#0f766e' }}>{subMateriObj?.label}</b> ({soalBankTampil.length} butir ditemukan di Bank Soal)
                     </div>
                     <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-                      <button
-                        type="button"
-                        onClick={() => handleBantuAstroGemilang(null, subMateriAktif)}
+                      <a
+                        href="#pusat-kendali-ai"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          document.getElementById('pusat-kendali-ai')?.scrollIntoView({ behavior: 'smooth' });
+                        }}
                         style={{
                           display: 'inline-flex',
                           alignItems: 'center',
                           gap: 6,
-                          background: '#ffffff',
+                          background: '#f0fdfa',
                           color: '#0f766e',
-                          border: '1.5px solid #0d9488',
+                          border: '1.5px solid #2dd4bf',
                           borderRadius: 8,
-                          padding: '6px 14px',
-                          fontSize: 11.5,
+                          padding: '7px 16px',
+                          fontSize: 12,
                           fontWeight: 800,
                           cursor: 'pointer',
+                          textDecoration: 'none',
                         }}
                       >
-                        <span>✨</span>
-                        <span>Mix Bank & AI ({targetJumlahSoal} Soal)</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleGeneratePureAiSoal(null, subMateriAktif)}
-                        style={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: 6,
-                          background: '#0369a1 linear-gradient(135deg, #0284c7 0%, #0369a1 100%)',
-                          color: '#ffffff',
-                          border: '1.5px solid #38bdf8',
-                          borderRadius: 8,
-                          padding: '6px 14px',
-                          fontSize: 11.5,
-                          fontWeight: 800,
-                          cursor: 'pointer',
-                          boxShadow: '0 2px 6px rgba(2, 132, 199, 0.25)',
-                        }}
-                        title={`Generate ${targetJumlahSoal} butir segar murni AI lengkap dengan gambar tanpa mengulang bank soal`}
-                      >
-                        <span>⚡</span>
-                        <span>Pure AI: {targetJumlahSoal} Soal HOTS Baru + Gambar</span>
-                      </button>
+                        <span>🎯 Lanjut Atur & Generate di Pusat Kendali AI (Langkah 4)</span>
+                        <span>↓</span>
+                      </a>
                     </div>
                   </div>
                 </div>
@@ -2014,66 +1901,32 @@ export default function CetakPaketLatihan() {
           )}
 
           {babAktif && (
-            <div style={gayaKartu}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' }}>
-                <div style={gayaJudulKartu}>
-                  4 · Telaah butir soal pada <span style={{ color: '#0f766e' }}>{babAktifObj?.ringkas || babAktif}</span>
-                  {subMateriObj?.id !== 'semua' && (
-                    <span style={{ marginLeft: 8, padding: '3px 10px', background: '#ecfdf5', color: '#047857', border: '1px solid #a7f3d0', borderRadius: 99, fontSize: 12, fontWeight: 700 }}>
-                      {subMateriObj?.label}
+            <div id="pusat-kendali-ai" style={{ ...gayaKartu, border: '2px solid #0d9488', boxShadow: '0 8px 24px rgba(13, 148, 136, 0.12)' }}>
+              {/* Header Langkah 4 */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, marginBottom: 14, flexWrap: 'wrap' }}>
+                <div>
+                  <div style={{ ...gayaJudulKartu, marginBottom: 4, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                    <span style={{ fontSize: 18 }}>🤖</span>
+                    <span>4 · Pusat Kendali AI & Telaah Paket Soal</span>
+                    <span style={{ padding: '3px 10px', background: '#ecfdf5', color: '#047857', border: '1px solid #a7f3d0', borderRadius: 99, fontSize: 12, fontWeight: 800 }}>
+                      {mapelAktif} · {babAktifObj?.ringkas || babAktif}
                     </span>
-                  )}
-                  <span style={{ fontSize: 12, color: '#64748b', fontWeight: 600, marginLeft: 6 }}>
-                    ({soalBankTampil.length} butir di Bank)
-                  </span>
+                    {subMateriObj?.id !== 'semua' && (
+                      <span style={{ padding: '3px 10px', background: '#f0fdfa', color: '#0f766e', border: '1.5px solid #2dd4bf', borderRadius: 99, fontSize: 12, fontWeight: 800 }}>
+                        🎯 {subMateriObj?.label}
+                      </span>
+                    )}
+                  </div>
+                  <p style={{ margin: 0, fontSize: 12, color: '#64748b' }}>
+                    Tersedia <b style={{ color: '#0f766e' }}>{soalBankTampil.length} butir asli</b> di Bank Soal. Tentukan jumlah butir latihan dan pilih mode pembuatan paket di bawah:
+                  </p>
                 </div>
-                <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-                  <button
-                    type="button"
-                    onClick={() => handleBantuAstroGemilang(null, subMateriAktif)}
-                    style={{
-                      background: '#fef08a linear-gradient(180deg, #fef08a 0%, #fde047 100%)',
-                      color: '#713f12',
-                      border: '1.5px solid #ca8a04',
-                      borderRadius: 8,
-                      padding: '7px 14px',
-                      fontSize: 12,
-                      fontWeight: 900,
-                      cursor: 'pointer',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: 6,
-                      boxShadow: '0 2px 6px rgba(202, 138, 4, 0.2)',
-                    }}
-                  >
-                    <span>✨ Siapkan {targetJumlahSoal} Soal (Mix Bank Asli + AI HOTS)</span>
-                  </button>
 
-                  <button
-                    type="button"
-                    disabled={astroSedangBekerja || (memuat && bankSoal.length === 0)}
-                    onClick={() => handleGeneratePureAiSoal(null, subMateriAktif)}
-                    style={{
-                      background: 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)',
-                      color: '#ffffff',
-                      border: '1.5px solid #38bdf8',
-                      borderRadius: 8,
-                      padding: '7px 14px',
-                      fontSize: 12,
-                      fontWeight: 900,
-                      cursor: (astroSedangBekerja || (memuat && bankSoal.length === 0)) ? 'not-allowed' : 'pointer',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: 6,
-                      boxShadow: '0 2px 6px rgba(2, 132, 199, 0.25)',
-                      opacity: (astroSedangBekerja || (memuat && bankSoal.length === 0)) ? 0.7 : 1,
-                    }}
-                    title={`Generate ${targetJumlahSoal} butir murni AI tanpa mengulang bank soal lama (lengkap dengan gambar & pembahasan)`}
-                  >
-                    <span>⚡</span>
-                    <span>Generate {targetJumlahSoal} Soal Pure AI (Fresh HOTS + Gambar Lengkap)</span>
-                  </button>
-                  {keranjang.length > 0 && (
+                {keranjang.length > 0 && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ fontSize: 12, fontWeight: 800, color: '#0d9488', background: '#ccfbf1', padding: '5px 12px', borderRadius: 99 }}>
+                      ✓ {keranjang.length} butir siap cetak / terbit
+                    </span>
                     <button
                       type="button"
                       onClick={() => {
@@ -2081,63 +1934,237 @@ export default function CetakPaketLatihan() {
                         setPesanKeranjang('Pilihan dikosongkan.');
                       }}
                       style={{
-                        background: '#f1f5f9',
-                        color: '#64748b',
-                        border: '1px solid #cbd5e1',
+                        background: '#fef2f2',
+                        color: '#b91c1c',
+                        border: '1px solid #fecaca',
                         borderRadius: 8,
-                        padding: '6px 10px',
-                        fontSize: 11.5,
+                        padding: '6px 12px',
+                        fontSize: 12,
                         fontWeight: 700,
                         cursor: 'pointer',
                       }}
                     >
-                      🧹 Kosongkan ({keranjang.length})
+                      🗑️ Kosongkan ({keranjang.length})
                     </button>
-                  )}
+                  </div>
+                )}
+              </div>
+
+              {/* BAR PEMILIH TARGET JUMLAH BUTIR SOAL */}
+              <div style={{
+                background: '#f8fafc',
+                border: '1.5px solid #e2e8f0',
+                borderRadius: 12,
+                padding: '12px 16px',
+                marginBottom: 16,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                flexWrap: 'wrap',
+                gap: 12,
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ fontSize: 13, color: '#0f172a', fontWeight: 800 }}>🎯 Target Jumlah Butir Latihan:</span>
+                  <span style={{ fontSize: 11.5, color: '#64748b' }}>
+                    Pilih porsi latihan yang ingin disiapkan:
+                  </span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                  {[
+                    { jml: 10, label: '10 Soal (Kuis Harian)' },
+                    { jml: 15, label: '15 Soal (Pengayaan)' },
+                    { jml: 20, label: '🔥 20 Soal (Drill Remedial)' },
+                    { jml: 30, label: '📚 30 Soal (Simulasi Lengkap)' },
+                  ].map((preset) => {
+                    const isSelected = targetJumlahSoal === preset.jml;
+                    return (
+                      <button
+                        key={preset.jml}
+                        type="button"
+                        onClick={() => setTargetJumlahSoal(preset.jml)}
+                        style={{
+                          background: isSelected ? '#0d9488' : '#ffffff',
+                          color: isSelected ? '#ffffff' : '#334155',
+                          border: isSelected ? '1.5px solid #0f766e' : '1px solid #cbd5e1',
+                          borderRadius: 8,
+                          padding: '6px 12px',
+                          fontSize: 12,
+                          fontWeight: isSelected ? 800 : 600,
+                          cursor: 'pointer',
+                          transition: 'all 0.15s ease',
+                          boxShadow: isSelected ? '0 2px 6px rgba(13, 148, 136, 0.3)' : 'none',
+                        }}
+                      >
+                        {preset.label}
+                      </button>
+                    );
+                  })}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginLeft: 6 }}>
+                    <span style={{ fontSize: 11.5, color: '#475569', fontWeight: 700 }}>Custom:</span>
+                    <input
+                      type="number"
+                      min={5}
+                      max={50}
+                      value={targetJumlahSoal}
+                      onChange={(e) => {
+                        const val = parseInt(e.target.value, 10);
+                        if (!isNaN(val) && val >= 1 && val <= 100) setTargetJumlahSoal(val);
+                      }}
+                      style={{
+                        width: 54,
+                        padding: '4px 6px',
+                        borderRadius: 6,
+                        border: '1.5px solid #0d9488',
+                        background: '#ffffff',
+                        color: '#0f766e',
+                        fontWeight: 900,
+                        fontSize: 12,
+                        textAlign: 'center',
+                      }}
+                    />
+                    <span style={{ fontSize: 11.5, color: '#64748b' }}>butir</span>
+                  </div>
                 </div>
               </div>
 
-              {/* Banner jika soal di bank pada sub-materi ini terbatas */}
-              {soalBankTampil.length < 5 && (
+              {/* 2 KARTU UTAMA MODE GENERATE AI (TERPISAH & JELAS FUNGSINYA) */}
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+                gap: 14,
+                marginBottom: 16,
+              }}>
+                {/* MODE 1: MIX BANK ASLI + AI HOTS */}
+                <div style={{
+                  background: 'linear-gradient(180deg, #fffbeb 0%, #fef3c7 100%)',
+                  border: '1.5px solid #f59e0b',
+                  borderRadius: 14,
+                  padding: '16px 18px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
+                  gap: 12,
+                  boxShadow: '0 4px 12px rgba(245, 158, 11, 0.12)',
+                }}>
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                      <span style={{ fontSize: 11, fontWeight: 900, background: '#f59e0b', color: '#ffffff', padding: '2px 8px', borderRadius: 99 }}>
+                        ⭐ REKOMENDASI TENTOR
+                      </span>
+                      <span style={{ fontSize: 11.5, color: '#b45309', fontWeight: 700 }}>
+                        Prioritas Soal Asli TKA
+                      </span>
+                    </div>
+                    <h5 style={{ margin: '0 0 6px', fontSize: 14.5, fontWeight: 900, color: '#78350f' }}>
+                      Mix Cerdas (Bank Asli + AI HOTS)
+                    </h5>
+                    <p style={{ margin: 0, fontSize: 12, color: '#92400e', lineHeight: 1.45 }}>
+                      Mengambil butir terbaik dari arsip asli TKA/SNBT di Bank Soal, lalu melengkapinya secara otomatis dengan soal sintesis HOTS berstandar resmi agar pas tepat <b>{targetJumlahSoal} butir</b>.
+                    </p>
+                  </div>
+
+                  <button
+                    type="button"
+                    disabled={astroSedangBekerja || (memuat && bankSoal.length === 0)}
+                    onClick={() => handleBantuAstroGemilang(null, subMateriAktif)}
+                    style={{
+                      width: '100%',
+                      background: (memuat && bankSoal.length === 0) ? '#94a3b8' : 'linear-gradient(180deg, #fef08a 0%, #facc15 100%)',
+                      color: (memuat && bankSoal.length === 0) ? '#ffffff' : '#713f12',
+                      border: '1.5px solid #ca8a04',
+                      borderRadius: 10,
+                      padding: '11px 16px',
+                      fontSize: 13,
+                      fontWeight: 900,
+                      cursor: (astroSedangBekerja || (memuat && bankSoal.length === 0)) ? 'not-allowed' : 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: 8,
+                      boxShadow: '0 2px 8px rgba(202, 138, 4, 0.3)',
+                      transition: 'transform 0.1s ease',
+                    }}
+                  >
+                    <span style={{ fontSize: 16 }}>{astroSedangBekerja ? '🤖' : '✨'}</span>
+                    <span>{astroSedangBekerja ? 'AI Sedang Bekerja...' : `Siapkan ${targetJumlahSoal} Soal Mix (Bank Asli + AI)`}</span>
+                  </button>
+                </div>
+
+                {/* MODE 2: PURE AI (100% FRESH HOTS + GAMBAR LENGKAP) */}
+                <div style={{
+                  background: 'linear-gradient(180deg, #f0f9ff 0%, #e0f2fe 100%)',
+                  border: '1.5px solid #38bdf8',
+                  borderRadius: 14,
+                  padding: '16px 18px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
+                  gap: 12,
+                  boxShadow: '0 4px 12px rgba(2, 132, 199, 0.12)',
+                }}>
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                      <span style={{ fontSize: 11, fontWeight: 900, background: '#0284c7', color: '#ffffff', padding: '2px 8px', borderRadius: 99 }}>
+                        ⚡ SOLUSI SOAL SEGAR / ANTI-BOSAN
+                      </span>
+                      <span style={{ fontSize: 11.5, color: '#0369a1', fontWeight: 700 }}>
+                        100% Murni AI
+                      </span>
+                    </div>
+                    <h5 style={{ margin: '0 0 6px', fontSize: 14.5, fontWeight: 900, color: '#0c4a6e' }}>
+                      Pure AI (100% Baru + Lengkap Gambar)
+                    </h5>
+                    <p style={{ margin: 0, fontSize: 12, color: '#0369a1', lineHeight: 1.45 }}>
+                      Meracik butir baru segar 100% murni AI tanpa mengulang bank soal yang pernah dikerjakan. Dilengkapi konteks kontekstual nyata, gambar diagram otentik, dan pembahasan lengkap.
+                    </p>
+                  </div>
+
+                  <button
+                    type="button"
+                    disabled={astroSedangBekerja || (memuat && bankSoal.length === 0)}
+                    onClick={() => handleGeneratePureAiSoal(null, subMateriAktif)}
+                    style={{
+                      width: '100%',
+                      background: (memuat && bankSoal.length === 0) ? '#94a3b8' : 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)',
+                      color: '#ffffff',
+                      border: '1.5px solid #0284c7',
+                      borderRadius: 10,
+                      padding: '11px 16px',
+                      fontSize: 13,
+                      fontWeight: 900,
+                      cursor: (astroSedangBekerja || (memuat && bankSoal.length === 0)) ? 'not-allowed' : 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: 8,
+                      boxShadow: '0 2px 8px rgba(2, 132, 199, 0.3)',
+                      transition: 'transform 0.1s ease',
+                    }}
+                  >
+                    <span style={{ fontSize: 16 }}>⚡</span>
+                    <span>Generate {targetJumlahSoal} Soal Pure AI (100% Baru)</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Catatan jika butir asli di bank soal kurang dari target */}
+              {soalBankTampil.length < targetJumlahSoal && (
                 <div style={{
                   background: '#fefce8',
-                  border: '1.5px dashed #facc15',
-                  borderRadius: 12,
-                  padding: '12px 16px',
+                  border: '1px solid #fef08a',
+                  borderRadius: 10,
+                  padding: '8px 14px',
                   marginBottom: 14,
                   display: 'flex',
                   alignItems: 'center',
-                  justifyContent: 'space-between',
-                  flexWrap: 'wrap',
-                  gap: 10,
+                  gap: 8,
+                  fontSize: 12,
+                  color: '#854d0e',
                 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <span style={{ fontSize: 22 }}>💡</span>
-                    <div>
-                      <div style={{ fontSize: 12.5, fontWeight: 800, color: '#854d0e' }}>
-                        Butir soal asli di Bank Soal untuk topik ini terbatas ({soalBankTampil.length} butir)
-                      </div>
-                      <div style={{ fontSize: 11.5, color: '#a16207', marginTop: 2 }}>
-                        Astro Gemilang dapat memadukan butir asli dengan bank soal sintesis HOTS berstandar TKA agar menjadi {targetJumlahSoal} soal lengkap.
-                      </div>
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => handleBantuAstroGemilang(null, subMateriAktif)}
-                    style={{
-                      background: '#854d0e',
-                      color: '#fef08a',
-                      border: 'none',
-                      borderRadius: 8,
-                      padding: '6px 14px',
-                      fontSize: 11.5,
-                      fontWeight: 800,
-                      cursor: 'pointer',
-                    }}
-                  >
-                    ✨ Auto-Mix Jadi {targetJumlahSoal} Soal
-                  </button>
+                  <span style={{ fontSize: 16 }}>💡</span>
+                  <span>
+                    Tersedia <b>{soalBankTampil.length} butir</b> di bank soal untuk topik ini. Mode <b>Mix Cerdas</b> atau <b>Pure AI</b> di atas akan otomatis menggenapkan paket latihan menjadi <b>{targetJumlahSoal} butir</b> berstandar TKA.
+                  </span>
                 </div>
               )}
 
