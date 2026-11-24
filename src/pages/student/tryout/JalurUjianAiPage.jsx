@@ -657,6 +657,31 @@ export default function JalurUjianAiPage() {
         console.warn('Gagal menyimpan record misi mingguan:', e);
       }
     }
+
+    // Jika sesi ini adalah Paket Soal Terbitan Tentor (Kelas Pendampingan)
+    if (sesiLatihanAktif?.paket) {
+      try {
+        const lama = JSON.parse(localStorage.getItem('gemilang_hasil_terbitan_siswa') || '[]');
+        const skorFinal = hasil.skor != null
+          ? hasil.skor
+          : Math.round(((hasil.totalBenar || 0) / Math.max(1, hasil.totalSoal || 10)) * 100);
+        const record = {
+          studentId: studentId || 'siswa_demo',
+          studentNama: profil?.nama || 'Siswa Pendampingan',
+          paketId: sesiLatihanAktif.paket.id,
+          paketJudul: sesiLatihanAktif.paket.judul,
+          subtesKode: sesiLatihanAktif.subtes?.kode || 'MTK',
+          skor: skorFinal,
+          benar: hasil.totalBenar || 0,
+          total: hasil.totalSoal || 10,
+          tuntas: skorFinal >= 75,
+          waktu: Date.now(),
+        };
+        localStorage.setItem('gemilang_hasil_terbitan_siswa', JSON.stringify([record, ...lama]));
+      } catch (e) {
+        console.warn('Gagal menyimpan record terbitan siswa:', e);
+      }
+    }
     setSesiLatihanAktif(null);
     setRefreshLatihanTick((t) => t + 1);
   };

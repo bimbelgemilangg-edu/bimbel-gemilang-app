@@ -531,6 +531,70 @@ export default function CetakPaketLatihan() {
   const [astroMode, setAstroMode] = useState('mix'); // 'mix' | 'pure_ai'
   const [targetJumlahSoal, setTargetJumlahSoal] = useState(10); // Target butir soal (Kuis 10, Pengayaan 15, Remedial Drill 20-30)
 
+  // 📊 STATE PAPAN ANALITIK KETUNTASAN & REMEDIAL KELAS
+  const [dataSiswaKelas, setDataSiswaKelas] = useState(() => {
+    try {
+      const tersimpan = localStorage.getItem('gemilang_analitik_kelas_siswa');
+      if (tersimpan) return JSON.parse(tersimpan);
+    } catch {}
+    return [
+      { id: 'sis_1', nama: 'Azka Ramadhani', kelas: '9 SMP', bab1: 80, tuntasBab1: true, kendala: '-' },
+      { id: 'sis_2', nama: 'Bima Pratama', kelas: '9 SMP', bab1: 60, tuntasBab1: false, kendala: 'Aturan Eksponen Negatif (2^-3)' },
+      { id: 'sis_3', nama: 'Citra Kirana', kelas: '9 SMP', bab1: 50, tuntasBab1: false, kendala: 'Aturan KaBaTaKu & Tanda Kurung' },
+      { id: 'sis_4', nama: 'Dafa Alamsyah', kelas: '9 SMP', bab1: 75, tuntasBab1: true, kendala: '-' },
+      { id: 'sis_5', nama: 'Echa Aurelia', kelas: '9 SMP', bab1: 45, tuntasBab1: false, kendala: 'Sifat Bilangan Rasional vs Irasional' },
+      { id: 'sis_6', nama: 'Farhan Naufal', kelas: '9 SMP', bab1: 90, tuntasBab1: true, kendala: '-' },
+      { id: 'sis_7', nama: 'Gita Maharani', kelas: '9 SMP', bab1: 55, tuntasBab1: false, kendala: 'Konversi Notasi Ilmiah Mikroskopis' },
+      { id: 'sis_8', nama: 'Hadi Prasetyo', kelas: '9 SMP', bab1: 50, tuntasBab1: false, kendala: 'Merasionalkan Penyebut Bentuk Akar' },
+    ];
+  });
+
+  const [statusRemedialSelesai, setStatusRemedialSelesai] = useState(() => {
+    try {
+      return localStorage.getItem('gemilang_status_remedial_bab1') === 'tuntas';
+    } catch {
+      return false;
+    }
+  });
+
+  const handleMulaiDrillRemedial = async (babNomorTarget = 1, subMateriIdTarget = 'jenis_sifat', namaBabTarget = '') => {
+    setJenjangAktif('SMP');
+    setMapelAktif('Matematika');
+    if (babNomorTarget === 1) {
+      setBabAktif('Bilangan (Bulat, Pecahan, Berpangkat, & Bentuk Akar)');
+    } else if (babNomorTarget === 2) {
+      setBabAktif('Aljabar (SPLDV, Persamaan Kuadrat, Fungsi & Pola Bilangan)');
+    } else {
+      setBabAktif(namaBabTarget || 'Bilangan (Bulat, Pecahan, Berpangkat, & Bentuk Akar)');
+    }
+    setSubMateriAktif(subMateriIdTarget || 'semua');
+    setTargetJumlahSoal(20); // Preset drill remedial = 20 butir
+    setSumber('bank'); // Beralih langsung ke Meja Racik & Pusat Kendali AI
+
+    setTimeout(() => {
+      document.getElementById('pusat-kendali-ai')?.scrollIntoView({ behavior: 'smooth' });
+    }, 120);
+
+    // Otomatis mulai racik Pure AI 20 butir untuk topik remedial
+    await handleGeneratePureAiSoal(null, subMateriIdTarget);
+  };
+
+  const handleSimulasiSiswaTuntasDrill = () => {
+    const dataUpdate = dataSiswaKelas.map((s) => ({
+      ...s,
+      bab1: Math.min(100, Math.max(75, s.bab1 + Math.floor(Math.random() * 20) + 15)),
+      tuntasBab1: true,
+      kendala: 'Tuntas setelah Drill Remedial 20 Soal ✅',
+    }));
+    setDataSiswaKelas(dataUpdate);
+    setStatusRemedialSelesai(true);
+    try {
+      localStorage.setItem('gemilang_analitik_kelas_siswa', JSON.stringify(dataUpdate));
+      localStorage.setItem('gemilang_status_remedial_bab1', 'tuntas');
+    } catch {}
+    alert('🎉 Hasil Drill Remedial Diperbarui!\n\nSeluruh siswa kini telah menuntaskan Bab 1 (Rata-rata 86/100). Bab 2: Aljabar kini RESMI TERBUKA untuk dilanjutkan!');
+  };
+
   // Muat daftar paket terbitan kelas pendampingan
   const muatTerbitan = useCallback(async () => {
     let list = [];
@@ -574,6 +638,11 @@ export default function CetakPaketLatihan() {
       mapel: mapelAktif || 'Matematika',
       subtes: mapelAktif || 'Matematika',
       bab: babAktif || 'Materi Inti',
+      babNomor: babAktifObj?.babNomor || 1,
+      subMateriId: subMateriAktif || 'semua',
+      subMateriLabel: subMateriObj?.label || 'Semua Sub-Materi',
+      kkm: 75,
+      isRemedial: targetJumlahSoal === 20 || judulFinal.toLowerCase().includes('remedial'),
       catatanTentor: catatanTerbitInput || 'Catat nomor dan langkah rumus di Buku Besar! Soal belum tuntas akan dibahas bersama di kelas.',
       tentorNama: idt.guruNama || 'Tentor Gemilang',
       tentorId: idt.guruId || '',
@@ -1323,9 +1392,38 @@ export default function CetakPaketLatihan() {
           keranjang terpisah; bar terpilih menempel di bawah layar. */}
       {langkah === 1 && (<>
       <div style={{ width: '100%' }}>
-      <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
-        <button style={gayaPill(sumber === 'bank')} onClick={() => setSumber('bank')}>🗂️ Bank Soal (per mapel → bab)</button>
-        <button style={gayaPill(sumber === 'paket')} onClick={() => setSumber('paket')}>📦 Paket Try Out saya ({paketList.length})</button>
+      <div style={{ display: 'flex', gap: 8, marginBottom: 14, flexWrap: 'wrap' }}>
+        <button style={gayaPill(sumber === 'bank')} onClick={() => setSumber('bank')}>
+          🗂️ Bank Soal & Pusat Kendali AI
+        </button>
+        <button style={gayaPill(sumber === 'paket')} onClick={() => setSumber('paket')}>
+          📦 Paket Try Out Saya ({paketList.length})
+        </button>
+        <button
+          type="button"
+          style={{
+            ...gayaPill(sumber === 'analitik'),
+            background: sumber === 'analitik' ? '#0f766e' : '#f0fdfa',
+            color: sumber === 'analitik' ? '#ffffff' : '#0f766e',
+            border: '1.5px solid #2dd4bf',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 6,
+          }}
+          onClick={() => setSumber('analitik')}
+        >
+          <span>📊 Papan Analitik Ketuntasan & Remedial Kelas</span>
+          <span style={{
+            fontSize: 10,
+            fontWeight: 900,
+            background: statusRemedialSelesai ? '#dcfce7' : '#fef08a',
+            color: statusRemedialSelesai ? '#166534' : '#713f12',
+            padding: '2px 7px',
+            borderRadius: 99,
+          }}>
+            {statusRemedialSelesai ? '✓ Semua Tuntas' : '⚠️ Remedial Aktif'}
+          </span>
+        </button>
       </div>
 
       {memuat && bankSoal.length > 0 && (
@@ -2330,6 +2428,479 @@ export default function CetakPaketLatihan() {
         </div>
       )}
 
+      {/* 📊 PAPAN ANALITIK KETUNTASAN SILABUS & REMEDIAL KELAS */}
+      {sumber === 'analitik' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          {/* HEADER & OVERVIEW PAPAN ANALITIK */}
+          <div style={{
+            background: 'linear-gradient(135deg, #042f2e 0%, #0f766e 100%)',
+            borderRadius: 16,
+            padding: '20px 24px',
+            color: '#ffffff',
+            boxShadow: '0 8px 24px rgba(13, 148, 136, 0.15)',
+            border: '1.5px solid #2dd4bf',
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16, flexWrap: 'wrap', marginBottom: 14 }}>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                  <h3 style={{ margin: 0, fontSize: 18, fontWeight: 900, color: '#f0fdfa' }}>
+                    📊 Papan Analitik Ketuntasan Silabus & Rekomendasi Lanjut Materi
+                  </h3>
+                  <span style={{
+                    background: statusRemedialSelesai ? '#22c55e' : '#f59e0b',
+                    color: '#ffffff',
+                    fontSize: 11,
+                    fontWeight: 900,
+                    padding: '3px 10px',
+                    borderRadius: 99,
+                  }}>
+                    {statusRemedialSelesai ? 'STATUS: KELAS TUNTAS (SIAP BAB 2)' : 'STATUS: REMEDIAL DIPERLUKAN (BAB 1)'}
+                  </span>
+                </div>
+                <p style={{ margin: '6px 0 0', fontSize: 12.5, color: '#ccfbf1', maxWidth: 780, lineHeight: 1.5 }}>
+                  Berdasarkan prinsip <b>Belajar Tuntas (Mastery Learning)</b> Bimbel Gemilang: Siswa yang belum tuntas pada bab prasyarat <b>tidak boleh dipaksa lanjut ke bab berikutnya</b>. Tentor wajib memberikan paket drill latihan remedial sampai pemahaman siswa tuntas (KKM ≥ 75%).
+                </p>
+              </div>
+
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                <button
+                  type="button"
+                  onClick={handleSimulasiSiswaTuntasDrill}
+                  style={{
+                    background: '#fef08a linear-gradient(180deg, #fef08a 0%, #fde047 100%)',
+                    color: '#713f12',
+                    border: '1.5px solid #ca8a04',
+                    borderRadius: 10,
+                    padding: '8px 14px',
+                    fontSize: 12,
+                    fontWeight: 900,
+                    cursor: 'pointer',
+                    boxShadow: '0 2px 8px rgba(202, 138, 4, 0.25)',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 6,
+                  }}
+                  title="Simulasikan nilai siswa setelah menyelesaikan paket drill remedial 20 butir"
+                >
+                  <span>⚡</span>
+                  <span>{statusRemedialSelesai ? 'Hasil Drill Tuntas (Reset/Ulang)' : 'Simulasi Siswa Selesai Drill'}</span>
+                </button>
+              </div>
+            </div>
+
+            {/* RINGKASAN METRIK KELAS */}
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+              gap: 12,
+              background: 'rgba(15, 23, 42, 0.45)',
+              borderRadius: 12,
+              padding: '14px 16px',
+              border: '1px solid rgba(45, 212, 191, 0.3)',
+            }}>
+              <div>
+                <div style={{ fontSize: 11, color: '#99f6e4', fontWeight: 700 }}>KELAS PENDAMPINGAN</div>
+                <div style={{ fontSize: 16, fontWeight: 900, color: '#fef08a', marginTop: 2 }}>Kelas 9 SMP · TKA MTK</div>
+              </div>
+              <div>
+                <div style={{ fontSize: 11, color: '#99f6e4', fontWeight: 700 }}>STANDAR KKM KELULUSAN</div>
+                <div style={{ fontSize: 16, fontWeight: 900, color: '#ffffff', marginTop: 2 }}>Skor Minimal 75</div>
+              </div>
+              <div>
+                <div style={{ fontSize: 11, color: '#99f6e4', fontWeight: 700 }}>RATA-RATA KELAS (BAB 1)</div>
+                <div style={{ fontSize: 16, fontWeight: 900, color: statusRemedialSelesai ? '#4ade80' : '#f87171', marginTop: 2 }}>
+                  {statusRemedialSelesai ? '86 / 100 (Tuntas)' : '58 / 100 (Di Bawah KKM)'}
+                </div>
+              </div>
+              <div>
+                <div style={{ fontSize: 11, color: '#99f6e4', fontWeight: 700 }}>TINGKAT KETUNTASAN</div>
+                <div style={{ fontSize: 16, fontWeight: 900, color: statusRemedialSelesai ? '#4ade80' : '#fbbf24', marginTop: 2 }}>
+                  {statusRemedialSelesai ? '87.5% (7 dari 8 Siswa)' : '37.5% (3 dari 8 Siswa)'}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* ROADMAP SILABUS BERJENJANG (PREREQUISITES LEARNING PIPELINE) */}
+          <div style={gayaKartu}>
+            <div style={{ ...gayaJudulKartu, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10, marginBottom: 14 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span>🎯</span>
+                <span>Alur Ketuntasan Materi & Prasyarat Kurikulum Resmi (SMP Matematika)</span>
+              </div>
+              <span style={{ fontSize: 12, color: '#64748b' }}>
+                Aturan: Bab selanjutnya hanya terbuka jika Bab sebelumnya tuntas minimal 75%
+              </span>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 14 }}>
+              {/* BAB 1: BILANGAN */}
+              <div style={{
+                background: statusRemedialSelesai ? '#f0fdf4' : '#fff7ed',
+                border: statusRemedialSelesai ? '2px solid #22c55e' : '2px solid #f97316',
+                borderRadius: 14,
+                padding: '16px 18px',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                boxShadow: statusRemedialSelesai ? '0 4px 12px rgba(34, 197, 94, 0.12)' : '0 4px 12px rgba(249, 115, 22, 0.15)',
+              }}>
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                    <span style={{
+                      fontSize: 10.5,
+                      fontWeight: 900,
+                      padding: '3px 8px',
+                      borderRadius: 99,
+                      background: statusRemedialSelesai ? '#22c55e' : '#ea580c',
+                      color: '#ffffff',
+                    }}>
+                      {statusRemedialSelesai ? '✅ TUNTAS MEMENUHI KKM' : '⚠️ BELUM TUNTAS (REMEDIAL)'}
+                    </span>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: statusRemedialSelesai ? '#15803d' : '#c2410c' }}>
+                      Pertemuan Minggu 1
+                    </span>
+                  </div>
+
+                  <h4 style={{ margin: '0 0 6px', fontSize: 15, fontWeight: 900, color: '#0f172a' }}>
+                    Bab 1: Bilangan Dasar & Operasi
+                  </h4>
+                  <div style={{ fontSize: 12, color: '#475569', marginBottom: 10 }}>
+                    Sifat Bilangan Real, KaBaTaKu, Eksponen Pangkat, Bentuk Akar & Notasi Ilmiah
+                  </div>
+
+                  {/* Indikator Skor */}
+                  <div style={{ background: '#ffffff', padding: '10px 12px', borderRadius: 10, border: '1px solid #e2e8f0', marginBottom: 12 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, marginBottom: 4 }}>
+                      <span style={{ color: '#64748b' }}>Rata-rata Kelas:</span>
+                      <b style={{ color: statusRemedialSelesai ? '#15803d' : '#ea580c' }}>
+                        {statusRemedialSelesai ? '86 / 100' : '58 / 100'}
+                      </b>
+                    </div>
+                    <div style={{ height: 8, background: '#e2e8f0', borderRadius: 99, overflow: 'hidden' }}>
+                      <div style={{
+                        height: '100%',
+                        width: statusRemedialSelesai ? '86%' : '58%',
+                        background: statusRemedialSelesai ? 'linear-gradient(90deg, #22c55e, #16a34a)' : 'linear-gradient(90deg, #f97316, #dc2626)',
+                        borderRadius: 99,
+                        transition: 'width 0.5s ease',
+                      }} />
+                    </div>
+                    <div style={{ fontSize: 11, color: '#64748b', marginTop: 6, display: 'flex', justifyContent: 'space-between' }}>
+                      <span>Ketuntasan: <b>{statusRemedialSelesai ? '87.5%' : '37.5%'}</b></span>
+                      <span>Target KKM: <b>75%</b></span>
+                    </div>
+                  </div>
+
+                  {/* Catatan Pedagogis & Diagnosa */}
+                  <div style={{
+                    fontSize: 11.5,
+                    color: statusRemedialSelesai ? '#166534' : '#9a3412',
+                    lineHeight: 1.45,
+                    marginBottom: 14,
+                    background: statusRemedialSelesai ? '#dcfce7' : '#ffedd5',
+                    padding: '8px 10px',
+                    borderRadius: 8,
+                  }}>
+                    {statusRemedialSelesai ? (
+                      <>
+                        <b>Evaluasi Guru:</b> Siswa telah tuntas memahami konsep operasi bilangan & eksponen setelah menyelesaikan latihan drill remedial. Kelas siap melangkah ke Bab 2: Aljabar!
+                      </>
+                    ) : (
+                      <>
+                        <b>Diagnosa Siswa:</b> 5 dari 8 siswa gagal pada soal <i>Jenis & Sifat Bilangan Real</i> dan <i>Eksponen Negatif</i>. <b>Dilarang lanjut ke Bab 2 Aljabar</b> agar siswa tidak semakin tertinggal!
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                {/* Tombol Aksi */}
+                <div>
+                  {statusRemedialSelesai ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setJenjangAktif('SMP');
+                        setMapelAktif('Matematika');
+                        setBabAktif('Aljabar (SPLDV, Persamaan Kuadrat, Fungsi & Pola Bilangan)');
+                        setSumber('bank');
+                      }}
+                      style={{
+                        width: '100%',
+                        background: 'linear-gradient(135deg, #0d9488 0%, #0f766e 100%)',
+                        color: '#ffffff',
+                        border: 'none',
+                        borderRadius: 10,
+                        padding: '10px 14px',
+                        fontSize: 12.5,
+                        fontWeight: 900,
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: 8,
+                        boxShadow: '0 2px 8px rgba(13, 148, 136, 0.3)',
+                      }}
+                    >
+                      <span>🚀 Lanjut Buka & Racik Bab 2: Aljabar</span>
+                      <span>→</span>
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => handleMulaiDrillRemedial(1, 'jenis_sifat', 'Bilangan (Bulat, Pecahan, Berpangkat, & Bentuk Akar)')}
+                      style={{
+                        width: '100%',
+                        background: 'linear-gradient(135deg, #ea580c 0%, #c2410c 100%)',
+                        color: '#ffffff',
+                        border: 'none',
+                        borderRadius: 10,
+                        padding: '11px 14px',
+                        fontSize: 12.5,
+                        fontWeight: 900,
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: 8,
+                        boxShadow: '0 3px 10px rgba(234, 88, 12, 0.35)',
+                      }}
+                    >
+                      <span style={{ fontSize: 16 }}>🔥</span>
+                      <span>Buat Paket Drill Remedial Bab 1 (20 Soal AI)</span>
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* BAB 2: ALJABAR & RELASI */}
+              <div style={{
+                background: statusRemedialSelesai ? '#ffffff' : '#f8fafc',
+                border: statusRemedialSelesai ? '1.5px solid #2dd4bf' : '1.5px dashed #cbd5e1',
+                borderRadius: 14,
+                padding: '16px 18px',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                opacity: statusRemedialSelesai ? 1 : 0.75,
+              }}>
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                    <span style={{
+                      fontSize: 10.5,
+                      fontWeight: 800,
+                      padding: '3px 8px',
+                      borderRadius: 99,
+                      background: statusRemedialSelesai ? '#0d9488' : '#64748b',
+                      color: '#ffffff',
+                    }}>
+                      {statusRemedialSelesai ? '🔓 MATERI TERBUKA' : '🔒 TERKUNCI (PRASYARAT)'}
+                    </span>
+                    <span style={{ fontSize: 11, fontWeight: 600, color: '#64748b' }}>
+                      Pertemuan Minggu 2
+                    </span>
+                  </div>
+
+                  <h4 style={{ margin: '0 0 6px', fontSize: 15, fontWeight: 900, color: '#0f172a' }}>
+                    Bab 2: Aljabar & Relasi
+                  </h4>
+                  <div style={{ fontSize: 12, color: '#475569', marginBottom: 12 }}>
+                    Operasi Suku Aljabar, Pemfaktoran, SPLDV Parkir/Belanja, Fungsi Kuadrat
+                  </div>
+
+                  <div style={{
+                    fontSize: 11.5,
+                    color: statusRemedialSelesai ? '#0f766e' : '#64748b',
+                    background: statusRemedialSelesai ? '#f0fdfa' : '#f1f5f9',
+                    padding: '10px 12px',
+                    borderRadius: 8,
+                    lineHeight: 1.45,
+                    marginBottom: 14,
+                  }}>
+                    {statusRemedialSelesai ? (
+                      <>
+                        ✓ <b>Prasyarat Terpenuhi!</b> Siswa sudah menguasai Bab 1. Anda dapat menyiapkan paket latihan Bab 2 menggunakan bank soal asli atau Pure AI.
+                      </>
+                    ) : (
+                      <>
+                        ⛔ <b>Prasyarat Belum Terpenuhi:</b> Materi Aljabar membutuhkan ketuntasan operasi bilangan di Bab 1. Tombol cetak & terbitan akan dibuka setelah drill remedial Bab 1 tuntas.
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                <div>
+                  <button
+                    type="button"
+                    disabled={!statusRemedialSelesai}
+                    onClick={() => {
+                      setJenjangAktif('SMP');
+                      setMapelAktif('Matematika');
+                      setBabAktif('Aljabar (SPLDV, Persamaan Kuadrat, Fungsi & Pola Bilangan)');
+                      setSumber('bank');
+                    }}
+                    style={{
+                      width: '100%',
+                      background: statusRemedialSelesai ? '#0d9488' : '#e2e8f0',
+                      color: statusRemedialSelesai ? '#ffffff' : '#94a3b8',
+                      border: 'none',
+                      borderRadius: 10,
+                      padding: '10px 14px',
+                      fontSize: 12.5,
+                      fontWeight: 800,
+                      cursor: statusRemedialSelesai ? 'pointer' : 'not-allowed',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: 6,
+                    }}
+                  >
+                    <span>{statusRemedialSelesai ? '✨ Siapkan Soal Bab 2' : '🔒 Terkunci (Tuntaskan Bab 1 Dulu)'}</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* BAB 3: GEOMETRI & RUANG */}
+              <div style={{
+                background: '#f8fafc',
+                border: '1.5px dashed #cbd5e1',
+                borderRadius: 14,
+                padding: '16px 18px',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                opacity: 0.7,
+              }}>
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                    <span style={{ fontSize: 10.5, fontWeight: 800, padding: '3px 8px', borderRadius: 99, background: '#64748b', color: '#ffffff' }}>
+                      🔒 TERKUNCI
+                    </span>
+                    <span style={{ fontSize: 11, fontWeight: 600, color: '#64748b' }}>Pertemuan Minggu 3</span>
+                  </div>
+                  <h4 style={{ margin: '0 0 6px', fontSize: 15, fontWeight: 900, color: '#0f172a' }}>
+                    Bab 3: Geometri & Ruang
+                  </h4>
+                  <div style={{ fontSize: 12, color: '#475569', marginBottom: 12 }}>
+                    Tripel Pythagoras, Sudut Garis, Luas Cat Dinding, Volume Bangun Ruang
+                  </div>
+                  <div style={{ fontSize: 11.5, color: '#64748b', background: '#f1f5f9', padding: '10px 12px', borderRadius: 8, lineHeight: 1.45 }}>
+                    Materi lanjutan setelah Bab 1 & Bab 2 tuntas.
+                  </div>
+                </div>
+                <button type="button" disabled style={{ width: '100%', background: '#e2e8f0', color: '#94a3b8', border: 'none', borderRadius: 10, padding: '10px 14px', fontSize: 12.5, fontWeight: 800, cursor: 'not-allowed' }}>
+                  🔒 Terkunci
+                </button>
+              </div>
+
+              {/* BAB 4: DATA & PELUANG */}
+              <div style={{
+                background: '#f8fafc',
+                border: '1.5px dashed #cbd5e1',
+                borderRadius: 14,
+                padding: '16px 18px',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                opacity: 0.7,
+              }}>
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                    <span style={{ fontSize: 10.5, fontWeight: 800, padding: '3px 8px', borderRadius: 99, background: '#64748b', color: '#ffffff' }}>
+                      🔒 TERKUNCI
+                    </span>
+                    <span style={{ fontSize: 11, fontWeight: 600, color: '#64748b' }}>Pertemuan Minggu 4</span>
+                  </div>
+                  <h4 style={{ margin: '0 0 6px', fontSize: 15, fontWeight: 900, color: '#0f172a' }}>
+                    Bab 4: Data & Peluang
+                  </h4>
+                  <div style={{ fontSize: 12, color: '#475569', marginBottom: 12 }}>
+                    Diagram Batang & Lingkaran, Rata-rata Gabungan, Peluang Teoretik
+                  </div>
+                  <div style={{ fontSize: 11.5, color: '#64748b', background: '#f1f5f9', padding: '10px 12px', borderRadius: 8, lineHeight: 1.45 }}>
+                    Materi akhir sebelum Try Out Akbar Asesmen Daerah & TKA.
+                  </div>
+                </div>
+                <button type="button" disabled style={{ width: '100%', background: '#e2e8f0', color: '#94a3b8', border: 'none', borderRadius: 10, padding: '10px 14px', fontSize: 12.5, fontWeight: 800, cursor: 'not-allowed' }}>
+                  🔒 Terkunci
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* TABEL DIAGNOSA KETUNTASAN PER SISWA DI KELAS */}
+          <div style={gayaKartu}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, flexWrap: 'wrap', gap: 10 }}>
+              <div>
+                <h4 style={{ margin: 0, fontSize: 15, fontWeight: 900, color: '#0f172a' }}>
+                  👥 Buku Progres Ketuntasan Siswa: Bab 1 (Bilangan Dasar)
+                </h4>
+                <p style={{ margin: '2px 0 0', fontSize: 12, color: '#64748b' }}>
+                  Rincian hasil latihan siswa di kelas tatap muka & catatan kesulitan perorangan untuk bahan bedah bersama tentor.
+                </p>
+              </div>
+              <span style={{ fontSize: 12, color: '#0f766e', fontWeight: 800, background: '#ccfbf1', padding: '4px 10px', borderRadius: 99 }}>
+                Total 8 Siswa Binaan
+              </span>
+            </div>
+
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+                <thead>
+                  <tr style={{ background: '#f1f5f9', borderBottom: '2px solid #cbd5e1', textAlign: 'left', color: '#334155' }}>
+                    <th style={{ padding: '10px 12px' }}>No</th>
+                    <th style={{ padding: '10px 12px' }}>Nama Siswa</th>
+                    <th style={{ padding: '10px 12px' }}>Kelas</th>
+                    <th style={{ padding: '10px 12px' }}>Skor Bab 1</th>
+                    <th style={{ padding: '10px 12px' }}>Status Kelulusan</th>
+                    <th style={{ padding: '10px 12px' }}>Topik Kendala / Catatan Tentor</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {dataSiswaKelas.map((sis, idx) => {
+                    const isTuntas = sis.bab1 >= 75;
+                    return (
+                      <tr key={sis.id} style={{ borderBottom: '1px solid #e2e8f0', background: isTuntas ? '#ffffff' : '#fffbeb' }}>
+                        <td style={{ padding: '10px 12px', fontWeight: 700, color: '#64748b' }}>{idx + 1}</td>
+                        <td style={{ padding: '10px 12px', fontWeight: 800, color: '#0f172a' }}>{sis.nama}</td>
+                        <td style={{ padding: '10px 12px', color: '#475569' }}>{sis.kelas}</td>
+                        <td style={{ padding: '10px 12px' }}>
+                          <span style={{
+                            fontWeight: 900,
+                            fontSize: 13,
+                            color: isTuntas ? '#15803d' : '#b91c1c',
+                            background: isTuntas ? '#dcfce7' : '#fee2e2',
+                            padding: '3px 8px',
+                            borderRadius: 6,
+                          }}>
+                            {sis.bab1} / 100
+                          </span>
+                        </td>
+                        <td style={{ padding: '10px 12px' }}>
+                          <span style={{
+                            fontSize: 11,
+                            fontWeight: 800,
+                            color: isTuntas ? '#15803d' : '#c2410c',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: 4,
+                          }}>
+                            {isTuntas ? '✓ Tuntas KKM' : '⚠️ Butuh Drill Remedial'}
+                          </span>
+                        </td>
+                        <td style={{ padding: '10px 12px', color: isTuntas ? '#64748b' : '#b45309', fontWeight: isTuntas ? 400 : 700 }}>
+                          {sis.kendala}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+
         {/* bar terpilih menempel: guru selalu tahu berapa yang terkumpul
             tanpa panel perantara, dan satu klik membawanya ke kertas */}
         <div style={{ position: 'sticky', bottom: 10, zIndex: 5, background: '#0f172a', color: '#fff', borderRadius: 14, padding: '10px 14px', display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap', marginTop: 14, boxShadow: '0 6px 18px rgba(15,23,42,.28)' }}>
@@ -2481,9 +3052,34 @@ export default function CetakPaketLatihan() {
               </p>
             </div>
           </div>
-          <span style={{ fontSize: 11, fontWeight: 800, color: '#0f766e', background: '#ccfbf1', padding: '4px 10px', borderRadius: 99 }}>
-            {daftarTerbitan.length} Paket Diterbitkan
-          </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+            <button
+              type="button"
+              onClick={() => {
+                setSumber('analitik');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              style={{
+                background: '#f0fdfa',
+                color: '#0f766e',
+                border: '1.5px solid #2dd4bf',
+                borderRadius: 8,
+                padding: '6px 12px',
+                fontSize: 11.5,
+                fontWeight: 800,
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 5,
+              }}
+            >
+              <span>📊 Buka Papan Analitik Ketuntasan Siswa</span>
+              <span>→</span>
+            </button>
+            <span style={{ fontSize: 11, fontWeight: 800, color: '#0f766e', background: '#ccfbf1', padding: '4px 10px', borderRadius: 99 }}>
+              {daftarTerbitan.length} Paket Diterbitkan
+            </span>
+          </div>
         </div>
 
         {daftarTerbitan.length === 0 ? (
@@ -2547,6 +3143,29 @@ export default function CetakPaketLatihan() {
                   </div>
 
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                    <button
+                      type="button"
+                      onClick={() => handleMulaiDrillRemedial(pkt.babNomor || 1, pkt.subMateriId || 'semua', pkt.bab)}
+                      style={{
+                        padding: '8px 12px',
+                        borderRadius: 8,
+                        border: '1.5px solid #ea580c',
+                        background: '#fff7ed',
+                        color: '#c2410c',
+                        fontSize: 12,
+                        fontWeight: 900,
+                        cursor: 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 5,
+                        boxShadow: '0 2px 6px rgba(234, 88, 12, 0.15)',
+                      }}
+                      title="Racik paket drill remedial baru (20 butir) dengan AI untuk materi ini"
+                    >
+                      <span>🔥</span>
+                      <span>Drill Remedial AI</span>
+                    </button>
+
                     <button
                       type="button"
                       onClick={() => setPaketTelaahModal(pkt)}
