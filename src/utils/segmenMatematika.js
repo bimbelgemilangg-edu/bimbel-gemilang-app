@@ -58,12 +58,18 @@ export function normalisasiTeksMatematika(teks) {
     .replace(/\ue077\ue094/g, '6. ')
     .replace(/[\uE000-\uF8FF]/g, '')
     // Auto-heal tipografi LaTeX yang rusak akibat karakter escape tab/string JS
+    .replace(/\\r\\n/g, '\n')
+    .replace(/\\n/g, '\n')
+    .replace(/\\t\s*ext\{/g, '\\text{')
+    .replace(/\\t\s*extRp/g, '\\text{Rp')
     .replace(/extRp\s*([0-9.,]+)/gi, '\\text{Rp$1}')
     .replace(/(\d+)\s*extcm/gi, '$1\\text{ cm}')
     .replace(/(\d+)\s*extm/gi, '$1\\text{ m}')
     .replace(/(\d+)\s*extkg/gi, '$1\\text{ kg}')
     .replace(/(^|[^\\])\bext\{/g, '$1\\text{')
-    .replace(/([0-9a-zA-Z\)\}\]])\s*imes\s*([0-9a-zA-Z\(\{\\])/g, '$1 \\times $2');
+    .replace(/\\t\s*imes/g, '\\times')
+    .replace(/([0-9a-zA-Z\)\}\]])\s*imes\s*([0-9a-zA-Z\(\{\\])/g, '$1 \\times $2')
+    .replace(/\bimes\b/g, '\\times');
 
   // Peta pecahan vulgar unicode (miring) ke pecahan bertingkat tegak
   const PETA_PECAHAN_VULGAR = {

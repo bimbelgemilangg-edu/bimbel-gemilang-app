@@ -531,7 +531,12 @@ export default function CetakPaketLatihan() {
   const [astroMode, setAstroMode] = useState('mix'); // 'mix' | 'pure_ai'
   const [targetJumlahSoal, setTargetJumlahSoal] = useState(10); // Target butir soal (Kuis 10, Pengayaan 15, Remedial Drill 20-30)
 
-  // 📊 STATE PAPAN ANALITIK KETUNTASAN & REMEDIAL KELAS
+  // 📊 STATE PAPAN ANALITIK KETUNTASAN & REMEDIAL KELAS (LIVE DATABASE & SIMULASI)
+  const [modeSimulasiDemo, setModeSimulasiDemo] = useState(false);
+  const [dataSiswaReal, setDataSiswaReal] = useState([]);
+  const [sedangMemuatAnalitikLive, setSedangMemuatAnalitikLive] = useState(false);
+
+  // Data Cohort Demo Simulasi
   const [dataSiswaKelas, setDataSiswaKelas] = useState(() => {
     try {
       const tersimpan = localStorage.getItem('gemilang_analitik_kelas_siswa');
@@ -556,6 +561,76 @@ export default function CetakPaketLatihan() {
       return false;
     }
   });
+
+  // Muat data realtime dari database Firestore (koleksi gemilang_hasil_terbitan_siswa & students)
+  const muatDataAnalitikSiswa = useCallback(async () => {
+    setSedangMemuatAnalitikLive(true);
+    let hasilDb = [];
+    try {
+      const snapHasil = await getDocs(collection(db, 'gemilang_hasil_terbitan_siswa'));
+      snapHasil.forEach((d) => hasilDb.push({ docId: d.id, ...d.data() }));
+    } catch (errDb) {
+      console.warn('Muat hasil pengerjaan Firestore:', errDb);
+    }
+    if (hasilDb.length === 0) {
+      try {
+        hasilDb = JSON.parse(localStorage.getItem('gemilang_hasil_terbitan_siswa') || '[]');
+      } catch {}
+    }
+
+    let rosterDb = [];
+    try {
+      const snapSiswa = await getDocs(collection(db, 'students'));
+      snapSiswa.forEach((d) => {
+        const dt = d.data();
+        rosterDb.push({
+          id: d.id,
+          nama: dt.nama || dt.name || dt.studentName || 'Siswa Gemilang',
+          kelas: dt.kelas || dt.grade || '9 SMP',
+        });
+      });
+    } catch (errS) {
+      console.warn('Muat roster students Firestore:', errS);
+    }
+
+    const mapHasil = {};
+    hasilDb.forEach((h) => {
+      const keyS = h.studentId || h.nama || h.studentNama;
+      if (!mapHasil[keyS] || (h.waktu || 0) > (mapHasil[keyS].waktu || 0)) {
+        mapHasil[keyS] = {
+          id: keyS,
+          nama: h.studentNama || h.nama || 'Siswa Gemilang',
+          kelas: h.kelas || '9 SMP',
+          bab1: h.skor != null ? Number(h.skor) : 0,
+          tuntasBab1: Number(h.skor || 0) >= 75,
+          kendala: Number(h.skor || 0) >= 75 ? '-' : 'Butuh Drill Remedial Konsep Dasar',
+          sudahMengerjakan: true,
+          waktu: h.waktu || Date.now(),
+        };
+      }
+    });
+
+    rosterDb.forEach((s) => {
+      if (!mapHasil[s.id]) {
+        mapHasil[s.id] = {
+          id: s.id,
+          nama: s.nama,
+          kelas: s.kelas,
+          bab1: null,
+          tuntasBab1: false,
+          kendala: 'Menunggu Pengerjaan Siswa di Aplikasi',
+          sudahMengerjakan: false,
+        };
+      }
+    });
+
+    setDataSiswaReal(Object.values(mapHasil));
+    setSedangMemuatAnalitikLive(false);
+  }, []);
+
+  useEffect(() => {
+    muatDataAnalitikSiswa();
+  }, [muatDataAnalitikSiswa]);
 
   const handleMulaiDrillRemedial = async (babNomorTarget = 1, subMateriIdTarget = 'jenis_sifat', namaBabTarget = '') => {
     setJenjangAktif('SMP');
@@ -2429,7 +2504,21 @@ export default function CetakPaketLatihan() {
       )}
 
       {/* 📊 PAPAN ANALITIK KETUNTASAN SILABUS & REMEDIAL KELAS */}
-      {sumber === 'analitik' && (
+      {sumber === 'analitik' && (() => {
+        const cohortAktif = modeSimulasiDemo ? dataSiswaKelas : dataSiswaReal;
+        const siswaSelesaiPengerjaan = cohortAktif.filter((s) => s.sudahMengerjakan !== false && s.bab1 != null);
+        const adaSiswaMengerjakan = siswaSelesaiPengerjaan.length > 0;
+        const rataRataSkor = adaSiswaMengerjakan
+          ? Math.round(siswaSelesaiPengerjaan.reduce((acc, curr) => acc + (curr.bab1 || 0), 0) / siswaSelesaiPengerjaan.length)
+          : 0;
+        const totalTuntas = siswaSelesaiPengerjaan.filter((s) => s.tuntasBab1).length;
+        const persenKetuntasan = adaSiswaMengerjakan
+          ? Math.round((totalTuntas / siswaSelesaiPengerjaan.length) * 100)
+          : 0;
+        const butuhRemedialCount = siswaSelesaiPengerjaan.length - totalTuntas;
+        const kelasTuntasMemenuhi = adaSiswaMengerjakan && (statusRemedialSelesai || persenKetuntasan >= 75);
+
+        return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           {/* HEADER & OVERVIEW PAPAN ANALITIK */}
           <div style={{
@@ -2447,15 +2536,29 @@ export default function CetakPaketLatihan() {
                     📊 Papan Analitik Ketuntasan Silabus & Rekomendasi Lanjut Materi
                   </h3>
                   <span style={{
-                    background: statusRemedialSelesai ? '#22c55e' : '#f59e0b',
+                    background: kelasTuntasMemenuhi ? '#22c55e' : (adaSiswaMengerjakan ? '#f59e0b' : '#334155'),
                     color: '#ffffff',
                     fontSize: 11,
                     fontWeight: 900,
                     padding: '3px 10px',
                     borderRadius: 99,
                   }}>
-                    {statusRemedialSelesai ? 'STATUS: KELAS TUNTAS (SIAP BAB 2)' : 'STATUS: REMEDIAL DIPERLUKAN (BAB 1)'}
+                    {kelasTuntasMemenuhi
+                      ? 'STATUS: KELAS TUNTAS (SIAP BAB 2)'
+                      : (adaSiswaMengerjakan ? 'STATUS: REMEDIAL DIPERLUKAN (BAB 1)' : 'STATUS: LIVE FIRESTORE (MENUNGGU PENGERJAAN)')}
                   </span>
+                  {modeSimulasiDemo && (
+                    <span style={{
+                      background: '#ea580c',
+                      color: '#ffffff',
+                      fontSize: 10.5,
+                      fontWeight: 800,
+                      padding: '2px 8px',
+                      borderRadius: 99,
+                    }}>
+                      ⚡ MODE SIMULASI DEMO
+                    </span>
+                  )}
                 </div>
                 <p style={{ margin: '6px 0 0', fontSize: 12.5, color: '#ccfbf1', maxWidth: 780, lineHeight: 1.5 }}>
                   Berdasarkan prinsip <b>Belajar Tuntas (Mastery Learning)</b> Bimbel Gemilang: Siswa yang belum tuntas pada bab prasyarat <b>tidak boleh dipaksa lanjut ke bab berikutnya</b>. Tentor wajib memberikan paket drill latihan remedial sampai pemahaman siswa tuntas (KKM ≥ 75%).
@@ -2463,28 +2566,90 @@ export default function CetakPaketLatihan() {
               </div>
 
               <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-                <button
-                  type="button"
-                  onClick={handleSimulasiSiswaTuntasDrill}
-                  style={{
-                    background: '#fef08a linear-gradient(180deg, #fef08a 0%, #fde047 100%)',
-                    color: '#713f12',
-                    border: '1.5px solid #ca8a04',
-                    borderRadius: 10,
-                    padding: '8px 14px',
-                    fontSize: 12,
-                    fontWeight: 900,
-                    cursor: 'pointer',
-                    boxShadow: '0 2px 8px rgba(202, 138, 4, 0.25)',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: 6,
-                  }}
-                  title="Simulasikan nilai siswa setelah menyelesaikan paket drill remedial 20 butir"
-                >
-                  <span>⚡</span>
-                  <span>{statusRemedialSelesai ? 'Hasil Drill Tuntas (Reset/Ulang)' : 'Simulasi Siswa Selesai Drill'}</span>
-                </button>
+                {modeSimulasiDemo ? (
+                  <>
+                    <button
+                      type="button"
+                      onClick={handleSimulasiSiswaTuntasDrill}
+                      style={{
+                        background: '#fef08a linear-gradient(180deg, #fef08a 0%, #fde047 100%)',
+                        color: '#713f12',
+                        border: '1.5px solid #ca8a04',
+                        borderRadius: 10,
+                        padding: '8px 14px',
+                        fontSize: 12,
+                        fontWeight: 900,
+                        cursor: 'pointer',
+                        boxShadow: '0 2px 8px rgba(202, 138, 4, 0.25)',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 6,
+                      }}
+                      title="Simulasikan nilai siswa setelah menyelesaikan paket drill remedial 20 butir"
+                    >
+                      <span>⚡</span>
+                      <span>{statusRemedialSelesai ? 'Hasil Drill Tuntas (Ulang)' : 'Simulasi Siswa Selesai Drill'}</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setModeSimulasiDemo(false)}
+                      style={{
+                        background: 'rgba(255,255,255,0.15)',
+                        color: '#ffffff',
+                        border: '1px solid rgba(255,255,255,0.4)',
+                        borderRadius: 10,
+                        padding: '8px 12px',
+                        fontSize: 12,
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                      }}
+                    >
+                      🔄 Kembali ke Data Live
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => setModeSimulasiDemo(true)}
+                      style={{
+                        background: '#fef08a linear-gradient(180deg, #fef08a 0%, #fde047 100%)',
+                        color: '#713f12',
+                        border: '1.5px solid #ca8a04',
+                        borderRadius: 10,
+                        padding: '8px 14px',
+                        fontSize: 12,
+                        fontWeight: 900,
+                        cursor: 'pointer',
+                        boxShadow: '0 2px 8px rgba(202, 138, 4, 0.25)',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 6,
+                      }}
+                      title="Tampilkan simulasi jika ingin mendemokan analitik remedial"
+                    >
+                      <span>⚡</span>
+                      <span>Uji Coba Demo / Simulasi Siswa</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={muatDataAnalitikSiswa}
+                      disabled={sedangMemuatAnalitikLive}
+                      style={{
+                        background: 'rgba(255,255,255,0.15)',
+                        color: '#ffffff',
+                        border: '1px solid rgba(255,255,255,0.4)',
+                        borderRadius: 10,
+                        padding: '8px 12px',
+                        fontSize: 12,
+                        fontWeight: 700,
+                        cursor: sedangMemuatAnalitikLive ? 'not-allowed' : 'pointer',
+                      }}
+                    >
+                      {sedangMemuatAnalitikLive ? '⏳ Memindai...' : '🔄 Sinkronkan Realtime'}
+                    </button>
+                  </>
+                )}
               </div>
             </div>
 
@@ -2508,14 +2673,14 @@ export default function CetakPaketLatihan() {
               </div>
               <div>
                 <div style={{ fontSize: 11, color: '#99f6e4', fontWeight: 700 }}>RATA-RATA KELAS (BAB 1)</div>
-                <div style={{ fontSize: 16, fontWeight: 900, color: statusRemedialSelesai ? '#4ade80' : '#f87171', marginTop: 2 }}>
-                  {statusRemedialSelesai ? '86 / 100 (Tuntas)' : '58 / 100 (Di Bawah KKM)'}
+                <div style={{ fontSize: 16, fontWeight: 900, color: adaSiswaMengerjakan ? (rataRataSkor >= 75 ? '#4ade80' : '#f87171') : '#94a3b8', marginTop: 2 }}>
+                  {adaSiswaMengerjakan ? `${rataRataSkor} / 100 (${rataRataSkor >= 75 ? 'Tuntas' : 'Di Bawah KKM'})` : 'Menunggu Pengerjaan Siswa'}
                 </div>
               </div>
               <div>
                 <div style={{ fontSize: 11, color: '#99f6e4', fontWeight: 700 }}>TINGKAT KETUNTASAN</div>
-                <div style={{ fontSize: 16, fontWeight: 900, color: statusRemedialSelesai ? '#4ade80' : '#fbbf24', marginTop: 2 }}>
-                  {statusRemedialSelesai ? '87.5% (7 dari 8 Siswa)' : '37.5% (3 dari 8 Siswa)'}
+                <div style={{ fontSize: 16, fontWeight: 900, color: adaSiswaMengerjakan ? (persenKetuntasan >= 75 ? '#4ade80' : '#fbbf24') : '#94a3b8', marginTop: 2 }}>
+                  {adaSiswaMengerjakan ? `${persenKetuntasan}% (${totalTuntas} dari ${siswaSelesaiPengerjaan.length} Siswa)` : '0% (Belum Ada Data)'}
                 </div>
               </div>
             </div>
@@ -2536,14 +2701,14 @@ export default function CetakPaketLatihan() {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 14 }}>
               {/* BAB 1: BILANGAN */}
               <div style={{
-                background: statusRemedialSelesai ? '#f0fdf4' : '#fff7ed',
-                border: statusRemedialSelesai ? '2px solid #22c55e' : '2px solid #f97316',
+                background: kelasTuntasMemenuhi ? '#f0fdf4' : (adaSiswaMengerjakan ? '#fff7ed' : '#f8fafc'),
+                border: kelasTuntasMemenuhi ? '2px solid #22c55e' : (adaSiswaMengerjakan ? '2px solid #f97316' : '1.5px solid #cbd5e1'),
                 borderRadius: 14,
                 padding: '16px 18px',
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'space-between',
-                boxShadow: statusRemedialSelesai ? '0 4px 12px rgba(34, 197, 94, 0.12)' : '0 4px 12px rgba(249, 115, 22, 0.15)',
+                boxShadow: kelasTuntasMemenuhi ? '0 4px 12px rgba(34, 197, 94, 0.12)' : (adaSiswaMengerjakan ? '0 4px 12px rgba(249, 115, 22, 0.15)' : 'none'),
               }}>
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
@@ -2552,12 +2717,14 @@ export default function CetakPaketLatihan() {
                       fontWeight: 900,
                       padding: '3px 8px',
                       borderRadius: 99,
-                      background: statusRemedialSelesai ? '#22c55e' : '#ea580c',
+                      background: kelasTuntasMemenuhi ? '#22c55e' : (adaSiswaMengerjakan ? '#ea580c' : '#64748b'),
                       color: '#ffffff',
                     }}>
-                      {statusRemedialSelesai ? '✅ TUNTAS MEMENUHI KKM' : '⚠️ BELUM TUNTAS (REMEDIAL)'}
+                      {kelasTuntasMemenuhi
+                        ? '✅ TUNTAS MEMENUHI KKM'
+                        : (adaSiswaMengerjakan ? '⚠️ BELUM TUNTAS (REMEDIAL)' : '📡 LIVE · MENUNGGU PENGERJAAN')}
                     </span>
-                    <span style={{ fontSize: 11, fontWeight: 700, color: statusRemedialSelesai ? '#15803d' : '#c2410c' }}>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: kelasTuntasMemenuhi ? '#15803d' : (adaSiswaMengerjakan ? '#c2410c' : '#64748b') }}>
                       Pertemuan Minggu 1
                     </span>
                   </div>
@@ -2573,21 +2740,21 @@ export default function CetakPaketLatihan() {
                   <div style={{ background: '#ffffff', padding: '10px 12px', borderRadius: 10, border: '1px solid #e2e8f0', marginBottom: 12 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, marginBottom: 4 }}>
                       <span style={{ color: '#64748b' }}>Rata-rata Kelas:</span>
-                      <b style={{ color: statusRemedialSelesai ? '#15803d' : '#ea580c' }}>
-                        {statusRemedialSelesai ? '86 / 100' : '58 / 100'}
+                      <b style={{ color: adaSiswaMengerjakan ? (rataRataSkor >= 75 ? '#15803d' : '#ea580c') : '#64748b' }}>
+                        {adaSiswaMengerjakan ? `${rataRataSkor} / 100` : '- / 100'}
                       </b>
                     </div>
                     <div style={{ height: 8, background: '#e2e8f0', borderRadius: 99, overflow: 'hidden' }}>
                       <div style={{
                         height: '100%',
-                        width: statusRemedialSelesai ? '86%' : '58%',
-                        background: statusRemedialSelesai ? 'linear-gradient(90deg, #22c55e, #16a34a)' : 'linear-gradient(90deg, #f97316, #dc2626)',
+                        width: `${Math.min(100, Math.max(0, rataRataSkor))}%`,
+                        background: rataRataSkor >= 75 ? 'linear-gradient(90deg, #22c55e, #16a34a)' : 'linear-gradient(90deg, #f97316, #dc2626)',
                         borderRadius: 99,
                         transition: 'width 0.5s ease',
                       }} />
                     </div>
                     <div style={{ fontSize: 11, color: '#64748b', marginTop: 6, display: 'flex', justifyContent: 'space-between' }}>
-                      <span>Ketuntasan: <b>{statusRemedialSelesai ? '87.5%' : '37.5%'}</b></span>
+                      <span>Ketuntasan: <b>{adaSiswaMengerjakan ? `${persenKetuntasan}%` : '0%'}</b></span>
                       <span>Target KKM: <b>75%</b></span>
                     </div>
                   </div>
@@ -2595,20 +2762,26 @@ export default function CetakPaketLatihan() {
                   {/* Catatan Pedagogis & Diagnosa */}
                   <div style={{
                     fontSize: 11.5,
-                    color: statusRemedialSelesai ? '#166534' : '#9a3412',
+                    color: adaSiswaMengerjakan ? (rataRataSkor >= 75 ? '#166534' : '#9a3412') : '#334155',
                     lineHeight: 1.45,
                     marginBottom: 14,
-                    background: statusRemedialSelesai ? '#dcfce7' : '#ffedd5',
+                    background: adaSiswaMengerjakan ? (rataRataSkor >= 75 ? '#dcfce7' : '#ffedd5') : '#f1f5f9',
                     padding: '8px 10px',
                     borderRadius: 8,
                   }}>
-                    {statusRemedialSelesai ? (
-                      <>
-                        <b>Evaluasi Guru:</b> Siswa telah tuntas memahami konsep operasi bilangan & eksponen setelah menyelesaikan latihan drill remedial. Kelas siap melangkah ke Bab 2: Aljabar!
-                      </>
+                    {adaSiswaMengerjakan ? (
+                      rataRataSkor >= 75 ? (
+                        <>
+                          <b>Evaluasi Guru:</b> Siswa telah tuntas memahami konsep operasi bilangan & eksponen. Kelas siap melangkah ke Bab 2: Aljabar!
+                        </>
+                      ) : (
+                        <>
+                          <b>Diagnosa Siswa:</b> {butuhRemedialCount} dari {siswaSelesaiPengerjaan.length} siswa belum mencapai KKM. <b>Dilarang lanjut ke Bab 2 Aljabar</b> agar siswa tidak semakin tertinggal!
+                        </>
+                      )
                     ) : (
                       <>
-                        <b>Diagnosa Siswa:</b> 5 dari 8 siswa gagal pada soal <i>Jenis & Sifat Bilangan Real</i> dan <i>Eksponen Negatif</i>. <b>Dilarang lanjut ke Bab 2 Aljabar</b> agar siswa tidak semakin tertinggal!
+                        <b>Status Database:</b> Belum ada siswa yang mengumpulkan pengerjaan Bab 1. Klik tombol di bawah untuk menerbitkan paket latihan Bab 1 ke siswa.
                       </>
                     )}
                   </div>
@@ -2616,42 +2789,72 @@ export default function CetakPaketLatihan() {
 
                 {/* Tombol Aksi */}
                 <div>
-                  {statusRemedialSelesai ? (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setJenjangAktif('SMP');
-                        setMapelAktif('Matematika');
-                        setBabAktif('Aljabar (SPLDV, Persamaan Kuadrat, Fungsi & Pola Bilangan)');
-                        setSumber('bank');
-                      }}
-                      style={{
-                        width: '100%',
-                        background: 'linear-gradient(135deg, #0d9488 0%, #0f766e 100%)',
-                        color: '#ffffff',
-                        border: 'none',
-                        borderRadius: 10,
-                        padding: '10px 14px',
-                        fontSize: 12.5,
-                        fontWeight: 900,
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: 8,
-                        boxShadow: '0 2px 8px rgba(13, 148, 136, 0.3)',
-                      }}
-                    >
-                      <span>🚀 Lanjut Buka & Racik Bab 2: Aljabar</span>
-                      <span>→</span>
-                    </button>
+                  {adaSiswaMengerjakan ? (
+                    rataRataSkor >= 75 ? (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setJenjangAktif('SMP');
+                          setMapelAktif('Matematika');
+                          setBabAktif('Aljabar (SPLDV, Persamaan Kuadrat, Fungsi & Pola Bilangan)');
+                          setSumber('bank');
+                        }}
+                        style={{
+                          width: '100%',
+                          background: 'linear-gradient(135deg, #0d9488 0%, #0f766e 100%)',
+                          color: '#ffffff',
+                          border: 'none',
+                          borderRadius: 10,
+                          padding: '10px 14px',
+                          fontSize: 12.5,
+                          fontWeight: 900,
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: 8,
+                          boxShadow: '0 2px 8px rgba(13, 148, 136, 0.3)',
+                        }}
+                      >
+                        <span>🚀 Lanjut Buka & Racik Bab 2: Aljabar</span>
+                        <span>→</span>
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => handleMulaiDrillRemedial(1, 'jenis_sifat', 'Bilangan (Bulat, Pecahan, Berpangkat, & Bentuk Akar)')}
+                        style={{
+                          width: '100%',
+                          background: 'linear-gradient(135deg, #ea580c 0%, #c2410c 100%)',
+                          color: '#ffffff',
+                          border: 'none',
+                          borderRadius: 10,
+                          padding: '11px 14px',
+                          fontSize: 12.5,
+                          fontWeight: 900,
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: 8,
+                          boxShadow: '0 3px 10px rgba(234, 88, 12, 0.35)',
+                        }}
+                      >
+                        <span style={{ fontSize: 16 }}>🔥</span>
+                        <span>Buat Paket Drill Remedial Bab 1 (20 Soal AI)</span>
+                      </button>
+                    )
                   ) : (
                     <button
                       type="button"
-                      onClick={() => handleMulaiDrillRemedial(1, 'jenis_sifat', 'Bilangan (Bulat, Pecahan, Berpangkat, & Bentuk Akar)')}
+                      onClick={() => {
+                        setSumber('bank');
+                        setTabBuku('meja');
+                        setTimeout(() => document.getElementById('pusat-kendali-ai')?.scrollIntoView({ behavior: 'smooth' }), 100);
+                      }}
                       style={{
                         width: '100%',
-                        background: 'linear-gradient(135deg, #ea580c 0%, #c2410c 100%)',
+                        background: 'linear-gradient(135deg, #0f766e 0%, #115e59 100%)',
                         color: '#ffffff',
                         border: 'none',
                         borderRadius: 10,
@@ -2663,11 +2866,11 @@ export default function CetakPaketLatihan() {
                         alignItems: 'center',
                         justifyContent: 'center',
                         gap: 8,
-                        boxShadow: '0 3px 10px rgba(234, 88, 12, 0.35)',
+                        boxShadow: '0 3px 10px rgba(15, 118, 110, 0.3)',
                       }}
                     >
-                      <span style={{ fontSize: 16 }}>🔥</span>
-                      <span>Buat Paket Drill Remedial Bab 1 (20 Soal AI)</span>
+                      <span style={{ fontSize: 15 }}>📢</span>
+                      <span>Terbitkan Paket Latihan Bab 1 ke Siswa</span>
                     </button>
                   )}
                 </div>
@@ -2675,14 +2878,14 @@ export default function CetakPaketLatihan() {
 
               {/* BAB 2: ALJABAR & RELASI */}
               <div style={{
-                background: statusRemedialSelesai ? '#ffffff' : '#f8fafc',
-                border: statusRemedialSelesai ? '1.5px solid #2dd4bf' : '1.5px dashed #cbd5e1',
+                background: kelasTuntasMemenuhi ? '#ffffff' : '#f8fafc',
+                border: kelasTuntasMemenuhi ? '1.5px solid #2dd4bf' : '1.5px dashed #cbd5e1',
                 borderRadius: 14,
                 padding: '16px 18px',
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'space-between',
-                opacity: statusRemedialSelesai ? 1 : 0.75,
+                opacity: kelasTuntasMemenuhi ? 1 : 0.75,
               }}>
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
@@ -2691,10 +2894,10 @@ export default function CetakPaketLatihan() {
                       fontWeight: 800,
                       padding: '3px 8px',
                       borderRadius: 99,
-                      background: statusRemedialSelesai ? '#0d9488' : '#64748b',
+                      background: kelasTuntasMemenuhi ? '#0d9488' : '#64748b',
                       color: '#ffffff',
                     }}>
-                      {statusRemedialSelesai ? '🔓 MATERI TERBUKA' : '🔒 TERKUNCI (PRASYARAT)'}
+                      {kelasTuntasMemenuhi ? '🔓 MATERI TERBUKA' : '🔒 TERKUNCI (PRASYARAT)'}
                     </span>
                     <span style={{ fontSize: 11, fontWeight: 600, color: '#64748b' }}>
                       Pertemuan Minggu 2
@@ -2710,14 +2913,14 @@ export default function CetakPaketLatihan() {
 
                   <div style={{
                     fontSize: 11.5,
-                    color: statusRemedialSelesai ? '#0f766e' : '#64748b',
-                    background: statusRemedialSelesai ? '#f0fdfa' : '#f1f5f9',
+                    color: kelasTuntasMemenuhi ? '#0f766e' : '#64748b',
+                    background: kelasTuntasMemenuhi ? '#f0fdfa' : '#f1f5f9',
                     padding: '10px 12px',
                     borderRadius: 8,
                     lineHeight: 1.45,
                     marginBottom: 14,
                   }}>
-                    {statusRemedialSelesai ? (
+                    {kelasTuntasMemenuhi ? (
                       <>
                         ✓ <b>Prasyarat Terpenuhi!</b> Siswa sudah menguasai Bab 1. Anda dapat menyiapkan paket latihan Bab 2 menggunakan bank soal asli atau Pure AI.
                       </>
@@ -2732,7 +2935,7 @@ export default function CetakPaketLatihan() {
                 <div>
                   <button
                     type="button"
-                    disabled={!statusRemedialSelesai}
+                    disabled={!kelasTuntasMemenuhi}
                     onClick={() => {
                       setJenjangAktif('SMP');
                       setMapelAktif('Matematika');
@@ -2741,21 +2944,21 @@ export default function CetakPaketLatihan() {
                     }}
                     style={{
                       width: '100%',
-                      background: statusRemedialSelesai ? '#0d9488' : '#e2e8f0',
-                      color: statusRemedialSelesai ? '#ffffff' : '#94a3b8',
+                      background: kelasTuntasMemenuhi ? '#0d9488' : '#e2e8f0',
+                      color: kelasTuntasMemenuhi ? '#ffffff' : '#94a3b8',
                       border: 'none',
                       borderRadius: 10,
                       padding: '10px 14px',
                       fontSize: 12.5,
                       fontWeight: 800,
-                      cursor: statusRemedialSelesai ? 'pointer' : 'not-allowed',
+                      cursor: kelasTuntasMemenuhi ? 'pointer' : 'not-allowed',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
                       gap: 6,
                     }}
                   >
-                    <span>{statusRemedialSelesai ? '✨ Siapkan Soal Bab 2' : '🔒 Terkunci (Tuntaskan Bab 1 Dulu)'}</span>
+                    <span>{kelasTuntasMemenuhi ? '✨ Siapkan Soal Bab 2' : '🔒 Terkunci (Tuntaskan Bab 1 Dulu)'}</span>
                   </button>
                 </div>
               </div>
@@ -2836,70 +3039,124 @@ export default function CetakPaketLatihan() {
                   👥 Buku Progres Ketuntasan Siswa: Bab 1 (Bilangan Dasar)
                 </h4>
                 <p style={{ margin: '2px 0 0', fontSize: 12, color: '#64748b' }}>
-                  Rincian hasil latihan siswa di kelas tatap muka & catatan kesulitan perorangan untuk bahan bedah bersama tentor.
+                  {modeSimulasiDemo
+                    ? 'Mode Simulasi Demo: Rincian hasil latihan 8 siswa binaan contoh untuk simulasi drill remedial tentor.'
+                    : 'Data Realtime Database Gemilang: Rincian pengerjaan paket latihan siswa di kelas tatap muka.'}
                 </p>
               </div>
-              <span style={{ fontSize: 12, color: '#0f766e', fontWeight: 800, background: '#ccfbf1', padding: '4px 10px', borderRadius: 99 }}>
-                Total 8 Siswa Binaan
-              </span>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <span style={{ fontSize: 12, color: '#0f766e', fontWeight: 800, background: '#ccfbf1', padding: '4px 10px', borderRadius: 99 }}>
+                  Total {cohortAktif.length} Siswa Terdaftar
+                </span>
+                {modeSimulasiDemo ? (
+                  <button
+                    type="button"
+                    onClick={() => setModeSimulasiDemo(false)}
+                    style={{ background: '#f1f5f9', border: '1px solid #cbd5e1', borderRadius: 99, padding: '4px 12px', fontSize: 11, fontWeight: 700, color: '#475569', cursor: 'pointer' }}
+                  >
+                    Tutup Demo (Live)
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setModeSimulasiDemo(true)}
+                    style={{ background: '#fef3c7', border: '1px solid #f59e0b', borderRadius: 99, padding: '4px 12px', fontSize: 11, fontWeight: 800, color: '#92400e', cursor: 'pointer' }}
+                  >
+                    ⚡ Uji Coba Demo
+                  </button>
+                )}
+              </div>
             </div>
 
-            <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
-                <thead>
-                  <tr style={{ background: '#f1f5f9', borderBottom: '2px solid #cbd5e1', textAlign: 'left', color: '#334155' }}>
-                    <th style={{ padding: '10px 12px' }}>No</th>
-                    <th style={{ padding: '10px 12px' }}>Nama Siswa</th>
-                    <th style={{ padding: '10px 12px' }}>Kelas</th>
-                    <th style={{ padding: '10px 12px' }}>Skor Bab 1</th>
-                    <th style={{ padding: '10px 12px' }}>Status Kelulusan</th>
-                    <th style={{ padding: '10px 12px' }}>Topik Kendala / Catatan Tentor</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {dataSiswaKelas.map((sis, idx) => {
-                    const isTuntas = sis.bab1 >= 75;
-                    return (
-                      <tr key={sis.id} style={{ borderBottom: '1px solid #e2e8f0', background: isTuntas ? '#ffffff' : '#fffbeb' }}>
-                        <td style={{ padding: '10px 12px', fontWeight: 700, color: '#64748b' }}>{idx + 1}</td>
-                        <td style={{ padding: '10px 12px', fontWeight: 800, color: '#0f172a' }}>{sis.nama}</td>
-                        <td style={{ padding: '10px 12px', color: '#475569' }}>{sis.kelas}</td>
-                        <td style={{ padding: '10px 12px' }}>
-                          <span style={{
-                            fontWeight: 900,
-                            fontSize: 13,
-                            color: isTuntas ? '#15803d' : '#b91c1c',
-                            background: isTuntas ? '#dcfce7' : '#fee2e2',
-                            padding: '3px 8px',
-                            borderRadius: 6,
-                          }}>
-                            {sis.bab1} / 100
-                          </span>
-                        </td>
-                        <td style={{ padding: '10px 12px' }}>
-                          <span style={{
-                            fontSize: 11,
-                            fontWeight: 800,
-                            color: isTuntas ? '#15803d' : '#c2410c',
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: 4,
-                          }}>
-                            {isTuntas ? '✓ Tuntas KKM' : '⚠️ Butuh Drill Remedial'}
-                          </span>
-                        </td>
-                        <td style={{ padding: '10px 12px', color: isTuntas ? '#64748b' : '#b45309', fontWeight: isTuntas ? 400 : 700 }}>
-                          {sis.kendala}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+            {cohortAktif.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '36px 16px', background: '#f8fafc', borderRadius: 12, border: '1.5px dashed #cbd5e1' }}>
+                <div style={{ fontSize: 32, marginBottom: 6 }}>📡</div>
+                <h5 style={{ margin: '0 0 4px', fontSize: 14, fontWeight: 800, color: '#0f172a' }}>
+                  Terhubung ke Database Siswa Gemilang: Belum Ada Siswa yang Mengerjakan
+                </h5>
+                <p style={{ margin: '0 auto 12px', maxWidth: 520, fontSize: 12, color: '#64748b', lineHeight: 1.5 }}>
+                  Belum ada siswa yang mengumpulkan pengerjaan paket latihan untuk Bab 1. Nilai dan catatan kendala akan muncul otomatis di sini begitu siswa mengerjakan paket latihan di portal siswa.
+                </p>
+                <div style={{ display: 'flex', gap: 8, justifyContent: 'center' }}>
+                  <button
+                    type="button"
+                    onClick={() => setModeSimulasiDemo(true)}
+                    style={{ background: '#ea580c', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 16px', fontSize: 12, fontWeight: 800, cursor: 'pointer' }}
+                  >
+                    ⚡ Aktifkan Mode Simulasi Demo
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div style={{ overflowX: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+                  <thead>
+                    <tr style={{ background: '#f1f5f9', borderBottom: '2px solid #cbd5e1', textAlign: 'left', color: '#334155' }}>
+                      <th style={{ padding: '10px 12px' }}>No</th>
+                      <th style={{ padding: '10px 12px' }}>Nama Siswa</th>
+                      <th style={{ padding: '10px 12px' }}>Kelas</th>
+                      <th style={{ padding: '10px 12px' }}>Skor Bab 1</th>
+                      <th style={{ padding: '10px 12px' }}>Status Kelulusan</th>
+                      <th style={{ padding: '10px 12px' }}>Topik Kendala / Catatan Tentor</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {cohortAktif.map((sis, idx) => {
+                      const isTuntas = sis.bab1 != null && sis.bab1 >= 75;
+                      const belumMengerjakan = sis.bab1 == null;
+                      return (
+                        <tr key={sis.id || idx} style={{ borderBottom: '1px solid #e2e8f0', background: belumMengerjakan ? '#ffffff' : (isTuntas ? '#ffffff' : '#fffbeb') }}>
+                          <td style={{ padding: '10px 12px', fontWeight: 700, color: '#64748b' }}>{idx + 1}</td>
+                          <td style={{ padding: '10px 12px', fontWeight: 800, color: '#0f172a' }}>{sis.nama}</td>
+                          <td style={{ padding: '10px 12px', color: '#475569' }}>{sis.kelas || '9 SMP'}</td>
+                          <td style={{ padding: '10px 12px' }}>
+                            {belumMengerjakan ? (
+                              <span style={{ fontSize: 12, color: '#94a3b8', fontStyle: 'italic' }}>Belum Mengerjakan</span>
+                            ) : (
+                              <span style={{
+                                fontWeight: 900,
+                                fontSize: 13,
+                                color: isTuntas ? '#15803d' : '#b91c1c',
+                                background: isTuntas ? '#dcfce7' : '#fee2e2',
+                                padding: '3px 8px',
+                                borderRadius: 6,
+                              }}>
+                                {sis.bab1} / 100
+                              </span>
+                            )}
+                          </td>
+                          <td style={{ padding: '10px 12px' }}>
+                            {belumMengerjakan ? (
+                              <span style={{ fontSize: 11, fontWeight: 700, color: '#64748b', background: '#f1f5f9', padding: '3px 8px', borderRadius: 6 }}>
+                                ⏳ Menunggu Siswa
+                              </span>
+                            ) : (
+                              <span style={{
+                                fontSize: 11,
+                                fontWeight: 800,
+                                color: isTuntas ? '#15803d' : '#c2410c',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: 4,
+                              }}>
+                                {isTuntas ? '✓ Tuntas KKM' : '⚠️ Butuh Drill Remedial'}
+                              </span>
+                            )}
+                          </td>
+                          <td style={{ padding: '10px 12px', color: belumMengerjakan ? '#94a3b8' : (isTuntas ? '#64748b' : '#b45309'), fontWeight: isTuntas || belumMengerjakan ? 400 : 700 }}>
+                            {sis.kendala}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         </div>
-      )}
+        );
+      })()}
 
         {/* bar terpilih menempel: guru selalu tahu berapa yang terkumpul
             tanpa panel perantara, dan satu klik membawanya ke kertas */}

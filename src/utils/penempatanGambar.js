@@ -64,7 +64,9 @@ export function pisahTeksDanGambar(teks, gambarUrls = [], opts = {}) {
   const lewati = opts?.lewati instanceof Set
     ? opts.lewati
     : new Set(Array.isArray(opts?.lewati) ? opts.lewati.filter(Boolean) : []);
-  const sumber = String(teks ?? '');
+  const sumber = String(teks ?? '')
+    .replace(/\\r\\n/g, '\n')
+    .replace(/\\n/g, '\n');
   const segmen = [];
   const terpakai = new Set();
   let buffer = '';

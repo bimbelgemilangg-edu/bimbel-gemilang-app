@@ -668,9 +668,12 @@ export default function JalurUjianAiPage() {
         const record = {
           studentId: studentId || 'siswa_demo',
           studentNama: profil?.nama || 'Siswa Pendampingan',
+          kelas: profil?.kelas || targetJenjang?.jenjang || '9 SMP',
           paketId: sesiLatihanAktif.paket.id,
           paketJudul: sesiLatihanAktif.paket.judul,
           subtesKode: sesiLatihanAktif.subtes?.kode || 'MTK',
+          babNomor: Number(sesiLatihanAktif.paket.babNomor || 1),
+          namaBab: sesiLatihanAktif.paket.bab || 'Bab 1: Bilangan',
           skor: skorFinal,
           benar: hasil.totalBenar || 0,
           total: hasil.totalSoal || 10,
@@ -678,6 +681,11 @@ export default function JalurUjianAiPage() {
           waktu: Date.now(),
         };
         localStorage.setItem('gemilang_hasil_terbitan_siswa', JSON.stringify([record, ...lama]));
+        try {
+          addDoc(collection(db, 'gemilang_hasil_terbitan_siswa'), record);
+        } catch (eDb) {
+          console.warn('Simpan firestore hasil terbitan:', eDb);
+        }
       } catch (e) {
         console.warn('Gagal menyimpan record terbitan siswa:', e);
       }
