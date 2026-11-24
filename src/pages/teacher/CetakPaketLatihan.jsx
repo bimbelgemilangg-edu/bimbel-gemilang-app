@@ -41,7 +41,7 @@ import 'katex/dist/katex.min.css';
 import katexCssInline from 'katex/dist/katex.min.css?inline';
 import { db } from '../../firebase';
 import { deteksiTingkatSiswa } from '../../utils/tingkatSiswa';
-import { bacaIdentitasGuru } from '../../utils/identitasGuru';
+import { bacaIdentitasGuru, bacaDataGuruLogin } from '../../utils/identitasGuru';
 import { perluSegar, kebijakanGagalMuat } from '../../utils/keputusanMuat';
 import { pilihSoalUntukCetak, htmlPaketSiswa, htmlKunciTentor, htmlLembarCatatan } from '../../utils/cetakLatihan';
 import {
@@ -99,6 +99,103 @@ import { useSegarSaatTerlihat } from '../../utils/useSegarSaatTerlihat';
 import { sebaranKelas } from '../../utils/petaKonten';
 
 const BELUM = '(Belum diatur)';
+
+/**
+ * Mendeteksi mapel dan jenjang bawaan dari profil guru login.
+ * Memastikan Guru Matematika, Guru Bahasa Indonesia, dan Guru UTBK
+ * langsung mendarat pada bidang studi dan kurikulum resmi mereka masing-masing.
+ */
+export function deteksiProfilGuruMapel(guru) {
+  const g = guru || {};
+  const rawMapel = String(g.mapel || g.mataPelajaran || g.subject || g.bidangStudi || g.kodeMapel || '').trim().toLowerCase();
+  const rawJenjang = String(g.jenjang || g.tingkat || g.kategori || '').trim().toUpperCase();
+  const namaGuru = String(g.nama || g.name || g.guruNama || 'Tentor Gemilang').trim();
+
+  let jenjangCocok = 'SMP';
+  if (rawJenjang.includes('SMA') || rawJenjang.includes('UTBK') || rawJenjang.includes('SNBT')) {
+    jenjangCocok = 'SMA';
+  } else if (rawJenjang.includes('SD')) {
+    jenjangCocok = 'SD';
+  } else if (rawJenjang.includes('SMP')) {
+    jenjangCocok = 'SMP';
+  }
+
+  let mapelCocok = 'Matematika';
+  if (rawMapel.includes('indonesia') || rawMapel === 'bin' || rawMapel === 'lbin' || rawMapel.includes('bahasa')) {
+    mapelCocok = 'Bahasa Indonesia';
+  } else if (rawMapel.includes('kuantitatif') || rawMapel === 'pk') {
+    mapelCocok = 'Pengetahuan Kuantitatif';
+    jenjangCocok = 'SMA';
+  } else if (rawMapel.includes('penalaran matematika') || rawMapel === 'pm') {
+    mapelCocok = 'Penalaran Matematika';
+    jenjangCocok = 'SMA';
+  } else if (rawMapel.includes('bacaan') || rawMapel === 'pbm') {
+    mapelCocok = 'Pemahaman Bacaan & Menulis';
+    jenjangCocok = 'SMA';
+  } else if (rawMapel.includes('penalaran umum') || rawMapel === 'pu') {
+    mapelCocok = 'Penalaran Umum';
+    jenjangCocok = 'SMA';
+  } else if (rawMapel.includes('utbk') || rawMapel.includes('snbt')) {
+    jenjangCocok = 'SMA';
+    mapelCocok = 'Pengetahuan Kuantitatif';
+  } else if (rawMapel.includes('ipa') || rawMapel.includes('sains')) {
+    mapelCocok = 'IPA';
+  } else if (rawMapel.includes('inggris') || rawMapel === 'big' || rawMapel === 'lbing') {
+    mapelCocok = 'Bahasa Inggris';
+  }
+
+  return {
+    jenjangCocok,
+    mapelCocok,
+    namaGuru,
+    mapelAsli: g.mapel || g.mataPelajaran || mapelCocok,
+    idGuru: g.guruId || g.id || 'tentor_gemilang',
+  };
+}
+
+export function buatDataDemoSiswaPerMapel(mapel = 'Matematika', jenjang = 'SMP') {
+  const m = String(mapel || '').toLowerCase();
+  const j = String(jenjang || 'SMP').toUpperCase();
+  const labelKelas = j === 'SMA' ? '12 SMA' : (j === 'SD' ? '6 SD' : '9 SMP');
+
+  if (m.includes('indonesia') || m.includes('bacaan') || m.includes('pbm')) {
+    return [
+      { id: 'sis_1', nama: 'Azka Ramadhani', kelas: labelKelas, jenjang: j, bab1: 82, tuntasBab1: true, kendala: '-' },
+      { id: 'sis_2', nama: 'Bima Pratama', kelas: labelKelas, jenjang: j, bab1: 58, tuntasBab1: false, kendala: 'Ejaan PUEBI, Huruf Kapital & Tanda Baca' },
+      { id: 'sis_3', nama: 'Citra Kirana', kelas: labelKelas, jenjang: j, bab1: 52, tuntasBab1: false, kendala: 'Menemukan Ide Pokok Paragraf Induktif' },
+      { id: 'sis_4', nama: 'Dafa Alamsyah', kelas: labelKelas, jenjang: j, bab1: 78, tuntasBab1: true, kendala: '-' },
+      { id: 'sis_5', nama: 'Echa Aurelia', kelas: labelKelas, jenjang: j, bab1: 48, tuntasBab1: false, kendala: 'Membedakan Kalimat Fakta vs Opini' },
+      { id: 'sis_6', nama: 'Farhan Naufal', kelas: labelKelas, jenjang: j, bab1: 88, tuntasBab1: true, kendala: '-' },
+      { id: 'sis_7', nama: 'Gita Maharani', kelas: labelKelas, jenjang: j, bab1: 60, tuntasBab1: false, kendala: 'Kepaduan Kalimat Efektif & Konjungsi Antarkalimat' },
+      { id: 'sis_8', nama: 'Hadi Prasetyo', kelas: labelKelas, jenjang: j, bab1: 55, tuntasBab1: false, kendala: 'Makna Tersirat & Simpulan Teks Eksposisi' },
+    ];
+  }
+
+  if (m.includes('penalaran umum') || m.includes('pu')) {
+    return [
+      { id: 'sis_1', nama: 'Azka Ramadhani', kelas: labelKelas, jenjang: j, bab1: 85, tuntasBab1: true, kendala: '-' },
+      { id: 'sis_2', nama: 'Bima Pratama', kelas: labelKelas, jenjang: j, bab1: 55, tuntasBab1: false, kendala: 'Silogisme Modus Ponens & Tollens' },
+      { id: 'sis_3', nama: 'Citra Kirana', kelas: labelKelas, jenjang: j, bab1: 50, tuntasBab1: false, kendala: 'Penalaran Analitis Urutan & Posisi Duduk' },
+      { id: 'sis_4', nama: 'Dafa Alamsyah', kelas: labelKelas, jenjang: j, bab1: 76, tuntasBab1: true, kendala: '-' },
+      { id: 'sis_5', nama: 'Echa Aurelia', kelas: labelKelas, jenjang: j, bab1: 45, tuntasBab1: false, kendala: 'Kesesuaian Pernyataan Benar/Salah Teks Ilmiah' },
+      { id: 'sis_6', nama: 'Farhan Naufal', kelas: labelKelas, jenjang: j, bab1: 92, tuntasBab1: true, kendala: '-' },
+      { id: 'sis_7', nama: 'Gita Maharani', kelas: labelKelas, jenjang: j, bab1: 58, tuntasBab1: false, kendala: 'Simpulan Pasti Benar vs Mungkin Benar' },
+      { id: 'sis_8', nama: 'Hadi Prasetyo', kelas: labelKelas, jenjang: j, bab1: 52, tuntasBab1: false, kendala: 'Pola Bilangan Simbolik Logika Deret' },
+    ];
+  }
+
+  // Matematika / Pengetahuan Kuantitatif / Numerasi
+  return [
+    { id: 'sis_1', nama: 'Azka Ramadhani', kelas: labelKelas, jenjang: j, bab1: 80, tuntasBab1: true, kendala: '-' },
+    { id: 'sis_2', nama: 'Bima Pratama', kelas: labelKelas, jenjang: j, bab1: 60, tuntasBab1: false, kendala: 'Aturan Eksponen Negatif & Radikal' },
+    { id: 'sis_3', nama: 'Citra Kirana', kelas: labelKelas, jenjang: j, bab1: 50, tuntasBab1: false, kendala: 'Aturan KaBaTaKu & Tanda Kurung Pecahan' },
+    { id: 'sis_4', nama: 'Dafa Alamsyah', kelas: labelKelas, jenjang: j, bab1: 75, tuntasBab1: true, kendala: '-' },
+    { id: 'sis_5', nama: 'Echa Aurelia', kelas: labelKelas, jenjang: j, bab1: 45, tuntasBab1: false, kendala: 'Sifat Bilangan Rasional vs Irasional' },
+    { id: 'sis_6', nama: 'Farhan Naufal', kelas: labelKelas, jenjang: j, bab1: 90, tuntasBab1: true, kendala: '-' },
+    { id: 'sis_7', nama: 'Gita Maharani', kelas: labelKelas, jenjang: j, bab1: 55, tuntasBab1: false, kendala: 'Konversi Notasi Ilmiah & Rasio' },
+    { id: 'sis_8', nama: 'Hadi Prasetyo', kelas: labelKelas, jenjang: j, bab1: 50, tuntasBab1: false, kendala: 'Merasionalkan Penyebut Bentuk Akar' },
+  ];
+}
 
 export function normalisasiMetaSoal(s) {
   if (!s || typeof s !== 'object') return s;
@@ -460,9 +557,12 @@ export default function CetakPaketLatihan() {
   const [paketList, setPaketList] = useState(() => cachePaket || []);
   const [memuat, setMemuat] = useState(() => !(cacheBank && cacheBank.length > 0));
 
-  const [jenjangAktif, setJenjangAktif] = useState('SMP');
-  const [mapelAktif, setMapelAktif] = useState('Matematika');
-  const [babAktif, setBabAktif] = useState('Bilangan (Bulat, Pecahan, Berpangkat, & Bentuk Akar)');
+  const profilGuruLogin = useMemo(() => bacaDataGuruLogin(), []);
+  const profilTerdeteksi = useMemo(() => deteksiProfilGuruMapel(profilGuruLogin), [profilGuruLogin]);
+
+  const [jenjangAktif, setJenjangAktif] = useState(() => profilTerdeteksi.jenjangCocok || 'SMP');
+  const [mapelAktif, setMapelAktif] = useState(() => profilTerdeteksi.mapelCocok || 'Matematika');
+  const [babAktif, setBabAktif] = useState('');
   const [kelasFilter, setKelasFilter] = useState('');
   // Keranjang: array BUTIR (bukan id) supaya kartu tetap bisa dirender
   // setelah tentor pindah bab dan butirnya tak lagi ada di daftar tampil.
@@ -538,31 +638,52 @@ export default function CetakPaketLatihan() {
   const [filterJenjangAnalitik, setFilterJenjangAnalitik] = useState('aktif');
   const [sedangMemuatAnalitikLive, setSedangMemuatAnalitikLive] = useState(false);
 
+  const idGuruKey = useMemo(() => {
+    const idt = bacaIdentitasGuru();
+    return String(idt.guruId || idt.docId || profilTerdeteksi.idGuru || 'tentor_gemilang').trim();
+  }, [profilTerdeteksi]);
+
+  const kunciRemedialGuru = useMemo(() => {
+    return `gemilang_status_remedial_${idGuruKey}_${jenjangAktif}_${mapelAktif}_bab1`;
+  }, [idGuruKey, jenjangAktif, mapelAktif]);
+
   // Data Cohort Demo Simulasi
   const [dataSiswaKelas, setDataSiswaKelas] = useState(() => {
     try {
-      const tersimpan = localStorage.getItem('gemilang_analitik_kelas_siswa');
+      const tersimpan = localStorage.getItem(`gemilang_analitik_kelas_siswa_${idGuruKey}_${jenjangAktif}_${mapelAktif}`);
       if (tersimpan) return JSON.parse(tersimpan);
     } catch {}
-    return [
-      { id: 'sis_1', nama: 'Azka Ramadhani', kelas: '9 SMP', jenjang: 'SMP', isSmp: true, bab1: 80, tuntasBab1: true, kendala: '-' },
-      { id: 'sis_2', nama: 'Bima Pratama', kelas: '9 SMP', jenjang: 'SMP', isSmp: true, bab1: 60, tuntasBab1: false, kendala: 'Aturan Eksponen Negatif (2^-3)' },
-      { id: 'sis_3', nama: 'Citra Kirana', kelas: '9 SMP', jenjang: 'SMP', isSmp: true, bab1: 50, tuntasBab1: false, kendala: 'Aturan KaBaTaKu & Tanda Kurung' },
-      { id: 'sis_4', nama: 'Dafa Alamsyah', kelas: '9 SMP', jenjang: 'SMP', isSmp: true, bab1: 75, tuntasBab1: true, kendala: '-' },
-      { id: 'sis_5', nama: 'Echa Aurelia', kelas: '9 SMP', jenjang: 'SMP', isSmp: true, bab1: 45, tuntasBab1: false, kendala: 'Sifat Bilangan Rasional vs Irasional' },
-      { id: 'sis_6', nama: 'Farhan Naufal', kelas: '9 SMP', jenjang: 'SMP', isSmp: true, bab1: 90, tuntasBab1: true, kendala: '-' },
-      { id: 'sis_7', nama: 'Gita Maharani', kelas: '9 SMP', jenjang: 'SMP', isSmp: true, bab1: 55, tuntasBab1: false, kendala: 'Konversi Notasi Ilmiah Mikroskopis' },
-      { id: 'sis_8', nama: 'Hadi Prasetyo', kelas: '9 SMP', jenjang: 'SMP', isSmp: true, bab1: 50, tuntasBab1: false, kendala: 'Merasionalkan Penyebut Bentuk Akar' },
-    ];
+    return buatDataDemoSiswaPerMapel(profilTerdeteksi.mapelCocok, profilTerdeteksi.jenjangCocok);
   });
 
   const [statusRemedialSelesai, setStatusRemedialSelesai] = useState(() => {
     try {
-      return localStorage.getItem('gemilang_status_remedial_bab1') === 'tuntas';
+      return localStorage.getItem(kunciRemedialGuru) === 'tuntas';
     } catch {
       return false;
     }
   });
+
+  useEffect(() => {
+    try {
+      setStatusRemedialSelesai(localStorage.getItem(kunciRemedialGuru) === 'tuntas');
+    } catch {
+      setStatusRemedialSelesai(false);
+    }
+  }, [kunciRemedialGuru]);
+
+  useEffect(() => {
+    try {
+      const tersimpan = localStorage.getItem(`gemilang_analitik_kelas_siswa_${idGuruKey}_${jenjangAktif}_${mapelAktif}`);
+      if (tersimpan) {
+        setDataSiswaKelas(JSON.parse(tersimpan));
+      } else {
+        setDataSiswaKelas(buatDataDemoSiswaPerMapel(mapelAktif, jenjangAktif));
+      }
+    } catch {
+      setDataSiswaKelas(buatDataDemoSiswaPerMapel(mapelAktif, jenjangAktif));
+    }
+  }, [idGuruKey, jenjangAktif, mapelAktif]);
 
   // Muat data realtime dari database Firestore (koleksi gemilang_hasil_terbitan_siswa & students)
   const muatDataAnalitikSiswa = useCallback(async () => {
@@ -635,8 +756,32 @@ export default function CetakPaketLatihan() {
       console.warn('Muat roster students Firestore:', errS);
     }
 
+    const lmAktif = (mapelAktif || 'Matematika').toLowerCase();
     const mapHasil = {};
+
     hasilDb.forEach((h) => {
+      // Saring hasil berdasarkan mapel / subtes aktif agar progres guru matematika, bahasa indonesia, utbk tidak tertukar
+      const hMapel = String(h.mapel || h.subtes || h.paketJudul || '').toLowerCase();
+      const hKode = String(h.subtesKode || '').toUpperCase();
+
+      let cocok = false;
+      if (lmAktif.includes('indonesia')) {
+        cocok = hMapel.includes('indonesia') || hKode === 'BIN' || hKode === 'PBM' || hKode === 'LBIN';
+      } else if (lmAktif.includes('kuantitatif') || lmAktif.includes('pk')) {
+        cocok = hMapel.includes('kuantitatif') || hKode === 'PK' || hMapel.includes('pk');
+      } else if (lmAktif.includes('penalaran matematika') || lmAktif.includes('pm')) {
+        cocok = hMapel.includes('penalaran matematika') || hKode === 'PM';
+      } else if (lmAktif.includes('penalaran umum') || lmAktif.includes('pu')) {
+        cocok = hMapel.includes('penalaran umum') || hKode === 'PU';
+      } else if (lmAktif.includes('bacaan') || lmAktif.includes('pbm')) {
+        cocok = hMapel.includes('bacaan') || hKode === 'PBM';
+      } else {
+        // Matematika
+        cocok = hMapel.includes('matematika') || hKode === 'MTK' || (!hKode && !hMapel.includes('indonesia') && !hMapel.includes('inggris'));
+      }
+
+      if (!cocok) return;
+
       const keyS = h.studentId || h.nama || h.studentNama;
       if (!mapHasil[keyS] || (h.waktu || 0) > (mapHasil[keyS].waktu || 0)) {
         mapHasil[keyS] = {
@@ -647,7 +792,7 @@ export default function CetakPaketLatihan() {
           jenjang: h.jenjang || '',
           bab1: h.skor != null ? Number(h.skor) : 0,
           tuntasBab1: Number(h.skor || 0) >= 75,
-          kendala: Number(h.skor || 0) >= 75 ? '-' : 'Butuh Drill Remedial Konsep Dasar',
+          kendala: Number(h.skor || 0) >= 75 ? '-' : `Butuh Drill Remedial Konsep Dasar (${mapelAktif})`,
           sudahMengerjakan: true,
           waktu: h.waktu || Date.now(),
         };
@@ -686,25 +831,20 @@ export default function CetakPaketLatihan() {
 
     setDataSiswaReal(Object.values(mapHasil));
     setSedangMemuatAnalitikLive(false);
-  }, []);
+  }, [mapelAktif, jenjangAktif]);
 
   useEffect(() => {
     muatDataAnalitikSiswa();
   }, [muatDataAnalitikSiswa]);
 
-  const handleMulaiDrillRemedial = async (babNomorTarget = 1, subMateriIdTarget = 'jenis_sifat', namaBabTarget = '') => {
-    setJenjangAktif('SMP');
-    setMapelAktif('Matematika');
-    if (babNomorTarget === 1) {
-      setBabAktif('Bilangan (Bulat, Pecahan, Berpangkat, & Bentuk Akar)');
-    } else if (babNomorTarget === 2) {
-      setBabAktif('Aljabar (SPLDV, Persamaan Kuadrat, Fungsi & Pola Bilangan)');
-    } else {
-      setBabAktif(namaBabTarget || 'Bilangan (Bulat, Pecahan, Berpangkat, & Bentuk Akar)');
-    }
+  const handleMulaiDrillRemedial = async (babNomorTarget = 1, subMateriIdTarget = 'semua', namaBabTarget = '') => {
+    // Pertahankan mapelAktif dan jenjangAktif guru
+    const targetBab = namaBabTarget || (daftarBabResmi && daftarBabResmi[babNomorTarget - 1]?.namaBab) || babAktif;
+    setBabAktif(targetBab);
     setSubMateriAktif(subMateriIdTarget || 'semua');
     setTargetJumlahSoal(20); // Preset drill remedial = 20 butir
     setSumber('bank'); // Beralih langsung ke Meja Racik & Pusat Kendali AI
+    setTabBuku('meja');
 
     setTimeout(() => {
       document.getElementById('pusat-kendali-ai')?.scrollIntoView({ behavior: 'smooth' });
@@ -717,17 +857,17 @@ export default function CetakPaketLatihan() {
   const handleSimulasiSiswaTuntasDrill = () => {
     const dataUpdate = dataSiswaKelas.map((s) => ({
       ...s,
-      bab1: Math.min(100, Math.max(75, s.bab1 + Math.floor(Math.random() * 20) + 15)),
+      bab1: Math.min(100, Math.max(75, (s.bab1 || 60) + Math.floor(Math.random() * 20) + 15)),
       tuntasBab1: true,
-      kendala: 'Tuntas setelah Drill Remedial 20 Soal ✅',
+      kendala: `Tuntas setelah Drill Remedial 20 Soal (${mapelAktif}) ✅`,
     }));
     setDataSiswaKelas(dataUpdate);
     setStatusRemedialSelesai(true);
     try {
-      localStorage.setItem('gemilang_analitik_kelas_siswa', JSON.stringify(dataUpdate));
-      localStorage.setItem('gemilang_status_remedial_bab1', 'tuntas');
+      localStorage.setItem(`gemilang_analitik_kelas_siswa_${idGuruKey}_${jenjangAktif}_${mapelAktif}`, JSON.stringify(dataUpdate));
+      localStorage.setItem(kunciRemedialGuru, 'tuntas');
     } catch {}
-    alert('🎉 Hasil Drill Remedial Diperbarui!\n\nSeluruh siswa kini telah menuntaskan Bab 1 (Rata-rata 86/100). Bab 2: Aljabar kini RESMI TERBUKA untuk dilanjutkan!');
+    alert(`🎉 Hasil Drill Remedial ${mapelAktif} Diperbarui!\n\nSeluruh siswa kini telah menuntaskan Bab 1 ${mapelAktif} (Rata-rata 86/100). Materi Bab 2 (${mapelAktif}) kini RESMI TERBUKA untuk dilanjutkan!`);
   };
 
   // Muat daftar paket terbitan kelas pendampingan
@@ -765,6 +905,17 @@ export default function CetakPaketLatihan() {
     setSedangMenerbitkan(true);
     const idt = bacaIdentitasGuru();
     const judulFinal = judulTerbitInput.trim() || `${jenjangAktif || 'TKA'} ${mapelAktif || 'Matematika'} - ${babAktif || 'Latihan Pekanan'}`;
+
+    const lm = (mapelAktif || '').toLowerCase();
+    let kodeMapel = 'MTK';
+    if (lm.includes('indonesia') || lm === 'bin') kodeMapel = 'BIN';
+    else if (lm.includes('kuantitatif') || lm === 'pk') kodeMapel = 'PK';
+    else if (lm.includes('penalaran matematika') || lm === 'pm') kodeMapel = 'PM';
+    else if (lm.includes('bacaan') || lm === 'pbm') kodeMapel = 'PBM';
+    else if (lm.includes('penalaran umum') || lm === 'pu') kodeMapel = 'PU';
+    else if (lm.includes('ipa')) kodeMapel = 'IPA';
+    else if (lm.includes('inggris')) kodeMapel = 'BIG';
+
     const paketBaru = {
       id: `pendampingan_${Date.now()}`,
       judul: judulFinal,
@@ -772,6 +923,7 @@ export default function CetakPaketLatihan() {
       jenjang: jenjangAktif || 'SMP',
       mapel: mapelAktif || 'Matematika',
       subtes: mapelAktif || 'Matematika',
+      subtesKode: kodeMapel,
       bab: babAktif || 'Materi Inti',
       babNomor: babAktifObj?.babNomor || 1,
       subMateriId: subMateriAktif || 'semua',
@@ -1101,10 +1253,10 @@ export default function CetakPaketLatihan() {
     if (pb) setBabAktif(pb);
 
     if (isJalurPendampingan && !pm && !mapelAktif) {
-      setJenjangAktif('SMP');
-      setMapelAktif('Matematika');
+      setJenjangAktif(profilTerdeteksi.jenjangCocok || 'SMP');
+      setMapelAktif(profilTerdeteksi.mapelCocok || 'Matematika');
     }
-  }, [params, isJalurPendampingan, mapelAktif]);
+  }, [params, isJalurPendampingan, mapelAktif, profilTerdeteksi]);
 
   // ---- hirarki bank: jenjang -> mapel -> bab, terintegrasi standar Bimbel Gemilang ----
   const daftarJenjang = useMemo(() => {
@@ -2647,6 +2799,25 @@ export default function CetakPaketLatihan() {
                 <p style={{ margin: '6px 0 0', fontSize: 12.5, color: '#ccfbf1', maxWidth: 780, lineHeight: 1.5 }}>
                   Berdasarkan prinsip <b>Belajar Tuntas (Mastery Learning)</b> Bimbel Gemilang: Siswa yang belum tuntas pada bab prasyarat <b>tidak boleh dipaksa lanjut ke bab berikutnya</b>. Tentor wajib memberikan paket drill latihan remedial sampai pemahaman siswa tuntas (KKM ≥ 75%).
                 </p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginTop: 8 }}>
+                  <div style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 8,
+                    background: 'rgba(255, 255, 255, 0.15)',
+                    padding: '4px 12px',
+                    borderRadius: 99,
+                    fontSize: 12,
+                    fontWeight: 700,
+                    border: '1px solid rgba(255, 255, 255, 0.25)',
+                  }}>
+                    <span>👨‍🏫 Tentor Pengampu: <b>{profilTerdeteksi.namaGuru}</b></span>
+                    <span>•</span>
+                    <span>Bidang Studi: <b>{profilTerdeteksi.mapelAsli || mapelAktif}</b></span>
+                    <span>•</span>
+                    <span style={{ color: '#99f6e4' }}>🛡️ Silabus & Progres Mandiri ({jenjangAktif} - {mapelAktif})</span>
+                  </div>
+                </div>
               </div>
 
               <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
@@ -2777,11 +2948,25 @@ export default function CetakPaketLatihan() {
           </div>
 
           {/* ROADMAP SILABUS BERJENJANG (PREREQUISITES LEARNING PIPELINE) */}
+          {(() => {
+            const daftarBabRoadmap = (daftarBabResmi && daftarBabResmi.length > 0 ? daftarBabResmi.slice(0, 4) : []);
+            const daftarBabRoadmapLengkap = [...daftarBabRoadmap];
+            while (daftarBabRoadmapLengkap.length < 4) {
+              const nextIdx = daftarBabRoadmapLengkap.length + 1;
+              daftarBabRoadmapLengkap.push({
+                babNomor: nextIdx,
+                ringkas: `Bab ${nextIdx}: Pengayaan Lanjutan`,
+                namaBab: `Bab ${nextIdx}: Materi Pengayaan & Latihan`,
+                deskripsi: 'Materi lanjutan kurikulum resmi sebelum try out akbar.',
+              });
+            }
+
+            return (
           <div style={gayaKartu}>
             <div style={{ ...gayaJudulKartu, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10, marginBottom: 14 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <span>🎯</span>
-                <span>Alur Ketuntasan Materi & Prasyarat Kurikulum Resmi (SMP Matematika)</span>
+                <span>Alur Ketuntasan Materi & Prasyarat Kurikulum Resmi ({jenjangAktif} · {mapelAktif})</span>
               </div>
               <span style={{ fontSize: 12, color: '#64748b' }}>
                 Aturan: Bab selanjutnya hanya terbuka jika Bab sebelumnya tuntas minimal 75%
@@ -2789,344 +2974,339 @@ export default function CetakPaketLatihan() {
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 14 }}>
-              {/* BAB 1: BILANGAN */}
-              <div style={{
-                background: kelasTuntasMemenuhi ? '#f0fdf4' : (adaSiswaMengerjakan ? '#fff7ed' : '#f8fafc'),
-                border: kelasTuntasMemenuhi ? '2px solid #22c55e' : (adaSiswaMengerjakan ? '2px solid #f97316' : '1.5px solid #cbd5e1'),
-                borderRadius: 14,
-                padding: '16px 18px',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'space-between',
-                boxShadow: kelasTuntasMemenuhi ? '0 4px 12px rgba(34, 197, 94, 0.12)' : (adaSiswaMengerjakan ? '0 4px 12px rgba(249, 115, 22, 0.15)' : 'none'),
-              }}>
-                <div>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-                    <span style={{
-                      fontSize: 10.5,
-                      fontWeight: 900,
-                      padding: '3px 8px',
-                      borderRadius: 99,
-                      background: kelasTuntasMemenuhi ? '#22c55e' : (adaSiswaMengerjakan ? '#ea580c' : '#64748b'),
-                      color: '#ffffff',
-                    }}>
-                      {kelasTuntasMemenuhi
-                        ? '✅ TUNTAS MEMENUHI KKM'
-                        : (adaSiswaMengerjakan ? '⚠️ BELUM TUNTAS (REMEDIAL)' : '📡 LIVE · MENUNGGU PENGERJAAN')}
-                    </span>
-                    <span style={{ fontSize: 11, fontWeight: 700, color: kelasTuntasMemenuhi ? '#15803d' : (adaSiswaMengerjakan ? '#c2410c' : '#64748b') }}>
-                      Pertemuan Minggu 1
-                    </span>
-                  </div>
+              {daftarBabRoadmapLengkap.map((babItem, idx) => {
+                const isBab1 = idx === 0;
+                const isBab2 = idx === 1;
 
-                  <h4 style={{ margin: '0 0 6px', fontSize: 15, fontWeight: 900, color: '#0f172a' }}>
-                    Bab 1: Bilangan Dasar & Operasi
-                  </h4>
-                  <div style={{ fontSize: 12, color: '#475569', marginBottom: 10 }}>
-                    Sifat Bilangan Real, KaBaTaKu, Eksponen Pangkat, Bentuk Akar & Notasi Ilmiah
-                  </div>
-
-                  {/* Indikator Skor */}
-                  <div style={{ background: '#ffffff', padding: '10px 12px', borderRadius: 10, border: '1px solid #e2e8f0', marginBottom: 12 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, marginBottom: 4 }}>
-                      <span style={{ color: '#64748b' }}>Rata-rata Kelas:</span>
-                      <b style={{ color: adaSiswaMengerjakan ? (rataRataSkor >= 75 ? '#15803d' : '#ea580c') : '#64748b' }}>
-                        {adaSiswaMengerjakan ? `${rataRataSkor} / 100` : '- / 100'}
-                      </b>
-                    </div>
-                    <div style={{ height: 8, background: '#e2e8f0', borderRadius: 99, overflow: 'hidden' }}>
-                      <div style={{
-                        height: '100%',
-                        width: `${Math.min(100, Math.max(0, rataRataSkor))}%`,
-                        background: rataRataSkor >= 75 ? 'linear-gradient(90deg, #22c55e, #16a34a)' : 'linear-gradient(90deg, #f97316, #dc2626)',
-                        borderRadius: 99,
-                        transition: 'width 0.5s ease',
-                      }} />
-                    </div>
-                    <div style={{ fontSize: 11, color: '#64748b', marginTop: 6, display: 'flex', justifyContent: 'space-between' }}>
-                      <span>Ketuntasan: <b>{adaSiswaMengerjakan ? `${persenKetuntasan}%` : '0%'}</b></span>
-                      <span>Target KKM: <b>75%</b></span>
-                    </div>
-                  </div>
-
-                  {/* Catatan Pedagogis & Diagnosa */}
-                  <div style={{
-                    fontSize: 11.5,
-                    color: adaSiswaMengerjakan ? (rataRataSkor >= 75 ? '#166534' : '#9a3412') : '#334155',
-                    lineHeight: 1.45,
-                    marginBottom: 14,
-                    background: adaSiswaMengerjakan ? (rataRataSkor >= 75 ? '#dcfce7' : '#ffedd5') : '#f1f5f9',
-                    padding: '8px 10px',
-                    borderRadius: 8,
-                  }}>
-                    {adaSiswaMengerjakan ? (
-                      rataRataSkor >= 75 ? (
-                        <>
-                          <b>Evaluasi Guru:</b> Siswa telah tuntas memahami konsep operasi bilangan & eksponen. Kelas siap melangkah ke Bab 2: Aljabar!
-                        </>
-                      ) : (
-                        <>
-                          <b>Diagnosa Siswa:</b> {butuhRemedialCount} dari {siswaSelesaiPengerjaan.length} siswa belum mencapai KKM. <b>Dilarang lanjut ke Bab 2 Aljabar</b> agar siswa tidak semakin tertinggal!
-                        </>
-                      )
-                    ) : (
-                      <>
-                        <b>Status Database:</b> Belum ada siswa yang mengumpulkan pengerjaan Bab 1. Klik tombol di bawah untuk menerbitkan paket latihan Bab 1 ke siswa.
-                      </>
-                    )}
-                  </div>
-                </div>
-
-                {/* Tombol Aksi */}
-                <div>
-                  {adaSiswaMengerjakan ? (
-                    rataRataSkor >= 75 ? (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setJenjangAktif('SMP');
-                          setMapelAktif('Matematika');
-                          setBabAktif('Aljabar (SPLDV, Persamaan Kuadrat, Fungsi & Pola Bilangan)');
-                          setSumber('bank');
-                        }}
-                        style={{
-                          width: '100%',
-                          background: 'linear-gradient(135deg, #0d9488 0%, #0f766e 100%)',
-                          color: '#ffffff',
-                          border: 'none',
-                          borderRadius: 10,
-                          padding: '10px 14px',
-                          fontSize: 12.5,
-                          fontWeight: 900,
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          gap: 8,
-                          boxShadow: '0 2px 8px rgba(13, 148, 136, 0.3)',
-                        }}
-                      >
-                        <span>🚀 Lanjut Buka & Racik Bab 2: Aljabar</span>
-                        <span>→</span>
-                      </button>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={() => handleMulaiDrillRemedial(1, 'jenis_sifat', 'Bilangan (Bulat, Pecahan, Berpangkat, & Bentuk Akar)')}
-                        style={{
-                          width: '100%',
-                          background: 'linear-gradient(135deg, #ea580c 0%, #c2410c 100%)',
-                          color: '#ffffff',
-                          border: 'none',
-                          borderRadius: 10,
-                          padding: '11px 14px',
-                          fontSize: 12.5,
-                          fontWeight: 900,
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          gap: 8,
-                          boxShadow: '0 3px 10px rgba(234, 88, 12, 0.35)',
-                        }}
-                      >
-                        <span style={{ fontSize: 16 }}>🔥</span>
-                        <span>Buat Paket Drill Remedial Bab 1 (20 Soal AI)</span>
-                      </button>
-                    )
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setSumber('bank');
-                        setTabBuku('meja');
-                        setTimeout(() => document.getElementById('pusat-kendali-ai')?.scrollIntoView({ behavior: 'smooth' }), 100);
-                      }}
+                if (isBab1) {
+                  return (
+                    <div
+                      key={babItem.namaBab || idx}
                       style={{
-                        width: '100%',
-                        background: 'linear-gradient(135deg, #0f766e 0%, #115e59 100%)',
-                        color: '#ffffff',
-                        border: 'none',
-                        borderRadius: 10,
-                        padding: '11px 14px',
-                        fontSize: 12.5,
-                        fontWeight: 900,
-                        cursor: 'pointer',
+                        background: kelasTuntasMemenuhi ? '#f0fdf4' : (adaSiswaMengerjakan ? '#fff7ed' : '#f8fafc'),
+                        border: kelasTuntasMemenuhi ? '2px solid #22c55e' : (adaSiswaMengerjakan ? '2px solid #f97316' : '1.5px solid #cbd5e1'),
+                        borderRadius: 14,
+                        padding: '16px 18px',
                         display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: 8,
-                        boxShadow: '0 3px 10px rgba(15, 118, 110, 0.3)',
+                        flexDirection: 'column',
+                        justifyContent: 'space-between',
+                        boxShadow: kelasTuntasMemenuhi ? '0 4px 12px rgba(34, 197, 94, 0.12)' : (adaSiswaMengerjakan ? '0 4px 12px rgba(249, 115, 22, 0.15)' : 'none'),
                       }}
                     >
-                      <span style={{ fontSize: 15 }}>📢</span>
-                      <span>Terbitkan Paket Latihan Bab 1 ke Siswa</span>
-                    </button>
-                  )}
-                </div>
-              </div>
+                      <div>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                          <span style={{
+                            fontSize: 10.5,
+                            fontWeight: 900,
+                            padding: '3px 8px',
+                            borderRadius: 99,
+                            background: kelasTuntasMemenuhi ? '#22c55e' : (adaSiswaMengerjakan ? '#ea580c' : '#64748b'),
+                            color: '#ffffff',
+                          }}>
+                            {kelasTuntasMemenuhi
+                              ? '✅ TUNTAS MEMENUHI KKM'
+                              : (adaSiswaMengerjakan ? '⚠️ BELUM TUNTAS (REMEDIAL)' : '📡 LIVE · MENUNGGU PENGERJAAN')}
+                          </span>
+                          <span style={{ fontSize: 11, fontWeight: 700, color: kelasTuntasMemenuhi ? '#15803d' : (adaSiswaMengerjakan ? '#c2410c' : '#64748b') }}>
+                            Pertemuan Minggu 1
+                          </span>
+                        </div>
 
-              {/* BAB 2: ALJABAR & RELASI */}
-              <div style={{
-                background: kelasTuntasMemenuhi ? '#ffffff' : '#f8fafc',
-                border: kelasTuntasMemenuhi ? '1.5px solid #2dd4bf' : '1.5px dashed #cbd5e1',
-                borderRadius: 14,
-                padding: '16px 18px',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'space-between',
-                opacity: kelasTuntasMemenuhi ? 1 : 0.75,
-              }}>
-                <div>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-                    <span style={{
-                      fontSize: 10.5,
-                      fontWeight: 800,
-                      padding: '3px 8px',
-                      borderRadius: 99,
-                      background: kelasTuntasMemenuhi ? '#0d9488' : '#64748b',
-                      color: '#ffffff',
-                    }}>
-                      {kelasTuntasMemenuhi ? '🔓 MATERI TERBUKA' : '🔒 TERKUNCI (PRASYARAT)'}
-                    </span>
-                    <span style={{ fontSize: 11, fontWeight: 600, color: '#64748b' }}>
-                      Pertemuan Minggu 2
-                    </span>
-                  </div>
+                        <h4 style={{ margin: '0 0 6px', fontSize: 15, fontWeight: 900, color: '#0f172a' }}>
+                          {babItem.ringkas || babItem.namaBab}
+                        </h4>
+                        <div style={{ fontSize: 12, color: '#475569', marginBottom: 10 }}>
+                          {babItem.deskripsi || 'Materi fondasi utama semester berjalan.'}
+                        </div>
 
-                  <h4 style={{ margin: '0 0 6px', fontSize: 15, fontWeight: 900, color: '#0f172a' }}>
-                    Bab 2: Aljabar & Relasi
-                  </h4>
-                  <div style={{ fontSize: 12, color: '#475569', marginBottom: 12 }}>
-                    Operasi Suku Aljabar, Pemfaktoran, SPLDV Parkir/Belanja, Fungsi Kuadrat
-                  </div>
+                        {/* Indikator Skor */}
+                        <div style={{ background: '#ffffff', padding: '10px 12px', borderRadius: 10, border: '1px solid #e2e8f0', marginBottom: 12 }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, marginBottom: 4 }}>
+                            <span style={{ color: '#64748b' }}>Rata-rata Kelas:</span>
+                            <b style={{ color: adaSiswaMengerjakan ? (rataRataSkor >= 75 ? '#15803d' : '#ea580c') : '#64748b' }}>
+                              {adaSiswaMengerjakan ? `${rataRataSkor} / 100` : '- / 100'}
+                            </b>
+                          </div>
+                          <div style={{ height: 8, background: '#e2e8f0', borderRadius: 99, overflow: 'hidden' }}>
+                            <div style={{
+                              height: '100%',
+                              width: `${Math.min(100, Math.max(0, rataRataSkor))}%`,
+                              background: rataRataSkor >= 75 ? 'linear-gradient(90deg, #22c55e, #16a34a)' : 'linear-gradient(90deg, #f97316, #dc2626)',
+                              borderRadius: 99,
+                              transition: 'width 0.5s ease',
+                            }} />
+                          </div>
+                          <div style={{ fontSize: 11, color: '#64748b', marginTop: 6, display: 'flex', justifyContent: 'space-between' }}>
+                            <span>Ketuntasan: <b>{adaSiswaMengerjakan ? `${persenKetuntasan}%` : '0%'}</b></span>
+                            <span>Target KKM: <b>75%</b></span>
+                          </div>
+                        </div>
 
-                  <div style={{
-                    fontSize: 11.5,
-                    color: kelasTuntasMemenuhi ? '#0f766e' : '#64748b',
-                    background: kelasTuntasMemenuhi ? '#f0fdfa' : '#f1f5f9',
-                    padding: '10px 12px',
-                    borderRadius: 8,
-                    lineHeight: 1.45,
-                    marginBottom: 14,
-                  }}>
-                    {kelasTuntasMemenuhi ? (
-                      <>
-                        ✓ <b>Prasyarat Terpenuhi!</b> Siswa sudah menguasai Bab 1. Anda dapat menyiapkan paket latihan Bab 2 menggunakan bank soal asli atau Pure AI.
-                      </>
-                    ) : (
-                      <>
-                        ⛔ <b>Prasyarat Belum Terpenuhi:</b> Materi Aljabar membutuhkan ketuntasan operasi bilangan di Bab 1. Tombol cetak & terbitan akan dibuka setelah drill remedial Bab 1 tuntas.
-                      </>
-                    )}
-                  </div>
-                </div>
+                        {/* Catatan Pedagogis & Diagnosa */}
+                        <div style={{
+                          fontSize: 11.5,
+                          color: adaSiswaMengerjakan ? (rataRataSkor >= 75 ? '#166534' : '#9a3412') : '#334155',
+                          lineHeight: 1.45,
+                          marginBottom: 14,
+                          background: adaSiswaMengerjakan ? (rataRataSkor >= 75 ? '#dcfce7' : '#ffedd5') : '#f1f5f9',
+                          padding: '8px 10px',
+                          borderRadius: 8,
+                        }}>
+                          {adaSiswaMengerjakan ? (
+                            rataRataSkor >= 75 ? (
+                              <>
+                                <b>Evaluasi Guru:</b> Siswa telah tuntas memahami konsep dasar {babItem.ringkas || babItem.namaBab}. Kelas siap melangkah ke Bab 2!
+                              </>
+                            ) : (
+                              <>
+                                <b>Diagnosa Siswa:</b> {butuhRemedialCount} dari {siswaSelesaiPengerjaan.length} siswa belum mencapai KKM. <b>Dilarang lanjut ke Bab 2 {mapelAktif}</b> agar siswa tidak semakin tertinggal!
+                              </>
+                            )
+                          ) : (
+                            <>
+                              <b>Status Database:</b> Belum ada siswa yang mengumpulkan pengerjaan Bab 1. Klik tombol di bawah untuk menerbitkan paket latihan Bab 1 ke siswa.
+                            </>
+                          )}
+                        </div>
+                      </div>
 
-                <div>
-                  <button
-                    type="button"
-                    disabled={!kelasTuntasMemenuhi}
-                    onClick={() => {
-                      setJenjangAktif('SMP');
-                      setMapelAktif('Matematika');
-                      setBabAktif('Aljabar (SPLDV, Persamaan Kuadrat, Fungsi & Pola Bilangan)');
-                      setSumber('bank');
-                    }}
+                      {/* Tombol Aksi Bab 1 */}
+                      <div>
+                        {adaSiswaMengerjakan ? (
+                          (rataRataSkor >= 75 || statusRemedialSelesai) ? (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const bab2Obj = daftarBabRoadmapLengkap[1];
+                                if (bab2Obj) {
+                                  setBabAktif(bab2Obj.namaBab || bab2Obj.ringkas);
+                                }
+                                setSumber('bank');
+                                setTabBuku('meja');
+                                setTimeout(() => document.getElementById('pusat-kendali-ai')?.scrollIntoView({ behavior: 'smooth' }), 100);
+                              }}
+                              style={{
+                                width: '100%',
+                                background: 'linear-gradient(135deg, #0d9488 0%, #0f766e 100%)',
+                                color: '#ffffff',
+                                border: 'none',
+                                borderRadius: 10,
+                                padding: '10px 14px',
+                                fontSize: 12.5,
+                                fontWeight: 900,
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: 8,
+                                boxShadow: '0 2px 8px rgba(13, 148, 136, 0.3)',
+                              }}
+                            >
+                              <span>🚀 Lanjut Buka & Racik Bab 2: {daftarBabRoadmapLengkap[1]?.ringkas || 'Bab 2'}</span>
+                              <span>→</span>
+                            </button>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => handleMulaiDrillRemedial(1, 'semua', babItem.namaBab)}
+                              style={{
+                                width: '100%',
+                                background: 'linear-gradient(135deg, #ea580c 0%, #c2410c 100%)',
+                                color: '#ffffff',
+                                border: 'none',
+                                borderRadius: 10,
+                                padding: '11px 14px',
+                                fontSize: 12.5,
+                                fontWeight: 900,
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: 8,
+                                boxShadow: '0 3px 10px rgba(234, 88, 12, 0.35)',
+                              }}
+                            >
+                              <span style={{ fontSize: 16 }}>🔥</span>
+                              <span>Buat Paket Drill Remedial Bab 1 (20 Soal AI)</span>
+                            </button>
+                          )
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setBabAktif(babItem.namaBab);
+                              setSumber('bank');
+                              setTabBuku('meja');
+                              setTimeout(() => document.getElementById('pusat-kendali-ai')?.scrollIntoView({ behavior: 'smooth' }), 100);
+                            }}
+                            style={{
+                              width: '100%',
+                              background: 'linear-gradient(135deg, #0f766e 0%, #115e59 100%)',
+                              color: '#ffffff',
+                              border: 'none',
+                              borderRadius: 10,
+                              padding: '11px 14px',
+                              fontSize: 12.5,
+                              fontWeight: 900,
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              gap: 8,
+                              boxShadow: '0 3px 10px rgba(15, 118, 110, 0.3)',
+                            }}
+                          >
+                            <span style={{ fontSize: 15 }}>📢</span>
+                            <span>Terbitkan Paket Latihan Bab 1 ke Siswa</span>
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                }
+
+                if (isBab2) {
+                  return (
+                    <div
+                      key={babItem.namaBab || idx}
+                      style={{
+                        background: kelasTuntasMemenuhi ? '#ffffff' : '#f8fafc',
+                        border: kelasTuntasMemenuhi ? '1.5px solid #2dd4bf' : '1.5px dashed #cbd5e1',
+                        borderRadius: 14,
+                        padding: '16px 18px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'space-between',
+                        opacity: kelasTuntasMemenuhi ? 1 : 0.75,
+                      }}
+                    >
+                      <div>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                          <span style={{
+                            fontSize: 10.5,
+                            fontWeight: 800,
+                            padding: '3px 8px',
+                            borderRadius: 99,
+                            background: kelasTuntasMemenuhi ? '#0d9488' : '#64748b',
+                            color: '#ffffff',
+                          }}>
+                            {kelasTuntasMemenuhi ? '🔓 MATERI TERBUKA' : '🔒 TERKUNCI (PRASYARAT)'}
+                          </span>
+                          <span style={{ fontSize: 11, fontWeight: 600, color: '#64748b' }}>
+                            Pertemuan Minggu 2
+                          </span>
+                        </div>
+
+                        <h4 style={{ margin: '0 0 6px', fontSize: 15, fontWeight: 900, color: '#0f172a' }}>
+                          {babItem.ringkas || babItem.namaBab}
+                        </h4>
+                        <div style={{ fontSize: 12, color: '#475569', marginBottom: 12 }}>
+                          {babItem.deskripsi || 'Materi pengembangan konsep lanjutan.'}
+                        </div>
+
+                        <div style={{
+                          fontSize: 11.5,
+                          color: kelasTuntasMemenuhi ? '#0f766e' : '#64748b',
+                          background: kelasTuntasMemenuhi ? '#f0fdfa' : '#f1f5f9',
+                          padding: '10px 12px',
+                          borderRadius: 8,
+                          lineHeight: 1.45,
+                          marginBottom: 14,
+                        }}>
+                          {kelasTuntasMemenuhi ? (
+                            <>
+                              ✓ <b>Prasyarat Terpenuhi!</b> Siswa sudah menguasai Bab 1. Anda dapat menyiapkan paket latihan Bab 2 ({babItem.ringkas || 'Bab 2'}).
+                            </>
+                          ) : (
+                            <>
+                              ⛔ <b>Prasyarat Belum Terpenuhi:</b> Materi {babItem.ringkas || 'Bab 2'} membutuhkan ketuntasan di Bab 1. Tombol cetak & terbitan akan dibuka setelah drill remedial Bab 1 tuntas.
+                            </>
+                          )}
+                        </div>
+                      </div>
+
+                      <div>
+                        <button
+                          type="button"
+                          disabled={!kelasTuntasMemenuhi}
+                          onClick={() => {
+                            setBabAktif(babItem.namaBab || babItem.ringkas);
+                            setSumber('bank');
+                            setTabBuku('meja');
+                            setTimeout(() => document.getElementById('pusat-kendali-ai')?.scrollIntoView({ behavior: 'smooth' }), 100);
+                          }}
+                          style={{
+                            width: '100%',
+                            background: kelasTuntasMemenuhi ? '#0d9488' : '#e2e8f0',
+                            color: kelasTuntasMemenuhi ? '#ffffff' : '#94a3b8',
+                            border: 'none',
+                            borderRadius: 10,
+                            padding: '10px 14px',
+                            fontSize: 12.5,
+                            fontWeight: 800,
+                            cursor: kelasTuntasMemenuhi ? 'pointer' : 'not-allowed',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: 6,
+                          }}
+                        >
+                          <span>{kelasTuntasMemenuhi ? `✨ Siapkan Soal ${babItem.ringkas || 'Bab 2'}` : '🔒 Terkunci (Tuntaskan Bab 1 Dulu)'}</span>
+                        </button>
+                      </div>
+                    </div>
+                  );
+                }
+
+                // Bab 3 dan seterusnya
+                return (
+                  <div
+                    key={babItem.namaBab || idx}
                     style={{
-                      width: '100%',
-                      background: kelasTuntasMemenuhi ? '#0d9488' : '#e2e8f0',
-                      color: kelasTuntasMemenuhi ? '#ffffff' : '#94a3b8',
-                      border: 'none',
-                      borderRadius: 10,
-                      padding: '10px 14px',
-                      fontSize: 12.5,
-                      fontWeight: 800,
-                      cursor: kelasTuntasMemenuhi ? 'pointer' : 'not-allowed',
+                      background: '#f8fafc',
+                      border: '1.5px dashed #cbd5e1',
+                      borderRadius: 14,
+                      padding: '16px 18px',
                       display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: 6,
+                      flexDirection: 'column',
+                      justifyContent: 'space-between',
+                      opacity: 0.7,
                     }}
                   >
-                    <span>{kelasTuntasMemenuhi ? '✨ Siapkan Soal Bab 2' : '🔒 Terkunci (Tuntaskan Bab 1 Dulu)'}</span>
-                  </button>
-                </div>
-              </div>
-
-              {/* BAB 3: GEOMETRI & RUANG */}
-              <div style={{
-                background: '#f8fafc',
-                border: '1.5px dashed #cbd5e1',
-                borderRadius: 14,
-                padding: '16px 18px',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'space-between',
-                opacity: 0.7,
-              }}>
-                <div>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-                    <span style={{ fontSize: 10.5, fontWeight: 800, padding: '3px 8px', borderRadius: 99, background: '#64748b', color: '#ffffff' }}>
-                      🔒 TERKUNCI
-                    </span>
-                    <span style={{ fontSize: 11, fontWeight: 600, color: '#64748b' }}>Pertemuan Minggu 3</span>
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                        <span style={{ fontSize: 10.5, fontWeight: 800, padding: '3px 8px', borderRadius: 99, background: '#64748b', color: '#ffffff' }}>
+                          🔒 TERKUNCI
+                        </span>
+                        <span style={{ fontSize: 11, fontWeight: 600, color: '#64748b' }}>Pertemuan Minggu {idx + 1}</span>
+                      </div>
+                      <h4 style={{ margin: '0 0 6px', fontSize: 15, fontWeight: 900, color: '#0f172a' }}>
+                        {babItem.ringkas || babItem.namaBab}
+                      </h4>
+                      <div style={{ fontSize: 12, color: '#475569', marginBottom: 12 }}>
+                        {babItem.deskripsi || 'Materi pengayaan pekan kurikulum resmi.'}
+                      </div>
+                      <div style={{ fontSize: 11.5, color: '#64748b', background: '#f1f5f9', padding: '10px 12px', borderRadius: 8, lineHeight: 1.45 }}>
+                        {idx === 2 ? 'Materi lanjutan setelah Bab 1 & Bab 2 tuntas.' : 'Materi pengayaan pekan lanjutan sebelum Try Out Akbar.'}
+                      </div>
+                    </div>
+                    <button type="button" disabled style={{ width: '100%', background: '#e2e8f0', color: '#94a3b8', border: 'none', borderRadius: 10, padding: '10px 14px', fontSize: 12.5, fontWeight: 800, cursor: 'not-allowed' }}>
+                      🔒 Terkunci
+                    </button>
                   </div>
-                  <h4 style={{ margin: '0 0 6px', fontSize: 15, fontWeight: 900, color: '#0f172a' }}>
-                    Bab 3: Geometri & Ruang
-                  </h4>
-                  <div style={{ fontSize: 12, color: '#475569', marginBottom: 12 }}>
-                    Tripel Pythagoras, Sudut Garis, Luas Cat Dinding, Volume Bangun Ruang
-                  </div>
-                  <div style={{ fontSize: 11.5, color: '#64748b', background: '#f1f5f9', padding: '10px 12px', borderRadius: 8, lineHeight: 1.45 }}>
-                    Materi lanjutan setelah Bab 1 & Bab 2 tuntas.
-                  </div>
-                </div>
-                <button type="button" disabled style={{ width: '100%', background: '#e2e8f0', color: '#94a3b8', border: 'none', borderRadius: 10, padding: '10px 14px', fontSize: 12.5, fontWeight: 800, cursor: 'not-allowed' }}>
-                  🔒 Terkunci
-                </button>
-              </div>
-
-              {/* BAB 4: DATA & PELUANG */}
-              <div style={{
-                background: '#f8fafc',
-                border: '1.5px dashed #cbd5e1',
-                borderRadius: 14,
-                padding: '16px 18px',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'space-between',
-                opacity: 0.7,
-              }}>
-                <div>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-                    <span style={{ fontSize: 10.5, fontWeight: 800, padding: '3px 8px', borderRadius: 99, background: '#64748b', color: '#ffffff' }}>
-                      🔒 TERKUNCI
-                    </span>
-                    <span style={{ fontSize: 11, fontWeight: 600, color: '#64748b' }}>Pertemuan Minggu 4</span>
-                  </div>
-                  <h4 style={{ margin: '0 0 6px', fontSize: 15, fontWeight: 900, color: '#0f172a' }}>
-                    Bab 4: Data & Peluang
-                  </h4>
-                  <div style={{ fontSize: 12, color: '#475569', marginBottom: 12 }}>
-                    Diagram Batang & Lingkaran, Rata-rata Gabungan, Peluang Teoretik
-                  </div>
-                  <div style={{ fontSize: 11.5, color: '#64748b', background: '#f1f5f9', padding: '10px 12px', borderRadius: 8, lineHeight: 1.45 }}>
-                    Materi akhir sebelum Try Out Akbar Asesmen Daerah & TKA.
-                  </div>
-                </div>
-                <button type="button" disabled style={{ width: '100%', background: '#e2e8f0', color: '#94a3b8', border: 'none', borderRadius: 10, padding: '10px 14px', fontSize: 12.5, fontWeight: 800, cursor: 'not-allowed' }}>
-                  🔒 Terkunci
-                </button>
-              </div>
+                );
+              })}
             </div>
           </div>
+            );
+          })()}
 
           {/* TABEL DIAGNOSA KETUNTASAN PER SISWA DI KELAS */}
           <div style={gayaKartu}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, flexWrap: 'wrap', gap: 10 }}>
               <div>
                 <h4 style={{ margin: 0, fontSize: 15, fontWeight: 900, color: '#0f172a' }}>
-                  👥 Buku Progres Ketuntasan Siswa: Bab 1 ({jenjangAktif === 'SMP' ? 'Bilangan Dasar SMP' : (jenjangAktif === 'SMA' ? 'Bilangan & Aljabar SMA' : 'Numerasi Dasar SD')})
+                  👥 Buku Progres Ketuntasan Siswa: Bab 1 ({babAktifObj?.ringkas || 'Materi Inti'} · {mapelAktif})
                 </h4>
                 <p style={{ margin: '2px 0 0', fontSize: 12, color: '#64748b' }}>
                   {modeSimulasiDemo

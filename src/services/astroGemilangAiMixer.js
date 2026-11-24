@@ -255,6 +255,236 @@ export const SILABUS_RESMI_SMP = {
   ],
 };
 
+export const SILABUS_RESMI_SMA_UTBK = {
+  'Pengetahuan Kuantitatif': [
+    {
+      babNomor: 1,
+      namaBab: 'Bab 1 · Aljabar & Operasi Bilangan Riil (Eksponen, Pecahan, Rasio & KaBaTaKu)',
+      ringkas: 'Bab 1: Aljabar & Aritmetika Cepat',
+      icon: '🔢',
+      deskripsi: 'Operasi aljabar pecahan bersusun, sifat eksponen radikal, rasio bertingkat, dan aritmetika cepat.',
+      subMateriList: [
+        { id: 'semua', label: '🎯 Semua Sub-Materi Aljabar Kuantitatif', kataKunci: ['aljabar', 'eksponen', 'pecahan', 'rasio'] },
+        { id: 'aljabar_dasar', label: '🔢 Operasi Aljabar & Pecahan Bersusun', kataKunci: ['aljabar', 'pecahan bersusun', 'faktorisasi', 'penyederhanaan'] },
+        { id: 'eksponen_akar', label: '⚡ Eksponen & Bentuk Akar Lanjutan', kataKunci: ['eksponen', 'pangkat', 'bentuk akar', 'radikal'] },
+        { id: 'rasio_aritmetika', label: '⚖️ Rasio Bertingkat & Perbandingan Cepat', kataKunci: ['rasio', 'perbandingan', 'aritmetika', 'kecepatan'] },
+      ],
+    },
+    {
+      babNomor: 2,
+      namaBab: 'Bab 2 · Persamaan, SPLDV & Pertidaksamaan Linear/Kuadrat',
+      ringkas: 'Bab 2: Persamaan & Sistem Linear',
+      icon: '📐',
+      deskripsi: 'Sistem persamaan dua/tiga variabel, akar persamaan kuadrat, daerah pertidaksamaan, dan fungsi linear.',
+      subMateriList: [
+        { id: 'semua', label: '🎯 Semua Sub-Materi Persamaan', kataKunci: ['persamaan', 'spldv', 'kuadrat', 'pertidaksamaan'] },
+        { id: 'spldv_spl3v', label: '🚗 SPLDV & Sistem Linear Bertingkat', kataKunci: ['spldv', 'spl3v', 'eliminasi', 'substitusi'] },
+        { id: 'pers_kuadrat', label: '📈 Persamaan & Pertidaksamaan Kuadrat', kataKunci: ['kuadrat', 'akar kuadrat', 'diskriminan', 'garis bilangan'] },
+      ],
+    },
+    {
+      babNomor: 3,
+      namaBab: 'Bab 3 · Geometri Analitik, Sudut, Garis & Bangun Datar/Ruang',
+      ringkas: 'Bab 3: Geometri & Koordinat',
+      icon: '📐',
+      deskripsi: 'Gradien garis, titik potong koordinat kartesius, luas bangun datar gabungan, dan volume geometri ruang.',
+      subMateriList: [
+        { id: 'semua', label: '🎯 Semua Sub-Materi Geometri', kataKunci: ['geometri', 'sudut', 'koordinat', 'luas', 'volume'] },
+        { id: 'garis_sudut', label: '📏 Garis, Sudut & Geometri Datar', kataKunci: ['garis sejajar', 'sudut', 'segitiga', 'lingkaran'] },
+        { id: 'koordinat_analitik', label: '📍 Titik Koordinat & Gradien Garis', kataKunci: ['koordinat', 'kartesius', 'gradien', 'titik potong'] },
+      ],
+    },
+    {
+      babNomor: 4,
+      namaBab: 'Bab 4 · Statistika Deskriptif, Kombinatorika & Analisis Peluang',
+      ringkas: 'Bab 4: Data, Kombinatorika & Peluang',
+      icon: '📊',
+      deskripsi: 'Rata-rata gabungan, median, modus, permutasi, kombinasi, dan kaidah pencacahan peluang majemuk.',
+      subMateriList: [
+        { id: 'semua', label: '🎯 Semua Sub-Materi Data & Peluang', kataKunci: ['statistika', 'kombinatorika', 'peluang', 'rata-rata'] },
+        { id: 'statistika_dasar', label: '📊 Rata-rata Gabungan & Ukuran Penyebaran', kataKunci: ['rata-rata', 'median', 'modus', 'jangkauan'] },
+        { id: 'kaidah_pencacahan', label: '🎲 Permutasi, Kombinasi & Peluang', kataKunci: ['permutasi', 'kombinasi', 'peluang', 'dadu', 'koin'] },
+      ],
+    },
+  ],
+
+  'Penalaran Matematika': [
+    {
+      babNomor: 1,
+      namaBab: 'Bab 1 · Penalaran Masalah Nyata & Pemodelan Aritmetika',
+      ringkas: 'Bab 1: Pemodelan Aritmetika',
+      icon: '💡',
+      deskripsi: 'Penerapan konsep perbandingan berbalik nilai, efisiensi kerja bersama, dan laju perubahan linimasa.',
+      subMateriList: [{ id: 'semua', label: '🎯 Semua Masalah Nyata', kataKunci: ['pemodelan', 'laju', 'waktu kerja', 'perbandingan'] }],
+    },
+    {
+      babNomor: 2,
+      namaBab: 'Bab 2 · Optimasi Masalah, Keuangan & Perencanaan Logistik',
+      ringkas: 'Bab 2: Optimasi & Perencanaan',
+      icon: '📈',
+      deskripsi: 'Analisis laba rugi bertingkat, kapasitas angkut logistik, dan model matematika pemrograman linear.',
+      subMateriList: [{ id: 'semua', label: '🎯 Semua Optimasi', kataKunci: ['optimasi', 'biaya minimum', 'laba maksimum'] }],
+    },
+    {
+      babNomor: 3,
+      namaBab: 'Bab 3 · Analisis Data Grafis, Infografis & Tren Kuantitatif',
+      ringkas: 'Bab 3: Interpretasi Grafik & Data',
+      icon: '📊',
+      deskripsi: 'Membaca tren data ganda, perbandingan laju pertumbuhan grafik, dan prediksi nilai masa depan.',
+      subMateriList: [{ id: 'semua', label: '🎯 Semua Infografis', kataKunci: ['grafik', 'diagram batang', 'tren', 'prediksi'] }],
+    },
+    {
+      babNomor: 4,
+      namaBab: 'Bab 4 · Keputusan Kuantitatif & Logika Solusi Kompleks',
+      ringkas: 'Bab 4: Pengambilan Keputusan',
+      icon: '⚖️',
+      deskripsi: 'Evaluasi kecukupan data (1) dan (2), penentuan kebenaran pernyataan majemuk, dan verifikasi hipotesis.',
+      subMateriList: [{ id: 'semua', label: '🎯 Semua Evaluasi Solusi', kataKunci: ['kecukupan data', 'pernyataan majemuk'] }],
+    },
+  ],
+
+  'Pemahaman Bacaan & Menulis': [
+    {
+      babNomor: 1,
+      namaBab: 'Bab 1 · Kaidah Ejaan PUEBI, Tanda Baca, Huruf Kapital & Kata Serapan',
+      ringkas: 'Bab 1: Ejaan & Kaidah Kebahasaan',
+      icon: '✍️',
+      deskripsi: 'Ketepatan penggunaan tanda koma, titik dua, huruf kapital, penulisan kata berimbuhan, dan kata baku.',
+      subMateriList: [{ id: 'semua', label: '🎯 Semua Ejaan PUEBI', kataKunci: ['ejaan', 'tanda baca', 'huruf kapital', 'kata baku'] }],
+    },
+    {
+      babNomor: 2,
+      namaBab: 'Bab 2 · Kalimat Efektif, Kohesi Paragraf & Gagasan Utama',
+      ringkas: 'Bab 2: Kalimat Efektif & Paragraf',
+      icon: '📖',
+      deskripsi: 'Kehematan kata, kelogisan struktur SPOK, kepaduan paragraf deduktif-induktif, dan perbaikan kalimat rancu.',
+      subMateriList: [{ id: 'semua', label: '🎯 Semua Kalimat Efektif', kataKunci: ['kalimat efektif', 'kohesi', 'paragraf', 'spok'] }],
+    },
+    {
+      babNomor: 3,
+      namaBab: 'Bab 3 · Hubungan Logis Antar-Paragraf, Sebab-Akibat & Konjungsi',
+      ringkas: 'Bab 3: Hubungan Antar-Paragraf',
+      icon: '🔗',
+      deskripsi: 'Konjungsi antarkalimat dan antarklausa, hubungan kausalitas, penegasan argumen, dan sintesis wacana.',
+      subMateriList: [{ id: 'semua', label: '🎯 Semua Konjungsi Antar-Paragraf', kataKunci: ['konjungsi', 'kausalitas', 'hubungan logis'] }],
+    },
+    {
+      babNomor: 4,
+      namaBab: 'Bab 4 · Penalaran Kritis, Bias Informasi & Evaluasi Kesimpulan Teks',
+      ringkas: 'Bab 4: Penalaran Kritis & Evaluasi',
+      icon: '🧠',
+      deskripsi: 'Mengidentifikasi asumsi tersembunyi, kelemahan metodologi bacaan ilmiah, dan validitas simpulan penulis.',
+      subMateriList: [{ id: 'semua', label: '🎯 Semua Evaluasi Teks', kataKunci: ['penalaran kritis', 'asumsi', 'bias', 'simpulan'] }],
+    },
+  ],
+
+  'Penalaran Umum': [
+    {
+      babNomor: 1,
+      namaBab: 'Bab 1 · Logika Deduktif (Silogisme, Modus Ponens & Modus Tollens)',
+      ringkas: 'Bab 1: Logika Deduktif',
+      icon: '💡',
+      deskripsi: 'Penarikan simpulan mutlak dari premis umum dan premis khusus, implikasi logis, dan ekuivalensi pernyataan.',
+      subMateriList: [{ id: 'semua', label: '🎯 Semua Logika Deduktif', kataKunci: ['silogisme', 'premis', 'modus ponens', 'modus tollens'] }],
+    },
+    {
+      babNomor: 2,
+      namaBab: 'Bab 2 · Logika Induktif, Generalisasi & Pola Sebab-Akibat',
+      ringkas: 'Bab 2: Logika Induktif & Kausalitas',
+      icon: '🔍',
+      deskripsi: 'Pernyataan memperkuat atau memperlemah argumen, analogi induktif, dan hubungan sebab-akibat fenomena.',
+      subMateriList: [{ id: 'semua', label: '🎯 Semua Logika Induktif', kataKunci: ['induktif', 'memperlemah', 'memperkuat', 'argumen'] }],
+    },
+    {
+      babNomor: 3,
+      namaBab: 'Bab 3 · Penalaran Analitis (Posisi Tempat Duduk, Urutan & Penjadwalan)',
+      ringkas: 'Bab 3: Penalaran Posisi & Urutan',
+      icon: '🗺️',
+      deskripsi: 'Pemecahan masalah penataan bersyarat, perankingan bertingkat, dan kombinasi jadwal kegiatan.',
+      subMateriList: [{ id: 'semua', label: '🎯 Semua Penalaran Analitis', kataKunci: ['posisi', 'urutan', 'jadwal', 'perankingan'] }],
+    },
+    {
+      babNomor: 4,
+      namaBab: 'Bab 4 · Penalaran Kuantitatif Simbolik & Pola Barisan Figuratif',
+      ringkas: 'Bab 4: Kuantitatif & Barisan Simbol',
+      icon: '🔢',
+      deskripsi: 'Operasi bilangan bertanda baru, pola aritmetika tersembunyi dalam diagram, dan deret angka/huruf.',
+      subMateriList: [{ id: 'semua', label: '🎯 Semua Pola Simbolik', kataKunci: ['simbolik', 'operasi baru', 'deret angka', 'figuratif'] }],
+    },
+  ],
+};
+
+export const SILABUS_RESMI_SD = {
+  Matematika: [
+    {
+      babNomor: 1,
+      namaBab: 'Bab 1 · Operasi Hitung Campuran Bilangan Cacah & Pecahan',
+      ringkas: 'Bab 1: Bilangan Cacah & Pecahan',
+      icon: '🔢',
+      deskripsi: 'Penjumlahan, pengurangan, perkalian, pembagian bilangan cacah dan pecahan biasa/desimal.',
+      subMateriList: [{ id: 'semua', label: '🎯 Semua Operasi Dasar', kataKunci: ['cacah', 'pecahan', 'operasi hitung'] }],
+    },
+    {
+      babNomor: 2,
+      namaBab: 'Bab 2 · FPB, KPK & Pola Bilangan Sederhana',
+      ringkas: 'Bab 2: FPB, KPK & Pola Bilangan',
+      icon: '🧮',
+      deskripsi: 'Faktor persekutuan terbesar, kelipatan persekutuan terkecil, dan pembagian benda sama banyak.',
+      subMateriList: [{ id: 'semua', label: '🎯 Semua FPB & KPK', kataKunci: ['fpb', 'kpk', 'pola bilangan'] }],
+    },
+    {
+      babNomor: 3,
+      namaBab: 'Bab 3 · Geometri Dasar, Keliling & Luas Bangun Datar',
+      ringkas: 'Bab 3: Geometri & Luas Datar',
+      icon: '📐',
+      deskripsi: 'Keliling dan luas persegi, persegi panjang, segitiga, trapesium, dan lingkaran dasar.',
+      subMateriList: [{ id: 'semua', label: '🎯 Semua Geometri SD', kataKunci: ['keliling', 'luas', 'bangun datar'] }],
+    },
+    {
+      babNomor: 4,
+      namaBab: 'Bab 4 · Pengumpulan Data & Membaca Diagram Batang',
+      ringkas: 'Bab 4: Data & Diagram Batang',
+      icon: '📊',
+      deskripsi: 'Tabel frekuensi sederhana, diagram batang, piktogram, dan menentukan nilai tertinggi/terendah.',
+      subMateriList: [{ id: 'semua', label: '🎯 Semua Pengolahan Data', kataKunci: ['diagram batang', 'tabel data', 'frekuensi'] }],
+    },
+  ],
+  'Bahasa Indonesia': [
+    {
+      babNomor: 1,
+      namaBab: 'Bab 1 · Membaca Pemahaman Teks Cerita & Watak Tokoh',
+      ringkas: 'Bab 1: Teks Cerita & Tokoh',
+      icon: '📖',
+      deskripsi: 'Menentukan tokoh utama, sifat watak tokoh, latar tempat cerita fabel atau cerita anak.',
+      subMateriList: [{ id: 'semua', label: '🎯 Semua Teks Cerita', kataKunci: ['tokoh', 'watak', 'cerita anak', 'latar'] }],
+    },
+    {
+      babNomor: 2,
+      namaBab: 'Bab 2 · Menemukan Informasi Tersurat (5W1H) & Gagasan Pokok',
+      ringkas: 'Bab 2: Informasi Tersurat (5W1H)',
+      icon: '📑',
+      deskripsi: 'Menjawab pertanyaan apa, siapa, di mana, kapan, mengapa, bagaimana dari teks petunjuk/bacaan.',
+      subMateriList: [{ id: 'semua', label: '🎯 Semua Informasi 5W1H', kataKunci: ['5w1h', 'siapa', 'kapan', 'di mana', 'mengapa'] }],
+    },
+    {
+      babNomor: 3,
+      namaBab: 'Bab 3 · Huruf Kapital & Tanda Baca Dasar Titik/Koma',
+      ringkas: 'Bab 3: Huruf Kapital & Tanda Baca',
+      icon: '✍️',
+      deskripsi: 'Penulisan huruf besar awal kalimat, nama orang/tempat, dan penggunaan tanda titik, koma, tanya.',
+      subMateriList: [{ id: 'semua', label: '🎯 Semua Ejaan Dasar', kataKunci: ['huruf kapital', 'tanda baca', 'titik koma'] }],
+    },
+    {
+      babNomor: 4,
+      namaBab: 'Bab 4 · Menulis Paragraf Sederhana & Menentukan Pesan Moral',
+      ringkas: 'Bab 4: Paragraf & Pesan Moral',
+      icon: '🌱',
+      deskripsi: 'Menyusun kalimat acak menjadi paragraf padu dan menyimpulkan nasihat kebaikan dari cerita.',
+      subMateriList: [{ id: 'semua', label: '🎯 Semua Paragraf & Pesan', kataKunci: ['paragraf padu', 'pesan moral', 'amanat'] }],
+    },
+  ],
+};
+
 // ==============================================================================
 // 2. KATALOG GENERATOR SOAL HOTS AI (SINTESIS PENGAYAAN BERSTANDAR TKA 2026/2027)
 // ==============================================================================
@@ -698,16 +928,39 @@ export function kurasiDanMixSoalAi({
  * Mengambil daftar Bab Kurikulum Resmi dengan total jumlah soal dari bankSoal
  */
 export function ambilDaftarBab(jenjang = 'SMP', mapel = 'Matematika', bankSoal = []) {
-  const mapelNorm = mapel.toLowerCase().includes('indonesia') ? 'Bahasa Indonesia' : 'Matematika';
-  const silabusMapel = SILABUS_RESMI_SMP[mapelNorm];
+  const jenjangNorm = String(jenjang || 'SMP').toUpperCase();
+  const mapelNorm = String(mapel || 'Matematika').toLowerCase();
 
-  if (jenjang === 'SMP' && silabusMapel) {
-    return silabusMapel.map((bab) => {
-      const jumlah = bankSoal.filter((s) => {
+  let silabusPilihan = null;
+
+  if (jenjangNorm === 'SMP') {
+    const kunci = mapelNorm.includes('indonesia') ? 'Bahasa Indonesia' : 'Matematika';
+    silabusPilihan = SILABUS_RESMI_SMP[kunci];
+  } else if (jenjangNorm === 'SMA' || jenjangNorm === 'UTBK') {
+    if (SILABUS_RESMI_SMA_UTBK[mapel]) {
+      silabusPilihan = SILABUS_RESMI_SMA_UTBK[mapel];
+    } else if (mapelNorm.includes('indonesia') || mapelNorm.includes('bacaan') || mapelNorm.includes('pbm')) {
+      silabusPilihan = SILABUS_RESMI_SMA_UTBK['Pemahaman Bacaan & Menulis'];
+    } else if (mapelNorm.includes('penalaran umum') || mapelNorm.includes('pu')) {
+      silabusPilihan = SILABUS_RESMI_SMA_UTBK['Penalaran Umum'];
+    } else if (mapelNorm.includes('penalaran matematika') || mapelNorm.includes('pm')) {
+      silabusPilihan = SILABUS_RESMI_SMA_UTBK['Penalaran Matematika'];
+    } else {
+      silabusPilihan = SILABUS_RESMI_SMA_UTBK['Pengetahuan Kuantitatif'];
+    }
+  } else if (jenjangNorm === 'SD') {
+    const kunci = mapelNorm.includes('indonesia') ? 'Bahasa Indonesia' : 'Matematika';
+    silabusPilihan = SILABUS_RESMI_SD[kunci];
+  }
+
+  if (silabusPilihan && silabusPilihan.length > 0) {
+    return silabusPilihan.map((bab) => {
+      const jumlah = (bankSoal || []).filter((s) => {
         const sj = String(s.jenjang || '').toUpperCase();
-        if (s.jenjang && !sj.includes('SMP')) return false;
+        if (s.jenjang && !sj.includes(jenjangNorm)) return false;
         const sm = String(s.mataPelajaran || s.mapel || '').toLowerCase();
-        if (mapel.toLowerCase().includes('matematika') && !sm.includes('matematika') && !sm.includes('numerasi') && s.subtesKode !== 'MTK') return false;
+        if (mapelNorm.includes('matematika') && !sm.includes('matematika') && !sm.includes('numerasi') && s.subtesKode !== 'MTK') return false;
+        if (mapelNorm.includes('indonesia') && !sm.includes('indonesia') && !sm.includes('bacaan') && s.subtesKode !== 'BIN' && s.subtesKode !== 'PBM') return false;
         return s.babNomor === bab.babNomor;
       }).length;
 
