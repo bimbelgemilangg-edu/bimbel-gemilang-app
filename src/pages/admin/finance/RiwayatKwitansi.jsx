@@ -65,8 +65,9 @@ const RiwayatKwitansi = () => {
         .map(d => ({ id: d.id, ...d.data() }))
         // Kwitansi = bukti uang MASUK yang BENERAN diterima. Setor kas
         // (type 'Transfer') punya bukti sendiri (Bukti Setor Kas di tab
-        // Tutup Kasir), dan komitmen Cicilan belum ada uangnya.
-        .filter(l => l.type === 'Pemasukan' && l.method !== 'Cicilan')
+        // Tutup Kasir), dan komitmen Cicilan nominal 0 belum ada uangnya.
+        // Cicilan yang sudah dibayar (amount > 0) otomatis berhak cetak kwitansi.
+        .filter(l => l.type === 'Pemasukan' && (l.method !== 'Cicilan' || (parseInt(l.amount || 0) > 0)))
         .sort((a, b) => {
           const dc = String(b.date || '').localeCompare(String(a.date || ''));
           if (dc !== 0) return dc;
@@ -244,7 +245,14 @@ const RiwayatKwitansi = () => {
                       {l.studentId && <div style={{ fontSize: 9.5, color: '#94a3b8' }}>{l.studentId}</div>}
                     </td>
                     <td style={{ ...styles.td, maxWidth: 240 }}>
-                      <div style={{ fontSize: 11.5, color: '#334155', fontWeight: 600 }}>{l.category || '-'}</div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                        <span style={{ fontSize: 11.5, color: '#334155', fontWeight: 600 }}>{l.category || '-'}</span>
+                        {(l.isCicilan || l.category === 'SPP / Cicilan' || (l.note && l.note.toLowerCase().includes('cicilan'))) && (
+                          <span style={{ fontSize: 9.5, fontWeight: 800, color: '#0f766e', background: '#ccfbf1', padding: '1px 6px', borderRadius: 4 }}>
+                            📋 Cicilan{l.cicilanKe ? ` ke-${l.cicilanKe}` : ''}
+                          </span>
+                        )}
+                      </div>
                       {l.note && <div style={{ fontSize: 10, color: '#94a3b8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={l.note}>{l.note}</div>}
                     </td>
                     <td style={{ ...styles.td, textAlign: 'right', fontWeight: 800, color: '#16a34a', whiteSpace: 'nowrap' }}>
@@ -257,22 +265,30 @@ const RiwayatKwitansi = () => {
                       {l.refTransfer && <div style={{ fontSize: 9, color: '#1d4ed8', marginTop: 2 }}>ref: {l.refTransfer}</div>}
                     </td>
                     <td style={{ ...styles.td, textAlign: 'center' }}>
-                      {l.buktiUrl ? (
+                      <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, justifyContent: 'center' }}>
                         <button
                           type="button"
-                          onClick={() => setPreviewBukti(l.buktiUrl)}
-                          style={{
-                            display: 'inline-flex', alignItems: 'center', gap: 4,
-                            padding: '5px 10px', borderRadius: 8, border: '1px solid #bfdbfe',
-                            background: '#eff6ff', color: '#1d4ed8', fontWeight: 700, fontSize: 11, cursor: 'pointer'
-                          }}
-                          title="Lihat foto bukti transfer"
+                          onClick={() => cetakSatu(l)}
+                          style={styles.btnCetak}
+                          title={l.noKwitansi ? `Cetak Kwitansi (${l.noKwitansi})` : 'Cetak Kwitansi'}
                         >
-                          📎 Lihat Bukti
+                          <Printer size={12} /> Cetak
                         </button>
-                      ) : (
-                        <span style={{ fontSize: 11, color: '#64748b', fontWeight: 600 }}>✅ Tercatat</span>
-                      )}
+                        {l.buktiUrl && (
+                          <button
+                            type="button"
+                            onClick={() => setPreviewBukti(l.buktiUrl)}
+                            style={{
+                              display: 'inline-flex', alignItems: 'center', gap: 4,
+                              padding: '5px 8px', borderRadius: 8, border: '1px solid #bfdbfe',
+                              background: '#eff6ff', color: '#1d4ed8', fontWeight: 700, fontSize: 11, cursor: 'pointer'
+                            }}
+                            title="Lihat foto bukti transfer"
+                          >
+                            📎 Bukti
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}

@@ -580,15 +580,32 @@ const TransactionHistory = () => {
         return alert('❌ Gagal membuat nomor kwitansi: ' + e.message);
       }
     }
+    const noteLower = String(t.note || t.category || '').toLowerCase();
+    const isCicilan = Boolean(
+      t.isCicilan ||
+      t.category === 'SPP / Cicilan' ||
+      t.method === 'Cicilan' ||
+      noteLower.includes('cicilan') ||
+      noteLower.includes('angsuran')
+    );
+    let cicilanKe = t.cicilanKe || null;
+    if (!cicilanKe) {
+      const match = noteLower.match(/cicilan\s+(?:ke-?|bulan\s+ke-?)(\d+)/i);
+      if (match) cicilanKe = parseInt(match[1]);
+    }
+
     cetakKwitansi({
       nomor,
       tanggal: t.date || '',
       diterimaDari: t.namaSiswa || t.note || 'Pembayaran Umum',
       studentId: t.studentId || '',
       jumlah: parseInt(t.amount) || 0,
-      keperluan: t.note || t.category || 'Pembayaran',
+      keperluan: t.note || t.category || (isCicilan ? 'Pembayaran Cicilan' : 'Pembayaran'),
       metode: t.method || '-',
       refTransfer: t.refTransfer || '',
+      isCicilan,
+      cicilanKe,
+      sisaTagihan: t.sisaTagihan != null ? parseInt(t.sisaTagihan) : null,
     });
   };
 
@@ -889,8 +906,18 @@ const TransactionHistory = () => {
                     <td style={{...styles.td, textAlign: 'center'}}>
                       <div style={{display: 'flex', gap: 4, justifyContent: 'center'}}>
                         {/* 🔥 BARU (modul kwitansi): tombol cetak kwitansi di
-                            tiap pemasukan riil (bukan komitmen cicilan, bukan
+                            tiap pemasukan riil (bukan komitmen cicilan kosong, bukan
                             setor kas). */}
+                        {t.type === 'Pemasukan' && (parseInt(t.amount) || 0) > 0 && (
+                          <button
+                            type="button"
+                            onClick={() => cetakKwitansiLog(t)}
+                            style={styles.btnIcon('#7c3aed')}
+                            title={t.noKwitansi ? `Cetak Kwitansi (${t.noKwitansi})` : 'Cetak Kwitansi'}
+                          >
+                            <Printer size={13} />
+                          </button>
+                        )}
 
                         <button onClick={() => openEdit(t)} style={styles.btnIcon('#f59e0b')} title="Edit">
                           <Edit3 size={13} />

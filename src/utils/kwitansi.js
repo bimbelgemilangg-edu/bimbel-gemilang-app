@@ -156,16 +156,36 @@ export const cetakKwitansi = (data) => {
 };
 
 // Bangun data kwitansi dari dokumen finance_logs (mentah/normalisasi).
-export const kwitansiDariLog = (log) => ({
-  nomor: log.noKwitansi || log.nomor || '',
-  tanggal: log.date || log.tanggal || '',
-  diterimaDari: log.namaSiswa || 'Siswa',
-  studentId: log.studentId || '',
-  jumlah: parseInt(log.amount || log.jumlah || 0),
-  keperluan: log.note || log.category || 'Pembayaran',
-  metode: log.methodAsli || log.method || '-',
-  refTransfer: log.refTransfer || '',
-});
+export const kwitansiDariLog = (log) => {
+  const noteLower = String(log.note || log.category || '').toLowerCase();
+  const isCicilan = Boolean(
+    log.isCicilan ||
+    log.category === 'SPP / Cicilan' ||
+    log.method === 'Cicilan' ||
+    noteLower.includes('cicilan') ||
+    noteLower.includes('angsuran')
+  );
+
+  let cicilanKe = log.cicilanKe || null;
+  if (!cicilanKe) {
+    const match = noteLower.match(/cicilan\s+(?:ke-?|bulan\s+ke-?)(\d+)/i);
+    if (match) cicilanKe = parseInt(match[1]);
+  }
+
+  return {
+    nomor: log.noKwitansi || log.nomor || '',
+    tanggal: log.date || log.tanggal || '',
+    diterimaDari: log.namaSiswa || 'Siswa',
+    studentId: log.studentId || '',
+    jumlah: parseInt(log.amount || log.jumlah || 0),
+    keperluan: log.note || log.category || (isCicilan ? 'Pembayaran Cicilan' : 'Pembayaran'),
+    metode: log.methodAsli || log.method || '-',
+    refTransfer: log.refTransfer || '',
+    isCicilan,
+    cicilanKe,
+    sisaTagihan: log.sisaTagihan != null ? parseInt(log.sisaTagihan) : null,
+  };
+};
 
 // ---------- RINGKASAN RIWAYAT KWITANSI (buat dicetak) ----------
 // rows: array log; periodeLabel: mis. "September 2026"

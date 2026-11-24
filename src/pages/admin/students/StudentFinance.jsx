@@ -1082,15 +1082,83 @@ const StudentFinance = () => {
         return alert('❌ Gagal membuat nomor: ' + e.message);
       }
     }
+    const noteLower = String(log.note || log.category || '').toLowerCase();
+    const isCic = log.category === 'SPP / Cicilan' ||
+                  log.method === 'Cicilan' ||
+                  log.isCicilan === true ||
+                  noteLower.includes('cicilan') ||
+                  noteLower.includes('angsuran');
+    let cicilanKe = log.cicilanKe || null;
+    if (!cicilanKe) {
+      const match = noteLower.match(/cicilan\s+(?:ke-?|bulan\s+ke-?)(\d+)/i);
+      if (match) cicilanKe = parseInt(match[1]);
+    }
     cetakKwitansi({
       nomor,
       tanggal: log.date || '',
       diterimaDari: log.namaSiswa || student?.nama || 'Siswa',
       studentId: log.studentId || student?.studentId || '',
       jumlah: parseInt(log.amount) || 0,
-      keperluan: log.note || log.category || 'Pembayaran',
+      keperluan: log.note || log.category || (isCic ? 'Pembayaran Cicilan' : 'Pembayaran'),
       metode: log.method || '-',
       refTransfer: log.refTransfer || '',
+      isCicilan: isCic,
+      cicilanKe,
+      sisaTagihan: log.sisaTagihan != null ? parseInt(log.sisaTagihan) : Math.max(0, tagihan?.sisaTagihan || 0),
+    });
+  };
+
+  // ===== 🔥 CETAK KWITANSI LANGSUNG DARI BARIS JADWAL CICILAN =====
+  const cetakKwitansiCicilanItem = async (item, idx) => {
+    let nomor = item.noKwitansi;
+    const bulanKe = item.bulanKe || (idx + 1);
+
+    // Cari di financeLogs apakah ada log pembayaran untuk cicilan ini
+    const logCocok = (financeLogs || []).find(l =>
+      l.type === 'Pemasukan' &&
+      (l.cicilanKe === bulanKe || String(l.note || '').toLowerCase().includes(`cicilan ke-${bulanKe}`))
+    );
+
+    if (!nomor && logCocok?.noKwitansi) {
+      nomor = logCocok.noKwitansi;
+    }
+
+    if (!nomor) {
+      if (!window.confirm(`Cicilan ke-${bulanKe} belum memiliki nomor kwitansi. Buatkan nomor resmi sekarang lalu cetak?`)) return;
+      try {
+        const tglStr = item.tanggalBayar || logCocok?.date || tanggalLokalHariIni();
+        const tglObj = new Date(`${tglStr}T00:00:00`);
+        nomor = await ambilNomorKwitansiBerikutnya(tglObj);
+
+        // Simpan nomor kwitansi ke dokumen tagihan agar permanen
+        if (tagihan?.id) {
+          const detailAman = Array.isArray(tagihan.detailCicilan) ? [...tagihan.detailCicilan] : [];
+          if (detailAman[idx]) {
+            detailAman[idx] = { ...detailAman[idx], noKwitansi: nomor };
+            await updateDoc(doc(db, "finance_tagihan", tagihan.id), { detailCicilan: detailAman });
+          }
+        }
+        if (logCocok?.id) {
+          await updateDoc(doc(db, "finance_logs", logCocok.id), { noKwitansi: nomor });
+        }
+      } catch (e) {
+        return showAlert('❌ Gagal membuat nomor kwitansi: ' + e.message);
+      }
+    }
+
+    cetakKwitansi({
+      nomor,
+      tanggal: item.tanggalBayar || logCocok?.date || tanggalLokalHariIni(),
+      diterimaDari: student?.nama || 'Siswa',
+      studentId: student?.studentId || id,
+      jumlah: parseInt(item.nominal) || 0,
+      keperluan: `Pembayaran Cicilan ke-${bulanKe} SPP ${student?.nama || ''}`,
+      metode: item.metode || logCocok?.method || 'Tunai',
+      refTransfer: logCocok?.refTransfer || '',
+      isCicilan: true,
+      cicilanKe: bulanKe,
+      totalCicilan: tagihan?.detailCicilan?.length || 0,
+      sisaTagihan: Math.max(0, tagihan?.sisaTagihan || 0),
     });
   };
 
@@ -1498,6 +1566,9 @@ const StudentFinance = () => {
         refTransfer: payRef.trim(),
         buktiUrl,
         noKwitansi,
+        isCicilan: true,
+        cicilanKe: payingIndex !== null ? (payingIndex + 1) : null,
+        sisaTagihan: Math.max(0, (tagihan?.sisaTagihan || 0) - nominal),
         statusRekonsiliasi: payMethod === 'Transfer' ? 'pending' : '',
         createdAt: serverTimestamp()
       });
@@ -1507,7 +1578,13 @@ const StudentFinance = () => {
       if (payingIndex !== null && tagihan) {
         const newDetails = [...detailCicilanAman];
         if (newDetails[payingIndex]) {
-          newDetails[payingIndex] = { ...newDetails[payingIndex], status: 'Lunas', tanggalBayar: today };
+          newDetails[payingIndex] = {
+            ...newDetails[payingIndex],
+            status: 'Lunas',
+            tanggalBayar: today,
+            noKwitansi: noKwitansi,
+            metode: payMethod,
+          };
         }
         batch.update(doc(db, "finance_tagihan", tagihan.id), {
           detailCicilan: newDetails,
@@ -1524,7 +1601,8 @@ const StudentFinance = () => {
         let newDetails;
         if (nominal >= sisaSebelumnya) {
           newDetails = detailCicilanAman.map(c => ({
-            ...c, status: 'Lunas', tanggalBayar: c.status === 'Belum Lunas' ? today : c.tanggalBayar
+            ...c, status: 'Lunas', tanggalBayar: c.status === 'Belum Lunas' ? today : c.tanggalBayar,
+            noKwitansi: c.noKwitansi || noKwitansi, metode: c.metode || payMethod
           }));
         } else {
           let sisaUang = nominal;
@@ -1533,7 +1611,7 @@ const StudentFinance = () => {
             const nomCicilan = Number(c.nominal) || 0;
             if (sisaUang >= nomCicilan && nomCicilan > 0) {
               sisaUang -= nomCicilan;
-              return { ...c, status: 'Lunas', tanggalBayar: today };
+              return { ...c, status: 'Lunas', tanggalBayar: today, noKwitansi: c.noKwitansi || noKwitansi, metode: c.metode || payMethod };
             }
             return c;
           });
@@ -1546,8 +1624,8 @@ const StudentFinance = () => {
 
       showAlert(`✅ Pembayaran Rp ${nominal.toLocaleString()} berhasil! Kwitansi ${noKwitansi} dibuat.`);
       setShowPayModal(false);
-      // 🔥 BARU (modul kwitansi): langsung tawarkan cetak -- tugas admin
-      // selesai begitu uang tercatat & kwitansi diserahkan ke pembayar.
+      // 🔥 BARU (modul kwitansi): tawarkan cetak kwitansi resmi cicilan
+      const sisaSetelahBayar = Math.max(0, (tagihan?.sisaTagihan || 0) - nominal);
       const dataCetak = {
         nomor: noKwitansi,
         tanggal: today,
@@ -1555,15 +1633,27 @@ const StudentFinance = () => {
         studentId: kodeUnik,
         jumlah: nominal,
         keperluan: payingIndex !== null
-          ? `Pembayaran cicilan ke-${payingIndex + 1} SPP ${student?.nama || ''}`
+          ? `Pembayaran Cicilan ke-${payingIndex + 1} SPP ${student?.nama || ''}`
           : `Pelunasan tagihan SPP ${student?.nama || ''}`,
         metode: payMethod,
         refTransfer: payRef.trim(),
+        isCicilan: true,
+        cicilanKe: payingIndex !== null ? (payingIndex + 1) : null,
+        totalCicilan: detailCicilanAman.length,
+        sisaTagihan: sisaSetelahBayar,
       };
       setPayRef('');
       setPayBukti(null);
       fetchData();
-      // Cetak kwitansi dinonaktifkan di area admin
+
+      if (window.confirm(
+        `✅ Pembayaran cicilan Rp ${nominal.toLocaleString()} berhasil dibukukan!\n\n` +
+        `Kwitansi Resmi ${noKwitansi} telah terbit.\n` +
+        (sisaSetelahBayar > 0 ? `Sisa tagihan cicilan: Rp ${sisaSetelahBayar.toLocaleString()}.\n\n` : `Tagihan SPP kini LUNAS PENUH! 🎉\n\n`) +
+        `Cetak kwitansi cicilan ini sekarang?`
+      )) {
+        cetakKwitansi(dataCetak);
+      }
     } catch (error) { 
       console.error(error); 
       showAlert('❌ Gagal: ' + error.message); 
@@ -2149,7 +2239,28 @@ const StudentFinance = () => {
                       <div style={styles.cicilanRight}>
                         <strong style={styles.cicilanAmount}>Rp {item.nominal?.toLocaleString()}</strong>
                         {item.status === 'Lunas' ? (
-                          <span style={styles.badgeLunas}>✅ Lunas</span>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                            <span style={styles.badgeLunas}>✅ Lunas</span>
+                            <button
+                              onClick={() => cetakKwitansiCicilanItem(item, idx)}
+                              style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: 4,
+                                padding: '4px 8px',
+                                borderRadius: 6,
+                                border: '1px solid #7c3aed',
+                                background: '#f5f3ff',
+                                color: '#6d28d9',
+                                fontSize: 11,
+                                fontWeight: 700,
+                                cursor: 'pointer',
+                              }}
+                              title="Cetak Kwitansi Cicilan Ini"
+                            >
+                              <Printer size={11} /> Kwitansi
+                            </button>
+                          </div>
                         ) : (
                           <button onClick={() => openBayarModal(idx)} style={styles.btnBayarCicilan}>Bayar</button>
                         )}

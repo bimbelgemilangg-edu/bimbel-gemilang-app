@@ -30,10 +30,19 @@ export const cssAturanPage = (kertas = KERTAS_A4) =>
 
 // ---------- TEMPLATE KWITANSI ----------
 // data: { nomor, tanggal, diterimaDari, studentId, jumlah, keperluan,
-//         metode, refTransfer, catatanTambahan, penandaTangan }
+//         metode, refTransfer, catatanTambahan, penandaTangan,
+//         isCicilan, cicilanKe, totalCicilan, sisaTagihan }
 export const htmlKwitansi = (data) => {
   const jumlah = parseInt(data.jumlah) || 0;
   const logo = '/pwa-192x192.png';
+  const isCicilan = Boolean(
+    data.isCicilan ||
+    data.cicilanKe != null ||
+    data.metode === 'Cicilan' ||
+    String(data.keperluan || '').toLowerCase().includes('cicilan') ||
+    String(data.keperluan || '').toLowerCase().includes('angsuran')
+  );
+
   // Catatan cetak: tanpa garis/bingkai hitam (permintaan owner — kertas setengah A4
   // dipotong manual, garis hitam membuat hasil potong terlihat kotor & boros tinta).
   return `
@@ -48,10 +57,12 @@ export const htmlKwitansi = (data) => {
       <td style="vertical-align: top; padding-left: 10px;">
         <div style="font-size: 17px; font-weight: 800; letter-spacing: 0.6px;">BIMBEL GEMILANG</div>
         <div style="font-size: 9.5px; color: #475569;">Bimbingan Belajar &amp; Platform Edukasi Digital</div>
-        <div style="font-size: 9.5px; color: #475569;">Sistem Keuangan Resmi — Kwitansi Pembayaran</div>
+        <div style="font-size: 9.5px; color: #475569;">Sistem Keuangan Resmi — ${isCicilan ? 'Kwitansi Pembayaran Cicilan' : 'Kwitansi Pembayaran'}</div>
       </td>
       <td style="text-align: right; vertical-align: top;">
-        <div style="font-size: 13px; font-weight: 800; letter-spacing: 1px;">KWITANSI</div>
+        <div style="font-size: 13px; font-weight: 800; letter-spacing: 1px;">
+          ${isCicilan ? 'KWITANSI CICILAN' : 'KWITANSI'}
+        </div>
         <div style="font-size: 11px; font-weight: 700; background: #f1f5f9; display: inline-block; padding: 3px 8px; margin-top: 3px; border-radius: 6px;">
           No: ${data.nomor || '(tanpa nomor)'}
         </div>
@@ -78,6 +89,17 @@ export const htmlKwitansi = (data) => {
       <td style="padding: 3px 0; vertical-align: top; font-weight: 700;">Untuk Pembayaran</td>
       <td style="padding: 3px 0;">: ${data.keperluan || '-'}</td>
     </tr>
+    ${isCicilan ? `
+    <tr>
+      <td style="padding: 3px 0; vertical-align: top; font-weight: 700;">Jenis Pembayaran</td>
+      <td style="padding: 3px 0;">: <span style="background: #e0f2fe; color: #0369a1; padding: 1px 6px; border-radius: 4px; font-weight: 700; font-size: 11px;">Angsuran / Cicilan Berkala</span>${data.cicilanKe ? ` &nbsp;• <b>Cicilan ke-${data.cicilanKe}${data.totalCicilan ? ` dari ${data.totalCicilan} bulan` : ''}</b>` : ''}</td>
+    </tr>
+    ${data.sisaTagihan != null ? `
+    <tr>
+      <td style="padding: 3px 0; vertical-align: top; font-weight: 700;">Sisa Tagihan</td>
+      <td style="padding: 3px 0;">: ${data.sisaTagihan > 0 ? `<b style="color: #b45309;">${rp(data.sisaTagihan)}</b> <span style="font-size: 10px; color: #64748b;">(kewajiban cicilan berikutnya)</span>` : `<b style="color: #16a34a;">Lunas Penuh (Semua Cicilan Tuntas)</b>`}</td>
+    </tr>` : ''}
+    ` : ''}
     <tr>
       <td style="padding: 3px 0; vertical-align: top; font-weight: 700;">Metode Bayar</td>
       <td style="padding: 3px 0;">: ${data.metode || '-'}${data.refTransfer ? ` — No. Struk/Ref Bank: <b>${data.refTransfer}</b>` : ''}</td>
@@ -94,7 +116,7 @@ export const htmlKwitansi = (data) => {
       <td></td>
       <td style="width: 210px; text-align: right;">
         <div style="padding: 6px 12px; background: #f1f5f9; border-radius: 8px;">
-          <div style="font-size: 9.5px; font-weight: 700; color: #475569;">JUMLAH</div>
+          <div style="font-size: 9.5px; font-weight: 700; color: #475569;">${isCicilan ? 'NOMINAL CICILAN' : 'JUMLAH'}</div>
           <div style="font-size: 16px; font-weight: 800;">${rp(jumlah)}</div>
         </div>
       </td>

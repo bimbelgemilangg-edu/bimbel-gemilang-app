@@ -2,7 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../../firebase'; 
 import { doc, getDoc, query, collection, where, getDocs, onSnapshot } from "firebase/firestore";
-import { Wallet, Lock, History, ShieldCheck, AlertCircle, Clock, Receipt, CalendarClock } from 'lucide-react';
+import { Wallet, Lock, History, ShieldCheck, AlertCircle, Clock, Receipt, CalendarClock, Printer } from 'lucide-react';
+import { cetakKwitansi, kwitansiDariLog } from '../../utils/kwitansi';
 
 const StudentFinance = () => {
   const [student, setStudent] = useState(null);
@@ -165,6 +166,52 @@ const StudentFinance = () => {
       .sort((a, b) => b.daysLate - a.daysLate);
   })();
 
+  // ===== 🔥 CETAK KWITANSI CICILAN DARI JADWAL CICILAN =====
+  const handleCetakKwitansiCicilan = (item, idx) => {
+    const bulanKe = item.bulanKe || (idx + 1);
+    const logCocok = paymentHistory.find(l =>
+      (l.cicilanKe && Number(l.cicilanKe) === Number(bulanKe)) ||
+      (l.note && l.note.toLowerCase().includes(`cicilan ke-${bulanKe}`)) ||
+      (l.note && l.note.toLowerCase().includes(`cicilan ${bulanKe}`)) ||
+      (item.noKwitansi && l.noKwitansi === item.noKwitansi)
+    );
+
+    const sisa = tagihan?.sisaTagihan != null
+      ? tagihan.sisaTagihan
+      : (tagihan?.detailCicilan || [])
+          .slice(idx + 1)
+          .reduce((acc, cur) => acc + (cur.status === 'Lunas' ? 0 : (Number(cur.nominal) || 0)), 0);
+
+    const noKwitansi = item.noKwitansi || logCocok?.noKwitansi || `KWT-CIC-${student?.studentId || studentNim || 'SISWA'}-${bulanKe}`;
+
+    cetakKwitansi({
+      nomor: noKwitansi,
+      tanggal: item.tanggalBayar || logCocok?.date || new Date().toISOString().split('T')[0],
+      diterimaDari: student?.nama || 'Siswa',
+      studentId: student?.studentId || studentNim || '',
+      jumlah: parseInt(item.nominal) || 0,
+      keperluan: `Pembayaran Cicilan ke-${bulanKe} SPP ${student?.namaPaket || student?.paket || ''}`.trim(),
+      metode: item.metode || logCocok?.method || 'Transfer Bank / Kasir',
+      refTransfer: logCocok?.refTransfer || item.refTransfer || '',
+      isCicilan: true,
+      cicilanKe: bulanKe,
+      sisaTagihan: Math.max(0, sisa),
+    });
+  };
+
+  // ===== 🔥 CETAK KWITANSI DARI RIWAYAT TRANSAKSI PEMBAYARAN =====
+  const handleCetakKwitansiLog = (log) => {
+    const kwt = kwitansiDariLog({
+      ...log,
+      namaSiswa: log.namaSiswa || student?.nama || 'Siswa',
+      studentId: log.studentId || student?.studentId || studentNim,
+    });
+    if (kwt.sisaTagihan == null && tagihan?.sisaTagihan != null) {
+      kwt.sisaTagihan = tagihan.sisaTagihan;
+    }
+    cetakKwitansi(kwt);
+  };
+
   if (loading) {
     return (
       <div style={{ textAlign: 'center', padding: '50px', color: '#94a3b8' }}>
@@ -297,27 +344,42 @@ const StudentFinance = () => {
               <th style={styles.th}>Deskripsi</th>
               <th style={styles.th}>Nominal</th>
               <th style={styles.th}>Status</th>
+              <th style={{ ...styles.th, textAlign: 'center' }}>Kwitansi</th>
             </tr>
           </thead>
           <tbody>
             {tagihan?.detailCicilan?.length > 0 ? (
               tagihan.detailCicilan.map((item, idx) => {
                 const isOverdue = overdueInstallments.some(o => o.idx === idx);
+                const isLunas = item.status === 'Lunas';
                 return (
                   <tr key={idx} style={{ borderBottom: '1px solid #f1f5f9' }}>
                     <td style={styles.td}>Cicilan Bulan Ke-{item.bulanKe}</td>
                     <td style={styles.td}><b>Rp {item.nominal?.toLocaleString()}</b></td>
                     <td style={styles.td}>
-                      <span style={item.status === 'Lunas' ? styles.badgeLunas : (isOverdue ? styles.badgeTerlambat : styles.badgeWait)}>
-                        {item.status === 'Lunas' ? 'Lunas' : (isOverdue ? 'Terlambat' : item.status)}
+                      <span style={isLunas ? styles.badgeLunas : (isOverdue ? styles.badgeTerlambat : styles.badgeWait)}>
+                        {isLunas ? 'Lunas' : (isOverdue ? 'Terlambat' : item.status)}
                       </span>
+                    </td>
+                    <td style={{ ...styles.td, textAlign: 'center' }}>
+                      {isLunas ? (
+                        <button
+                          onClick={() => handleCetakKwitansiCicilan(item, idx)}
+                          style={styles.btnCetakKwitansi}
+                          title="Cetak Kwitansi Pembayaran Cicilan"
+                        >
+                          <Printer size={13} /> Kwitansi
+                        </button>
+                      ) : (
+                        <span style={{ color: '#94a3b8', fontSize: '12px' }}>-</span>
+                      )}
                     </td>
                   </tr>
                 );
               })
             ) : (
               <tr>
-                <td colSpan="3" style={{ ...styles.td, textAlign: 'center', color: '#94a3b8', padding: '40px' }}>
+                <td colSpan="4" style={{ ...styles.td, textAlign: 'center', color: '#94a3b8', padding: '40px' }}>
                   Belum ada riwayat tagihan cicilan.
                 </td>
               </tr>
@@ -338,6 +400,7 @@ const StudentFinance = () => {
               <th style={styles.th}>Keterangan</th>
               <th style={styles.th}>Metode</th>
               <th style={styles.th}>Nominal</th>
+              <th style={{ ...styles.th, textAlign: 'center' }}>Aksi</th>
             </tr>
           </thead>
           <tbody>
@@ -363,11 +426,26 @@ const StudentFinance = () => {
                       <b style={{ color: '#10b981' }}>Rp {(item.amount || 0).toLocaleString()}</b>
                     )}
                   </td>
+                  <td style={{ ...styles.td, textAlign: 'center' }}>
+                    {item.method === 'Cicilan' && (item.amount || 0) <= 0 ? (
+                      <span style={{ color: '#94a3b8', fontSize: '12px' }}>-</span>
+                    ) : (item.amount || 0) > 0 ? (
+                      <button
+                        onClick={() => handleCetakKwitansiLog(item)}
+                        style={styles.btnCetakKwitansi}
+                        title={item.noKwitansi ? `Cetak Kwitansi (${item.noKwitansi})` : 'Cetak Kwitansi'}
+                      >
+                        <Printer size={13} /> Kwitansi
+                      </button>
+                    ) : (
+                      <span style={{ color: '#94a3b8', fontSize: '12px' }}>-</span>
+                    )}
+                  </td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan="4" style={{ ...styles.td, textAlign: 'center', color: '#94a3b8', padding: '40px' }}>
+                <td colSpan="5" style={{ ...styles.td, textAlign: 'center', color: '#94a3b8', padding: '40px' }}>
                   Belum ada riwayat pembayaran tercatat.
                 </td>
               </tr>
@@ -430,6 +508,20 @@ const styles = {
     background: '#2563eb', color: 'white', border: 'none', 
     padding: '15px 30px', borderRadius: '12px', fontWeight: 'bold', 
     marginTop: '20px', cursor: 'pointer', transition: 'background 0.3s' 
+  },
+  btnCetakKwitansi: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '6px',
+    background: '#f5f3ff',
+    color: '#7c3aed',
+    border: '1px solid #ddd6fe',
+    padding: '6px 12px',
+    borderRadius: '8px',
+    fontSize: '12px',
+    fontWeight: '600',
+    cursor: 'pointer',
+    transition: 'all 0.15s ease'
   },
   alertBox: { 
     display: 'flex', alignItems: 'center', gap: '15px', 
