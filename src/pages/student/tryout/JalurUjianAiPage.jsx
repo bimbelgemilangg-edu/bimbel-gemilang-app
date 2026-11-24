@@ -668,7 +668,7 @@ export default function JalurUjianAiPage() {
         const record = {
           studentId: studentId || 'siswa_demo',
           studentNama: profil?.nama || 'Siswa Pendampingan',
-          kelas: profil?.kelas || targetJenjang?.jenjang || '9 SMP',
+          kelas: profil?.kelasSekolah || profil?.kelas || targetJenjang?.label || targetJenjang?.jenjang || '-',
           paketId: sesiLatihanAktif.paket.id,
           paketJudul: sesiLatihanAktif.paket.judul,
           subtesKode: sesiLatihanAktif.subtes?.kode || 'MTK',

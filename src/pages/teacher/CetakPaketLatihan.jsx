@@ -40,6 +40,7 @@ import { collection, query, where, getDocs, addDoc, deleteDoc, updateDoc, doc } 
 import 'katex/dist/katex.min.css';
 import katexCssInline from 'katex/dist/katex.min.css?inline';
 import { db } from '../../firebase';
+import { deteksiTingkatSiswa } from '../../utils/tingkatSiswa';
 import { bacaIdentitasGuru } from '../../utils/identitasGuru';
 import { perluSegar, kebijakanGagalMuat } from '../../utils/keputusanMuat';
 import { pilihSoalUntukCetak, htmlPaketSiswa, htmlKunciTentor, htmlLembarCatatan } from '../../utils/cetakLatihan';
@@ -534,6 +535,7 @@ export default function CetakPaketLatihan() {
   // 📊 STATE PAPAN ANALITIK KETUNTASAN & REMEDIAL KELAS (LIVE DATABASE & SIMULASI)
   const [modeSimulasiDemo, setModeSimulasiDemo] = useState(false);
   const [dataSiswaReal, setDataSiswaReal] = useState([]);
+  const [filterJenjangAnalitik, setFilterJenjangAnalitik] = useState('aktif');
   const [sedangMemuatAnalitikLive, setSedangMemuatAnalitikLive] = useState(false);
 
   // Data Cohort Demo Simulasi
@@ -543,14 +545,14 @@ export default function CetakPaketLatihan() {
       if (tersimpan) return JSON.parse(tersimpan);
     } catch {}
     return [
-      { id: 'sis_1', nama: 'Azka Ramadhani', kelas: '9 SMP', bab1: 80, tuntasBab1: true, kendala: '-' },
-      { id: 'sis_2', nama: 'Bima Pratama', kelas: '9 SMP', bab1: 60, tuntasBab1: false, kendala: 'Aturan Eksponen Negatif (2^-3)' },
-      { id: 'sis_3', nama: 'Citra Kirana', kelas: '9 SMP', bab1: 50, tuntasBab1: false, kendala: 'Aturan KaBaTaKu & Tanda Kurung' },
-      { id: 'sis_4', nama: 'Dafa Alamsyah', kelas: '9 SMP', bab1: 75, tuntasBab1: true, kendala: '-' },
-      { id: 'sis_5', nama: 'Echa Aurelia', kelas: '9 SMP', bab1: 45, tuntasBab1: false, kendala: 'Sifat Bilangan Rasional vs Irasional' },
-      { id: 'sis_6', nama: 'Farhan Naufal', kelas: '9 SMP', bab1: 90, tuntasBab1: true, kendala: '-' },
-      { id: 'sis_7', nama: 'Gita Maharani', kelas: '9 SMP', bab1: 55, tuntasBab1: false, kendala: 'Konversi Notasi Ilmiah Mikroskopis' },
-      { id: 'sis_8', nama: 'Hadi Prasetyo', kelas: '9 SMP', bab1: 50, tuntasBab1: false, kendala: 'Merasionalkan Penyebut Bentuk Akar' },
+      { id: 'sis_1', nama: 'Azka Ramadhani', kelas: '9 SMP', jenjang: 'SMP', isSmp: true, bab1: 80, tuntasBab1: true, kendala: '-' },
+      { id: 'sis_2', nama: 'Bima Pratama', kelas: '9 SMP', jenjang: 'SMP', isSmp: true, bab1: 60, tuntasBab1: false, kendala: 'Aturan Eksponen Negatif (2^-3)' },
+      { id: 'sis_3', nama: 'Citra Kirana', kelas: '9 SMP', jenjang: 'SMP', isSmp: true, bab1: 50, tuntasBab1: false, kendala: 'Aturan KaBaTaKu & Tanda Kurung' },
+      { id: 'sis_4', nama: 'Dafa Alamsyah', kelas: '9 SMP', jenjang: 'SMP', isSmp: true, bab1: 75, tuntasBab1: true, kendala: '-' },
+      { id: 'sis_5', nama: 'Echa Aurelia', kelas: '9 SMP', jenjang: 'SMP', isSmp: true, bab1: 45, tuntasBab1: false, kendala: 'Sifat Bilangan Rasional vs Irasional' },
+      { id: 'sis_6', nama: 'Farhan Naufal', kelas: '9 SMP', jenjang: 'SMP', isSmp: true, bab1: 90, tuntasBab1: true, kendala: '-' },
+      { id: 'sis_7', nama: 'Gita Maharani', kelas: '9 SMP', jenjang: 'SMP', isSmp: true, bab1: 55, tuntasBab1: false, kendala: 'Konversi Notasi Ilmiah Mikroskopis' },
+      { id: 'sis_8', nama: 'Hadi Prasetyo', kelas: '9 SMP', jenjang: 'SMP', isSmp: true, bab1: 50, tuntasBab1: false, kendala: 'Merasionalkan Penyebut Bentuk Akar' },
     ];
   });
 
@@ -583,10 +585,50 @@ export default function CetakPaketLatihan() {
       const snapSiswa = await getDocs(collection(db, 'students'));
       snapSiswa.forEach((d) => {
         const dt = d.data();
+        const rawKelas = String(dt.kelasSekolah || dt.kelas || dt.tingkatKelas || dt.grade || '').trim();
+        const rawJenjang = String(dt.jenjang || '').trim().toUpperCase();
+        const rawProgram = String(dt.program || dt.kategori || '').trim();
+
+        // Deteksi jenjang menggunakan deteksiTingkatSiswa resmi
+        const infoTingkat = deteksiTingkatSiswa({
+          kelasSekolah: rawKelas,
+          kelas: rawKelas,
+          jenjang: rawJenjang,
+          program: rawProgram,
+        });
+
+        let jenjangBaku = infoTingkat.jenjangBaku || rawJenjang || 'UMUM';
+        if (infoTingkat.isSma || rawJenjang === 'SMA' || rawJenjang === 'UTBK') {
+          jenjangBaku = 'SMA';
+        } else if (infoTingkat.isSmp || rawJenjang === 'SMP') {
+          jenjangBaku = 'SMP';
+        } else if (infoTingkat.isSd || rawJenjang === 'SD') {
+          jenjangBaku = 'SD';
+        }
+
+        // Tampilan kelas yang rapi dan jujur sesuai data riil siswa
+        let kelasTampil = rawKelas;
+        if (!kelasTampil) {
+          kelasTampil = jenjangBaku !== 'UMUM' ? `Siswa ${jenjangBaku}` : '-';
+        } else if (/^\d+$/.test(kelasTampil)) {
+          // Jika hanya angka murni seperti "7", "8", "9", "10", "11", "12"
+          kelasTampil = `${kelasTampil} ${jenjangBaku !== 'UMUM' ? jenjangBaku : ''}`.trim();
+        }
+
         rosterDb.push({
           id: d.id,
+          studentId: dt.studentId || d.id,
           nama: dt.nama || dt.name || dt.studentName || 'Siswa Gemilang',
-          kelas: dt.kelas || dt.grade || '9 SMP',
+          kelas: kelasTampil,
+          kelasSekolah: rawKelas,
+          jenjang: jenjangBaku,
+          isSmp: infoTingkat.isSmp || jenjangBaku === 'SMP',
+          isSma: infoTingkat.isSma || jenjangBaku === 'SMA',
+          isSd: infoTingkat.isSd || jenjangBaku === 'SD',
+          program: rawProgram,
+          enrolledSubjects: Array.isArray(dt.enrolledSubjects) ? dt.enrolledSubjects : [],
+          isBlocked: dt.isBlocked === true,
+          status: dt.status,
         });
       });
     } catch (errS) {
@@ -599,8 +641,10 @@ export default function CetakPaketLatihan() {
       if (!mapHasil[keyS] || (h.waktu || 0) > (mapHasil[keyS].waktu || 0)) {
         mapHasil[keyS] = {
           id: keyS,
+          studentId: h.studentId || keyS,
           nama: h.studentNama || h.nama || 'Siswa Gemilang',
-          kelas: h.kelas || '9 SMP',
+          kelas: h.kelas || h.kelasSekolah || '-',
+          jenjang: h.jenjang || '',
           bab1: h.skor != null ? Number(h.skor) : 0,
           tuntasBab1: Number(h.skor || 0) >= 75,
           kendala: Number(h.skor || 0) >= 75 ? '-' : 'Butuh Drill Remedial Konsep Dasar',
@@ -611,11 +655,27 @@ export default function CetakPaketLatihan() {
     });
 
     rosterDb.forEach((s) => {
-      if (!mapHasil[s.id]) {
+      const matchKey = mapHasil[s.id] ? s.id : (mapHasil[s.studentId] ? s.studentId : null);
+      if (matchKey) {
+        mapHasil[matchKey].nama = s.nama;
+        mapHasil[matchKey].kelas = s.kelas || mapHasil[matchKey].kelas || '-';
+        mapHasil[matchKey].jenjang = s.jenjang;
+        mapHasil[matchKey].isSmp = s.isSmp;
+        mapHasil[matchKey].isSma = s.isSma;
+        mapHasil[matchKey].isSd = s.isSd;
+        mapHasil[matchKey].enrolledSubjects = s.enrolledSubjects;
+      } else {
         mapHasil[s.id] = {
           id: s.id,
+          studentId: s.studentId,
           nama: s.nama,
-          kelas: s.kelas,
+          kelas: s.kelas || '-',
+          jenjang: s.jenjang,
+          isSmp: s.isSmp,
+          isSma: s.isSma,
+          isSd: s.isSd,
+          program: s.program,
+          enrolledSubjects: s.enrolledSubjects,
           bab1: null,
           tuntasBab1: false,
           kendala: 'Menunggu Pengerjaan Siswa di Aplikasi',
@@ -2505,7 +2565,31 @@ export default function CetakPaketLatihan() {
 
       {/* 📊 PAPAN ANALITIK KETUNTASAN SILABUS & REMEDIAL KELAS */}
       {sumber === 'analitik' && (() => {
-        const cohortAktif = modeSimulasiDemo ? dataSiswaKelas : dataSiswaReal;
+        const targetJenjangAktif = (jenjangAktif || 'SMP').toUpperCase();
+        const sumberData = modeSimulasiDemo ? dataSiswaKelas : dataSiswaReal;
+
+        const cohortAktif = modeSimulasiDemo
+          ? sumberData
+          : sumberData.filter((s) => {
+              if (filterJenjangAnalitik === 'semua') return true;
+              if (filterJenjangAnalitik !== 'aktif') {
+                const k = String(s.kelas || '').toUpperCase();
+                return k.includes(filterJenjangAnalitik.toUpperCase()) || s.jenjang === filterJenjangAnalitik.toUpperCase();
+              }
+              if (targetJenjangAktif === 'SMP') {
+                return s.isSmp || s.jenjang === 'SMP' || /\b(7|8|9|VII|VIII|IX|SMP|MTS)\b/i.test(`${s.kelas} ${s.jenjang}`);
+              }
+              if (targetJenjangAktif === 'SMA' || targetJenjangAktif === 'UTBK') {
+                return s.isSma || s.jenjang === 'SMA' || s.jenjang === 'UTBK' || /\b(10|11|12|X|XI|XII|SMA|SMK|MA|UTBK|SNBT|ALUMNI)\b/i.test(`${s.kelas} ${s.jenjang}`);
+              }
+              if (targetJenjangAktif === 'SD') {
+                return s.isSd || s.jenjang === 'SD' || /\b(1|2|3|4|5|6|SD|MI)\b/i.test(`${s.kelas} ${s.jenjang}`);
+              }
+              return true;
+            });
+
+        const opsiKelasUnik = [...new Set(sumberData.map((s) => s.kelas).filter((k) => k && k !== '-'))].sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+
         const siswaSelesaiPengerjaan = cohortAktif.filter((s) => s.sudahMengerjakan !== false && s.bab1 != null);
         const adaSiswaMengerjakan = siswaSelesaiPengerjaan.length > 0;
         const rataRataSkor = adaSiswaMengerjakan
@@ -2664,8 +2748,14 @@ export default function CetakPaketLatihan() {
               border: '1px solid rgba(45, 212, 191, 0.3)',
             }}>
               <div>
-                <div style={{ fontSize: 11, color: '#99f6e4', fontWeight: 700 }}>KELAS PENDAMPINGAN</div>
-                <div style={{ fontSize: 16, fontWeight: 900, color: '#fef08a', marginTop: 2 }}>Kelas 9 SMP · TKA MTK</div>
+                <div style={{ fontSize: 11, color: '#99f6e4', fontWeight: 700 }}>SASARAN KELAS & MAPEL</div>
+                <div style={{ fontSize: 16, fontWeight: 900, color: '#fef08a', marginTop: 2 }}>
+                  {filterJenjangAnalitik === 'semua'
+                    ? `Semua Jenjang · ${mapelAktif || 'Matematika'}`
+                    : (filterJenjangAnalitik !== 'aktif'
+                        ? `Kelas ${filterJenjangAnalitik} · ${mapelAktif || 'Matematika'}`
+                        : `${jenjangAktif === 'SMP' ? 'SMP / MTs' : (jenjangAktif === 'SMA' ? 'SMA / UTBK' : 'SD / MI')} · ${mapelAktif || 'Matematika'}`)}
+                </div>
               </div>
               <div>
                 <div style={{ fontSize: 11, color: '#99f6e4', fontWeight: 700 }}>STANDAR KKM KELULUSAN</div>
@@ -3036,7 +3126,7 @@ export default function CetakPaketLatihan() {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, flexWrap: 'wrap', gap: 10 }}>
               <div>
                 <h4 style={{ margin: 0, fontSize: 15, fontWeight: 900, color: '#0f172a' }}>
-                  👥 Buku Progres Ketuntasan Siswa: Bab 1 (Bilangan Dasar)
+                  👥 Buku Progres Ketuntasan Siswa: Bab 1 ({jenjangAktif === 'SMP' ? 'Bilangan Dasar SMP' : (jenjangAktif === 'SMA' ? 'Bilangan & Aljabar SMA' : 'Numerasi Dasar SD')})
                 </h4>
                 <p style={{ margin: '2px 0 0', fontSize: 12, color: '#64748b' }}>
                   {modeSimulasiDemo
@@ -3044,7 +3134,32 @@ export default function CetakPaketLatihan() {
                     : 'Data Realtime Database Gemilang: Rincian pengerjaan paket latihan siswa di kelas tatap muka.'}
                 </p>
               </div>
-              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+              <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+                {!modeSimulasiDemo && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <span style={{ fontSize: 11.5, fontWeight: 700, color: '#475569' }}>Filter Kelas:</span>
+                    <select
+                      value={filterJenjangAnalitik}
+                      onChange={(e) => setFilterJenjangAnalitik(e.target.value)}
+                      style={{
+                        padding: '5px 10px',
+                        borderRadius: 8,
+                        border: '1.5px solid #0d9488',
+                        fontSize: 12,
+                        fontWeight: 700,
+                        color: '#0f766e',
+                        background: '#ffffff',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      <option value="aktif">Sesuai Jenjang ({jenjangAktif === 'SMP' ? 'SMP / MTs' : (jenjangAktif === 'SMA' ? 'SMA / UTBK' : 'SD / MI')})</option>
+                      <option value="semua">Tampilkan Semua Siswa (Seluruh Jenjang)</option>
+                      {opsiKelasUnik.map((k) => (
+                        <option key={k} value={k}>Kelas {k}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
                 <span style={{ fontSize: 12, color: '#0f766e', fontWeight: 800, background: '#ccfbf1', padding: '4px 10px', borderRadius: 99 }}>
                   Total {cohortAktif.length} Siswa Terdaftar
                 </span>
@@ -3108,7 +3223,20 @@ export default function CetakPaketLatihan() {
                         <tr key={sis.id || idx} style={{ borderBottom: '1px solid #e2e8f0', background: belumMengerjakan ? '#ffffff' : (isTuntas ? '#ffffff' : '#fffbeb') }}>
                           <td style={{ padding: '10px 12px', fontWeight: 700, color: '#64748b' }}>{idx + 1}</td>
                           <td style={{ padding: '10px 12px', fontWeight: 800, color: '#0f172a' }}>{sis.nama}</td>
-                          <td style={{ padding: '10px 12px', color: '#475569' }}>{sis.kelas || '9 SMP'}</td>
+                          <td style={{ padding: '10px 12px' }}>
+                            <span style={{
+                              background: '#f8fafc',
+                              color: '#0f172a',
+                              padding: '3px 8px',
+                              borderRadius: 6,
+                              fontSize: 11.5,
+                              fontWeight: 700,
+                              border: '1px solid #cbd5e1',
+                              display: 'inline-block',
+                            }}>
+                              {sis.kelas || '-'}
+                            </span>
+                          </td>
                           <td style={{ padding: '10px 12px' }}>
                             {belumMengerjakan ? (
                               <span style={{ fontSize: 12, color: '#94a3b8', fontStyle: 'italic' }}>Belum Mengerjakan</span>
