@@ -8,7 +8,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
-  Menu, X, LayoutDashboard, Users, GraduationCap, Calendar, CreditCard, FileText, Settings, LogOut, BookOpen, ClipboardList, Globe, TrendingUp, UserPlus, DollarSign, FileUp, Briefcase, Brain, Rocket, ClipboardCheck, Sparkles, BarChart3, Trophy, UploadCloud, Trash2, FolderTree, BookMarked, GitMerge, Archive, Crown, Lock, Receipt, KeyRound, Key, History, Wallet, Toolbox, Library, Landmark, Target, LineChart, BookUp, Scale, FileSpreadsheet, CheckCircle, FileQuestion,
+  Menu, X, LayoutDashboard, Users, GraduationCap, Calendar, CreditCard, FileText, Settings, LogOut, BookOpen, ClipboardList, Globe, TrendingUp, UserPlus, DollarSign, FileUp, Briefcase, Brain, Rocket, ClipboardCheck, Sparkles, BarChart3, Trophy, UploadCloud, Trash2, FolderTree, BookMarked, GitMerge, Archive, Crown, Lock, Receipt, KeyRound, Key, History, Wallet, Toolbox, Library, Landmark, Target, LineChart, BookUp, Scale, FileSpreadsheet, CheckCircle, FileQuestion, Camera,
 } from 'lucide-react';
 import { db } from '../firebase';
 import {
@@ -186,6 +186,7 @@ const SidebarAdmin = () => {
         { name: 'Manajemen Absensi', path: '/admin/attendance', icon: <ClipboardCheck size={18} /> },
         { name: 'Kelola Guru', path: '/admin/teachers', icon: <GraduationCap size={18} /> },
         { name: 'Sesi & Validasi Guru', path: '/admin/teachers/sesi', icon: <CheckCircle size={18} /> },
+        { name: 'Galeri Mengajar', path: '/admin/teachers/galeri', icon: <Camera size={18} /> },
         { name: 'E-Learning (Modul & Kuis Guru)', path: '/guru/modul', icon: <BookOpen size={18} /> },
         { name: 'Rapor & Prestasi', path: '/admin/raport', icon: <BarChart3 size={18} /> },
       ]

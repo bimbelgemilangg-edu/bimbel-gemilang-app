@@ -570,6 +570,13 @@ export default function SesiGuruPage() {
               <Users size={13} /> Kelola Guru
             </button>
             <button
+              onClick={() => navigate('/admin/teachers/galeri')}
+              style={styles.btnQuickNav}
+              title="Lihat Galeri Foto Dokumentasi Mengajar Tentor"
+            >
+              <Camera size={13} color="#7c3aed" /> Galeri Mengajar
+            </button>
+            <button
               onClick={() => navigate('/admin/teachers/salaries')}
               style={styles.btnQuickNavHonor}
               title="Rekap Gaji & Pembayaran Honor Tentor"

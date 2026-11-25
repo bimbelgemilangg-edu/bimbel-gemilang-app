@@ -1032,6 +1032,9 @@ const TeacherList = () => {
             <button onClick={() => { handleCancelEditMapel(); setShowMapelModal(true); }} style={styles.btnMapel(isMobile)}>
               <Layers size={14} /> Mapel
             </button>
+            <button onClick={() => navigate('/admin/teachers/galeri')} style={styles.btnGaleri(isMobile)} title="Galeri Dokumentasi Mengajar Tentor">
+              <Camera size={14} /> Galeri Foto
+            </button>
             <button onClick={() => setShowAddModal(true)} style={styles.btnAdd(isMobile)}>
               <Plus size={14} /> Tambah Guru
             </button>
@@ -1234,6 +1237,13 @@ const TeacherList = () => {
                               <ClipboardCheck size={14} />
                             </button>
                           )}
+                          <button
+                            onClick={() => navigate(`/admin/teachers/galeri?guru=${t.id}`)}
+                            style={{...styles.btnAction, background: '#f5f3ff', color: '#7c3aed'}}
+                            title={`Lihat galeri foto mengajar ${t.nama}`}
+                          >
+                            <Camera size={14} />
+                          </button>
                           <button 
                             onClick={() => handleDelete(t.id, t.nama)} 
                             disabled={deleting === t.id} 
@@ -1869,6 +1879,11 @@ const styles = {
   }),
   btnMapel: (m) => ({ 
     background: '#fef3c7', color: '#b45309', border: '1px solid #fde68a', 
+    padding: m ? '6px 10px' : '8px 12px', borderRadius: 8, cursor: 'pointer', 
+    fontWeight: 600, fontSize: m ? 11 : 12, display: 'flex', alignItems: 'center', gap: 4 
+  }),
+  btnGaleri: (m) => ({ 
+    background: '#f5f3ff', color: '#7c3aed', border: '1px solid #ddd6fe', 
     padding: m ? '6px 10px' : '8px 12px', borderRadius: 8, cursor: 'pointer', 
     fontWeight: 600, fontSize: m ? 11 : 12, display: 'flex', alignItems: 'center', gap: 4 
   }),

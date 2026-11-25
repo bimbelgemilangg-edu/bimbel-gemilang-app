@@ -99,6 +99,7 @@ import FinanceLayout from './pages/admin/finance/FinanceLayout';
 
 import TeacherList from './pages/admin/teachers/TeacherList';
 import TeacherSalaries from './pages/admin/teachers/TeacherSalaries';
+import GaleriMengajarPage from './pages/admin/teachers/GaleriMengajarPage';
 import GuruPantauTryOut from './pages/teacher/GuruPantauTryOut';
 import CetakPaketLatihan from './pages/teacher/CetakPaketLatihan';
 import PerpustakaanKonten from './pages/PerpustakaanKonten';
@@ -698,6 +699,11 @@ function App() {
         <Route
           path="/admin/teachers/sesi"
           element={<AdminRoute><SesiGuruPage /></AdminRoute>}
+        />
+        {/* 🔥 BARU: Galeri foto mengajar tentor untuk cross-check & konten promosi/sosmed */}
+        <Route
+          path="/admin/teachers/galeri"
+          element={<AdminRoute><GaleriMengajarPage /></AdminRoute>}
         />
         {/* 🔥 BARU: hub perkakas bank soal & konten (21 menu diringkas
             jadi satu pintu berdeskripsi + pencatat klik). */}
