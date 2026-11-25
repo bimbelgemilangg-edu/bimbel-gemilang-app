@@ -613,17 +613,29 @@ export default function PapanJelajahPage({ studentId: studentIdProp = '' }) {
           <div style={st.bannerAgendaHeader}>
             <div>
               <div style={{ fontSize: 11.5, fontWeight: 800, color: '#0d9488', textTransform: 'uppercase', marginBottom: 4 }}>
-                {jenjangAktif === 'SMP' ? 'ROADMAP ASESMEN & TKA SMP 2026' : jenjangAktif === 'SD' ? 'ROADMAP TKA SD 2026' : 'ROADMAP SELEKSI UTBK-SNBT 2027'}
+                {infoTingkat.isKelas12
+                  ? 'ROADMAP SELEKSI UTBK-SNBT 2027'
+                  : (infoTingkat.isKelas9
+                    ? 'ROADMAP ASESMEN & TKA SMP 2026'
+                    : (infoTingkat.isSmp
+                      ? 'AGENDA SIMULASI EVALUASI SMP'
+                      : (infoTingkat.isSd
+                        ? 'AGENDA EVALUASI BELAJAR SD'
+                        : 'AGENDA SIMULASI EVALUASI SMA')))}
               </div>
               <h3 style={{ fontSize: 19, fontWeight: 900, color: '#0f172a', margin: '0 0 6px' }}>
                 Simulasi Try Out Terjadwal & Evaluasi Akbar ({jenjangAktif})
               </h3>
               <p style={{ fontSize: 13, color: '#475569', margin: 0, lineHeight: 1.5 }}>
-                {jenjangAktif === 'SMP'
-                  ? 'Simulasi terjadwal Tes Kemampuan Akademik SMP dengan format CBT resmi, pemetaan literasi numerasi & membaca menuju SMA Unggulan.'
-                  : jenjangAktif === 'SD'
-                  ? 'Simulasi terjadwal Tes Kemampuan Akademik SD dengan format CBT resmi menuju SMP Favorit impian.'
-                  : 'Dilaksanakan serentak dengan naskah 7 subtes resmi SNPMB, pengawasan anti-cheat online, dan evaluasi IRT skala 1000.'}
+                {infoTingkat.isKelas12
+                  ? 'Dilaksanakan serentak dengan naskah 7 subtes resmi SNPMB, pengawasan anti-cheat online, dan evaluasi IRT skala 1000.'
+                  : (infoTingkat.isKelas9
+                    ? 'Simulasi terjadwal Tes Kemampuan Akademik SMP Kelas 9 dengan format CBT resmi, pemetaan literasi numerasi & membaca menuju SMA Unggulan.'
+                    : (infoTingkat.isSmp
+                      ? 'Simulasi terjadwal evaluasi akademik SMP dengan format CBT resmi untuk mengasah pemahaman materi.'
+                      : (infoTingkat.isSd
+                        ? 'Simulasi terjadwal evaluasi belajar SD dengan format interaktif ramah anak.'
+                        : 'Simulasi berkala persiapan penguasaan materi mata pelajaran SMA.')))}
               </p>
             </div>
 

@@ -49,7 +49,8 @@ export default function ModulBelajarUtbkPage() {
     return deteksiTingkatSiswa({ ...profil, kelas: kelasCek, kelasSekolah: kelasCek, jenjang: jenjangCek });
   }, [profil, kelasCek, jenjangCek]);
 
-  const isSmp = infoTingkat.isSmp;
+  // HANYA Kelas 9 SMP yang mengakses modul TKA SMP, dan HANYA Kelas 12 SMA yang mengakses modul UTBK
+  const isSmp = infoTingkat.isKelas9;
   const isKelas12 = infoTingkat.isKelas12;
 
   const [selectedSubtes, setSelectedSubtes] = useState('ALL');
@@ -138,22 +139,22 @@ export default function ModulBelajarUtbkPage() {
         </h2>
         <p style={{ fontSize: 14, color: '#64748b', lineHeight: 1.6, marginBottom: 20 }}>
           {infoTingkat.isSmaBawah
-            ? 'Mohon maaf, kurikulum 7 subtes UTBK-SNBT disusun khusus untuk siswa Kelas 12 SMA & Alumni. Untuk siswa Kelas 10 & 11, silakan fokus eksplorasi Target Kampus & Katalog 173 PTN serta pendalaman materi harian.'
-            : 'Mohon maaf, fitur Modul Belajar interaktif saat ini tersedia untuk jenjang TKA SMP Kelas 9 dan UTBK-SNBT Kelas 12 SMA. Silakan akses menu belajar dan latihan harian sesuai jenjangmu di Dashboard.'}
+            ? 'Mohon maaf, kurikulum 7 subtes UTBK-SNBT disusun khusus untuk siswa Kelas 12 SMA & Alumni. Untuk siswa Kelas 10 & 11, silakan fokus pada pembelajaran materi harian di menu E-Learning.'
+            : (infoTingkat.isSmpBawah
+              ? 'Mohon maaf, kurikulum modul TKA SMP disusun khusus untuk siswa Kelas 9 SMP. Untuk siswa Kelas 7 & 8, silakan fokus pada pembelajaran materi harian di menu E-Learning.'
+              : 'Mohon maaf, fitur Modul Belajar interaktif saat ini tersedia khusus untuk jenjang TKA SMP Kelas 9 dan UTBK-SNBT Kelas 12 SMA. Silakan akses menu belajar dan latihan harian sesuai jenjangmu di Dashboard.')}
         </p>
         <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
-          {infoTingkat.bisaAksesTargetKampus && (
-            <button
-              type="button"
-              onClick={() => navigate('/siswa/target-kampus')}
-              style={{
-                background: '#0d9488', color: '#fff', border: 'none', borderRadius: 10,
-                padding: '10px 20px', fontWeight: 700, fontSize: 13, cursor: 'pointer',
-              }}
-            >
-              Eksplorasi Target Kampus 🎯
-            </button>
-          )}
+          <button
+            type="button"
+            onClick={() => navigate('/siswa/elearning')}
+            style={{
+              background: '#0d9488', color: '#fff', border: 'none', borderRadius: 10,
+              padding: '10px 20px', fontWeight: 700, fontSize: 13, cursor: 'pointer',
+            }}
+          >
+            Buka E-Learning 📖
+          </button>
           <button
             type="button"
             onClick={() => navigate('/siswa/dashboard')}

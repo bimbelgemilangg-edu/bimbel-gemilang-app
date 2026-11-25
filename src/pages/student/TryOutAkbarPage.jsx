@@ -24,17 +24,14 @@ import {
   FileText,
 } from 'lucide-react';
 import { useProfilSiswa } from '../../utils/profilSiswa';
+import { deteksiTingkatSiswa } from '../../utils/tingkatSiswa';
 
 export default function TryOutAkbarPage() {
   const navigate = useNavigate();
   const profil = useProfilSiswa();
 
   const jenjang = useMemo(() => {
-    const raw = String(profil.jenjang || profil.tingkat || profil.kelas || profil.kelasSekolah || '').toUpperCase();
-    if (raw.includes('SMA') || raw.includes('10') || raw.includes('11') || raw.includes('12') || raw.includes('UTBK')) {
-      return 'SMA';
-    }
-    return 'SMP';
+    return deteksiTingkatSiswa(profil).jenjangBaku;
   }, [profil]);
 
   // Data Event Akbar Mendatang

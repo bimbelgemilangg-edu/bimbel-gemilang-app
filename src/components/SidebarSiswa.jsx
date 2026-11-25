@@ -89,10 +89,10 @@ const SidebarSiswa = ({ activeMenu, setActiveMenu, isOpen, setIsOpen }) => {
         { id: 'latihan-harian', label: 'Latihan Harian', icon: <Flame size={18} />, path: '/siswa/latihan-harian', color: '#dc2626' },
         // 📖 E-Learning: Materi, kuis mandiri, dan tugas interaktif unggahan tentor/guru
         { id: 'elearning', label: 'E-Learning (Modul & Kuis)', icon: <BookOpen size={18} />, path: '/siswa/elearning', color: '#652D90', badge: 'Guru' },
-        // 📚 Modul Belajar: UTBK untuk Kelas 12 SMA, TKA untuk SMP
-        ...((infoTingkat.isKelas12 || infoTingkat.isSmp) ? [{
+        // 📚 Modul Belajar: UTBK untuk Kelas 12 SMA, TKA untuk Kelas 9 SMP
+        ...((infoTingkat.isKelas12 || infoTingkat.isKelas9) ? [{
           id: 'modul',
-          label: infoTingkat.isKelas12 ? 'Modul Belajar UTBK' : 'Modul Belajar TKA',
+          label: infoTingkat.isKelas12 ? 'Modul Belajar UTBK' : 'Modul Belajar TKA SMP',
           icon: <BookOpen size={18} />,
           path: '/siswa/modul',
           color: '#0d9488',

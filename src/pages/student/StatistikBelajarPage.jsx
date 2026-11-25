@@ -26,6 +26,7 @@ import {
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { useProfilSiswa } from '../../utils/profilSiswa';
+import { deteksiTingkatSiswa } from '../../utils/tingkatSiswa';
 import {
   getSubtesLatihanList,
   hitungStatistikLatihanSiswa,
@@ -45,17 +46,9 @@ export default function StatistikBelajarPage() {
   const [loading, setLoading] = useState(true);
   const [sesiList, setSesiList] = useState([]);
 
-  // Deteksi jenjang siswa
-  const jenjang = useMemo(() => {
-    const raw = String(profil.jenjang || profil.tingkat || profil.kelas || profil.kelasSekolah || '').toUpperCase();
-    if (raw.includes('SMA') || raw.includes('10') || raw.includes('11') || raw.includes('12') || raw.includes('UTBK')) {
-      return 'SMA';
-    }
-    if (raw.includes('SD') || raw.includes('1') || raw.includes('2') || raw.includes('3') || raw.includes('4') || raw.includes('5') || raw.includes('6')) {
-      return 'SD';
-    }
-    return 'SMP';
-  }, [profil]);
+  // Deteksi jenjang siswa menggunakan deteksi tingkat resmi
+  const infoTingkat = useMemo(() => deteksiTingkatSiswa(profil), [profil]);
+  const jenjang = infoTingkat.jenjangBaku;
 
   // Muat riwayat sesi pengerjaan siswa (Try Out & Latihan Menu Jalur)
   useEffect(() => {
@@ -271,7 +264,9 @@ export default function StatistikBelajarPage() {
           <span>Kembali ke Beranda</span>
         </button>
         <div style={S.headerInfo}>
-          <div style={S.badgeJenjang}>STATISTIK BELAJAR • {jenjang === 'SMP' ? 'TKA SMP (KELAS 9)' : jenjang === 'SD' ? 'TKA SD (KELAS 6)' : 'UTBK SNBT (SMA)'}</div>
+          <div style={S.badgeJenjang}>
+            STATISTIK BELAJAR • {infoTingkat.isKelas12 ? 'UTBK-SNBT (SMA KELAS 12)' : (infoTingkat.isKelas9 ? 'TKA SMP (KELAS 9)' : (infoTingkat.isSmp ? 'EVALUASI SMP' : (infoTingkat.isSd ? 'EVALUASI SD' : 'EVALUASI SMA')))}
+          </div>
           <h1 style={S.judulUtama}>Progres &amp; Analisis Belajar Personal</h1>
           <p style={S.subJudul}>
             Pantau pertumbuhan skor tryout, konsistensi kalender latihan, dan pemetaan kelemahan per subtes secara real-time.
@@ -316,7 +311,7 @@ export default function StatistikBelajarPage() {
         </div>
         <button
           type="button"
-          onClick={() => navigate('/siswa/roadmap')}
+          onClick={() => navigate((infoTingkat.isKelas12 || infoTingkat.isKelas9) ? '/siswa/roadmap' : '/siswa/latihan-harian')}
           style={{
             background: '#0d9488',
             color: '#ffffff',

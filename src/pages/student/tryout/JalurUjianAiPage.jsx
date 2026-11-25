@@ -135,9 +135,10 @@ export default function JalurUjianAiPage() {
     return deteksiJenjangUjianAkhir({ ...profil, kelas: k, jenjang: j });
   }, [profil]);
 
-  const isSmp = targetJenjang?.jenjang === 'SMP';
-  const isSd = targetJenjang?.jenjang === 'SD';
-  const isUtbk = !isSmp && !isSd;
+  // HANYA Kelas 9 SMP untuk TKA SMP, dan HANYA Kelas 12 SMA untuk UTBK-SNBT
+  const isSmp = targetJenjang?.jenjang === 'SMP' && targetJenjang?.kelas === '9';
+  const isUtbk = targetJenjang?.jenjang === 'SMA' && targetJenjang?.kelas === '12';
+  const isSd = false; // TKA SD BELUM DI BUAT (Sesuai arahan owner)
 
   // Daftar Subtes Dinamis (SMP: MTK, BIN, IPA, BIG; SD: MTK, BIN; SMA: 7 Subtes UTBK)
   const daftarSubtes = useMemo(() => {
@@ -778,8 +779,8 @@ export default function JalurUjianAiPage() {
     );
   }
 
-  // JIKA SISWA BUKAN KELAS AKHIR
-  if (!targetJenjang) {
+  // JIKA SISWA BUKAN KELAS 9 SMP ATAU KELAS 12 SMA
+  if (!targetJenjang || (!isSmp && !isUtbk)) {
     return (
       <div style={st.bukanAkhirWrapper}>
         <div style={st.kartuBukanAkhir}>
@@ -790,10 +791,10 @@ export default function JalurUjianAiPage() {
             Kelas Pendampingan Ujian Akhir
           </h2>
           <p style={{ color: '#475569', fontSize: 14, lineHeight: 1.6, margin: '0 0 20px' }}>
-            Halo <strong>{profil.nama || 'Siswa'}</strong>! Fitur <strong>Kelas Pendampingan</strong> ini dirancang khusus bagi sahabat kelas <strong>6 SD (TKA SD)</strong>, <strong>9 SMP (TKA SMP)</strong>, dan <strong>12 SMA/SMK (UTBK-SNBT)</strong> untuk simulasi kelulusan dan seleksi sekolah/kampus impian.
+            Halo <strong>{profil.nama || 'Siswa'}</strong>! Fitur <strong>Kelas Pendampingan</strong> saat ini dikhususkan bagi siswa <strong>Kelas 9 SMP (Persiapan TKA SMP)</strong> dan <strong>Kelas 12 SMA / Alumni (Persiapan UTBK-SNBT)</strong>.
           </p>
           <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 12, padding: 14, marginBottom: 20, textAlign: 'left', fontSize: 13, color: '#166534' }}>
-            ✨ Untuk kelasmu (<strong>{profil.kelas || 'Reguler'}</strong>), silakan nikmati menu <strong>Modul Belajar UTBK</strong> dan <strong>Try Out</strong> untuk mengasah kemampuan harian!
+            ✨ Untuk kelasmu (<strong>{profil.kelasSekolah || profil.kelas || 'Reguler'}</strong>), silakan nikmati menu <strong>E-Learning</strong>, <strong>Latihan Harian</strong>, dan <strong>Try Out Terjadwal</strong> untuk mengasah kemampuan belajar!
           </div>
           <button
             type="button"
@@ -905,7 +906,7 @@ export default function JalurUjianAiPage() {
               <div style={st.badgeKampusIcon}>🎯</div>
               <div>
                 <div style={{ fontSize: 11, fontWeight: 700, color: '#64748b' }}>
-                  {targetJenjang.jenjang === 'SMP' ? 'Standarisasi TKA SMP Menuju SMA Unggulan' : 'Asesmen Standarisasi TKA SD Menuju SMP Favorit'}
+                  {targetJenjang.jenjang === 'SMP' ? 'Standarisasi TKA SMP Menuju SMA Unggulan' : 'Target Skor UTBK-SNBT Menuju PTN Impian'}
                 </div>
                 <div style={{ fontSize: 13, fontWeight: 800, color: '#0f172a' }}>
                   Standar Kelulusan: <span style={{ color: '#0d9488' }}>85.0</span> • Akurasi Terkini: <b>{analisisBelajar.skorRata != null ? `${analisisBelajar.skorRata}%` : 'Mulai Latihan'}</b>

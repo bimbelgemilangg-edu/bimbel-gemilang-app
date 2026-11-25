@@ -1,18 +1,19 @@
 // src/utils/tingkatSiswa.js
 // ============================================================
-// LOGIKA PEMBAGIAN JENJANG & KELAS SISWA (HAK AKSES KELAS 12 SMA)
+// LOGIKA PEMBAGIAN JENJANG & KELAS SISWA (HAK AKSES KELAS 9 SMP & 12 SMA)
 //
-// Aturan Hak Akses:
-// 1. KELAS 12 SMA (Paten):
-//    - Full akses ke fitur UTBK/SNBT: Modul 7 Subtes, Roadmap UTBK,
-//      Tryout UTBK 2x sebulan, Target PTN & Katalog 173 PTN, Countdown UTBK.
-// 2. KELAS 10 & 11 SMA:
-//    - Boleh eksplorasi Target PTN & Katalog PTN.
-//    - Fitur intensif UTBK (Modul 7 Subtes & Tryout UTBK Marathon) dikunci
-//      dengan pesan edukatif "Khusus untuk kelas 12 SMA".
-// 3. SMP, SD, & ENGLISH COURSE / UMUM:
-//    - SAMA SEKALI TIDAK MELIHAT fitur UTBK maupun PTN/Kampus.
-//    - Roadmap & Tryout mengikuti jenjang masing-masing (TKA SMP / TKA SD).
+// Aturan Hak Akses Sesuai Arahan Owner:
+// 1. KELAS 9 SMP:
+//    - Hak akses khusus menu TKA SMP KELAS 9 (Kelas Pendampingan TKA,
+//      Modul Belajar TKA SMP, Countdown Asesmen TKA SMP).
+// 2. KELAS 12 SMA / ALUMNI / GAP YEAR:
+//    - Hak akses khusus menu UTBK SMA KELAS 12 (Kelas Pendampingan UTBK,
+//      Modul Belajar 7 Subtes UTBK, Target PTN & Katalog 173 PTN, Countdown UTBK-SNBT).
+// 3. TKA SD & TKA SMA:
+//    - Status: BELUM DI BUAT (Sesuai arahan owner). Tidak ada menu TKA SD atau TKA SMA.
+// 4. KELAS SELAIN ITU (SD 1-6, SMP 7-8, SMA 10-11, ENGLISH / UMUM):
+//    - SAMA SEKALI TIDAK MELIHAT MENU TERKAIT UTBK/SNBT MAUPUN TKA!
+//    - Fokus pada materi harian, E-Learning, kuis interaktif, dan latihan harian reguler.
 // ============================================================
 
 /**
@@ -24,39 +25,63 @@ export function deteksiTingkatSiswa(profil = {}) {
     p = { kelas: p, kelasSekolah: p };
   }
   const kSekolah = String(p?.kelasSekolah || '').trim();
-  const kKelas = String(p?.kelas || '').trim();
+  const kKelas = String(p?.kelas || p?.studentKelas || p?.grade || '').trim();
   const jJenjang = String(p?.jenjang || '').trim();
   const pProgram = String(p?.program || p?.kategori || '').trim();
 
   const gabungan = `${kSekolah} ${kKelas} ${jJenjang} ${pProgram}`.toUpperCase();
 
-  // 1. Deteksi Kelas 12 SMA / Gap Year / Alumni UTBK
-  const isKelas12 =
-    /\b(12|XII)\b/i.test(gabungan) ||
-    /\b(GAP\s*YEAR|ALUMNI|UTBK|SNBT)\b/i.test(gabungan) ||
-    (kKelas === '12 SMA' || kSekolah === '12 SMA');
+  // 1. Deteksi Alumni / UTBK / Gap Year / SNBT
+  const isAlumniUtbk =
+    /\b(GAP\s*YEAR|GAPYEAR|ALUMNI|UTBK|SNBT)\b/i.test(gabungan) ||
+    kKelas === '12 SMA' || kSekolah === '12 SMA';
 
-  // 2. Deteksi Kelas 10 & 11 SMA
+  // 2. Flag Jenjang Utama (Word Boundary ketat agar SMPN 6 tidak tertukar dengan SD 6)
+  const hasSmp = /\b(SMP|SMPN|MTS|MTSN)\b/i.test(gabungan);
+  const hasSma = /\b(SMA|SMAN|SMK|SMKN|MA|MAN)\b/i.test(gabungan) || isAlumniUtbk;
+  const hasSd = /\b(SD|SDN|MI|MIN)\b/i.test(gabungan);
+
+  // 3. Cek Nomor Kelas secara presisi
+  const isKelas9Spesifik =
+    /\b(9|IX)\b/i.test(gabungan) &&
+    (hasSmp || /\b(9\s*SMP|SMP\s*9|KELAS\s*9|IX\s*SMP)\b/i.test(gabungan) || (!hasSma && !hasSd));
+
+  const isKelas12Spesifik =
+    isAlumniUtbk ||
+    (/\b(12|XII)\b/i.test(gabungan) &&
+      (hasSma || /\b(12\s*SMA|SMA\s*12|KELAS\s*12|XII\s*SMA|12\s*SMK)\b/i.test(gabungan) || (!hasSmp && !hasSd)));
+
+  // Deteksi Kelas 10 & 11 SMA
   const isSmaBawah =
-    (/\b(10|11|X|XI)\b/i.test(gabungan) || /\b(SMA|SMK|MA)\b/i.test(gabungan)) &&
-    !isKelas12 &&
-    !/\b(SMP|MTS|SD|MI)\b/i.test(gabungan);
+    (hasSma || /\b(10|11|X|XI)\b/i.test(gabungan)) &&
+    !isKelas12Spesifik &&
+    !hasSmp &&
+    !hasSd;
 
-  // 3. Deteksi SMA secara umum (10, 11, 12)
-  const isSma = isKelas12 || isSmaBawah || (/\b(SMA|SMK|MA)\b/i.test(gabungan) && !/\b(SMP|MTS|SD|MI)\b/i.test(gabungan));
+  // Deteksi SMA secara umum
+  const isSma = isKelas12Spesifik || isSmaBawah || (hasSma && !hasSmp && !hasSd);
 
-  // 4. Deteksi SMP (Kelas 7, 8, 9)
-  const isSmp =
-    (/\b(7|8|9|VII|VIII|IX)\b/i.test(gabungan) || /\b(SMP|MTS)\b/i.test(gabungan)) &&
-    !isSma;
-
-  // 5. Deteksi SD (Kelas 1-6)
-  const isSd =
-    (/\b(1|2|3|4|5|6|I|II|III|IV|V|VI)\b/i.test(gabungan) || /\b(SD|MI)\b/i.test(gabungan)) &&
+  // Deteksi Kelas 7 & 8 SMP
+  const isSmpBawah =
+    hasSmp &&
+    !isKelas9Spesifik &&
     !isSma &&
-    !isSmp;
+    !hasSd;
 
-  // 6. Program Lain (English Course, Kursus, Umum)
+  // Deteksi SMP secara umum
+  const isSmp = (hasSmp || isKelas9Spesifik || isSmpBawah) && !isSma;
+
+  // Deteksi SD secara umum
+  const isSd = (hasSd || (/\b(1|2|3|4|5|6|I|II|III|IV|V|VI)\b/i.test(gabungan) && !hasSmp && !hasSma)) && !isSmp && !isSma;
+
+  // Deteksi Kelas 6 SD spesifik
+  const isKelas6 = isSd && (
+    /\b(6|VI)\b/i.test(gabungan) ||
+    /\b(6\s*SD|SD\s*6|KELAS\s*6|VI\s*SD)\b/i.test(gabungan)
+  );
+  const isSdBawah = isSd && !isKelas6;
+
+  // Program Lain (English Course, Kursus, Umum)
   const isEnglishCourse = /\b(ENGLISH|TOEFL|IELTS|KURSUS)\b/i.test(gabungan);
   const isUmum = !isSma && !isSmp && !isSd;
 
@@ -66,17 +91,36 @@ export function deteksiTingkatSiswa(profil = {}) {
   else if (isEnglishCourse) jenjangBaku = 'ENGLISH';
   else if (isUmum) jenjangBaku = 'UMUM';
 
+  // Hak Akses Presisi Sesuai Permintaan Owner:
+  // - HANYA Kelas 9 SMP yang boleh mengakses TKA SMP
+  // - HANYA Kelas 12 SMA / Alumni yang boleh mengakses UTBK SMA
+  // - TKA SD & TKA SMA status: BELUM DI BUAT (false)
+  // - Selain itu GABISA menampilkan menu terkait UTBK/SNBT dan TKA
+  const bisaAksesTkaSmp = Boolean(isSmp && isKelas9Spesifik);
+  const bisaAksesUtbk = Boolean(isSma && isKelas12Spesifik);
+  const bisaAksesTkaSd = false; // BELUM DI BUAT
+  const bisaAksesTkaSma = false; // BELUM DI BUAT
+
   return {
-    isKelas12,
+    isKelas12: bisaAksesUtbk,
     isSmaBawah,
     isSma,
+    isKelas9: bisaAksesTkaSmp,
+    isSmpBawah,
     isSmp,
+    isKelas6,
+    isSdBawah,
     isSd,
     isEnglishCourse,
     isUmum,
     jenjangBaku,
-    bisaAksesTargetKampus: isSma, // SMA (10, 11, 12) bisa eksplorasi kampus
-    bisaAksesFiturUtbk: isKelas12, // HANYA Kelas 12 yang paten akses penuh UTBK
+    bisaAksesTkaSmp,
+    bisaAksesUtbk,
+    bisaAksesTkaSd,
+    bisaAksesTkaSma,
+    bisaAksesTargetKampus: bisaAksesUtbk, // HANYA Kelas 12 SMA (target UTBK SNBT)
+    bisaAksesFiturUtbk: bisaAksesUtbk,     // HANYA Kelas 12 SMA (UTBK penuh)
+    bisaAksesModulUjian: bisaAksesTkaSmp || bisaAksesUtbk, // HANYA 9 SMP & 12 SMA
   };
 }
 

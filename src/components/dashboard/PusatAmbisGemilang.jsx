@@ -46,35 +46,24 @@ export default function PusatAmbisGemilang({
     let badgeUjian;
 
     if (infoTingkat.isKelas12) {
-      // UTBK-SNBT 2027 Gelombang 1 diperkirakan 21 April 2027
+      // UTBK-SNBT 2027 Gelombang 1 diperkirakan 21 April 2027 (HANYA Kelas 12 SMA / Alumni)
       tanggalTarget = new Date('2027-04-21T07:00:00+07:00');
       namaUjian = 'UTBK-SNBT 2027';
       targetLabel = 'PTN Impian';
       badgeUjian = 'SNPMB 2027';
-    } else if (infoTingkat.isSmaBawah) {
-      // Penilaian Akhir & Asesmen TKA SMA
-      tanggalTarget = new Date('2026-06-08T07:30:00+07:00');
-      namaUjian = 'Penilaian Akhir & TKA SMA';
-      targetLabel = 'Fondasi PTN Impian';
-      badgeUjian = 'SMA 2026';
-    } else if (infoTingkat.isSmp) {
-      // Asesmen TKA SMP 2026 diperkirakan 11 Mei 2026
+    } else if (infoTingkat.isKelas9) {
+      // Asesmen TKA SMP 2026 diperkirakan 11 Mei 2026 (HANYA Kelas 9 SMP)
       tanggalTarget = new Date('2026-05-11T07:30:00+07:00');
       namaUjian = 'Asesmen TKA SMP 2026';
       targetLabel = 'SMA Unggulan Impian';
       badgeUjian = 'TKA SMP 2026';
-    } else if (infoTingkat.isSd) {
-      // Asesmen TKA SD 2026 diperkirakan 18 Mei 2026
-      tanggalTarget = new Date('2026-05-18T07:30:00+07:00');
-      namaUjian = 'Asesmen TKA SD 2026';
-      targetLabel = 'SMP Favorit Impian';
-      badgeUjian = 'TKA SD 2026';
     } else {
-      // Program Umum / Kursus
-      tanggalTarget = new Date('2026-06-20T07:30:00+07:00');
-      namaUjian = 'Evaluasi Kemampuan Akhir';
-      targetLabel = 'Standar Kompetensi';
-      badgeUjian = 'GEMILANG 2026';
+      // Kelas selain itu (SD 1-6, SMP 7-8, SMA 10-11): TIDAK MENAMPILKAN TKA MAUPUN UTBK
+      // (TKA SD & TKA SMA belum dibuat sesuai arahan owner)
+      tanggalTarget = new Date('2026-06-08T07:30:00+07:00');
+      namaUjian = 'Penilaian Akhir Semester 2026';
+      targetLabel = 'Standar Prestasi Akademik';
+      badgeUjian = 'SEMESTER';
     }
 
     const selisihMs = tanggalTarget.getTime() - sekarang.getTime();
@@ -272,14 +261,14 @@ export default function PusatAmbisGemilang({
               </div>
               <button
                 type="button"
-                onClick={() => navigate('/siswa/roadmap')}
+                onClick={() => navigate((infoTingkat.isKelas12 || infoTingkat.isKelas9) ? '/siswa/roadmap' : '/siswa/latihan-harian')}
                 style={styles.btnAksiMisi}
               >
                 Mulai ⚡
               </button>
             </div>
 
-            {/* Misi 2: Buka Modul (Kelas 12 UTBK vs Reguler) */}
+            {/* Misi 2: Buka Modul (Kelas 12 UTBK vs Kelas 9 TKA vs Reguler) */}
             <div style={styles.itemMisi}>
               <button
                 type="button"
@@ -295,15 +284,15 @@ export default function PusatAmbisGemilang({
               </button>
               <div style={{ flex: 1 }}>
                 <div style={{ ...styles.teksMisiJudul, textDecoration: statusMisi.misi2 ? 'line-through' : 'none', color: statusMisi.misi2 ? '#64748b' : '#1e293b' }}>
-                  {infoTingkat.isKelas12 ? 'Pelajari 1 Modul Bab UTBK' : (infoTingkat.isSmp ? 'Pelajari 1 Modul Bab TKA SMP' : 'Pelajari Materi Pembelajaran')}
+                  {infoTingkat.isKelas12 ? 'Pelajari 1 Modul Bab UTBK' : (infoTingkat.isKelas9 ? 'Pelajari 1 Modul Bab TKA SMP' : 'Pelajari Materi Pembelajaran')}
                 </div>
                 <div style={styles.teksMisiSub}>
-                  {infoTingkat.isKelas12 ? 'Penguatan konsep 7 subtes resmi SNPMB' : (infoTingkat.isSmp ? 'Penguatan konsep Numerasi & Literasi TKA Kelas 9' : 'Penguatan konsep dan telaah materi')}
+                  {infoTingkat.isKelas12 ? 'Penguatan konsep 7 subtes resmi SNPMB' : (infoTingkat.isKelas9 ? 'Penguatan konsep Numerasi & Literasi TKA Kelas 9' : 'Penguatan konsep dan telaah materi')}
                 </div>
               </div>
               <button
                 type="button"
-                onClick={() => navigate((infoTingkat.isKelas12 || infoTingkat.isSmp) ? '/siswa/modul' : '/siswa/latihan-harian')}
+                onClick={() => navigate((infoTingkat.isKelas12 || infoTingkat.isKelas9) ? '/siswa/modul' : '/siswa/elearning')}
                 style={styles.btnAksiMisi}
               >
                 Buka 📖

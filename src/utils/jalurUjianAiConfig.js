@@ -26,116 +26,122 @@ import { SOAL_PRESET_UTBK } from '../data/utbk2026KatkielData.js';
 import { SOAL_TKA_2026_SD_MTK, SOAL_TKA_2026_SD_BINDO } from '../data/tka2026SdData.js';
 
 /**
- * Deteksi apakah siswa berada di jenjang akhir yang wajib ujian seleksi.
+ * Deteksi apakah siswa berada di jenjang akhir yang wajib ujian seleksi:
+ * 1. Kelas 9 SMP -> TKA SMP KELAS 9
+ * 2. Kelas 12 SMA / Alumni / Gap Year -> UTBK SMA KELAS 12
+ * 3. TKA SD & TKA SMA -> BELUM DI BUAT (return null)
+ * 4. Kelas lain (SD 1-6, SMP 7-8, SMA 10-11) -> return null (TIDAK BISA MENAMPILKAN MENU TERKAIT UTBK / TKA)
+ *
  * @param {object|string} siswaAtauKelas objek profil siswa atau string kelas
  * @returns {null|{jenjang:string, kelas:string, kodeTarget:string, namaUjian:string, labelBadge:string, subJudul:string, deskripsi:string}}
  */
 export function deteksiJenjangUjianAkhir(siswaAtauKelas) {
-  let kelasStr = '';
+  let kSekolah = '';
+  let kKelas = '';
   let jenjangStr = '';
+  let programStr = '';
   if (typeof siswaAtauKelas === 'object' && siswaAtauKelas !== null) {
-    kelasStr = String(siswaAtauKelas.kelasSekolah || siswaAtauKelas.kelas || siswaAtauKelas.studentKelas || siswaAtauKelas.grade || '');
+    kSekolah = String(siswaAtauKelas.kelasSekolah || '');
+    kKelas = String(siswaAtauKelas.kelas || siswaAtauKelas.studentKelas || siswaAtauKelas.grade || '');
     jenjangStr = String(siswaAtauKelas.jenjang || '');
+    programStr = String(siswaAtauKelas.program || siswaAtauKelas.kategori || '');
   } else {
-    kelasStr = String(siswaAtauKelas || '');
+    kKelas = String(siswaAtauKelas || '');
   }
-  const k = kelasStr.trim().toLowerCase();
-  const j = jenjangStr.trim().toLowerCase();
+  const raw = `${kSekolah} ${kKelas} ${jenjangStr} ${programStr}`.trim().toLowerCase();
 
-  // 1. Cek Alumni / UTBK / Gap Year / Kedinasan
-  if (k.includes('alumni') || k.includes('gap year') || k.includes('gapyear') || k.includes('utbk') || k.includes('snbt')) {
+  // 1. Cek Alumni / UTBK / Gap Year / Kedinasan (Langsung ke UTBK SMA Kelas 12)
+  const isAlumniUtbk = /\b(alumni|gap\s*year|gapyear|utbk|snbt)\b/i.test(raw);
+  if (isAlumniUtbk) {
     return {
       jenjang: 'SMA',
       kelas: '12',
       kodeTarget: '12-SMA',
-      namaUjian: 'UTBK-SNBT & TKA SMA',
-      labelBadge: 'UTBK / TKA',
-      subJudul: 'Ekspedisi Kosmik SNBT & TKA SMA',
+      namaUjian: 'UTBK-SNBT SMA Kelas 12',
+      labelBadge: 'UTBK SNBT',
+      subJudul: 'Ekspedisi Kosmik SNBT & UTBK SMA Kelas 12',
       deskripsi: 'Simulasi bertingkat tanpa deadline persiapan lolos PTN & kedinasan impian.',
     };
   }
 
-  // Ekstrak angka kelas bila ada
-  const matchAngka = /(\d{1,2})/.exec(k);
-  const angka = matchAngka ? parseInt(matchAngka[1], 10) : null;
+  // 2. Deteksi Jenjang dengan Word Boundary ketat (Mencegah 'SMPN 6' masuk ke SD)
+  const hasSmp = /\b(smp|smpn|mts|mtsn)\b/i.test(raw);
+  const hasSma = /\b(sma|sman|smk|smkn|ma|man)\b/i.test(raw);
+  const hasSd = /\b(sd|sdn|mi|min)\b/i.test(raw);
 
-  // 2. Cek Kelas 6 SD
-  const isSd = k.includes('sd') || k.includes('mi') || j.includes('sd') || j.includes('mi');
-  if (angka === 6 || (isSd && (angka === 6 || k.includes('vi'))) || k.includes('6 sd') || k.includes('sd 6') || k.includes('kelas 6')) {
-    return {
-      jenjang: 'SD',
-      kelas: '6',
-      kodeTarget: '6-SD',
-      namaUjian: 'TKA SD (Asesmen Standarisasi)',
-      labelBadge: 'TKA SD',
-      subJudul: 'Misi Penjelajah TKA SD',
-      deskripsi: 'Simulasi bertingkat tanpa deadline untuk pemantapan standarisasi & kelulusan SD.',
-    };
+  // 3. Deteksi Kelas 9 SMP Spesifik
+  const is9 = /(kelas\s*9|\b9\s*(smp|mts)|\b(smp|mts)\s*9\b|\b9\b|\bix\b)/i.test(raw);
+
+  // 4. Deteksi Kelas 12 SMA Spesifik
+  const is12 = /(kelas\s*12|\b12\s*(sma|smk|ma)|\b(sma|smk|ma)\s*12\b|\b12\b|\bxii\b)/i.test(raw);
+
+  // === PENCOCOKAN KETAT ===
+
+  // KELAS 9 SMP -> TKA SMP KELAS 9
+  if (hasSmp && !hasSma && !hasSd) {
+    if (is9) {
+      return {
+        jenjang: 'SMP',
+        kelas: '9',
+        kodeTarget: '9-SMP',
+        namaUjian: 'TKA SMP Kelas 9',
+        labelBadge: 'TKA SMP',
+        subJudul: 'Ekspedisi Orbit TKA SMP Kelas 9',
+        deskripsi: 'Simulasi bertahap penguasaan TKA Matematika & Bahasa Indonesia menuju SMA favorit.',
+      };
+    }
+    // SMP Kelas 7 atau 8 -> Belum jenjang akhir, return null
+    return null;
   }
 
-  // 3. Cek Kelas 9 SMP
-  const isSmp = k.includes('smp') || k.includes('mts') || j.includes('smp') || j.includes('mts');
-  if (angka === 9 || (isSmp && (angka === 9 || k.includes('ix'))) || k.includes('9 smp') || k.includes('smp 9') || k.includes('kelas 9')) {
+  // KELAS 12 SMA -> UTBK SMA KELAS 12
+  if (hasSma && !hasSmp && !hasSd) {
+    if (is12) {
+      return {
+        jenjang: 'SMA',
+        kelas: '12',
+        kodeTarget: '12-SMA',
+        namaUjian: 'UTBK-SNBT SMA Kelas 12',
+        labelBadge: 'UTBK SNBT',
+        subJudul: 'Ekspedisi Kosmik SNBT & UTBK SMA Kelas 12',
+        deskripsi: 'Simulasi bertingkat tanpa deadline persiapan lolos PTN & kedinasan impian.',
+      };
+    }
+    // SMA Kelas 10 atau 11 -> Belum jenjang akhir UTBK, return null
+    return null;
+  }
+
+  // SD (KELAS 1 - 6): TKA SD BELUM DI BUAT -> return null
+  if (hasSd && !hasSmp && !hasSma) {
+    return null;
+  }
+
+  // Fallback toleran jika siswa hanya menginput angka murni tanpa nama sekolah/jenjang:
+  if (is9 && !is12 && !hasSd) {
     return {
       jenjang: 'SMP',
       kelas: '9',
       kodeTarget: '9-SMP',
-      namaUjian: 'TKA SMP (Pemantapan Kelulusan)',
+      namaUjian: 'TKA SMP Kelas 9',
       labelBadge: 'TKA SMP',
-      subJudul: 'Ekspedisi Orbit TKA SMP',
+      subJudul: 'Ekspedisi Orbit TKA SMP Kelas 9',
       deskripsi: 'Simulasi bertahap penguasaan TKA Matematika & Bahasa Indonesia menuju SMA favorit.',
     };
   }
 
-  // 4. Cek Kelas 12 SMA / SMK / Alumni / UTBK
-  const isSma = k.includes('sma') || k.includes('smk') || k.includes('ma') || j.includes('sma') || j.includes('smk') || j.includes('ma') || k.includes('utbk') || k.includes('alumni') || k.includes('xii');
-  if (angka === 12 || k.includes('xii') || (isSma && (angka === 12 || k.includes('xii') || k.includes('utbk') || k.includes('alumni'))) || k.includes('12 sma') || k.includes('sma 12') || k.includes('12 smk') || k.includes('kelas 12')) {
+  if (is12 && !is9 && !hasSmp && !hasSd) {
     return {
       jenjang: 'SMA',
       kelas: '12',
       kodeTarget: '12-SMA',
-      namaUjian: 'UTBK-SNBT & TKA SMA',
-      labelBadge: 'UTBK / TKA',
-      subJudul: 'Ekspedisi Kosmik SNBT & TKA SMA',
+      namaUjian: 'UTBK-SNBT SMA Kelas 12',
+      labelBadge: 'UTBK SNBT',
+      subJudul: 'Ekspedisi Kosmik SNBT & UTBK SMA Kelas 12',
       deskripsi: 'Simulasi bertingkat tanpa deadline persiapan lolos PTN & kedinasan impian.',
     };
   }
 
-  // Fallback toleran jika siswa hanya mengisi angka murni
-  if (angka === 6) {
-    return {
-      jenjang: 'SD',
-      kelas: '6',
-      kodeTarget: '6-SD',
-      namaUjian: 'TKA SD (Asesmen Standarisasi)',
-      labelBadge: 'TKA SD',
-      subJudul: 'Misi Penjelajah TKA SD',
-      deskripsi: 'Simulasi bertingkat tanpa deadline untuk pemantapan standarisasi & kelulusan SD.',
-    };
-  }
-  if (angka === 9) {
-    return {
-      jenjang: 'SMP',
-      kelas: '9',
-      kodeTarget: '9-SMP',
-      namaUjian: 'TKA SMP (Pemantapan Kelulusan)',
-      labelBadge: 'TKA SMP',
-      subJudul: 'Ekspedisi Orbit TKA SMP',
-      deskripsi: 'Simulasi bertahap penguasaan TKA Matematika & Bahasa Indonesia menuju SMA favorit.',
-    };
-  }
-  if (angka === 12) {
-    return {
-      jenjang: 'SMA',
-      kelas: '12',
-      kodeTarget: '12-SMA',
-      namaUjian: 'UTBK-SNBT & TKA SMA',
-      labelBadge: 'UTBK / TKA',
-      subJudul: 'Ekspedisi Kosmik SNBT & TKA SMA',
-      deskripsi: 'Simulasi bertingkat tanpa deadline persiapan lolos PTN & kedinasan impian.',
-    };
-  }
-
+  // Selain itu (SD, SMP 7-8, SMA 10-11, English, Umum): return null
   return null;
 }
 
@@ -176,165 +182,11 @@ export function getDaftarUnitJalurUjian(jenjang = 'SMP') {
   const j = String(jenjang).toUpperCase();
 
   // ------------------------------------------------------------
-  // 🎒 1. JALUR UJIAN TKA SD (KELAS 6 / FASE C) — SUBTES MURNI 12-14 SOAL (20 MNT)
-  // Dipisah tegas: Matematika dan Bahasa Indonesia TIDAK DICAMPUR
+  // 🎒 1. JALUR UJIAN TKA SD (STATUS: BELUM DI BUAT)
+  // Sesuai arahan owner, TKA SD belum dibuat sehingga tidak aktif
   // ------------------------------------------------------------
   if (j === 'SD') {
-    return [
-      {
-        id: 'jalur-ai-sd-u1',
-        unitNomor: 1,
-        judul: 'Unit 1: TKA Matematika — Pecahan & Bilangan Rasional',
-        subjudul: 'Pecahan Senilai, Bentuk Desimal & Operasi Hitung',
-        tipe: 'start',
-        mapel: 'TKA Matematika',
-        subtesKode: 'MTK',
-        kategoriSubtes: 'Matematika',
-        polaFokus: 'Pecahan Senilai & Perbandingan Rasio',
-        durasiMenit: 20,
-        jumlahSoal: 12,
-        passingGrade: 60,
-        xpReward: 100,
-        icon: 'Rocket',
-        posisiAlign: 'center',
-        deskripsi: 'Misi kilat 20 menit: taklukkan operasi hitung pecahan senilai dan perbandingan rasio bilangan.',
-      },
-      {
-        id: 'jalur-ai-sd-u2',
-        unitNomor: 2,
-        judul: 'Unit 2: TKA Bahasa Indonesia — Fakta Wacana Tersurat',
-        subjudul: 'Menemukan Fakta Kunci & Ide Tersurat dalam Teks Informasi',
-        tipe: 'unit',
-        mapel: 'TKA Bahasa Indonesia',
-        subtesKode: 'BINDO',
-        kategoriSubtes: 'Bahasa Indonesia',
-        polaFokus: 'Teks Informasi & Fakta Tersurat',
-        durasiMenit: 20,
-        jumlahSoal: 12,
-        passingGrade: 65,
-        xpReward: 120,
-        icon: 'BookOpen',
-        posisiAlign: 'left',
-        deskripsi: 'Misi kilat 20 menit: bedah wacana informasi dan temukan fakta kunci tanpa terkecoh opsi mirip.',
-      },
-      {
-        id: 'jalur-ai-sd-u3',
-        unitNomor: 3,
-        judul: 'Unit 3: TKA Matematika — Geometri Keliling & Luas',
-        subjudul: 'Bangun Datar Gabungan & Pemecahan Masalah Luas',
-        tipe: 'unit',
-        mapel: 'TKA Matematika',
-        subtesKode: 'MTK',
-        kategoriSubtes: 'Matematika',
-        polaFokus: 'Geometri Keliling & Luas Bangun Datar',
-        durasiMenit: 20,
-        jumlahSoal: 12,
-        passingGrade: 70,
-        xpReward: 140,
-        icon: 'Sparkles',
-        posisiAlign: 'right',
-        deskripsi: 'Misi kilat 20 menit: kuasai rumus luas/keliling bangun gabungan dengan pemotongan bidang cerdas.',
-      },
-      {
-        id: 'jalur-ai-sd-u4',
-        unitNomor: 4,
-        judul: 'Unit 4: TKA Bahasa Indonesia — Sastra Fabel & Makna Tersirat',
-        subjudul: 'Amanat Cerita, Watak Tokoh & Pesan Moral Fabel',
-        tipe: 'unit',
-        mapel: 'TKA Bahasa Indonesia',
-        subtesKode: 'BINDO',
-        kategoriSubtes: 'Bahasa Indonesia',
-        polaFokus: 'Sastra Anak & Amanat Tersirat',
-        durasiMenit: 20,
-        jumlahSoal: 12,
-        passingGrade: 70,
-        xpReward: 160,
-        icon: 'Award',
-        posisiAlign: 'left',
-        deskripsi: 'Misi kilat 20 menit: temukan amanat tersembunyi dan watak tokoh fabel dengan jeli.',
-      },
-      {
-        id: 'jalur-ai-sd-u5',
-        unitNomor: 5,
-        judul: 'Unit 5: TKA Matematika — Pengukuran Kecepatan & Debit',
-        subjudul: 'Soal Cerita Jarak Waktu Kecepatan serta Debit Volume',
-        tipe: 'unit',
-        mapel: 'TKA Matematika',
-        subtesKode: 'MTK',
-        kategoriSubtes: 'Matematika',
-        polaFokus: 'Satuan Kecepatan & Debit Aliran',
-        durasiMenit: 20,
-        jumlahSoal: 12,
-        passingGrade: 75,
-        xpReward: 180,
-        icon: 'Sparkles',
-        posisiAlign: 'right',
-        deskripsi: 'Misi kilat 20 menit: modelkan kasus aliran debit dan susul-menyusul kecepatan tanpa bingung satuan.',
-      },
-      {
-        id: 'jalur-ai-sd-u6',
-        unitNomor: 6,
-        judul: 'Unit 6: TKA Bahasa Indonesia — Ide Pokok & Simpulan Teks',
-        subjudul: 'Menentukan Gagasan Utama Paragraf & Simpulan Akhir',
-        tipe: 'unit',
-        mapel: 'TKA Bahasa Indonesia',
-        subtesKode: 'BINDO',
-        kategoriSubtes: 'Bahasa Indonesia',
-        polaFokus: 'Gagasan Utama & Simpulan Paragraf',
-        durasiMenit: 20,
-        jumlahSoal: 12,
-        passingGrade: 75,
-        xpReward: 200,
-        icon: 'BookOpen',
-        posisiAlign: 'left',
-        deskripsi: 'Misi kilat 20 menit: kuasai teknik skimming untuk menyimpulkan ide pokok paragraf secara presisi.',
-      },
-      {
-        id: 'jalur-ai-sd-u7',
-        unitNomor: 7,
-        judul: 'Unit 7: TKA Matematika — Pengolahan Data & Diagram',
-        subjudul: 'Membaca Tabel, Diagram Batang, Garis & Rata-rata Nilai',
-        tipe: 'unit',
-        mapel: 'TKA Matematika',
-        subtesKode: 'MTK',
-        kategoriSubtes: 'Matematika',
-        polaFokus: 'Statistika Tabel Diagram & Rata-rata',
-        durasiMenit: 20,
-        jumlahSoal: 12,
-        passingGrade: 80,
-        xpReward: 220,
-        icon: 'Award',
-        posisiAlign: 'right',
-        deskripsi: 'Misi kilat 20 menit: ekstrak informasi dari tabel/diagram dan hitung nilai mean secara kilat.',
-      },
-      {
-        id: 'jalur-ai-sd-u8',
-        unitNomor: 8,
-        judul: 'Unit 8: Simulasi Terpadu Asesmen Standarisasi SD',
-        subjudul: 'Simulasi Lengkap Matematika & Bahasa Indonesia Menuju SMP',
-        tipe: 'unit',
-        mapel: 'Simulasi Terpadu TKA SD',
-        subtesKode: 'TERPADU',
-        kategoriSubtes: 'Simulasi',
-        polaFokus: 'Simulasi Terpadu Standarisasi SD',
-        durasiMenit: 25,
-        jumlahSoal: 14,
-        passingGrade: 80,
-        xpReward: 250,
-        icon: 'Trophy',
-        posisiAlign: 'left',
-        deskripsi: 'Tantangan puncak 25 menit: simulasi gabungan standar Asesmen TKA SD untuk membuktikan kesiapan masuk SMP impian!',
-      },
-      {
-        id: 'jalur-ai-sd-review',
-        unitNomor: 9,
-        judul: 'Radar Diagnosa TKA SD & Analisis Kelulusan',
-        subjudul: 'Breakdown Penguasaan Matematika vs Bahasa Indonesia',
-        tipe: 'review',
-        posisiAlign: 'center',
-        deskripsi: 'Analisis komprehensif performamu dari seluruh unit. Temukan kekuatanmu dan materi yang perlu ditingkatkan!',
-      },
-    ];
+    return [];
   }
 
   // ------------------------------------------------------------

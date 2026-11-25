@@ -277,9 +277,9 @@ export function normalisasiMetaSoal(s) {
 }
 
 const DAFTAR_JENJANG_UTAMA = [
-  { id: 'SMP', label: 'SMP / MTs', deskripsi: 'TKA SMP · Asesmen Daerah · Masuk SMA Unggulan', icon: '🎓', badge: 'TKA SMP' },
-  { id: 'SMA', label: 'SMA / MA / UTBK', deskripsi: 'UTBK SNBT · SNPMB · Masuk PTN Impian', icon: '🏛️', badge: 'UTBK SNBT' },
-  { id: 'SD', label: 'SD / MI', deskripsi: 'TKA SD · Fondasi Numerasi & Literasi', icon: '🎒', badge: 'TKA SD' },
+  { id: 'SMP', label: 'SMP / MTs', deskripsi: 'TKA SMP Kelas 9 · Asesmen Daerah · Masuk SMA Unggulan', icon: '🎓', badge: 'TKA SMP 9' },
+  { id: 'SMA', label: 'SMA / MA / UTBK', deskripsi: 'UTBK SNBT Kelas 12 · SNPMB · Masuk PTN Impian', icon: '🏛️', badge: 'UTBK 12' },
+  { id: 'SD', label: 'SD / MI', deskripsi: 'Fondasi Numerasi & Literasi Sekolah Dasar', icon: '🎒', badge: 'Reguler SD' },
 ];
 
 const MAPEL_RESMI_PER_JENJANG = {

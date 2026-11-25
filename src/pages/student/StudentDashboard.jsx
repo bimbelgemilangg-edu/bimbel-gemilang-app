@@ -861,8 +861,8 @@ const StudentDashboard = () => {
           const targetUjian = deteksiJenjangUjianAkhir({ ...studentProfile, kelas: k, jenjang: j });
           if (!targetUjian) return null;
 
-          const isUtbk = targetUjian.jenjang === 'SMA' || String(k).toLowerCase().includes('12') || String(k).toLowerCase().includes('utbk');
-          const judulRoadmap = isUtbk ? 'Roadmap UTBK-SNBT' : targetUjian.jenjang === 'SD' ? 'Roadmap TKA SD' : 'Roadmap TKA SMP';
+          const isUtbk = targetUjian.jenjang === 'SMA';
+          const judulRoadmap = isUtbk ? 'Roadmap UTBK-SNBT SMA Kelas 12' : 'Roadmap TKA SMP Kelas 9';
           const taglineRoadmap = isUtbk
             ? 'Pantau perjalanan kemampuan UTBK/SNBT-mu real time'
             : 'Pantau perjalanan kemampuan TKA-mu real time';
@@ -929,10 +929,10 @@ const StudentDashboard = () => {
             { key: 'elearning', label: 'E-Learning', emoji: '📖', warna: '#f3e8ff', warnaTeks: '#652D90', segeraHadir: false },
             { key: 'latihan', label: 'Latihan Harian', emoji: '📝', warna: '#ecfeff', warnaTeks: '#155e75', segeraHadir: false },
             { key: 'tryout', label: 'TryOut Terjadwal', emoji: '📅', warna: '#fef3c7', warnaTeks: '#92400e', segeraHadir: false },
-            // 📚 Modul Belajar: UTBK untuk kelas 12 SMA, TKA untuk SMP
-            ...((infoTingkat.isKelas12 || infoTingkat.isSmp) ? [{
+            // 📚 Modul Belajar: UTBK untuk kelas 12 SMA, TKA untuk kelas 9 SMP
+            ...((infoTingkat.isKelas12 || infoTingkat.isKelas9) ? [{
               key: 'modul',
-              label: infoTingkat.isKelas12 ? 'Modul Belajar UTBK' : 'Modul Belajar TKA',
+              label: infoTingkat.isKelas12 ? 'Modul Belajar UTBK' : 'Modul Belajar TKA SMP',
               emoji: '📚',
               warna: '#ccfbf1',
               warnaTeks: '#0f766e',
