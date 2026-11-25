@@ -862,10 +862,10 @@ const StudentDashboard = () => {
           if (!targetUjian) return null;
 
           const isUtbk = targetUjian.jenjang === 'SMA';
-          const judulRoadmap = isUtbk ? 'Roadmap UTBK-SNBT SMA Kelas 12' : 'Roadmap TKA SMP Kelas 9';
+          const judulRoadmap = isUtbk ? '🏔️ Peta Pendakian UTBK-SNBT Kelas 12' : '🏔️ Peta Pendakian TKA SMP Kelas 9';
           const taglineRoadmap = isUtbk
-            ? 'Pantau perjalanan kemampuan UTBK/SNBT-mu real time'
-            : 'Pantau perjalanan kemampuan TKA-mu real time';
+            ? 'Lihat posisi teman di puncak UTBK & daki maksimal 2x/minggu'
+            : 'Lihat posisi teman di puncak TKA SMP & daki maksimal 2x/minggu';
 
           return (
             <div
@@ -873,27 +873,28 @@ const StudentDashboard = () => {
               style={{
                 marginTop: 10,
                 marginBottom: 16,
-                background: 'linear-gradient(135deg, #0d9488 0%, #047857 100%)',
+                background: 'linear-gradient(135deg, #0d9488 0%, #0f172a 100%)',
                 borderRadius: 20,
                 padding: '16px 20px',
                 color: '#ffffff',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
+                gap: 12,
                 cursor: 'pointer',
-                boxShadow: '0 6px 20px rgba(13, 148, 136, 0.28)',
+                boxShadow: '0 8px 24px rgba(13, 148, 136, 0.3)',
                 position: 'relative',
                 overflow: 'hidden',
               }}
               title={`Buka ${judulRoadmap}`}
             >
-              <div style={{ position: 'relative', zIndex: 2, maxWidth: '80%' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+              <div style={{ position: 'relative', zIndex: 2, maxWidth: '75%' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4, flexWrap: 'wrap' }}>
                   <span style={{ background: '#f59e0b', color: '#1e293b', fontSize: 10, fontWeight: 900, padding: '2px 8px', borderRadius: 99 }}>
                     {targetUjian.labelBadge}
                   </span>
                   <span style={{ fontSize: 11, fontWeight: 700, color: '#ccfbf1' }}>
-                    Simulasi Bertahap Tanpa Deadline
+                    Peta Gunung &amp; Progres Teman
                   </span>
                 </div>
                 <div style={{ fontSize: 16.5, fontWeight: 900, color: '#ffffff' }}>
@@ -903,15 +904,14 @@ const StudentDashboard = () => {
                   {taglineRoadmap} 🚀
                 </div>
               </div>
-              <div style={{ position: 'relative', zIndex: 2 }}>
-                <div style={{
-                  width: 46, height: 46, borderRadius: '50%',
-                  background: 'rgba(255,255,255,0.22)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+              <div style={{ position: 'relative', zIndex: 2, display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{
+                  background: '#ffffff', color: '#0f766e', fontSize: 12, fontWeight: 900,
+                  padding: '8px 14px', borderRadius: 99, whiteSpace: 'nowrap',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.18)',
                 }}>
-                  <Rocket size={22} color="#ffffff" />
-                </div>
+                  Buka Peta →
+                </span>
               </div>
             </div>
           );
@@ -925,7 +925,7 @@ const StudentDashboard = () => {
           const infoTingkat = deteksiTingkatSiswa({ ...studentProfile, kelas: kJenjang, kelasSekolah: kJenjang, jenjang: jJenjang });
 
           const menuBaru = [
-            ...(cekAi ? [{ key: 'roadmap', label: 'Roadmap', emoji: '🗺️', warna: '#ccfbf1', warnaTeks: '#0f766e', segeraHadir: false }] : []),
+            ...(cekAi ? [{ key: 'roadmap', label: 'Peta Pendakian', emoji: '🏔️', warna: '#ccfbf1', warnaTeks: '#0f766e', segeraHadir: false }] : []),
             { key: 'elearning', label: 'E-Learning', emoji: '📖', warna: '#f3e8ff', warnaTeks: '#652D90', segeraHadir: false },
             { key: 'latihan', label: 'Latihan Harian', emoji: '📝', warna: '#ecfeff', warnaTeks: '#155e75', segeraHadir: false },
             { key: 'tryout', label: 'TryOut Terjadwal', emoji: '📅', warna: '#fef3c7', warnaTeks: '#92400e', segeraHadir: false },

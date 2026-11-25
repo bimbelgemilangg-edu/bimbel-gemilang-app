@@ -15,7 +15,7 @@
 // ============================================================
 
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { db } from '../../../firebase';
 import { collection, getDocs, query, where, doc, deleteDoc, addDoc } from 'firebase/firestore';
 import {
@@ -28,6 +28,8 @@ import {
 import { DAFTAR_SUBTES_SMP, SEMUA_BAB_SMP } from '../../../data/tkaSmpModulData.js';
 import { DAFTAR_SUBTES_MODUL, SEMUA_BAB_MODUL } from '../../../data/ambisModulUtbkData.js';
 import RenderMath from '../../../components/RenderMath';
+import PetaGunungPendakian from '../../../components/tryout/PetaGunungPendakian';
+import { hitungKuotaPendakianMingguIni, muatPosisiTemanPendakian } from '../../../utils/kuotaPendakian';
 import { useProfilSiswa } from '../../../utils/profilSiswa';
 import { useDataTargetKampus } from '../../../services/dataTargetKampus';
 import { saringPaketUntukSiswa } from '../../../utils/cocokkanTargetPaket';
@@ -120,6 +122,7 @@ function getWeekKey(date = new Date()) {
 
 export default function JalurUjianAiPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const profil = useProfilSiswa();
   const studentId = typeof localStorage !== 'undefined'
     ? localStorage.getItem('studentId') || localStorage.getItem('studentNim') || ''
@@ -157,7 +160,14 @@ export default function JalurUjianAiPage() {
   // 'latihan_kelas' (Tugas Bersama Tentor & Buku Besar)
   // 'modul_materi' (Modul Teori TKA/UTBK)
   // 'ambis_practice' (Latihan Mandiri AI Kuota Mingguan)
-  const [tabTampilan, setTabTampilan] = useState('latihan_kelas');
+  const [tabTampilan, setTabTampilan] = useState(() => {
+    const params = new URLSearchParams(location.search || '');
+    const t = params.get('tab');
+    if (t === 'ekspedisi_jalur' || t === 'peta_jalur') return 'ekspedisi_jalur';
+    if (location.pathname.includes('/roadmap')) return 'ekspedisi_jalur';
+    return 'latihan_kelas';
+  });
+  const [temanPendakian, setTemanPendakian] = useState({ temanList: [], perPos: new Map() });
   const [daftarTerbitanTentor, setDaftarTerbitanTentor] = useState([]);
   const [subtesModulTerpilih, setSubtesModulTerpilih] = useState('ALL');
   const [subtesSilabusTerpilih, setSubtesSilabusTerpilih] = useState(() => (targetJenjang?.jenjang === 'SMP' ? 'MTK' : targetJenjang?.jenjang === 'SD' ? 'MTK' : 'PU'));
@@ -423,10 +433,31 @@ export default function JalurUjianAiPage() {
     });
   }, [paketOtomatisDb, targetJenjang]);
 
-  // 3. Progresi personal ekspedisi jalur
+  // 3. Progresi personal ekspedisi jalur & kuota pendakian mingguan (maks 2x/minggu)
   const { unitList, totalUnit, selesaiCount, persentaseSelesai } = useMemo(() => {
     return hitungProgresiJalur(daftarUnit, sesiList);
   }, [daftarUnit, sesiList]);
+
+  const kuotaPendakian = useMemo(() => {
+    return hitungKuotaPendakianMingguIni(sesiList, daftarUnit);
+  }, [sesiList, daftarUnit]);
+
+  // 3b. Muat posisi Pos pendakian teman sejenjang (bubble foto teman di Peta Gunung)
+  useEffect(() => {
+    if (!targetJenjang?.jenjang) return;
+    let aktif = true;
+    muatPosisiTemanPendakian(db, {
+      jenjangTarget: targetJenjang.jenjang,
+      myStudentId: studentId,
+      myStudentDocId: studentDocId,
+      daftarUnit,
+    })
+      .then((res) => {
+        if (aktif && res) setTemanPendakian(res);
+      })
+      .catch((err) => console.warn('Gagal memuat posisi teman pendakian:', err));
+    return () => { aktif = false; };
+  }, [targetJenjang?.jenjang, studentId, studentDocId, daftarUnit]);
 
   // 4. Target Kampus Siswa
   const { keadaan: keadaanTarget } = useDataTargetKampus();
@@ -536,6 +567,7 @@ export default function JalurUjianAiPage() {
       setModalReviewTerbuka(true);
       return;
     }
+    setPesanError('');
     setUnitTerpilih(unit);
   };
 
@@ -543,8 +575,12 @@ export default function JalurUjianAiPage() {
   const handleMulaiUjian = async (unit) => {
     if (!unit || unit.status === 'locked' || unit.status === 'completed' || sedangMenyiapkan) {
       if (unit?.status === 'completed') {
-        setPesanError('Misi try out ini sudah selesai dikerjakan dan tidak dapat dikerjakan lagi.');
+        setPesanError('Misi pendakian ini sudah selesai dikerjakan.');
       }
+      return;
+    }
+    if (kuotaPendakian.terkunciMingguIni) {
+      setPesanError(`⏳ Kuota pendakian minggu ini (${kuotaPendakian.maksimal}/${kuotaPendakian.maksimal}) sudah terpakai! Istirahat sejenak di Basecamp dan lanjutkan pendakian lagi ${kuotaPendakian.labelReset} agar bank soal tetap terjaga.`);
       return;
     }
     setSedangMenyiapkan(true);
@@ -1918,95 +1954,19 @@ export default function JalurUjianAiPage() {
       )}
 
       {/* ==================================================================== */}
-      {/* TAB 2: PETA EKSPEDISI JALUR (LEVELING BERTAHAP UNIT 1 - 8)           */}
+      {/* TAB 2: PETA GUNUNG PENDAKIAN (DENGAN BUBBLE TEMAN & KUOTA MINGGUAN)  */}
       {/* ==================================================================== */}
       {tabTampilan === 'ekspedisi_jalur' && (
-        <div style={{ marginTop: 16 }}>
-          {/* BAR PROGRES JALUR KEMAMPUAN SISWA */}
-          <div style={st.barProgresBungkus}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-              <span style={{ fontSize: 12, fontWeight: 800, color: '#0f766e', display: 'flex', alignItems: 'center', gap: 4 }}>
-                <Compass size={14} /> Jalur Misi Mandiri (Tanpa Deadline)
-              </span>
-              <span style={{ fontSize: 12, fontWeight: 800, color: '#0d9488' }}>
-                {persentaseSelesai}% Selesai
-              </span>
-            </div>
-            <div style={st.progressBarTrack}>
-              <div style={{ ...st.progressBarFill, width: `${persentaseSelesai}%` }} />
-            </div>
-          </div>
-
-          {/* DAFTAR UNIT JALUR EKSPEDISI */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 14 }}>
-            {unitList.map((unit) => {
-              const isLocked = unit.status === 'locked';
-              const isCurrent = unit.status === 'current';
-              const isCompleted = unit.status === 'completed';
-
-              return (
-                <div
-                  key={unit.id}
-                  onClick={() => handleKlikUnit(unit)}
-                  style={{
-                    ...st.kartuUnitEkspedisi,
-                    border: isCurrent ? '2px solid #0d9488' : '1px solid #e2e8f0',
-                    background: isCurrent ? '#f0fdfa' : '#ffffff',
-                    cursor: isLocked ? 'not-allowed' : 'pointer',
-                    opacity: isLocked ? 0.75 : 1,
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                    <div style={{
-                      width: 44,
-                      height: 44,
-                      borderRadius: 12,
-                      background: isCompleted ? '#d1fae5' : isCurrent ? '#ccfbf1' : '#f1f5f9',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}>
-                      {isCompleted ? (
-                        <CheckCircle2 size={24} color="#059669" />
-                      ) : isCurrent ? (
-                        <Rocket size={24} color="#0d9488" />
-                      ) : (
-                        <Lock size={20} color="#94a3b8" />
-                      )}
-                    </div>
-                    <div>
-                      <div style={{ fontSize: 11, fontWeight: 800, color: isCurrent ? '#0d9488' : '#64748b' }}>
-                        {unit.mapel} {unit.polaFokus && `• ${unit.polaFokus}`}
-                      </div>
-                      <h4 style={{ fontSize: 15, fontWeight: 800, color: '#0f172a', margin: '2px 0 4px' }}>
-                        {unit.judul}
-                      </h4>
-                      <div style={{ fontSize: 12, color: '#64748b' }}>
-                        {unit.jumlahSoal} Soal • {unit.durasiMenit} Menit • {unit.xpReward} XP
-                      </div>
-                    </div>
-                  </div>
-
-                  <div>
-                    {isCompleted ? (
-                      <span style={{ fontSize: 12, fontWeight: 800, color: '#059669', background: '#ecfdf5', padding: '4px 10px', borderRadius: 8 }}>
-                        Selesai ({unit.skor}%)
-                      </span>
-                    ) : isCurrent ? (
-                      <button type="button" style={st.btnMulaiUnitJalur}>
-                        Mulai Misi 🚀
-                      </button>
-                    ) : (
-                      <span style={{ fontSize: 12, fontWeight: 600, color: '#94a3b8' }}>
-                        Terkunci
-                      </span>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
+        <PetaGunungPendakian
+          unitList={unitList}
+          persentaseSelesai={persentaseSelesai}
+          kuotaPendakian={kuotaPendakian}
+          temanPerPos={temanPendakian.perPos}
+          temanList={temanPendakian.temanList}
+          profilSaya={profil}
+          isSmp={isSmp}
+          onKlikUnit={handleKlikUnit}
+        />
       )}
 
       {/* ==================================================================== */}
@@ -2467,14 +2427,34 @@ export default function JalurUjianAiPage() {
               </div>
             )}
 
+            {unitTerpilih.status === 'current' && kuotaPendakian.terkunciMingguIni && (
+              <div style={{ background: '#fffbeb', border: '1px solid #fcd34d', borderRadius: 10, padding: 10, color: '#92400e', fontSize: 12, marginBottom: 12, lineHeight: 1.5 }}>
+                ⏳ <b>Kuota Pendakian Minggu Ini ({kuotaPendakian.maksimal}/{kuotaPendakian.maksimal}) Sudah Terpakai.</b> Lanjutkan pendakian berikutnya <b>{kuotaPendakian.labelReset}</b> agar materi matang &amp; bank soal tetap terjaga.
+              </div>
+            )}
+
             <button
               type="button"
-              disabled={sedangMenyiapkan || unitTerpilih.status === 'locked'}
+              disabled={sedangMenyiapkan || unitTerpilih.status === 'locked' || unitTerpilih.status === 'completed' || (unitTerpilih.status === 'current' && kuotaPendakian.terkunciMingguIni)}
               onClick={() => handleMulaiUjian(unitTerpilih)}
-              style={st.btnLuncurkanUjian}
+              style={{
+                ...st.btnLuncurkanUjian,
+                opacity: (sedangMenyiapkan || unitTerpilih.status === 'locked' || unitTerpilih.status === 'completed' || (unitTerpilih.status === 'current' && kuotaPendakian.terkunciMingguIni)) ? 0.55 : 1,
+                cursor: (unitTerpilih.status === 'locked' || unitTerpilih.status === 'completed' || (unitTerpilih.status === 'current' && kuotaPendakian.terkunciMingguIni)) ? 'not-allowed' : 'pointer',
+              }}
             >
               <Rocket size={18} />
-              <span>{sedangMenyiapkan ? 'Menyiapkan Simulasi...' : 'Mulai Simulasi Ujian 🚀'}</span>
+              <span>
+                {sedangMenyiapkan
+                  ? 'Menyiapkan Simulasi...'
+                  : unitTerpilih.status === 'completed'
+                  ? 'Sudah Selesai ✓'
+                  : unitTerpilih.status === 'locked'
+                  ? 'Pos Masih Terkunci 🔒'
+                  : kuotaPendakian.terkunciMingguIni
+                  ? `Buka ${kuotaPendakian.labelReset} ⏳`
+                  : 'Mulai Simulasi Ujian 🚀'}
+              </span>
             </button>
           </div>
         </div>
