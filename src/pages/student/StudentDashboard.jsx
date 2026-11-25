@@ -299,19 +299,23 @@ const StudentDashboard = () => {
         if (snap.exists()) {
           const d = snap.data();
           setProgresXp(Number(d.xp) || 0);
-          setProgresStreak(Number(d.streak) || 0);
           const hariIniStr = new Date().toISOString().slice(0, 10);
           const lastActiveDateStr = d.lastActiveDate || null;
-          const streak = Number(d.streak) || 0;
+          const rawStreak = Number(d.streak) || 0;
           const target = d.targetHarian || 10;
           const soalHariIni = d.soalHariIniTanggal === hariIniStr ? (d.soalHariIniCount || 0) : 0;
           if (!lastActiveDateStr) {
+            setProgresStreak(0);
             setStatusStreak('belum-pernah');
           } else {
             const selisihHari = Math.round((new Date(hariIniStr).getTime() - new Date(lastActiveDateStr).getTime()) / (1000 * 60 * 60 * 24));
-            if (streak === 0 && selisihHari > 1) setStatusStreak('berakhir');
-            else if (soalHariIni < target) setStatusStreak('berisiko');
-            else setStatusStreak('aman');
+            if (selisihHari > 1 || rawStreak <= 0) {
+              setProgresStreak(0);
+              setStatusStreak(rawStreak === 0 && selisihHari <= 1 ? 'berisiko' : 'berakhir');
+            } else {
+              setProgresStreak(rawStreak);
+              setStatusStreak(soalHariIni < target ? 'berisiko' : 'aman');
+            }
           }
         }
       } catch (e) {
@@ -967,10 +971,12 @@ const StudentDashboard = () => {
                   </div>
                 </div>
                 <div style={{ display: 'flex', gap: 8, marginBottom: 16, position: 'relative' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'rgba(255,255,255,0.15)', padding: '6px 11px', borderRadius: 20 }}>
-                    <span style={{ fontSize: 13 }}>🔥</span>
-                    <span style={{ color: 'white', fontWeight: 700, fontSize: 12 }}>{progresStreak} hari</span>
-                  </div>
+                  {progresStreak > 0 && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'rgba(255,255,255,0.15)', padding: '6px 11px', borderRadius: 20 }}>
+                      <span style={{ fontSize: 13 }}>🔥</span>
+                      <span style={{ color: 'white', fontWeight: 700, fontSize: 12 }}>{progresStreak} hari</span>
+                    </div>
+                  )}
                   <div style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'rgba(255,255,255,0.15)', padding: '6px 11px', borderRadius: 20 }}>
                     <span style={{ fontSize: 13 }}>🚀</span>
                     <span style={{ color: 'white', fontWeight: 700, fontSize: 12 }}>{progresXp} XP</span>

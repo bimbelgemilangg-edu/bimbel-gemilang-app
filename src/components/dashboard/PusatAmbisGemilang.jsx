@@ -332,7 +332,8 @@ export default function PusatAmbisGemilang({
           </div>
         </div>
 
-        {/* Kolom Kanan: Streak Latihan & 7 Hari Terakhir */}
+        {/* Kolom Kanan: Streak Latihan (HANYA muncul jika siswa sudah punya streak > 0) */}
+        {progresStreak > 0 ? (
         <div style={styles.cardStreak}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -351,9 +352,7 @@ export default function PusatAmbisGemilang({
           </div>
 
           <div style={styles.teksStreakPemicu}>
-            {progresStreak === 0
-              ? 'Latihan hari ini untuk menyalakan api streak pertamamu!'
-              : `Hebat! Pertahankan streak ${progresStreak} hari ini agar ritme belajarmu tidak putus.`}
+            {`Hebat! Pertahankan streak ${progresStreak} hari ini agar ritme belajarmu tidak putus.`}
           </div>
 
           {/* Strip 7 Hari */}
@@ -397,6 +396,36 @@ export default function PusatAmbisGemilang({
             <ChevronRight size={15} color="#0d9488" />
           </button>
         </div>
+        ) : (
+        <div style={styles.cardStreak}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+            <div>
+              <div style={styles.streakLabel}>PROGRES LATIHAN</div>
+              <div style={{ fontSize: 15, fontWeight: 800, color: '#0f172a', marginTop: 2 }}>
+                Belum Ada Latihan Aktif
+              </div>
+            </div>
+            <div style={styles.xpBadge}>
+              <Zap size={14} color="#f59e0b" />
+              <span>{progresXp} XP</span>
+            </div>
+          </div>
+
+          <div style={styles.teksStreakPemicu}>
+            Kerjakan latihan pertamamu hari ini untuk mengaktifkan streak belajar dan memunculkan statistik progresmu.
+          </div>
+
+          <button
+            type="button"
+            onClick={() => navigate('/siswa/statistik')}
+            style={{ ...styles.btnBukaStatistik, marginTop: 'auto' }}
+          >
+            <BarChart3 size={15} color="#0d9488" />
+            <span>Lihat Statistik &amp; Kalender Heatmap Belajar</span>
+            <ChevronRight size={15} color="#0d9488" />
+          </button>
+        </div>
+        )}
       </div>
 
       {/* ============================================================ */}

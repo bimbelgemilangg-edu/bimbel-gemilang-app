@@ -133,8 +133,9 @@ export async function muatPosisiTemanPendakian(db, {
       maxUnitPerSiswa.get(d.id) || 0,
       maxUnitPerSiswa.get(dt.studentId) || 0,
     );
-    // Jika belum selesai unit apa pun -> berada di Pos 1; jika sudah selesai unit k -> sedang di Pos k+1
-    const posSekarang = Math.min(totalPos + 1, unitSelesai + 1);
+    // Hanya tampilkan bubble avatar teman jika sudah pernah mengerjakan minimal 1 latihan/pendakian
+    if (unitSelesai <= 0) return;
+    const posSekarang = Math.min(totalPos + 1, unitSelesai);
 
     temanList.push({
       id: d.id,

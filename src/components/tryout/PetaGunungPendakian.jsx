@@ -88,12 +88,16 @@ export default function PetaGunungPendakian({
     return [...(unitList || [])].reverse();
   }, [unitList]);
 
-  // Pos tempat user saat ini berada
-  const posSaya = useMemo(() => {
+  // Pos tempat user saat ini berada & cek apakah sudah pernah mengerjakan minimal 1 latihan
+  const { posSaya, sudahPernahLatihan } = useMemo(() => {
+    const jumlahSelesai = (unitList || []).filter((u) => u.status === 'completed').length;
     const aktif = (unitList || []).find((u) => u.status === 'current');
-    if (aktif) return aktif.unitNomor;
+    if (aktif) return { posSaya: aktif.unitNomor, sudahPernahLatihan: jumlahSelesai > 0 };
     const selesaiSemua = (unitList || []).every((u) => u.status === 'completed');
-    return selesaiSemua ? (unitList?.length || 9) : 1;
+    return {
+      posSaya: selesaiSemua ? (unitList?.length || 9) : 1,
+      sudahPernahLatihan: jumlahSelesai > 0,
+    };
   }, [unitList]);
 
   // Cari teman yang berada di Pos lebih tinggi untuk kalimat motivasi
@@ -250,8 +254,8 @@ export default function PetaGunungPendakian({
                 >
                   {/* NODE BULAT UTAMA + BUBBLE FOTO SAYA / TEMAN */}
                   <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                    {/* Bubble Foto Saya jika ini Pos aktif saya */}
-                    {isCurrent && (
+                    {/* Bubble Foto Saya hanya muncul jika sudah pernah mengerjakan minimal 1 latihan */}
+                    {isCurrent && sudahPernahLatihan && (
                       <div style={S.myBubbleTag}>
                         <AvatarBubble nama={myNama} fotoUrl={myFoto} size={36} borderColor="#facc15" glow />
                         <span style={S.myTagPill}>Kamu</span>
@@ -423,10 +427,14 @@ export default function PetaGunungPendakian({
         <div style={S.bottomAscentBar}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <Sparkles size={16} color="#fde047" />
-            <span style={{ fontWeight: 800 }}>Kamu di Pos {posSaya}</span>
+            <span style={{ fontWeight: 800 }}>
+              {sudahPernahLatihan ? `Kamu di Pos ${posSaya}` : 'Belum ada pendakian'}
+            </span>
           </div>
           <span style={{ fontSize: 12, opacity: 0.9 }}>
-            {temanTerdepan
+            {!sudahPernahLatihan
+              ? '🏔️ Kerjakan Pos 1 untuk memunculkan avatarmu di gunung!'
+              : temanTerdepan
               ? `🔥 ${temanTerdepan.nama.split(' ')[0]} sudah di Pos ${temanTerdepan.posSekarang} — ayo kejar!`
               : temanList.length > 0
               ? `🏆 Kamu memimpin pendakian bersama ${temanList.length} teman!`
