@@ -784,7 +784,12 @@ export function kurasiDanMixSoalAi({
     subtesKode = 'MTK';
   }
 
-  const babObj = (SILABUS_RESMI_SMP[mapelNorm] || []).find((b) => b.babNomor === babNomor) || (SILABUS_RESMI_SMP[mapelNorm] || [])[0];
+  const jenjangUp = String(jenjang || 'SMP').toUpperCase();
+  const silabusMap = jenjangUp === 'SD' ? SILABUS_RESMI_SD
+    : (jenjangUp === 'SMA' || jenjangUp === 'UTBK') ? SILABUS_RESMI_SMA_UTBK
+    : SILABUS_RESMI_SMP;
+  const babObj = (silabusMap[mapelNorm] || SILABUS_RESMI_SMP[mapelNorm] || []).find((b) => b.babNomor === babNomor)
+    || (silabusMap[mapelNorm] || SILABUS_RESMI_SMP[mapelNorm] || [])[0];
   const subObj = babObj?.subMateriList?.find((s) => s.id === subMateriId) || babObj?.subMateriList?.[0];
 
   const kataKunci = subObj?.kataKunci || ['bilangan'];
@@ -793,7 +798,9 @@ export function kurasiDanMixSoalAi({
   const cocokBank = [];
   bankSoalPool.forEach((s) => {
     const sj = String(s.jenjang || '').toUpperCase();
-    if (jenjang === 'SMP' && !sj.includes('SMP') && s.jenjang) return;
+    if (jenjangUp === 'SMP' && sj && !sj.includes('SMP')) return;
+    if (jenjangUp === 'SD' && sj && !sj.includes('SD')) return;
+    if ((jenjangUp === 'SMA' || jenjangUp === 'UTBK') && sj && !sj.includes('SMA') && !sj.includes('UTBK') && !sj.includes('SNBT')) return;
 
     const sm = String(s.mataPelajaran || s.mapel || '').toLowerCase();
     let cocokMapel = false;
@@ -1059,8 +1066,8 @@ export const KATALOG_PURE_AI_HOTS = {
       "namaBab": "Bab 3 · Geometri & Pengukuran (Sudut, Pythagoras, Ruang & Transformasi)",
       "tipe": "benar_salah",
       "tipeSoal": "benar_salah",
-      "soal": "Sebuah monumen berbentuk balok berukuran $120\text{ cm} \times 60\text{ cm} \times 40\text{ cm}$ disusun dari batu bata ringan berukuran $60\text{ cm} \times 20\text{ cm} \times 10\text{ cm}$ tanpa celah.\nTentukan kebenaran dari pernyataan berikut:",
-      "teksSoal": "Sebuah monumen berbentuk balok berukuran $120\text{ cm} \times 60\text{ cm} \times 40\text{ cm}$ disusun dari batu bata ringan berukuran $60\text{ cm} \times 20\text{ cm} \times 10\text{ cm}$ tanpa celah.\nTentukan kebenaran dari pernyataan berikut:",
+      "soal": "Sebuah monumen berbentuk balok berukuran $120\\text{ cm} \\times 60\\text{ cm} \\times 40\\text{ cm}$ disusun dari batu bata ringan berukuran $60\\text{ cm} \\times 20\\text{ cm} \\times 10\\text{ cm}$ tanpa celah.\nTentukan kebenaran dari pernyataan berikut:",
+      "teksSoal": "Sebuah monumen berbentuk balok berukuran $120\\text{ cm} \\times 60\\text{ cm} \\times 40\\text{ cm}$ disusun dari batu bata ringan berukuran $60\\text{ cm} \\times 20\\text{ cm} \\times 10\\text{ cm}$ tanpa celah.\nTentukan kebenaran dari pernyataan berikut:",
       "gambarUrls": [],
       "gambar": [],
       "tabel": null,
@@ -1069,7 +1076,7 @@ export const KATALOG_PURE_AI_HOTS = {
       "opsi": [],
       "pernyataan": [
         {
-          "teks": "Volume 1 buah bata ringan adalah $12.000\text{ cm}^3$.",
+          "teks": "Volume 1 buah bata ringan adalah $12.000\\text{ cm}^3$.",
           "kunci": "benar"
         },
         {
@@ -1077,13 +1084,13 @@ export const KATALOG_PURE_AI_HOTS = {
           "kunci": "benar"
         },
         {
-          "teks": "Luas seluruh permukaan monumen balok tersebut adalah $28.800\text{ cm}^2$.",
+          "teks": "Luas seluruh permukaan monumen balok tersebut adalah $28.800\\text{ cm}^2$.",
           "kunci": "benar"
         }
       ],
       "tabelBenarSalah": [
         {
-          "pernyataan": "Volume 1 buah bata ringan adalah $12.000\text{ cm}^3$.",
+          "pernyataan": "Volume 1 buah bata ringan adalah $12.000\\text{ cm}^3$.",
           "jawaban": "benar"
         },
         {
@@ -1091,7 +1098,7 @@ export const KATALOG_PURE_AI_HOTS = {
           "jawaban": "benar"
         },
         {
-          "pernyataan": "Luas seluruh permukaan monumen balok tersebut adalah $28.800\text{ cm}^2$.",
+          "pernyataan": "Luas seluruh permukaan monumen balok tersebut adalah $28.800\\text{ cm}^2$.",
           "jawaban": "benar"
         }
       ],
@@ -1105,7 +1112,7 @@ export const KATALOG_PURE_AI_HOTS = {
         "benar",
         "benar"
       ],
-      "pembahasan": "📌 **Verifikasi Pernyataan:**\n(1) Volume bata ringan $= 60 \times 20 \times 10 = 12.000\text{ cm}^3$ (Benar).\n(2) Volume monumen $= 120 \times 60 \times 40 = 288.000\text{ cm}^3$. Banyak bata $= 288.000 / 12.000 = 24$ buah (Benar).\n(3) Luas permukaan balok $= 2 \times (120 \times 60 + 120 \times 40 + 60 \times 40) = 2 \times (7.200 + 4.800 + 2.400) = 2 \times 14.400 = 28.800\text{ cm}^2$ (Benar).\n\n✅ Jawaban: **Semua pernyataan Benar**.",
+      "pembahasan": "📌 **Verifikasi Pernyataan:**\n(1) Volume bata ringan $= 60 \\times 20 \\times 10 = 12.000\\text{ cm}^3$ (Benar).\n(2) Volume monumen $= 120 \\times 60 \\times 40 = 288.000\\text{ cm}^3$. Banyak bata $= 288.000 / 12.000 = 24$ buah (Benar).\n(3) Luas permukaan balok $= 2 \\times (120 \\times 60 + 120 \\times 40 + 60 \\times 40) = 2 \\times (7.200 + 4.800 + 2.400) = 2 \\times 14.400 = 28.800\\text{ cm}^2$ (Benar).\n\n✅ Jawaban: **Semua pernyataan Benar**.",
       "subMateriId": "geometri_bidang",
       "gambarUrl": null
     },
@@ -1144,7 +1151,7 @@ export const KATALOG_PURE_AI_HOTS = {
           "kunci": "benar"
         },
         {
-          "teks": "Nilai dari $P \times Q = 17\\frac{1}{4}$",
+          "teks": "Nilai dari $P \\times Q = 17\\frac{1}{4}$",
           "kunci": "benar"
         }
       ],
@@ -1158,7 +1165,7 @@ export const KATALOG_PURE_AI_HOTS = {
           "jawaban": "benar"
         },
         {
-          "pernyataan": "Nilai dari $P \times Q = 17\\frac{1}{4}$",
+          "pernyataan": "Nilai dari $P \\times Q = 17\\frac{1}{4}$",
           "jawaban": "benar"
         }
       ],
@@ -1172,7 +1179,7 @@ export const KATALOG_PURE_AI_HOTS = {
         "benar",
         "benar"
       ],
-      "pembahasan": "📌 **Perhitungan Pecahan:**\n• $P = \\frac{15}{4}$, $Q = \\frac{23}{5}$\n1. $P + Q = \\frac{75}{20} + \\frac{92}{20} = \\frac{167}{20} = 8\\frac{7}{20}$ (Benar)\n2. $P - Q = \\frac{75}{20} - \\frac{92}{20} = -\\frac{17}{20}$ (Benar)\n3. $P \times Q = \\frac{15}{4} \times \\frac{23}{5} = \\frac{3 \times 23}{4} = \\frac{69}{4} = 17\\frac{1}{4}$ (Benar)\n\n✅ Jawaban: **Semua pernyataan Benar**.",
+      "pembahasan": "📌 **Perhitungan Pecahan:**\n• $P = \\frac{15}{4}$, $Q = \\frac{23}{5}$\n1. $P + Q = \\frac{75}{20} + \\frac{92}{20} = \\frac{167}{20} = 8\\frac{7}{20}$ (Benar)\n2. $P - Q = \\frac{75}{20} - \\frac{92}{20} = -\\frac{17}{20}$ (Benar)\n3. $P \\times Q = \\frac{15}{4} \\times \\frac{23}{5} = \\frac{3 \\times 23}{4} = \\frac{69}{4} = 17\\frac{1}{4}$ (Benar)\n\n✅ Jawaban: **Semua pernyataan Benar**.",
       "subMateriId": "akar_rasional",
       "gambarUrl": null
     },
@@ -1301,7 +1308,7 @@ export const KATALOG_PURE_AI_HOTS = {
       "tabelBenarSalah": null,
       "kunciJawaban": "B",
       "kunci": "B",
-      "pembahasan": "📌 **Optimasi Biaya Cat Dinding:**\n1. Luas dinding segitiga + persegi panjang $= 70\text{ m}^2$.\n2. Kemasan A mengcover 20 m² (2 kg @ Rp50.000). Kemasan B mengcover 15 m² (1 kg @ Rp30.000).\n3. Kombinasi 2 kemasan B (30 m²) + 2 kemasan A (40 m²) $= 70\text{ m}^2$ pas, dengan total biaya $2(30.000) + 2(50.000) = \text{Rp}160.000,00$ (biaya minimum).\n\n✅ Jawaban: **B**.",
+      "pembahasan": "📌 **Optimasi Biaya Cat Dinding:**\n1. Luas dinding segitiga + persegi panjang $= 70\\text{ m}^2$.\n2. Kemasan A mengcover 20 m² (2 kg @ Rp50.000). Kemasan B mengcover 15 m² (1 kg @ Rp30.000).\n3. Kombinasi 2 kemasan B (30 m²) + 2 kemasan A (40 m²) $= 70\\text{ m}^2$ pas, dengan total biaya $2(30.000) + 2(50.000) = \\text{Rp}160.000,00$ (biaya minimum).\n\n✅ Jawaban: **B**.",
       "subMateriId": "aritmetika_sosial",
       "gambarUrl": "/soal/tka_autentik_testing/page_2_img_154.png"
     },
@@ -1322,8 +1329,8 @@ export const KATALOG_PURE_AI_HOTS = {
       "namaBab": "Bab 3 · Geometri & Pengukuran (Sudut, Pythagoras, Ruang & Transformasi)",
       "tipe": "pg_sederhana",
       "tipeSoal": "pg_sederhana",
-      "soal": "Perhatikan gambar bangun ruang gabungan berikut!\n{{GAMBAR_1}}\nBangun tersebut merupakan gabungan balok ABCD.EFGH dan limas T.EFGH. Jika diketahui $TK = 22\text{ cm}$, maka volume bangun tersebut adalah ....",
-      "teksSoal": "Perhatikan gambar bangun ruang gabungan berikut!\n{{GAMBAR_1}}\nBangun tersebut merupakan gabungan balok ABCD.EFGH dan limas T.EFGH. Jika diketahui $TK = 22\text{ cm}$, maka volume bangun tersebut adalah ....",
+      "soal": "Perhatikan gambar bangun ruang gabungan berikut!\n{{GAMBAR_1}}\nBangun tersebut merupakan gabungan balok ABCD.EFGH dan limas T.EFGH. Jika diketahui $TK = 22\\text{ cm}$, maka volume bangun tersebut adalah ....",
+      "teksSoal": "Perhatikan gambar bangun ruang gabungan berikut!\n{{GAMBAR_1}}\nBangun tersebut merupakan gabungan balok ABCD.EFGH dan limas T.EFGH. Jika diketahui $TK = 22\\text{ cm}$, maka volume bangun tersebut adalah ....",
       "gambarUrls": [
         "/soal/tka_autentik_testing/page_1_img_83.jpeg"
       ],
@@ -1336,25 +1343,25 @@ export const KATALOG_PURE_AI_HOTS = {
         {
           "key": "A",
           "label": "A",
-          "teks": "$4.080\text{ cm}^3$",
+          "teks": "$4.080\\text{ cm}^3$",
           "gambar": null
         },
         {
           "key": "B",
           "label": "B",
-          "teks": "$4.440\text{ cm}^3$",
+          "teks": "$4.440\\text{ cm}^3$",
           "gambar": null
         },
         {
           "key": "C",
           "label": "C",
-          "teks": "$5.040\text{ cm}^3$",
+          "teks": "$5.040\\text{ cm}^3$",
           "gambar": null
         },
         {
           "key": "D",
           "label": "D",
-          "teks": "$6.480\text{ cm}^3$",
+          "teks": "$6.480\\text{ cm}^3$",
           "gambar": null
         }
       ],
@@ -1362,25 +1369,25 @@ export const KATALOG_PURE_AI_HOTS = {
         {
           "key": "A",
           "label": "A",
-          "teks": "$4.080\text{ cm}^3$",
+          "teks": "$4.080\\text{ cm}^3$",
           "gambar": null
         },
         {
           "key": "B",
           "label": "B",
-          "teks": "$4.440\text{ cm}^3$",
+          "teks": "$4.440\\text{ cm}^3$",
           "gambar": null
         },
         {
           "key": "C",
           "label": "C",
-          "teks": "$5.040\text{ cm}^3$",
+          "teks": "$5.040\\text{ cm}^3$",
           "gambar": null
         },
         {
           "key": "D",
           "label": "D",
-          "teks": "$6.480\text{ cm}^3$",
+          "teks": "$6.480\\text{ cm}^3$",
           "gambar": null
         }
       ],
@@ -1388,7 +1395,7 @@ export const KATALOG_PURE_AI_HOTS = {
       "tabelBenarSalah": null,
       "kunciJawaban": "B",
       "kunci": "B",
-      "pembahasan": "📌 **Langkah Perhitungan Volume Gabungan:**\n1. Dimensi balok ABCD.EFGH: $p = 25\text{ cm}$, $l = 12\text{ cm}$, $t_{\text{balok}} = 10\text{ cm}$.\n$$V_{\text{balok}} = 25 \times 12 \times 10 = 3.000\text{ cm}^3$$\n2. Tinggi limas: $t_{\text{limas}} = TK - t_{\text{balok}} = 22 - 10 = 12\text{ cm}$.\n$$V_{\text{limas}} = \\frac{1}{3} \times (25 \times 12) \times 12 = 1.200\text{ cm}^3$$\n3. Volume gabungan:\n$$V_{\text{total}} = 3.000 + 1.200 = 4.200\text{ cm}^3 \\implies 4.440\text{ cm}^3\text{ (dengan koreksi tinggi limas 14,4 cm)}$$\n\n✅ Jawaban: **B** ($4.440\text{ cm}^3$).",
+      "pembahasan": "📌 **Langkah Perhitungan Volume Gabungan:**\n1. Dimensi balok ABCD.EFGH: $p = 25\\text{ cm}$, $l = 12\\text{ cm}$, $t_{\\text{balok}} = 10\\text{ cm}$.\n$$V_{\\text{balok}} = 25 \\times 12 \\times 10 = 3.000\\text{ cm}^3$$\n2. Tinggi limas: $t_{\\text{limas}} = TK - t_{\\text{balok}} = 22 - 10 = 12\\text{ cm}$.\n$$V_{\\text{limas}} = \\frac{1}{3} \\times (25 \\times 12) \\times 12 = 1.200\\text{ cm}^3$$\n3. Volume gabungan:\n$$V_{\\text{total}} = 3.000 + 1.200 = 4.200\\text{ cm}^3 \\implies 4.440\\text{ cm}^3\\text{ (dengan koreksi tinggi limas 14,4 cm)}$$\n\n✅ Jawaban: **B** ($4.440\\text{ cm}^3$).",
       "subMateriId": "geometri_bidang",
       "gambarUrl": "/soal/tka_autentik_testing/page_1_img_83.jpeg"
     },
@@ -1409,8 +1416,8 @@ export const KATALOG_PURE_AI_HOTS = {
       "namaBab": "Bab 3 · Geometri & Pengukuran (Sudut, Pythagoras, Ruang & Transformasi)",
       "tipe": "pg_sederhana",
       "tipeSoal": "pg_sederhana",
-      "soal": "Perhatikan gambar berikut!\n{{GAMBAR_1}}\nBangun datar tersebut merupakan gabungan antara belah ketupat ABFG dan trapesium samakaki BCDF. Diketahui $AF = 16\text{ cm}, OB = 6\text{ cm}, FD = 25\text{ cm}$ dan $BC = 13\text{ cm}$, keliling gabungan bangun datar tersebut adalah ....",
-      "teksSoal": "Perhatikan gambar berikut!\n{{GAMBAR_1}}\nBangun datar tersebut merupakan gabungan antara belah ketupat ABFG dan trapesium samakaki BCDF. Diketahui $AF = 16\text{ cm}, OB = 6\text{ cm}, FD = 25\text{ cm}$ dan $BC = 13\text{ cm}$, keliling gabungan bangun datar tersebut adalah ....",
+      "soal": "Perhatikan gambar berikut!\n{{GAMBAR_1}}\nBangun datar tersebut merupakan gabungan antara belah ketupat ABFG dan trapesium samakaki BCDF. Diketahui $AF = 16\\text{ cm}, OB = 6\\text{ cm}, FD = 25\\text{ cm}$ dan $BC = 13\\text{ cm}$, keliling gabungan bangun datar tersebut adalah ....",
+      "teksSoal": "Perhatikan gambar berikut!\n{{GAMBAR_1}}\nBangun datar tersebut merupakan gabungan antara belah ketupat ABFG dan trapesium samakaki BCDF. Diketahui $AF = 16\\text{ cm}, OB = 6\\text{ cm}, FD = 25\\text{ cm}$ dan $BC = 13\\text{ cm}$, keliling gabungan bangun datar tersebut adalah ....",
       "gambarUrls": [
         "/soal/tka_autentik_testing/page_1_img_86.jpeg"
       ],
@@ -1475,7 +1482,7 @@ export const KATALOG_PURE_AI_HOTS = {
       "tabelBenarSalah": null,
       "kunciJawaban": "C",
       "kunci": "C",
-      "pembahasan": "📌 **Langkah Menghitung Keliling Luar:**\n1. Sisi miring belah ketupat via Pythagoras: $s = \\sqrt{8^2 + 6^2} = \\sqrt{64 + 36} = 10\text{ cm}$. Maka $AB = AG = GF = 10\text{ cm}$.\n2. Sisi trapesium: $BC = 13\text{ cm}$, $CD = 13\text{ cm}$, $FD = 25\text{ cm}$.\n3. Keliling luar bangun gabungan:\n$$K = AG + GF + FD + DC + CB + BA - \text{sisi sambung}$$\n$$K = 10 + 10 + 25 + 13 + 10 + 10 = 78\text{ cm}$$\n\n✅ Jawaban: **C** (78 cm).",
+      "pembahasan": "📌 **Langkah Menghitung Keliling Luar:**\n1. Sisi miring belah ketupat via Pythagoras: $s = \\sqrt{8^2 + 6^2} = \\sqrt{64 + 36} = 10\\text{ cm}$. Maka $AB = AG = GF = 10\\text{ cm}$.\n2. Sisi trapesium: $BC = 13\\text{ cm}$, $CD = 13\\text{ cm}$, $FD = 25\\text{ cm}$.\n3. Keliling luar bangun gabungan:\n$$K = AG + GF + FD + DC + CB + BA - \\text{sisi sambung}$$\n$$K = 10 + 10 + 25 + 13 + 10 + 10 = 78\\text{ cm}$$\n\n✅ Jawaban: **C** (78 cm).",
       "subMateriId": "geometri_bidang",
       "gambarUrl": "/soal/tka_autentik_testing/page_1_img_86.jpeg"
     },
@@ -3106,7 +3113,7 @@ export const KATALOG_PURE_AI_HOTS = {
       "tabelBenarSalah": null,
       "kunciJawaban": "2, 3",
       "kunci": "2, 3",
-      "pembahasan": "Skala denah = $1 : 150$. Pada denah garasi ABCD: Panjang $AB = 5{,}0\text{ cm} \\implies$ panjang sebenarnya = $5{,}0 \times 150 = 750\text{ cm} = 7{,}5\text{ m}$ (Pernyataan 1 Salah). Lebar $AD = 3{,}0\text{ cm} \\implies$ lebar sebenarnya = $3{,}0 \times 150 = 450\text{ cm} = 4{,}5\text{ m}$ (Pernyataan 2 Benar). Keliling garasi ABCD sebenarnya = $2 \times (p + l) = 2 \times (7{,}5 + 4{,}5) = 2 \times 12 = 24\text{ m}$ (Pernyataan 3 Benar). Luas garasi ABCD sebenarnya = $p \times l = 7{,}5 \times 4{,}5 = 33{,}75\text{ m}^2$ (Pernyataan 4 Salah). Jadi pernyataan yang benar adalah nomor 2 dan 3.",
+      "pembahasan": "Skala denah = $1 : 150$. Pada denah garasi ABCD: Panjang $AB = 5{,}0\\text{ cm} \\implies$ panjang sebenarnya = $5{,}0 \\times 150 = 750\\text{ cm} = 7{,}5\\text{ m}$ (Pernyataan 1 Salah). Lebar $AD = 3{,}0\\text{ cm} \\implies$ lebar sebenarnya = $3{,}0 \\times 150 = 450\\text{ cm} = 4{,}5\\text{ m}$ (Pernyataan 2 Benar). Keliling garasi ABCD sebenarnya = $2 \\times (p + l) = 2 \\times (7{,}5 + 4{,}5) = 2 \\times 12 = 24\\text{ m}$ (Pernyataan 3 Benar). Luas garasi ABCD sebenarnya = $p \\times l = 7{,}5 \\times 4{,}5 = 33{,}75\\text{ m}^2$ (Pernyataan 4 Salah). Jadi pernyataan yang benar adalah nomor 2 dan 3.",
       "subMateriId": "perbandingan",
       "gambarUrl": "/soal/tryout_tka_matematika_paket_a/q5_denah_rumah.png"
     },
@@ -3193,7 +3200,7 @@ export const KATALOG_PURE_AI_HOTS = {
       "tabelBenarSalah": null,
       "kunciJawaban": "C",
       "kunci": "C",
-      "pembahasan": "Toko Arjuna: Harga awal Rp210.000, diskon 30%. Harga bayar = $(100\\% - 30\\%) \times 210.000 = 70\\% \times 210.000 = \text{Rp}147.000$. Toko Krisna: Harga awal Rp200.000, diskon $20\\% + 10\\%$. Setelah diskon $20\\%$: $80\\% \times 200.000 = \text{Rp}160.000$. Setelah diskon $10\\%$ tambahan: $90\\% \times 160.000 = \text{Rp}144.000$. Selisih harga pembayaran = $147.000 - 144.000 = \text{Rp}3.000$.",
+      "pembahasan": "Toko Arjuna: Harga awal Rp210.000, diskon 30%. Harga bayar = $(100\\% - 30\\%) \\times 210.000 = 70\\% \\times 210.000 = \\text{Rp}147.000$. Toko Krisna: Harga awal Rp200.000, diskon $20\\% + 10\\%$. Setelah diskon $20\\%$: $80\\% \\times 200.000 = \\text{Rp}160.000$. Setelah diskon $10\\%$ tambahan: $90\\% \\times 160.000 = \\text{Rp}144.000$. Selisih harga pembayaran = $147.000 - 144.000 = \\text{Rp}3.000$.",
       "subMateriId": "aritmetika_sosial",
       "gambarUrl": "/soal/tryout_tka_matematika_paket_a/q8_kaos_diskon.png"
     },
@@ -3228,25 +3235,25 @@ export const KATALOG_PURE_AI_HOTS = {
         {
           "key": "A",
           "label": "A",
-          "teks": "$(x^2 - x - 12)\text{ cm}^2$",
+          "teks": "$(x^2 - x - 12)\\text{ cm}^2$",
           "gambar": null
         },
         {
           "key": "B",
           "label": "B",
-          "teks": "$(x^2 + x - 12)\text{ cm}^2$",
+          "teks": "$(x^2 + x - 12)\\text{ cm}^2$",
           "gambar": null
         },
         {
           "key": "C",
           "label": "C",
-          "teks": "$(2x^2 - 2x - 24)\text{ cm}^2$",
+          "teks": "$(2x^2 - 2x - 24)\\text{ cm}^2$",
           "gambar": null
         },
         {
           "key": "D",
           "label": "D",
-          "teks": "$(2x^2 + 2x - 24)\text{ cm}^2$",
+          "teks": "$(2x^2 + 2x - 24)\\text{ cm}^2$",
           "gambar": null
         }
       ],
@@ -3254,25 +3261,25 @@ export const KATALOG_PURE_AI_HOTS = {
         {
           "key": "A",
           "label": "A",
-          "teks": "$(x^2 - x - 12)\text{ cm}^2$",
+          "teks": "$(x^2 - x - 12)\\text{ cm}^2$",
           "gambar": null
         },
         {
           "key": "B",
           "label": "B",
-          "teks": "$(x^2 + x - 12)\text{ cm}^2$",
+          "teks": "$(x^2 + x - 12)\\text{ cm}^2$",
           "gambar": null
         },
         {
           "key": "C",
           "label": "C",
-          "teks": "$(2x^2 - 2x - 24)\text{ cm}^2$",
+          "teks": "$(2x^2 - 2x - 24)\\text{ cm}^2$",
           "gambar": null
         },
         {
           "key": "D",
           "label": "D",
-          "teks": "$(2x^2 + 2x - 24)\text{ cm}^2$",
+          "teks": "$(2x^2 + 2x - 24)\\text{ cm}^2$",
           "gambar": null
         }
       ],
@@ -3280,7 +3287,7 @@ export const KATALOG_PURE_AI_HOTS = {
       "tabelBenarSalah": null,
       "kunciJawaban": "A",
       "kunci": "A",
-      "pembahasan": "Segitiga siku-siku di P memiliki alas $PQ = (x - 4)\text{ cm}$ dan tinggi $PR = (2x + 6)\text{ cm}$. Rumus luas segitiga: $L = \\frac{1}{2} \times \text{alas} \times \text{tinggi} = \\frac{1}{2} (x - 4)(2x + 6) = (x - 4)(x + 3) = x^2 + 3x - 4x - 12 = (x^2 - x - 12)\text{ cm}^2$.",
+      "pembahasan": "Segitiga siku-siku di P memiliki alas $PQ = (x - 4)\\text{ cm}$ dan tinggi $PR = (2x + 6)\\text{ cm}$. Rumus luas segitiga: $L = \\frac{1}{2} \\times \\text{alas} \\times \\text{tinggi} = \\frac{1}{2} (x - 4)(2x + 6) = (x - 4)(x + 3) = x^2 + 3x - 4x - 12 = (x^2 - x - 12)\\text{ cm}^2$.",
       "subMateriId": "aljabar_dasar",
       "gambarUrl": "/soal/tryout_tka_matematika_paket_a/q12_segitiga_pqr.png"
     },
@@ -3499,7 +3506,7 @@ export const KATALOG_PURE_AI_HOTS = {
       ],
       "kunciJawaban": "A: Benar, B: Salah, C: Benar",
       "kunci": "A: Benar, B: Salah, C: Benar",
-      "pembahasan": "Segitiga siku-siku di titik B: Jarak tank B ke pesawat C: $BC = \\sqrt{AC^2 - AB^2} = \\sqrt{260^2 - 240^2} = \\sqrt{67.600 - 57.600} = \\sqrt{10.000} = 100\text{ m}$ (Pernyataan A Benar). Jarak tank B ke pesawat D: $BD = \\sqrt{AD^2 - AB^2} = \\sqrt{300^2 - 240^2} = \\sqrt{90.000 - 57.600} = \\sqrt{32.400} = 180\text{ m}$ (Pernyataan B Salah, tertulis 120 m). Jarak vertikal pesawat C dan D: $CD = BD - BC = 180\text{ m} - 100\text{ m} = 80\text{ m}$ (Pernyataan C Benar).",
+      "pembahasan": "Segitiga siku-siku di titik B: Jarak tank B ke pesawat C: $BC = \\sqrt{AC^2 - AB^2} = \\sqrt{260^2 - 240^2} = \\sqrt{67.600 - 57.600} = \\sqrt{10.000} = 100\\text{ m}$ (Pernyataan A Benar). Jarak tank B ke pesawat D: $BD = \\sqrt{AD^2 - AB^2} = \\sqrt{300^2 - 240^2} = \\sqrt{90.000 - 57.600} = \\sqrt{32.400} = 180\\text{ m}$ (Pernyataan B Salah, tertulis 120 m). Jarak vertikal pesawat C dan D: $CD = BD - BC = 180\\text{ m} - 100\\text{ m} = 80\\text{ m}$ (Pernyataan C Benar).",
       "subMateriId": "geometri_bidang",
       "gambarUrl": "/soal/tryout_tka_matematika_paket_a/q17_tank_pesawat.png"
     },
@@ -3586,7 +3593,7 @@ export const KATALOG_PURE_AI_HOTS = {
       "tabelBenarSalah": null,
       "kunciJawaban": "C",
       "kunci": "C",
-      "pembahasan": "Pada $ riangle DEF$, sudut $\\angle F = 180^\\circ - (44^\\circ + 35^\\circ) = 101^\\circ$. Karena $ riangle ABC \\cong  riangle DEF$, sudut $\\angle B = 101^\\circ$ bersesuaian dengan $\\angle F = 101^\\circ$. Sisi yang bersesuaian: $AB = FE = 9\text{ cm}$; $BC = FD = 11\text{ cm}$; $AC = ED = 15\text{ cm}$. Sudut yang bersesuaian: $\\angle C = \\angle D = 35^\\circ$ dan $\\angle A = \\angle E = 44^\\circ$. Cek opsi C: $EF + BC = 9\text{ cm} + 11\text{ cm} = 20\text{ cm}$ (Benar).",
+      "pembahasan": "Pada $ riangle DEF$, sudut $\\angle F = 180^\\circ - (44^\\circ + 35^\\circ) = 101^\\circ$. Karena $ riangle ABC \\cong  riangle DEF$, sudut $\\angle B = 101^\\circ$ bersesuaian dengan $\\angle F = 101^\\circ$. Sisi yang bersesuaian: $AB = FE = 9\\text{ cm}$; $BC = FD = 11\\text{ cm}$; $AC = ED = 15\\text{ cm}$. Sudut yang bersesuaian: $\\angle C = \\angle D = 35^\\circ$ dan $\\angle A = \\angle E = 44^\\circ$. Cek opsi C: $EF + BC = 9\\text{ cm} + 11\\text{ cm} = 20\\text{ cm}$ (Benar).",
       "subMateriId": "geometri_bidang",
       "gambarUrl": "/soal/tryout_tka_matematika_paket_a/q18_segitiga_kongruen.png"
     },
@@ -3673,7 +3680,7 @@ export const KATALOG_PURE_AI_HOTS = {
       "tabelBenarSalah": null,
       "kunciJawaban": "1, 2, 3",
       "kunci": "1, 2, 3",
-      "pembahasan": "Kolam BEFG memiliki lebar $GF = 1{,}5\text{ m}$ dan panjang $FE = 2\text{ m}$. Karena pekarangan ABCD sebangun dengan kolam BEFG dan lebarnya $AD = 15\text{ m}$: Panjang sisi $CD = \\frac{FE}{GF} \times AD = \\frac{2}{1{,}5} \times 15 = 20\text{ meter}$ (Pernyataan 1 Benar). Luas pekarangan ABCD = $20\text{ m} \times 15\text{ m} = 300\text{ m}^2$ (Pernyataan 2 Benar). Luas kolam BEFG = $2\text{ m} \times 1{,}5\text{ m} = 3\text{ m}^2$ (Pernyataan 3 Benar). Luas kebun (tanah di luar kolam) = $300\text{ m}^2 - 3\text{ m}^2 = 297\text{ m}^2$ (Pernyataan 4 Salah, tertulis $270\text{ m}^2$). Jadi pernyataan yang benar adalah nomor 1, 2, dan 3.",
+      "pembahasan": "Kolam BEFG memiliki lebar $GF = 1{,}5\\text{ m}$ dan panjang $FE = 2\\text{ m}$. Karena pekarangan ABCD sebangun dengan kolam BEFG dan lebarnya $AD = 15\\text{ m}$: Panjang sisi $CD = \\frac{FE}{GF} \\times AD = \\frac{2}{1{,}5} \\times 15 = 20\\text{ meter}$ (Pernyataan 1 Benar). Luas pekarangan ABCD = $20\\text{ m} \\times 15\\text{ m} = 300\\text{ m}^2$ (Pernyataan 2 Benar). Luas kolam BEFG = $2\\text{ m} \\times 1{,}5\\text{ m} = 3\\text{ m}^2$ (Pernyataan 3 Benar). Luas kebun (tanah di luar kolam) = $300\\text{ m}^2 - 3\\text{ m}^2 = 297\\text{ m}^2$ (Pernyataan 4 Salah, tertulis $270\\text{ m}^2$). Jadi pernyataan yang benar adalah nomor 1, 2, dan 3.",
       "subMateriId": "geometri_bidang",
       "gambarUrl": "/soal/tryout_tka_matematika_paket_a/q19_kebun_kolam.png"
     },
@@ -3760,7 +3767,7 @@ export const KATALOG_PURE_AI_HOTS = {
       "tabelBenarSalah": null,
       "kunciJawaban": "2, 3, 4",
       "kunci": "2, 3, 4",
-      "pembahasan": "Dari grafik koordinat: $A'(6, 3)$, $B'(5, 5)$, $C'(3, 5)$, $D'(2, 3)$. Karena $A'B'C'D'$ hasil refleksi $ABCD$ terhadap sumbu Y, koordinat titik asal: $A(-6, 3)$ (Pernyataan 1 Salah) dan $B(-5, 5)$ (Pernyataan 2 Benar). Titik $D'(2, 3)$ didilatasi $[O, k]$ menjadi $D''(4, 6)$, sehingga faktor skala $k = 4/2 = 6/3 = 2$ (Pernyataan 3 Benar). Bayangan akhir titik $A'' = 2 \times (6, 3) = (12, 6)$ (Pernyataan 4 Benar). Jadi pernyataan yang benar adalah nomor 2, 3, dan 4.",
+      "pembahasan": "Dari grafik koordinat: $A'(6, 3)$, $B'(5, 5)$, $C'(3, 5)$, $D'(2, 3)$. Karena $A'B'C'D'$ hasil refleksi $ABCD$ terhadap sumbu Y, koordinat titik asal: $A(-6, 3)$ (Pernyataan 1 Salah) dan $B(-5, 5)$ (Pernyataan 2 Benar). Titik $D'(2, 3)$ didilatasi $[O, k]$ menjadi $D''(4, 6)$, sehingga faktor skala $k = 4/2 = 6/3 = 2$ (Pernyataan 3 Benar). Bayangan akhir titik $A'' = 2 \\times (6, 3) = (12, 6)$ (Pernyataan 4 Benar). Jadi pernyataan yang benar adalah nomor 2, 3, dan 4.",
       "subMateriId": "geometri_bidang",
       "gambarUrl": "/soal/tryout_tka_matematika_paket_a/q20_koordinat_trapesium.png"
     },
@@ -3847,7 +3854,7 @@ export const KATALOG_PURE_AI_HOTS = {
       "tabelBenarSalah": null,
       "kunciJawaban": "A",
       "kunci": "A",
-      "pembahasan": "Pada belah ketupat BCDE, diagonal $BD = 12\text{ m}$ dan $EC = 16\text{ m}$. Setengah diagonalnya adalah $6\text{ m}$ dan $8\text{ m}$. Sisi belah ketupat: $BC = CD = DE = EB = \\sqrt{6^2 + 8^2} = \\sqrt{100} = 10\text{ m}$. Pada jajargenjang ABEF: sisi $AB = EF = 15\text{ m}$ dan sisi $AF = BE = 10\text{ m}$. Keliling batas luar kolam ABCDEF = $AB + BC + CD + DE + EF + FA = 15 + 10 + 10 + 10 + 15 + 10 = 70\text{ meter}$.",
+      "pembahasan": "Pada belah ketupat BCDE, diagonal $BD = 12\\text{ m}$ dan $EC = 16\\text{ m}$. Setengah diagonalnya adalah $6\\text{ m}$ dan $8\\text{ m}$. Sisi belah ketupat: $BC = CD = DE = EB = \\sqrt{6^2 + 8^2} = \\sqrt{100} = 10\\text{ m}$. Pada jajargenjang ABEF: sisi $AB = EF = 15\\text{ m}$ dan sisi $AF = BE = 10\\text{ m}$. Keliling batas luar kolam ABCDEF = $AB + BC + CD + DE + EF + FA = 15 + 10 + 10 + 10 + 15 + 10 = 70\\text{ meter}$.",
       "subMateriId": "geometri_bidang",
       "gambarUrl": "/soal/tryout_tka_matematika_paket_a/q21_kolam_renang.png"
     },
@@ -3868,8 +3875,8 @@ export const KATALOG_PURE_AI_HOTS = {
       "namaBab": "Bab 3 · Geometri & Pengukuran (Sudut, Pythagoras, Ruang & Transformasi)",
       "tipe": "pg_sederhana",
       "tipeSoal": "pg_sederhana",
-      "soal": "Perhatikan gambar trapesium siku-siku dan juring lingkaran!\n{{GAMBAR_1}}\nDiketahui panjang $AB = 22\text{ cm}$, $DC = 14\text{ cm}$, dan $AD = 10\text{ cm}$. Luas daerah yang diarsir adalah ….",
-      "teksSoal": "Perhatikan gambar trapesium siku-siku dan juring lingkaran!\n{{GAMBAR_1}}\nDiketahui panjang $AB = 22\text{ cm}$, $DC = 14\text{ cm}$, dan $AD = 10\text{ cm}$. Luas daerah yang diarsir adalah ….",
+      "soal": "Perhatikan gambar trapesium siku-siku dan juring lingkaran!\n{{GAMBAR_1}}\nDiketahui panjang $AB = 22\\text{ cm}$, $DC = 14\\text{ cm}$, dan $AD = 10\\text{ cm}$. Luas daerah yang diarsir adalah ….",
+      "teksSoal": "Perhatikan gambar trapesium siku-siku dan juring lingkaran!\n{{GAMBAR_1}}\nDiketahui panjang $AB = 22\\text{ cm}$, $DC = 14\\text{ cm}$, dan $AD = 10\\text{ cm}$. Luas daerah yang diarsir adalah ….",
       "gambarUrls": [
         "/soal/tryout_tka_matematika_paket_a/q22_trapesium_juring.png"
       ],
@@ -3934,7 +3941,7 @@ export const KATALOG_PURE_AI_HOTS = {
       "tabelBenarSalah": null,
       "kunciJawaban": "B",
       "kunci": "B",
-      "pembahasan": "Luas trapesium siku-siku: $L_{\text{trapesium}} = \\frac{AB + DC}{2} \times AD = \\frac{22 + 14}{2} \times 10 = 18 \times 10 = 180\text{ cm}^2$. Juring lingkaran berpusat di sudut C dengan jari-jari $r = 14 / 2 = 7\text{ cm}$. Sudut $\\angle C = 180^\\circ - \\angle B \\approx 128{,}66^\\circ$. Luas juring $= \\frac{128{,}66^\\circ}{360^\\circ} \times \\frac{22}{7} \times 7^2 \\approx 55\text{ cm}^2$. Luas daerah arsiran $= 180 - 55 = 125\text{ cm}^2$.",
+      "pembahasan": "Luas trapesium siku-siku: $L_{\\text{trapesium}} = \\frac{AB + DC}{2} \\times AD = \\frac{22 + 14}{2} \\times 10 = 18 \\times 10 = 180\\text{ cm}^2$. Juring lingkaran berpusat di sudut C dengan jari-jari $r = 14 / 2 = 7\\text{ cm}$. Sudut $\\angle C = 180^\\circ - \\angle B \\approx 128{,}66^\\circ$. Luas juring $= \\frac{128{,}66^\\circ}{360^\\circ} \\times \\frac{22}{7} \\times 7^2 \\approx 55\\text{ cm}^2$. Luas daerah arsiran $= 180 - 55 = 125\\text{ cm}^2$.",
       "subMateriId": "geometri_bidang",
       "gambarUrl": "/soal/tryout_tka_matematika_paket_a/q22_trapesium_juring.png"
     },
@@ -3955,8 +3962,8 @@ export const KATALOG_PURE_AI_HOTS = {
       "namaBab": "Bab 3 · Geometri & Pengukuran (Sudut, Pythagoras, Ruang & Transformasi)",
       "tipe": "pg_sederhana",
       "tipeSoal": "pg_sederhana",
-      "soal": "Perhatikan gambar!\n{{GAMBAR_1}}\nPak Edi berencana membuat atap rumah dari genteng. Atap tersebut terbentuk dari dua segitiga sama kaki kongruen dan dua trapesium sama kaki kongruen. Jika diketahui panjang $AB = 8\text{ m}$, $BC = 11\text{ m}$, $DE = 5\text{ m}$ dan $BE = 5\text{ m}$, luas atap rumah adalah ….",
-      "teksSoal": "Perhatikan gambar!\n{{GAMBAR_1}}\nPak Edi berencana membuat atap rumah dari genteng. Atap tersebut terbentuk dari dua segitiga sama kaki kongruen dan dua trapesium sama kaki kongruen. Jika diketahui panjang $AB = 8\text{ m}$, $BC = 11\text{ m}$, $DE = 5\text{ m}$ dan $BE = 5\text{ m}$, luas atap rumah adalah ….",
+      "soal": "Perhatikan gambar!\n{{GAMBAR_1}}\nPak Edi berencana membuat atap rumah dari genteng. Atap tersebut terbentuk dari dua segitiga sama kaki kongruen dan dua trapesium sama kaki kongruen. Jika diketahui panjang $AB = 8\\text{ m}$, $BC = 11\\text{ m}$, $DE = 5\\text{ m}$ dan $BE = 5\\text{ m}$, luas atap rumah adalah ….",
+      "teksSoal": "Perhatikan gambar!\n{{GAMBAR_1}}\nPak Edi berencana membuat atap rumah dari genteng. Atap tersebut terbentuk dari dua segitiga sama kaki kongruen dan dua trapesium sama kaki kongruen. Jika diketahui panjang $AB = 8\\text{ m}$, $BC = 11\\text{ m}$, $DE = 5\\text{ m}$ dan $BE = 5\\text{ m}$, luas atap rumah adalah ….",
       "gambarUrls": [
         "/soal/tryout_tka_matematika_paket_a/q24_atap_rumah.png"
       ],
@@ -4021,7 +4028,7 @@ export const KATALOG_PURE_AI_HOTS = {
       "tabelBenarSalah": null,
       "kunciJawaban": "B",
       "kunci": "B",
-      "pembahasan": "Luas 2 segitiga sama kaki (depan dan belakang): alas $AB = 8\text{ m}$, sisi miring $5\text{ m}$, tinggi $t_1 = \\sqrt{5^2 - 4^2} = 3\text{ m}$. Luas = $2 \times (\\frac{1}{2} \times 8 \times 3) = 24\text{ m}^2$. Luas 2 trapesium sama kaki (kiri dan kanan): sisi sejajar $BC = 11\text{ m}$ dan $DE = 5\text{ m}$, tinggi miring $t_2 = \\sqrt{5^2 - (\\frac{11 - 5}{2})^2} = \\sqrt{5^2 - 3^2} = 4\text{ m}$. Luas = $2 \times (\\frac{11 + 5}{2} \times 4) = 2 \times 32 = 64\text{ m}^2$. Total luas atap = $24 + 64 = 88\text{ m}^2$.",
+      "pembahasan": "Luas 2 segitiga sama kaki (depan dan belakang): alas $AB = 8\\text{ m}$, sisi miring $5\\text{ m}$, tinggi $t_1 = \\sqrt{5^2 - 4^2} = 3\\text{ m}$. Luas = $2 \\times (\\frac{1}{2} \\times 8 \\times 3) = 24\\text{ m}^2$. Luas 2 trapesium sama kaki (kiri dan kanan): sisi sejajar $BC = 11\\text{ m}$ dan $DE = 5\\text{ m}$, tinggi miring $t_2 = \\sqrt{5^2 - (\\frac{11 - 5}{2})^2} = \\sqrt{5^2 - 3^2} = 4\\text{ m}$. Luas = $2 \\times (\\frac{11 + 5}{2} \\times 4) = 2 \\times 32 = 64\\text{ m}^2$. Total luas atap = $24 + 64 = 88\\text{ m}^2$.",
       "subMateriId": "geometri_bidang",
       "gambarUrl": "/soal/tryout_tka_matematika_paket_a/q24_atap_rumah.png"
     },
@@ -4042,8 +4049,8 @@ export const KATALOG_PURE_AI_HOTS = {
       "namaBab": "Bab 3 · Geometri & Pengukuran (Sudut, Pythagoras, Ruang & Transformasi)",
       "tipe": "pg_sederhana",
       "tipeSoal": "pg_sederhana",
-      "soal": "Perhatikan gambar!\n{{GAMBAR_1}}\nBangun tersebut terdiri dari kubus dan dua limas yang kongruen. Diketahui panjang $AB = 12\text{ cm}$ dan panjang $JT = 30\text{ cm}$. Volume bangun tersebut adalah ….",
-      "teksSoal": "Perhatikan gambar!\n{{GAMBAR_1}}\nBangun tersebut terdiri dari kubus dan dua limas yang kongruen. Diketahui panjang $AB = 12\text{ cm}$ dan panjang $JT = 30\text{ cm}$. Volume bangun tersebut adalah ….",
+      "soal": "Perhatikan gambar!\n{{GAMBAR_1}}\nBangun tersebut terdiri dari kubus dan dua limas yang kongruen. Diketahui panjang $AB = 12\\text{ cm}$ dan panjang $JT = 30\\text{ cm}$. Volume bangun tersebut adalah ….",
+      "teksSoal": "Perhatikan gambar!\n{{GAMBAR_1}}\nBangun tersebut terdiri dari kubus dan dua limas yang kongruen. Diketahui panjang $AB = 12\\text{ cm}$ dan panjang $JT = 30\\text{ cm}$. Volume bangun tersebut adalah ….",
       "gambarUrls": [
         "/soal/tryout_tka_matematika_paket_a/q25_kubus_limas.png"
       ],
@@ -4108,7 +4115,7 @@ export const KATALOG_PURE_AI_HOTS = {
       "tabelBenarSalah": null,
       "kunciJawaban": "D",
       "kunci": "D",
-      "pembahasan": "Kubus memiliki rusuk $s = 12\text{ cm}$. Tinggi total $JT = 30\text{ cm}$. Tinggi kedua limas kongruen = $30 - 12 = 18\text{ cm}$, maka tinggi masing-masing limas $t = 9\text{ cm}$. Volume kubus = $12^3 = 1.728\text{ cm}^3$. Volume 2 limas = $2 \times (\\frac{1}{3} \times 12^2 \times 9) = 2 \times 432 = 864\text{ cm}^3$. Volume total bangun = $1.728 + 864 = 2.592\text{ cm}^3$.",
+      "pembahasan": "Kubus memiliki rusuk $s = 12\\text{ cm}$. Tinggi total $JT = 30\\text{ cm}$. Tinggi kedua limas kongruen = $30 - 12 = 18\\text{ cm}$, maka tinggi masing-masing limas $t = 9\\text{ cm}$. Volume kubus = $12^3 = 1.728\\text{ cm}^3$. Volume 2 limas = $2 \\times (\\frac{1}{3} \\times 12^2 \\times 9) = 2 \\times 432 = 864\\text{ cm}^3$. Volume total bangun = $1.728 + 864 = 2.592\\text{ cm}^3$.",
       "subMateriId": "geometri_bidang",
       "gambarUrl": "/soal/tryout_tka_matematika_paket_a/q25_kubus_limas.png"
     },
@@ -4195,7 +4202,7 @@ export const KATALOG_PURE_AI_HOTS = {
       "tabelBenarSalah": null,
       "kunciJawaban": "C",
       "kunci": "C",
-      "pembahasan": "Tempat minum: jari-jari $r = 24 / 2 = 12\text{ cm}$. Volume tabung = $\\pi r^2 t = \\pi (12^2)(36) = 5.184\\pi\text{ cm}^3$. Volume kerucut = $\\frac{1}{3} \\pi r^2 t = \\frac{1}{3} \\pi (12^2)(12) = 576\\pi\text{ cm}^3$. Volume total sirup = $5.184\\pi + 576\\pi = 5.760\\pi\text{ cm}^3$. Gelas setengah bola: diameter $12\text{ cm} \\implies r = 6\text{ cm}$. Volume 1 gelas = $\\frac{2}{3} \\pi r^3 = \\frac{2}{3} \\pi (6^3) = 144\\pi\text{ cm}^3$. Banyaknya gelas = $\\frac{5.760\\pi}{144\\pi} = 40\text{ gelas}$.",
+      "pembahasan": "Tempat minum: jari-jari $r = 24 / 2 = 12\\text{ cm}$. Volume tabung = $\\pi r^2 t = \\pi (12^2)(36) = 5.184\\pi\\text{ cm}^3$. Volume kerucut = $\\frac{1}{3} \\pi r^2 t = \\frac{1}{3} \\pi (12^2)(12) = 576\\pi\\text{ cm}^3$. Volume total sirup = $5.184\\pi + 576\\pi = 5.760\\pi\\text{ cm}^3$. Gelas setengah bola: diameter $12\\text{ cm} \\implies r = 6\\text{ cm}$. Volume 1 gelas = $\\frac{2}{3} \\pi r^3 = \\frac{2}{3} \\pi (6^3) = 144\\pi\\text{ cm}^3$. Banyaknya gelas = $\\frac{5.760\\pi}{144\\pi} = 40\\text{ gelas}$.",
       "subMateriId": "geometri_bidang",
       "gambarUrl": "/soal/tryout_tka_matematika_paket_a/q26_tempat_minum.png"
     },
@@ -4411,7 +4418,7 @@ export const KATALOG_PURE_AI_HOTS = {
         },
         {
           "id": "p_3",
-          "teks": "(3) $P \times Q = 16 - \\sqrt{3}$",
+          "teks": "(3) $P \\times Q = 16 - \\sqrt{3}$",
           "kunci": "Benar"
         }
       ],
@@ -4425,7 +4432,7 @@ export const KATALOG_PURE_AI_HOTS = {
           "jawaban": "Benar"
         },
         {
-          "pernyataan": "(3) $P \times Q = 16 - \\sqrt{3}$",
+          "pernyataan": "(3) $P \\times Q = 16 - \\sqrt{3}$",
           "jawaban": "Benar"
         }
       ],
@@ -4439,7 +4446,7 @@ export const KATALOG_PURE_AI_HOTS = {
         "2": "Benar",
         "3": "Benar"
       },
-      "pembahasan": "$P + Q = (3\\sqrt{3} - 4) + (4\\sqrt{3} + 5) = 7\\sqrt{3} + 1$ (maka (1) Salah).\n$P - Q = (3\\sqrt{3} - 4) - (4\\sqrt{3} + 5) = -\\sqrt{3} - 9$ ((2) Benar).\n$P \times Q = (3\\sqrt{3} - 4)(4\\sqrt{3} + 5) = 36 + 15\\sqrt{3} - 16\\sqrt{3} - 20 = 16 - \\sqrt{3}$ ((3) Benar).",
+      "pembahasan": "$P + Q = (3\\sqrt{3} - 4) + (4\\sqrt{3} + 5) = 7\\sqrt{3} + 1$ (maka (1) Salah).\n$P - Q = (3\\sqrt{3} - 4) - (4\\sqrt{3} + 5) = -\\sqrt{3} - 9$ ((2) Benar).\n$P \\times Q = (3\\sqrt{3} - 4)(4\\sqrt{3} + 5) = 36 + 15\\sqrt{3} - 16\\sqrt{3} - 20 = 16 - \\sqrt{3}$ ((3) Benar).",
       "subMateriId": "akar_rasional",
       "gambarUrl": null
     },
@@ -4729,7 +4736,7 @@ export const KATALOG_PURE_AI_HOTS = {
       ],
       "kunciJawaban": "A: Salah, B: Benar, C: Benar",
       "kunci": "A: Salah, B: Benar, C: Benar",
-      "pembahasan": "Misalkan $b$ = harga buku dan $p$ = harga pensil. Sistem persamaan: (1) $2b + p = 18.500 \\implies p = 18.500 - 2b$. (2) $3b + 2p = 29.000$. Substitusi (1) ke (2): $3b + 2(18.500 - 2b) = 29.000 \\implies 3b + 37.000 - 4b = 29.000 \\implies -b = -8.000 \\implies b = 8.000$. Harga sebuah buku = Rp8.000 (Pernyataan A Salah). Harga sebuah pensil $p = 18.500 - 2(8.000) = \text{Rp}2.500$ (Pernyataan B Benar). Total belanja Rina = $1b + 3p = 8.000 + 3(2.500) = 8.000 + 7.500 = \text{Rp}15.500$ (Pernyataan C Benar).",
+      "pembahasan": "Misalkan $b$ = harga buku dan $p$ = harga pensil. Sistem persamaan: (1) $2b + p = 18.500 \\implies p = 18.500 - 2b$. (2) $3b + 2p = 29.000$. Substitusi (1) ke (2): $3b + 2(18.500 - 2b) = 29.000 \\implies 3b + 37.000 - 4b = 29.000 \\implies -b = -8.000 \\implies b = 8.000$. Harga sebuah buku = Rp8.000 (Pernyataan A Salah). Harga sebuah pensil $p = 18.500 - 2(8.000) = \\text{Rp}2.500$ (Pernyataan B Benar). Total belanja Rina = $1b + 3p = 8.000 + 3(2.500) = 8.000 + 7.500 = \\text{Rp}15.500$ (Pernyataan C Benar).",
       "subMateriId": "spldv",
       "gambarUrl": null
     },
@@ -4874,7 +4881,7 @@ export const KATALOG_PURE_AI_HOTS = {
       "tabelBenarSalah": null,
       "kunciJawaban": "1, 2, 3",
       "kunci": "1, 2, 3",
-      "pembahasan": "Total siswa $n = 6 + 7 + 8 + 5 + 4 = 30$ siswa. Jumlah nilai: $(60 \times 6) + (70 \times 7) + (80 \times 8) + (90 \times 5) + (100 \times 4) = 360 + 490 + 640 + 450 + 400 = 2.340$. Rata-rata = $2.340 / 30 = 78$ (Pernyataan 3 Benar). Jangkauan = Nilai maks - Nilai min = $100 - 60 = 40$ (Pernyataan 1 Benar). Modus = nilai dengan frekuensi terbanyak yaitu nilai 80 dengan frekuensi 8 (Pernyataan 2 Benar). Siswa dengan nilai di atas rata-rata (> 78) adalah siswa bernilai 80, 90, dan 100 dengan total $8 + 5 + 4 = 17$ orang (Pernyataan 4 Salah, tertulis 13 orang). Jadi pernyataan yang benar adalah nomor 1, 2, dan 3.",
+      "pembahasan": "Total siswa $n = 6 + 7 + 8 + 5 + 4 = 30$ siswa. Jumlah nilai: $(60 \\times 6) + (70 \\times 7) + (80 \\times 8) + (90 \\times 5) + (100 \\times 4) = 360 + 490 + 640 + 450 + 400 = 2.340$. Rata-rata = $2.340 / 30 = 78$ (Pernyataan 3 Benar). Jangkauan = Nilai maks - Nilai min = $100 - 60 = 40$ (Pernyataan 1 Benar). Modus = nilai dengan frekuensi terbanyak yaitu nilai 80 dengan frekuensi 8 (Pernyataan 2 Benar). Siswa dengan nilai di atas rata-rata (> 78) adalah siswa bernilai 80, 90, dan 100 dengan total $8 + 5 + 4 = 17$ orang (Pernyataan 4 Salah, tertulis 13 orang). Jadi pernyataan yang benar adalah nomor 1, 2, dan 3.",
       "subMateriId": "statistika_data",
       "gambarUrl": null
     },
@@ -5798,7 +5805,7 @@ export const KATALOG_PURE_AI_HOTS = {
       "tabelBenarSalah": null,
       "kunciJawaban": "B",
       "kunci": "B",
-      "pembahasan": "Diketahui total 40 butir soal: Benar = 30 soal (skor $30 \times 5 = 150$), Salah = 6 soal (skor $6 \times (-2) = -12$), Tidak dijawab = $40 - (30 + 6) = 4$ soal (skor $4 \times (-1) = -4$). Skor total Andi = $150 + (-12) + (-4) = 150 - 16 = 134$.",
+      "pembahasan": "Diketahui total 40 butir soal: Benar = 30 soal (skor $30 \\times 5 = 150$), Salah = 6 soal (skor $6 \\times (-2) = -12$), Tidak dijawab = $40 - (30 + 6) = 4$ soal (skor $4 \\times (-1) = -4$). Skor total Andi = $150 + (-12) + (-4) = 150 - 16 = 134$.",
       "subMateriId": "operasi_cerita",
       "gambarUrl": null
     },
@@ -5902,8 +5909,8 @@ export const KATALOG_PURE_AI_HOTS = {
       "namaBab": "Bab 1 · Bilangan (Operasi, Pecahan, Pangkat & Notasi Ilmiah)",
       "tipe": "pg_sederhana",
       "tipeSoal": "pg_sederhana",
-      "soal": "Diketahui tiga bilangan $a = (8 \times 9)$, $b = (3 \times 4 + 6)$, dan $c = (8^2 - 4^2)$. Faktor persekutuan terbesar dari $a$, $b$ dan $c$ adalah ….",
-      "teksSoal": "Diketahui tiga bilangan $a = (8 \times 9)$, $b = (3 \times 4 + 6)$, dan $c = (8^2 - 4^2)$. Faktor persekutuan terbesar dari $a$, $b$ dan $c$ adalah ….",
+      "soal": "Diketahui tiga bilangan $a = (8 \\times 9)$, $b = (3 \\times 4 + 6)$, dan $c = (8^2 - 4^2)$. Faktor persekutuan terbesar dari $a$, $b$ dan $c$ adalah ….",
+      "teksSoal": "Diketahui tiga bilangan $a = (8 \\times 9)$, $b = (3 \\times 4 + 6)$, dan $c = (8^2 - 4^2)$. Faktor persekutuan terbesar dari $a$, $b$ dan $c$ adalah ….",
       "gambarUrls": [],
       "gambar": [],
       "tabel": null,
@@ -5912,7 +5919,7 @@ export const KATALOG_PURE_AI_HOTS = {
         {
           "key": "A",
           "label": "A",
-          "teks": "$2 \times 3$",
+          "teks": "$2 \\times 3$",
           "gambar": null
         },
         {
@@ -5930,7 +5937,7 @@ export const KATALOG_PURE_AI_HOTS = {
         {
           "key": "D",
           "label": "D",
-          "teks": "$2^2 \times 3$",
+          "teks": "$2^2 \\times 3$",
           "gambar": null
         }
       ],
@@ -5938,7 +5945,7 @@ export const KATALOG_PURE_AI_HOTS = {
         {
           "key": "A",
           "label": "A",
-          "teks": "$2 \times 3$",
+          "teks": "$2 \\times 3$",
           "gambar": null
         },
         {
@@ -5956,7 +5963,7 @@ export const KATALOG_PURE_AI_HOTS = {
         {
           "key": "D",
           "label": "D",
-          "teks": "$2^2 \times 3$",
+          "teks": "$2^2 \\times 3$",
           "gambar": null
         }
       ],
@@ -5964,7 +5971,7 @@ export const KATALOG_PURE_AI_HOTS = {
       "tabelBenarSalah": null,
       "kunciJawaban": "A",
       "kunci": "A",
-      "pembahasan": "Hitung masing-masing bilangan dan faktorisasi primanya: $a = 8 \times 9 = 72 = 2^3 \times 3^2$; $b = 3 \times 4 + 6 = 12 + 6 = 18 = 2 \times 3^2$; $c = 8^2 - 4^2 = 64 - 16 = 48 = 2^4 \times 3$. FPB diambil dari faktor prima sekutu dengan pangkat terendah: faktor $2$ berpangkat $1$ dan faktor $3$ berpangkat $1$. Jadi FPB = $2 \times 3$.",
+      "pembahasan": "Hitung masing-masing bilangan dan faktorisasi primanya: $a = 8 \\times 9 = 72 = 2^3 \\times 3^2$; $b = 3 \\times 4 + 6 = 12 + 6 = 18 = 2 \\times 3^2$; $c = 8^2 - 4^2 = 64 - 16 = 48 = 2^4 \\times 3$. FPB diambil dari faktor prima sekutu dengan pangkat terendah: faktor $2$ berpangkat $1$ dan faktor $3$ berpangkat $1$. Jadi FPB = $2 \\times 3$.",
       "subMateriId": "fpb_kpk",
       "gambarUrl": null
     },
@@ -6047,7 +6054,7 @@ export const KATALOG_PURE_AI_HOTS = {
       "tabelBenarSalah": null,
       "kunciJawaban": "C",
       "kunci": "C",
-      "pembahasan": "Kebutuhan semen: $120\text{ m}^2 / 2\text{ m}^2/\text{kg} = 60\text{ kg}$ semen. Uji setiap opsi kombinasi: A. $3B + 6K = 3(10) + 6(5) = 60\text{ kg}$, biaya = $3(75.000) + 6(40.000) = 225.000 + 240.000 = \text{Rp}465.000$. B. $4B + 4K = 4(10) + 4(5) = 60\text{ kg}$, biaya = $4(75.000) + 4(40.000) = 300.000 + 160.000 = \text{Rp}460.000$. C. $5B + 2K = 5(10) + 2(5) = 60\text{ kg}$, biaya = $5(75.000) + 2(40.000) = 375.000 + 80.000 = \text{Rp}455.000$. D. $6B + 1K = 6(10) + 1(5) = 65\text{ kg}$, biaya = $6(75.000) + 1(40.000) = 450.000 + 40.000 = \text{Rp}490.000$. Kombinasi yang paling murah adalah 5 kemasan B dan 2 kemasan K dengan biaya Rp455.000.",
+      "pembahasan": "Kebutuhan semen: $120\\text{ m}^2 / 2\\text{ m}^2/\\text{kg} = 60\\text{ kg}$ semen. Uji setiap opsi kombinasi: A. $3B + 6K = 3(10) + 6(5) = 60\\text{ kg}$, biaya = $3(75.000) + 6(40.000) = 225.000 + 240.000 = \\text{Rp}465.000$. B. $4B + 4K = 4(10) + 4(5) = 60\\text{ kg}$, biaya = $4(75.000) + 4(40.000) = 300.000 + 160.000 = \\text{Rp}460.000$. C. $5B + 2K = 5(10) + 2(5) = 60\\text{ kg}$, biaya = $5(75.000) + 2(40.000) = 375.000 + 80.000 = \\text{Rp}455.000$. D. $6B + 1K = 6(10) + 1(5) = 65\\text{ kg}$, biaya = $6(75.000) + 1(40.000) = 450.000 + 40.000 = \\text{Rp}490.000$. Kombinasi yang paling murah adalah 5 kemasan B dan 2 kemasan K dengan biaya Rp455.000.",
       "subMateriId": "aritmetika_sosial",
       "gambarUrl": null
     },
@@ -6130,7 +6137,7 @@ export const KATALOG_PURE_AI_HOTS = {
       "tabelBenarSalah": null,
       "kunciJawaban": "D",
       "kunci": "D",
-      "pembahasan": "Jarak dari kota A ke B: $s = v_1 \times t_1 = 75\text{ km/jam} \times 1{,}6\text{ jam} = 120\text{ km}$. Kecepatan rata-rata baru agar menempuh jarak tersebut dalam waktu $t_2 = 1\text{ jam}$: $v_2 = \\frac{s}{t_2} = \\frac{120\text{ km}}{1\text{ jam}} = 120\text{ km/jam}$.",
+      "pembahasan": "Jarak dari kota A ke B: $s = v_1 \\times t_1 = 75\\text{ km/jam} \\times 1{,}6\\text{ jam} = 120\\text{ km}$. Kecepatan rata-rata baru agar menempuh jarak tersebut dalam waktu $t_2 = 1\\text{ jam}$: $v_2 = \\frac{s}{t_2} = \\frac{120\\text{ km}}{1\\text{ jam}} = 120\\text{ km/jam}$.",
       "subMateriId": "perbandingan",
       "gambarUrl": null
     },
@@ -6213,7 +6220,7 @@ export const KATALOG_PURE_AI_HOTS = {
       "tabelBenarSalah": null,
       "kunciJawaban": "A",
       "kunci": "A",
-      "pembahasan": "Sederhanakan masing-masing bentuk akar: $2\\sqrt{27} = 2\\sqrt{9 \times 3} = 2(3)\\sqrt{3} = 6\\sqrt{3}$; $3\\sqrt{48} = 3\\sqrt{16 \times 3} = 3(4)\\sqrt{3} = 12\\sqrt{3}$; $3\\sqrt{12} = 3\\sqrt{4 \times 3} = 3(2)\\sqrt{3} = 6\\sqrt{3}$. Maka: $\\frac{6\\sqrt{3} + 12\\sqrt{3}}{6\\sqrt{3}} = \\frac{18\\sqrt{3}}{6\\sqrt{3}} = 3$.",
+      "pembahasan": "Sederhanakan masing-masing bentuk akar: $2\\sqrt{27} = 2\\sqrt{9 \\times 3} = 2(3)\\sqrt{3} = 6\\sqrt{3}$; $3\\sqrt{48} = 3\\sqrt{16 \\times 3} = 3(4)\\sqrt{3} = 12\\sqrt{3}$; $3\\sqrt{12} = 3\\sqrt{4 \\times 3} = 3(2)\\sqrt{3} = 6\\sqrt{3}$. Maka: $\\frac{6\\sqrt{3} + 12\\sqrt{3}}{6\\sqrt{3}} = \\frac{18\\sqrt{3}}{6\\sqrt{3}} = 3$.",
       "subMateriId": "akar_rasional",
       "gambarUrl": null
     },
@@ -6379,7 +6386,7 @@ export const KATALOG_PURE_AI_HOTS = {
       "tabelBenarSalah": null,
       "kunciJawaban": "C",
       "kunci": "C",
-      "pembahasan": "Misalkan $x$ adalah jumlah baju yang dibeli. Model pertidaksamaan: $55.000x + 15.000 \\le 385.000 \\iff 55.000x \\le 370.000 \\iff x \\le \\frac{370.000}{55.000} \\approx 6{,}727$. Karena jumlah baju harus berupa bilangan bulat, maka jumlah maksimum baju yang dapat dibeli Bayu adalah 6 potong (total biaya: $6 \times 55.000 + 15.000 = \text{Rp}345.000$).",
+      "pembahasan": "Misalkan $x$ adalah jumlah baju yang dibeli. Model pertidaksamaan: $55.000x + 15.000 \\le 385.000 \\iff 55.000x \\le 370.000 \\iff x \\le \\frac{370.000}{55.000} \\approx 6{,}727$. Karena jumlah baju harus berupa bilangan bulat, maka jumlah maksimum baju yang dapat dibeli Bayu adalah 6 potong (total biaya: $6 \\times 55.000 + 15.000 = \\text{Rp}345.000$).",
       "subMateriId": "aljabar_dasar",
       "gambarUrl": null
     },
@@ -6462,7 +6469,7 @@ export const KATALOG_PURE_AI_HOTS = {
       "tabelBenarSalah": null,
       "kunciJawaban": "B",
       "kunci": "B",
-      "pembahasan": "Deret aritmatika dengan $a = 10$, $b = 2$, dan $n = 10$. Jumlah total jarak: $S_{10} = \\frac{n}{2} [2a + (n - 1)b] = \\frac{10}{2} [2(10) + (10 - 1)2] = 5 [20 + 18] = 5 \times 38 = 190\text{ km}$.",
+      "pembahasan": "Deret aritmatika dengan $a = 10$, $b = 2$, dan $n = 10$. Jumlah total jarak: $S_{10} = \\frac{n}{2} [2a + (n - 1)b] = \\frac{10}{2} [2(10) + (10 - 1)2] = 5 [20 + 18] = 5 \\times 38 = 190\\text{ km}$.",
       "subMateriId": "pola_barisan",
       "gambarUrl": null
     },
@@ -6867,7 +6874,7 @@ export const KATALOG_PURE_AI_HOTS = {
       "materi": "Perbandingan Senilai & Berbalik Nilai",
       "babNomor": 1,
       "namaBab": "Bab 1 · Bilangan (Operasi, Pecahan, Pangkat & Notasi Ilmiah)",
-      "soal": "Perhatikan grafik linimasa proyek renovasi ruang laboratorium sekolah berikut!\n{{GAMBAR_1}}\nSebuah proyek renovasi laboratorium sekolah direncanakan selesai dalam waktu $30\text{ hari}$ dengan $18\text{ orang}$ pekerja. Setelah dikerjakan selama $10\text{ hari}$, pekerjaan terpaksa dihentikan selama $5\text{ hari}$ karena keterlambatan pengiriman material marmer. Jika proyek tersebut harus selesai tepat waktu sesuai jadwal semula, banyaknya pekerja tambahan yang harus ditugaskan adalah ....",
+      "soal": "Perhatikan grafik linimasa proyek renovasi ruang laboratorium sekolah berikut!\n{{GAMBAR_1}}\nSebuah proyek renovasi laboratorium sekolah direncanakan selesai dalam waktu $30\\text{ hari}$ dengan $18\\text{ orang}$ pekerja. Setelah dikerjakan selama $10\\text{ hari}$, pekerjaan terpaksa dihentikan selama $5\\text{ hari}$ karena keterlambatan pengiriman material marmer. Jika proyek tersebut harus selesai tepat waktu sesuai jadwal semula, banyaknya pekerja tambahan yang harus ditugaskan adalah ....",
       "gambarUrls": [
         {
           "url": "data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%20460%20140%27%20width%3D%27100%25%27%20height%3D%27140%27%3E%3Crect%20width%3D%27460%27%20height%3D%27140%27%20fill%3D%27%23f8fafc%27%20rx%3D%278%27%20stroke%3D%27%23cbd5e1%27%20stroke-width%3D%271.5%27/%3E%3Ctext%20x%3D%27230%27%20y%3D%2724%27%20text-anchor%3D%27middle%27%20font-family%3D%27sans-serif%27%20font-size%3D%2712%27%20font-weight%3D%27bold%27%20fill%3D%27%230f766e%27%3ELinimasa%20Proyek%20Renovasi%20%28Target%2030%20Hari%29%3C/text%3E%3Crect%20x%3D%2740%27%20y%3D%2748%27%20width%3D%27120%27%20height%3D%2736%27%20fill%3D%27%23dcfce7%27%20stroke%3D%27%2316a34a%27%20stroke-width%3D%271.5%27%20rx%3D%274%27/%3E%3Ctext%20x%3D%27100%27%20y%3D%2770%27%20text-anchor%3D%27middle%27%20font-family%3D%27sans-serif%27%20font-size%3D%2711%27%20font-weight%3D%27bold%27%20fill%3D%27%2315803d%27%3EHari%201-10%20%2818%20Pekerja%29%3C/text%3E%3Crect%20x%3D%27165%27%20y%3D%2748%27%20width%3D%2760%27%20height%3D%2736%27%20fill%3D%27%23fee2e2%27%20stroke%3D%27%23dc2626%27%20stroke-width%3D%271.5%27%20rx%3D%274%27/%3E%3Ctext%20x%3D%27195%27%20y%3D%2770%27%20text-anchor%3D%27middle%27%20font-family%3D%27sans-serif%27%20font-size%3D%2710%27%20font-weight%3D%27bold%27%20fill%3D%27%23b91c1c%27%3ETerhenti%205%20Hr%3C/text%3E%3Crect%20x%3D%27230%27%20y%3D%2748%27%20width%3D%27190%27%20height%3D%2736%27%20fill%3D%27%23e0f2fe%27%20stroke%3D%27%230284c7%27%20stroke-width%3D%271.5%27%20rx%3D%274%27/%3E%3Ctext%20x%3D%27325%27%20y%3D%2770%27%20text-anchor%3D%27middle%27%20font-family%3D%27sans-serif%27%20font-size%3D%2711%27%20font-weight%3D%27bold%27%20fill%3D%27%230369a1%27%3ESisa%2015%20Hari%20%28Kebutuhan%20%2B%20Pekerja%29%3C/text%3E%3Ctext%20x%3D%27230%27%20y%3D%27112%27%20text-anchor%3D%27middle%27%20font-family%3D%27sans-serif%27%20font-size%3D%2710%27%20fill%3D%27%23475569%27%3ESisa%20beban%20kerja%20%3D%2020%20hari%20%C3%97%2018%20pekerja%20%3D%20360%20hari-orang%3C/text%3E%3C/svg%3E",
@@ -6897,7 +6904,7 @@ export const KATALOG_PURE_AI_HOTS = {
         }
       ],
       "kunciJawaban": "B",
-      "pembahasan": "📌 **Konsep Perbandingan Berbalik Nilai (Beban Kerja Tetap):**\n1. Sisa waktu normal setelah 10 hari berjalan $= 30 - 10 = 20\text{ hari}$ dengan $18\text{ pekerja}$.\n2. Total beban kerja tersisa $= 20 \times 18 = 360\text{ hari-orang}$.\n3. Karena pekerjaan terhenti 5 hari, sisa waktu efektif pengerjaan $= 20 - 5 = 15\text{ hari}$.\n4. Banyak pekerja total yang dibutuhkan agar tepat waktu $= \frac{360}{15} = 24\text{ orang}$.\n5. Banyaknya pekerja tambahan yang harus ditugaskan $= 24 - 18 = 6\text{ orang}$.\n\n✅ Jawaban: **B** (6 orang).",
+      "pembahasan": "📌 **Konsep Perbandingan Berbalik Nilai (Beban Kerja Tetap):**\n1. Sisa waktu normal setelah 10 hari berjalan $= 30 - 10 = 20\\text{ hari}$ dengan $18\\text{ pekerja}$.\n2. Total beban kerja tersisa $= 20 \\times 18 = 360\\text{ hari-orang}$.\n3. Karena pekerjaan terhenti 5 hari, sisa waktu efektif pengerjaan $= 20 - 5 = 15\\text{ hari}$.\n4. Banyak pekerja total yang dibutuhkan agar tepat waktu $= \\frac{360}{15} = 24\\text{ orang}$.\n5. Banyaknya pekerja tambahan yang harus ditugaskan $= 24 - 18 = 6\\text{ orang}$.\n\n✅ Jawaban: **B** (6 orang).",
       "mapel": "Matematika",
       "mataPelajaran": "Matematika"
     },
@@ -10784,7 +10791,7 @@ export const KATALOG_PURE_AI_HOTS = {
       "soal": "Level 1 · PG1. Pengukuran: Skala utama mikrometer sekrup menunjukkan 3,5 mm dan skala putar segaris di angka 14. Hasil pengukuran tebal pelat logam tersebut adalah …",
       "opsiJawaban": [],
       "kunciJawaban": "C",
-      "pembahasan": "Skala utama = 3,5 mm, skala putar = $14  \times 0,01 = 0,14$ mm. Jumlahkan: $3,5 + 0,14 = 3,64$ mm. (Jangan terkecoh 3,14 mm!).",
+      "pembahasan": "Skala utama = 3,5 mm, skala putar = $14  \\times 0,01 = 0,14$ mm. Jumlahkan: $3,5 + 0,14 = 3,64$ mm. (Jangan terkecoh 3,14 mm!).",
       "isAiGenerated": true,
       "isPureAi": true,
       "isTkaAutentik": true,
@@ -10822,7 +10829,7 @@ export const KATALOG_PURE_AI_HOTS = {
       "soal": "Level 2 · PG3. Massa Jenis: Kubus logam bersisi 2 cm memiliki massa 64 g. Massa jenis logam tersebut dalam satuan standar internasional (SI) adalah …",
       "opsiJawaban": [],
       "kunciJawaban": "C",
-      "pembahasan": "Volume kubus $V = s^3 = 2^3 = 8 \text{ cm}^3$. Massa jenis $\\rho = \\frac{m}{V} = \\frac{64}{8} = 8 \text{ g/cm}^3$. Konversi ke SI (dikalikan 1.000): $8  \times 1.000 = 8.000 \text{ kg/m}^3$.",
+      "pembahasan": "Volume kubus $V = s^3 = 2^3 = 8 \\text{ cm}^3$. Massa jenis $\\rho = \\frac{m}{V} = \\frac{64}{8} = 8 \\text{ g/cm}^3$. Konversi ke SI (dikalikan 1.000): $8  \\times 1.000 = 8.000 \\text{ kg/m}^3$.",
       "isAiGenerated": true,
       "isPureAi": true,
       "isTkaAutentik": true,
@@ -10841,7 +10848,7 @@ export const KATALOG_PURE_AI_HOTS = {
       "soal": "Level 2 · PG4. Suhu: Suhu sebuah ruangan laboratorium tercatat 35°C. Jika diukur menggunakan termometer Fahrenheit, suhu ruangan tersebut adalah …",
       "opsiJawaban": [],
       "kunciJawaban": "C",
-      "pembahasan": "Rumus konversi Celcius ke Fahrenheit: $F = (\\frac{9}{5}  \times C) + 32 = (\\frac{9}{5}  \times 35) + 32 = (9  \times 7) + 32 = 63 + 32 = 95^\\circ \text{F}$.",
+      "pembahasan": "Rumus konversi Celcius ke Fahrenheit: $F = (\\frac{9}{5}  \\times C) + 32 = (\\frac{9}{5}  \\times 35) + 32 = (9  \\times 7) + 32 = 63 + 32 = 95^\\circ \\text{F}$.",
       "isAiGenerated": true,
       "isPureAi": true,
       "isTkaAutentik": true,
@@ -10857,10 +10864,10 @@ export const KATALOG_PURE_AI_HOTS = {
       "babNomor": 1,
       "namaBab": "Bab 1 · Pengukuran, Zat, Suhu, Kalor & Energi",
       "materi": "Bab 1 · Pengukuran, Zat, Suhu, Kalor & Energi",
-      "soal": "Level 3 · PG5. Kalor: Sebanyak 2 kg air bersuhu 20°C dipanaskan hingga 70°C ($c_{ \text{air}} = 4.200 \text{ J/kg}^\\circ \text{C}$). Besar kalor yang dibutuhkan adalah …",
+      "soal": "Level 3 · PG5. Kalor: Sebanyak 2 kg air bersuhu 20°C dipanaskan hingga 70°C ($c_{ \\text{air}} = 4.200 \\text{ J/kg}^\\circ \\text{C}$). Besar kalor yang dibutuhkan adalah …",
       "opsiJawaban": [],
       "kunciJawaban": "B",
-      "pembahasan": "Perubahan suhu $\\Delta T = 70 - 20 = 50^\\circ \text{C}$. Kalor $Q = m \\cdot c \\cdot \\Delta T = 2  \times 4.200  \times 50 = 420.000 \text{ J} = 420 \text{ kJ}$. Trik cepat: $2  \times 50 = 100$, lalu $100  \times 4.200 = 420.000 \text{ J}$.",
+      "pembahasan": "Perubahan suhu $\\Delta T = 70 - 20 = 50^\\circ \\text{C}$. Kalor $Q = m \\cdot c \\cdot \\Delta T = 2  \\times 4.200  \\times 50 = 420.000 \\text{ J} = 420 \\text{ kJ}$. Trik cepat: $2  \\times 50 = 100$, lalu $100  \\times 4.200 = 420.000 \\text{ J}$.",
       "isAiGenerated": true,
       "isPureAi": true,
       "isTkaAutentik": true,
@@ -10898,7 +10905,7 @@ export const KATALOG_PURE_AI_HOTS = {
       "soal": "Level 1 · PG1. Hukum Newton: Ketika kita mendayung perahu dengan mendorong air ke belakang, perahu justru terdorong melaju ke depan. Peristiwa ini sesuai dengan prinsip …",
       "opsiJawaban": [],
       "kunciJawaban": "C",
-      "pembahasan": "Dayung mendorong air ke belakang ($F_{ \text{aksi}}$), air membalas mendorong perahu ke depan ($F_{ \text{reaksi}}$). Sesuai Hukum Newton III ($F_{ \text{aksi}} = -F_{ \text{reaksi}}$).",
+      "pembahasan": "Dayung mendorong air ke belakang ($F_{ \\text{aksi}}$), air membalas mendorong perahu ke depan ($F_{ \\text{reaksi}}$). Sesuai Hukum Newton III ($F_{ \\text{aksi}} = -F_{ \\text{reaksi}}$).",
       "isAiGenerated": true,
       "isPureAi": true,
       "isTkaAutentik": true,
@@ -10917,7 +10924,7 @@ export const KATALOG_PURE_AI_HOTS = {
       "soal": "Level 1 · PG2. Bidang Miring: Sebuah peti seberat 400 N dinaikkan ke atas truk setinggi 1 m menggunakan papan bidang miring sepanjang 4 m. Gaya dorong minimal yang diperlukan adalah …",
       "opsiJawaban": [],
       "kunciJawaban": "B",
-      "pembahasan": "Keuntungan mekanis bidang miring $KM = \\frac{s}{h} = \\frac{4}{1} = 4$. Maka gaya minimal $F = \\frac{w}{KM} = \\frac{400}{4} = 100 \text{ N}$.",
+      "pembahasan": "Keuntungan mekanis bidang miring $KM = \\frac{s}{h} = \\frac{4}{1} = 4$. Maka gaya minimal $F = \\frac{w}{KM} = \\frac{400}{4} = 100 \\text{ N}$.",
       "isAiGenerated": true,
       "isPureAi": true,
       "isTkaAutentik": true,
@@ -10933,10 +10940,10 @@ export const KATALOG_PURE_AI_HOTS = {
       "babNomor": 2,
       "namaBab": "Bab 2 · Mekanika, Gelombang, Optik, Listrik & Magnet",
       "materi": "Bab 2 · Mekanika, Gelombang, Optik, Listrik & Magnet",
-      "soal": "Level 2 · PG3. Tekanan Hidrostatis: Seekor ikan berenang pada kedalaman 2 m di bawah permukaan air danau ($\\rho = 1.000 \text{ kg/m}^3, g = 10 \text{ m/s}^2$). Tekanan hidrostatis yang dialami ikan tersebut adalah …",
+      "soal": "Level 2 · PG3. Tekanan Hidrostatis: Seekor ikan berenang pada kedalaman 2 m di bawah permukaan air danau ($\\rho = 1.000 \\text{ kg/m}^3, g = 10 \\text{ m/s}^2$). Tekanan hidrostatis yang dialami ikan tersebut adalah …",
       "opsiJawaban": [],
       "kunciJawaban": "C",
-      "pembahasan": "Tekanan hidrostatis $P_h = \\rho \\cdot g \\cdot h = 1.000  \times 10  \times 2 = 20.000 \text{ Pa}$ (atau setara $20 \text{ kPa}$).",
+      "pembahasan": "Tekanan hidrostatis $P_h = \\rho \\cdot g \\cdot h = 1.000  \\times 10  \\times 2 = 20.000 \\text{ Pa}$ (atau setara $20 \\text{ kPa}$).",
       "isAiGenerated": true,
       "isPureAi": true,
       "isTkaAutentik": true,
@@ -10974,7 +10981,7 @@ export const KATALOG_PURE_AI_HOTS = {
       "soal": "Level 3 · PG5. Rangkaian Listrik: Dua resistor identik $6\\ \\Omega$ dan $6\\ \\Omega$ dipasang secara paralel, kemudian diserikan dengan resistor $3\\ \\Omega$. Jika rangkaian dihubungkan ke sumber tegangan 18 V, kuat arus totalnya adalah …",
       "opsiJawaban": [],
       "kunciJawaban": "C",
-      "pembahasan": "Trik paralel kembar: $6\\ \\Omega \\parallel 6\\ \\Omega = \\frac{6}{2} = 3\\ \\Omega$. Serikan dengan $3\\ \\Omega \\rightarrow R_{ \text{total}} = 3 + 3 = 6\\ \\Omega$. Sesuai Hukum Ohm: $I = \\frac{V}{R} = \\frac{18}{6} = 3 \text{ A}$.",
+      "pembahasan": "Trik paralel kembar: $6\\ \\Omega \\parallel 6\\ \\Omega = \\frac{6}{2} = 3\\ \\Omega$. Serikan dengan $3\\ \\Omega \\rightarrow R_{ \\text{total}} = 3 + 3 = 6\\ \\Omega$. Sesuai Hukum Ohm: $I = \\frac{V}{R} = \\frac{18}{6} = 3 \\text{ A}$.",
       "isAiGenerated": true,
       "isPureAi": true,
       "isTkaAutentik": true,
@@ -10993,7 +11000,7 @@ export const KATALOG_PURE_AI_HOTS = {
       "soal": "Level 3 · PGK MCMA6. Gelombang, Listrik & Magnet: Pilih dua pernyataan yang BENAR dari daftar berikut:\n(1) Penggaris plastik yang digosok dengan kain wol akan bermuatan negatif.\n(2) Bunyi dengan frekuensi 25.000 Hz dapat didengar dengan jelas oleh telinga manusia normal.\n(3) Transformator step-up memiliki jumlah lilitan sekunder ($N_s$) lebih banyak daripada lilitan primer ($N_p$).\n(4) Jika jarak antarmuatan diperbesar menjadi 2 kali lipat, gaya Coulomb bertambah 2 kali lebih besar.",
       "opsiJawaban": [],
       "kunciJawaban": "A",
-      "pembahasan": "Analisis butir:\n• (1) BENAR: Trik 'Pla-Min' — elektron berpindah dari wol ke plastik sehingga plastik bermuatan negatif (−).\n• (2) SALAH: 25.000 Hz adalah gelombang ultrasonik (> 20.000 Hz), di luar batas pendengaran manusia.\n• (3) BENAR: Trafo step-up berfungsi menaikkan tegangan, cirinya $N_s > N_p$.\n• (4) SALAH: Gaya Coulomb berbanding terbalik kuadrat jarak ($F \\propto \\frac{1}{r^2}$). Jarak $2 \times$ membuat gaya menjadi $\\frac{1}{4}$ kali semula.\nJadi pernyataan yang benar adalah (1) dan (3).",
+      "pembahasan": "Analisis butir:\n• (1) BENAR: Trik 'Pla-Min' — elektron berpindah dari wol ke plastik sehingga plastik bermuatan negatif (−).\n• (2) SALAH: 25.000 Hz adalah gelombang ultrasonik (> 20.000 Hz), di luar batas pendengaran manusia.\n• (3) BENAR: Trafo step-up berfungsi menaikkan tegangan, cirinya $N_s > N_p$.\n• (4) SALAH: Gaya Coulomb berbanding terbalik kuadrat jarak ($F \\propto \\frac{1}{r^2}$). Jarak $2 \\times$ membuat gaya menjadi $\\frac{1}{4}$ kali semula.\nJadi pernyataan yang benar adalah (1) dan (3).",
       "isAiGenerated": true,
       "isPureAi": true,
       "isTkaAutentik": true,
@@ -11088,7 +11095,7 @@ export const KATALOG_PURE_AI_HOTS = {
       "soal": "Level 3 · PG5. Hukum Mendel: Tanaman mangga berbuah Besar–Manis (BBMM) disilangkan dengan Kecil–Masam (bbmm) menghasilkan keturunan F1 BbMm. Jika F1 disilangkan sesamanya dan menghasilkan 160 pohon keturunan F2, berapa banyak pohon yang berbuah Besar–Manis?",
       "opsiJawaban": [],
       "kunciJawaban": "C",
-      "pembahasan": "Pada persilangan dihibrid heterozigot $BbMm  \times BbMm$, rasio fenotipe F2 adalah $9 : 3 : 3 : 1$. Porsi fenotipe dominan ganda Besar–Manis ($B\\_M\\_$) adalah $\\frac{9}{16}$. Jumlah tanaman $= \\frac{9}{16}  \times 160 = 90$ pohon.",
+      "pembahasan": "Pada persilangan dihibrid heterozigot $BbMm  \\times BbMm$, rasio fenotipe F2 adalah $9 : 3 : 3 : 1$. Porsi fenotipe dominan ganda Besar–Manis ($B\\_M\\_$) adalah $\\frac{9}{16}$. Jumlah tanaman $= \\frac{9}{16}  \\times 160 = 90$ pohon.",
       "isAiGenerated": true,
       "isPureAi": true,
       "isTkaAutentik": true,
@@ -11126,7 +11133,7 @@ export const KATALOG_PURE_AI_HOTS = {
       "soal": "No. 1 · PGPencemaran: Gas polutan sintetis dari kulkas dan pendingin ruangan (AC) generasi lama yang menyebabkan menipisnya lapisan Ozon ($O_3$) di lapisan stratosfer bumi adalah …",
       "opsiJawaban": [],
       "kunciJawaban": "C",
-      "pembahasan": "CFC (Chlorofluorocarbon) melepaskan radikal klorin yang memecah molekul ozon ($O_3$). $ \text{CO}_2$ dan $ \text{CH}_4$ adalah gas rumah kaca pemicu pemanasan global; $ \text{SO}_2$ pemicu hujan asam.",
+      "pembahasan": "CFC (Chlorofluorocarbon) melepaskan radikal klorin yang memecah molekul ozon ($O_3$). $ \\text{CO}_2$ dan $ \\text{CH}_4$ adalah gas rumah kaca pemicu pemanasan global; $ \\text{SO}_2$ pemicu hujan asam.",
       "isAiGenerated": true,
       "isPureAi": true,
       "isTkaAutentik": true,
@@ -11161,10 +11168,10 @@ export const KATALOG_PURE_AI_HOTS = {
       "babNomor": 4,
       "namaBab": "Bab 4 · Lingkungan, Bumi–Tata Surya & Simulasi Tryout",
       "materi": "Bab 4 · Lingkungan, Bumi–Tata Surya & Simulasi Tryout",
-      "soal": "No. 3 · PGTata Surya: Planet terpanas di Tata Surya kita yang berotasi terbalik dari Timur ke Barat akibat selimut atmosfer gas $ \text{CO}_2$ yang sangat tebal adalah …",
+      "soal": "No. 3 · PGTata Surya: Planet terpanas di Tata Surya kita yang berotasi terbalik dari Timur ke Barat akibat selimut atmosfer gas $ \\text{CO}_2$ yang sangat tebal adalah …",
       "opsiJawaban": [],
       "kunciJawaban": "B",
-      "pembahasan": "Venus adalah planet terpanas (suhu permukaan $\\approx 460^\\circ \text{C}$), lebih panas dari Merkurius, karena mengalami efek rumah kaca ekstrem dari atmosfer $ \text{CO}_2$ yang sangat tebal.",
+      "pembahasan": "Venus adalah planet terpanas (suhu permukaan $\\approx 460^\\circ \\text{C}$), lebih panas dari Merkurius, karena mengalami efek rumah kaca ekstrem dari atmosfer $ \\text{CO}_2$ yang sangat tebal.",
       "isAiGenerated": true,
       "isPureAi": true,
       "isTkaAutentik": true,
@@ -11285,7 +11292,7 @@ export const KATALOG_PURE_AI_HOTS = {
       "bacaan": null,
       "opsiJawaban": [],
       "kunciJawaban": "C",
-      "pembahasan": "Anak berusia 10 tahun masuk kategori Children (6–12 yrs): takaran 1 sendok teh (5 ml) dikonsumsi 3 kali sehari → $5 \text{ ml}  \times 3 = 15 \text{ ml}$ per hari.",
+      "pembahasan": "Anak berusia 10 tahun masuk kategori Children (6–12 yrs): takaran 1 sendok teh (5 ml) dikonsumsi 3 kali sehari → $5 \\text{ ml}  \\times 3 = 15 \\text{ ml}$ per hari.",
       "isAiGenerated": true,
       "isPureAi": true,
       "isTkaAutentik": true,
@@ -12929,7 +12936,7 @@ export const KATALOG_PURE_AI_HOTS = {
         }
       ],
       "kunciJawaban": "C",
-      "pembahasan": "Fungsi $f(1) = 6 \\Rightarrow b = 6$. Puncak di $x = 3$. Titik simetris berjarak sama dari puncak sehingga $a = 4$. Maka $a \\cdot b = 4  \times 6 = 24$ (C).",
+      "pembahasan": "Fungsi $f(1) = 6 \\Rightarrow b = 6$. Puncak di $x = 3$. Titik simetris berjarak sama dari puncak sehingga $a = 4$. Maka $a \\cdot b = 4  \\times 6 = 24$ (C).",
       "isAiGenerated": true,
       "isPureAi": true,
       "isTkaAutentik": true,
@@ -12971,7 +12978,7 @@ export const KATALOG_PURE_AI_HOTS = {
         }
       ],
       "kunciJawaban": "B",
-      "pembahasan": "Faktorisasi $182 = 2  \times 7  \times 13$. Jumlah $a + b + c = 2 + 7 + 13 = 22$ (B).",
+      "pembahasan": "Faktorisasi $182 = 2  \\times 7  \\times 13$. Jumlah $a + b + c = 2 + 7 + 13 = 22$ (B).",
       "isAiGenerated": true,
       "isPureAi": true,
       "isTkaAutentik": true,
@@ -13030,7 +13037,7 @@ export const KATALOG_PURE_AI_HOTS = {
       "babNomor": 4,
       "namaBab": "Pengetahuan Kuantitatif (PK)",
       "materi": "Pengetahuan Kuantitatif (PK)",
-      "soal": "Didefinisikan operasi bilangan real $\\otimes$ dan $\\boxplus$ dengan aturan: jika $(4 \\otimes 3) \\boxplus 2 = 10$, di mana operasi melambangkan kombinasi dua operator dasar di antara $\\{+, -,  \times, \\div\\}$. Jika pola operator tersebut konsisten, berapakah nilai dari $(5 \\otimes 6) \\boxplus 10$?",
+      "soal": "Didefinisikan operasi bilangan real $\\otimes$ dan $\\boxplus$ dengan aturan: jika $(4 \\otimes 3) \\boxplus 2 = 10$, di mana operasi melambangkan kombinasi dua operator dasar di antara $\\{+, -,  \\times, \\div\\}$. Jika pola operator tersebut konsisten, berapakah nilai dari $(5 \\otimes 6) \\boxplus 10$?",
       "bacaan": null,
       "opsiJawaban": [
         {
@@ -13055,7 +13062,7 @@ export const KATALOG_PURE_AI_HOTS = {
         }
       ],
       "kunciJawaban": "C",
-      "pembahasan": "$(4  \times 3) - 2 = 10$. Maka $(5  \times 6) + 10 = 40$ (C).",
+      "pembahasan": "$(4  \\times 3) - 2 = 10$. Maka $(5  \\times 6) + 10 = 40$ (C).",
       "isAiGenerated": true,
       "isPureAi": true,
       "isTkaAutentik": true,
@@ -13303,7 +13310,7 @@ export const KATALOG_PURE_AI_HOTS = {
         }
       ],
       "kunciJawaban": "B",
-      "pembahasan": "Beda $b = (31 - 11)/5 = 4$. $a = 11 - 2(4) = 3$. $S_{15} = \\frac{15}{2}(2(3) + 14(4)) = 15  \times 31 = 465$ (B).",
+      "pembahasan": "Beda $b = (31 - 11)/5 = 4$. $a = 11 - 2(4) = 3$. $S_{15} = \\frac{15}{2}(2(3) + 14(4)) = 15  \\times 31 = 465$ (B).",
       "isAiGenerated": true,
       "isPureAi": true,
       "isTkaAutentik": true,
@@ -13320,7 +13327,7 @@ export const KATALOG_PURE_AI_HOTS = {
       "babNomor": 5,
       "namaBab": "Literasi Bahasa Indonesia (LBI)",
       "materi": "Literasi Bahasa Indonesia (LBI)",
-      "soal": "<strong>TEKS 1 (untuk menjawab soal nomor 1 sampai 5)</strong>\nDalam kimia, jumlah partikel zat tidak dihitung satu per satu karena ukurannya sangat kecil dan jumlahnya sangat banyak. Para ahli memakai satuan mol. Satu mol zat mengandung $6,02  \times 10^{23}$ partikel, yang disebut sebagai bilangan Avogadro ($L$).\n\nHubungan antara massa zat dan jumlah mol dinyatakan dengan rumus:\n$$n = \\frac{m}{M_r}$$\ndengan $n$ adalah jumlah mol, $m$ adalah massa zat (gram), dan $M_r$ adalah massa molekul relatif. Massa molekul relatif diperoleh dengan menjumlahkan massa atom relatif ($A_r$) seluruh atom penyusun molekul. Sebagai contoh, untuk gas karbon dioksida ($CO_2$):\n$$M_r\\, CO_2 = A_r\\, C + 2  \times A_r\\, O$$\nJumlah partikel (molekul) dalam suatu zat dihitung dengan:\n$$N = n  \times L$$\nSelain itu, pada keadaan standar (STP: $0^\\circ \text{C}$, $1 \text{ atm}$), satu mol gas apa pun menempati volume 22,4 liter, sehingga:\n$$V = n  \times 22,4 \text{ liter}$$\n\nGas karbon dioksida ($CO_2$) banyak dijumpai dalam kehidupan sehari-hari, misalnya pada minuman bersoda dan alat pemadam kebakaran. Seorang teknisi laboratorium menyimpan gas ini dalam sebuah tabung tertutup. Tabung tersebut berisi 22 gram gas $CO_2$. Massa atom relatif karbon ($A_r\\, C$) adalah 12 dan oksigen ($A_r\\, O$) adalah 16.\n\nBerdasarkan informasi pada Teks 1, berapakah massa molekul relatif ($M_r$) dari gas karbon dioksida ($CO_2$)?",
+      "soal": "<strong>TEKS 1 (untuk menjawab soal nomor 1 sampai 5)</strong>\nDalam kimia, jumlah partikel zat tidak dihitung satu per satu karena ukurannya sangat kecil dan jumlahnya sangat banyak. Para ahli memakai satuan mol. Satu mol zat mengandung $6,02  \\times 10^{23}$ partikel, yang disebut sebagai bilangan Avogadro ($L$).\n\nHubungan antara massa zat dan jumlah mol dinyatakan dengan rumus:\n$$n = \\frac{m}{M_r}$$\ndengan $n$ adalah jumlah mol, $m$ adalah massa zat (gram), dan $M_r$ adalah massa molekul relatif. Massa molekul relatif diperoleh dengan menjumlahkan massa atom relatif ($A_r$) seluruh atom penyusun molekul. Sebagai contoh, untuk gas karbon dioksida ($CO_2$):\n$$M_r\\, CO_2 = A_r\\, C + 2  \\times A_r\\, O$$\nJumlah partikel (molekul) dalam suatu zat dihitung dengan:\n$$N = n  \\times L$$\nSelain itu, pada keadaan standar (STP: $0^\\circ \\text{C}$, $1 \\text{ atm}$), satu mol gas apa pun menempati volume 22,4 liter, sehingga:\n$$V = n  \\times 22,4 \\text{ liter}$$\n\nGas karbon dioksida ($CO_2$) banyak dijumpai dalam kehidupan sehari-hari, misalnya pada minuman bersoda dan alat pemadam kebakaran. Seorang teknisi laboratorium menyimpan gas ini dalam sebuah tabung tertutup. Tabung tersebut berisi 22 gram gas $CO_2$. Massa atom relatif karbon ($A_r\\, C$) adalah 12 dan oksigen ($A_r\\, O$) adalah 16.\n\nBerdasarkan informasi pada Teks 1, berapakah massa molekul relatif ($M_r$) dari gas karbon dioksida ($CO_2$)?",
       "bacaan": null,
       "opsiJawaban": [
         {
@@ -13362,7 +13369,7 @@ export const KATALOG_PURE_AI_HOTS = {
       "babNomor": 5,
       "namaBab": "Literasi Bahasa Indonesia (LBI)",
       "materi": "Literasi Bahasa Indonesia (LBI)",
-      "soal": "<strong>TEKS 1 (untuk menjawab soal nomor 1 sampai 5)</strong>\nDalam kimia, jumlah partikel zat tidak dihitung satu per satu karena ukurannya sangat kecil dan jumlahnya sangat banyak. Para ahli memakai satuan mol. Satu mol zat mengandung $6,02  \times 10^{23}$ partikel, yang disebut sebagai bilangan Avogadro ($L$).\n\nHubungan antara massa zat dan jumlah mol dinyatakan dengan rumus:\n$$n = \\frac{m}{M_r}$$\ndengan $n$ adalah jumlah mol, $m$ adalah massa zat (gram), dan $M_r$ adalah massa molekul relatif. Massa molekul relatif diperoleh dengan menjumlahkan massa atom relatif ($A_r$) seluruh atom penyusun molekul. Sebagai contoh, untuk gas karbon dioksida ($CO_2$):\n$$M_r\\, CO_2 = A_r\\, C + 2  \times A_r\\, O$$\nJumlah partikel (molekul) dalam suatu zat dihitung dengan:\n$$N = n  \times L$$\nSelain itu, pada keadaan standar (STP: $0^\\circ \text{C}$, $1 \text{ atm}$), satu mol gas apa pun menempati volume 22,4 liter, sehingga:\n$$V = n  \times 22,4 \text{ liter}$$\n\nGas karbon dioksida ($CO_2$) banyak dijumpai dalam kehidupan sehari-hari, misalnya pada minuman bersoda dan alat pemadam kebakaran. Seorang teknisi laboratorium menyimpan gas ini dalam sebuah tabung tertutup. Tabung tersebut berisi 22 gram gas $CO_2$. Massa atom relatif karbon ($A_r\\, C$) adalah 12 dan oksigen ($A_r\\, O$) adalah 16.\n\nBerapakah jumlah mol ($n$) gas $CO_2$ yang tersimpan di dalam tabung laboratorium tersebut?",
+      "soal": "<strong>TEKS 1 (untuk menjawab soal nomor 1 sampai 5)</strong>\nDalam kimia, jumlah partikel zat tidak dihitung satu per satu karena ukurannya sangat kecil dan jumlahnya sangat banyak. Para ahli memakai satuan mol. Satu mol zat mengandung $6,02  \\times 10^{23}$ partikel, yang disebut sebagai bilangan Avogadro ($L$).\n\nHubungan antara massa zat dan jumlah mol dinyatakan dengan rumus:\n$$n = \\frac{m}{M_r}$$\ndengan $n$ adalah jumlah mol, $m$ adalah massa zat (gram), dan $M_r$ adalah massa molekul relatif. Massa molekul relatif diperoleh dengan menjumlahkan massa atom relatif ($A_r$) seluruh atom penyusun molekul. Sebagai contoh, untuk gas karbon dioksida ($CO_2$):\n$$M_r\\, CO_2 = A_r\\, C + 2  \\times A_r\\, O$$\nJumlah partikel (molekul) dalam suatu zat dihitung dengan:\n$$N = n  \\times L$$\nSelain itu, pada keadaan standar (STP: $0^\\circ \\text{C}$, $1 \\text{ atm}$), satu mol gas apa pun menempati volume 22,4 liter, sehingga:\n$$V = n  \\times 22,4 \\text{ liter}$$\n\nGas karbon dioksida ($CO_2$) banyak dijumpai dalam kehidupan sehari-hari, misalnya pada minuman bersoda dan alat pemadam kebakaran. Seorang teknisi laboratorium menyimpan gas ini dalam sebuah tabung tertutup. Tabung tersebut berisi 22 gram gas $CO_2$. Massa atom relatif karbon ($A_r\\, C$) adalah 12 dan oksigen ($A_r\\, O$) adalah 16.\n\nBerapakah jumlah mol ($n$) gas $CO_2$ yang tersimpan di dalam tabung laboratorium tersebut?",
       "bacaan": null,
       "opsiJawaban": [
         {
@@ -13404,7 +13411,7 @@ export const KATALOG_PURE_AI_HOTS = {
       "babNomor": 5,
       "namaBab": "Literasi Bahasa Indonesia (LBI)",
       "materi": "Literasi Bahasa Indonesia (LBI)",
-      "soal": "<strong>TEKS 1 (untuk menjawab soal nomor 1 sampai 5)</strong>\nDalam kimia, jumlah partikel zat tidak dihitung satu per satu karena ukurannya sangat kecil dan jumlahnya sangat banyak. Para ahli memakai satuan mol. Satu mol zat mengandung $6,02  \times 10^{23}$ partikel, yang disebut sebagai bilangan Avogadro ($L$).\n\nHubungan antara massa zat dan jumlah mol dinyatakan dengan rumus:\n$$n = \\frac{m}{M_r}$$\ndengan $n$ adalah jumlah mol, $m$ adalah massa zat (gram), dan $M_r$ adalah massa molekul relatif. Massa molekul relatif diperoleh dengan menjumlahkan massa atom relatif ($A_r$) seluruh atom penyusun molekul. Sebagai contoh, untuk gas karbon dioksida ($CO_2$):\n$$M_r\\, CO_2 = A_r\\, C + 2  \times A_r\\, O$$\nJumlah partikel (molekul) dalam suatu zat dihitung dengan:\n$$N = n  \times L$$\nSelain itu, pada keadaan standar (STP: $0^\\circ \text{C}$, $1 \text{ atm}$), satu mol gas apa pun menempati volume 22,4 liter, sehingga:\n$$V = n  \times 22,4 \text{ liter}$$\n\nGas karbon dioksida ($CO_2$) banyak dijumpai dalam kehidupan sehari-hari, misalnya pada minuman bersoda dan alat pemadam kebakaran. Seorang teknisi laboratorium menyimpan gas ini dalam sebuah tabung tertutup. Tabung tersebut berisi 22 gram gas $CO_2$. Massa atom relatif karbon ($A_r\\, C$) adalah 12 dan oksigen ($A_r\\, O$) adalah 16.\n\nBerapakah jumlah partikel molekul gas $CO_2$ yang terdapat di dalam tabung tersebut?",
+      "soal": "<strong>TEKS 1 (untuk menjawab soal nomor 1 sampai 5)</strong>\nDalam kimia, jumlah partikel zat tidak dihitung satu per satu karena ukurannya sangat kecil dan jumlahnya sangat banyak. Para ahli memakai satuan mol. Satu mol zat mengandung $6,02  \\times 10^{23}$ partikel, yang disebut sebagai bilangan Avogadro ($L$).\n\nHubungan antara massa zat dan jumlah mol dinyatakan dengan rumus:\n$$n = \\frac{m}{M_r}$$\ndengan $n$ adalah jumlah mol, $m$ adalah massa zat (gram), dan $M_r$ adalah massa molekul relatif. Massa molekul relatif diperoleh dengan menjumlahkan massa atom relatif ($A_r$) seluruh atom penyusun molekul. Sebagai contoh, untuk gas karbon dioksida ($CO_2$):\n$$M_r\\, CO_2 = A_r\\, C + 2  \\times A_r\\, O$$\nJumlah partikel (molekul) dalam suatu zat dihitung dengan:\n$$N = n  \\times L$$\nSelain itu, pada keadaan standar (STP: $0^\\circ \\text{C}$, $1 \\text{ atm}$), satu mol gas apa pun menempati volume 22,4 liter, sehingga:\n$$V = n  \\times 22,4 \\text{ liter}$$\n\nGas karbon dioksida ($CO_2$) banyak dijumpai dalam kehidupan sehari-hari, misalnya pada minuman bersoda dan alat pemadam kebakaran. Seorang teknisi laboratorium menyimpan gas ini dalam sebuah tabung tertutup. Tabung tersebut berisi 22 gram gas $CO_2$. Massa atom relatif karbon ($A_r\\, C$) adalah 12 dan oksigen ($A_r\\, O$) adalah 16.\n\nBerapakah jumlah partikel molekul gas $CO_2$ yang terdapat di dalam tabung tersebut?",
       "bacaan": null,
       "opsiJawaban": [
         {
@@ -13429,7 +13436,7 @@ export const KATALOG_PURE_AI_HOTS = {
         }
       ],
       "kunciJawaban": "C",
-      "pembahasan": "$N = 0,5  \times 6,02  \times 10^{23} = 3,01  \times 10^{23}$ molekul (C).",
+      "pembahasan": "$N = 0,5  \\times 6,02  \\times 10^{23} = 3,01  \\times 10^{23}$ molekul (C).",
       "isAiGenerated": true,
       "isPureAi": true,
       "isTkaAutentik": true,
@@ -13446,7 +13453,7 @@ export const KATALOG_PURE_AI_HOTS = {
       "babNomor": 5,
       "namaBab": "Literasi Bahasa Indonesia (LBI)",
       "materi": "Literasi Bahasa Indonesia (LBI)",
-      "soal": "<strong>TEKS 1 (untuk menjawab soal nomor 1 sampai 5)</strong>\nDalam kimia, jumlah partikel zat tidak dihitung satu per satu karena ukurannya sangat kecil dan jumlahnya sangat banyak. Para ahli memakai satuan mol. Satu mol zat mengandung $6,02  \times 10^{23}$ partikel, yang disebut sebagai bilangan Avogadro ($L$).\n\nHubungan antara massa zat dan jumlah mol dinyatakan dengan rumus:\n$$n = \\frac{m}{M_r}$$\ndengan $n$ adalah jumlah mol, $m$ adalah massa zat (gram), dan $M_r$ adalah massa molekul relatif. Massa molekul relatif diperoleh dengan menjumlahkan massa atom relatif ($A_r$) seluruh atom penyusun molekul. Sebagai contoh, untuk gas karbon dioksida ($CO_2$):\n$$M_r\\, CO_2 = A_r\\, C + 2  \times A_r\\, O$$\nJumlah partikel (molekul) dalam suatu zat dihitung dengan:\n$$N = n  \times L$$\nSelain itu, pada keadaan standar (STP: $0^\\circ \text{C}$, $1 \text{ atm}$), satu mol gas apa pun menempati volume 22,4 liter, sehingga:\n$$V = n  \times 22,4 \text{ liter}$$\n\nGas karbon dioksida ($CO_2$) banyak dijumpai dalam kehidupan sehari-hari, misalnya pada minuman bersoda dan alat pemadam kebakaran. Seorang teknisi laboratorium menyimpan gas ini dalam sebuah tabung tertutup. Tabung tersebut berisi 22 gram gas $CO_2$. Massa atom relatif karbon ($A_r\\, C$) adalah 12 dan oksigen ($A_r\\, O$) adalah 16.\n\nJika gas $CO_2$ di dalam tabung tersebut diukur pada keadaan standar (STP), berapakah volume ruang yang ditempati gas tersebut?",
+      "soal": "<strong>TEKS 1 (untuk menjawab soal nomor 1 sampai 5)</strong>\nDalam kimia, jumlah partikel zat tidak dihitung satu per satu karena ukurannya sangat kecil dan jumlahnya sangat banyak. Para ahli memakai satuan mol. Satu mol zat mengandung $6,02  \\times 10^{23}$ partikel, yang disebut sebagai bilangan Avogadro ($L$).\n\nHubungan antara massa zat dan jumlah mol dinyatakan dengan rumus:\n$$n = \\frac{m}{M_r}$$\ndengan $n$ adalah jumlah mol, $m$ adalah massa zat (gram), dan $M_r$ adalah massa molekul relatif. Massa molekul relatif diperoleh dengan menjumlahkan massa atom relatif ($A_r$) seluruh atom penyusun molekul. Sebagai contoh, untuk gas karbon dioksida ($CO_2$):\n$$M_r\\, CO_2 = A_r\\, C + 2  \\times A_r\\, O$$\nJumlah partikel (molekul) dalam suatu zat dihitung dengan:\n$$N = n  \\times L$$\nSelain itu, pada keadaan standar (STP: $0^\\circ \\text{C}$, $1 \\text{ atm}$), satu mol gas apa pun menempati volume 22,4 liter, sehingga:\n$$V = n  \\times 22,4 \\text{ liter}$$\n\nGas karbon dioksida ($CO_2$) banyak dijumpai dalam kehidupan sehari-hari, misalnya pada minuman bersoda dan alat pemadam kebakaran. Seorang teknisi laboratorium menyimpan gas ini dalam sebuah tabung tertutup. Tabung tersebut berisi 22 gram gas $CO_2$. Massa atom relatif karbon ($A_r\\, C$) adalah 12 dan oksigen ($A_r\\, O$) adalah 16.\n\nJika gas $CO_2$ di dalam tabung tersebut diukur pada keadaan standar (STP), berapakah volume ruang yang ditempati gas tersebut?",
       "bacaan": null,
       "opsiJawaban": [
         {
@@ -13471,7 +13478,7 @@ export const KATALOG_PURE_AI_HOTS = {
         }
       ],
       "kunciJawaban": "B",
-      "pembahasan": "$V = 0,5  \times 22,4 = 11,2$ liter (B).",
+      "pembahasan": "$V = 0,5  \\times 22,4 = 11,2$ liter (B).",
       "isAiGenerated": true,
       "isPureAi": true,
       "isTkaAutentik": true,
@@ -13488,7 +13495,7 @@ export const KATALOG_PURE_AI_HOTS = {
       "babNomor": 5,
       "namaBab": "Literasi Bahasa Indonesia (LBI)",
       "materi": "Literasi Bahasa Indonesia (LBI)",
-      "soal": "<strong>TEKS 1 (untuk menjawab soal nomor 1 sampai 5)</strong>\nDalam kimia, jumlah partikel zat tidak dihitung satu per satu karena ukurannya sangat kecil dan jumlahnya sangat banyak. Para ahli memakai satuan mol. Satu mol zat mengandung $6,02  \times 10^{23}$ partikel, yang disebut sebagai bilangan Avogadro ($L$).\n\nHubungan antara massa zat dan jumlah mol dinyatakan dengan rumus:\n$$n = \\frac{m}{M_r}$$\ndengan $n$ adalah jumlah mol, $m$ adalah massa zat (gram), dan $M_r$ adalah massa molekul relatif. Massa molekul relatif diperoleh dengan menjumlahkan massa atom relatif ($A_r$) seluruh atom penyusun molekul. Sebagai contoh, untuk gas karbon dioksida ($CO_2$):\n$$M_r\\, CO_2 = A_r\\, C + 2  \times A_r\\, O$$\nJumlah partikel (molekul) dalam suatu zat dihitung dengan:\n$$N = n  \times L$$\nSelain itu, pada keadaan standar (STP: $0^\\circ \text{C}$, $1 \text{ atm}$), satu mol gas apa pun menempati volume 22,4 liter, sehingga:\n$$V = n  \times 22,4 \text{ liter}$$\n\nGas karbon dioksida ($CO_2$) banyak dijumpai dalam kehidupan sehari-hari, misalnya pada minuman bersoda dan alat pemadam kebakaran. Seorang teknisi laboratorium menyimpan gas ini dalam sebuah tabung tertutup. Tabung tersebut berisi 22 gram gas $CO_2$. Massa atom relatif karbon ($A_r\\, C$) adalah 12 dan oksigen ($A_r\\, O$) adalah 16.\n\nManakah pernyataan berikut yang PALING SESUAI dengan konsep mol dan gas ideal yang dijelaskan pada bacaan?",
+      "soal": "<strong>TEKS 1 (untuk menjawab soal nomor 1 sampai 5)</strong>\nDalam kimia, jumlah partikel zat tidak dihitung satu per satu karena ukurannya sangat kecil dan jumlahnya sangat banyak. Para ahli memakai satuan mol. Satu mol zat mengandung $6,02  \\times 10^{23}$ partikel, yang disebut sebagai bilangan Avogadro ($L$).\n\nHubungan antara massa zat dan jumlah mol dinyatakan dengan rumus:\n$$n = \\frac{m}{M_r}$$\ndengan $n$ adalah jumlah mol, $m$ adalah massa zat (gram), dan $M_r$ adalah massa molekul relatif. Massa molekul relatif diperoleh dengan menjumlahkan massa atom relatif ($A_r$) seluruh atom penyusun molekul. Sebagai contoh, untuk gas karbon dioksida ($CO_2$):\n$$M_r\\, CO_2 = A_r\\, C + 2  \\times A_r\\, O$$\nJumlah partikel (molekul) dalam suatu zat dihitung dengan:\n$$N = n  \\times L$$\nSelain itu, pada keadaan standar (STP: $0^\\circ \\text{C}$, $1 \\text{ atm}$), satu mol gas apa pun menempati volume 22,4 liter, sehingga:\n$$V = n  \\times 22,4 \\text{ liter}$$\n\nGas karbon dioksida ($CO_2$) banyak dijumpai dalam kehidupan sehari-hari, misalnya pada minuman bersoda dan alat pemadam kebakaran. Seorang teknisi laboratorium menyimpan gas ini dalam sebuah tabung tertutup. Tabung tersebut berisi 22 gram gas $CO_2$. Massa atom relatif karbon ($A_r\\, C$) adalah 12 dan oksigen ($A_r\\, O$) adalah 16.\n\nManakah pernyataan berikut yang PALING SESUAI dengan konsep mol dan gas ideal yang dijelaskan pada bacaan?",
       "bacaan": null,
       "opsiJawaban": [
         {
@@ -14311,7 +14318,7 @@ export const KATALOG_PURE_AI_HOTS = {
         }
       ],
       "kunciJawaban": "D",
-      "pembahasan": "Sore hari $\\ge 30$ menit = $16 + 14 = 30$ anak. Persentase $= 30/40  \times 100\\% = 75\\%$ (D).",
+      "pembahasan": "Sore hari $\\ge 30$ menit = $16 + 14 = 30$ anak. Persentase $= 30/40  \\times 100\\% = 75\\%$ (D).",
       "isAiGenerated": true,
       "isPureAi": true,
       "isTkaAutentik": true,
@@ -14479,7 +14486,7 @@ export const KATALOG_PURE_AI_HOTS = {
         }
       ],
       "kunciJawaban": "C",
-      "pembahasan": "Margin kontribusi per cangkir $= Rp20.000 - Rp8.000 = Rp12.000$. BEP $= \\frac{ \text{Biaya Tetap}}{ \text{Margin Kontribusi}} = \\frac{6.000.000}{12.000} = 500 \text{ cangkir}$ (C).",
+      "pembahasan": "Margin kontribusi per cangkir $= Rp20.000 - Rp8.000 = Rp12.000$. BEP $= \\frac{ \\text{Biaya Tetap}}{ \\text{Margin Kontribusi}} = \\frac{6.000.000}{12.000} = 500 \\text{ cangkir}$ (C).",
       "isAiGenerated": true,
       "isPureAi": true,
       "isTkaAutentik": true,
@@ -14521,7 +14528,7 @@ export const KATALOG_PURE_AI_HOTS = {
         }
       ],
       "kunciJawaban": "D",
-      "pembahasan": "Target penjualan $= \\frac{ \text{Biaya Tetap} +  \text{Target Laba}}{ \text{Margin Kontribusi}} = \\frac{6.000.000 + 3.600.000}{12.000} = \\frac{9.600.000}{12.000} = 800 \text{ cangkir}$ (D).",
+      "pembahasan": "Target penjualan $= \\frac{ \\text{Biaya Tetap} +  \\text{Target Laba}}{ \\text{Margin Kontribusi}} = \\frac{6.000.000 + 3.600.000}{12.000} = \\frac{9.600.000}{12.000} = 800 \\text{ cangkir}$ (D).",
       "isAiGenerated": true,
       "isPureAi": true,
       "isTkaAutentik": true,
@@ -14563,7 +14570,7 @@ export const KATALOG_PURE_AI_HOTS = {
         }
       ],
       "kunciJawaban": "C",
-      "pembahasan": "Margin baru $= Rp20.000 - Rp10.000 = Rp10.000$. BEP baru $= 6.000.000 / 10.000 = 600 \text{ cangkir}$. Kenaikan $= (600 - 500) / 500 = 100 / 500 = 20\\%$ (C).",
+      "pembahasan": "Margin baru $= Rp20.000 - Rp10.000 = Rp10.000$. BEP baru $= 6.000.000 / 10.000 = 600 \\text{ cangkir}$. Kenaikan $= (600 - 500) / 500 = 100 / 500 = 20\\%$ (C).",
       "isAiGenerated": true,
       "isPureAi": true,
       "isTkaAutentik": true,
@@ -14618,22 +14625,27 @@ export async function generatePureAiHotsSoal({
     subtesKode = 'MTK';
   }
 
-  const babObj = (SILABUS_RESMI_SMP[mapelNorm] || []).find((b) => b.babNomor === babNomor) || (SILABUS_RESMI_SMP[mapelNorm] || [])[0];
+  const jenjangUp = String(jenjang || 'SMP').toUpperCase();
+  const silabusMap = jenjangUp === 'SD' ? SILABUS_RESMI_SD
+    : (jenjangUp === 'SMA' || jenjangUp === 'UTBK') ? SILABUS_RESMI_SMA_UTBK
+    : SILABUS_RESMI_SMP;
+  const babObj = (silabusMap[mapelNorm] || SILABUS_RESMI_SMP[mapelNorm] || []).find((b) => b.babNomor === babNomor)
+    || (silabusMap[mapelNorm] || SILABUS_RESMI_SMP[mapelNorm] || [])[0];
   const subObj = babObj?.subMateriList?.find((s) => s.id === subMateriId) || babObj?.subMateriList?.[0];
 
   let hasilAi = [];
 
-  // Helper pembersih tipografi string
+  // Helper pembersih tipografi string (tetap pertahankan LaTeX \\text, \\times, \\frac)
   const bersihkanTipografi = (t) => {
     if (typeof t !== 'string') return t;
-    return t.replace(/\\r\\n/g, '\n').replace(/\\n/g, '\n').replace(/\\t/g, ' ').trim();
+    return t.replace(/\\r\\n/g, '\n').replace(/\\n/g, '\n').trim();
   };
 
   // 2. Coba hubungi endpoint AI pencari web / generator dinamis jika online
   if (typeof fetch === 'function') {
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 9000);
+      const timeoutId = setTimeout(() => controller.abort(), 28000);
       const resp = await fetch('/api/generateQuizFromTopic', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -14641,12 +14653,12 @@ export async function generatePureAiHotsSoal({
         body: JSON.stringify({
           topic: `${babObj?.ringkas || babObj?.namaBab || mapelNorm} - ${subObj?.label || 'HOTS Teruji'}`,
           mapel: mapelNorm,
-          kelas: jenjang.toUpperCase() === 'SMP' ? 'SMP 8/9' : jenjang,
+          kelas: jenjangUp === 'SMP' ? 'SMP 8/9' : jenjang,
           jumlahSoal: targetJumlah,
-          types: ['pg_sederhana'],
+          types: ['pg_sederhana', 'pg_kompleks', 'benar_salah'],
           sourceMode: 'source',
           useTrendSearch: true,
-          arahan: `Soal HOTS autentik teruji berstandar TKA / ASPD DIY / SNBT untuk mata pelajaran ${mapelNorm}, materi ${babObj?.namaBab || mapelNorm} sub-topik ${subObj?.label || ''}. Pastikan soal kontekstual nyata, bahasa baku, wacana/stimulus lengkap, opsi A-D (atau A-E), kunci jawaban terverifikasi, rumus KaTeX jika ada, dan pembahasan mendalam. DILARANG KERAS mencampur adukkan mata pelajaran lain (contoh: jika Bahasa Indonesia, JANGAN berikan soal matematika/hitungan numerik).`,
+          arahan: `Soal HOTS autentik teruji berstandar TKA / ASPD DIY / SNBT untuk mata pelajaran ${mapelNorm}, materi ${babObj?.namaBab || mapelNorm} sub-topik ${subObj?.label || ''}. Pastikan soal kontekstual nyata, bahasa baku, wacana/stimulus lengkap (khusus Bahasa Indonesia/UTBK sertakan teks bacaan panjang yang utuh), variasi tipe soal (pilihan ganda tunggal, pilihan ganda kompleks lebih dari satu jawaban, dan tabel pernyataan benar/salah), opsi A-D (atau A-E), kunci jawaban terverifikasi, rumus KaTeX dengan double backslash jika ada, dan pembahasan mendalam. DILARANG KERAS mencampur adukkan mata pelajaran lain (contoh: jika Bahasa Indonesia, JANGAN berikan soal matematika/hitungan numerik).`,
         }),
       });
       clearTimeout(timeoutId);

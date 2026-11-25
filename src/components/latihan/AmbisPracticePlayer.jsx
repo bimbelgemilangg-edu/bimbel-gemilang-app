@@ -393,7 +393,9 @@ export default function AmbisPracticePlayer({
     }
 
     // Default pg_sederhana
-    return jawabanTerpilih === soalSekarang.kunci;
+    const kRaw = String(soalSekarang.kunci || soalSekarang.kunciJawaban || '').trim().toUpperCase();
+    const jRaw = String(jawabanTerpilih || '').trim().toUpperCase();
+    return Boolean(kRaw && jRaw && kRaw === jRaw);
   };
 
   // Periksa jawaban
@@ -764,7 +766,6 @@ export default function AmbisPracticePlayer({
     );
   }
 
-  const isBenar = jawabanTerpilih === soalSekarang.kunci;
   const isRemedial = indeksAktif >= totalSoalAwal;
 
   return (
@@ -871,42 +872,64 @@ export default function AmbisPracticePlayer({
         </div>
 
         {/* Wacana / Stimulus Panjang (bila ada) */}
-        {soalSekarang.wacana && (
-          <div style={st.boxWacana}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: '#475569', marginBottom: 6, textTransform: 'uppercase' }}>
-              Wacana / Teks Bacaan:
+        {(() => {
+          const wacanaTeks =
+            (typeof soalSekarang.wacana === 'string' ? soalSekarang.wacana : soalSekarang.wacana?.teks) ||
+            (typeof soalSekarang.bacaan === 'string' ? soalSekarang.bacaan : soalSekarang.bacaan?.teks) ||
+            (typeof soalSekarang.stimulus === 'string' ? soalSekarang.stimulus : soalSekarang.stimulus?.teks) ||
+            soalSekarang.teksBacaan ||
+            '';
+          if (!String(wacanaTeks).trim()) return null;
+          return (
+            <div style={st.boxWacana}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: '#475569', marginBottom: 6, textTransform: 'uppercase' }}>
+                Wacana / Teks Bacaan:
+              </div>
+              <div style={{ fontSize: 14, lineHeight: 1.6, color: '#334155' }}>
+                {renderMath(wacanaTeks)}
+              </div>
             </div>
-            <div style={{ fontSize: 14, lineHeight: 1.6, color: '#334155' }}>
-              {renderMath(soalSekarang.wacana)}
-            </div>
-          </div>
-        )}
+          );
+        })()}
 
         {/* Teks Pertanyaan */}
         <div style={st.teksPertanyaan}>
-          {renderMath(soalSekarang.soal)}
+          {renderMath(soalSekarang.soal || soalSekarang.teksSoal || '')}
         </div>
 
         {/* Gambar / Visual Stimulus Soal (jika ada) */}
-        {Array.isArray(soalSekarang.gambar) && soalSekarang.gambar.length > 0 && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, margin: '12px 0 16px', alignItems: 'center' }}>
-            {soalSekarang.gambar.map((imgUrl, gIdx) => (
-              <img
-                key={gIdx}
-                src={imgUrl}
-                alt={`Visual Soal ${gIdx + 1}`}
-                style={{
-                  maxWidth: '100%',
-                  maxHeight: 360,
-                  objectFit: 'contain',
-                  borderRadius: 10,
-                  border: '1px solid #e2e8f0',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
-                }}
-              />
-            ))}
-          </div>
-        )}
+        {(() => {
+          const semuaGambar = [];
+          const tambahGbr = (g) => {
+            if (!g) return;
+            const u = typeof g === 'string' ? g.trim() : (g.url || g.uploadedUrl || g.src || '').trim();
+            if (u && !semuaGambar.includes(u)) semuaGambar.push(u);
+          };
+          if (Array.isArray(soalSekarang.gambar)) soalSekarang.gambar.forEach(tambahGbr);
+          if (Array.isArray(soalSekarang.gambarUrls)) soalSekarang.gambarUrls.forEach(tambahGbr);
+          if (Array.isArray(soalSekarang.bacaan?.gambar)) soalSekarang.bacaan.gambar.forEach(tambahGbr);
+          if (soalSekarang.gambarUrl) tambahGbr(soalSekarang.gambarUrl);
+          if (semuaGambar.length === 0) return null;
+          return (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, margin: '12px 0 16px', alignItems: 'center' }}>
+              {semuaGambar.map((imgUrl, gIdx) => (
+                <img
+                  key={gIdx}
+                  src={imgUrl}
+                  alt={`Visual Soal ${gIdx + 1}`}
+                  style={{
+                    maxWidth: '100%',
+                    maxHeight: 360,
+                    objectFit: 'contain',
+                    borderRadius: 10,
+                    border: '1px solid #e2e8f0',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                  }}
+                />
+              ))}
+            </div>
+          );
+        })()}
 
         {/* TAMPILAN INTERAKTIF SESUAI TIPE SOAL */}
         {soalSekarang.tipeSoal === 'benar_salah' ? (

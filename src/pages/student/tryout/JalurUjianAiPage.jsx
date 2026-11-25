@@ -50,6 +50,7 @@ import {
   hitungStatistikLatihanSiswa,
   bacaProgresLatihanSiswa,
   resetProgresLatihanSiswa,
+  normalisasiButir,
 } from '../../../data/ambisLatihanBankSoal';
 import AmbisPracticePlayer from '../../../components/latihan/AmbisPracticePlayer';
 import { htmlPaketSiswa } from '../../../utils/cetakLatihan';
@@ -1253,10 +1254,18 @@ export default function JalurUjianAiPage() {
                           <button
                             type="button"
                             onClick={() => {
+                              const soalTernormalisasi = soalListPkt
+                                .map((s, idx) => normalisasiButir(s, pkt.subtes || pkt.mapel || 'MTK', pkt.bab || pkt.namaBab || 'Pendampingan', idx + 1) || s)
+                                .filter(Boolean);
                               setSesiLatihanAktif({
                                 subtes: { kode: pkt.subtes || pkt.mapel || 'TKA', nama: pkt.subtes || pkt.mapel || 'Latihan Kelas Tentor' },
-                                paket: { id: pkt.id || pkt.docId, judul: pkt.judulPaket || pkt.judul },
-                                daftarSoal: soalListPkt,
+                                paket: {
+                                  id: pkt.id || pkt.docId,
+                                  judul: pkt.judulPaket || pkt.judul,
+                                  babNomor: Number(pkt.babNomor || 1),
+                                  bab: pkt.bab || pkt.namaBab || 'Bab 1: Bilangan',
+                                },
+                                daftarSoal: soalTernormalisasi,
                                 mode: 'Active Recall',
                                 isWeeklyDrill: false,
                               });
