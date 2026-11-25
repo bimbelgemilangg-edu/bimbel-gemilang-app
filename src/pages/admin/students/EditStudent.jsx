@@ -15,6 +15,7 @@ import {
 import PilihDurasiBulan from '../../../components/admin/PilihDurasiBulan';
 import { tambahBulanKeTanggal, normalisasiDurasi } from '../../../utils/durasiPaket';
 import { saringMapelUntukSiswa, pangkasKodeMapelTerpilih } from '../../../utils/aksesMapelPerJenjang';
+import { jenjangDariKelas, normalisasiKelasDanJenjang, DAFTAR_KELAS_PER_JENJANG } from '../../../utils/normalisasiKelasJenjang';
 import InputRupiah from '../../../components/InputRupiah';
 
 // 🔥 BARU: sama persis logikanya dengan normalisasiNoHp() di AddStudent.jsx
@@ -444,7 +445,8 @@ const EditStudent = () => {
         password: formData.password,
         tempatLahir: formData.tempatLahir,
         tanggalLahir: tanggalLahirStr || originalData?.tanggalLahir || '',
-        kelasSekolah: formData.kelasSekolah,
+        kelas: formData.programType === 'English' ? 'Umum' : formData.kelasSekolah,
+        kelasSekolah: formData.programType === 'English' ? 'Umum' : formData.kelasSekolah,
         // 🔥 Field level-atas ini yang dibaca fitur kirim WA otomatis di
         // FinanceDashboard.jsx -- WAJIB ikut disinkronkan tiap ada edit.
         noHp: noHpBersih,
@@ -455,7 +457,7 @@ const EditStudent = () => {
           hp: noHpBersih 
         },
         kategori: formData.programType,
-        jenjang: formData.programType === 'English' ? 'English' : formData.jenjang,
+        jenjang: formData.programType === 'English' ? 'English' : normalisasiKelasDanJenjang({ kelasSekolah: formData.kelasSekolah, jenjang: formData.jenjang }).jenjang,
         paket: formData.programType === 'English' ? formData.englishLevelId : formData.paketId,
         paketNama: paketName,
         detailProgram: detailProgram,
@@ -690,7 +692,15 @@ const EditStudent = () => {
                 <select 
                   style={styles.input} 
                   value={formData.kelasSekolah} 
-                  onChange={e => updateField('kelasSekolah', e.target.value)}
+                  onChange={e => {
+                    const kBaru = e.target.value;
+                    const jBaru = jenjangDariKelas(kBaru, formData.programType);
+                    setFormData(prev => ({
+                      ...prev,
+                      kelasSekolah: kBaru,
+                      jenjang: (jBaru && ['SD', 'SMP', 'SMA'].includes(jBaru)) ? jBaru : prev.jenjang,
+                    }));
+                  }}
                 >
                   <option value="1 SD">1 SD</option><option value="2 SD">2 SD</option>
                   <option value="3 SD">3 SD</option><option value="4 SD">4 SD</option>
@@ -849,11 +859,13 @@ const EditStudent = () => {
                       style={styles.input} 
                       value={formData.jenjang} 
                       onChange={e => {
-                        updateField('jenjang', e.target.value);
-                        updateField('paketId', null);
+                        const jBaru = e.target.value;
+                        const daftarValid = DAFTAR_KELAS_PER_JENJANG[jBaru] || [];
+                        const kBaru = daftarValid.includes(formData.kelasSekolah) ? formData.kelasSekolah : (daftarValid[0] || formData.kelasSekolah);
+                        setFormData(prev => ({ ...prev, jenjang: jBaru, kelasSekolah: kBaru, paketId: null }));
                         // Pangkas akses mapel yang tak sah di jenjang baru.
                         setSelectedMapelCodes(prev => pangkasKodeMapelTerpilih(prev, mapelList, {
-                          jenjang: e.target.value, kelas: formData.kelasSekolah, programType: formData.programType,
+                          jenjang: jBaru, kelas: kBaru, programType: formData.programType,
                         }));
                       }}
                     >

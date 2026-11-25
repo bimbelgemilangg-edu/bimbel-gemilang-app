@@ -3,6 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../firebase';
 import { collection, getDocs, query, orderBy } from "firebase/firestore";
+import { isAkunBelajarAktif, pesanBlokir } from '../utils/statusAkunSiswa';
+import { normalisasiKelasDanJenjang } from '../utils/normalisasiKelasJenjang';
 import { 
   User, Lock, Eye, EyeOff, LogIn, BookOpen, 
   Sparkles, Shield, CheckCircle, AlertCircle, 
@@ -208,26 +210,19 @@ const LoginSiswa = () => {
 
       if (studentData) {
         if (String(studentData.password) === inputPassword) {
-          // 🎯 CEK STATUS AKUN TRIAL CLASS (3 HARI)
+          // 🔒 CEK STATUS AKUN: BLOKIR, NONAKTIF, TRIAL HABIS, ATAU MASA PAKET HABIS
+          if (!isAkunBelajarAktif(studentData)) {
+            const infoBlokir = pesanBlokir(studentData);
+            return alert(`⛔ ${infoBlokir.judul}\n\n${infoBlokir.isi}`);
+          }
           if (studentData.isTrial) {
-            const now = new Date();
-            const expires = studentData.trialExpiresAt ? new Date(studentData.trialExpiresAt) : null;
-            const tglSelesai = studentData.tanggalSelesai ? new Date(studentData.tanggalSelesai + 'T23:59:59') : null;
-            
-            const isExpired = (expires && now > expires) || (tglSelesai && now > tglSelesai);
-            if (isExpired) {
-              return alert(
-                "⏳ Masa Trial Class (3 Hari) kamu telah selesai!\n\n" +
-                "Terima kasih telah mencoba serunya belajar di Bimbel Gemilang. " +
-                "Yuk hubungi admin untuk mendaftar resmi agar bisa terus akses try out, video materi, dan modul lengkap!"
-              );
-            }
             localStorage.setItem("isTrialStudent", "true");
           } else {
             localStorage.removeItem("isTrialStudent");
           }
           // 🔥 AMBIL STUDENT ID ASLI (bukan docId)
           const studentId = studentData.studentId || docId;
+          const normKelas = normalisasiKelasDanJenjang(studentData);
           
           // 🔥 SIMPAN KE LOCALSTORAGE DENGAN BENAR
           localStorage.setItem("isSiswaLoggedIn", "true");
@@ -237,17 +232,12 @@ const LoginSiswa = () => {
           localStorage.setItem("studentId", studentId);
           localStorage.setItem("studentNim", studentId);  // ← NIM PAKAI STUDENT ID ASLI
 
-          // 🔥 BARU: simpan JUGA docId Firestore yang asli (misal
-          // "7Hyjs2gL0BzSSzOS7ajF"). Ini WAJIB dipakai tiap kali baca/tulis
-          // ke collection "students" -- karena docId INI yang dipakai admin
-          // di /admin/students/edit/{docId}, BUKAN studentId (NIS) di atas.
-          // Kalau ketuker, data nyasar ke dokumen "hantu" yang gak pernah
-          // kebuka admin (ini penyebab foto & alamat gak sinkron sebelumnya).
+          // 🔥 BARU: simpan JUGA docId Firestore yang asli
           localStorage.setItem("studentDocId", docId);
           
           localStorage.setItem("studentName", studentData.nama || "Siswa");
-          localStorage.setItem("studentKelas", studentData.kelasSekolah || "");
-          localStorage.setItem("studentGrade", studentData.kelasSekolah || "");
+          localStorage.setItem("studentKelas", normKelas.kelasSekolah || studentData.kelasSekolah || studentData.kelas || "");
+          localStorage.setItem("studentGrade", normKelas.kelasSekolah || studentData.kelasSekolah || studentData.kelas || "");
           localStorage.setItem("studentFotoUrl", studentData.fotoUrl || studentData.photoUrl || studentData.foto || studentData.avatarUrl || "");
           
           console.log("✅ Login berhasil - Student ID:", studentId);

@@ -11,6 +11,7 @@ import {
 import {
   Calendar, Save, Trash2, Edit3, X, Search, RefreshCw, ChevronLeft, ChevronRight,
 } from 'lucide-react';
+import { isAkunBelajarAktif } from '../../../utils/statusAkunSiswa';
 
 const STATUS_OPTS = ['Hadir', 'Izin', 'Sakit', 'Alpha'];
 const STATUS_STYLE = {
@@ -69,7 +70,7 @@ const AdminAttendanceManage = () => {
       ]);
       const stu = stuSnap.docs
         .map((d) => ({ id: d.id, ...d.data() }))
-        .filter((s) => !s.isBlocked)
+        .filter((s) => isAkunBelajarAktif(s))
         .sort((a, b) => String(a.nama || '').localeCompare(String(b.nama || ''), 'id'));
       setStudents(stu);
 

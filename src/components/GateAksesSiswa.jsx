@@ -3,7 +3,7 @@
 // bukan 0 XP misterius. Halaman Keuangan & Dashboard tidak perlu gate ini.
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Lock, Wallet, MessageCircle } from 'lucide-react';
+import { Lock, LogOut, MessageCircle } from 'lucide-react';
 import { muatStatusSiswa, pesanBlokir } from '../utils/statusAkunSiswa';
 
 const WA_ADMIN = 'https://wa.me/628135752327';
@@ -39,8 +39,23 @@ export default function GateAksesSiswa({ children, fitur = 'fitur belajar' }) {
 
   if (!cek.aktif) {
     const p = pesanBlokir(cek.student);
+    const handleLogout = () => {
+      localStorage.removeItem('isSiswaLoggedIn');
+      localStorage.removeItem('role');
+      localStorage.removeItem('studentId');
+      localStorage.removeItem('studentNim');
+      localStorage.removeItem('studentDocId');
+      localStorage.removeItem('studentName');
+      localStorage.removeItem('studentKelas');
+      localStorage.removeItem('studentGrade');
+      localStorage.removeItem('studentFotoUrl');
+      localStorage.removeItem('studentIsBlocked');
+      localStorage.removeItem('studentStatus');
+      localStorage.removeItem('isTrialStudent');
+      navigate('/login-siswa', { replace: true });
+    };
     return (
-      <div style={S.wrap}>
+      <div style={{ ...S.wrap, minHeight: '100vh' }}>
         <div style={S.card}>
           <div style={S.iconBox}>
             <Lock size={36} color="#ef4444" />
@@ -48,11 +63,11 @@ export default function GateAksesSiswa({ children, fitur = 'fitur belajar' }) {
           <h2 style={S.judul}>{p.judul}</h2>
           <p style={S.isi}>{p.isi}</p>
           <p style={S.hint}>
-            Fitur <b>{fitur}</b> terkunci. Itu sebabnya XP sering terlihat 0 dan namamu tidak muncul di papan peringkat — sampai admin menandai akun <b>Aktif</b> (pembayaran lunas/disetujui).
+            Seluruh akses portal siswa (<b>{fitur}</b>, Dashboard, Materi, Try Out, Jadwal, dan Papan Peringkat) dikunci otomatis oleh sistem dan namamu tidak ditampilkan hingga status akun kembali <b>Aktif</b>.
           </p>
           <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'center', marginTop: 18 }}>
-            <button type="button" style={S.btnSecondary} onClick={() => navigate('/siswa/keuangan')}>
-              <Wallet size={16} /> Lihat Administrasi
+            <button type="button" style={S.btnSecondary} onClick={handleLogout}>
+              <LogOut size={16} /> Keluar Akun
             </button>
             <button type="button" style={S.btnPrimary} onClick={() => window.open(WA_ADMIN, '_blank')}>
               <MessageCircle size={16} /> Hubungi Admin

@@ -13,6 +13,7 @@ import {
   Wallet, X, Send, MessageCircle, BookOpen, Hash, Tag
 } from 'lucide-react';
 import InputRupiah from '../../../components/InputRupiah';
+import { normalisasiKelasDanJenjang } from '../../../utils/normalisasiKelasJenjang';
 
 const ManageOnlineRegistration = () => {
   const navigate = useNavigate();
@@ -274,10 +275,17 @@ Dengan menandatangani formulir ini, Saya menyatakan SETUJU dan siap MEMATUHI sel
       const username = generateUsername(reg.namaLengkap);
       const password = String(Math.floor(100000 + Math.random() * 900000));
 
+      const normKelas = normalisasiKelasDanJenjang({
+        kelasSekolah: reg.kelasSekolah,
+        paketNama: reg.paketBimbelNama,
+      });
+
       const studentRef = await addDoc(collection(db, "students"), {
         nama: reg.namaLengkap,
         gender: reg.gender || '',
-        kelasSekolah: reg.kelasSekolah,
+        jenjang: normKelas.jenjang,
+        kelas: normKelas.kelasSekolah,
+        kelasSekolah: normKelas.kelasSekolah,
         asalSekolah: reg.asalSekolah || '',
         username, password,
         wa: reg.whatsappAktif,

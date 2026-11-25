@@ -41,6 +41,7 @@ import 'katex/dist/katex.min.css';
 import katexCssInline from 'katex/dist/katex.min.css?inline';
 import { db } from '../../firebase';
 import { deteksiTingkatSiswa } from '../../utils/tingkatSiswa';
+import { isAkunBelajarAktif } from '../../utils/statusAkunSiswa';
 import { bacaIdentitasGuru, bacaDataGuruLogin } from '../../utils/identitasGuru';
 import { perluSegar, kebijakanGagalMuat } from '../../utils/keputusanMuat';
 import { pilihSoalUntukCetak, htmlPaketSiswa, htmlKunciTentor, htmlLembarCatatan } from '../../utils/cetakLatihan';
@@ -706,6 +707,7 @@ export default function CetakPaketLatihan() {
       const snapSiswa = await getDocs(collection(db, 'students'));
       snapSiswa.forEach((d) => {
         const dt = d.data();
+        if (!isAkunBelajarAktif(dt)) return; // Siswa terblokir / masa paket habis tidak dipanggil di roster guru
         const rawKelas = String(dt.kelasSekolah || dt.kelas || dt.tingkatKelas || dt.grade || '').trim();
         const rawJenjang = String(dt.jenjang || '').trim().toUpperCase();
         const rawProgram = String(dt.program || dt.kategori || '').trim();

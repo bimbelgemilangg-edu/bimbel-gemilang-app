@@ -317,7 +317,7 @@ const GuruRoute = ({ children }) => {
 const SiswaRoute = ({ children }) => {
   const isAuth = localStorage.getItem('isSiswaLoggedIn') === 'true';
   if (!isAuth) return <Navigate to="/login-siswa" replace />;
-  return children;
+  return <GateAksesSiswa fitur="portal siswa">{children}</GateAksesSiswa>;
 };
 
 // 🔥 DIPERBAIKI (keluhan nyata 2026-10-01): dulu admin yang membuka area

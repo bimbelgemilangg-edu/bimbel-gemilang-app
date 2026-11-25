@@ -13,6 +13,7 @@ import {
 import { uploadElearningFile } from '../../../services/uploadService';
 import { KANAL } from '../../../utils/kanalUang';
 import { saringMapelUntukSiswa, pangkasKodeMapelTerpilih } from '../../../utils/aksesMapelPerJenjang';
+import { jenjangDariKelas, normalisasiKelasDanJenjang, DAFTAR_KELAS_PER_JENJANG } from '../../../utils/normalisasiKelasJenjang';
 import { ambilNomorKwitansiBerikutnya, cetakKwitansi, rp } from '../../../utils/kwitansi';
 import { rincianAmortisasi } from '../owner/keuanganOwnerUtils';
 // 🔥 BARU (21 Okt 2026, durasi paket bebas + promo): dropdown durasi tak
@@ -473,12 +474,13 @@ const AddStudent = () => {
         password: getPassword(),
         role: 'siswa',
         kategori: formData.programType,
-        jenjang: formData.programType === 'English' ? 'English' : formData.jenjang,
+        jenjang: formData.programType === 'English' ? 'English' : normalisasiKelasDanJenjang({ kelasSekolah: formData.kelasSekolah, jenjang: formData.jenjang }).jenjang,
         detailProgram: detailProgram,
         paket: formData.programType === 'English' ? formData.englishLevelId : formData.paketId,
         paketNama: paketName,
         paketHargaBulanan: pkg.price,
         fotoUrl: studentFotoUrl,
+        kelas: formData.programType === 'English' ? 'Umum' : formData.kelasSekolah,
         kelasSekolah: formData.programType === 'English' ? 'Umum' : formData.kelasSekolah,
         tempatLahir: formData.tempatLahir,
         tanggalLahir: tanggalLahirStr,
@@ -695,7 +697,19 @@ const AddStudent = () => {
         </div>
         <div style={styles.inputGroup}>
           <label style={styles.label}>Kelas Sekolah</label>
-          <select style={styles.input} value={formData.kelasSekolah} onChange={e => updateField('kelasSekolah', e.target.value)}>
+          <select
+            style={styles.input}
+            value={formData.kelasSekolah}
+            onChange={e => {
+              const kBaru = e.target.value;
+              const jBaru = jenjangDariKelas(kBaru, formData.programType);
+              setFormData(prev => ({
+                ...prev,
+                kelasSekolah: kBaru,
+                jenjang: (jBaru && ['SD', 'SMP', 'SMA'].includes(jBaru)) ? jBaru : prev.jenjang,
+              }));
+            }}
+          >
             <option value="1 SD">1 SD</option><option value="2 SD">2 SD</option>
             <option value="3 SD">3 SD</option><option value="4 SD">4 SD</option>
             <option value="5 SD">5 SD</option><option value="6 SD">6 SD</option>
@@ -759,7 +773,19 @@ const AddStudent = () => {
           <div style={styles.row2}>
             <div style={styles.inputGroup}>
               <label style={styles.label}>Jenjang</label>
-              <select style={styles.input} value={formData.jenjang} onChange={e => updateField('jenjang', e.target.value)}>
+              <select
+                style={styles.input}
+                value={formData.jenjang}
+                onChange={e => {
+                  const jBaru = e.target.value;
+                  const daftarValid = DAFTAR_KELAS_PER_JENJANG[jBaru] || [];
+                  setFormData(prev => ({
+                    ...prev,
+                    jenjang: jBaru,
+                    kelasSekolah: daftarValid.includes(prev.kelasSekolah) ? prev.kelasSekolah : (daftarValid[0] || prev.kelasSekolah),
+                  }));
+                }}
+              >
                 <option value="SD">SD (Kelas 1-6)</option>
                 <option value="SMP">SMP (Kelas 7-9)</option>
                 <option value="SMA">SMA (Kelas 10-12)</option>

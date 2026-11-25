@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SidebarAdmin from '../../../components/SidebarAdmin';
 import { db } from '../../../firebase';
-import { collection, getDocs, deleteDoc, doc, updateDoc, addDoc, serverTimestamp, query, limit, where } from "firebase/firestore";
+import { collection, getDocs, deleteDoc, doc, updateDoc, addDoc, serverTimestamp, query, limit, where, writeBatch } from "firebase/firestore";
 import * as XLSX from 'xlsx';
 import { 
   Search, Sparkles, Copy, MessageSquare, Plus, PlusCircle, Edit3, Trash2, UserCheck, UserX, Users,
@@ -16,6 +16,7 @@ import { uploadElearningFile } from '../../../services/uploadService';
 // 🔥 BARU (2026-11-16): English Course masa aktif berbasis kuota pertemuan (8x/bulan)
 // dicocokkan otomatis dari absensi guru & siswa (bukan habis kalender).
 import { hitungKuotaEnglishCourse, isProgramEnglish } from '../../../utils/kuotaEnglishCourse';
+import { DAFTAR_KELAS_PER_JENJANG, normalisasiKelasDanJenjang } from '../../../utils/normalisasiKelasJenjang';
 
 const StudentList = () => {
   const navigate = useNavigate();
@@ -53,6 +54,69 @@ const StudentList = () => {
   const [showAuditModal, setShowAuditModal] = useState(false);
   const [auditSelisihMap, setAuditSelisihMap] = useState({});
   const [auditSelisihList, setAuditSelisihList] = useState([]);
+
+  // 🧹 BARU: Audit & Perbaikan Data Kelas/Jenjang Siswa (Root Cause Cleanup)
+  const [showAuditJenjangModal, setShowAuditJenjangModal] = useState(false);
+  const [memperbaikiJenjang, setMemperbaikiJenjang] = useState(false);
+
+  const auditJenjangList = React.useMemo(() => {
+    return students
+      .map((s) => {
+        const norm = normalisasiKelasDanJenjang({
+          kelasSekolah: s.kelasSekolah,
+          kelas: s.kelas,
+          jenjang: s.jenjang,
+          programType: s.programType || s.kategori,
+          kategori: s.kategori,
+        });
+        const lamaJenjang = String(s.jenjang || '').trim();
+        const lamaKelasSekolah = String(s.kelasSekolah || '').trim();
+        const lamaKelas = String(s.kelas || '').trim();
+        const butuhUpdate =
+          (norm.jenjang && lamaJenjang !== norm.jenjang) ||
+          (norm.kelasSekolah && lamaKelasSekolah !== norm.kelasSekolah) ||
+          (norm.kelas && lamaKelas !== norm.kelas);
+        if (!butuhUpdate) return null;
+        return {
+          id: s.id,
+          nama: s.nama || 'Siswa',
+          lamaJenjang: lamaJenjang || '(kosong)',
+          lamaKelasSekolah: lamaKelasSekolah || lamaKelas || '(kosong)',
+          baruJenjang: norm.jenjang || lamaJenjang,
+          baruKelasSekolah: norm.kelasSekolah || lamaKelasSekolah,
+          baruKelas: norm.kelas || norm.kelasSekolah,
+        };
+      })
+      .filter(Boolean);
+  }, [students]);
+
+  const handlePerbaikiSemuaJenjang = async () => {
+    if (auditJenjangList.length === 0) return;
+    setMemperbaikiJenjang(true);
+    try {
+      const CHUNK = 400;
+      for (let i = 0; i < auditJenjangList.length; i += CHUNK) {
+        const batch = writeBatch(db);
+        auditJenjangList.slice(i, i + CHUNK).forEach((item) => {
+          batch.update(doc(db, 'students', item.id), {
+            jenjang: item.baruJenjang,
+            kelasSekolah: item.baruKelasSekolah,
+            kelas: item.baruKelas,
+            updatedAt: serverTimestamp(),
+          });
+        });
+        await batch.commit();
+      }
+      showAlert(`✅ ${auditJenjangList.length} data kelas & jenjang siswa berhasil dirapikan!`);
+      setShowAuditJenjangModal(false);
+      fetchStudents();
+    } catch (err) {
+      console.error('Gagal merapikan jenjang:', err);
+      showAlert('❌ Gagal merapikan data: ' + err.message);
+    } finally {
+      setMemperbaikiJenjang(false);
+    }
+  };
 
   // 🔥 BARU: Quick photo upload langsung dari tabel siswa
   const fotoInputRef = useRef(null);
@@ -405,15 +469,22 @@ const StudentList = () => {
       if (trialForm.jenjang === 'sma') enrolled = ['bind', 'mtk', 'fis', 'kim', 'bio', 'bing', 'prog_tka'];
       if (trialForm.jenjang === 'english') enrolled = ['bing', 'prog_engc'];
 
+      const normTrial = normalisasiKelasDanJenjang({
+        kelasSekolah: trialForm.kelasSekolah,
+        jenjang: trialForm.jenjang,
+        programType: trialForm.jenjang === 'english' ? 'English' : 'Reguler',
+      });
+
       const newTrialStudent = {
         nama: trialForm.nama.trim(),
         username: generatedUsername,
         password: generatedPassword,
         studentId: studentId,
-        jenjang: trialForm.jenjang.toUpperCase(),
-        kelasSekolah: trialForm.kelasSekolah,
+        jenjang: normTrial.jenjang || trialForm.jenjang.toUpperCase(),
+        kelas: normTrial.kelasSekolah,
+        kelasSekolah: normTrial.kelasSekolah,
         kategori: trialForm.program,
-        detailProgram: `Trial Class - ${trialForm.kelasSekolah}`,
+        detailProgram: `Trial Class - ${normTrial.kelasSekolah}`,
         paketNama: 'Trial Class 3 Hari',
         durasiBulan: 0.1,
         tanggalMulai: tglMulai,
@@ -594,10 +665,11 @@ const StudentList = () => {
                           onChange={e => {
                             const j = e.target.value;
                             let defK = '7 SMP';
-                            if (j === 'sd') defK = '5 SD';
-                            if (j === 'sma') defK = '10 SMA';
-                            if (j === 'english') defK = 'English Kids';
-                            setTrialForm({ ...trialForm, jenjang: j, kelasSekolah: defK });
+                            let defProg = 'Reguler SMP';
+                            if (j === 'sd') { defK = '5 SD'; defProg = 'Reguler SD'; }
+                            if (j === 'sma') { defK = '10 SMA'; defProg = 'Reguler SMA'; }
+                            if (j === 'english') { defK = 'English Kids'; defProg = 'English Course'; }
+                            setTrialForm({ ...trialForm, jenjang: j, kelasSekolah: defK, program: defProg });
                           }}
                           style={{ width: '100%', padding: '9px 10px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13 }}
                         >
@@ -610,16 +682,23 @@ const StudentList = () => {
 
                       <div>
                         <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#475569', marginBottom: 4 }}>
-                          Kelas
+                          Kelas (Pilih Baku)
                         </label>
-                        <input
-                          type="text"
-                          placeholder="Misal: 7 SMP"
+                        <select
                           value={trialForm.kelasSekolah}
                           onChange={e => setTrialForm({ ...trialForm, kelasSekolah: e.target.value })}
                           required
-                          style={{ width: '100%', padding: '9px 10px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13, boxSizing: 'border-box' }}
-                        />
+                          style={{ width: '100%', padding: '9px 10px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13, boxSizing: 'border-box', background: 'white' }}
+                        >
+                          {(DAFTAR_KELAS_PER_JENJANG[
+                            trialForm.jenjang === 'sd' ? 'SD'
+                            : trialForm.jenjang === 'smp' ? 'SMP'
+                            : trialForm.jenjang === 'sma' ? 'SMA'
+                            : 'English'
+                          ] || []).map(k => (
+                            <option key={k} value={k}>{k}</option>
+                          ))}
+                        </select>
                       </div>
                     </div>
 
@@ -808,6 +887,24 @@ const StudentList = () => {
               {auditSelisihList.length > 0 && (
                 <span style={{ background: '#fff', color: '#ea580c', fontSize: 11, padding: '1px 6px', borderRadius: 999, fontWeight: 900 }}>
                   {auditSelisihList.length} Selisih
+                </span>
+              )}
+            </button>
+            <button
+              onClick={() => setShowAuditJenjangModal(true)}
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: 6,
+                padding: '9px 14px', borderRadius: 10,
+                background: auditJenjangList.length > 0 ? '#fef3c7' : '#f0fdf4',
+                color: auditJenjangList.length > 0 ? '#b45309' : '#15803d',
+                border: `1px solid ${auditJenjangList.length > 0 ? '#fcd34d' : '#bbf7d0'}`,
+                fontWeight: 800, fontSize: 13, cursor: 'pointer'
+              }}
+            >
+              <span>🧹</span> Rapikan Kelas/Jenjang
+              {auditJenjangList.length > 0 && (
+                <span style={{ background: '#d97706', color: 'white', borderRadius: 99, padding: '1px 7px', fontSize: 11 }}>
+                  {auditJenjangList.length}
                 </span>
               )}
             </button>
@@ -1384,6 +1481,77 @@ const StudentList = () => {
                   Tutup
                 </button>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* ===== MODAL AUDIT & PERBAIKAN KELAS/JENJANG SISWA ===== */}
+        {showAuditJenjangModal && (
+          <div style={styles.modalOverlay} onClick={() => setShowAuditJenjangModal(false)}>
+            <div style={{ ...styles.modal, maxWidth: '780px', width: '95%' }} onClick={e => e.stopPropagation()}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '18px 22px', borderBottom: '1px solid #e2e8f0' }}>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: 16, fontWeight: 800, color: '#1e293b' }}>
+                    🧹 Audit & Rapikan Data Kelas / Jenjang Siswa
+                  </h3>
+                  <p style={{ margin: '2px 0 0', fontSize: 12, color: '#64748b' }}>
+                    Menyelaraskan field jenjang, kelasSekolah, dan kelas agar tidak ada siswa SMP nyasar ke SD atau terblokir fiturnya.
+                  </p>
+                </div>
+                <button
+                  onClick={() => setShowAuditJenjangModal(false)}
+                  style={{ border: 'none', background: '#f1f5f9', borderRadius: 8, width: 32, height: 32, cursor: 'pointer', fontSize: 16 }}
+                >
+                  ✕
+                </button>
+              </div>
+              <div style={{ padding: 20, maxHeight: '60vh', overflowY: 'auto' }}>
+                {auditJenjangList.length === 0 ? (
+                  <div style={{ textAlign: 'center', padding: 30, color: '#15803d', fontWeight: 700 }}>
+                    ✅ Semua data kelas & jenjang siswa di Firestore sudah selaras dan bersih!
+                  </div>
+                ) : (
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12.5 }}>
+                    <thead>
+                      <tr style={{ background: '#f8fafc', textAlign: 'left', borderBottom: '2px solid #e2e8f0' }}>
+                        <th style={{ padding: '8px 10px' }}>Nama Siswa</th>
+                        <th style={{ padding: '8px 10px' }}>Data Lama</th>
+                        <th style={{ padding: '8px 10px' }}>Perbaikan Baku</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {auditJenjangList.map((item) => (
+                        <tr key={item.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                          <td style={{ padding: '8px 10px', fontWeight: 700, color: '#0f172a' }}>{item.nama}</td>
+                          <td style={{ padding: '8px 10px', color: '#dc2626' }}>
+                            Jenjang: <b>{item.lamaJenjang}</b> • Kelas: <b>{item.lamaKelasSekolah}</b>
+                          </td>
+                          <td style={{ padding: '8px 10px', color: '#15803d' }}>
+                            Jenjang: <b>{item.baruJenjang}</b> • Kelas: <b>{item.baruKelasSekolah}</b>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
+              </div>
+              {auditJenjangList.length > 0 && (
+                <div style={{ padding: '14px 20px', borderTop: '1px solid #e2e8f0', display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
+                  <button
+                    onClick={() => setShowAuditJenjangModal(false)}
+                    style={{ padding: '9px 16px', background: '#f1f5f9', color: '#475569', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer' }}
+                  >
+                    Tutup
+                  </button>
+                  <button
+                    onClick={handlePerbaikiSemuaJenjang}
+                    disabled={memperbaikiJenjang}
+                    style={{ padding: '9px 18px', background: '#0d9488', color: 'white', border: 'none', borderRadius: 8, fontWeight: 800, cursor: 'pointer' }}
+                  >
+                    {memperbaikiJenjang ? 'Menyimpan...' : `Terapkan Perbaikan (${auditJenjangList.length} Siswa)`}
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         )}

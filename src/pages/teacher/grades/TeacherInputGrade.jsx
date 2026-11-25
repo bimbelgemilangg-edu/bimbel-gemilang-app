@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { RAPORT_COLLECTIONS, DIMENSI_CONFIG, DIMENSI_KEYS, KOMPONEN_BOBOT, KOMPONEN_LABEL } from '../../../firebase/raportCollection';
 import { exportToRaportScores, saveCatatanGuru, getCatatanGuru } from '../../../services/raportService';
+import { isAkunBelajarAktif } from '../../../utils/statusAkunSiswa';
 
 const TeacherInputGrade = () => {
   const location = useLocation();
@@ -95,7 +96,9 @@ const TeacherInputGrade = () => {
     setLoading(true);
     try {
       const snapSiswa = await getDocs(collection(db, "students"));
-      let dataSiswa = snapSiswa.docs.map(d => ({ id: d.id, ...d.data() }));
+      let dataSiswa = snapSiswa.docs
+        .map(d => ({ id: d.id, ...d.data() }))
+        .filter(s => isAkunBelajarAktif(s));
       
       const qScores = query(
         collection(db, RAPORT_COLLECTIONS.SCORES), 

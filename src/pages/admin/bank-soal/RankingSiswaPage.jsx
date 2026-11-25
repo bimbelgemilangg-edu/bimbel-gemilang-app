@@ -71,6 +71,12 @@ export default function RankingSiswaPage() {
       snapSiswa.forEach((d) => {
         const s = d.data();
         if (!s.studentId || s.isBlocked) return; // siswa nunggak/nonaktif tidak diranking
+        const st = String(s.status || '').trim().toLowerCase();
+        if (st && st !== 'aktif' && st !== 'active' && st !== 'trial') return;
+        const selesaiStr = s.tanggalSelesai ? String(s.tanggalSelesai).trim() : '';
+        if (selesaiStr && /^\d{4}-\d{2}-\d{2}$/.test(selesaiStr)) {
+          if (new Date(`${selesaiStr}T23:59:59`).getTime() < Date.now()) return;
+        }
         const prog = progresMap[s.studentId] || {};
         daftar.push({
           studentId: s.studentId,
