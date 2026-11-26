@@ -141,7 +141,7 @@ export default function KartuBimbinganGuru() {
         (a, b) => (Number(a.pertemuanKe) || 0) - (Number(b.pertemuanKe) || 0)
       );
       setEntries(list);
-      const nextKe = Math.min(20, (list[list.length - 1]?.pertemuanKe || 0) + 1);
+      const nextKe = Math.min(25, (list[list.length - 1]?.pertemuanKe || 0) + 1);
       setForm((prev) => ({ ...prev, pertemuanKe: nextKe }));
     } catch (e) {
       console.error('Gagal memuat kartu bimbingan:', e);
@@ -322,7 +322,7 @@ export default function KartuBimbinganGuru() {
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginBottom: 14 }}>
                     <div>
                       <div style={{ fontSize: 11, fontWeight: 800, color: '#0d9488', textTransform: 'uppercase' }}>
-                        Kartu Kendali Siswa (20 Pertemuan)
+                        Kartu Kendali Siswa (25 Pertemuan)
                       </div>
                       <h3 style={{ margin: '2px 0 0', fontSize: 17, fontWeight: 900, color: '#0f172a' }}>
                         {selectedStudent.nama} • <span style={{ color: '#475569', fontWeight: 700 }}>{selectedStudent.kelasSekolah || selectedStudent.kelas}</span>
@@ -340,7 +340,7 @@ export default function KartuBimbinganGuru() {
                         <input
                           type="number"
                           min={1}
-                          max={20}
+                          max={25}
                           value={form.pertemuanKe}
                           onChange={(e) => setForm({ ...form, pertemuanKe: e.target.value })}
                           style={S.input}
@@ -475,7 +475,7 @@ export default function KartuBimbinganGuru() {
                 {/* DAFTAR PERTEMUAN TERCATAT */}
                 <div style={S.card}>
                   <div style={{ fontSize: 14.5, fontWeight: 800, color: '#0f172a', marginBottom: 12 }}>
-                    Riwayat Bimbingan ({entries.length}/20 Pertemuan)
+                    Riwayat Bimbingan ({entries.length}/25 Pertemuan)
                   </div>
                   {loadingEntries ? (
                     <div style={{ textAlign: 'center', padding: 20, color: '#64748b' }}>Memuat catatan...</div>

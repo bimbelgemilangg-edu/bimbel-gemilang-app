@@ -615,7 +615,7 @@ const AdminAttendanceManage = () => {
         }
       });
     }
-    return Array.from({ length: 20 }, (_, i) => {
+    return Array.from({ length: 25 }, (_, i) => {
       const no = i + 1;
       return { no, entry: byKe.get(no) || null };
     });
@@ -677,25 +677,25 @@ const AdminAttendanceManage = () => {
 <html>
 <head>
   <meta charset="utf-8" />
-  <title>Kartu Kendali Bimbingan 20 Pertemuan - ${namaSiswa}</title>
+  <title>Kartu Kendali Bimbingan 25 Pertemuan - ${namaSiswa}</title>
   <style>
-    @page { size: 330mm 215mm landscape; margin: 4.5mm 6.5mm; }
+    @page { size: 330mm 215mm landscape; margin: 4mm 6mm; }
     * { box-sizing: border-box; }
     body { font-family: Arial, Helvetica, sans-serif; color: #0f172a; margin: 0; padding: 0; }
-    .kop { display: flex; align-items: center; justify-content: space-between; border-bottom: 2.5px solid #0f766e; padding-bottom: 4px; margin-bottom: 5px; }
+    .kop { display: flex; align-items: center; justify-content: space-between; border-bottom: 2.5px solid #0f766e; padding-bottom: 4px; margin-bottom: 4px; }
     .kop-left { display: flex; align-items: center; gap: 10px; }
-    .kop-logo { width: 40px; height: 40px; border-radius: 50%; border: 1.5px solid #0f766e; object-fit: cover; }
-    .kop-brand { font-size: 13.5px; font-weight: 900; color: #0f766e; text-transform: uppercase; letter-spacing: 0.4px; }
-    .kop-sub { font-size: 10px; font-weight: 800; color: #0f172a; }
-    .identitas { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px 14px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 5px; padding: 5px 10px; margin-bottom: 5px; font-size: 9.5px; }
-    table { width: 100%; border-collapse: collapse; font-size: 8.8px; }
-    th, td { border: 1px solid #334155; padding: 3.1px 5px; vertical-align: middle; }
-    th { background: #0f766e; color: #ffffff; font-size: 8.8px; text-align: left; }
-    td { height: 18px; }
+    .kop-logo { width: 38px; height: 38px; border-radius: 50%; border: 1.5px solid #0f766e; object-fit: cover; }
+    .kop-brand { font-size: 13px; font-weight: 900; color: #0f766e; text-transform: uppercase; letter-spacing: 0.4px; }
+    .kop-sub { font-size: 9.8px; font-weight: 800; color: #0f172a; }
+    .identitas { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px 14px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 5px; padding: 4px 10px; margin-bottom: 4px; font-size: 9.2px; }
+    table { width: 100%; border-collapse: collapse; font-size: 8.4px; }
+    th, td { border: 1px solid #334155; padding: 2.3px 5px; vertical-align: middle; }
+    th { background: #0f766e; color: #ffffff; font-size: 8.5px; text-align: left; }
+    td { height: 15.5px; }
     tr:nth-child(even) td { background: #f8fafc; }
-    .validasi { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 6px; font-size: 9px; page-break-inside: avoid; }
+    .validasi { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 5px; font-size: 8.8px; page-break-inside: avoid; }
     .ttd-col { width: 230px; text-align: center; }
-    .ttd-space { height: 24px; }
+    .ttd-space { height: 22px; }
     .ttd-line { border-top: 1px solid #0f172a; padding-top: 2px; font-weight: 700; }
     @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
   </style>
@@ -706,7 +706,7 @@ const AdminAttendanceManage = () => {
       <img src="${logoUrl}" alt="Logo" class="kop-logo" />
       <div>
         <div class="kop-brand">Lembaga Bimbingan Belajar Gemilang</div>
-        <div class="kop-sub">KARTU KENDALI BIMBINGAN, PEMAHAMAN MATERI &amp; VALIDASI PARAF (20 PERTEMUAN)</div>
+        <div class="kop-sub">KARTU KENDALI BIMBINGAN, PEMAHAMAN MATERI &amp; VALIDASI PARAF (25 PERTEMUAN)</div>
       </div>
     </div>
     <div style="text-align:right;font-size:9px;color:#334155;">
@@ -942,7 +942,7 @@ const AdminAttendanceManage = () => {
               color: modeTab === 'kartu_bimbingan' ? '#ffffff' : '#334155',
             }}
           >
-            🪪 Kartu Bimbingan (F4 20 Pertemuan)
+            🪪 Kartu Bimbingan (F4 25 Pertemuan)
           </button>
         </div>
 
@@ -953,7 +953,7 @@ const AdminAttendanceManage = () => {
         {modeTab === 'kartu_bimbingan' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             <div style={{ background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 12, padding: '12px 16px', fontSize: 12.5, color: '#1e3a8a', lineHeight: 1.5 }}>
-              <b>🪪 Kartu Kendali Bimbingan Siswa (Adaptasi Kartu Bimbingan Dosen — F4 Landscape 20 Pertemuan):</b> Menggabungkan catatan materi &amp; pemahaman siswa, kewenangan <b>Paraf Tentor</b> (bisa dikosongkan jika siswa ramai/tidak respek + alasan), <b>Paraf Orang Tua</b>, dan <b>Validasi Terakhir Admin</b> dalam 1 lembar F4 hemat kertas.
+              <b>🪪 Kartu Kendali Bimbingan Siswa (Adaptasi Kartu Bimbingan Dosen — F4 Landscape 25 Pertemuan):</b> Menggabungkan catatan materi &amp; pemahaman siswa, kewenangan <b>Paraf Tentor</b> (bisa dikosongkan jika siswa ramai/tidak respek + alasan), <b>Paraf Orang Tua</b>, dan <b>Validasi Terakhir Admin</b> dalam 1 lembar F4.
             </div>
 
             <div style={{ ...styles.toolbar, background: '#ffffff', padding: 14, borderRadius: 12, border: '1px solid #e2e8f0' }}>
@@ -964,7 +964,7 @@ const AdminAttendanceManage = () => {
                   onChange={(e) => setKartuStudentId(e.target.value)}
                   style={{ ...styles.select, flex: 1, maxWidth: 380 }}
                 >
-                  <option value="">-- Blangko Kosong (20 Pertemuan) / Pilih Siswa --</option>
+                  <option value="">-- Blangko Kosong (25 Pertemuan) / Pilih Siswa --</option>
                   {students.map((s) => (
                     <option key={s.id} value={s.id}>
                       {s.nama} ({s.kelasSekolah || s.kelas || '-'}) — {s.studentId || s.id}
@@ -981,7 +981,7 @@ const AdminAttendanceManage = () => {
                   padding: '9px 18px', fontWeight: 800, fontSize: 13, cursor: 'pointer',
                 }}
               >
-                <Printer size={16} /> Cetak / Download F4 Landscape (20 Pertemuan)
+                <Printer size={16} /> Cetak / Download F4 Landscape (25 Pertemuan)
               </button>
             </div>
 
