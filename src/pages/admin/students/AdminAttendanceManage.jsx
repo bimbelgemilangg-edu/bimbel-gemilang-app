@@ -62,6 +62,9 @@ const AdminAttendanceManage = () => {
   const [offlineLabelRombel, setOfflineLabelRombel] = useState('');
   const [offlineTentor, setOfflineTentor] = useState('');
   const [offlineExcludedIds, setOfflineExcludedIds] = useState([]);
+  // 🪪 BARU: Kartu Bimbingan Siswa (F4 Landscape 20 Pertemuan - Paraf Tentor, Ortu & Admin)
+  const [kartuEntries, setKartuEntries] = useState([]);
+  const [kartuStudentId, setKartuStudentId] = useState('');
 
   const adminName =
     (typeof localStorage !== 'undefined' &&
@@ -82,10 +85,11 @@ const AdminAttendanceManage = () => {
   const fetchAll = async () => {
     setLoading(true);
     try {
-      const [stuSnap, attSnap, schedSnap] = await Promise.all([
+      const [stuSnap, attSnap, schedSnap, kartuSnap] = await Promise.all([
         getDocs(collection(db, 'students')),
         getDocs(collection(db, 'attendance')),
         getDocs(collection(db, 'jadwal_bimbel')).catch(() => ({ docs: [] })),
+        getDocs(collection(db, 'kartu_bimbingan')).catch(() => ({ docs: [] })),
       ]);
       const stu = stuSnap.docs
         .map((d) => ({ id: d.id, ...d.data() }))
@@ -100,6 +104,8 @@ const AdminAttendanceManage = () => {
         .map((d) => ({ id: d.id, ...d.data() }))
         .sort((a, b) => String(b.dateStr || '').localeCompare(String(a.dateStr || '')));
       setSchedules(scheds);
+
+      setKartuEntries(kartuSnap.docs.map((d) => ({ id: d.id, ...d.data() })));
     } catch (e) {
       console.error(e);
       showAlert('❌ Gagal memuat data');
@@ -378,6 +384,175 @@ const AdminAttendanceManage = () => {
   };
 
   // ============================================================
+  // 🪪 KARTU BIMBINGAN SISWA (F4 LANDSCAPE • 20 PERTEMUAN / 1 HALAMAN)
+  // ============================================================
+  const kartuStudentObj = useMemo(() => {
+    if (!kartuStudentId) return null;
+    return students.find((s) => s.id === kartuStudentId || s.studentId === kartuStudentId) || null;
+  }, [students, kartuStudentId]);
+
+  const kartuRows20 = useMemo(() => {
+    const byKe = new Map();
+    if (kartuStudentObj) {
+      const sid = kartuStudentObj.studentId || kartuStudentObj.id;
+      kartuEntries.forEach((e) => {
+        const match =
+          e.studentDocId === kartuStudentObj.id ||
+          e.studentId === sid ||
+          e.studentId === kartuStudentObj.id;
+        if (match && e.pertemuanKe) {
+          byKe.set(Number(e.pertemuanKe), e);
+        }
+      });
+    }
+    return Array.from({ length: 20 }, (_, i) => {
+      const no = i + 1;
+      return { no, entry: byKe.get(no) || null };
+    });
+  }, [kartuStudentObj, kartuEntries]);
+
+  const handleDownloadKartuBimbinganF4 = () => {
+    const win = window.open('', '_blank', 'width=1180,height=740');
+    if (!win) {
+      return showAlert('⚠️ Izinkan pop-up browser untuk mencetak Kartu Bimbingan F4.');
+    }
+    const logoUrl = `${window.location.origin}/pwa-192x192.png`;
+    const namaSiswa = kartuStudentObj ? kartuStudentObj.nama : '________________________________________';
+    const nisSiswa = kartuStudentObj ? (kartuStudentObj.studentId || kartuStudentObj.id) : '____________________';
+    const kelasSiswa = kartuStudentObj ? (kartuStudentObj.kelasSekolah || kartuStudentObj.kelas || '-') : '__________';
+    const programSiswa = kartuStudentObj ? (kartuStudentObj.kategori || kartuStudentObj.program || 'Reguler') : '__________';
+    const namaOrtu = kartuStudentObj
+      ? (kartuStudentObj.ortu?.ayah && kartuStudentObj.ortu?.ayah !== '-'
+        ? kartuStudentObj.ortu.ayah
+        : kartuStudentObj.ortu?.ibu && kartuStudentObj.ortu?.ibu !== '-'
+        ? kartuStudentObj.ortu.ibu
+        : 'Orang Tua / Wali')
+      : 'Orang Tua / Wali';
+    const hpOrtu = kartuStudentObj ? (kartuStudentObj.ortu?.hp || kartuStudentObj.noHp || '-') : '-';
+    const tanggalCetak = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+
+    const rowsHtml = kartuRows20
+      .map(({ no, entry }) => {
+        if (!entry) {
+          return `
+            <tr>
+              <td style="text-align:center;font-weight:700;">${no}</td>
+              <td></td>
+              <td></td>
+              <td style="text-align:center;font-size:8px;color:#64748b;">☐ Paham &nbsp; ☐ Ulang</td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+            </tr>`;
+        }
+        const parafHtml = entry.parafTentor
+          ? `<span style="color:#166534;font-weight:800;">✓ Sah</span>`
+          : `<span style="color:#b91c1c;font-weight:900;">KOSONG (DITAHAN)</span>`;
+        return `
+          <tr>
+            <td style="text-align:center;font-weight:700;">${no}</td>
+            <td style="white-space:nowrap;">${entry.tanggal || '-'}</td>
+            <td><strong>${entry.mapel || ''}</strong>${entry.babMateri ? ` — ${entry.babMateri}` : ''}</td>
+            <td style="text-align:center;">${entry.pemahaman || '-'}</td>
+            <td>${entry.namaTentor || '-'}</td>
+            <td style="text-align:center;">${parafHtml}</td>
+            <td style="color:${entry.parafTentor ? '#334155' : '#b91c1c'};">${entry.alasanKosong || (entry.sikap !== 'Tertib & Fokus' ? entry.sikap : '-')}</td>
+            <td></td>
+          </tr>`;
+      })
+      .join('');
+
+    win.document.write(`<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Kartu Kendali Bimbingan 20 Pertemuan - ${namaSiswa}</title>
+  <style>
+    @page { size: 330mm 215mm landscape; margin: 4.5mm 6.5mm; }
+    * { box-sizing: border-box; }
+    body { font-family: Arial, Helvetica, sans-serif; color: #0f172a; margin: 0; padding: 0; }
+    .kop { display: flex; align-items: center; justify-content: space-between; border-bottom: 2.5px solid #0f766e; padding-bottom: 4px; margin-bottom: 5px; }
+    .kop-left { display: flex; align-items: center; gap: 10px; }
+    .kop-logo { width: 40px; height: 40px; border-radius: 50%; border: 1.5px solid #0f766e; object-fit: cover; }
+    .kop-brand { font-size: 13.5px; font-weight: 900; color: #0f766e; text-transform: uppercase; letter-spacing: 0.4px; }
+    .kop-sub { font-size: 10px; font-weight: 800; color: #0f172a; }
+    .identitas { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px 14px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 5px; padding: 5px 10px; margin-bottom: 5px; font-size: 9.5px; }
+    table { width: 100%; border-collapse: collapse; font-size: 8.8px; }
+    th, td { border: 1px solid #334155; padding: 3.1px 5px; vertical-align: middle; }
+    th { background: #0f766e; color: #ffffff; font-size: 8.8px; text-align: left; }
+    td { height: 18px; }
+    tr:nth-child(even) td { background: #f8fafc; }
+    .validasi { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 6px; font-size: 9px; page-break-inside: avoid; }
+    .ttd-col { width: 230px; text-align: center; }
+    .ttd-space { height: 24px; }
+    .ttd-line { border-top: 1px solid #0f172a; padding-top: 2px; font-weight: 700; }
+    @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+  </style>
+</head>
+<body>
+  <div class="kop">
+    <div class="kop-left">
+      <img src="${logoUrl}" alt="Logo" class="kop-logo" />
+      <div>
+        <div class="kop-brand">Lembaga Bimbingan Belajar Gemilang</div>
+        <div class="kop-sub">KARTU KENDALI BIMBINGAN, PEMAHAMAN MATERI &amp; VALIDASI PARAF (20 PERTEMUAN)</div>
+      </div>
+    </div>
+    <div style="text-align:right;font-size:9px;color:#334155;">
+      <div><strong>Format:</strong> F4 Landscape (Hemat Kertas 20 Sesi)</div>
+      <div><strong>Dicetak:</strong> ${tanggalCetak}</div>
+    </div>
+  </div>
+
+  <div class="identitas">
+    <div><strong>Nama Siswa:</strong> ${namaSiswa}</div>
+    <div><strong>NIS / ID Siswa:</strong> ${nisSiswa}</div>
+    <div><strong>Kelas / Jenjang:</strong> ${kelasSiswa}</div>
+    <div><strong>Program:</strong> ${programSiswa}</div>
+    <div><strong>Orang Tua / Wali:</strong> ${namaOrtu}</div>
+    <div><strong>No. HP Ortu:</strong> ${hpOrtu}</div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th style="width:24px;text-align:center;">No</th>
+        <th style="width:8.5%;">Tanggal</th>
+        <th style="width:24%;">Mapel, Bab &amp; Materi Hari Ini</th>
+        <th style="width:11%;text-align:center;">Pemahaman</th>
+        <th style="width:11%;">Nama Tentor</th>
+        <th style="width:10%;text-align:center;">Paraf Tentor</th>
+        <th style="width:21%;">Alasan Jika Paraf Kosong / Catatan</th>
+        <th style="width:11%;text-align:center;">Paraf Ortu</th>
+      </tr>
+    </thead>
+    <tbody>${rowsHtml}</tbody>
+  </table>
+
+  <div class="validasi">
+    <div class="ttd-col">
+      <div>Validasi Akhir Orang Tua / Wali,</div>
+      <div class="ttd-space"></div>
+      <div class="ttd-line">( ${namaOrtu} )</div>
+    </div>
+    <div style="text-align:center;color:#475569;font-size:8px;max-width:420px;line-height:1.35;">
+      <strong>Aturan Kartu Kendali:</strong> Tentor berhak <b>tidak memberikan paraf</b> apabila siswa ramai, tidak respek, atau belum menuntaskan pemahaman materi. Orang tua wajib memeriksa kolom alasan dan membubuhkan paraf validasi kedua.
+    </div>
+    <div class="ttd-col">
+      <div>Validasi Terakhir Admin,</div>
+      <div class="ttd-space"></div>
+      <div class="ttd-line">( ${adminName} )</div>
+    </div>
+  </div>
+
+  <script>window.onload = function(){ setTimeout(function(){ window.print(); }, 300); };</script>
+</body>
+</html>`);
+    win.document.close();
+  };
+
+  // ============================================================
   // 🖨️ ABSENSI OFFLINE MINGGUAN (F4 LANDSCAPE • 1 HALAMAN PENUH)
   // ============================================================
   const offlineWeekDays = useMemo(() => {
@@ -587,6 +762,175 @@ const AdminAttendanceManage = () => {
     win.document.close();
   };
 
+  // ============================================================
+  // 🪪 KARTU BIMBINGAN SISWA (F4 LANDSCAPE • 20 PERTEMUAN / 1 HALAMAN)
+  // ============================================================
+  const kartuStudentObj = useMemo(() => {
+    if (!kartuStudentId) return null;
+    return students.find((s) => s.id === kartuStudentId || s.studentId === kartuStudentId) || null;
+  }, [students, kartuStudentId]);
+
+  const kartuRows20 = useMemo(() => {
+    const byKe = new Map();
+    if (kartuStudentObj) {
+      const sid = kartuStudentObj.studentId || kartuStudentObj.id;
+      kartuEntries.forEach((e) => {
+        const match =
+          e.studentDocId === kartuStudentObj.id ||
+          e.studentId === sid ||
+          e.studentId === kartuStudentObj.id;
+        if (match && e.pertemuanKe) {
+          byKe.set(Number(e.pertemuanKe), e);
+        }
+      });
+    }
+    return Array.from({ length: 20 }, (_, i) => {
+      const no = i + 1;
+      return { no, entry: byKe.get(no) || null };
+    });
+  }, [kartuStudentObj, kartuEntries]);
+
+  const handleDownloadKartuBimbinganF4 = () => {
+    const win = window.open('', '_blank', 'width=1180,height=740');
+    if (!win) {
+      return showAlert('⚠️ Izinkan pop-up browser untuk mencetak Kartu Bimbingan F4.');
+    }
+    const logoUrl = `${window.location.origin}/pwa-192x192.png`;
+    const namaSiswa = kartuStudentObj ? kartuStudentObj.nama : '________________________________________';
+    const nisSiswa = kartuStudentObj ? (kartuStudentObj.studentId || kartuStudentObj.id) : '____________________';
+    const kelasSiswa = kartuStudentObj ? (kartuStudentObj.kelasSekolah || kartuStudentObj.kelas || '-') : '__________';
+    const programSiswa = kartuStudentObj ? (kartuStudentObj.kategori || kartuStudentObj.program || 'Reguler') : '__________';
+    const namaOrtu = kartuStudentObj
+      ? (kartuStudentObj.ortu?.ayah && kartuStudentObj.ortu?.ayah !== '-'
+        ? kartuStudentObj.ortu.ayah
+        : kartuStudentObj.ortu?.ibu && kartuStudentObj.ortu?.ibu !== '-'
+        ? kartuStudentObj.ortu.ibu
+        : 'Orang Tua / Wali')
+      : 'Orang Tua / Wali';
+    const hpOrtu = kartuStudentObj ? (kartuStudentObj.ortu?.hp || kartuStudentObj.noHp || '-') : '-';
+    const tanggalCetak = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+
+    const rowsHtml = kartuRows20
+      .map(({ no, entry }) => {
+        if (!entry) {
+          return `
+            <tr>
+              <td style="text-align:center;font-weight:700;">${no}</td>
+              <td></td>
+              <td></td>
+              <td style="text-align:center;font-size:8px;color:#64748b;">☐ Paham &nbsp; ☐ Ulang</td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+            </tr>`;
+        }
+        const parafHtml = entry.parafTentor
+          ? `<span style="color:#166534;font-weight:800;">✓ Sah</span>`
+          : `<span style="color:#b91c1c;font-weight:900;">KOSONG (DITAHAN)</span>`;
+        return `
+          <tr>
+            <td style="text-align:center;font-weight:700;">${no}</td>
+            <td style="white-space:nowrap;">${entry.tanggal || '-'}</td>
+            <td><strong>${entry.mapel || ''}</strong>${entry.babMateri ? ` — ${entry.babMateri}` : ''}</td>
+            <td style="text-align:center;">${entry.pemahaman || '-'}</td>
+            <td>${entry.namaTentor || '-'}</td>
+            <td style="text-align:center;">${parafHtml}</td>
+            <td style="color:${entry.parafTentor ? '#334155' : '#b91c1c'};">${entry.alasanKosong || (entry.sikap !== 'Tertib & Fokus' ? entry.sikap : '-')}</td>
+            <td></td>
+          </tr>`;
+      })
+      .join('');
+
+    win.document.write(`<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Kartu Kendali Bimbingan 20 Pertemuan - ${namaSiswa}</title>
+  <style>
+    @page { size: 330mm 215mm landscape; margin: 4.5mm 6.5mm; }
+    * { box-sizing: border-box; }
+    body { font-family: Arial, Helvetica, sans-serif; color: #0f172a; margin: 0; padding: 0; }
+    .kop { display: flex; align-items: center; justify-content: space-between; border-bottom: 2.5px solid #0f766e; padding-bottom: 4px; margin-bottom: 5px; }
+    .kop-left { display: flex; align-items: center; gap: 10px; }
+    .kop-logo { width: 40px; height: 40px; border-radius: 50%; border: 1.5px solid #0f766e; object-fit: cover; }
+    .kop-brand { font-size: 13.5px; font-weight: 900; color: #0f766e; text-transform: uppercase; letter-spacing: 0.4px; }
+    .kop-sub { font-size: 10px; font-weight: 800; color: #0f172a; }
+    .identitas { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px 14px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 5px; padding: 5px 10px; margin-bottom: 5px; font-size: 9.5px; }
+    table { width: 100%; border-collapse: collapse; font-size: 8.8px; }
+    th, td { border: 1px solid #334155; padding: 3.1px 5px; vertical-align: middle; }
+    th { background: #0f766e; color: #ffffff; font-size: 8.8px; text-align: left; }
+    td { height: 18px; }
+    tr:nth-child(even) td { background: #f8fafc; }
+    .validasi { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 6px; font-size: 9px; page-break-inside: avoid; }
+    .ttd-col { width: 230px; text-align: center; }
+    .ttd-space { height: 24px; }
+    .ttd-line { border-top: 1px solid #0f172a; padding-top: 2px; font-weight: 700; }
+    @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+  </style>
+</head>
+<body>
+  <div class="kop">
+    <div class="kop-left">
+      <img src="${logoUrl}" alt="Logo" class="kop-logo" />
+      <div>
+        <div class="kop-brand">Lembaga Bimbingan Belajar Gemilang</div>
+        <div class="kop-sub">KARTU KENDALI BIMBINGAN, PEMAHAMAN MATERI &amp; VALIDASI PARAF (20 PERTEMUAN)</div>
+      </div>
+    </div>
+    <div style="text-align:right;font-size:9px;color:#334155;">
+      <div><strong>Format:</strong> F4 Landscape (Hemat Kertas 20 Sesi)</div>
+      <div><strong>Dicetak:</strong> ${tanggalCetak}</div>
+    </div>
+  </div>
+
+  <div class="identitas">
+    <div><strong>Nama Siswa:</strong> ${namaSiswa}</div>
+    <div><strong>NIS / ID Siswa:</strong> ${nisSiswa}</div>
+    <div><strong>Kelas / Jenjang:</strong> ${kelasSiswa}</div>
+    <div><strong>Program:</strong> ${programSiswa}</div>
+    <div><strong>Orang Tua / Wali:</strong> ${namaOrtu}</div>
+    <div><strong>No. HP Ortu:</strong> ${hpOrtu}</div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th style="width:24px;text-align:center;">No</th>
+        <th style="width:8.5%;">Tanggal</th>
+        <th style="width:24%;">Mapel, Bab &amp; Materi Hari Ini</th>
+        <th style="width:11%;text-align:center;">Pemahaman</th>
+        <th style="width:11%;">Nama Tentor</th>
+        <th style="width:10%;text-align:center;">Paraf Tentor</th>
+        <th style="width:21%;">Alasan Jika Paraf Kosong / Catatan</th>
+        <th style="width:11%;text-align:center;">Paraf Ortu</th>
+      </tr>
+    </thead>
+    <tbody>${rowsHtml}</tbody>
+  </table>
+
+  <div class="validasi">
+    <div class="ttd-col">
+      <div>Validasi Akhir Orang Tua / Wali,</div>
+      <div class="ttd-space"></div>
+      <div class="ttd-line">( ${namaOrtu} )</div>
+    </div>
+    <div style="text-align:center;color:#475569;font-size:8px;max-width:420px;line-height:1.35;">
+      <strong>Aturan Kartu Kendali:</strong> Tentor berhak <b>tidak memberikan paraf</b> apabila siswa ramai, tidak respek, atau belum menuntaskan pemahaman materi. Orang tua wajib memeriksa kolom alasan dan membubuhkan paraf validasi kedua.
+    </div>
+    <div class="ttd-col">
+      <div>Validasi Terakhir Admin,</div>
+      <div class="ttd-space"></div>
+      <div class="ttd-line">( ${adminName} )</div>
+    </div>
+  </div>
+
+  <script>window.onload = function(){ setTimeout(function(){ window.print(); }, 300); };</script>
+</body>
+</html>`);
+    win.document.close();
+  };
+
   const openEdit = (row) => {
     setEditRow({
       studentId: row.studentKey,
@@ -750,10 +1094,105 @@ const AdminAttendanceManage = () => {
           >
             <Printer size={15} /> Absensi Offline (F4 Landscape)
           </button>
+          <button
+            type="button"
+            onClick={() => setModeTab('kartu_bimbingan')}
+            style={{
+              padding: '9px 16px',
+              borderRadius: 10,
+              border: 'none',
+              fontWeight: 800,
+              fontSize: 13,
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 6,
+              background: modeTab === 'kartu_bimbingan' ? '#0f766e' : '#e2e8f0',
+              color: modeTab === 'kartu_bimbingan' ? '#ffffff' : '#334155',
+            }}
+          >
+            🪪 Kartu Bimbingan (F4 20 Pertemuan)
+          </button>
         </div>
 
         {alertMsg && (
           <div style={styles.alert}>{alertMsg}</div>
+        )}
+
+        {modeTab === 'kartu_bimbingan' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <div style={{ background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 12, padding: '12px 16px', fontSize: 12.5, color: '#1e3a8a', lineHeight: 1.5 }}>
+              <b>🪪 Kartu Kendali Bimbingan Siswa (Adaptasi Kartu Bimbingan Dosen — F4 Landscape 20 Pertemuan):</b> Menggabungkan catatan materi &amp; pemahaman siswa, kewenangan <b>Paraf Tentor</b> (bisa dikosongkan jika siswa ramai/tidak respek + alasan), <b>Paraf Orang Tua</b>, dan <b>Validasi Terakhir Admin</b> dalam 1 lembar F4 hemat kertas.
+            </div>
+
+            <div style={{ ...styles.toolbar, background: '#ffffff', padding: 14, borderRadius: 12, border: '1px solid #e2e8f0' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1, minWidth: 260 }}>
+                <label style={{ fontSize: 12.5, fontWeight: 700, color: '#334155' }}>Pilih Siswa:</label>
+                <select
+                  value={kartuStudentId}
+                  onChange={(e) => setKartuStudentId(e.target.value)}
+                  style={{ ...styles.select, flex: 1, maxWidth: 380 }}
+                >
+                  <option value="">-- Blangko Kosong (20 Pertemuan) / Pilih Siswa --</option>
+                  {students.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.nama} ({s.kelasSekolah || s.kelas || '-'}) — {s.studentId || s.id}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <button
+                type="button"
+                onClick={handleDownloadKartuBimbinganF4}
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 6,
+                  background: '#0d9488', color: '#ffffff', border: 'none', borderRadius: 10,
+                  padding: '9px 18px', fontWeight: 800, fontSize: 13, cursor: 'pointer',
+                }}
+              >
+                <Printer size={16} /> Cetak / Download F4 Landscape (20 Pertemuan)
+              </button>
+            </div>
+
+            <div style={{ background: '#ffffff', borderRadius: 14, border: '1px solid #e2e8f0', overflowX: 'auto' }}>
+              <table style={styles.table}>
+                <thead>
+                  <tr>
+                    <th style={styles.th}>Ke</th>
+                    <th style={styles.th}>Tanggal</th>
+                    <th style={styles.th}>Mapel, Bab &amp; Materi</th>
+                    <th style={styles.th}>Pemahaman</th>
+                    <th style={styles.th}>Nama Tentor</th>
+                    <th style={styles.th}>Paraf Tentor</th>
+                    <th style={styles.th}>Alasan / Catatan</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {kartuRows20.map(({ no, entry }) => (
+                    <tr key={no}>
+                      <td style={{ ...styles.td, fontWeight: 700 }}>#{no}</td>
+                      <td style={styles.td}>{entry?.tanggal || '-'}</td>
+                      <td style={styles.td}>
+                        {entry ? <><strong>{entry.mapel}</strong> — {entry.babMateri}</> : <span style={{ color: '#94a3b8' }}>Kosong (siap diisi)</span>}
+                      </td>
+                      <td style={styles.td}>{entry?.pemahaman || '-'}</td>
+                      <td style={styles.td}>{entry?.namaTentor || '-'}</td>
+                      <td style={styles.td}>
+                        {!entry ? '-' : entry.parafTentor ? (
+                          <span style={{ ...styles.badge, background: '#dcfce7', color: '#166534' }}>✓ Sah</span>
+                        ) : (
+                          <span style={{ ...styles.badge, background: '#fee2e2', color: '#b91c1c' }}>DITAHAN</span>
+                        )}
+                      </td>
+                      <td style={{ ...styles.td, color: entry && !entry.parafTentor ? '#b91c1c' : '#475569' }}>
+                        {entry?.alasanKosong || entry?.sikap || '-'}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
         )}
 
         {modeTab === 'offline_f4' && (

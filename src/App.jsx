@@ -179,6 +179,7 @@ import BatalkanUjiCobaPage from './pages/admin/bank-soal/BatalkanUjiCobaPage';
 import TeacherDashboard from './pages/teacher/TeacherDashboard';
 import TeacherHistory from './pages/teacher/TeacherHistory';
 import TeacherAttendance from './pages/teacher/TeacherAttendance';
+import KartuBimbinganGuru from './pages/teacher/KartuBimbinganGuru';
 
 import TeacherInputGrade from './pages/teacher/grades/TeacherInputGrade';
 import TeacherGradeManager from './pages/teacher/grades/TeacherGradeManager';
@@ -959,6 +960,7 @@ function App() {
         <Route path="/guru/profile" element={<GuruPage><TeacherProfile /></GuruPage>} />
         <Route path="/guru/schedule" element={<GuruPage><TeacherSchedule /></GuruPage>} />
         <Route path="/guru/attendance" element={<GuruPage><TeacherAttendance /></GuruPage>} />
+        <Route path="/guru/kartu-bimbingan" element={<GuruPage><KartuBimbinganGuru /></GuruPage>} />
         <Route path="/guru/history" element={<GuruPage><TeacherHistory /></GuruPage>} />
         <Route path="/guru/class-session/:id" element={<GuruPage><ClassSession /></GuruPage>} />
         <Route path="/guru/grades/input" element={<GuruPage><TeacherInputGrade /></GuruPage>} />

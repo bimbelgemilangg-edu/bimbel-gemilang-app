@@ -42,6 +42,13 @@ const SidebarGuru = () => {
     { name: 'Upload Modul Materi', path: '/guru/modul/materi', icon: <FileText size={20} /> },
     { name: 'Buat Kuis Interaktif', path: '/guru/modul/quiz', icon: <FileQuestion size={20} /> },
     { name: 'Jadwal Mengajar', path: '/guru/schedule', icon: <Calendar size={20} /> },
+    {
+      name: 'Kartu Kendali & Paraf',
+      path: '/guru/kartu-bimbingan',
+      icon: <ClipboardCheck size={20} />,
+      badge: 'Paraf',
+      badgeColor: '#0284c7',
+    },
     { name: 'Perpustakaan', path: '/guru/perpustakaan', icon: <Library size={20} /> },
     { name: 'Buku PDF Gemilang', path: '/guru/buku-pdf', icon: <BookMarked size={20} /> },
     { name: 'Persiapan Buku', path: '/guru/buku', icon: <GraduationCap size={20} /> },
