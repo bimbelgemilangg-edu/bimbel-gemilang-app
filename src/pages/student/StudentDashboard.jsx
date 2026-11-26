@@ -490,12 +490,24 @@ const StudentDashboard = () => {
           }
         }
 
-        // Ringkasan kehadiran (gabungkan semua skema identitas)
+        // Ringkasan kehadiran KHUSUS BULAN BERJALAN (YYYY-MM) & deduplikasi sesi sama
+        const bulanIniPrefix = tglHariIni.slice(0, 7);
+        const attBulanIniUnik = [];
+        const seenAttKeys = new Set();
+        attList.forEach((a) => {
+          const tglStr = String(a.tanggal || a.date || '').slice(0, 10);
+          if (!tglStr.startsWith(bulanIniPrefix)) return;
+          const sesiKey = `${tglStr}__${a.scheduleId || a.jadwalId || a.mapel || a.id}`;
+          if (seenAttKeys.has(sesiKey)) return;
+          seenAttKeys.add(sesiKey);
+          attBulanIniUnik.push(a);
+        });
+
         setAttendanceSummary({
-          hadir: attList.filter(a => a.status === 'Hadir').length,
-          izin: attList.filter(a => a.status === 'Izin' || a.status === 'Sakit').length,
-          alpha: attList.filter(a => a.status === 'Alpha').length,
-          total: attList.length,
+          hadir: attBulanIniUnik.filter(a => a.status === 'Hadir').length,
+          izin: attBulanIniUnik.filter(a => a.status === 'Izin' || a.status === 'Sakit').length,
+          alpha: attBulanIniUnik.filter(a => a.status === 'Alpha').length,
+          total: attBulanIniUnik.length,
         });
 
         // Petakan log absensi & pemantauan sesi hari ini ke jadwal
@@ -1636,12 +1648,16 @@ const StudentDashboard = () => {
         </div>
 
         <div ref={attendanceRef} className="sd-card" style={{ background: 'white', padding: 18, borderRadius: 18, border: '1px solid #eef1f5', marginTop: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.03)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 14 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14, flexWrap: 'wrap', gap: 8 }}>
             <h3 style={{ margin: 0, fontSize: 14, fontWeight: 800, color: '#1e293b', display: 'flex', alignItems: 'center', gap: 8 }}>
-              <ClipboardList size={17} color="#0d9488" /> Kehadiran
+              <ClipboardList size={17} color="#0d9488" />
+              <span>Kehadiran</span>
+              <span style={{ fontSize: 10.5, fontWeight: 700, background: '#f0fdfa', color: '#0f766e', padding: '2px 8px', borderRadius: 99, border: '1px solid #ccfbf1' }}>
+                {new Date().toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })}
+              </span>
             </h3>
             <button onClick={() => navigate('/siswa/absensi')} style={{ background: 'none', border: 'none', color: '#5B2ECC', fontWeight: 700, fontSize: 11, cursor: 'pointer' }}>
-              Riwayat Lengkap →
+              Detail Bulan Ini →
             </button>
           </div>
           {dataLoading ? <SkeletonLines count={2} /> : (

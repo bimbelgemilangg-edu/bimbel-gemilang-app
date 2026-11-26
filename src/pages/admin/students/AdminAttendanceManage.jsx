@@ -9,7 +9,7 @@ import {
   collection, getDocs, addDoc, updateDoc, deleteDoc, doc, serverTimestamp,
 } from 'firebase/firestore';
 import {
-  Calendar, Save, Trash2, Edit3, X, Search, RefreshCw, ChevronLeft, ChevronRight,
+  Calendar, Save, Trash2, Edit3, X, Search, RefreshCw, ChevronLeft, ChevronRight, FileText, Download,
 } from 'lucide-react';
 import { isAkunBelajarAktif } from '../../../utils/statusAkunSiswa';
 
@@ -49,6 +49,10 @@ const AdminAttendanceManage = () => {
   const [filterStatus, setFilterStatus] = useState('Semua');
   const [alertMsg, setAlertMsg] = useState(null);
   const [editRow, setEditRow] = useState(null); // { studentId, nama, status, keterangan, mapel, existingId }
+  // 🔥 BARU: Mode Rekap Bulanan (Arsip Bulan Lalu) + Download PDF untuk Orang Tua/Admin
+  const [modeTab, setModeTab] = useState('harian'); // 'harian' | 'bulanan'
+  const [selectedMonth, setSelectedMonth] = useState(toISODate(new Date()).slice(0, 7));
+  const [selectedStudentId, setSelectedStudentId] = useState('semua');
 
   useEffect(() => {
     const onResize = () => setIsMobile(window.innerWidth < 768);
@@ -142,6 +146,169 @@ const AdminAttendanceManage = () => {
     const d = new Date(selectedDate + 'T12:00:00');
     d.setDate(d.getDate() + n);
     setSelectedDate(toISODate(d));
+  };
+
+  // Rekap Bulanan (termasuk bulan-bulan sebelumnya) khusus Portal Admin + Download PDF
+  const selectedStudentObj = useMemo(() => {
+    if (selectedStudentId === 'semua') return null;
+    return students.find((s) => s.id === selectedStudentId || s.studentId === selectedStudentId) || null;
+  }, [students, selectedStudentId]);
+
+  const monthlyRecords = useMemo(() => {
+    const monthPrefix = String(selectedMonth || '').slice(0, 7);
+    if (!monthPrefix) return [];
+    const mapSiswaById = new Map();
+    const mapSiswaByName = new Map();
+    students.forEach((s) => {
+      mapSiswaById.set(s.id, s);
+      if (s.studentId) mapSiswaById.set(s.studentId, s);
+      if (s.nama) mapSiswaByName.set(String(s.nama).trim().toLowerCase(), s);
+    });
+
+    const filtered = [];
+    const seen = new Set();
+    attendance.forEach((a) => {
+      const tgl = String(a.tanggal || a.date || '').slice(0, 10);
+      if (!tgl.startsWith(monthPrefix)) return;
+
+      const siswaMatch =
+        mapSiswaById.get(a.studentId) ||
+        mapSiswaById.get(a.studentDocId) ||
+        mapSiswaByName.get(String(a.namaSiswa || a.studentName || '').trim().toLowerCase()) ||
+        null;
+
+      if (selectedStudentObj) {
+        const sid = selectedStudentObj.studentId || selectedStudentObj.id;
+        const matchTarget =
+          a.studentId === sid ||
+          a.studentId === selectedStudentObj.id ||
+          a.studentDocId === selectedStudentObj.id ||
+          (a.namaSiswa && a.namaSiswa === selectedStudentObj.nama) ||
+          (a.studentName && a.studentName === selectedStudentObj.nama);
+        if (!matchTarget) return;
+      }
+
+      const key = `${tgl}__${a.studentId || a.namaSiswa || a.id}__${a.scheduleId || a.jadwalId || a.mapel || 'umum'}`;
+      if (seen.has(key)) return;
+      seen.add(key);
+
+      filtered.push({
+        ...a,
+        tanggalNorm: tgl,
+        namaTampil: siswaMatch?.nama || a.namaSiswa || a.studentName || '-',
+        kelasTampil: siswaMatch?.kelasSekolah || siswaMatch?.kelas || '-',
+      });
+    });
+
+    filtered.sort((a, b) => a.tanggalNorm.localeCompare(b.tanggalNorm));
+    return filtered;
+  }, [attendance, students, selectedMonth, selectedStudentObj]);
+
+  const monthlyStats = useMemo(() => {
+    const hadir = monthlyRecords.filter((x) => x.status === 'Hadir').length;
+    const izin = monthlyRecords.filter((x) => x.status === 'Izin').length;
+    const sakit = monthlyRecords.filter((x) => x.status === 'Sakit').length;
+    const alpha = monthlyRecords.filter((x) => x.status === 'Alpha').length;
+    const total = monthlyRecords.length;
+    const persen = total > 0 ? Math.round((hadir / total) * 100) : 0;
+    return { hadir, izin, sakit, alpha, total, persen };
+  }, [monthlyRecords]);
+
+  const labelBulanTerpilih = useMemo(() => {
+    if (!selectedMonth) return '-';
+    const d = new Date(`${selectedMonth}-01T12:00:00`);
+    return Number.isNaN(d.getTime())
+      ? selectedMonth
+      : d.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+  }, [selectedMonth]);
+
+  const handleDownloadPdf = () => {
+    const win = window.open('', '_blank', 'width=900,height=700');
+    if (!win) {
+      return showAlert('⚠️ Izinkan pop-up browser untuk mengunduh / mencetak PDF absensi.');
+    }
+    const judulSiswa = selectedStudentObj
+      ? `${selectedStudentObj.nama} (${selectedStudentObj.kelasSekolah || selectedStudentObj.kelas || '-'})`
+      : 'Semua Siswa Aktif';
+
+    const rowsHtml = monthlyRecords.length === 0
+      ? `<tr><td colspan="6" style="text-align:center;padding:24px;color:#64748b;">Tidak ada catatan absensi pada periode ${labelBulanTerpilih}.</td></tr>`
+      : monthlyRecords.map((r, i) => `
+          <tr>
+            <td style="text-align:center;">${i + 1}</td>
+            <td>${formatTanggalPanjang(r.tanggalNorm)}</td>
+            <td><strong>${r.namaTampil}</strong><br/><span style="font-size:11px;color:#64748b;">${r.kelasTampil}</span></td>
+            <td>${r.mapel || 'Umum'}</td>
+            <td style="text-align:center;font-weight:700;">${r.status || '-'}</td>
+            <td>${r.keterangan && r.keterangan !== '-' ? r.keterangan : '-'}</td>
+          </tr>
+        `).join('');
+
+    win.document.write(`<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Laporan Kehadiran ${labelBulanTerpilih} - ${judulSiswa}</title>
+  <style>
+    body { font-family: Arial, Helvetica, sans-serif; color: #0f172a; padding: 28px; margin: 0; }
+    .header { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 3px solid #0d9488; padding-bottom: 12px; margin-bottom: 18px; }
+    .brand { font-size: 20px; font-weight: 900; color: #0f766e; }
+    .sub { font-size: 12px; color: #475569; margin-top: 2px; }
+    .meta { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 14px; margin-bottom: 16px; font-size: 13px; }
+    .summary { display: flex; gap: 10px; margin-bottom: 18px; }
+    .sum-box { flex: 1; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px; text-align: center; }
+    .sum-box small { display: block; font-size: 10px; color: #64748b; font-weight: 700; text-transform: uppercase; }
+    .sum-box strong { font-size: 18px; color: #0f172a; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    th { background: #0f766e; color: #ffffff; padding: 8px 10px; text-align: left; }
+    td { border-bottom: 1px solid #e2e8f0; padding: 8px 10px; vertical-align: top; }
+    tr:nth-child(even) td { background: #f8fafc; }
+    .footer { margin-top: 24px; font-size: 11px; color: #64748b; display: flex; justify-content: space-between; }
+    @media print { body { padding: 14px; } }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div>
+      <div class="brand">BIMBEL GEMILANG</div>
+      <div class="sub">Laporan Resmi Jadwal &amp; Kehadiran Siswa</div>
+    </div>
+    <div style="text-align:right;font-size:12px;color:#475569;">
+      Dicetak: ${new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
+    </div>
+  </div>
+  <div class="meta">
+    <div><strong>Periode:</strong> ${labelBulanTerpilih}</div>
+    <div><strong>Peserta:</strong> ${judulSiswa}</div>
+  </div>
+  <div class="summary">
+    <div class="sum-box"><small>Hadir</small><strong>${monthlyStats.hadir}</strong></div>
+    <div class="sum-box"><small>Izin</small><strong>${monthlyStats.izin}</strong></div>
+    <div class="sum-box"><small>Sakit</small><strong>${monthlyStats.sakit}</strong></div>
+    <div class="sum-box"><small>Alpha</small><strong>${monthlyStats.alpha}</strong></div>
+    <div class="sum-box"><small>Persentase</small><strong>${monthlyStats.persen}%</strong></div>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th style="width:36px;text-align:center;">No</th>
+        <th>Hari &amp; Tanggal</th>
+        <th>Nama Siswa &amp; Kelas</th>
+        <th>Mapel / Sesi</th>
+        <th style="width:80px;text-align:center;">Status</th>
+        <th>Keterangan</th>
+      </tr>
+    </thead>
+    <tbody>${rowsHtml}</tbody>
+  </table>
+  <div class="footer">
+    <span>Dokumen resmi Portal Admin Bimbel Gemilang</span>
+    <span>Total ${monthlyStats.total} sesi tercatat</span>
+  </div>
+  <script>window.onload = function(){ setTimeout(function(){ window.print(); }, 250); };</script>
+</body>
+</html>`);
+    win.document.close();
   };
 
   const openEdit = (row) => {
@@ -247,13 +414,161 @@ const AdminAttendanceManage = () => {
             <RefreshCw size={14} /> Refresh
           </button>
         </div>
-        <p style={{ color: '#64748b', fontSize: 13, marginTop: 0, marginBottom: 16 }}>
-          Pilih tanggal, lalu set status Hadir / Izin / Sakit / Alpha dan isi keterangan (izin, sakit, dll).
+        <p style={{ color: '#64748b', fontSize: 13, marginTop: 0, marginBottom: 14 }}>
+          Kelola absensi harian atau cek riwayat bulanan siswa (termasuk bulan-bulan sebelumnya) dan unduh laporan PDF resmi.
         </p>
+
+        {/* Tab Mode: Harian vs Rekap Bulanan & Download PDF */}
+        <div style={{ display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap' }}>
+          <button
+            type="button"
+            onClick={() => setModeTab('harian')}
+            style={{
+              padding: '9px 16px',
+              borderRadius: 10,
+              border: 'none',
+              fontWeight: 800,
+              fontSize: 13,
+              cursor: 'pointer',
+              background: modeTab === 'harian' ? '#0f766e' : '#e2e8f0',
+              color: modeTab === 'harian' ? '#ffffff' : '#334155',
+            }}
+          >
+            📅 Absensi Harian
+          </button>
+          <button
+            type="button"
+            onClick={() => setModeTab('bulanan')}
+            style={{
+              padding: '9px 16px',
+              borderRadius: 10,
+              border: 'none',
+              fontWeight: 800,
+              fontSize: 13,
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 6,
+              background: modeTab === 'bulanan' ? '#0f766e' : '#e2e8f0',
+              color: modeTab === 'bulanan' ? '#ffffff' : '#334155',
+            }}
+          >
+            <FileText size={15} /> Rekap Bulanan &amp; Download PDF
+          </button>
+        </div>
 
         {alertMsg && (
           <div style={styles.alert}>{alertMsg}</div>
         )}
+
+        {modeTab === 'bulanan' && (
+          <div>
+            <div style={{ ...styles.toolbar, background: '#ffffff', padding: 14, borderRadius: 12, border: '1px solid #e2e8f0' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <label style={{ fontSize: 12, fontWeight: 700, color: '#475569' }}>Bulan:</label>
+                <input
+                  type="month"
+                  value={selectedMonth}
+                  onChange={(e) => setSelectedMonth(e.target.value)}
+                  style={{ padding: '7px 10px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13 }}
+                />
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1, minWidth: 220 }}>
+                <label style={{ fontSize: 12, fontWeight: 700, color: '#475569' }}>Siswa:</label>
+                <select
+                  value={selectedStudentId}
+                  onChange={(e) => setSelectedStudentId(e.target.value)}
+                  style={{ ...styles.select, flex: 1, maxWidth: 320 }}
+                >
+                  <option value="semua">-- Semua Siswa Aktif --</option>
+                  {students.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.nama} ({s.kelasSekolah || s.kelas || '-'})
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <button
+                type="button"
+                onClick={handleDownloadPdf}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  background: '#0d9488',
+                  color: '#ffffff',
+                  border: 'none',
+                  borderRadius: 10,
+                  padding: '9px 16px',
+                  fontWeight: 800,
+                  fontSize: 13,
+                  cursor: 'pointer',
+                }}
+              >
+                <Download size={15} /> Download / Cetak PDF
+              </button>
+            </div>
+
+            <div style={styles.statGrid}>
+              {[
+                ['Hadir', monthlyStats.hadir, '#22c55e'],
+                ['Izin', monthlyStats.izin, '#3b82f6'],
+                ['Sakit', monthlyStats.sakit, '#f59e0b'],
+                ['Alpha', monthlyStats.alpha, '#ef4444'],
+                ['Persentase Hadir', `${monthlyStats.persen}%`, '#0d9488'],
+              ].map(([label, val, color]) => (
+                <div key={label} style={{ ...styles.statCard, borderLeft: `4px solid ${color}` }}>
+                  <small style={{ color: '#64748b', fontWeight: 700 }}>{label}</small>
+                  <div style={{ fontSize: 22, fontWeight: 800, color: '#1e293b' }}>{val}</div>
+                </div>
+              ))}
+            </div>
+
+            <div style={{ background: '#ffffff', borderRadius: 14, border: '1px solid #e2e8f0', overflowX: 'auto' }}>
+              <table style={styles.table}>
+                <thead>
+                  <tr>
+                    <th style={styles.th}>Tanggal</th>
+                    <th style={styles.th}>Nama Siswa</th>
+                    <th style={styles.th}>Mapel / Sesi</th>
+                    <th style={styles.th}>Status</th>
+                    <th style={styles.th}>Keterangan</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {monthlyRecords.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} style={{ textAlign: 'center', padding: 28, color: '#64748b' }}>
+                        Belum ada catatan kehadiran untuk periode <b>{labelBulanTerpilih}</b>.
+                      </td>
+                    </tr>
+                  ) : monthlyRecords.map((r) => {
+                    const stt = STATUS_STYLE[r.status] || STATUS_STYLE.Belum;
+                    return (
+                      <tr key={r.id}>
+                        <td style={styles.td}>{formatTanggalPanjang(r.tanggalNorm)}</td>
+                        <td style={styles.td}>
+                          <div style={{ fontWeight: 700, color: '#0f172a' }}>{r.namaTampil}</div>
+                          <div style={{ fontSize: 11, color: '#64748b' }}>{r.kelasTampil}</div>
+                        </td>
+                        <td style={styles.td}>{r.mapel || 'Umum'}</td>
+                        <td style={styles.td}>
+                          <span style={{ ...styles.badge, background: stt.bg, color: stt.color }}>
+                            {r.status || '-'}
+                          </span>
+                        </td>
+                        <td style={styles.td}>{r.keterangan && r.keterangan !== '-' ? r.keterangan : '-'}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {modeTab === 'harian' && (
+          <>
 
         {/* Tanggal */}
         <div style={styles.toolbar}>
@@ -414,6 +729,8 @@ const AdminAttendanceManage = () => {
               </tbody>
             </table>
           </div>
+        )}
+          </>
         )}
 
         {/* Modal edit */}
