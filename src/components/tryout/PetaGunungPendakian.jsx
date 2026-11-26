@@ -433,7 +433,9 @@ export default function PetaGunungPendakian({
           </div>
           <span style={{ fontSize: 12, opacity: 0.9 }}>
             {!sudahPernahLatihan
-              ? '🏔️ Kerjakan Pos 1 untuk memunculkan avatarmu di gunung!'
+              ? (temanList.length > 0
+                ? `🏔️ Kerjakan Pos 1 untuk memunculkan avatarmu! (${temanList.length} teman sudah mendaki)`
+                : '🏔️ Belum ada teman yang mendaki — jadilah yang pertama di Pos 1!')
               : temanTerdepan
               ? `🔥 ${temanTerdepan.nama.split(' ')[0]} sudah di Pos ${temanTerdepan.posSekarang} — ayo kejar!`
               : temanList.length > 0

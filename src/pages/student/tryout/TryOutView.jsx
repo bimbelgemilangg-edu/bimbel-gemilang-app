@@ -645,11 +645,15 @@ export default function TryOutView() {
   // ---------------- MULAI TRY OUT ----------------
   const mulaiTryOut = useCallback(async () => {
     const sekarang = Date.now();
+    const isJalurAi = Boolean(paket?.jalurUjianAi || searchParams.get('jalur') === 'ai' || String(paketId || '').startsWith('jalur-ai-'));
+    const unitNomorVal = paket?.unitNomor ?? (searchParams.get('unitNomor') ? Number(searchParams.get('unitNomor')) : null);
     try {
       const docRef = await addDoc(collection(db, 'tryout_sesi'), {
         paketId,
         studentId,
         status: 'berjalan',
+        jalurUjianAi: isJalurAi,
+        ...(unitNomorVal ? { unitNomor: unitNomorVal } : {}),
         jawaban: {},
         subtesAktifIndex: 0,
         waktuMulai: serverTimestamp(),
@@ -768,8 +772,12 @@ export default function TryOutView() {
       // ini yang WAJIB berhasil sebelum siswa dikasih tau "selesai".
       if (sesiId) {
         try {
+          const isJalurAi = Boolean(paket?.jalurUjianAi || searchParams.get('jalur') === 'ai' || String(paketId || '').startsWith('jalur-ai-'));
+          const unitNomorVal = paket?.unitNomor ?? (searchParams.get('unitNomor') ? Number(searchParams.get('unitNomor')) : null);
           await updateDoc(doc(db, 'tryout_sesi', sesiId), {
             status: 'selesai',
+            jalurUjianAi: isJalurAi,
+            ...(unitNomorVal ? { unitNomor: unitNomorVal } : {}),
             jawaban,
             totalSkorPersen,
             paketJudul: paket?.judul || 'Simulasi Ujian',

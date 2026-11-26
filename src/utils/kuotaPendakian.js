@@ -99,11 +99,14 @@ export async function muatPosisiTemanPendakian(db, {
   const skorTerakhirPerSiswa = new Map();
   snapSesi.forEach((d) => {
     const s = d.data();
+    const idKandidat = String(s.unitId || s.paketId || s.tryoutId || '');
+    const matchJalurId = /^jalur-ai-(?:sd|smp|sma)-u(\d+)$/i.exec(idKandidat);
     const nomor =
-      (s.unitNomor != null && s.jalurUjianAi ? Number(s.unitNomor) : null) ||
+      (s.unitNomor != null ? Number(s.unitNomor) : null) ||
       unitIdKeNomor.get(s.unitId) ||
       unitIdKeNomor.get(s.paketId) ||
       unitIdKeNomor.get(s.tryoutId) ||
+      (matchJalurId ? Number(matchJalurId[1]) : null) ||
       null;
     if (!nomor) return;
 
