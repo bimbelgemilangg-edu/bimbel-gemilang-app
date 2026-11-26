@@ -710,7 +710,7 @@ const AdminAttendanceManage = () => {
       </div>
     </div>
     <div style="text-align:right;font-size:9px;color:#334155;">
-      <div><strong>Format:</strong> F4 Landscape (Hemat Kertas 20 Sesi)</div>
+      <div><strong>Format:</strong> F4 Landscape</div>
       <div><strong>Dicetak:</strong> ${tanggalCetak}</div>
     </div>
   </div>
@@ -733,7 +733,7 @@ const AdminAttendanceManage = () => {
         <th style="width:11%;text-align:center;">Pemahaman</th>
         <th style="width:11%;">Nama Tentor</th>
         <th style="width:10%;text-align:center;">Paraf Tentor</th>
-        <th style="width:21%;">Alasan Jika Paraf Kosong / Catatan</th>
+        <th style="width:21%;">Catatan</th>
         <th style="width:11%;text-align:center;">Paraf Ortu</th>
       </tr>
     </thead>
