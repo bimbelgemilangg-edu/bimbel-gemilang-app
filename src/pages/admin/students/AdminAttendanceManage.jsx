@@ -534,8 +534,8 @@ const AdminAttendanceManage = () => {
     th { background: #0f766e; color: #ffffff; font-size: 9.5px; }
     tr:nth-child(even) td { background: #f8fafc; }
     .validasi { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 8px; font-size: 9.5px; page-break-inside: avoid; }
-    .ttd-col { width: 220px; text-align: center; }
-    .ttd-space { height: 28px; }
+    .ttd-col { width: 250px; text-align: center; }
+    .ttd-space { height: 36px; }
     .ttd-line { border-top: 1px solid #0f172a; padding-top: 2px; font-weight: 700; }
     @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
   </style>
@@ -682,20 +682,20 @@ const AdminAttendanceManage = () => {
     @page { size: 330mm 215mm landscape; margin: 4mm 6mm; }
     * { box-sizing: border-box; }
     body { font-family: Arial, Helvetica, sans-serif; color: #0f172a; margin: 0; padding: 0; }
-    .kop { display: flex; align-items: center; justify-content: space-between; border-bottom: 2.5px solid #0f766e; padding-bottom: 4px; margin-bottom: 4px; }
+    .kop { display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #0f766e; padding-bottom: 3px; margin-bottom: 4px; }
     .kop-left { display: flex; align-items: center; gap: 10px; }
-    .kop-logo { width: 38px; height: 38px; border-radius: 50%; border: 1.5px solid #0f766e; object-fit: cover; }
-    .kop-brand { font-size: 13px; font-weight: 900; color: #0f766e; text-transform: uppercase; letter-spacing: 0.4px; }
-    .kop-sub { font-size: 9.8px; font-weight: 800; color: #0f172a; }
-    .identitas { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px 14px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 5px; padding: 4px 10px; margin-bottom: 4px; font-size: 9.2px; }
+    .kop-logo { width: 34px; height: 34px; border-radius: 50%; border: 1.5px solid #0f766e; object-fit: cover; }
+    .kop-brand { font-size: 12.5px; font-weight: 900; color: #0f766e; text-transform: uppercase; letter-spacing: 0.4px; }
+    .kop-sub { font-size: 9.5px; font-weight: 800; color: #0f172a; }
+    .identitas { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px 14px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 5px; padding: 3px 10px; margin-bottom: 4px; font-size: 9px; }
     table { width: 100%; border-collapse: collapse; font-size: 8.4px; }
-    th, td { border: 1px solid #334155; padding: 2.3px 5px; vertical-align: middle; }
+    th, td { border: 1px solid #334155; padding: 2.6px 5px; vertical-align: middle; }
     th { background: #0f766e; color: #ffffff; font-size: 8.5px; text-align: left; }
-    td { height: 15.5px; }
+    td { height: 18.5px; }
     tr:nth-child(even) td { background: #f8fafc; }
-    .validasi { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 5px; font-size: 8.8px; page-break-inside: avoid; }
-    .ttd-col { width: 230px; text-align: center; }
-    .ttd-space { height: 22px; }
+    .validasi { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 6px; font-size: 9px; page-break-inside: avoid; }
+    .ttd-col { width: 250px; text-align: center; }
+    .ttd-space { height: 34px; }
     .ttd-line { border-top: 1px solid #0f172a; padding-top: 2px; font-weight: 700; }
     @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
   </style>
@@ -729,12 +729,12 @@ const AdminAttendanceManage = () => {
       <tr>
         <th style="width:24px;text-align:center;">No</th>
         <th style="width:8.5%;">Tanggal</th>
-        <th style="width:24%;">Mapel, Bab &amp; Materi Hari Ini</th>
-        <th style="width:11%;text-align:center;">Pemahaman</th>
-        <th style="width:11%;">Nama Tentor</th>
-        <th style="width:10%;text-align:center;">Paraf Tentor</th>
-        <th style="width:21%;">Catatan</th>
-        <th style="width:11%;text-align:center;">Paraf Ortu</th>
+        <th style="width:22%;">Mapel, Bab &amp; Materi Hari Ini</th>
+        <th style="width:10%;text-align:center;">Pemahaman</th>
+        <th style="width:10.5%;">Nama Tentor</th>
+        <th style="width:12%;text-align:center;">Paraf Tentor</th>
+        <th style="width:19%;">Catatan</th>
+        <th style="width:13%;text-align:center;">Paraf Ortu</th>
       </tr>
     </thead>
     <tbody>${rowsHtml}</tbody>
