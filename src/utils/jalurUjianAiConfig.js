@@ -851,19 +851,40 @@ export async function pastikanPaketUnitTersedia(db, unit, jenjang = 'SMP') {
       if (!s || typeof s !== 'object') return false;
       const idStr = String(s.id || '').toUpperCase();
       if (idStr.includes('SD-JALU')) return false;
+
+      // Isolasi mata pelajaran agar Matematika & Bahasa Indonesia tidak tercampur di Pos subtes murni
+      const subtesKat = String(unit.kategoriSubtes || '').toLowerCase();
+      const mapelSoal = String(s.mataPelajaran || s.mapel || '').toLowerCase();
+      const materiSoal = String(s.materi || '').toLowerCase();
+      if (subtesKat === 'matematika') {
+        if (mapelSoal.includes('indonesia') || mapelSoal.includes('inggris') || mapelSoal.includes('ipa') || materiSoal.includes('teks laporan') || materiSoal.includes('fabel')) {
+          return false;
+        }
+      } else if (subtesKat === 'bahasa indonesia') {
+        if (mapelSoal.includes('matematika') || mapelSoal.includes('inggris') || mapelSoal.includes('ipa')) {
+          return false;
+        }
+      }
+
       const tipe = String(s.tipe || 'pg_sederhana').toLowerCase();
-      if (tipe === 'benar_salah') {
-        return Array.isArray(s.pernyataan) && s.pernyataan.length > 0;
+      const kunciStr = String(s.kunciJawaban || s.kunci || s.kunci_jawaban || '').trim();
+      if (tipe === 'benar_salah' || tipe === 'pg_kategori') {
+        const list = s.pernyataan || s.tabelBenarSalah || [];
+        const kunciTunggalHuruf = /^[A-E]$/i.test(kunciStr);
+        return Array.isArray(list) && list.length >= 2 && !kunciTunggalHuruf;
       }
       const ops = s.opsiJawaban || s.opsi || [];
-      return Array.isArray(ops) && ops.length >= 2 && Boolean(s.kunciJawaban || s.kunci || s.kunci_jawaban);
+      if (tipe === 'pg_kompleks' || tipe === 'mcma') {
+        return Array.isArray(ops) && ops.length >= 2 && kunciStr.includes(',');
+      }
+      return Array.isArray(ops) && ops.length >= 4 && Boolean(kunciStr);
     };
 
-    // Gunakan cache Firestore HANYA jika presetVersion >= 2, durasi valid, dan seluruh soal lulus validasi
+    // Gunakan cache Firestore HANYA jika presetVersion >= 3, durasi valid, dan seluruh soal lulus validasi
     if (snap.exists()) {
       const dataAda = snap.data();
       const daftarAda = Array.isArray(dataAda.daftarSoal) ? dataAda.daftarSoal : [];
-      const versiValid = Number(dataAda.presetVersion || 0) >= 2;
+      const versiValid = Number(dataAda.presetVersion || 0) >= 3;
       const durasiValid = Number(dataAda.durasiTotalMenit || dataAda.durasiMenit || 0) > 0;
       const semuaSoalValid = daftarAda.length === unit.jumlahSoal && daftarAda.length > 0 && daftarAda.every(isSoalValid);
       if (versiValid && durasiValid && semuaSoalValid) {
@@ -892,7 +913,7 @@ export async function pastikanPaketUnitTersedia(db, unit, jenjang = 'SMP') {
       modeTimer: 'total',
       durasiMenit: durasiFinal,
       durasiTotalMenit: durasiFinal,
-      presetVersion: 2,
+      presetVersion: 3,
       status: 'aktif',
       otomatis: false,
       jalurUjianAi: true,

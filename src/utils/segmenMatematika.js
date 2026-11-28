@@ -168,12 +168,18 @@ export function normalisasiTeksMatematika(teks) {
     return `$${mantissa} \\times 10^{${g2}}$`;
   });
 
-  // Pangkat dengan tanda kurung: mis. 4^(-2), 2^(-3), (-2)^4, a^(m+n)
+  // Pangkat dengan tanda kurung: mis. 4^(-2), 2^(-3), (-2)^4, a^(m+n), cm^(2), m^(3)
   hasil = hasil.replace(/\((-?[0-9a-zA-Z]+)\)\^([0-9a-zA-Z\-+]+)/g, (m, g1, g2) => `$(${g1})^{${g2}}$`);
-  hasil = hasil.replace(/(?<![\w$])([a-zA-Z]|\d+|\([^\)]+\))\^\(([^\)]+)\)(?![\w$])/g, (m, g1, g2) => `$${g1}^{${g2}}$`);
+  hasil = hasil.replace(/(?<![\w$])([a-zA-Z]+|\d+|\([^\)]+\))\^\(([^\)]+)\)(?![\w$])/g, (m, g1, g2) => {
+    const satuan = /^(?:km|hm|dam|dm|cm|mm|m|ha|cc|kg|g|mg|ml|l|liter)$/i.test(g1) ? `\\text{${g1}}` : g1;
+    return `$${satuan}^{${g2}}$`;
+  });
 
-  // Pangkat sederhana di luar math: mis. x^2, x^3, 2^10, 10^-3
-  hasil = hasil.replace(/(?<![\w$])([a-zA-Z]|\d+)\^([0-9a-zA-Z\-+]+)(?![\w$])/g, (m, g1, g2) => `$${g1}^{${g2}}$`);
+  // Pangkat sederhana di luar math: mis. x^2, x^3, 2^10, 10^-3, cm^2
+  hasil = hasil.replace(/(?<![\w$])([a-zA-Z]+|\d+)\^([0-9a-zA-Z\-+]+)(?![\w$])/g, (m, g1, g2) => {
+    const satuan = /^(?:km|hm|dam|dm|cm|mm|m|ha|cc|kg|g|mg|ml|l|liter)$/i.test(g1) ? `\\text{${g1}}` : g1;
+    return `$${satuan}^{${g2}}$`;
+  });
 
   // Gabungkan perkalian di antara dua token math yang berdekatan: $a^m$ × $a^n$ -> $a^m \times a^n$
   hasil = hasil.replace(/\$([^\$]+)\$\s*[×x]\s*\$([^\$]+)\$/g, (m, g1, g2) => `$${g1} \\times ${g2}$`);

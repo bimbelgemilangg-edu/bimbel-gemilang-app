@@ -590,7 +590,8 @@ export default function JalurUjianAiPage() {
     setPesanError('');
     try {
       const targetPaketId = unit.paketIdAsli || unit.id;
-      if (!unit.paketIdAsli) {
+      const isPresetUnit = String(unit.id || '').startsWith('jalur-ai-');
+      if (!unit.paketIdAsli || isPresetUnit) {
         await pastikanPaketUnitTersedia(db, unit, targetJenjang?.jenjang || 'SMA');
       }
       navigate(`/siswa/tryout/${targetPaketId}?jalur=ai&unitNomor=${unit.unitNomor}`);

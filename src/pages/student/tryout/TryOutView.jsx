@@ -69,7 +69,7 @@ import { hitungSkalaSesi } from '../../../utils/hitungSkalaSesi';
 import { pisahKodeSumber } from '../../../utils/strukturPembahasan';
 import RenderPembahasan from '../../../components/RenderPembahasan';
 import { teksSoalDari, kunciStimulus, bacaanDari, gambarButirDari } from '../../../utils/fieldButirSoal';
-import { isPaketOtomatisAi } from '../../../utils/jalurUjianAiConfig';
+import { isPaketOtomatisAi, getDaftarUnitJalurUjian, pastikanPaketUnitTersedia } from '../../../utils/jalurUjianAiConfig';
 import { terapkanPotonganXP } from '../../../utils/potonganXPTryOut';
 import { acakSoalPerSiswa } from '../../../utils/acakSoalTryOut';
 import { tambahXpMingguan } from '../../../utils/mingguIni';
@@ -307,7 +307,28 @@ export default function TryOutView() {
     try {
       const snapPaket = await getDoc(doc(db, 'tryout_paket', paketId));
       if (!snapPaket.exists()) { setTahap('tidak-ditemukan'); return; }
-      const dataPaket = { id: snapPaket.id, ...snapPaket.data() };
+      let dataPaket = { id: snapPaket.id, ...snapPaket.data() };
+
+      // 🔄 Auto-heal paket Jalur AI (SD/SMP/SMA) jika cache Firestore masih versi lama (< 3) atau mengandung soal rusak SD-JALU
+      const matchJalur = /^jalur-ai-(sd|smp|sma)-u(\d+)$/i.exec(paketId);
+      let paketBaruDiperbarui = false;
+      if (matchJalur) {
+        const soalLama = Array.isArray(dataPaket.daftarSoal) ? dataPaket.daftarSoal : [];
+        const adaSoalRusak = soalLama.some((s) => String(s?.id || '').toUpperCase().includes('SD-JALU'));
+        if (Number(dataPaket.presetVersion || 0) < 3 || adaSoalRusak) {
+          const jTarget = matchJalur[1].toUpperCase();
+          const uNo = Number(matchJalur[2]);
+          const daftarU = getDaftarUnitJalurUjian(jTarget);
+          const unitObj = daftarU.find((u) => u.id === paketId || u.unitNomor === uNo);
+          if (unitObj) {
+            const healed = await pastikanPaketUnitTersedia(db, unitObj, jTarget);
+            if (healed && Array.isArray(healed.daftarSoal) && healed.daftarSoal.length > 0) {
+              dataPaket = healed;
+              paketBaruDiperbarui = true;
+            }
+          }
+        }
+      }
 
       // Filter soal hanya mapel yang didaftarkan admin ke siswa (enrolledSubjects)
       let enrolled = [];
@@ -351,6 +372,16 @@ export default function TryOutView() {
         // siswa bisa terkunci di layar hasil lama. Sekarang pilih lewat
         // util murni pilihSesiUtama (berjalan menang, lalu yang terbaru).
         const sesi = pilihSesiUtama(snapSesi.docs.map((d) => ({ id: d.id, ...d.data() })));
+        const validIdsSet = new Set((dataPaket.daftarSoal || []).map((sx) => sx.id));
+        const jwbKeys = Object.keys(sesi.jawaban || {});
+        const adaJawabanOrphan = jwbKeys.some((k) => !validIdsSet.has(k));
+        if (paketBaruDiperbarui && adaJawabanOrphan) {
+          try { await deleteDoc(doc(db, 'tryout_sesi', sesi.id)); } catch { /* ignore */ }
+          setSesiId(null);
+          setJawaban({});
+          setTahap('mulai');
+          return;
+        }
         setSesiId(sesi.id);
         setJawaban(sesi.jawaban || {});
         setFotoPengawasan(sesi.fotoPengawasan || []);
