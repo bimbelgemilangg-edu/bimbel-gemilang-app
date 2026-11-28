@@ -1318,6 +1318,7 @@ export function susunBankSoalLatihanSmp(bankSoalFirestore = []) {
   // 1. Prioritaskan butir soal dari Firestore bank_soal (inputan pengguna/tentor)
   if (Array.isArray(bankSoalFirestore) && bankSoalFirestore.length > 0) {
     bankSoalFirestore.forEach((s) => {
+      if (String(s?.id || '').toUpperCase().includes('SD-JALU')) return;
       const sj = String(s.jenjang || '').toUpperCase();
       const sk = String(s.kelas || s.kelasSekolah || s.tingkatKelas || '').trim();
       const sm = String(s.mataPelajaran || s.mapel || s.subtes || '').toLowerCase();
@@ -1472,6 +1473,7 @@ export function susunBankSoalLatihanSd(bankSoalFirestore = []) {
   // 1. Soal Firestore SD
   if (Array.isArray(bankSoalFirestore) && bankSoalFirestore.length > 0) {
     bankSoalFirestore.forEach((s) => {
+      if (String(s?.id || '').toUpperCase().includes('SD-JALU')) return;
       const sj = String(s.jenjang || '').toUpperCase();
       const sk = String(s.kelas || s.kelasSekolah || '');
       const isSd = sj.includes('SD') || sk.includes('4') || sk.includes('5') || sk.includes('6');
@@ -1518,6 +1520,7 @@ export function susunBankSoalLatihanUtbk(bankSoalFirestore = []) {
   // 1. Firestore SMA / UTBK
   if (Array.isArray(bankSoalFirestore) && bankSoalFirestore.length > 0) {
     bankSoalFirestore.forEach((s) => {
+      if (String(s?.id || '').toUpperCase().includes('SD-JALU')) return;
       const sj = String(s.jenjang || '').toUpperCase();
       const sk = String(s.kelas || s.kelasSekolah || '');
       const isSma = sj.includes('SMA') || sj.includes('SMK') || sk.includes('10') || sk.includes('11') || sk.includes('12') || sk.includes('UTBK');

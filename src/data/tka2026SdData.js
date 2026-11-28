@@ -2989,6 +2989,371 @@ export const SOAL_TKA_2026_SD_MTK = [
     "kunci_jawaban": "C",
     "kunci": "C",
     "pembahasan": "Jumlah nilai 5 siswa $= 5 \\times 80 = 400$. Setelah 1 siswa masuk, jumlah nilai $= 400 + 92 = 492$. Rata-rata 6 siswa $= 492 \\div 6 = 82$."
+  },
+  {
+    "id": "tka_sd_mtk_46",
+    "nomor": 46,
+    "jenjang": "SD",
+    "kelas": "6",
+    "tingkatKelas": "6 SD",
+    "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
+    "materi": "Bilangan Pecahan & Desimal - Luas Lahan (Pusmendik 2026)",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Pak Bakri mempunyai lahan seluas $3{,}5$ hektar. Pada lahan tersebut, $\\frac{1}{5}$ bagiannya akan ditanami cabai merah, $\\frac{1}{3}$ bagiannya akan ditanami tomat, dan sisanya akan ditanami daun bawang.\n\nBerapakah luas lahan yang akan ditanami tomat dan daun bawang?",
+    "teks_soal": "Pak Bakri mempunyai lahan seluas $3{,}5$ hektar. Pada lahan tersebut, $\\frac{1}{5}$ bagiannya akan ditanami cabai merah, $\\frac{1}{3}$ bagiannya akan ditanami tomat, dan sisanya akan ditanami daun bawang.\n\nBerapakah luas lahan yang akan ditanami tomat dan daun bawang?",
+    "soal": "Pak Bakri mempunyai lahan seluas $3{,}5$ hektar. Pada lahan tersebut, $\\frac{1}{5}$ bagiannya akan ditanami cabai merah, $\\frac{1}{3}$ bagiannya akan ditanami tomat, dan sisanya akan ditanami daun bawang.\n\nBerapakah luas lahan yang akan ditanami tomat dan daun bawang?",
+    "gambar": null,
+    "gambarUrls": [],
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "1,63 hektar",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "1,87 hektar",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "2,33 hektar",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "2,80 hektar",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "1,63 hektar",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "1,87 hektar",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "2,33 hektar",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "2,80 hektar",
+        "gambar": null
+      }
+    ],
+    "pernyataan": [],
+    "kunciJawaban": "D",
+    "kunci_jawaban": "D",
+    "kunci": "D",
+    "pembahasan": "Total lahan $= 3{,}5$ hektar. Lahan cabai merah $= \\frac{1}{5} \\times 3{,}5 = 0{,}70$ hektar. Maka luas lahan tomat dan daun bawang adalah sisanya: $3{,}5 - 0{,}70 = 2{,}80$ hektar."
+  },
+  {
+    "id": "tka_sd_mtk_47",
+    "nomor": 47,
+    "jenjang": "SD",
+    "kelas": "6",
+    "tingkatKelas": "6 SD",
+    "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
+    "materi": "Bilangan Rasional - Pecahan Senilai, Desimal & Persen (Pusmendik 2026)",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Pada hari Sabtu, Andi, Beni, Citra, dan Dika mengikuti kegiatan \"Lari Sehat\" di lapangan desa dengan target jarak $10\\text{ km}$. Hingga pukul $08.00$, diperoleh data:\n- Andi menempuh $0{,}4$ bagian dari total jarak.\n- Beni menempuh $60\\%$ dari total jarak.\n- Citra menempuh $\\frac{1}{3}$ bagian dari total jarak.\n- Dika menempuh $5{,}5\\text{ km}$ dari total jarak.\n\nSiapakah yang telah menempuh jarak lari sebesar $\\frac{3}{5}$ dari total jarak?",
+    "teks_soal": "Pada hari Sabtu, Andi, Beni, Citra, dan Dika mengikuti kegiatan \"Lari Sehat\" di lapangan desa dengan target jarak $10\\text{ km}$. Hingga pukul $08.00$, diperoleh data:\n- Andi menempuh $0{,}4$ bagian dari total jarak.\n- Beni menempuh $60\\%$ dari total jarak.\n- Citra menempuh $\\frac{1}{3}$ bagian dari total jarak.\n- Dika menempuh $5{,}5\\text{ km}$ dari total jarak.\n\nSiapakah yang telah menempuh jarak lari sebesar $\\frac{3}{5}$ dari total jarak?",
+    "soal": "Pada hari Sabtu, Andi, Beni, Citra, dan Dika mengikuti kegiatan \"Lari Sehat\" di lapangan desa dengan target jarak $10\\text{ km}$. Hingga pukul $08.00$, diperoleh data:\n- Andi menempuh $0{,}4$ bagian dari total jarak.\n- Beni menempuh $60\\%$ dari total jarak.\n- Citra menempuh $\\frac{1}{3}$ bagian dari total jarak.\n- Dika menempuh $5{,}5\\text{ km}$ dari total jarak.\n\nSiapakah yang telah menempuh jarak lari sebesar $\\frac{3}{5}$ dari total jarak?",
+    "gambar": null,
+    "gambarUrls": [],
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Andi",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Beni",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Citra",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "Dika",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Andi",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Beni",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Citra",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "Dika",
+        "gambar": null
+      }
+    ],
+    "pernyataan": [],
+    "kunciJawaban": "B",
+    "kunci_jawaban": "B",
+    "kunci": "B",
+    "pembahasan": "Ubah $\\frac{3}{5}$ ke persen: $\\frac{3}{5} = \\frac{60}{100} = 60\\%$. Anak yang telah menempuh $60\\%$ dari total jarak adalah Beni."
+  },
+  {
+    "id": "tka_sd_mtk_48",
+    "nomor": 48,
+    "jenjang": "SD",
+    "kelas": "6",
+    "tingkatKelas": "6 SD",
+    "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
+    "materi": "Geometri Ruang - Perubahan Ukuran Volume Balok (Pusmendik 2026)",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Sebuah bak berbentuk kubus memiliki volume sebesar $9\\text{ m}^3$. Bak tersebut akan diubah menjadi sebuah balok dengan panjangnya $2$ kali dari ukuran bak sebelumnya, lebarnya $\\frac{1}{2}$ dari ukuran bak sebelumnya, dan tingginya sama dengan ukuran bak sebelumnya.\n\nVolume dari bak yang baru adalah …",
+    "teks_soal": "Sebuah bak berbentuk kubus memiliki volume sebesar $9\\text{ m}^3$. Bak tersebut akan diubah menjadi sebuah balok dengan panjangnya $2$ kali dari ukuran bak sebelumnya, lebarnya $\\frac{1}{2}$ dari ukuran bak sebelumnya, dan tingginya sama dengan ukuran bak sebelumnya.\n\nVolume dari bak yang baru adalah …",
+    "soal": "Sebuah bak berbentuk kubus memiliki volume sebesar $9\\text{ m}^3$. Bak tersebut akan diubah menjadi sebuah balok dengan panjangnya $2$ kali dari ukuran bak sebelumnya, lebarnya $\\frac{1}{2}$ dari ukuran bak sebelumnya, dan tingginya sama dengan ukuran bak sebelumnya.\n\nVolume dari bak yang baru adalah …",
+    "gambar": null,
+    "gambarUrls": [],
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "$4{,}5\\text{ m}^3$",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "$9\\text{ m}^3$",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "$18\\text{ m}^3$",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "$22{,}5\\text{ m}^3$",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "$4{,}5\\text{ m}^3$",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "$9\\text{ m}^3$",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "$18\\text{ m}^3$",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "$22{,}5\\text{ m}^3$",
+        "gambar": null
+      }
+    ],
+    "pernyataan": [],
+    "kunciJawaban": "B",
+    "kunci_jawaban": "B",
+    "kunci": "B",
+    "pembahasan": "Misalkan rusuk kubus awal $s$, sehingga $s^3 = 9\\text{ m}^3$. Volume balok baru $= (2s) \\times (\\frac{1}{2}s) \\times s = (2 \\times \\frac{1}{2}) \\times s^3 = 1 \\times 9 = 9\\text{ m}^3$."
+  },
+  {
+    "id": "tka_sd_mtk_49",
+    "nomor": 49,
+    "jenjang": "SD",
+    "kelas": "6",
+    "tingkatKelas": "6 SD",
+    "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
+    "materi": "Geometri - Luas Bangun Datar Gabungan Lingkaran & Persegi (Ruangguru)",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Halaman rumah Pak Cahya berbentuk lingkaran dengan diameter $7\\text{ m}$. Di tengah halaman tersebut terdapat kolam ikan berbentuk persegi yang panjang sisinya $1\\text{ m}$. Luas halaman rumah Pak Cahya yang dapat digunakan untuk bermain adalah … $\\text{m}^2$.",
+    "teks_soal": "Halaman rumah Pak Cahya berbentuk lingkaran dengan diameter $7\\text{ m}$. Di tengah halaman tersebut terdapat kolam ikan berbentuk persegi yang panjang sisinya $1\\text{ m}$. Luas halaman rumah Pak Cahya yang dapat digunakan untuk bermain adalah … $\\text{m}^2$.",
+    "soal": "Halaman rumah Pak Cahya berbentuk lingkaran dengan diameter $7\\text{ m}$. Di tengah halaman tersebut terdapat kolam ikan berbentuk persegi yang panjang sisinya $1\\text{ m}$. Luas halaman rumah Pak Cahya yang dapat digunakan untuk bermain adalah … $\\text{m}^2$.",
+    "gambar": null,
+    "gambarUrls": [],
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "35",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "37,5",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "38,5",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "42,5",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "35",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "37,5",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "38,5",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "42,5",
+        "gambar": null
+      }
+    ],
+    "pernyataan": [],
+    "kunciJawaban": "B",
+    "kunci_jawaban": "B",
+    "kunci": "B",
+    "pembahasan": "Diameter $7\\text{ m} \\Rightarrow r = 3{,}5\\text{ m}$. Luas lingkaran $= \\frac{22}{7} \\times 3{,}5 \\times 3{,}5 = 38{,}5\\text{ m}^2$. Luas kolam persegi $= 1 \\times 1 = 1\\text{ m}^2$. Luas halaman bermain $= 38{,}5 - 1 = 37{,}5\\text{ m}^2$."
+  },
+  {
+    "id": "tka_sd_mtk_50",
+    "nomor": 50,
+    "jenjang": "SD",
+    "kelas": "6",
+    "tingkatKelas": "6 SD",
+    "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
+    "materi": "Geometri Ruang - Luas Permukaan Prisma Segitiga (Ruangguru)",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Sebuah prisma alasnya berbentuk segitiga siku-siku dengan sisi miring $26\\text{ cm}$ dan salah satu sisi siku-sikunya $10\\text{ cm}$. Jika luas permukaan prisma $960\\text{ cm}^2$, tinggi prisma tersebut adalah … cm.",
+    "teks_soal": "Sebuah prisma alasnya berbentuk segitiga siku-siku dengan sisi miring $26\\text{ cm}$ dan salah satu sisi siku-sikunya $10\\text{ cm}$. Jika luas permukaan prisma $960\\text{ cm}^2$, tinggi prisma tersebut adalah … cm.",
+    "soal": "Sebuah prisma alasnya berbentuk segitiga siku-siku dengan sisi miring $26\\text{ cm}$ dan salah satu sisi siku-sikunya $10\\text{ cm}$. Jika luas permukaan prisma $960\\text{ cm}^2$, tinggi prisma tersebut adalah … cm.",
+    "gambar": null,
+    "gambarUrls": [],
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "12 cm",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "15 cm",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "18 cm",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "21 cm",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "12 cm",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "15 cm",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "18 cm",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "21 cm",
+        "gambar": null
+      }
+    ],
+    "pernyataan": [],
+    "kunciJawaban": "A",
+    "kunci_jawaban": "A",
+    "kunci": "A",
+    "pembahasan": "Sisi siku-siku lainnya $= \\sqrt{26^2 - 10^2} = \\sqrt{576} = 24\\text{ cm}$. Luas alas $= \\frac{1}{2} \\times 10 \\times 24 = 120\\text{ cm}^2$, keliling alas $= 10 + 24 + 26 = 60\\text{ cm}$. Luas permukaan $= 2(120) + 60t = 960 \\Rightarrow 60t = 720 \\Rightarrow t = 12\\text{ cm}$."
   }
 ];
 
@@ -6011,5 +6376,370 @@ export const SOAL_TKA_2026_SD_BINDO = [
     "kunci_jawaban": "D",
     "kunci": "D",
     "pembahasan": "Keteguhan Bima melakukan kebiasaan baik memungut sampah meski diejek akhirnya terbukti sangat bermanfaat saat mencegah selokan tersumbat banjir."
+  },
+  {
+    "id": "tka_sd_bindo_46",
+    "nomor": 46,
+    "jenjang": "SD",
+    "kelas": "6",
+    "tingkatKelas": "6 SD",
+    "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
+    "materi": "Pemahaman Tekstual - Tokoh Fabel (Pusmendik 2026)",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Danau untuk Semua\n\nDi hutan ada sebuah danau tempat semua binatang minum. Suatu pagi, air danau menjadi kotor karena Rino si badak berendam di dalamnya. Binatang-binatang lain jadi tidak bisa minum. Namun, mereka takut menegur Rino karena badannya besar dan bercula. Mereka diam seribu bahasa. Rino malah merasa bangga karena jadi pusat perhatian.\n\nEsoknya, Rino masih berendam. Binatang-binatang makin kehausan. \"Aduh, bagaimana ini?\" ujar Bani si kelinci. Binatang-binatang hutan pun berkumpul dan bermusyawarah. Hari si harimau mengusulkan agar meminta bantuan Ucil si kancil.\n\nUcil menemui Rino dengan lembut dan membujuknya mengawasi pohon nangka dengan dalih ada makhluk yang menutup jalan air. Rino pun berjalan menuju pohon nangka, sehingga binatang-binatang lain bisa bergantian minum air danau dengan lega.\n\nSumber: Pusmendik Kemendikdasmen\n\nSiapa yang mengusulkan untuk meminta bantuan hewan yang cerdik?",
+    "teks_soal": "Danau untuk Semua\n\nDi hutan ada sebuah danau tempat semua binatang minum. Suatu pagi, air danau menjadi kotor karena Rino si badak berendam di dalamnya. Binatang-binatang lain jadi tidak bisa minum. Namun, mereka takut menegur Rino karena badannya besar dan bercula. Mereka diam seribu bahasa. Rino malah merasa bangga karena jadi pusat perhatian.\n\nEsoknya, Rino masih berendam. Binatang-binatang makin kehausan. \"Aduh, bagaimana ini?\" ujar Bani si kelinci. Binatang-binatang hutan pun berkumpul dan bermusyawarah. Hari si harimau mengusulkan agar meminta bantuan Ucil si kancil.\n\nUcil menemui Rino dengan lembut dan membujuknya mengawasi pohon nangka dengan dalih ada makhluk yang menutup jalan air. Rino pun berjalan menuju pohon nangka, sehingga binatang-binatang lain bisa bergantian minum air danau dengan lega.\n\nSumber: Pusmendik Kemendikdasmen\n\nSiapa yang mengusulkan untuk meminta bantuan hewan yang cerdik?",
+    "soal": "Danau untuk Semua\n\nDi hutan ada sebuah danau tempat semua binatang minum. Suatu pagi, air danau menjadi kotor karena Rino si badak berendam di dalamnya. Binatang-binatang lain jadi tidak bisa minum. Namun, mereka takut menegur Rino karena badannya besar dan bercula. Mereka diam seribu bahasa. Rino malah merasa bangga karena jadi pusat perhatian.\n\nEsoknya, Rino masih berendam. Binatang-binatang makin kehausan. \"Aduh, bagaimana ini?\" ujar Bani si kelinci. Binatang-binatang hutan pun berkumpul dan bermusyawarah. Hari si harimau mengusulkan agar meminta bantuan Ucil si kancil.\n\nUcil menemui Rino dengan lembut dan membujuknya mengawasi pohon nangka dengan dalih ada makhluk yang menutup jalan air. Rino pun berjalan menuju pohon nangka, sehingga binatang-binatang lain bisa bergantian minum air danau dengan lega.\n\nSumber: Pusmendik Kemendikdasmen\n\nSiapa yang mengusulkan untuk meminta bantuan hewan yang cerdik?",
+    "gambar": null,
+    "gambarUrls": [],
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Bani.",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Ucil.",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Rino.",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "Hari.",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Bani.",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Ucil.",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Rino.",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "Hari.",
+        "gambar": null
+      }
+    ],
+    "pernyataan": [],
+    "kunciJawaban": "D",
+    "kunci_jawaban": "D",
+    "kunci": "D",
+    "pembahasan": "Pada paragraf kedua dijelaskan secara tersurat bahwa Hari si harimau mengusulkan agar meminta bantuan Ucil si kancil."
+  },
+  {
+    "id": "tka_sd_bindo_47",
+    "nomor": 47,
+    "jenjang": "SD",
+    "kelas": "6",
+    "tingkatKelas": "6 SD",
+    "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
+    "materi": "Pemahaman Inferensial - Makna Ungkapan Fabel (Pusmendik 2026)",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Danau untuk Semua\n\nDi hutan ada sebuah danau tempat semua binatang minum. Suatu pagi, air danau menjadi kotor karena Rino si badak berendam di dalamnya. Binatang-binatang lain jadi tidak bisa minum. Namun, mereka takut menegur Rino karena badannya besar dan bercula. Mereka diam seribu bahasa. Rino malah merasa bangga karena jadi pusat perhatian.\n\nEsoknya, Rino masih berendam. Binatang-binatang makin kehausan. \"Aduh, bagaimana ini?\" ujar Bani si kelinci. Binatang-binatang hutan pun berkumpul dan bermusyawarah. Hari si harimau mengusulkan agar meminta bantuan Ucil si kancil.\n\nUcil menemui Rino dengan lembut dan membujuknya mengawasi pohon nangka dengan dalih ada makhluk yang menutup jalan air. Rino pun berjalan menuju pohon nangka, sehingga binatang-binatang lain bisa bergantian minum air danau dengan lega.\n\nSumber: Pusmendik Kemendikdasmen\n\n\"Mereka diam seribu bahasa.\"\nApa arti \"diam seribu bahasa\" pada teks fabel tersebut?",
+    "teks_soal": "Danau untuk Semua\n\nDi hutan ada sebuah danau tempat semua binatang minum. Suatu pagi, air danau menjadi kotor karena Rino si badak berendam di dalamnya. Binatang-binatang lain jadi tidak bisa minum. Namun, mereka takut menegur Rino karena badannya besar dan bercula. Mereka diam seribu bahasa. Rino malah merasa bangga karena jadi pusat perhatian.\n\nEsoknya, Rino masih berendam. Binatang-binatang makin kehausan. \"Aduh, bagaimana ini?\" ujar Bani si kelinci. Binatang-binatang hutan pun berkumpul dan bermusyawarah. Hari si harimau mengusulkan agar meminta bantuan Ucil si kancil.\n\nUcil menemui Rino dengan lembut dan membujuknya mengawasi pohon nangka dengan dalih ada makhluk yang menutup jalan air. Rino pun berjalan menuju pohon nangka, sehingga binatang-binatang lain bisa bergantian minum air danau dengan lega.\n\nSumber: Pusmendik Kemendikdasmen\n\n\"Mereka diam seribu bahasa.\"\nApa arti \"diam seribu bahasa\" pada teks fabel tersebut?",
+    "soal": "Danau untuk Semua\n\nDi hutan ada sebuah danau tempat semua binatang minum. Suatu pagi, air danau menjadi kotor karena Rino si badak berendam di dalamnya. Binatang-binatang lain jadi tidak bisa minum. Namun, mereka takut menegur Rino karena badannya besar dan bercula. Mereka diam seribu bahasa. Rino malah merasa bangga karena jadi pusat perhatian.\n\nEsoknya, Rino masih berendam. Binatang-binatang makin kehausan. \"Aduh, bagaimana ini?\" ujar Bani si kelinci. Binatang-binatang hutan pun berkumpul dan bermusyawarah. Hari si harimau mengusulkan agar meminta bantuan Ucil si kancil.\n\nUcil menemui Rino dengan lembut dan membujuknya mengawasi pohon nangka dengan dalih ada makhluk yang menutup jalan air. Rino pun berjalan menuju pohon nangka, sehingga binatang-binatang lain bisa bergantian minum air danau dengan lega.\n\nSumber: Pusmendik Kemendikdasmen\n\n\"Mereka diam seribu bahasa.\"\nApa arti \"diam seribu bahasa\" pada teks fabel tersebut?",
+    "gambar": null,
+    "gambarUrls": [],
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Para binatang di hutan tidak mampu melakukan sesuatu.",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Semua binatang di hutan menahan untuk tidak berkomentar.",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Penghuni hutan tidak mau mendengarkan pendapat orang lain.",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "Binatang-binatang di hutan tidak mengetahui masalah yang terjadi.",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Para binatang di hutan tidak mampu melakukan sesuatu.",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Semua binatang di hutan menahan untuk tidak berkomentar.",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Penghuni hutan tidak mau mendengarkan pendapat orang lain.",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "Binatang-binatang di hutan tidak mengetahui masalah yang terjadi.",
+        "gambar": null
+      }
+    ],
+    "pernyataan": [],
+    "kunciJawaban": "B",
+    "kunci_jawaban": "B",
+    "kunci": "B",
+    "pembahasan": "Karena takut pada Rino yang berbadan besar dan bercula, binatang lain menahan diri untuk tidak berkomentar atau berbicara sepatah kata pun."
+  },
+  {
+    "id": "tka_sd_bindo_48",
+    "nomor": 48,
+    "jenjang": "SD",
+    "kelas": "6",
+    "tingkatKelas": "6 SD",
+    "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
+    "materi": "Kaidah Kebahasaan - Ejaan EYD V & Tanda Baca Kalimat Langsung (Kompas)",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Perhatikan kalimat berikut!\nAni berkata \"besok kita akan belajar bersama di perpustakaan\".\n\nPenulisan tanda baca dan huruf kapital yang benar adalah …",
+    "teks_soal": "Perhatikan kalimat berikut!\nAni berkata \"besok kita akan belajar bersama di perpustakaan\".\n\nPenulisan tanda baca dan huruf kapital yang benar adalah …",
+    "soal": "Perhatikan kalimat berikut!\nAni berkata \"besok kita akan belajar bersama di perpustakaan\".\n\nPenulisan tanda baca dan huruf kapital yang benar adalah …",
+    "gambar": null,
+    "gambarUrls": [],
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Ani berkata, \"besok kita akan belajar bersama di perpustakaan.\"",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Ani berkata \"Besok kita akan belajar bersama di perpustakaan\".",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Ani berkata, \"Besok kita akan belajar bersama di perpustakaan.\"",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "Ani berkata \"besok kita akan belajar bersama di perpustakaan.\"",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Ani berkata, \"besok kita akan belajar bersama di perpustakaan.\"",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Ani berkata \"Besok kita akan belajar bersama di perpustakaan\".",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Ani berkata, \"Besok kita akan belajar bersama di perpustakaan.\"",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "Ani berkata \"besok kita akan belajar bersama di perpustakaan.\"",
+        "gambar": null
+      }
+    ],
+    "pernyataan": [],
+    "kunciJawaban": "C",
+    "kunci_jawaban": "C",
+    "kunci": "C",
+    "pembahasan": "Setelah kata pengiring (Ani berkata) diberi tanda koma (,), awal petikan langsung menggunakan huruf kapital (\"Besok...), dan titik diletakkan sebelum tanda petik penutup."
+  },
+  {
+    "id": "tka_sd_bindo_49",
+    "nomor": 49,
+    "jenjang": "SD",
+    "kelas": "6",
+    "tingkatKelas": "6 SD",
+    "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
+    "materi": "Teks Fungsional - Struktur Tata Urutan Naskah Pidato (Ruangguru)",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Perhatikan hal-hal pokok dalam naskah pidato berikut!\n1. Salam penutup\n2. Menyapa hadirin\n3. Pembuka\n4. Puji syukur\n5. Salam pembuka\n\nTata urutan yang baik dalam naskah pidato adalah …",
+    "teks_soal": "Perhatikan hal-hal pokok dalam naskah pidato berikut!\n1. Salam penutup\n2. Menyapa hadirin\n3. Pembuka\n4. Puji syukur\n5. Salam pembuka\n\nTata urutan yang baik dalam naskah pidato adalah …",
+    "soal": "Perhatikan hal-hal pokok dalam naskah pidato berikut!\n1. Salam penutup\n2. Menyapa hadirin\n3. Pembuka\n4. Puji syukur\n5. Salam pembuka\n\nTata urutan yang baik dalam naskah pidato adalah …",
+    "gambar": null,
+    "gambarUrls": [],
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "5-2-3-4-1",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "5-2-4-3-1",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "5-4-3-2-1",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "5-3-4-2-1",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "5-2-3-4-1",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "5-2-4-3-1",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "5-4-3-2-1",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "5-3-4-2-1",
+        "gambar": null
+      }
+    ],
+    "pernyataan": [],
+    "kunciJawaban": "B",
+    "kunci_jawaban": "B",
+    "kunci": "B",
+    "pembahasan": "Urutan pidato dimulai dari salam pembuka (5), menyapa hadirin (2), puji syukur (4), pembuka/pengantar topik (3), dan diakhiri salam penutup (1)."
+  },
+  {
+    "id": "tka_sd_bindo_50",
+    "nomor": 50,
+    "jenjang": "SD",
+    "kelas": "6",
+    "tingkatKelas": "6 SD",
+    "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
+    "materi": "Teks Laporan Pengamatan - Kesesuaian Pernyataan (Ruangguru)",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Perilaku Kucing Memijat\n\nSalah satu kegiatan kucing yang sering dilakukan yaitu memijat. Kucing memijat dengan cara menekankan telapak tangannya secara bergantian (kanan dan kiri), dan ada juga yang memijat dengan menarik (mengeluarkan) cakarnya. Kucing biasanya memijat manusia atau kucing lain dengan disertai suara dengkuran. Jika kucing memijat pemiliknya, hal tersebut menandakan bahwa mereka merasa aman dan nyaman serta menganggap orang tersebut sebagai pemiliknya.\n\nSumber: Ruangguru Latihan SD Kelas 6\n\nPernyataan yang tepat berdasarkan teks tersebut adalah …",
+    "teks_soal": "Perilaku Kucing Memijat\n\nSalah satu kegiatan kucing yang sering dilakukan yaitu memijat. Kucing memijat dengan cara menekankan telapak tangannya secara bergantian (kanan dan kiri), dan ada juga yang memijat dengan menarik (mengeluarkan) cakarnya. Kucing biasanya memijat manusia atau kucing lain dengan disertai suara dengkuran. Jika kucing memijat pemiliknya, hal tersebut menandakan bahwa mereka merasa aman dan nyaman serta menganggap orang tersebut sebagai pemiliknya.\n\nSumber: Ruangguru Latihan SD Kelas 6\n\nPernyataan yang tepat berdasarkan teks tersebut adalah …",
+    "soal": "Perilaku Kucing Memijat\n\nSalah satu kegiatan kucing yang sering dilakukan yaitu memijat. Kucing memijat dengan cara menekankan telapak tangannya secara bergantian (kanan dan kiri), dan ada juga yang memijat dengan menarik (mengeluarkan) cakarnya. Kucing biasanya memijat manusia atau kucing lain dengan disertai suara dengkuran. Jika kucing memijat pemiliknya, hal tersebut menandakan bahwa mereka merasa aman dan nyaman serta menganggap orang tersebut sebagai pemiliknya.\n\nSumber: Ruangguru Latihan SD Kelas 6\n\nPernyataan yang tepat berdasarkan teks tersebut adalah …",
+    "gambar": null,
+    "gambarUrls": [],
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Kucing akan mencakar saat sedang memijit manusia atau kucing lain.",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Kucing hanya memijit manusia yang membuatnya merasa aman dan nyaman.",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Kucing akan saling memijit kucing lain jika sedang saling membutuhkan.",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "Kucing dapat merasakan aman dan nyaman dipijit oleh manusia yang dianggap majikannya.",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Kucing akan mencakar saat sedang memijit manusia atau kucing lain.",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Kucing hanya memijit manusia yang membuatnya merasa aman dan nyaman.",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Kucing akan saling memijit kucing lain jika sedang saling membutuhkan.",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "Kucing dapat merasakan aman dan nyaman dipijit oleh manusia yang dianggap majikannya.",
+        "gambar": null
+      }
+    ],
+    "pernyataan": [],
+    "kunciJawaban": "B",
+    "kunci_jawaban": "B",
+    "kunci": "B",
+    "pembahasan": "Teks menjelaskan bahwa jika kucing memijat pemiliknya, hal itu menandakan kucing merasa aman dan nyaman."
   }
 ];

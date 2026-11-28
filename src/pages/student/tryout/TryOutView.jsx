@@ -30,7 +30,7 @@ import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { db } from '../../../firebase';
 import { filterSoalTryOutByMapelSiswa } from '../../../utils/aksesKontenSiswa';
 import {
-  doc, getDoc, addDoc, updateDoc, setDoc, collection, query, where, getDocs, serverTimestamp,
+  doc, getDoc, addDoc, updateDoc, setDoc, deleteDoc, collection, query, where, getDocs, serverTimestamp,
   onSnapshot
 } from 'firebase/firestore';
 import { ArrowLeft, Camera, ShieldAlert, Clock, CheckCircle2  , FileText, Award, Timer, ChevronLeft, ChevronDown } from 'lucide-react';
@@ -355,10 +355,18 @@ export default function TryOutView() {
         setJawaban(sesi.jawaban || {});
         setFotoPengawasan(sesi.fotoPengawasan || []);
         if (sesi.status === 'selesai') {
-          setHasilAkhir({
-            xpMentah: sesi.xpMentah, xpFinal: sesi.xpFinal, totalSkorPersen: sesi.totalSkorPersen, pelanggaran: sesi.pelanggaran || [],
-          });
-          setTahap('selesai');
+          const terjawab = Object.keys(sesi.jawaban || {}).length;
+          if ((dataPaket.jalurUjianAi || searchParams.get('jalur') === 'ai') && terjawab === 0 && (sesi.totalSkorPersen || 0) === 0) {
+            try { await deleteDoc(doc(db, 'tryout_sesi', sesi.id)); } catch { /* ignore */ }
+            setSesiId(null);
+            setJawaban({});
+            setTahap('mulai');
+          } else {
+            setHasilAkhir({
+              xpMentah: sesi.xpMentah, xpFinal: sesi.xpFinal, totalSkorPersen: sesi.totalSkorPersen, pelanggaran: sesi.pelanggaran || [],
+            });
+            setTahap('selesai');
+          }
         } else {
           // 🔥 BARU (keluhan "soalnya gak keluar"): indeks subtes yang
           // tersimpan di sesi bisa MENUNJUK KELUAR ARRAY kalau susunan
@@ -909,7 +917,7 @@ export default function TryOutView() {
     isPaused: Boolean(paket?.isPaused),
     modeTimer: paket?.modeTimer,
     waktuMulaiMs,
-    durasiTotalMenit: paket?.durasiTotalMenit,
+    durasiTotalMenit: paket?.durasiTotalMenit || paket?.durasiMenit || paket?.subtes?.[0]?.durasiMenit || 20,
     subtes: paket?.subtes,
     subtesAktifIndex,
     waktuMulaiSubtesMs,

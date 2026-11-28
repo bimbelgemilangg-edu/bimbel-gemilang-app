@@ -81,10 +81,11 @@ export function useTimerTryOut({
     const totalJeda = jedaAkumulasiRef.current + jedaAktif;
 
     if (modeTimer === 'per-subtes') {
-      const durasi = subtes?.[subtesAktifIndex]?.durasiMenit || 0;
+      const durasi = Number(subtes?.[subtesAktifIndex]?.durasiMenit) > 0 ? Number(subtes[subtesAktifIndex].durasiMenit) : 20;
       return hitungSisaMs(waktuMulaiSubtesMs || sekarang, durasi, sekarang, totalJeda);
     }
-    return hitungSisaMs(waktuMulaiMs || sekarang, durasiTotalMenit || 0, sekarang, totalJeda);
+    const durasiAman = Number(durasiTotalMenit) > 0 ? Number(durasiTotalMenit) : 20;
+    return hitungSisaMs(waktuMulaiMs || sekarang, durasiAman, sekarang, totalJeda);
   }, [modeTimer, waktuMulaiMs, durasiTotalMenit, subtes, subtesAktifIndex, waktuMulaiSubtesMs]);
 
   useEffect(() => {

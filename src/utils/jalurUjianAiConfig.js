@@ -843,54 +843,38 @@ export async function pastikanPaketUnitTersedia(db, unit, jenjang = 'SMP') {
   if (!db || !unit || unit.tipe === 'review') return null;
 
   try {
-    const { doc, getDoc, setDoc, getDocs, collection, query, where, serverTimestamp } = await import('firebase/firestore');
+    const { doc, getDoc, setDoc, serverTimestamp } = await import('firebase/firestore');
     const paketRef = doc(db, 'tryout_paket', unit.id);
     const snap = await getDoc(paketRef);
 
-    // Jika dokumen sudah ada dan berisi soal sesuai target micro-learning (tepat unit.jumlahSoal)
+    const isSoalValid = (s) => {
+      if (!s || typeof s !== 'object') return false;
+      const idStr = String(s.id || '').toUpperCase();
+      if (idStr.includes('SD-JALU')) return false;
+      const tipe = String(s.tipe || 'pg_sederhana').toLowerCase();
+      if (tipe === 'benar_salah') {
+        return Array.isArray(s.pernyataan) && s.pernyataan.length > 0;
+      }
+      const ops = s.opsiJawaban || s.opsi || [];
+      return Array.isArray(ops) && ops.length >= 2 && Boolean(s.kunciJawaban || s.kunci || s.kunci_jawaban);
+    };
+
+    // Gunakan cache Firestore HANYA jika presetVersion >= 2, durasi valid, dan seluruh soal lulus validasi
     if (snap.exists()) {
       const dataAda = snap.data();
-      if (Array.isArray(dataAda.daftarSoal) && dataAda.daftarSoal.length === unit.jumlahSoal && dataAda.daftarSoal.length > 0) {
+      const daftarAda = Array.isArray(dataAda.daftarSoal) ? dataAda.daftarSoal : [];
+      const versiValid = Number(dataAda.presetVersion || 0) >= 2;
+      const durasiValid = Number(dataAda.durasiTotalMenit || dataAda.durasiMenit || 0) > 0;
+      const semuaSoalValid = daftarAda.length === unit.jumlahSoal && daftarAda.length > 0 && daftarAda.every(isSoalValid);
+      if (versiValid && durasiValid && semuaSoalValid) {
         return { id: snap.id, ...dataAda };
       }
     }
 
-    // Jika belum ada atau jumlah soal lama tidak cocok (misal warisan template 40 butir lama)
-    let bankSoal = [];
-    try {
-      const snapBank = await getDocs(
-        query(collection(db, 'bank_soal'), where('status', '==', 'aktif'))
-      );
-      bankSoal = snapBank.docs
-        .map((d) => ({ id: d.id, ...d.data() }))
-        .filter((s) => layakUntukTryOut(s));
-    } catch (e) {
-      console.warn('Bank soal Firestore belum dapat dimuat, menggunakan preset master:', e);
-    }
-
-    // Saring soal sesuai jenjang
-    const jenjangCocok = bankSoal.filter((s) => {
-      const sj = String(s.jenjang || '').toUpperCase();
-      return sj.includes(jenjang.toUpperCase());
-    });
-
-    // Ambil cadangan master preset terverifikasi (Anti-Zonk)
+    // Ambil langsung dari Master Preset terverifikasi (Anti-Zonk & terisolasi per subtes)
     const targetCount = unit.jumlahSoal || 12;
     const presetFallback = getSoalPresetUnitRoadmap(jenjang, unit.unitNomor, targetCount);
-
-    let soalTerpilih = [];
-    if (jenjangCocok.length >= targetCount) {
-      soalTerpilih = jenjangCocok.slice(0, targetCount);
-    } else {
-      // Gabungkan bank soal yang ada dengan master preset hingga pas unit.jumlahSoal
-      const existingIds = new Set(jenjangCocok.map((s) => s.id));
-      const sisaDibutuhkan = targetCount - jenjangCocok.length;
-      const pelengkap = presetFallback.filter((p) => !existingIds.has(p.id)).slice(0, sisaDibutuhkan);
-      soalTerpilih = [...jenjangCocok, ...pelengkap];
-      if (soalTerpilih.length < targetCount) {
-        soalTerpilih = presetFallback.slice(0, targetCount);
-      }
-    }
+    const soalTerpilih = presetFallback.filter(isSoalValid).slice(0, targetCount);
 
     // Normalisasi nomor soal urut 1..N
     const soalFinal = soalTerpilih.map((s, idx) => ({
@@ -898,13 +882,17 @@ export async function pastikanPaketUnitTersedia(db, unit, jenjang = 'SMP') {
       nomor: idx + 1,
     }));
 
+    const durasiFinal = Number(unit.durasiMenit) > 0 ? Number(unit.durasiMenit) : 20;
     const dataPaket = {
       nama: unit.judul,
       deskripsi: unit.deskripsi,
       jenjang: jenjang.toUpperCase(),
       targetKelas: jenjang.toUpperCase() === 'SD' ? '6 SD' : jenjang.toUpperCase() === 'SMP' ? '9 SMP' : '12 SMA',
       targetKategori: 'Semua',
-      durasiMenit: unit.durasiMenit || 20,
+      modeTimer: 'total',
+      durasiMenit: durasiFinal,
+      durasiTotalMenit: durasiFinal,
+      presetVersion: 2,
       status: 'aktif',
       otomatis: false,
       jalurUjianAi: true,
@@ -920,7 +908,7 @@ export async function pastikanPaketUnitTersedia(db, unit, jenjang = 'SMP') {
       subtes: [
         {
           nama: unit.mapel || 'Subtes Utama',
-          durasiMenit: unit.durasiMenit || 20,
+          durasiMenit: durasiFinal,
           jumlahSoal: soalFinal.length,
         },
       ],
