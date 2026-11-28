@@ -79,6 +79,7 @@ export default function PetaGunungPendakian({
   temanList = [],
   profilSaya = {},
   isSmp = true,
+  isSd = false,
   onKlikUnit,
 }) {
   const [modalTemanPos, setModalTemanPos] = useState(null);
@@ -121,7 +122,7 @@ export default function PetaGunungPendakian({
           <div>
             <div style={{ fontSize: 11.5, fontWeight: 800, color: '#0f766e', display: 'flex', alignItems: 'center', gap: 5, textTransform: 'uppercase' }}>
               <Compass size={14} />
-              <span>{isSmp ? 'Pendakian TKA SMP Kelas 9' : 'Pendakian UTBK-SNBT Kelas 12'}</span>
+              <span>{isSd ? 'Pendakian TKA SD Kelas 6' : (isSmp ? 'Pendakian TKA SMP Kelas 9' : 'Pendakian UTBK-SNBT Kelas 12')}</span>
             </div>
             <h3 style={{ margin: '2px 0 0', fontSize: 17, fontWeight: 900, color: '#0f172a' }}>
               Peta Puncak Kemampuan ({persentaseSelesai}% Tuntas)

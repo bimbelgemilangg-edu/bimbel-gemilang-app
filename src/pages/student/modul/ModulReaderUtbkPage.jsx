@@ -53,6 +53,16 @@ import {
   getSkorKuisSmpBab,
   simpanTerakhirDibacaSmp,
 } from '../../../data/tkaSmpModulData.js';
+import {
+  getSubtestSdByKode,
+  getBabSdBySlug,
+  getBabSdTetangga,
+  tandaiBabSdSelesai,
+  getDaftarBabSdSelesai,
+  simpanSkorKuisSdBab,
+  getSkorKuisSdBab,
+  simpanTerakhirDibacaSd,
+} from '../../../data/tkaSdModulData.js';
 import { useProfilSiswa } from '../../../utils/profilSiswa';
 import { deteksiTingkatSiswa } from '../../../utils/tingkatSiswa';
 import RenderMath from '../../../components/RenderMath';
@@ -134,7 +144,15 @@ export default function ModulReaderUtbkPage() {
     return deteksiTingkatSiswa({ ...profil, kelas: kelasCek, kelasSekolah: kelasCek, jenjang: jenjangCek });
   }, [profil, kelasCek, jenjangCek]);
 
-  // Deteksi apakah modul yang dibuka adalah subtes SMP
+  // Deteksi apakah modul yang dibuka adalah subtes SD atau SMP
+  const isSdSubtest = useMemo(() => {
+    const k = String(subtestKode || '').toUpperCase().trim();
+    return (
+      k.endsWith('_SD') ||
+      ['MTK_SD', 'BIN_SD'].includes(k)
+    );
+  }, [subtestKode]);
+
   const isSmpSubtest = useMemo(() => {
     const k = String(subtestKode || '').toUpperCase().trim();
     return (
@@ -144,7 +162,8 @@ export default function ModulReaderUtbkPage() {
     );
   }, [subtestKode]);
 
-  const isSmp = isSmpSubtest || infoTingkat.isSmp;
+  const isSd = isSdSubtest || (!isSmpSubtest && infoTingkat.isKelas6);
+  const isSmp = !isSd && (isSmpSubtest || infoTingkat.isSmp);
 
   const [studentId, setStudentId] = useState('');
   const [bukaSolusi, setBukaSolusi] = useState({});
@@ -162,27 +181,36 @@ export default function ModulReaderUtbkPage() {
     setBukaSlideUnit((prev) => ({ ...prev, [unitKey]: !prev[unitKey] }));
   };
 
-  // Ambil data bab dan subtes (mendukung SMP dan UTBK SMA)
+  // Ambil data bab dan subtes (mendukung SD, SMP dan UTBK SMA)
   const subtest = useMemo(() => {
+    if (isSd) {
+      return getSubtestSdByKode(subtestKode) || getSubtestSmpByKode(subtestKode) || getSubtestByKode(subtestKode);
+    }
     if (isSmp) {
       return getSubtestSmpByKode(subtestKode) || getSubtestByKode(subtestKode);
     }
-    return getSubtestByKode(subtestKode) || getSubtestSmpByKode(subtestKode);
-  }, [subtestKode, isSmp]);
+    return getSubtestByKode(subtestKode) || getSubtestSmpByKode(subtestKode) || getSubtestSdByKode(subtestKode);
+  }, [subtestKode, isSd, isSmp]);
 
   const bab = useMemo(() => {
+    if (isSd) {
+      return getBabSdBySlug(subtestKode, babSlug) || getBabSmpBySlug(subtestKode, babSlug) || getBabBySlug(subtestKode, babSlug);
+    }
     if (isSmp) {
       return getBabSmpBySlug(subtestKode, babSlug) || getBabBySlug(subtestKode, babSlug);
     }
-    return getBabBySlug(subtestKode, babSlug) || getBabSmpBySlug(subtestKode, babSlug);
-  }, [subtestKode, babSlug, isSmp]);
+    return getBabBySlug(subtestKode, babSlug) || getBabSmpBySlug(subtestKode, babSlug) || getBabSdBySlug(subtestKode, babSlug);
+  }, [subtestKode, babSlug, isSd, isSmp]);
 
   const tetangga = useMemo(() => {
+    if (isSd) {
+      return getBabSdTetangga(subtestKode, babSlug) || getBabSmpTetangga(subtestKode, babSlug) || getBabTetangga(subtestKode, babSlug);
+    }
     if (isSmp) {
       return getBabSmpTetangga(subtestKode, babSlug) || getBabTetangga(subtestKode, babSlug);
     }
-    return getBabTetangga(subtestKode, babSlug) || getBabSmpTetangga(subtestKode, babSlug);
-  }, [subtestKode, babSlug, isSmp]);
+    return getBabTetangga(subtestKode, babSlug) || getBabSmpTetangga(subtestKode, babSlug) || getBabSdTetangga(subtestKode, babSlug);
+  }, [subtestKode, babSlug, isSd, isSmp]);
 
   useEffect(() => {
     const sid =
@@ -194,7 +222,13 @@ export default function ModulReaderUtbkPage() {
 
     if (bab) {
       // Simpan riwayat terakhir dibaca
-      if (isSmp) {
+      if (isSd) {
+        simpanTerakhirDibacaSd(sid, {
+          subtestKode: bab.subtestKode,
+          babSlug: bab.slug,
+          judul: bab.judul,
+        });
+      } else if (isSmp) {
         simpanTerakhirDibacaSmp(sid, {
           subtestKode: bab.subtestKode,
           babSlug: bab.slug,
@@ -209,11 +243,15 @@ export default function ModulReaderUtbkPage() {
       }
 
       // Cek apakah sudah selesai sebelumnya
-      const selesaiList = isSmp ? getDaftarBabSmpSelesai(sid) : getDaftarBabSelesai(sid);
+      const selesaiList = isSd
+        ? getDaftarBabSdSelesai(sid)
+        : (isSmp ? getDaftarBabSmpSelesai(sid) : getDaftarBabSelesai(sid));
       setIsSelesai(selesaiList.includes(bab.id));
 
       // Cek apakah sudah pernah mengerjakan kuis bab ini
-      const savedKuis = isSmp ? getSkorKuisSmpBab(sid, bab.id) : getSkorKuisBab(sid, bab.id);
+      const savedKuis = isSd
+        ? getSkorKuisSdBab(sid, bab.id)
+        : (isSmp ? getSkorKuisSmpBab(sid, bab.id) : getSkorKuisBab(sid, bab.id));
       if (savedKuis) {
         setHasilKuis(savedKuis);
       } else {
@@ -227,10 +265,10 @@ export default function ModulReaderUtbkPage() {
       setBukaSolusiUnit({});
       window.scrollTo(0, 0);
     }
-  }, [subtestKode, babSlug, bab, isSmp]);
+  }, [subtestKode, babSlug, bab, isSd, isSmp]);
 
-  // Guard hak akses: Hanya Kelas 12 SMA & SMP yang diizinkan
-  if (!infoTingkat.isKelas12 && !infoTingkat.isSmp) {
+  // Guard hak akses: Hanya Kelas 6 SD, Kelas 9 SMP & Kelas 12 SMA yang diizinkan
+  if (!infoTingkat.isKelas12 && !infoTingkat.isSmp && !infoTingkat.isKelas6) {
     return (
       <div style={{ maxWidth: 640, margin: '60px auto', padding: '24px 20px', textAlign: 'center', fontFamily: 'system-ui, sans-serif' }}>
         <div style={{ width: 64, height: 64, borderRadius: 32, background: '#fef3c7', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
@@ -242,7 +280,7 @@ export default function ModulReaderUtbkPage() {
         <p style={{ fontSize: 14, color: '#64748b', lineHeight: 1.6, marginBottom: 20 }}>
           {infoTingkat.isSmaBawah
             ? 'Mohon maaf, materi modul UTBK-SNBT ini diperuntukkan bagi siswa Kelas 12 SMA & Alumni. Untuk siswa Kelas 10 & 11, silakan fokus eksplorasi Target Kampus & Katalog 173 PTN serta pendalaman materi sekolah.'
-            : 'Mohon maaf, modul belajar interaktif saat ini tersedia untuk jenjang TKA SMP Kelas 9 dan UTBK-SNBT Kelas 12 SMA. Silakan akses menu belajar dan latihan harian sesuai jenjangmu di Dashboard.'}
+            : 'Mohon maaf, modul belajar interaktif saat ini tersedia untuk jenjang TKA SD Kelas 6, TKA SMP Kelas 9, dan UTBK-SNBT Kelas 12 SMA. Silakan akses menu belajar dan latihan harian sesuai jenjangmu di Dashboard.'}
         </p>
         <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
           {infoTingkat.bisaAksesTargetKampus && (
@@ -323,9 +361,11 @@ export default function ModulReaderUtbkPage() {
       }
     });
 
-    const res = isSmp
-      ? simpanSkorKuisSmpBab(studentId, bab.id, benar, total)
-      : simpanSkorKuisBab(studentId, bab.id, benar, total);
+    const res = isSd
+      ? simpanSkorKuisSdBab(studentId, bab.id, benar, total)
+      : (isSmp
+        ? simpanSkorKuisSmpBab(studentId, bab.id, benar, total)
+        : simpanSkorKuisBab(studentId, bab.id, benar, total));
 
     setHasilKuis(res);
     setSudahDiperiksa(true);
@@ -342,7 +382,9 @@ export default function ModulReaderUtbkPage() {
 
   // Handler tandai manual bab selesai
   const handleTandaiSelesai = () => {
-    if (isSmp) {
+    if (isSd) {
+      tandaiBabSdSelesai(studentId, bab.id);
+    } else if (isSmp) {
       tandaiBabSmpSelesai(studentId, bab.id);
     } else {
       tandaiBabSelesai(studentId, bab.id);
@@ -379,7 +421,7 @@ export default function ModulReaderUtbkPage() {
             gap: 6,
           }}
         >
-          <ArrowLeft size={14} /> Daftar Modul {isSmp ? 'TKA' : 'UTBK'}
+          <ArrowLeft size={14} /> Daftar Modul {isSd || isSmp ? 'TKA' : 'UTBK'}
         </button>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
@@ -1365,7 +1407,7 @@ export default function ModulReaderUtbkPage() {
                       }}
                     >
                       <div style={{ fontSize: 11, fontWeight: 800, color: '#0f766e', textTransform: 'uppercase', marginBottom: 6 }}>
-                        {isSmp ? 'Kaidah Penting TKA SMP:' : 'Kaidah Penting UTBK:'}
+                        {isSd ? 'Kaidah Penting TKA SD:' : (isSmp ? 'Kaidah Penting TKA SMP:' : 'Kaidah Penting UTBK:')}
                       </div>
                       {kt.poinPenting.map((pt, pIdx) => (
                         <div key={pIdx} style={{ fontSize: 12, color: '#475569', lineHeight: 1.5, marginBottom: 4 }}>
@@ -1392,7 +1434,7 @@ export default function ModulReaderUtbkPage() {
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#b45309', fontWeight: 800, fontSize: 14, marginBottom: 8 }}>
                 <Zap size={18} />
-                {isSmp ? 'Trik Kilat Gemilang (30 Detik)' : 'Trik Cepat UTBK (30 Detik)'}
+                {isSd || isSmp ? 'Trik Kilat Gemilang (30 Detik)' : 'Trik Cepat UTBK (30 Detik)'}
               </div>
               <div style={{ margin: 0, fontSize: 13, color: '#78350f', lineHeight: 1.6, fontWeight: 500 }}>
                 <RenderMath text={bab.trikCepat} />
@@ -1836,9 +1878,11 @@ export default function ModulReaderUtbkPage() {
             Siap Menguji Pemahamanmu?
           </div>
           <div style={{ fontSize: 15, fontWeight: 800 }}>
-            {isSmp
-              ? `Lanjut Latihan Soal ${subtest.nama} di Roadmap TKA SMP`
-              : `Lanjut Latihan Soal Subtes ${subtest.nama} di Roadmap`}
+            {isSd
+              ? `Lanjut Latihan Soal ${subtest.nama} di Roadmap TKA SD`
+              : (isSmp
+                ? `Lanjut Latihan Soal ${subtest.nama} di Roadmap TKA SMP`
+                : `Lanjut Latihan Soal Subtes ${subtest.nama} di Roadmap`)}
           </div>
           <div style={{ fontSize: 12, opacity: 0.85, marginTop: 2 }}>
             Terapkan trik cepat yang baru kamu pelajari ke latihan bertarget waktu.

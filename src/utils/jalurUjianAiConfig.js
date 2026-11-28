@@ -69,10 +69,13 @@ export function deteksiJenjangUjianAkhir(siswaAtauKelas) {
   const hasSma = /\b(sma|sman|smk|smkn|ma|man)\b/i.test(raw);
   const hasSd = /\b(sd|sdn|mi|min)\b/i.test(raw);
 
-  // 3. Deteksi Kelas 9 SMP Spesifik
+  // 3. Deteksi Kelas 6 SD Spesifik
+  const is6 = /(kelas\s*6|\b6\s*(sd|mi)|\b(sd|mi)\s*6\b|\b6\b|\bvi\b)/i.test(raw);
+
+  // 4. Deteksi Kelas 9 SMP Spesifik
   const is9 = /(kelas\s*9|\b9\s*(smp|mts)|\b(smp|mts)\s*9\b|\b9\b|\bix\b)/i.test(raw);
 
-  // 4. Deteksi Kelas 12 SMA Spesifik
+  // 5. Deteksi Kelas 12 SMA Spesifik
   const is12 = /(kelas\s*12|\b12\s*(sma|smk|ma)|\b(sma|smk|ma)\s*12\b|\b12\b|\bxii\b)/i.test(raw);
 
   // === PENCOCOKAN KETAT ===
@@ -111,12 +114,35 @@ export function deteksiJenjangUjianAkhir(siswaAtauKelas) {
     return null;
   }
 
-  // SD (KELAS 1 - 6): TKA SD BELUM DI BUAT -> return null
+  // SD (HANYA KELAS 6 SD -> TKA SD; Kelas 1-5 SD return null)
   if (hasSd && !hasSmp && !hasSma) {
+    if (is6) {
+      return {
+        jenjang: 'SD',
+        kelas: '6',
+        kodeTarget: '6-SD',
+        namaUjian: 'TKA SD Kelas 6',
+        labelBadge: 'TKA SD',
+        subJudul: 'Ekspedisi Juara TKA SD Kelas 6',
+        deskripsi: 'Simulasi bertahap penguasaan Numerasi Matematika & Literasi Bahasa Indonesia menuju SMP favorit.',
+      };
+    }
     return null;
   }
 
   // Fallback toleran jika siswa hanya menginput angka murni tanpa nama sekolah/jenjang:
+  if (is6 && !is9 && !is12 && !hasSmp && !hasSma) {
+    return {
+      jenjang: 'SD',
+      kelas: '6',
+      kodeTarget: '6-SD',
+      namaUjian: 'TKA SD Kelas 6',
+      labelBadge: 'TKA SD',
+      subJudul: 'Ekspedisi Juara TKA SD Kelas 6',
+      deskripsi: 'Simulasi bertahap penguasaan Numerasi Matematika & Literasi Bahasa Indonesia menuju SMP favorit.',
+    };
+  }
+
   if (is9 && !is12 && !hasSd) {
     return {
       jenjang: 'SMP',
@@ -182,11 +208,165 @@ export function getDaftarUnitJalurUjian(jenjang = 'SMP') {
   const j = String(jenjang).toUpperCase();
 
   // ------------------------------------------------------------
-  // 🎒 1. JALUR UJIAN TKA SD (STATUS: BELUM DI BUAT)
-  // Sesuai arahan owner, TKA SD belum dibuat sehingga tidak aktif
+  // 🎒 1. JALUR UJIAN TKA SD (KELAS 6 / FASE C) — SUBTES MURNI 12-14 SOAL (20 MNT)
+  // Dipisah tegas: Matematika dan Bahasa Indonesia TIDAK DICAMPUR kecuali Pos 8
   // ------------------------------------------------------------
   if (j === 'SD') {
-    return [];
+    return [
+      {
+        id: 'jalur-ai-sd-u1',
+        unitNomor: 1,
+        judul: 'Unit 1: TKA Matematika — Bilangan, Pecahan & FPB/KPK',
+        subjudul: 'Operasi Hitung KaBaTaKu, Pecahan-Desimal-Persen & FPB/KPK',
+        tipe: 'start',
+        mapel: 'TKA Matematika SD',
+        subtesKode: 'MTK',
+        kategoriSubtes: 'Matematika',
+        polaFokus: 'Bilangan Bulat, Pecahan, FPB & KPK',
+        durasiMenit: 20,
+        jumlahSoal: 12,
+        passingGrade: 60,
+        xpReward: 100,
+        icon: 'Rocket',
+        posisiAlign: 'center',
+        deskripsi: 'Misi kilat 20 menit: taklukkan hitung campuran, konversi pecahan-desimal-persen, dan soal cerita FPB/KPK.',
+      },
+      {
+        id: 'jalur-ai-sd-u2',
+        unitNomor: 2,
+        judul: 'Unit 2: TKA Bahasa Indonesia — Ide Pokok & Fakta Tersurat',
+        subjudul: 'Menentukan Kalimat Utama, Gagasan Pokok & Informasi Wacana',
+        tipe: 'unit',
+        mapel: 'TKA Bahasa Indonesia SD',
+        subtesKode: 'BINDO',
+        kategoriSubtes: 'Bahasa Indonesia',
+        polaFokus: 'Ide Pokok & Informasi Tersurat 5W+1H',
+        durasiMenit: 20,
+        jumlahSoal: 12,
+        passingGrade: 65,
+        xpReward: 120,
+        icon: 'BookOpen',
+        posisiAlign: 'left',
+        deskripsi: 'Misi kilat 20 menit: temukan kalimat utama deduktif/induktif dan informasi faktual teks bacaan tanpa terkecoh.',
+      },
+      {
+        id: 'jalur-ai-sd-u3',
+        unitNomor: 3,
+        judul: 'Unit 3: TKA Matematika — Geometri Bangun Datar & Ruang',
+        subjudul: 'Keliling-Luas Gabungan, Lingkaran & Volume Kubus/Balok/Tabung',
+        tipe: 'unit',
+        mapel: 'TKA Matematika SD',
+        subtesKode: 'MTK',
+        kategoriSubtes: 'Matematika',
+        polaFokus: 'Bangun Datar Gabungan & Volume Bangun Ruang',
+        durasiMenit: 20,
+        jumlahSoal: 12,
+        passingGrade: 70,
+        xpReward: 140,
+        icon: 'Sparkles',
+        posisiAlign: 'right',
+        deskripsi: 'Misi kilat 20 menit: hitung luas bagian lingkaran, bangun gabungan, serta volume & luas permukaan kubus/balok.',
+      },
+      {
+        id: 'jalur-ai-sd-u4',
+        unitNomor: 4,
+        judul: 'Unit 4: TKA Bahasa Indonesia — Teks Sastra, Fabel & Puisi',
+        subjudul: 'Watak Tokoh, Konflik, Amanat Fabel, Puisi & Ungkapan/Pantun',
+        tipe: 'unit',
+        mapel: 'TKA Bahasa Indonesia SD',
+        subtesKode: 'BINDO',
+        kategoriSubtes: 'Bahasa Indonesia',
+        polaFokus: 'Unsur Intrinsik Cerita, Amanat & Majas',
+        durasiMenit: 20,
+        jumlahSoal: 12,
+        passingGrade: 70,
+        xpReward: 160,
+        icon: 'Award',
+        posisiAlign: 'left',
+        deskripsi: 'Misi kilat 20 menit: pahami amanat fabel, konflik cerita, arti ungkapan/peribahasa, dan makna larik puisi anak.',
+      },
+      {
+        id: 'jalur-ai-sd-u5',
+        unitNomor: 5,
+        judul: 'Unit 5: TKA Matematika — Kecepatan, Debit & Skala Peta',
+        subjudul: 'Konversi Satuan Berat/Volume, Segitiga JKW & VDW',
+        tipe: 'unit',
+        mapel: 'TKA Matematika SD',
+        subtesKode: 'MTK',
+        kategoriSubtes: 'Matematika',
+        polaFokus: 'Kecepatan Berpapasan, Debit & Skala',
+        durasiMenit: 20,
+        jumlahSoal: 12,
+        passingGrade: 75,
+        xpReward: 180,
+        icon: 'Sparkles',
+        posisiAlign: 'right',
+        deskripsi: 'Misi kilat 20 menit: selesaikan soal waktu tiba/berpapasan, debit tangki, konversi liter, dan skala peta.',
+      },
+      {
+        id: 'jalur-ai-sd-u6',
+        unitNomor: 6,
+        judul: 'Unit 6: TKA Bahasa Indonesia — Makna Kata, Opini & EYD V',
+        subjudul: 'Kosakata Kontekstual, Simpulan, Fakta vs Opini & Kalimat Efektif',
+        tipe: 'unit',
+        mapel: 'TKA Bahasa Indonesia SD',
+        subtesKode: 'BINDO',
+        kategoriSubtes: 'Bahasa Indonesia',
+        polaFokus: 'Makna Kata, Fakta-Opini & Kaidah EYD V',
+        durasiMenit: 20,
+        jumlahSoal: 12,
+        passingGrade: 75,
+        xpReward: 200,
+        icon: 'BookOpen',
+        posisiAlign: 'left',
+        deskripsi: 'Misi kilat 20 menit: kuasai kosakata baku KBBI, bedakan fakta dari opini, dan evaluasi relevansi teks.',
+      },
+      {
+        id: 'jalur-ai-sd-u7',
+        unitNomor: 7,
+        judul: 'Unit 7: TKA Matematika — Statistika Data & Diagram',
+        subjudul: 'Tabel Frekuensi, Diagram Lingkaran, Mean, Median & Modus',
+        tipe: 'unit',
+        mapel: 'TKA Matematika SD',
+        subtesKode: 'MTK',
+        kategoriSubtes: 'Matematika',
+        polaFokus: 'Diagram Lingkaran & Rata-rata/Median/Modus',
+        durasiMenit: 20,
+        jumlahSoal: 12,
+        passingGrade: 80,
+        xpReward: 220,
+        icon: 'Award',
+        posisiAlign: 'right',
+        deskripsi: 'Misi kilat 20 menit: olah data piktogram, diagram batang/lingkaran (% & derajat), serta rata-rata gabungan.',
+      },
+      {
+        id: 'jalur-ai-sd-u8',
+        unitNomor: 8,
+        judul: 'Unit 8: Simulasi Terpadu Prediksi TKA SD 2026',
+        subjudul: 'Kombinasi Resmi Literasi & Numerasi Berstandar Pusmendik',
+        tipe: 'unit',
+        mapel: 'Simulasi Prediksi TKA SD',
+        subtesKode: 'TERPADU',
+        kategoriSubtes: 'Simulasi',
+        polaFokus: 'Simulasi Terpadu Matematika & Bahasa Indonesia SD',
+        durasiMenit: 25,
+        jumlahSoal: 14,
+        passingGrade: 80,
+        xpReward: 260,
+        icon: 'Trophy',
+        posisiAlign: 'left',
+        deskripsi: 'Tantangan puncak 25 menit: uji ketahanan menghadapi simulasi kombinasi standar resmi TKA SD menuju SMP favorit!',
+      },
+      {
+        id: 'jalur-ai-sd-review',
+        unitNomor: 9,
+        judul: 'Radar Diagnosa TKA SD & Evaluasi Kesiapan',
+        subjudul: 'Breakdown Penguasaan Numerasi vs Literasi Kelas 6',
+        tipe: 'review',
+        posisiAlign: 'center',
+        deskripsi: 'Analisis komprehensif kemampuan belajar dan panduan fokus materi menuju kelulusan terbaik Kelas 6 SD.',
+      },
+    ];
   }
 
   // ------------------------------------------------------------

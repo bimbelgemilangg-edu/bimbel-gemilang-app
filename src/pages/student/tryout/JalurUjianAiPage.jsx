@@ -25,6 +25,7 @@ import {
   Target, Zap, RotateCcw, ArrowRight, BookOpen, Layers, Check, Scissors,
   GraduationCap, Download,
 } from 'lucide-react';
+import { DAFTAR_SUBTES_SD, SEMUA_BAB_SD } from '../../../data/tkaSdModulData.js';
 import { DAFTAR_SUBTES_SMP, SEMUA_BAB_SMP } from '../../../data/tkaSmpModulData.js';
 import { DAFTAR_SUBTES_MODUL, SEMUA_BAB_MODUL } from '../../../data/ambisModulUtbkData.js';
 import RenderMath from '../../../components/RenderMath';
@@ -138,10 +139,10 @@ export default function JalurUjianAiPage() {
     return deteksiJenjangUjianAkhir({ ...profil, kelas: k, jenjang: j });
   }, [profil]);
 
-  // HANYA Kelas 9 SMP untuk TKA SMP, dan HANYA Kelas 12 SMA untuk UTBK-SNBT
+  // HANYA Kelas 6 SD (TKA SD), Kelas 9 SMP (TKA SMP), dan Kelas 12 SMA (UTBK-SNBT)
   const isSmp = targetJenjang?.jenjang === 'SMP' && targetJenjang?.kelas === '9';
   const isUtbk = targetJenjang?.jenjang === 'SMA' && targetJenjang?.kelas === '12';
-  const isSd = false; // TKA SD BELUM DI BUAT (Sesuai arahan owner)
+  const isSd = targetJenjang?.jenjang === 'SD' && targetJenjang?.kelas === '6';
 
   // Daftar Subtes Dinamis (SMP: MTK, BIN, IPA, BIG; SD: MTK, BIN; SMA: 7 Subtes UTBK)
   const daftarSubtes = useMemo(() => {
@@ -149,12 +150,14 @@ export default function JalurUjianAiPage() {
   }, [targetJenjang]);
 
   const daftarSubtesModul = useMemo(() => {
+    if (isSd) return DAFTAR_SUBTES_SD;
     return isSmp ? DAFTAR_SUBTES_SMP : DAFTAR_SUBTES_MODUL;
-  }, [isSmp]);
+  }, [isSd, isSmp]);
 
   const semuaBabModul = useMemo(() => {
+    if (isSd) return SEMUA_BAB_SD;
     return isSmp ? SEMUA_BAB_SMP : SEMUA_BAB_MODUL;
-  }, [isSmp]);
+  }, [isSd, isSmp]);
 
   // 3 Pilar Kelas Pendampingan:
   // 'latihan_kelas' (Tugas Bersama Tentor & Buku Besar)
@@ -362,9 +365,9 @@ export default function JalurUjianAiPage() {
           })
           .filter((d) => d.status !== 'dihapus');
 
-        // Filter ketat isolasi: Khusus SMP, HANYA ambil butir soal dari Folder TKA pengguna atau jenisUjian TKA
+        // Filter ketat isolasi: Khusus TKA SMP/SD, HANYA ambil butir soal dari Folder TKA atau jenisUjian TKA
         let bankSoalTersaring = allBankSoal;
-        if (isSmp) {
+        if (isSmp || isSd) {
           bankSoalTersaring = allBankSoal.filter((s) => {
             const isDariFolderTka = s.sumberSoalId && tkaFolderIds.has(s.sumberSoalId);
             const isJenisTka = String(s.jenisUjian || '').toUpperCase() === 'TKA';
@@ -815,8 +818,8 @@ export default function JalurUjianAiPage() {
     );
   }
 
-  // JIKA SISWA BUKAN KELAS 9 SMP ATAU KELAS 12 SMA
-  if (!targetJenjang || (!isSmp && !isUtbk)) {
+  // JIKA SISWA BUKAN KELAS 6 SD, KELAS 9 SMP, ATAU KELAS 12 SMA
+  if (!targetJenjang || (!isSd && !isSmp && !isUtbk)) {
     return (
       <div style={st.bukanAkhirWrapper}>
         <div style={st.kartuBukanAkhir}>
@@ -827,7 +830,7 @@ export default function JalurUjianAiPage() {
             Kelas Pendampingan Ujian Akhir
           </h2>
           <p style={{ color: '#475569', fontSize: 14, lineHeight: 1.6, margin: '0 0 20px' }}>
-            Halo <strong>{profil.nama || 'Siswa'}</strong>! Fitur <strong>Kelas Pendampingan</strong> saat ini dikhususkan bagi siswa <strong>Kelas 9 SMP (Persiapan TKA SMP)</strong> dan <strong>Kelas 12 SMA / Alumni (Persiapan UTBK-SNBT)</strong>.
+            Halo <strong>{profil.nama || 'Siswa'}</strong>! Fitur <strong>Kelas Pendampingan</strong> dikhususkan bagi siswa <strong>Kelas 6 SD (Persiapan TKA SD)</strong>, <strong>Kelas 9 SMP (Persiapan TKA SMP)</strong>, dan <strong>Kelas 12 SMA / Alumni (Persiapan UTBK-SNBT)</strong>.
           </p>
           <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 12, padding: 14, marginBottom: 20, textAlign: 'left', fontSize: 13, color: '#166534' }}>
             ✨ Untuk kelasmu (<strong>{profil.kelasSekolah || profil.kelas || 'Reguler'}</strong>), silakan nikmati menu <strong>E-Learning</strong>, <strong>Latihan Harian</strong>, dan <strong>Try Out Terjadwal</strong> untuk mengasah kemampuan belajar!
@@ -1371,7 +1374,7 @@ export default function JalurUjianAiPage() {
                   Pilar Teori & Konsep
                 </span>
                 <span style={{ fontSize: 12, opacity: 0.9 }}>
-                  {isSmp ? 'Kurikulum TKA SMP 2027' : 'Kurikulum Standar UTBK 2027'}
+                  {isSd ? 'Kurikulum TKA SD 2026' : (isSmp ? 'Kurikulum TKA SMP 2027' : 'Kurikulum Standar UTBK 2027')}
                 </span>
               </div>
               <h2 style={{ fontSize: 22, fontWeight: 900, margin: '0 0 8px', color: '#ffffff' }}>
@@ -1421,9 +1424,9 @@ export default function JalurUjianAiPage() {
                 whiteSpace: 'nowrap',
               }}
             >
-              Semua Subtes ({isSmp ? SEMUA_BAB_SMP.length : SEMUA_BAB_MODUL.length} Bab)
+              Semua Subtes ({semuaBabModul.length} Bab)
             </button>
-            {(isSmp ? DAFTAR_SUBTES_SMP : DAFTAR_SUBTES_MODUL).map((sub) => {
+            {daftarSubtesModul.map((sub) => {
               const aktif = subtesModulTerpilih === sub.kode;
               return (
                 <button
@@ -1455,13 +1458,13 @@ export default function JalurUjianAiPage() {
           {/* Cards Grid of Chapters */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 16 }}>
             {(() => {
-              const daftarBab = isSmp ? SEMUA_BAB_SMP : SEMUA_BAB_MODUL;
+              const daftarBab = semuaBabModul;
               const disaring = subtesModulTerpilih === 'ALL'
                 ? daftarBab
                 : daftarBab.filter((b) => (b.subtestKode || b.subtes) === subtesModulTerpilih);
 
               return disaring.map((bab, idx) => {
-                const subKode = bab.subtestKode || bab.subtes || (isSmp ? 'MTK_SMP' : 'PU');
+                const subKode = bab.subtestKode || bab.subtes || (isSd ? 'MTK_SD' : (isSmp ? 'MTK_SMP' : 'PU'));
                 const slug = bab.slug || `bab-${idx + 1}`;
                 return (
                   <div
@@ -1965,6 +1968,7 @@ export default function JalurUjianAiPage() {
           temanList={temanPendakian.temanList}
           profilSaya={profil}
           isSmp={isSmp}
+          isSd={isSd}
           onKlikUnit={handleKlikUnit}
         />
       )}

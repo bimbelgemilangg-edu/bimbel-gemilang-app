@@ -92,13 +92,14 @@ export function deteksiTingkatSiswa(profil = {}) {
   else if (isUmum) jenjangBaku = 'UMUM';
 
   // Hak Akses Presisi Sesuai Permintaan Owner:
+  // - HANYA Kelas 6 SD yang boleh mengakses TKA SD
   // - HANYA Kelas 9 SMP yang boleh mengakses TKA SMP
   // - HANYA Kelas 12 SMA / Alumni yang boleh mengakses UTBK SMA
-  // - TKA SD & TKA SMA status: BELUM DI BUAT (false)
+  // - TKA SMA status: BELUM DI BUAT (false)
   // - Selain itu GABISA menampilkan menu terkait UTBK/SNBT dan TKA
+  const bisaAksesTkaSd = Boolean(isSd && isKelas6);
   const bisaAksesTkaSmp = Boolean(isSmp && isKelas9Spesifik);
   const bisaAksesUtbk = Boolean(isSma && isKelas12Spesifik);
-  const bisaAksesTkaSd = false; // BELUM DI BUAT
   const bisaAksesTkaSma = false; // BELUM DI BUAT
 
   return {
@@ -108,7 +109,7 @@ export function deteksiTingkatSiswa(profil = {}) {
     isKelas9: bisaAksesTkaSmp,
     isSmpBawah,
     isSmp,
-    isKelas6,
+    isKelas6: bisaAksesTkaSd,
     isSdBawah,
     isSd,
     isEnglishCourse,
@@ -120,7 +121,7 @@ export function deteksiTingkatSiswa(profil = {}) {
     bisaAksesTkaSma,
     bisaAksesTargetKampus: bisaAksesUtbk, // HANYA Kelas 12 SMA (target UTBK SNBT)
     bisaAksesFiturUtbk: bisaAksesUtbk,     // HANYA Kelas 12 SMA (UTBK penuh)
-    bisaAksesModulUjian: bisaAksesTkaSmp || bisaAksesUtbk, // HANYA 9 SMP & 12 SMA
+    bisaAksesModulUjian: bisaAksesTkaSd || bisaAksesTkaSmp || bisaAksesUtbk, // HANYA 6 SD, 9 SMP & 12 SMA
   };
 }
 

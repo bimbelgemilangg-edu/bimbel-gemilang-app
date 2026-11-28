@@ -57,9 +57,15 @@ export default function PusatAmbisGemilang({
       namaUjian = 'Asesmen TKA SMP 2026';
       targetLabel = 'SMA Unggulan Impian';
       badgeUjian = 'TKA SMP 2026';
+    } else if (infoTingkat.isKelas6) {
+      // Asesmen TKA SD 2026 dijadwalkan mulai 20 April 2026 (HANYA Kelas 6 SD)
+      tanggalTarget = new Date('2026-04-20T07:30:00+07:00');
+      namaUjian = 'Asesmen TKA SD 2026';
+      targetLabel = 'SMP Favorit Impian';
+      badgeUjian = 'TKA SD 2026';
     } else {
-      // Kelas selain itu (SD 1-6, SMP 7-8, SMA 10-11): TIDAK MENAMPILKAN TKA MAUPUN UTBK
-      // (TKA SD & TKA SMA belum dibuat sesuai arahan owner)
+      // Kelas selain itu (SD 1-5, SMP 7-8, SMA 10-11): TIDAK MENAMPILKAN TKA MAUPUN UTBK
+      // (TKA SMA belum dibuat sesuai arahan owner)
       tanggalTarget = new Date('2026-06-08T07:30:00+07:00');
       namaUjian = 'Penilaian Akhir Semester 2026';
       targetLabel = 'Standar Prestasi Akademik';
@@ -261,7 +267,7 @@ export default function PusatAmbisGemilang({
               </div>
               <button
                 type="button"
-                onClick={() => navigate((infoTingkat.isKelas12 || infoTingkat.isKelas9) ? '/siswa/roadmap' : '/siswa/latihan-harian')}
+                onClick={() => navigate((infoTingkat.isKelas12 || infoTingkat.isKelas9 || infoTingkat.isKelas6) ? '/siswa/roadmap' : '/siswa/latihan-harian')}
                 style={styles.btnAksiMisi}
               >
                 Mulai ⚡
@@ -284,15 +290,15 @@ export default function PusatAmbisGemilang({
               </button>
               <div style={{ flex: 1 }}>
                 <div style={{ ...styles.teksMisiJudul, textDecoration: statusMisi.misi2 ? 'line-through' : 'none', color: statusMisi.misi2 ? '#64748b' : '#1e293b' }}>
-                  {infoTingkat.isKelas12 ? 'Pelajari 1 Modul Bab UTBK' : (infoTingkat.isKelas9 ? 'Pelajari 1 Modul Bab TKA SMP' : 'Pelajari Materi Pembelajaran')}
+                  {infoTingkat.isKelas12 ? 'Pelajari 1 Modul Bab UTBK' : (infoTingkat.isKelas9 ? 'Pelajari 1 Modul Bab TKA SMP' : (infoTingkat.isKelas6 ? 'Pelajari 1 Modul Bab TKA SD' : 'Pelajari Materi Pembelajaran'))}
                 </div>
                 <div style={styles.teksMisiSub}>
-                  {infoTingkat.isKelas12 ? 'Penguatan konsep 7 subtes resmi SNPMB' : (infoTingkat.isKelas9 ? 'Penguatan konsep Numerasi & Literasi TKA Kelas 9' : 'Penguatan konsep dan telaah materi')}
+                  {infoTingkat.isKelas12 ? 'Penguatan konsep 7 subtes resmi SNPMB' : (infoTingkat.isKelas9 ? 'Penguatan konsep Numerasi & Literasi TKA Kelas 9' : (infoTingkat.isKelas6 ? 'Penguatan konsep Numerasi & Literasi TKA Kelas 6' : 'Penguatan konsep dan telaah materi'))}
                 </div>
               </div>
               <button
                 type="button"
-                onClick={() => navigate((infoTingkat.isKelas12 || infoTingkat.isKelas9) ? '/siswa/modul' : '/siswa/elearning')}
+                onClick={() => navigate((infoTingkat.isKelas12 || infoTingkat.isKelas9 || infoTingkat.isKelas6) ? '/siswa/modul' : '/siswa/elearning')}
                 style={styles.btnAksiMisi}
               >
                 Buka 📖

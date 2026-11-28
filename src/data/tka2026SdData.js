@@ -1918,6 +1918,1077 @@ export const SOAL_TKA_2026_SD_MTK = [
     "kunci_jawaban": "B",
     "kunci": "B",
     "pembahasan": "Total kapasitas bus $= 72$ siswa. Siswa kelas 6A $= 25$ orang, siswa kelas 6B $= 24$ orang. Siswa kelas 6C $= 72 - (25 + 24) = 72 - 49 = 23$ siswa."
+  },
+  {
+    "id": "tka_sd_mtk_31",
+    "nomor": 31,
+    "jenjang": "SD",
+    "kelas": "6",
+    "tingkatKelas": "6 SD",
+    "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
+    "materi": "Bilangan - Operasi Campuran Pecahan, Desimal & Persen (Pusmendik 2026)",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Hasil dari $120\\% - 3 + 2 \\times 0{,}75 + \\frac{2}{3} = \\dots$",
+    "teks_soal": "Hasil dari $120\\% - 3 + 2 \\times 0{,}75 + \\frac{2}{3} = \\dots$",
+    "soal": "Hasil dari $120\\% - 3 + 2 \\times 0{,}75 + \\frac{2}{3} = \\dots$",
+    "gambar": null,
+    "gambarUrls": [],
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "$\\frac{11}{30}$",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "$\\frac{49}{60}$",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "$\\frac{31}{30}$",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "$\\frac{98}{60}$",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "$\\frac{11}{30}$",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "$\\frac{49}{60}$",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "$\\frac{31}{30}$",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "$\\frac{98}{60}$",
+        "gambar": null
+      }
+    ],
+    "pernyataan": [],
+    "kunciJawaban": "A",
+    "kunci_jawaban": "A",
+    "kunci": "A",
+    "pembahasan": "Kerjakan perkalian terlebih dahulu: $2 \\times 0{,}75 = 1{,}5$. Ubah $120\\% = 1{,}2$. Maka $1{,}2 - 3 + 1{,}5 = -0{,}3 = -\\frac{3}{10}$. Jumlahkan dengan $\\frac{2}{3}$: $-\\frac{3}{10} + \\frac{2}{3} = \\frac{-9 + 20}{30} = \\frac{11}{30}$."
+  },
+  {
+    "id": "tka_sd_mtk_32",
+    "nomor": 32,
+    "jenjang": "SD",
+    "kelas": "6",
+    "tingkatKelas": "6 SD",
+    "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
+    "materi": "Bilangan - Pecahan, Desimal & Diskon Belanja (Pusmendik 2026)",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Menjelang tahun ajaran baru, Toko Buku Ceria memberikan diskon $10\\%$ untuk semua jenis buku. Diketahui harga buku gambar adalah $\\frac{1}{2}$ dari harga buku komik. Harga buku tulis adalah $0{,}75$ kali harga buku komik. Apabila harga buku komik adalah Rp24.000,00, harga buku gambar dan buku tulis setelah dikenakan diskon adalah …",
+    "teks_soal": "Menjelang tahun ajaran baru, Toko Buku Ceria memberikan diskon $10\\%$ untuk semua jenis buku. Diketahui harga buku gambar adalah $\\frac{1}{2}$ dari harga buku komik. Harga buku tulis adalah $0{,}75$ kali harga buku komik. Apabila harga buku komik adalah Rp24.000,00, harga buku gambar dan buku tulis setelah dikenakan diskon adalah …",
+    "soal": "Menjelang tahun ajaran baru, Toko Buku Ceria memberikan diskon $10\\%$ untuk semua jenis buku. Diketahui harga buku gambar adalah $\\frac{1}{2}$ dari harga buku komik. Harga buku tulis adalah $0{,}75$ kali harga buku komik. Apabila harga buku komik adalah Rp24.000,00, harga buku gambar dan buku tulis setelah dikenakan diskon adalah …",
+    "gambar": null,
+    "gambarUrls": [],
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Rp18.000,00",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Rp24.000,00",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Rp27.000,00",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "Rp30.000,00",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Rp18.000,00",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Rp24.000,00",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Rp27.000,00",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "Rp30.000,00",
+        "gambar": null
+      }
+    ],
+    "pernyataan": [],
+    "kunciJawaban": "C",
+    "kunci_jawaban": "C",
+    "kunci": "C",
+    "pembahasan": "Harga awal buku gambar $= \\frac{1}{2} \\times 24.000 = \\text{Rp}12.000,00$. Harga awal buku tulis $= 0{,}75 \\times 24.000 = \\text{Rp}18.000,00$. Total sebelum diskon $= 12.000 + 18.000 = \\text{Rp}30.000,00$. Setelah diskon $10\\%$, harga bayar $= 90\\% \\times 30.000 = \\text{Rp}27.000,00$."
+  },
+  {
+    "id": "tka_sd_mtk_33",
+    "nomor": 33,
+    "jenjang": "SD",
+    "kelas": "6",
+    "tingkatKelas": "6 SD",
+    "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
+    "materi": "Pengukuran - Konversi Satuan Baku Berat (Pusmendik 2026)",
+    "tipe": "pg_kompleks",
+    "teksSoal": "Setiap bulan Ramadan, SD Harapan mengadakan bakti sosial. Mereka membagi sembako yang berisi $3\\text{ kg}$ beras, dua bungkus gula pasir dengan berat masing-masing kemasan $5\\text{ hg}$, dan lima bungkus mi instan dengan berat per bungkus $85\\text{ g}$.\n\nPilihlah pernyataan yang benar sesuai dengan informasi tersebut! Jawaban benar lebih dari satu.",
+    "teks_soal": "Setiap bulan Ramadan, SD Harapan mengadakan bakti sosial. Mereka membagi sembako yang berisi $3\\text{ kg}$ beras, dua bungkus gula pasir dengan berat masing-masing kemasan $5\\text{ hg}$, dan lima bungkus mi instan dengan berat per bungkus $85\\text{ g}$.\n\nPilihlah pernyataan yang benar sesuai dengan informasi tersebut! Jawaban benar lebih dari satu.",
+    "soal": "Setiap bulan Ramadan, SD Harapan mengadakan bakti sosial. Mereka membagi sembako yang berisi $3\\text{ kg}$ beras, dua bungkus gula pasir dengan berat masing-masing kemasan $5\\text{ hg}$, dan lima bungkus mi instan dengan berat per bungkus $85\\text{ g}$.\n\nPilihlah pernyataan yang benar sesuai dengan informasi tersebut! Jawaban benar lebih dari satu.",
+    "gambar": null,
+    "gambarUrls": [],
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Total berat semua isi paket adalah 4.425 gram.",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Berat mi instan dalam paket tersebut lebih dari 0,5 kilogram.",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Satu kemasan gula pasir lebih berat dibandingkan seluruh mi instan.",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Total berat semua isi paket adalah 4.425 gram.",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Berat mi instan dalam paket tersebut lebih dari 0,5 kilogram.",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Satu kemasan gula pasir lebih berat dibandingkan seluruh mi instan.",
+        "gambar": null
+      }
+    ],
+    "pernyataan": [],
+    "kunciJawaban": "A,C",
+    "kunci_jawaban": "A,C",
+    "kunci": "A,C",
+    "pembahasan": "- Beras $= 3\\text{ kg} = 3.000\\text{ g}$.\n- Gula pasir $= 2 \\times 5\\text{ hg} = 10\\text{ hg} = 1.000\\text{ g}$ (1 kemasan $= 500\\text{ g}$).\n- Mi instan $= 5 \\times 85\\text{ g} = 425\\text{ g} = 0{,}425\\text{ kg}$.\nTotal $= 3.000 + 1.000 + 425 = 4.425\\text{ g}$ (A Benar). Berat mi instan $0{,}425\\text{ kg} < 0{,}5\\text{ kg}$ (B Salah). Satu kemasan gula ($500\\text{ g}$) $>$ seluruh mi ($425\\text{ g}$) (C Benar)."
+  },
+  {
+    "id": "tka_sd_mtk_34",
+    "nomor": 34,
+    "jenjang": "SD",
+    "kelas": "6",
+    "tingkatKelas": "6 SD",
+    "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
+    "materi": "Pengukuran - Kecepatan, Jarak & Waktu Tempuh (Pusmendik 2026)",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Pak Bayu dan keluarganya tinggal di Kota Yogyakarta dan berencana liburan ke Semarang. Diketahui jarak Yogyakarta–Semarang $140\\text{ km}$ dan kecepatan rata-rata mobil Pak Bayu $80\\text{ km/jam}$. Pak Bayu berangkat dari rumah pukul $06.00$. Apabila di tengah perjalanan mereka berhenti selama $15\\text{ menit}$ untuk membeli oleh-oleh, pukul berapakah Pak Bayu dan keluarga tiba di Semarang?",
+    "teks_soal": "Pak Bayu dan keluarganya tinggal di Kota Yogyakarta dan berencana liburan ke Semarang. Diketahui jarak Yogyakarta–Semarang $140\\text{ km}$ dan kecepatan rata-rata mobil Pak Bayu $80\\text{ km/jam}$. Pak Bayu berangkat dari rumah pukul $06.00$. Apabila di tengah perjalanan mereka berhenti selama $15\\text{ menit}$ untuk membeli oleh-oleh, pukul berapakah Pak Bayu dan keluarga tiba di Semarang?",
+    "soal": "Pak Bayu dan keluarganya tinggal di Kota Yogyakarta dan berencana liburan ke Semarang. Diketahui jarak Yogyakarta–Semarang $140\\text{ km}$ dan kecepatan rata-rata mobil Pak Bayu $80\\text{ km/jam}$. Pak Bayu berangkat dari rumah pukul $06.00$. Apabila di tengah perjalanan mereka berhenti selama $15\\text{ menit}$ untuk membeli oleh-oleh, pukul berapakah Pak Bayu dan keluarga tiba di Semarang?",
+    "gambar": null,
+    "gambarUrls": [],
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "07.45",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "08.00",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "08.45",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "09.00",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "07.45",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "08.00",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "08.45",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "09.00",
+        "gambar": null
+      }
+    ],
+    "pernyataan": [],
+    "kunciJawaban": "B",
+    "kunci_jawaban": "B",
+    "kunci": "B",
+    "pembahasan": "Waktu tempuh berkendara $= \\frac{140}{80} = 1\\frac{3}{4}\\text{ jam} = 1\\text{ jam } 45\\text{ menit}$. Ditambah berhenti $15\\text{ menit}$, total lama perjalanan $= 2\\text{ jam}$. Jam tiba $= 06.00 + 02.00 = 08.00$."
+  },
+  {
+    "id": "tka_sd_mtk_35",
+    "nomor": 35,
+    "jenjang": "SD",
+    "kelas": "6",
+    "tingkatKelas": "6 SD",
+    "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
+    "materi": "Pengukuran & Bilangan Desimal - Berat Benda (Pusmendik 2026)",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Ibu pergi ke pasar membeli $3\\text{ kg}$ buah. Di dalam keranjang belanja ibu terdapat dua buah alpukat mentega dengan berat total $1{,}25\\text{ kg}$ dan sisanya adalah tujuh buah mangga kweni yang sama berat. Berat satu buah mangga kweni adalah …",
+    "teks_soal": "Ibu pergi ke pasar membeli $3\\text{ kg}$ buah. Di dalam keranjang belanja ibu terdapat dua buah alpukat mentega dengan berat total $1{,}25\\text{ kg}$ dan sisanya adalah tujuh buah mangga kweni yang sama berat. Berat satu buah mangga kweni adalah …",
+    "soal": "Ibu pergi ke pasar membeli $3\\text{ kg}$ buah. Di dalam keranjang belanja ibu terdapat dua buah alpukat mentega dengan berat total $1{,}25\\text{ kg}$ dan sisanya adalah tujuh buah mangga kweni yang sama berat. Berat satu buah mangga kweni adalah …",
+    "gambar": null,
+    "gambarUrls": [],
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "0,2 kg",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "0,25 kg",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "0,3 kg",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "0,35 kg",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "0,2 kg",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "0,25 kg",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "0,3 kg",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "0,35 kg",
+        "gambar": null
+      }
+    ],
+    "pernyataan": [],
+    "kunciJawaban": "B",
+    "kunci_jawaban": "B",
+    "kunci": "B",
+    "pembahasan": "Berat 7 buah mangga $= 3 - 1{,}25 = 1{,}75\\text{ kg}$. Berat 1 buah mangga kweni $= 1{,}75 \\div 7 = 0{,}25\\text{ kg}$."
+  },
+  {
+    "id": "tka_sd_mtk_36",
+    "nomor": 36,
+    "jenjang": "SD",
+    "kelas": "6",
+    "tingkatKelas": "6 SD",
+    "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
+    "materi": "Geometri - Volume Kubus & Balok Satuan (Pusmendik 2026)",
+    "tipe": "pg_kompleks",
+    "teksSoal": "Bu Guru menugaskan Doni untuk membawa sebuah kotak yang dapat menampung tepat $64$ kubus satuan berusuk $1\\text{ cm}$. Di rumah, Doni memiliki beberapa macam kotak dengan berbagai ukuran. Di antara pilihan berikut, kotak mana sajakah yang tepat dapat menampung $64$ kubus satuan? Pilihlah jawaban yang benar! Jawaban benar lebih dari satu.",
+    "teks_soal": "Bu Guru menugaskan Doni untuk membawa sebuah kotak yang dapat menampung tepat $64$ kubus satuan berusuk $1\\text{ cm}$. Di rumah, Doni memiliki beberapa macam kotak dengan berbagai ukuran. Di antara pilihan berikut, kotak mana sajakah yang tepat dapat menampung $64$ kubus satuan? Pilihlah jawaban yang benar! Jawaban benar lebih dari satu.",
+    "soal": "Bu Guru menugaskan Doni untuk membawa sebuah kotak yang dapat menampung tepat $64$ kubus satuan berusuk $1\\text{ cm}$. Di rumah, Doni memiliki beberapa macam kotak dengan berbagai ukuran. Di antara pilihan berikut, kotak mana sajakah yang tepat dapat menampung $64$ kubus satuan? Pilihlah jawaban yang benar! Jawaban benar lebih dari satu.",
+    "gambar": null,
+    "gambarUrls": [],
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Kotak berukuran 8 cm × 2 cm × 4 cm",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Kotak berukuran 4 cm × 4 cm × 4 cm",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Kotak berukuran 4 cm × 3 cm × 5 cm",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Kotak berukuran 8 cm × 2 cm × 4 cm",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Kotak berukuran 4 cm × 4 cm × 4 cm",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Kotak berukuran 4 cm × 3 cm × 5 cm",
+        "gambar": null
+      }
+    ],
+    "pernyataan": [],
+    "kunciJawaban": "A,B",
+    "kunci_jawaban": "A,B",
+    "kunci": "A,B",
+    "pembahasan": "Volume 64 kubus satuan berusuk $1\\text{ cm}$ adalah $64\\text{ cm}^3$.\n- Kotak A: $8 \\times 2 \\times 4 = 64\\text{ cm}^3$ (Memenuhi).\n- Kotak B: $4 \\times 4 \\times 4 = 64\\text{ cm}^3$ (Memenuhi).\n- Kotak C: $4 \\times 3 \\times 5 = 60\\text{ cm}^3$ (Tidak cukup)."
+  },
+  {
+    "id": "tka_sd_mtk_37",
+    "nomor": 37,
+    "jenjang": "SD",
+    "kelas": "6",
+    "tingkatKelas": "6 SD",
+    "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
+    "materi": "Bilangan Cacah & Pengukuran Panjang (Pusmendik 2026)",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Dio sedang membantu ayah memotong batang rotan untuk dijadikan stik pewangi ruangan. Ayah mempunyai batang rotan dengan panjang $320\\text{ cm}$ dan ingin membuat stik pewangi ruangan sebanyak mungkin dengan panjang stik masing-masing $15\\text{ cm}$. Sisa batang rotan yang tidak terpakai adalah sepanjang …",
+    "teks_soal": "Dio sedang membantu ayah memotong batang rotan untuk dijadikan stik pewangi ruangan. Ayah mempunyai batang rotan dengan panjang $320\\text{ cm}$ dan ingin membuat stik pewangi ruangan sebanyak mungkin dengan panjang stik masing-masing $15\\text{ cm}$. Sisa batang rotan yang tidak terpakai adalah sepanjang …",
+    "soal": "Dio sedang membantu ayah memotong batang rotan untuk dijadikan stik pewangi ruangan. Ayah mempunyai batang rotan dengan panjang $320\\text{ cm}$ dan ingin membuat stik pewangi ruangan sebanyak mungkin dengan panjang stik masing-masing $15\\text{ cm}$. Sisa batang rotan yang tidak terpakai adalah sepanjang …",
+    "gambar": null,
+    "gambarUrls": [],
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "4 cm",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "5 cm",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "6 cm",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "7 cm",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "4 cm",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "5 cm",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "6 cm",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "7 cm",
+        "gambar": null
+      }
+    ],
+    "pernyataan": [],
+    "kunciJawaban": "B",
+    "kunci_jawaban": "B",
+    "kunci": "B",
+    "pembahasan": "Bagi $320$ dengan $15$: $15 \\times 21 = 315\\text{ cm}$. Sisa batang rotan yang tidak terpakai $= 320 - 315 = 5\\text{ cm}$."
+  },
+  {
+    "id": "tka_sd_mtk_38",
+    "nomor": 38,
+    "jenjang": "SD",
+    "kelas": "6",
+    "tingkatKelas": "6 SD",
+    "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
+    "materi": "Bilangan Asli - KPK dalam Soal Cerita (Pusmendik 2026)",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Murid-murid SD Cerdas, SD Pelita, dan SD Mentari melakukan kegiatan olahraga di lapangan bola yang sama. Jadwal olahraga SD Cerdas setiap 2 minggu sekali, SD Pelita setiap 3 minggu sekali, dan SD Mentari setiap 4 minggu sekali. Hari ini ketiga SD berolahraga bersama. Setiap periode waktu berapakah ketiga SD tersebut akan bertemu lagi?",
+    "teks_soal": "Murid-murid SD Cerdas, SD Pelita, dan SD Mentari melakukan kegiatan olahraga di lapangan bola yang sama. Jadwal olahraga SD Cerdas setiap 2 minggu sekali, SD Pelita setiap 3 minggu sekali, dan SD Mentari setiap 4 minggu sekali. Hari ini ketiga SD berolahraga bersama. Setiap periode waktu berapakah ketiga SD tersebut akan bertemu lagi?",
+    "soal": "Murid-murid SD Cerdas, SD Pelita, dan SD Mentari melakukan kegiatan olahraga di lapangan bola yang sama. Jadwal olahraga SD Cerdas setiap 2 minggu sekali, SD Pelita setiap 3 minggu sekali, dan SD Mentari setiap 4 minggu sekali. Hari ini ketiga SD berolahraga bersama. Setiap periode waktu berapakah ketiga SD tersebut akan bertemu lagi?",
+    "gambar": null,
+    "gambarUrls": [],
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "4 minggu",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "6 minggu",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "12 minggu",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "18 minggu",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "4 minggu",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "6 minggu",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "12 minggu",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "18 minggu",
+        "gambar": null
+      }
+    ],
+    "pernyataan": [],
+    "kunciJawaban": "C",
+    "kunci_jawaban": "C",
+    "kunci": "C",
+    "pembahasan": "Pertemuan berulang dicari menggunakan $\\text{KPK}(2, 3, 4)$. Kelipatan $4$ adalah $4, 8, 12, \\dots$, dan $12$ habis dibagi $2$ dan $3$. Jadi mereka bertemu kembali setiap $12$ minggu sekali."
+  },
+  {
+    "id": "tka_sd_mtk_39",
+    "nomor": 39,
+    "jenjang": "SD",
+    "kelas": "6",
+    "tingkatKelas": "6 SD",
+    "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
+    "materi": "Bilangan Pecahan & Operasi Aljabar Sederhana (Pusmendik 2026)",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Misal $a = 5 - \\frac{7}{2}$ dan $b = \\frac{3}{4} - \\frac{1}{2}$. Maka nilai $a - 2b = \\dots$",
+    "teks_soal": "Misal $a = 5 - \\frac{7}{2}$ dan $b = \\frac{3}{4} - \\frac{1}{2}$. Maka nilai $a - 2b = \\dots$",
+    "soal": "Misal $a = 5 - \\frac{7}{2}$ dan $b = \\frac{3}{4} - \\frac{1}{2}$. Maka nilai $a - 2b = \\dots$",
+    "gambar": null,
+    "gambarUrls": [],
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "$1$",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "$1\\frac{1}{4}$",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "$2$",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "$2\\frac{1}{4}$",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "$1$",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "$1\\frac{1}{4}$",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "$2$",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "$2\\frac{1}{4}$",
+        "gambar": null
+      }
+    ],
+    "pernyataan": [],
+    "kunciJawaban": "A",
+    "kunci_jawaban": "A",
+    "kunci": "A",
+    "pembahasan": "Hitung nilai masing-masing: $a = \\frac{10}{2} - \\frac{7}{2} = \\frac{3}{2}$. Kemudian $b = \\frac{3}{4} - \\frac{2}{4} = \\frac{1}{4}$. Maka $2b = 2 \\times \\frac{1}{4} = \\frac{1}{2}$. Sehingga $a - 2b = \\frac{3}{2} - \\frac{1}{2} = 1$."
+  },
+  {
+    "id": "tka_sd_mtk_40",
+    "nomor": 40,
+    "jenjang": "SD",
+    "kelas": "6",
+    "tingkatKelas": "6 SD",
+    "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
+    "materi": "Bilangan Cacah - Operasi Hitung Kontekstual (Pusmendik 2026)",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Perpustakaan SD Cahaya mengadakan kegiatan \"Ayo Membaca Buku\" untuk murid kelas 6. Jumlah peserta dari Kelas A sebanyak $28$ siswa, Kelas B sebanyak $36$ siswa, dan Kelas C sebanyak $32$ siswa. Setiap siswa mendapatkan $3$ buah buku bacaan. Jika $1$ dus berisi $24$ buku, berapa dus buku yang dibutuhkan untuk kegiatan tersebut?",
+    "teks_soal": "Perpustakaan SD Cahaya mengadakan kegiatan \"Ayo Membaca Buku\" untuk murid kelas 6. Jumlah peserta dari Kelas A sebanyak $28$ siswa, Kelas B sebanyak $36$ siswa, dan Kelas C sebanyak $32$ siswa. Setiap siswa mendapatkan $3$ buah buku bacaan. Jika $1$ dus berisi $24$ buku, berapa dus buku yang dibutuhkan untuk kegiatan tersebut?",
+    "soal": "Perpustakaan SD Cahaya mengadakan kegiatan \"Ayo Membaca Buku\" untuk murid kelas 6. Jumlah peserta dari Kelas A sebanyak $28$ siswa, Kelas B sebanyak $36$ siswa, dan Kelas C sebanyak $32$ siswa. Setiap siswa mendapatkan $3$ buah buku bacaan. Jika $1$ dus berisi $24$ buku, berapa dus buku yang dibutuhkan untuk kegiatan tersebut?",
+    "gambar": null,
+    "gambarUrls": [],
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "8 dus",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "10 dus",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "12 dus",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "24 dus",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "8 dus",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "10 dus",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "12 dus",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "24 dus",
+        "gambar": null
+      }
+    ],
+    "pernyataan": [],
+    "kunciJawaban": "C",
+    "kunci_jawaban": "C",
+    "kunci": "C",
+    "pembahasan": "Total siswa $= 28 + 36 + 32 = 96$ siswa. Total buku dibutuhkan $= 96 \\times 3 = 288$ buku. Jumlah dus $= 288 \\div 24 = 12$ dus."
+  },
+  {
+    "id": "tka_sd_mtk_41",
+    "nomor": 41,
+    "jenjang": "SD",
+    "kelas": "6",
+    "tingkatKelas": "6 SD",
+    "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
+    "materi": "Geometri - Sifat Bangun Datar (Pusmendik 2026)",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Sebuah bangun datar memiliki sifat-sifat sebagai berikut:\n1) Keempat sisinya sama panjang.\n2) Memiliki dua pasang sisi sejajar.\n3) Diagonal-diagonalnya saling berpotongan tegak lurus.\n4) Sudut-sudut yang berhadapan sama besar (tidak harus siku-siku).\n\nBerdasarkan sifat-sifat di atas, nama bangun datar tersebut adalah …",
+    "teks_soal": "Sebuah bangun datar memiliki sifat-sifat sebagai berikut:\n1) Keempat sisinya sama panjang.\n2) Memiliki dua pasang sisi sejajar.\n3) Diagonal-diagonalnya saling berpotongan tegak lurus.\n4) Sudut-sudut yang berhadapan sama besar (tidak harus siku-siku).\n\nBerdasarkan sifat-sifat di atas, nama bangun datar tersebut adalah …",
+    "soal": "Sebuah bangun datar memiliki sifat-sifat sebagai berikut:\n1) Keempat sisinya sama panjang.\n2) Memiliki dua pasang sisi sejajar.\n3) Diagonal-diagonalnya saling berpotongan tegak lurus.\n4) Sudut-sudut yang berhadapan sama besar (tidak harus siku-siku).\n\nBerdasarkan sifat-sifat di atas, nama bangun datar tersebut adalah …",
+    "gambar": null,
+    "gambarUrls": [],
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Persegi",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Persegi panjang",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Belah ketupat",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "Layang-layang",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Persegi",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Persegi panjang",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Belah ketupat",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "Layang-layang",
+        "gambar": null
+      }
+    ],
+    "pernyataan": [],
+    "kunciJawaban": "C",
+    "kunci_jawaban": "C",
+    "kunci": "C",
+    "pembahasan": "Bangun dengan empat sisi sama panjang, dua pasang sisi sejajar, diagonal berpotongan tegak lurus, dan sudut berhadapan sama besar (tanpa syarat keempat sudutnya $90^{\\circ}$) adalah belah ketupat."
+  },
+  {
+    "id": "tka_sd_mtk_42",
+    "nomor": 42,
+    "jenjang": "SD",
+    "kelas": "6",
+    "tingkatKelas": "6 SD",
+    "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
+    "materi": "Pengukuran - Satuan Waktu & Jadwal Kegiatan (Pusmendik 2026)",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Pada hari Minggu, Rani mengikuti kegiatan belajar menari di sanggar seni.\n- Rani berangkat dari rumah pukul $07.25$.\n- Perjalanan menuju sanggar memerlukan waktu $45$ menit.\n- Kegiatan belajar menari berlangsung selama $1$ jam $35$ menit.\n- Setelah kegiatan selesai, Rani beristirahat di sanggar selama $20$ menit sebelum pulang.\n\nPukul berapakah Rani meninggalkan sanggar untuk pulang?",
+    "teks_soal": "Pada hari Minggu, Rani mengikuti kegiatan belajar menari di sanggar seni.\n- Rani berangkat dari rumah pukul $07.25$.\n- Perjalanan menuju sanggar memerlukan waktu $45$ menit.\n- Kegiatan belajar menari berlangsung selama $1$ jam $35$ menit.\n- Setelah kegiatan selesai, Rani beristirahat di sanggar selama $20$ menit sebelum pulang.\n\nPukul berapakah Rani meninggalkan sanggar untuk pulang?",
+    "soal": "Pada hari Minggu, Rani mengikuti kegiatan belajar menari di sanggar seni.\n- Rani berangkat dari rumah pukul $07.25$.\n- Perjalanan menuju sanggar memerlukan waktu $45$ menit.\n- Kegiatan belajar menari berlangsung selama $1$ jam $35$ menit.\n- Setelah kegiatan selesai, Rani beristirahat di sanggar selama $20$ menit sebelum pulang.\n\nPukul berapakah Rani meninggalkan sanggar untuk pulang?",
+    "gambar": null,
+    "gambarUrls": [],
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "09.45",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "10.00",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "10.05",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "10.25",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "09.45",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "10.00",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "10.05",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "10.25",
+        "gambar": null
+      }
+    ],
+    "pernyataan": [],
+    "kunciJawaban": "C",
+    "kunci_jawaban": "C",
+    "kunci": "C",
+    "pembahasan": "Tiba di sanggar: $07.25 + 45\\text{ menit} = 08.10$. Selesai menari: $08.10 + 1\\text{ jam } 35\\text{ menit} = 09.45$. Setelah istirahat $20$ menit: $09.45 + 20\\text{ menit} = 10.05$."
+  },
+  {
+    "id": "tka_sd_mtk_43",
+    "nomor": 43,
+    "jenjang": "SD",
+    "kelas": "6",
+    "tingkatKelas": "6 SD",
+    "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
+    "materi": "Bilangan Rasional - Membandingkan Pecahan & Desimal (Ruangguru 2025)",
+    "tipe": "pg_kompleks",
+    "teksSoal": "Pilihlah bilangan yang terletak di antara $\\frac{1}{5}$ dan $\\frac{1}{2}$! Jawaban benar lebih dari satu.",
+    "teks_soal": "Pilihlah bilangan yang terletak di antara $\\frac{1}{5}$ dan $\\frac{1}{2}$! Jawaban benar lebih dari satu.",
+    "soal": "Pilihlah bilangan yang terletak di antara $\\frac{1}{5}$ dan $\\frac{1}{2}$! Jawaban benar lebih dari satu.",
+    "gambar": null,
+    "gambarUrls": [],
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "0,25",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "0,6",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "0,15",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "0,4",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "0,25",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "0,6",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "0,15",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "0,4",
+        "gambar": null
+      }
+    ],
+    "pernyataan": [],
+    "kunciJawaban": "A,D",
+    "kunci_jawaban": "A,D",
+    "kunci": "A,D",
+    "pembahasan": "Ubah batas ke desimal: $\\frac{1}{5} = 0{,}2$ dan $\\frac{1}{2} = 0{,}5$. Bilangan di antara $0{,}2$ dan $0{,}5$ adalah $0{,}25$ (A) dan $0{,}4$ (D). Nilai $0{,}6 > 0{,}5$ dan $0{,}15 < 0{,}2$."
+  },
+  {
+    "id": "tka_sd_mtk_44",
+    "nomor": 44,
+    "jenjang": "SD",
+    "kelas": "6",
+    "tingkatKelas": "6 SD",
+    "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
+    "materi": "Geometri Ruang - Penalaran Kubus Satuan (Kompas TKA SD 2026)",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Sebuah kubus besar disusun dari kubus-kubus satuan berukuran $4 \\times 4 \\times 4$. Seluruh permukaan luar kubus besar itu dicat. Banyak kubus satuan di bagian dalam yang tidak terkena cat sama sekali adalah …",
+    "teks_soal": "Sebuah kubus besar disusun dari kubus-kubus satuan berukuran $4 \\times 4 \\times 4$. Seluruh permukaan luar kubus besar itu dicat. Banyak kubus satuan di bagian dalam yang tidak terkena cat sama sekali adalah …",
+    "soal": "Sebuah kubus besar disusun dari kubus-kubus satuan berukuran $4 \\times 4 \\times 4$. Seluruh permukaan luar kubus besar itu dicat. Banyak kubus satuan di bagian dalam yang tidak terkena cat sama sekali adalah …",
+    "gambar": null,
+    "gambarUrls": [],
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "4 kubus satuan",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "8 kubus satuan",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "12 kubus satuan",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "16 kubus satuan",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "4 kubus satuan",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "8 kubus satuan",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "12 kubus satuan",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "16 kubus satuan",
+        "gambar": null
+      }
+    ],
+    "pernyataan": [],
+    "kunciJawaban": "B",
+    "kunci_jawaban": "B",
+    "kunci": "B",
+    "pembahasan": "Kubus bagian dalam yang tidak menyentuh permukaan luar mana pun memiliki ukuran $(4-2) \\times (4-2) \\times (4-2) = 2 \\times 2 \\times 2 = 8$ kubus satuan."
+  },
+  {
+    "id": "tka_sd_mtk_45",
+    "nomor": 45,
+    "jenjang": "SD",
+    "kelas": "6",
+    "tingkatKelas": "6 SD",
+    "mapel": "Matematika",
+    "mataPelajaran": "Matematika",
+    "materi": "Statistika - Rata-rata Gabungan (Kompas TKA SD 2026)",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Rata-rata nilai ulangan Matematika $5$ siswa adalah $80$. Kemudian seorang siswa baru yang memperoleh nilai $92$ bergabung dengan kelompok tersebut. Rata-rata nilai keenam siswa sekarang adalah …",
+    "teks_soal": "Rata-rata nilai ulangan Matematika $5$ siswa adalah $80$. Kemudian seorang siswa baru yang memperoleh nilai $92$ bergabung dengan kelompok tersebut. Rata-rata nilai keenam siswa sekarang adalah …",
+    "soal": "Rata-rata nilai ulangan Matematika $5$ siswa adalah $80$. Kemudian seorang siswa baru yang memperoleh nilai $92$ bergabung dengan kelompok tersebut. Rata-rata nilai keenam siswa sekarang adalah …",
+    "gambar": null,
+    "gambarUrls": [],
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "81",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "81,5",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "82",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "86",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "81",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "81,5",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "82",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "86",
+        "gambar": null
+      }
+    ],
+    "pernyataan": [],
+    "kunciJawaban": "C",
+    "kunci_jawaban": "C",
+    "kunci": "C",
+    "pembahasan": "Jumlah nilai 5 siswa $= 5 \\times 80 = 400$. Setelah 1 siswa masuk, jumlah nilai $= 400 + 92 = 492$. Rata-rata 6 siswa $= 492 \\div 6 = 82$."
   }
 ];
 
@@ -3961,5 +5032,984 @@ export const SOAL_TKA_2026_SD_BINDO = [
     "kunci_jawaban": "B",
     "kunci": "B",
     "pembahasan": "Sesuai isi teks, Kongres Pemuda I diselenggarakan oleh tokoh pergerakan pemuda (seperti Satiman dan Mohammad Tabrani), dihadiri berbagai organisasi daerah nusantara, dan membahas persatuan serta cita-cita kemerdekaan bangsa Indonesia."
+  },
+  {
+    "id": "tka_sd_bindo_31",
+    "nomor": 31,
+    "jenjang": "SD",
+    "kelas": "6",
+    "tingkatKelas": "6 SD",
+    "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
+    "materi": "Pemahaman Tekstual - Informasi Tersurat Teks Informasi (Pusmendik 2026)",
+    "tipe": "pg_kompleks",
+    "teksSoal": "Hewan Pemakan Daun, Apa Itu?\n\nHewan bisa dibagi menjadi tiga kelompok berdasarkan makanan mereka. Karnivora, hewan pemakan daging. Contoh hewan karnivora adalah singa. Selanjutnya herbivora, yaitu hewan pemakan tumbuhan. Sapi adalah contoh hewan herbivora. Terakhir, hewan omnivora, yaitu hewan pemakan daging dan tumbuhan, seperti beruang.\n\nDari kelompok herbivora, ada hewan yang hanya makan daun saja. Mereka disebut folivora. Hewan folivora hanya makan daun untuk hidup. Namun, daun itu susah untuk dicerna, apalagi kalau sudah tua. Kadang-kadang daun juga mengandung zat yang bisa berbahaya.\n\nAgar bisa mencerna daun, tubuh hewan folivora punya cara khusus. Mereka punya usus yang panjang agar makanan bisa diproses lebih lama. Tubuh hewan folivora bekerja lebih lambat, jadi tidak terlalu banyak bergerak. Di dalam perut hewan folivora juga ada bakteri baik yang membantu mencerna daun. Beberapa hewan folivora lebih suka daun muda karena lebih lembut dan mudah dimakan.\n\nAda beberapa contoh hewan folivora yang hidup di alam. Misalnya, panda yang makan daun bambu. Ada juga koala yang makan daun eukaliptus. Mereka tinggal di hutan dan sangat bergantung pada daun untuk makan. Karena itu, hutan tempat mereka tinggal harus dijaga supaya mereka bisa terus hidup.\n\nSumber: Pusmendik Kemendikdasmen (Adaptasi Bobo)\n\nApa saja contoh hewan folivora berdasarkan informasi tersebut? Jawaban benar lebih dari satu.",
+    "teks_soal": "Hewan Pemakan Daun, Apa Itu?\n\nHewan bisa dibagi menjadi tiga kelompok berdasarkan makanan mereka. Karnivora, hewan pemakan daging. Contoh hewan karnivora adalah singa. Selanjutnya herbivora, yaitu hewan pemakan tumbuhan. Sapi adalah contoh hewan herbivora. Terakhir, hewan omnivora, yaitu hewan pemakan daging dan tumbuhan, seperti beruang.\n\nDari kelompok herbivora, ada hewan yang hanya makan daun saja. Mereka disebut folivora. Hewan folivora hanya makan daun untuk hidup. Namun, daun itu susah untuk dicerna, apalagi kalau sudah tua. Kadang-kadang daun juga mengandung zat yang bisa berbahaya.\n\nAgar bisa mencerna daun, tubuh hewan folivora punya cara khusus. Mereka punya usus yang panjang agar makanan bisa diproses lebih lama. Tubuh hewan folivora bekerja lebih lambat, jadi tidak terlalu banyak bergerak. Di dalam perut hewan folivora juga ada bakteri baik yang membantu mencerna daun. Beberapa hewan folivora lebih suka daun muda karena lebih lembut dan mudah dimakan.\n\nAda beberapa contoh hewan folivora yang hidup di alam. Misalnya, panda yang makan daun bambu. Ada juga koala yang makan daun eukaliptus. Mereka tinggal di hutan dan sangat bergantung pada daun untuk makan. Karena itu, hutan tempat mereka tinggal harus dijaga supaya mereka bisa terus hidup.\n\nSumber: Pusmendik Kemendikdasmen (Adaptasi Bobo)\n\nApa saja contoh hewan folivora berdasarkan informasi tersebut? Jawaban benar lebih dari satu.",
+    "soal": "Hewan Pemakan Daun, Apa Itu?\n\nHewan bisa dibagi menjadi tiga kelompok berdasarkan makanan mereka. Karnivora, hewan pemakan daging. Contoh hewan karnivora adalah singa. Selanjutnya herbivora, yaitu hewan pemakan tumbuhan. Sapi adalah contoh hewan herbivora. Terakhir, hewan omnivora, yaitu hewan pemakan daging dan tumbuhan, seperti beruang.\n\nDari kelompok herbivora, ada hewan yang hanya makan daun saja. Mereka disebut folivora. Hewan folivora hanya makan daun untuk hidup. Namun, daun itu susah untuk dicerna, apalagi kalau sudah tua. Kadang-kadang daun juga mengandung zat yang bisa berbahaya.\n\nAgar bisa mencerna daun, tubuh hewan folivora punya cara khusus. Mereka punya usus yang panjang agar makanan bisa diproses lebih lama. Tubuh hewan folivora bekerja lebih lambat, jadi tidak terlalu banyak bergerak. Di dalam perut hewan folivora juga ada bakteri baik yang membantu mencerna daun. Beberapa hewan folivora lebih suka daun muda karena lebih lembut dan mudah dimakan.\n\nAda beberapa contoh hewan folivora yang hidup di alam. Misalnya, panda yang makan daun bambu. Ada juga koala yang makan daun eukaliptus. Mereka tinggal di hutan dan sangat bergantung pada daun untuk makan. Karena itu, hutan tempat mereka tinggal harus dijaga supaya mereka bisa terus hidup.\n\nSumber: Pusmendik Kemendikdasmen (Adaptasi Bobo)\n\nApa saja contoh hewan folivora berdasarkan informasi tersebut? Jawaban benar lebih dari satu.",
+    "gambar": null,
+    "gambarUrls": [],
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Sapi",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Koala",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Panda",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Sapi",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Koala",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Panda",
+        "gambar": null
+      }
+    ],
+    "pernyataan": [],
+    "kunciJawaban": "B,C",
+    "kunci_jawaban": "B,C",
+    "kunci": "B,C",
+    "pembahasan": "Pada teks dijelaskan bahwa sapi adalah herbivora umum, sedangkan contoh hewan folivora (khusus pemakan daun) adalah panda (daun bambu) dan koala (daun eukaliptus)."
+  },
+  {
+    "id": "tka_sd_bindo_32",
+    "nomor": 32,
+    "jenjang": "SD",
+    "kelas": "6",
+    "tingkatKelas": "6 SD",
+    "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
+    "materi": "Pemahaman Inferensial - Gagasan Utama Paragraf (Pusmendik 2026)",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Hewan Pemakan Daun, Apa Itu?\n\nHewan bisa dibagi menjadi tiga kelompok berdasarkan makanan mereka. Karnivora, hewan pemakan daging. Contoh hewan karnivora adalah singa. Selanjutnya herbivora, yaitu hewan pemakan tumbuhan. Sapi adalah contoh hewan herbivora. Terakhir, hewan omnivora, yaitu hewan pemakan daging dan tumbuhan, seperti beruang.\n\nDari kelompok herbivora, ada hewan yang hanya makan daun saja. Mereka disebut folivora. Hewan folivora hanya makan daun untuk hidup. Namun, daun itu susah untuk dicerna, apalagi kalau sudah tua. Kadang-kadang daun juga mengandung zat yang bisa berbahaya.\n\nAgar bisa mencerna daun, tubuh hewan folivora punya cara khusus. Mereka punya usus yang panjang agar makanan bisa diproses lebih lama. Tubuh hewan folivora bekerja lebih lambat, jadi tidak terlalu banyak bergerak. Di dalam perut hewan folivora juga ada bakteri baik yang membantu mencerna daun. Beberapa hewan folivora lebih suka daun muda karena lebih lembut dan mudah dimakan.\n\nAda beberapa contoh hewan folivora yang hidup di alam. Misalnya, panda yang makan daun bambu. Ada juga koala yang makan daun eukaliptus. Mereka tinggal di hutan dan sangat bergantung pada daun untuk makan. Karena itu, hutan tempat mereka tinggal harus dijaga supaya mereka bisa terus hidup.\n\nSumber: Pusmendik Kemendikdasmen (Adaptasi Bobo)\n\nApa gagasan utama yang disampaikan pada paragraf ketiga teks tersebut?",
+    "teks_soal": "Hewan Pemakan Daun, Apa Itu?\n\nHewan bisa dibagi menjadi tiga kelompok berdasarkan makanan mereka. Karnivora, hewan pemakan daging. Contoh hewan karnivora adalah singa. Selanjutnya herbivora, yaitu hewan pemakan tumbuhan. Sapi adalah contoh hewan herbivora. Terakhir, hewan omnivora, yaitu hewan pemakan daging dan tumbuhan, seperti beruang.\n\nDari kelompok herbivora, ada hewan yang hanya makan daun saja. Mereka disebut folivora. Hewan folivora hanya makan daun untuk hidup. Namun, daun itu susah untuk dicerna, apalagi kalau sudah tua. Kadang-kadang daun juga mengandung zat yang bisa berbahaya.\n\nAgar bisa mencerna daun, tubuh hewan folivora punya cara khusus. Mereka punya usus yang panjang agar makanan bisa diproses lebih lama. Tubuh hewan folivora bekerja lebih lambat, jadi tidak terlalu banyak bergerak. Di dalam perut hewan folivora juga ada bakteri baik yang membantu mencerna daun. Beberapa hewan folivora lebih suka daun muda karena lebih lembut dan mudah dimakan.\n\nAda beberapa contoh hewan folivora yang hidup di alam. Misalnya, panda yang makan daun bambu. Ada juga koala yang makan daun eukaliptus. Mereka tinggal di hutan dan sangat bergantung pada daun untuk makan. Karena itu, hutan tempat mereka tinggal harus dijaga supaya mereka bisa terus hidup.\n\nSumber: Pusmendik Kemendikdasmen (Adaptasi Bobo)\n\nApa gagasan utama yang disampaikan pada paragraf ketiga teks tersebut?",
+    "soal": "Hewan Pemakan Daun, Apa Itu?\n\nHewan bisa dibagi menjadi tiga kelompok berdasarkan makanan mereka. Karnivora, hewan pemakan daging. Contoh hewan karnivora adalah singa. Selanjutnya herbivora, yaitu hewan pemakan tumbuhan. Sapi adalah contoh hewan herbivora. Terakhir, hewan omnivora, yaitu hewan pemakan daging dan tumbuhan, seperti beruang.\n\nDari kelompok herbivora, ada hewan yang hanya makan daun saja. Mereka disebut folivora. Hewan folivora hanya makan daun untuk hidup. Namun, daun itu susah untuk dicerna, apalagi kalau sudah tua. Kadang-kadang daun juga mengandung zat yang bisa berbahaya.\n\nAgar bisa mencerna daun, tubuh hewan folivora punya cara khusus. Mereka punya usus yang panjang agar makanan bisa diproses lebih lama. Tubuh hewan folivora bekerja lebih lambat, jadi tidak terlalu banyak bergerak. Di dalam perut hewan folivora juga ada bakteri baik yang membantu mencerna daun. Beberapa hewan folivora lebih suka daun muda karena lebih lembut dan mudah dimakan.\n\nAda beberapa contoh hewan folivora yang hidup di alam. Misalnya, panda yang makan daun bambu. Ada juga koala yang makan daun eukaliptus. Mereka tinggal di hutan dan sangat bergantung pada daun untuk makan. Karena itu, hutan tempat mereka tinggal harus dijaga supaya mereka bisa terus hidup.\n\nSumber: Pusmendik Kemendikdasmen (Adaptasi Bobo)\n\nApa gagasan utama yang disampaikan pada paragraf ketiga teks tersebut?",
+    "gambar": null,
+    "gambarUrls": [],
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Jenis daun yang cocok untuk hewan folivora.",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Pembagian hewan berdasarkan makanan mereka.",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Cara khusus tubuh hewan folivora mencerna daun.",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "Peranan penting hutan bagi kehidupan hewan folivora.",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Jenis daun yang cocok untuk hewan folivora.",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Pembagian hewan berdasarkan makanan mereka.",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Cara khusus tubuh hewan folivora mencerna daun.",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "Peranan penting hutan bagi kehidupan hewan folivora.",
+        "gambar": null
+      }
+    ],
+    "pernyataan": [],
+    "kunciJawaban": "C",
+    "kunci_jawaban": "C",
+    "kunci": "C",
+    "pembahasan": "Paragraf ketiga diawali kalimat utama \"Agar bisa mencerna daun, tubuh hewan folivora punya cara khusus\" lalu merinci usus panjang, metabolisme lambat, dan bakteri baik."
+  },
+  {
+    "id": "tka_sd_bindo_33",
+    "nomor": 33,
+    "jenjang": "SD",
+    "kelas": "6",
+    "tingkatKelas": "6 SD",
+    "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
+    "materi": "Pemahaman Tekstual - Informasi Fabel (Pusmendik 2026)",
+    "tipe": "pg_kompleks",
+    "teksSoal": "Kenthus yang Sombong\n\nDi tengah padang rumput terdapat kolam. Kolam itu dihuni banyak katak. Kenthus adalah anak katak yang paling besar dan kuat. Dia merasa tidak terkalahkan.\n\nSuatu pagi Kenthus melompat di padang rumput. Ada seekor anak lembu. Ia sedang bermain dan berlari-lari. Anak lembu itu menjulurkan lidahnya untuk makan. Lidahnya mengenai Kenthus. Kenthus melompat. \"Berani makhluk ini mengusikku!\" kata Kenthus sembari menuju ke tepi kolam.\n\n\"Kenthus, mengapa kamu terengah-engah?\" tanya Naka. \"Lihatlah di padang rumput itu. Makhluk itu sangat sombong. Ia tadi hendak menelanku!\" kata Kenthus dengan napas terengah-engah.\n\nKoko, kakak Kenthus, menjelaskan. \"Makhluk itu anak lembu. Anak lembu tidak jahat. Lembu tidak makan katak. Ia hanya makan rumput.\"\n\n\"Aku tidak percaya,\" jawab Kenthus menggebu-gebu. \"Aku sebenarnya bisa melawannya dengan mengembungkan diriku,\" lanjut Kenthus dengan bangga.\n\n\"Kamu tidak akan dapat menandingi lembu itu. Perbuatan kamu berbahaya,\" kata Koko.\n\nKenthus mengembungkan tubuhnya. Perutnya membesar secara berlebihan. Tiba-tiba ia jatuh lemas. Perutnya terasa sakit. Perlahan-lahan ia mengempiskan tubuhnya. \"Aku baik-baik saja. Maafkan aku, Kak. Aku tidak mendengar kata-katamu,\" kata Kenthus sembari menunduk.\n\nSumber: Pusmendik Kemendikdasmen (Adaptasi CeritaAnak)\n\nApa yang dijelaskan Koko tentang anak lembu? Pilihlah jawaban benar lebih dari satu.",
+    "teks_soal": "Kenthus yang Sombong\n\nDi tengah padang rumput terdapat kolam. Kolam itu dihuni banyak katak. Kenthus adalah anak katak yang paling besar dan kuat. Dia merasa tidak terkalahkan.\n\nSuatu pagi Kenthus melompat di padang rumput. Ada seekor anak lembu. Ia sedang bermain dan berlari-lari. Anak lembu itu menjulurkan lidahnya untuk makan. Lidahnya mengenai Kenthus. Kenthus melompat. \"Berani makhluk ini mengusikku!\" kata Kenthus sembari menuju ke tepi kolam.\n\n\"Kenthus, mengapa kamu terengah-engah?\" tanya Naka. \"Lihatlah di padang rumput itu. Makhluk itu sangat sombong. Ia tadi hendak menelanku!\" kata Kenthus dengan napas terengah-engah.\n\nKoko, kakak Kenthus, menjelaskan. \"Makhluk itu anak lembu. Anak lembu tidak jahat. Lembu tidak makan katak. Ia hanya makan rumput.\"\n\n\"Aku tidak percaya,\" jawab Kenthus menggebu-gebu. \"Aku sebenarnya bisa melawannya dengan mengembungkan diriku,\" lanjut Kenthus dengan bangga.\n\n\"Kamu tidak akan dapat menandingi lembu itu. Perbuatan kamu berbahaya,\" kata Koko.\n\nKenthus mengembungkan tubuhnya. Perutnya membesar secara berlebihan. Tiba-tiba ia jatuh lemas. Perutnya terasa sakit. Perlahan-lahan ia mengempiskan tubuhnya. \"Aku baik-baik saja. Maafkan aku, Kak. Aku tidak mendengar kata-katamu,\" kata Kenthus sembari menunduk.\n\nSumber: Pusmendik Kemendikdasmen (Adaptasi CeritaAnak)\n\nApa yang dijelaskan Koko tentang anak lembu? Pilihlah jawaban benar lebih dari satu.",
+    "soal": "Kenthus yang Sombong\n\nDi tengah padang rumput terdapat kolam. Kolam itu dihuni banyak katak. Kenthus adalah anak katak yang paling besar dan kuat. Dia merasa tidak terkalahkan.\n\nSuatu pagi Kenthus melompat di padang rumput. Ada seekor anak lembu. Ia sedang bermain dan berlari-lari. Anak lembu itu menjulurkan lidahnya untuk makan. Lidahnya mengenai Kenthus. Kenthus melompat. \"Berani makhluk ini mengusikku!\" kata Kenthus sembari menuju ke tepi kolam.\n\n\"Kenthus, mengapa kamu terengah-engah?\" tanya Naka. \"Lihatlah di padang rumput itu. Makhluk itu sangat sombong. Ia tadi hendak menelanku!\" kata Kenthus dengan napas terengah-engah.\n\nKoko, kakak Kenthus, menjelaskan. \"Makhluk itu anak lembu. Anak lembu tidak jahat. Lembu tidak makan katak. Ia hanya makan rumput.\"\n\n\"Aku tidak percaya,\" jawab Kenthus menggebu-gebu. \"Aku sebenarnya bisa melawannya dengan mengembungkan diriku,\" lanjut Kenthus dengan bangga.\n\n\"Kamu tidak akan dapat menandingi lembu itu. Perbuatan kamu berbahaya,\" kata Koko.\n\nKenthus mengembungkan tubuhnya. Perutnya membesar secara berlebihan. Tiba-tiba ia jatuh lemas. Perutnya terasa sakit. Perlahan-lahan ia mengempiskan tubuhnya. \"Aku baik-baik saja. Maafkan aku, Kak. Aku tidak mendengar kata-katamu,\" kata Kenthus sembari menunduk.\n\nSumber: Pusmendik Kemendikdasmen (Adaptasi CeritaAnak)\n\nApa yang dijelaskan Koko tentang anak lembu? Pilihlah jawaban benar lebih dari satu.",
+    "gambar": null,
+    "gambarUrls": [],
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Makhluk itu sangat sombong.",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Anak lembu tidak jahat.",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Lembu tidak makan katak.",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Makhluk itu sangat sombong.",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Anak lembu tidak jahat.",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Lembu tidak makan katak.",
+        "gambar": null
+      }
+    ],
+    "pernyataan": [],
+    "kunciJawaban": "B,C",
+    "kunci_jawaban": "B,C",
+    "kunci": "B,C",
+    "pembahasan": "Dalam dialognya, Koko menjelaskan bahwa \"Anak lembu tidak jahat. Lembu tidak makan katak. Ia hanya makan rumput.\" Yang menuduh sombong adalah Kenthus, bukan Koko."
+  },
+  {
+    "id": "tka_sd_bindo_34",
+    "nomor": 34,
+    "jenjang": "SD",
+    "kelas": "6",
+    "tingkatKelas": "6 SD",
+    "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
+    "materi": "Pemahaman Inferensial - Peristiwa & Konflik Cerita (Pusmendik 2026)",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Kenthus yang Sombong\n\nDi tengah padang rumput terdapat kolam. Kolam itu dihuni banyak katak. Kenthus adalah anak katak yang paling besar dan kuat. Dia merasa tidak terkalahkan.\n\nSuatu pagi Kenthus melompat di padang rumput. Ada seekor anak lembu. Ia sedang bermain dan berlari-lari. Anak lembu itu menjulurkan lidahnya untuk makan. Lidahnya mengenai Kenthus. Kenthus melompat. \"Berani makhluk ini mengusikku!\" kata Kenthus sembari menuju ke tepi kolam.\n\n\"Kenthus, mengapa kamu terengah-engah?\" tanya Naka. \"Lihatlah di padang rumput itu. Makhluk itu sangat sombong. Ia tadi hendak menelanku!\" kata Kenthus dengan napas terengah-engah.\n\nKoko, kakak Kenthus, menjelaskan. \"Makhluk itu anak lembu. Anak lembu tidak jahat. Lembu tidak makan katak. Ia hanya makan rumput.\"\n\n\"Aku tidak percaya,\" jawab Kenthus menggebu-gebu. \"Aku sebenarnya bisa melawannya dengan mengembungkan diriku,\" lanjut Kenthus dengan bangga.\n\n\"Kamu tidak akan dapat menandingi lembu itu. Perbuatan kamu berbahaya,\" kata Koko.\n\nKenthus mengembungkan tubuhnya. Perutnya membesar secara berlebihan. Tiba-tiba ia jatuh lemas. Perutnya terasa sakit. Perlahan-lahan ia mengempiskan tubuhnya. \"Aku baik-baik saja. Maafkan aku, Kak. Aku tidak mendengar kata-katamu,\" kata Kenthus sembari menunduk.\n\nSumber: Pusmendik Kemendikdasmen (Adaptasi CeritaAnak)\n\nApa kejadian yang membuat Kenthus merasa menyesal?",
+    "teks_soal": "Kenthus yang Sombong\n\nDi tengah padang rumput terdapat kolam. Kolam itu dihuni banyak katak. Kenthus adalah anak katak yang paling besar dan kuat. Dia merasa tidak terkalahkan.\n\nSuatu pagi Kenthus melompat di padang rumput. Ada seekor anak lembu. Ia sedang bermain dan berlari-lari. Anak lembu itu menjulurkan lidahnya untuk makan. Lidahnya mengenai Kenthus. Kenthus melompat. \"Berani makhluk ini mengusikku!\" kata Kenthus sembari menuju ke tepi kolam.\n\n\"Kenthus, mengapa kamu terengah-engah?\" tanya Naka. \"Lihatlah di padang rumput itu. Makhluk itu sangat sombong. Ia tadi hendak menelanku!\" kata Kenthus dengan napas terengah-engah.\n\nKoko, kakak Kenthus, menjelaskan. \"Makhluk itu anak lembu. Anak lembu tidak jahat. Lembu tidak makan katak. Ia hanya makan rumput.\"\n\n\"Aku tidak percaya,\" jawab Kenthus menggebu-gebu. \"Aku sebenarnya bisa melawannya dengan mengembungkan diriku,\" lanjut Kenthus dengan bangga.\n\n\"Kamu tidak akan dapat menandingi lembu itu. Perbuatan kamu berbahaya,\" kata Koko.\n\nKenthus mengembungkan tubuhnya. Perutnya membesar secara berlebihan. Tiba-tiba ia jatuh lemas. Perutnya terasa sakit. Perlahan-lahan ia mengempiskan tubuhnya. \"Aku baik-baik saja. Maafkan aku, Kak. Aku tidak mendengar kata-katamu,\" kata Kenthus sembari menunduk.\n\nSumber: Pusmendik Kemendikdasmen (Adaptasi CeritaAnak)\n\nApa kejadian yang membuat Kenthus merasa menyesal?",
+    "soal": "Kenthus yang Sombong\n\nDi tengah padang rumput terdapat kolam. Kolam itu dihuni banyak katak. Kenthus adalah anak katak yang paling besar dan kuat. Dia merasa tidak terkalahkan.\n\nSuatu pagi Kenthus melompat di padang rumput. Ada seekor anak lembu. Ia sedang bermain dan berlari-lari. Anak lembu itu menjulurkan lidahnya untuk makan. Lidahnya mengenai Kenthus. Kenthus melompat. \"Berani makhluk ini mengusikku!\" kata Kenthus sembari menuju ke tepi kolam.\n\n\"Kenthus, mengapa kamu terengah-engah?\" tanya Naka. \"Lihatlah di padang rumput itu. Makhluk itu sangat sombong. Ia tadi hendak menelanku!\" kata Kenthus dengan napas terengah-engah.\n\nKoko, kakak Kenthus, menjelaskan. \"Makhluk itu anak lembu. Anak lembu tidak jahat. Lembu tidak makan katak. Ia hanya makan rumput.\"\n\n\"Aku tidak percaya,\" jawab Kenthus menggebu-gebu. \"Aku sebenarnya bisa melawannya dengan mengembungkan diriku,\" lanjut Kenthus dengan bangga.\n\n\"Kamu tidak akan dapat menandingi lembu itu. Perbuatan kamu berbahaya,\" kata Koko.\n\nKenthus mengembungkan tubuhnya. Perutnya membesar secara berlebihan. Tiba-tiba ia jatuh lemas. Perutnya terasa sakit. Perlahan-lahan ia mengempiskan tubuhnya. \"Aku baik-baik saja. Maafkan aku, Kak. Aku tidak mendengar kata-katamu,\" kata Kenthus sembari menunduk.\n\nSumber: Pusmendik Kemendikdasmen (Adaptasi CeritaAnak)\n\nApa kejadian yang membuat Kenthus merasa menyesal?",
+    "gambar": null,
+    "gambarUrls": [],
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Kenthus hendak ditelan anak lembu di padang rumput.",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Kenthus berlari ke tepi kolam hingga terengah-engah.",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Kenthus mengembang terlalu besar hingga jatuh lemas.",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "Kenthus dimarahi Koko karena terlalu menggebu-gebu.",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Kenthus hendak ditelan anak lembu di padang rumput.",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Kenthus berlari ke tepi kolam hingga terengah-engah.",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Kenthus mengembang terlalu besar hingga jatuh lemas.",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "Kenthus dimarahi Koko karena terlalu menggebu-gebu.",
+        "gambar": null
+      }
+    ],
+    "pernyataan": [],
+    "kunciJawaban": "C",
+    "kunci_jawaban": "C",
+    "kunci": "C",
+    "pembahasan": "Setelah mengembungkan tubuhnya secara berlebihan hingga perutnya sakit dan jatuh lemas, barulah Kenthus menunduk dan meminta maaf karena tidak mendengar nasihat kakaknya."
+  },
+  {
+    "id": "tka_sd_bindo_35",
+    "nomor": 35,
+    "jenjang": "SD",
+    "kelas": "6",
+    "tingkatKelas": "6 SD",
+    "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
+    "materi": "Evaluasi & Apresiasi - Respons Emosional Fabel (Pusmendik 2026)",
+    "tipe": "benar_salah",
+    "teksSoal": "Kenthus yang Sombong\n\nDi tengah padang rumput terdapat kolam. Kolam itu dihuni banyak katak. Kenthus adalah anak katak yang paling besar dan kuat. Dia merasa tidak terkalahkan.\n\nSuatu pagi Kenthus melompat di padang rumput. Ada seekor anak lembu. Ia sedang bermain dan berlari-lari. Anak lembu itu menjulurkan lidahnya untuk makan. Lidahnya mengenai Kenthus. Kenthus melompat. \"Berani makhluk ini mengusikku!\" kata Kenthus sembari menuju ke tepi kolam.\n\n\"Kenthus, mengapa kamu terengah-engah?\" tanya Naka. \"Lihatlah di padang rumput itu. Makhluk itu sangat sombong. Ia tadi hendak menelanku!\" kata Kenthus dengan napas terengah-engah.\n\nKoko, kakak Kenthus, menjelaskan. \"Makhluk itu anak lembu. Anak lembu tidak jahat. Lembu tidak makan katak. Ia hanya makan rumput.\"\n\n\"Aku tidak percaya,\" jawab Kenthus menggebu-gebu. \"Aku sebenarnya bisa melawannya dengan mengembungkan diriku,\" lanjut Kenthus dengan bangga.\n\n\"Kamu tidak akan dapat menandingi lembu itu. Perbuatan kamu berbahaya,\" kata Koko.\n\nKenthus mengembungkan tubuhnya. Perutnya membesar secara berlebihan. Tiba-tiba ia jatuh lemas. Perutnya terasa sakit. Perlahan-lahan ia mengempiskan tubuhnya. \"Aku baik-baik saja. Maafkan aku, Kak. Aku tidak mendengar kata-katamu,\" kata Kenthus sembari menunduk.\n\nSumber: Pusmendik Kemendikdasmen (Adaptasi CeritaAnak)\n\nAmel telah membaca cerita tersebut. Tentukan Benar atau Salah untuk reaksi Amel yang sesuai saat membaca akhir cerita tersebut!",
+    "teks_soal": "Kenthus yang Sombong\n\nDi tengah padang rumput terdapat kolam. Kolam itu dihuni banyak katak. Kenthus adalah anak katak yang paling besar dan kuat. Dia merasa tidak terkalahkan.\n\nSuatu pagi Kenthus melompat di padang rumput. Ada seekor anak lembu. Ia sedang bermain dan berlari-lari. Anak lembu itu menjulurkan lidahnya untuk makan. Lidahnya mengenai Kenthus. Kenthus melompat. \"Berani makhluk ini mengusikku!\" kata Kenthus sembari menuju ke tepi kolam.\n\n\"Kenthus, mengapa kamu terengah-engah?\" tanya Naka. \"Lihatlah di padang rumput itu. Makhluk itu sangat sombong. Ia tadi hendak menelanku!\" kata Kenthus dengan napas terengah-engah.\n\nKoko, kakak Kenthus, menjelaskan. \"Makhluk itu anak lembu. Anak lembu tidak jahat. Lembu tidak makan katak. Ia hanya makan rumput.\"\n\n\"Aku tidak percaya,\" jawab Kenthus menggebu-gebu. \"Aku sebenarnya bisa melawannya dengan mengembungkan diriku,\" lanjut Kenthus dengan bangga.\n\n\"Kamu tidak akan dapat menandingi lembu itu. Perbuatan kamu berbahaya,\" kata Koko.\n\nKenthus mengembungkan tubuhnya. Perutnya membesar secara berlebihan. Tiba-tiba ia jatuh lemas. Perutnya terasa sakit. Perlahan-lahan ia mengempiskan tubuhnya. \"Aku baik-baik saja. Maafkan aku, Kak. Aku tidak mendengar kata-katamu,\" kata Kenthus sembari menunduk.\n\nSumber: Pusmendik Kemendikdasmen (Adaptasi CeritaAnak)\n\nAmel telah membaca cerita tersebut. Tentukan Benar atau Salah untuk reaksi Amel yang sesuai saat membaca akhir cerita tersebut!",
+    "soal": "Kenthus yang Sombong\n\nDi tengah padang rumput terdapat kolam. Kolam itu dihuni banyak katak. Kenthus adalah anak katak yang paling besar dan kuat. Dia merasa tidak terkalahkan.\n\nSuatu pagi Kenthus melompat di padang rumput. Ada seekor anak lembu. Ia sedang bermain dan berlari-lari. Anak lembu itu menjulurkan lidahnya untuk makan. Lidahnya mengenai Kenthus. Kenthus melompat. \"Berani makhluk ini mengusikku!\" kata Kenthus sembari menuju ke tepi kolam.\n\n\"Kenthus, mengapa kamu terengah-engah?\" tanya Naka. \"Lihatlah di padang rumput itu. Makhluk itu sangat sombong. Ia tadi hendak menelanku!\" kata Kenthus dengan napas terengah-engah.\n\nKoko, kakak Kenthus, menjelaskan. \"Makhluk itu anak lembu. Anak lembu tidak jahat. Lembu tidak makan katak. Ia hanya makan rumput.\"\n\n\"Aku tidak percaya,\" jawab Kenthus menggebu-gebu. \"Aku sebenarnya bisa melawannya dengan mengembungkan diriku,\" lanjut Kenthus dengan bangga.\n\n\"Kamu tidak akan dapat menandingi lembu itu. Perbuatan kamu berbahaya,\" kata Koko.\n\nKenthus mengembungkan tubuhnya. Perutnya membesar secara berlebihan. Tiba-tiba ia jatuh lemas. Perutnya terasa sakit. Perlahan-lahan ia mengempiskan tubuhnya. \"Aku baik-baik saja. Maafkan aku, Kak. Aku tidak mendengar kata-katamu,\" kata Kenthus sembari menunduk.\n\nSumber: Pusmendik Kemendikdasmen (Adaptasi CeritaAnak)\n\nAmel telah membaca cerita tersebut. Tentukan Benar atau Salah untuk reaksi Amel yang sesuai saat membaca akhir cerita tersebut!",
+    "gambar": null,
+    "gambarUrls": [],
+    "opsiJawaban": [],
+    "opsi": [],
+    "pernyataan": [
+      {
+        "teks": "Terharu karena Kenthus mau mengakui kesalahannya.",
+        "jawaban": "Benar",
+        "gambar": null
+      },
+      {
+        "teks": "Bahagia karena Kenthus berbaikan dengan anak lembu.",
+        "jawaban": "Salah",
+        "gambar": null
+      },
+      {
+        "teks": "Antusias karena Kenthus bisa membuktikan kekuatannya.",
+        "jawaban": "Salah",
+        "gambar": null
+      }
+    ],
+    "kunciJawaban": "Benar,Salah,Salah",
+    "kunci_jawaban": "Benar,Salah,Salah",
+    "kunci": "Benar,Salah,Salah",
+    "pembahasan": "Di akhir cerita Kenthus mengakui kesalahannya kepada Koko (pernyataan 1 Benar). Anak lembu tidak muncul lagi di akhir cerita dan Kenthus justru gagal membuktikan kekuatannya (pernyataan 2 dan 3 Salah)."
+  },
+  {
+    "id": "tka_sd_bindo_36",
+    "nomor": 36,
+    "jenjang": "SD",
+    "kelas": "6",
+    "tingkatKelas": "6 SD",
+    "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
+    "materi": "Pemahaman Tekstual - Tokoh & Penyelesaian Masalah (Pusmendik 2026)",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Antre, Dong!\n\nTia dan Devi sedang berada di Toko Buku Gemar. Mereka mencari buku pelajaran. Setelah menemukan buku yang dicari, mereka menuju ke kasir. Mereka menempati urutan kelima dan keenam. Tak lama kemudian, ada orang yang mengantre di belakang mereka. Mereka sabar menunggu giliran membayar di kasir.\n\nNamun, tiba-tiba seorang pemuda berjalan ke antrean paling depan. Tentu saja, orang-orang yang sudah mengantre lebih dulu memprotes.\n\n\"Tolong, antre, Dik,\" kata seorang ibu yang berada di belakangnya.\n\n\"Maaf, Bu, saya harus cepat-cepat. Ini juga hanya satu buku, pasti tidak akan lama. Tidak akan sampai lima menit,\" kata pemuda itu.\n\n\"Tidak boleh seperti itu, Nak. Kita harus membudayakan antre,\" ucap ibu itu.\n\n\"Iya, Kak, kita harus antre. Semua yang ada di sini juga ingin cepat dilayani,\" sahut Tia. Devi terlihat hanya diam dan mengangguk.\n\nMendengar ada suara seperti keributan, Pak Satpam pun masuk. Dia menenangkan situasi. Pemuda itu harus tetap mengantre sesuai urutan.\n\nSumber: Pusmendik Kemendikdasmen\n\nSiapakah tokoh yang menyelesaikan keributan dalam cerita tersebut?",
+    "teks_soal": "Antre, Dong!\n\nTia dan Devi sedang berada di Toko Buku Gemar. Mereka mencari buku pelajaran. Setelah menemukan buku yang dicari, mereka menuju ke kasir. Mereka menempati urutan kelima dan keenam. Tak lama kemudian, ada orang yang mengantre di belakang mereka. Mereka sabar menunggu giliran membayar di kasir.\n\nNamun, tiba-tiba seorang pemuda berjalan ke antrean paling depan. Tentu saja, orang-orang yang sudah mengantre lebih dulu memprotes.\n\n\"Tolong, antre, Dik,\" kata seorang ibu yang berada di belakangnya.\n\n\"Maaf, Bu, saya harus cepat-cepat. Ini juga hanya satu buku, pasti tidak akan lama. Tidak akan sampai lima menit,\" kata pemuda itu.\n\n\"Tidak boleh seperti itu, Nak. Kita harus membudayakan antre,\" ucap ibu itu.\n\n\"Iya, Kak, kita harus antre. Semua yang ada di sini juga ingin cepat dilayani,\" sahut Tia. Devi terlihat hanya diam dan mengangguk.\n\nMendengar ada suara seperti keributan, Pak Satpam pun masuk. Dia menenangkan situasi. Pemuda itu harus tetap mengantre sesuai urutan.\n\nSumber: Pusmendik Kemendikdasmen\n\nSiapakah tokoh yang menyelesaikan keributan dalam cerita tersebut?",
+    "soal": "Antre, Dong!\n\nTia dan Devi sedang berada di Toko Buku Gemar. Mereka mencari buku pelajaran. Setelah menemukan buku yang dicari, mereka menuju ke kasir. Mereka menempati urutan kelima dan keenam. Tak lama kemudian, ada orang yang mengantre di belakang mereka. Mereka sabar menunggu giliran membayar di kasir.\n\nNamun, tiba-tiba seorang pemuda berjalan ke antrean paling depan. Tentu saja, orang-orang yang sudah mengantre lebih dulu memprotes.\n\n\"Tolong, antre, Dik,\" kata seorang ibu yang berada di belakangnya.\n\n\"Maaf, Bu, saya harus cepat-cepat. Ini juga hanya satu buku, pasti tidak akan lama. Tidak akan sampai lima menit,\" kata pemuda itu.\n\n\"Tidak boleh seperti itu, Nak. Kita harus membudayakan antre,\" ucap ibu itu.\n\n\"Iya, Kak, kita harus antre. Semua yang ada di sini juga ingin cepat dilayani,\" sahut Tia. Devi terlihat hanya diam dan mengangguk.\n\nMendengar ada suara seperti keributan, Pak Satpam pun masuk. Dia menenangkan situasi. Pemuda itu harus tetap mengantre sesuai urutan.\n\nSumber: Pusmendik Kemendikdasmen\n\nSiapakah tokoh yang menyelesaikan keributan dalam cerita tersebut?",
+    "gambar": null,
+    "gambarUrls": [],
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Tia.",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Devi.",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Kasir.",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "Pak Satpam.",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Tia.",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Devi.",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Kasir.",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "Pak Satpam.",
+        "gambar": null
+      }
+    ],
+    "pernyataan": [],
+    "kunciJawaban": "D",
+    "kunci_jawaban": "D",
+    "kunci": "D",
+    "pembahasan": "Pada paragraf terakhir disebutkan: \"Mendengar ada suara seperti keributan, Pak Satpam pun masuk. Dia menenangkan situasi. Pemuda itu harus tetap mengantre sesuai urutan.\""
+  },
+  {
+    "id": "tka_sd_bindo_37",
+    "nomor": 37,
+    "jenjang": "SD",
+    "kelas": "6",
+    "tingkatKelas": "6 SD",
+    "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
+    "materi": "Pemahaman Inferensial - Peristiwa Tokoh Cerita (Pusmendik 2026)",
+    "tipe": "pg_kompleks",
+    "teksSoal": "Antre, Dong!\n\nTia dan Devi sedang berada di Toko Buku Gemar. Mereka mencari buku pelajaran. Setelah menemukan buku yang dicari, mereka menuju ke kasir. Mereka menempati urutan kelima dan keenam. Tak lama kemudian, ada orang yang mengantre di belakang mereka. Mereka sabar menunggu giliran membayar di kasir.\n\nNamun, tiba-tiba seorang pemuda berjalan ke antrean paling depan. Tentu saja, orang-orang yang sudah mengantre lebih dulu memprotes.\n\n\"Tolong, antre, Dik,\" kata seorang ibu yang berada di belakangnya.\n\n\"Maaf, Bu, saya harus cepat-cepat. Ini juga hanya satu buku, pasti tidak akan lama. Tidak akan sampai lima menit,\" kata pemuda itu.\n\n\"Tidak boleh seperti itu, Nak. Kita harus membudayakan antre,\" ucap ibu itu.\n\n\"Iya, Kak, kita harus antre. Semua yang ada di sini juga ingin cepat dilayani,\" sahut Tia. Devi terlihat hanya diam dan mengangguk.\n\nMendengar ada suara seperti keributan, Pak Satpam pun masuk. Dia menenangkan situasi. Pemuda itu harus tetap mengantre sesuai urutan.\n\nSumber: Pusmendik Kemendikdasmen\n\nApa saja peristiwa yang dialami Tia dalam cerita? Jawaban benar lebih dari satu!",
+    "teks_soal": "Antre, Dong!\n\nTia dan Devi sedang berada di Toko Buku Gemar. Mereka mencari buku pelajaran. Setelah menemukan buku yang dicari, mereka menuju ke kasir. Mereka menempati urutan kelima dan keenam. Tak lama kemudian, ada orang yang mengantre di belakang mereka. Mereka sabar menunggu giliran membayar di kasir.\n\nNamun, tiba-tiba seorang pemuda berjalan ke antrean paling depan. Tentu saja, orang-orang yang sudah mengantre lebih dulu memprotes.\n\n\"Tolong, antre, Dik,\" kata seorang ibu yang berada di belakangnya.\n\n\"Maaf, Bu, saya harus cepat-cepat. Ini juga hanya satu buku, pasti tidak akan lama. Tidak akan sampai lima menit,\" kata pemuda itu.\n\n\"Tidak boleh seperti itu, Nak. Kita harus membudayakan antre,\" ucap ibu itu.\n\n\"Iya, Kak, kita harus antre. Semua yang ada di sini juga ingin cepat dilayani,\" sahut Tia. Devi terlihat hanya diam dan mengangguk.\n\nMendengar ada suara seperti keributan, Pak Satpam pun masuk. Dia menenangkan situasi. Pemuda itu harus tetap mengantre sesuai urutan.\n\nSumber: Pusmendik Kemendikdasmen\n\nApa saja peristiwa yang dialami Tia dalam cerita? Jawaban benar lebih dari satu!",
+    "soal": "Antre, Dong!\n\nTia dan Devi sedang berada di Toko Buku Gemar. Mereka mencari buku pelajaran. Setelah menemukan buku yang dicari, mereka menuju ke kasir. Mereka menempati urutan kelima dan keenam. Tak lama kemudian, ada orang yang mengantre di belakang mereka. Mereka sabar menunggu giliran membayar di kasir.\n\nNamun, tiba-tiba seorang pemuda berjalan ke antrean paling depan. Tentu saja, orang-orang yang sudah mengantre lebih dulu memprotes.\n\n\"Tolong, antre, Dik,\" kata seorang ibu yang berada di belakangnya.\n\n\"Maaf, Bu, saya harus cepat-cepat. Ini juga hanya satu buku, pasti tidak akan lama. Tidak akan sampai lima menit,\" kata pemuda itu.\n\n\"Tidak boleh seperti itu, Nak. Kita harus membudayakan antre,\" ucap ibu itu.\n\n\"Iya, Kak, kita harus antre. Semua yang ada di sini juga ingin cepat dilayani,\" sahut Tia. Devi terlihat hanya diam dan mengangguk.\n\nMendengar ada suara seperti keributan, Pak Satpam pun masuk. Dia menenangkan situasi. Pemuda itu harus tetap mengantre sesuai urutan.\n\nSumber: Pusmendik Kemendikdasmen\n\nApa saja peristiwa yang dialami Tia dalam cerita? Jawaban benar lebih dari satu!",
+    "gambar": null,
+    "gambarUrls": [],
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Mencari dan membeli buku bersama Devi.",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Dinasihati oleh seorang ibu untuk antre.",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Ikut menegur pemuda yang menyerobot antrean.",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Mencari dan membeli buku bersama Devi.",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Dinasihati oleh seorang ibu untuk antre.",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Ikut menegur pemuda yang menyerobot antrean.",
+        "gambar": null
+      }
+    ],
+    "pernyataan": [],
+    "kunciJawaban": "A,C",
+    "kunci_jawaban": "A,C",
+    "kunci": "A,C",
+    "pembahasan": "Tia mencari buku bersama Devi dan bersabar mengantre (A benar), lalu Tia ikut menegur si pemuda (C benar). Yang dinasihati ibu adalah si pemuda, bukan Tia (B salah)."
+  },
+  {
+    "id": "tka_sd_bindo_38",
+    "nomor": 38,
+    "jenjang": "SD",
+    "kelas": "6",
+    "tingkatKelas": "6 SD",
+    "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
+    "materi": "Evaluasi Nilai Kehidupan - Budaya Antre (Pusmendik 2026)",
+    "tipe": "benar_salah",
+    "teksSoal": "Antre, Dong!\n\nTia dan Devi sedang berada di Toko Buku Gemar. Mereka mencari buku pelajaran. Setelah menemukan buku yang dicari, mereka menuju ke kasir. Mereka menempati urutan kelima dan keenam. Tak lama kemudian, ada orang yang mengantre di belakang mereka. Mereka sabar menunggu giliran membayar di kasir.\n\nNamun, tiba-tiba seorang pemuda berjalan ke antrean paling depan. Tentu saja, orang-orang yang sudah mengantre lebih dulu memprotes.\n\n\"Tolong, antre, Dik,\" kata seorang ibu yang berada di belakangnya.\n\n\"Maaf, Bu, saya harus cepat-cepat. Ini juga hanya satu buku, pasti tidak akan lama. Tidak akan sampai lima menit,\" kata pemuda itu.\n\n\"Tidak boleh seperti itu, Nak. Kita harus membudayakan antre,\" ucap ibu itu.\n\n\"Iya, Kak, kita harus antre. Semua yang ada di sini juga ingin cepat dilayani,\" sahut Tia. Devi terlihat hanya diam dan mengangguk.\n\nMendengar ada suara seperti keributan, Pak Satpam pun masuk. Dia menenangkan situasi. Pemuda itu harus tetap mengantre sesuai urutan.\n\nSumber: Pusmendik Kemendikdasmen\n\nDalam cerita, seorang pemuda mengatakan, \"hanya satu buku, pasti tidak akan lama.\" Menurut Intan, perkataan tersebut tidak dapat dibenarkan. Tentukan Benar atau Salah apakah alasan berikut mendukung pendapat Intan berdasarkan isi cerita!",
+    "teks_soal": "Antre, Dong!\n\nTia dan Devi sedang berada di Toko Buku Gemar. Mereka mencari buku pelajaran. Setelah menemukan buku yang dicari, mereka menuju ke kasir. Mereka menempati urutan kelima dan keenam. Tak lama kemudian, ada orang yang mengantre di belakang mereka. Mereka sabar menunggu giliran membayar di kasir.\n\nNamun, tiba-tiba seorang pemuda berjalan ke antrean paling depan. Tentu saja, orang-orang yang sudah mengantre lebih dulu memprotes.\n\n\"Tolong, antre, Dik,\" kata seorang ibu yang berada di belakangnya.\n\n\"Maaf, Bu, saya harus cepat-cepat. Ini juga hanya satu buku, pasti tidak akan lama. Tidak akan sampai lima menit,\" kata pemuda itu.\n\n\"Tidak boleh seperti itu, Nak. Kita harus membudayakan antre,\" ucap ibu itu.\n\n\"Iya, Kak, kita harus antre. Semua yang ada di sini juga ingin cepat dilayani,\" sahut Tia. Devi terlihat hanya diam dan mengangguk.\n\nMendengar ada suara seperti keributan, Pak Satpam pun masuk. Dia menenangkan situasi. Pemuda itu harus tetap mengantre sesuai urutan.\n\nSumber: Pusmendik Kemendikdasmen\n\nDalam cerita, seorang pemuda mengatakan, \"hanya satu buku, pasti tidak akan lama.\" Menurut Intan, perkataan tersebut tidak dapat dibenarkan. Tentukan Benar atau Salah apakah alasan berikut mendukung pendapat Intan berdasarkan isi cerita!",
+    "soal": "Antre, Dong!\n\nTia dan Devi sedang berada di Toko Buku Gemar. Mereka mencari buku pelajaran. Setelah menemukan buku yang dicari, mereka menuju ke kasir. Mereka menempati urutan kelima dan keenam. Tak lama kemudian, ada orang yang mengantre di belakang mereka. Mereka sabar menunggu giliran membayar di kasir.\n\nNamun, tiba-tiba seorang pemuda berjalan ke antrean paling depan. Tentu saja, orang-orang yang sudah mengantre lebih dulu memprotes.\n\n\"Tolong, antre, Dik,\" kata seorang ibu yang berada di belakangnya.\n\n\"Maaf, Bu, saya harus cepat-cepat. Ini juga hanya satu buku, pasti tidak akan lama. Tidak akan sampai lima menit,\" kata pemuda itu.\n\n\"Tidak boleh seperti itu, Nak. Kita harus membudayakan antre,\" ucap ibu itu.\n\n\"Iya, Kak, kita harus antre. Semua yang ada di sini juga ingin cepat dilayani,\" sahut Tia. Devi terlihat hanya diam dan mengangguk.\n\nMendengar ada suara seperti keributan, Pak Satpam pun masuk. Dia menenangkan situasi. Pemuda itu harus tetap mengantre sesuai urutan.\n\nSumber: Pusmendik Kemendikdasmen\n\nDalam cerita, seorang pemuda mengatakan, \"hanya satu buku, pasti tidak akan lama.\" Menurut Intan, perkataan tersebut tidak dapat dibenarkan. Tentukan Benar atau Salah apakah alasan berikut mendukung pendapat Intan berdasarkan isi cerita!",
+    "gambar": null,
+    "gambarUrls": [],
+    "opsiJawaban": [],
+    "opsi": [],
+    "pernyataan": [
+      {
+        "teks": "Semua orang yang mengantre juga ingin cepat dilayani.",
+        "jawaban": "Benar",
+        "gambar": null
+      },
+      {
+        "teks": "Mengantre membutuhkan kesabaran setiap orang.",
+        "jawaban": "Salah",
+        "gambar": null
+      },
+      {
+        "teks": "Aturan antrean harus dihormati oleh semua orang.",
+        "jawaban": "Benar",
+        "gambar": null
+      }
+    ],
+    "kunciJawaban": "Benar,Salah,Benar",
+    "kunci_jawaban": "Benar,Salah,Benar",
+    "kunci": "Benar,Salah,Benar",
+    "pembahasan": "Sesuai acuan Pusmendik: Tia menegaskan semua orang di antrean juga ingin cepat dilayani (A mendukung/Benar), dan aturan antrean berlaku bagi semua termasuk anak muda (C mendukung/Benar)."
+  },
+  {
+    "id": "tka_sd_bindo_39",
+    "nomor": 39,
+    "jenjang": "SD",
+    "kelas": "6",
+    "tingkatKelas": "6 SD",
+    "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
+    "materi": "Pemahaman Tekstual - Sebab-Akibat Teks Informasi (Pusmendik 2026)",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Kenapa Kita Tidak Boleh Malas Menyikat Gigi?\n\nApakah kamu sering lupa menyikat gigi sebelum tidur? Kenapa kita tidak boleh malas menyikat gigi? Bayangkan jika kita tidak memiliki gigi. Kita hanya bisa makan makanan lunak saja. Makanan yang tidak perlu digigit atau dikunyah. Oleh karena itu, kita harus merawat gigi. Faktanya, gigi kita terdiri dari banyak lapisan, lho.\n\nBayangkan jika kita tidak menyikat gigi! Bakteri jahat suka memakan sisa gula, misalnya sisa kue, keripik, roti, dan permen. Mereka melepaskan asam yang membuat gigi kita berlubang. Mengerikan, ya! Yuk, rajin menyikat gigi sebelum tidur dan setelah bangun tidur.\n\nSumber: Pusmendik Kemendikdasmen (Adaptasi Bobo)\n\nApa penyebab gigi berlubang berdasarkan bacaan tersebut?",
+    "teks_soal": "Kenapa Kita Tidak Boleh Malas Menyikat Gigi?\n\nApakah kamu sering lupa menyikat gigi sebelum tidur? Kenapa kita tidak boleh malas menyikat gigi? Bayangkan jika kita tidak memiliki gigi. Kita hanya bisa makan makanan lunak saja. Makanan yang tidak perlu digigit atau dikunyah. Oleh karena itu, kita harus merawat gigi. Faktanya, gigi kita terdiri dari banyak lapisan, lho.\n\nBayangkan jika kita tidak menyikat gigi! Bakteri jahat suka memakan sisa gula, misalnya sisa kue, keripik, roti, dan permen. Mereka melepaskan asam yang membuat gigi kita berlubang. Mengerikan, ya! Yuk, rajin menyikat gigi sebelum tidur dan setelah bangun tidur.\n\nSumber: Pusmendik Kemendikdasmen (Adaptasi Bobo)\n\nApa penyebab gigi berlubang berdasarkan bacaan tersebut?",
+    "soal": "Kenapa Kita Tidak Boleh Malas Menyikat Gigi?\n\nApakah kamu sering lupa menyikat gigi sebelum tidur? Kenapa kita tidak boleh malas menyikat gigi? Bayangkan jika kita tidak memiliki gigi. Kita hanya bisa makan makanan lunak saja. Makanan yang tidak perlu digigit atau dikunyah. Oleh karena itu, kita harus merawat gigi. Faktanya, gigi kita terdiri dari banyak lapisan, lho.\n\nBayangkan jika kita tidak menyikat gigi! Bakteri jahat suka memakan sisa gula, misalnya sisa kue, keripik, roti, dan permen. Mereka melepaskan asam yang membuat gigi kita berlubang. Mengerikan, ya! Yuk, rajin menyikat gigi sebelum tidur dan setelah bangun tidur.\n\nSumber: Pusmendik Kemendikdasmen (Adaptasi Bobo)\n\nApa penyebab gigi berlubang berdasarkan bacaan tersebut?",
+    "gambar": null,
+    "gambarUrls": [],
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Rusaknya enamel pada gigi.",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Enamel gigi tidak sekuat tulang.",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Pembuluh darah dan saraf sensitif.",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "Bakteri melepaskan zat asam pada gigi.",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Rusaknya enamel pada gigi.",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Enamel gigi tidak sekuat tulang.",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Pembuluh darah dan saraf sensitif.",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "Bakteri melepaskan zat asam pada gigi.",
+        "gambar": null
+      }
+    ],
+    "pernyataan": [],
+    "kunciJawaban": "D",
+    "kunci_jawaban": "D",
+    "kunci": "D",
+    "pembahasan": "Tersurat pada paragraf kedua: \"Bakteri jahat suka memakan sisa gula... Mereka melepaskan asam yang membuat gigi kita berlubang.\""
+  },
+  {
+    "id": "tka_sd_bindo_40",
+    "nomor": 40,
+    "jenjang": "SD",
+    "kelas": "6",
+    "tingkatKelas": "6 SD",
+    "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
+    "materi": "Pemahaman Inferensial - Prediksi Akibat Teks Informasi (Pusmendik 2026)",
+    "tipe": "pg_kompleks",
+    "teksSoal": "Kenapa Kita Tidak Boleh Malas Menyikat Gigi?\n\nApakah kamu sering lupa menyikat gigi sebelum tidur? Kenapa kita tidak boleh malas menyikat gigi? Bayangkan jika kita tidak memiliki gigi. Kita hanya bisa makan makanan lunak saja. Makanan yang tidak perlu digigit atau dikunyah. Oleh karena itu, kita harus merawat gigi. Faktanya, gigi kita terdiri dari banyak lapisan, lho.\n\nBayangkan jika kita tidak menyikat gigi! Bakteri jahat suka memakan sisa gula, misalnya sisa kue, keripik, roti, dan permen. Mereka melepaskan asam yang membuat gigi kita berlubang. Mengerikan, ya! Yuk, rajin menyikat gigi sebelum tidur dan setelah bangun tidur.\n\nSumber: Pusmendik Kemendikdasmen (Adaptasi Bobo)\n\nApa yang terjadi pada gigi jika tidak dirawat dengan baik? Jawaban benar lebih dari satu.",
+    "teks_soal": "Kenapa Kita Tidak Boleh Malas Menyikat Gigi?\n\nApakah kamu sering lupa menyikat gigi sebelum tidur? Kenapa kita tidak boleh malas menyikat gigi? Bayangkan jika kita tidak memiliki gigi. Kita hanya bisa makan makanan lunak saja. Makanan yang tidak perlu digigit atau dikunyah. Oleh karena itu, kita harus merawat gigi. Faktanya, gigi kita terdiri dari banyak lapisan, lho.\n\nBayangkan jika kita tidak menyikat gigi! Bakteri jahat suka memakan sisa gula, misalnya sisa kue, keripik, roti, dan permen. Mereka melepaskan asam yang membuat gigi kita berlubang. Mengerikan, ya! Yuk, rajin menyikat gigi sebelum tidur dan setelah bangun tidur.\n\nSumber: Pusmendik Kemendikdasmen (Adaptasi Bobo)\n\nApa yang terjadi pada gigi jika tidak dirawat dengan baik? Jawaban benar lebih dari satu.",
+    "soal": "Kenapa Kita Tidak Boleh Malas Menyikat Gigi?\n\nApakah kamu sering lupa menyikat gigi sebelum tidur? Kenapa kita tidak boleh malas menyikat gigi? Bayangkan jika kita tidak memiliki gigi. Kita hanya bisa makan makanan lunak saja. Makanan yang tidak perlu digigit atau dikunyah. Oleh karena itu, kita harus merawat gigi. Faktanya, gigi kita terdiri dari banyak lapisan, lho.\n\nBayangkan jika kita tidak menyikat gigi! Bakteri jahat suka memakan sisa gula, misalnya sisa kue, keripik, roti, dan permen. Mereka melepaskan asam yang membuat gigi kita berlubang. Mengerikan, ya! Yuk, rajin menyikat gigi sebelum tidur dan setelah bangun tidur.\n\nSumber: Pusmendik Kemendikdasmen (Adaptasi Bobo)\n\nApa yang terjadi pada gigi jika tidak dirawat dengan baik? Jawaban benar lebih dari satu.",
+    "gambar": null,
+    "gambarUrls": [],
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Gigi akan menjadi rusak dan bolong.",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Gigi akan mengunyah makanan lebih lama.",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Gigi akan ditumbuhi oleh bakteri sisa makanan.",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Gigi akan menjadi rusak dan bolong.",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Gigi akan mengunyah makanan lebih lama.",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Gigi akan ditumbuhi oleh bakteri sisa makanan.",
+        "gambar": null
+      }
+    ],
+    "pernyataan": [],
+    "kunciJawaban": "A,C",
+    "kunci_jawaban": "A,C",
+    "kunci": "A,C",
+    "pembahasan": "Jika malas menyikat gigi, sisa gula pada gigi ditumbuhi/dimakan bakteri jahat (C) lalu melepaskan asam yang membuat gigi rusak dan berlubang (A)."
+  },
+  {
+    "id": "tka_sd_bindo_41",
+    "nomor": 41,
+    "jenjang": "SD",
+    "kelas": "6",
+    "tingkatKelas": "6 SD",
+    "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
+    "materi": "Pemahaman Inferensial - Makna Larik Puisi (Pusmendik 2026)",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Surat untuk Sahabat\n\nSenyum itu enggan lepas dari bibirmu\nKetika kau melihat kedatanganku\nUluran tanganmu menyambutku\nUntuk selalu bersama dan saling berpegang erat\nMenghadapi segala suka maupun duka\n\nBila sesekali kau marah\nItu karena aku tak mau memahamimu\nBila sesekali aku berbuat salah\nMaafmu selalu terbuka untukku\n\nKata terima kasih kuanggap lebih manis daripada kata maaf\nuntuk segala keceriaan yang selalu kau bagi\nuntuk segala ketulusan hati yang selalu kau beri\ndan untuk kesetiaan yang tak akan pernah lekang oleh masa\n\nBila kita dewasa nanti\ndan jarak juga waktu memisahkan kita\nSatu harapku dalam hati\nKata persahabatan tidak akan pernah menjadi sebuah kenangan\n\nSumber: Antologi Puisi Anak Kemendikdasmen\n\n\"kesetiaan yang tak akan pernah lekang oleh masa\"\n\nMakna pada larik puisi tersebut adalah …",
+    "teks_soal": "Surat untuk Sahabat\n\nSenyum itu enggan lepas dari bibirmu\nKetika kau melihat kedatanganku\nUluran tanganmu menyambutku\nUntuk selalu bersama dan saling berpegang erat\nMenghadapi segala suka maupun duka\n\nBila sesekali kau marah\nItu karena aku tak mau memahamimu\nBila sesekali aku berbuat salah\nMaafmu selalu terbuka untukku\n\nKata terima kasih kuanggap lebih manis daripada kata maaf\nuntuk segala keceriaan yang selalu kau bagi\nuntuk segala ketulusan hati yang selalu kau beri\ndan untuk kesetiaan yang tak akan pernah lekang oleh masa\n\nBila kita dewasa nanti\ndan jarak juga waktu memisahkan kita\nSatu harapku dalam hati\nKata persahabatan tidak akan pernah menjadi sebuah kenangan\n\nSumber: Antologi Puisi Anak Kemendikdasmen\n\n\"kesetiaan yang tak akan pernah lekang oleh masa\"\n\nMakna pada larik puisi tersebut adalah …",
+    "soal": "Surat untuk Sahabat\n\nSenyum itu enggan lepas dari bibirmu\nKetika kau melihat kedatanganku\nUluran tanganmu menyambutku\nUntuk selalu bersama dan saling berpegang erat\nMenghadapi segala suka maupun duka\n\nBila sesekali kau marah\nItu karena aku tak mau memahamimu\nBila sesekali aku berbuat salah\nMaafmu selalu terbuka untukku\n\nKata terima kasih kuanggap lebih manis daripada kata maaf\nuntuk segala keceriaan yang selalu kau bagi\nuntuk segala ketulusan hati yang selalu kau beri\ndan untuk kesetiaan yang tak akan pernah lekang oleh masa\n\nBila kita dewasa nanti\ndan jarak juga waktu memisahkan kita\nSatu harapku dalam hati\nKata persahabatan tidak akan pernah menjadi sebuah kenangan\n\nSumber: Antologi Puisi Anak Kemendikdasmen\n\n\"kesetiaan yang tak akan pernah lekang oleh masa\"\n\nMakna pada larik puisi tersebut adalah …",
+    "gambar": null,
+    "gambarUrls": [],
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Simbol penerimaan, dukungan, dan rasa aman dalam persahabatan.",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Ungkapan kebahagiaan saat bertemu seseorang yang lama tidak bertemu.",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Penghargaan dan rasa syukur sebagai hal yang berkesan dalam persahabatan.",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "Lambang hubungan abadi, tetap kuat meski waktu atau jarak memisahkan.",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Simbol penerimaan, dukungan, dan rasa aman dalam persahabatan.",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Ungkapan kebahagiaan saat bertemu seseorang yang lama tidak bertemu.",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Penghargaan dan rasa syukur sebagai hal yang berkesan dalam persahabatan.",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "Lambang hubungan abadi, tetap kuat meski waktu atau jarak memisahkan.",
+        "gambar": null
+      }
+    ],
+    "pernyataan": [],
+    "kunciJawaban": "D",
+    "kunci_jawaban": "D",
+    "kunci": "D",
+    "pembahasan": "\"Tak lekang oleh masa\" berarti tidak rusak atau hilang dimakan waktu—melambangkan persahabatan abadi yang tetap kuat walau dipisahkan jarak dan waktu."
+  },
+  {
+    "id": "tka_sd_bindo_42",
+    "nomor": 42,
+    "jenjang": "SD",
+    "kelas": "6",
+    "tingkatKelas": "6 SD",
+    "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
+    "materi": "Pemahaman Inferensial - Amanat Puisi Anak (Pusmendik 2026)",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Surat untuk Sahabat\n\nSenyum itu enggan lepas dari bibirmu\nKetika kau melihat kedatanganku\nUluran tanganmu menyambutku\nUntuk selalu bersama dan saling berpegang erat\nMenghadapi segala suka maupun duka\n\nBila sesekali kau marah\nItu karena aku tak mau memahamimu\nBila sesekali aku berbuat salah\nMaafmu selalu terbuka untukku\n\nKata terima kasih kuanggap lebih manis daripada kata maaf\nuntuk segala keceriaan yang selalu kau bagi\nuntuk segala ketulusan hati yang selalu kau beri\ndan untuk kesetiaan yang tak akan pernah lekang oleh masa\n\nBila kita dewasa nanti\ndan jarak juga waktu memisahkan kita\nSatu harapku dalam hati\nKata persahabatan tidak akan pernah menjadi sebuah kenangan\n\nSumber: Antologi Puisi Anak Kemendikdasmen\n\nPesan apa yang ingin disampaikan dalam puisi tersebut?",
+    "teks_soal": "Surat untuk Sahabat\n\nSenyum itu enggan lepas dari bibirmu\nKetika kau melihat kedatanganku\nUluran tanganmu menyambutku\nUntuk selalu bersama dan saling berpegang erat\nMenghadapi segala suka maupun duka\n\nBila sesekali kau marah\nItu karena aku tak mau memahamimu\nBila sesekali aku berbuat salah\nMaafmu selalu terbuka untukku\n\nKata terima kasih kuanggap lebih manis daripada kata maaf\nuntuk segala keceriaan yang selalu kau bagi\nuntuk segala ketulusan hati yang selalu kau beri\ndan untuk kesetiaan yang tak akan pernah lekang oleh masa\n\nBila kita dewasa nanti\ndan jarak juga waktu memisahkan kita\nSatu harapku dalam hati\nKata persahabatan tidak akan pernah menjadi sebuah kenangan\n\nSumber: Antologi Puisi Anak Kemendikdasmen\n\nPesan apa yang ingin disampaikan dalam puisi tersebut?",
+    "soal": "Surat untuk Sahabat\n\nSenyum itu enggan lepas dari bibirmu\nKetika kau melihat kedatanganku\nUluran tanganmu menyambutku\nUntuk selalu bersama dan saling berpegang erat\nMenghadapi segala suka maupun duka\n\nBila sesekali kau marah\nItu karena aku tak mau memahamimu\nBila sesekali aku berbuat salah\nMaafmu selalu terbuka untukku\n\nKata terima kasih kuanggap lebih manis daripada kata maaf\nuntuk segala keceriaan yang selalu kau bagi\nuntuk segala ketulusan hati yang selalu kau beri\ndan untuk kesetiaan yang tak akan pernah lekang oleh masa\n\nBila kita dewasa nanti\ndan jarak juga waktu memisahkan kita\nSatu harapku dalam hati\nKata persahabatan tidak akan pernah menjadi sebuah kenangan\n\nSumber: Antologi Puisi Anak Kemendikdasmen\n\nPesan apa yang ingin disampaikan dalam puisi tersebut?",
+    "gambar": null,
+    "gambarUrls": [],
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Persahabatan membuat seseorang harus mengalah demi menjaga hubungan.",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Persahabatan harus selalu diutamakan di atas hubungan dengan keluarga.",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Persahabatan membutuhkan pengertian, kesetiaan, dan saling menghargai.",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "Persahabatan sering diuji oleh konflik sehingga tidak selalu bertahan.",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Persahabatan membuat seseorang harus mengalah demi menjaga hubungan.",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Persahabatan harus selalu diutamakan di atas hubungan dengan keluarga.",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Persahabatan membutuhkan pengertian, kesetiaan, dan saling menghargai.",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "Persahabatan sering diuji oleh konflik sehingga tidak selalu bertahan.",
+        "gambar": null
+      }
+    ],
+    "pernyataan": [],
+    "kunciJawaban": "C",
+    "kunci_jawaban": "C",
+    "kunci": "C",
+    "pembahasan": "Bait-bait puisi menekankan saling memahami saat marah, memberi maaf, bersyukur atas ketulusan, serta menjaga kesetiaan."
+  },
+  {
+    "id": "tka_sd_bindo_43",
+    "nomor": 43,
+    "jenjang": "SD",
+    "kelas": "6",
+    "tingkatKelas": "6 SD",
+    "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
+    "materi": "Evaluasi & Apresiasi - Realita vs Fantasi dalam Cerita (Ruangguru 2025)",
+    "tipe": "pg_kompleks",
+    "teksSoal": "Pohon Mangga Ajaib\n\nDi sebuah desa tumbuh pohon mangga ajaib milik bersama warga. Siapa saja boleh memetik buahnya, tetapi tidak boleh dijual. Konon, jika orang yang memiliki hati jahat memakan buahnya, mangga itu akan terasa sangat pahit.\n\nSuatu hari datanglah seorang pedagang kaya yang tamak. Ia ingin membeli pohon itu dengan harga mahal, tetapi sesepuh desa menolak karena pohon tersebut milik bersama. Pedagang itu kesal dan diam-diam datang pada malam hari membawa kapak untuk menebangnya.\n\nNamun saat mencoba memakan satu buah mangga, rasanya amat pahit. Tiba-tiba pohon mangga itu berbicara, \"Hai pedagang tamak! Buahku akan pahit bagi mereka yang memiliki hati jahat sepertimu!\" Pedagang itu ketakutan dan lari meninggalkan desa.\n\nSumber: Ruangguru Simulasi TKA SD\n\nPeristiwa dalam cerita \"Pohon Mangga Ajaib\" yang dapat ditemukan dalam kehidupan nyata adalah … (Jawaban benar lebih dari satu)",
+    "teks_soal": "Pohon Mangga Ajaib\n\nDi sebuah desa tumbuh pohon mangga ajaib milik bersama warga. Siapa saja boleh memetik buahnya, tetapi tidak boleh dijual. Konon, jika orang yang memiliki hati jahat memakan buahnya, mangga itu akan terasa sangat pahit.\n\nSuatu hari datanglah seorang pedagang kaya yang tamak. Ia ingin membeli pohon itu dengan harga mahal, tetapi sesepuh desa menolak karena pohon tersebut milik bersama. Pedagang itu kesal dan diam-diam datang pada malam hari membawa kapak untuk menebangnya.\n\nNamun saat mencoba memakan satu buah mangga, rasanya amat pahit. Tiba-tiba pohon mangga itu berbicara, \"Hai pedagang tamak! Buahku akan pahit bagi mereka yang memiliki hati jahat sepertimu!\" Pedagang itu ketakutan dan lari meninggalkan desa.\n\nSumber: Ruangguru Simulasi TKA SD\n\nPeristiwa dalam cerita \"Pohon Mangga Ajaib\" yang dapat ditemukan dalam kehidupan nyata adalah … (Jawaban benar lebih dari satu)",
+    "soal": "Pohon Mangga Ajaib\n\nDi sebuah desa tumbuh pohon mangga ajaib milik bersama warga. Siapa saja boleh memetik buahnya, tetapi tidak boleh dijual. Konon, jika orang yang memiliki hati jahat memakan buahnya, mangga itu akan terasa sangat pahit.\n\nSuatu hari datanglah seorang pedagang kaya yang tamak. Ia ingin membeli pohon itu dengan harga mahal, tetapi sesepuh desa menolak karena pohon tersebut milik bersama. Pedagang itu kesal dan diam-diam datang pada malam hari membawa kapak untuk menebangnya.\n\nNamun saat mencoba memakan satu buah mangga, rasanya amat pahit. Tiba-tiba pohon mangga itu berbicara, \"Hai pedagang tamak! Buahku akan pahit bagi mereka yang memiliki hati jahat sepertimu!\" Pedagang itu ketakutan dan lari meninggalkan desa.\n\nSumber: Ruangguru Simulasi TKA SD\n\nPeristiwa dalam cerita \"Pohon Mangga Ajaib\" yang dapat ditemukan dalam kehidupan nyata adalah … (Jawaban benar lebih dari satu)",
+    "gambar": null,
+    "gambarUrls": [],
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Orang yang tamak sering kali tidak puas dengan apa yang dimilikinya.",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Pohon mangga yang bisa berubah rasa sesuai hati orang yang memakannya.",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Ada orang yang mencoba mengambil keuntungan dari milik bersama.",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "Tanaman yang bisa berbicara seperti manusia.",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Orang yang tamak sering kali tidak puas dengan apa yang dimilikinya.",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Pohon mangga yang bisa berubah rasa sesuai hati orang yang memakannya.",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Ada orang yang mencoba mengambil keuntungan dari milik bersama.",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "Tanaman yang bisa berbicara seperti manusia.",
+        "gambar": null
+      }
+    ],
+    "pernyataan": [],
+    "kunciJawaban": "A,C",
+    "kunci_jawaban": "A,C",
+    "kunci": "A,C",
+    "pembahasan": "Keserakahan dan upaya mengambil keuntungan pribadi dari milik bersama (A dan C) adalah kejadian nyata di masyarakat, sedangkan buah berubah rasa magis dan pohon berbicara (B dan D) adalah unsur fantasi dongeng."
+  },
+  {
+    "id": "tka_sd_bindo_44",
+    "nomor": 44,
+    "jenjang": "SD",
+    "kelas": "6",
+    "tingkatKelas": "6 SD",
+    "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
+    "materi": "Pemahaman Tekstual - Ide Pokok Paragraf Cerita (Kompas TKA SD 2026)",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Kebiasaan Baik Bima\n\nBima selalu membawa kantong plastik kecil di tasnya. Setiap pulang sekolah, ia memungut sampah yang berserakan di sepanjang jalan menuju rumah. Teman-temannya sering menertawakan kebiasaan itu. \"Memangnya kamu petugas kebersihan?\" ejek Doni. Bima hanya tersenyum dan terus memungut sampah.\n\nSuatu sore, hujan deras turun. Jalan di depan sekolah mulai tergenang karena selokan tersumbat sampah. Doni yang berlari tergesa-gesa terpeleset dan jatuh ke genangan air. Bima segera menolongnya berdiri. Setelah itu, mereka bersama-sama membersihkan sampah yang menyumbat selokan. Air pun surut perlahan. Doni menunduk malu. \"Maaf ya, Bima. Ternyata kebiasaanmu bermanfaat,\" katanya pelan.\n\nSumber: Kompas TKA Bahasa Indonesia Kelas 6\n\nIde pokok paragraf pertama teks tersebut adalah …",
+    "teks_soal": "Kebiasaan Baik Bima\n\nBima selalu membawa kantong plastik kecil di tasnya. Setiap pulang sekolah, ia memungut sampah yang berserakan di sepanjang jalan menuju rumah. Teman-temannya sering menertawakan kebiasaan itu. \"Memangnya kamu petugas kebersihan?\" ejek Doni. Bima hanya tersenyum dan terus memungut sampah.\n\nSuatu sore, hujan deras turun. Jalan di depan sekolah mulai tergenang karena selokan tersumbat sampah. Doni yang berlari tergesa-gesa terpeleset dan jatuh ke genangan air. Bima segera menolongnya berdiri. Setelah itu, mereka bersama-sama membersihkan sampah yang menyumbat selokan. Air pun surut perlahan. Doni menunduk malu. \"Maaf ya, Bima. Ternyata kebiasaanmu bermanfaat,\" katanya pelan.\n\nSumber: Kompas TKA Bahasa Indonesia Kelas 6\n\nIde pokok paragraf pertama teks tersebut adalah …",
+    "soal": "Kebiasaan Baik Bima\n\nBima selalu membawa kantong plastik kecil di tasnya. Setiap pulang sekolah, ia memungut sampah yang berserakan di sepanjang jalan menuju rumah. Teman-temannya sering menertawakan kebiasaan itu. \"Memangnya kamu petugas kebersihan?\" ejek Doni. Bima hanya tersenyum dan terus memungut sampah.\n\nSuatu sore, hujan deras turun. Jalan di depan sekolah mulai tergenang karena selokan tersumbat sampah. Doni yang berlari tergesa-gesa terpeleset dan jatuh ke genangan air. Bima segera menolongnya berdiri. Setelah itu, mereka bersama-sama membersihkan sampah yang menyumbat selokan. Air pun surut perlahan. Doni menunduk malu. \"Maaf ya, Bima. Ternyata kebiasaanmu bermanfaat,\" katanya pelan.\n\nSumber: Kompas TKA Bahasa Indonesia Kelas 6\n\nIde pokok paragraf pertama teks tersebut adalah …",
+    "gambar": null,
+    "gambarUrls": [],
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Doni suka mengejek teman-temannya di sekolah.",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Bima memiliki kebiasaan memungut sampah meskipun ditertawakan temannya.",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Bima bekerja sebagai petugas kebersihan sepulang sekolah.",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "Bima membawa tas yang berisi banyak kantong plastik.",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Doni suka mengejek teman-temannya di sekolah.",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Bima memiliki kebiasaan memungut sampah meskipun ditertawakan temannya.",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Bima bekerja sebagai petugas kebersihan sepulang sekolah.",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "Bima membawa tas yang berisi banyak kantong plastik.",
+        "gambar": null
+      }
+    ],
+    "pernyataan": [],
+    "kunciJawaban": "B",
+    "kunci_jawaban": "B",
+    "kunci": "B",
+    "pembahasan": "Seluruh paragraf pertama menceritakan kebiasaan rutin Bima memungut sampah sepulang sekolah dan reaksi teman-temannya yang menertawakannya."
+  },
+  {
+    "id": "tka_sd_bindo_45",
+    "nomor": 45,
+    "jenjang": "SD",
+    "kelas": "6",
+    "tingkatKelas": "6 SD",
+    "mapel": "Bahasa Indonesia",
+    "mataPelajaran": "Bahasa Indonesia",
+    "materi": "Pemahaman Inferensial - Amanat Cerita (Kompas TKA SD 2026)",
+    "tipe": "pg_sederhana",
+    "teksSoal": "Kebiasaan Baik Bima\n\nBima selalu membawa kantong plastik kecil di tasnya. Setiap pulang sekolah, ia memungut sampah yang berserakan di sepanjang jalan menuju rumah. Teman-temannya sering menertawakan kebiasaan itu. \"Memangnya kamu petugas kebersihan?\" ejek Doni. Bima hanya tersenyum dan terus memungut sampah.\n\nSuatu sore, hujan deras turun. Jalan di depan sekolah mulai tergenang karena selokan tersumbat sampah. Doni yang berlari tergesa-gesa terpeleset dan jatuh ke genangan air. Bima segera menolongnya berdiri. Setelah itu, mereka bersama-sama membersihkan sampah yang menyumbat selokan. Air pun surut perlahan. Doni menunduk malu. \"Maaf ya, Bima. Ternyata kebiasaanmu bermanfaat,\" katanya pelan.\n\nSumber: Kompas TKA Bahasa Indonesia Kelas 6\n\nAmanat yang paling tepat dari cerita tersebut adalah …",
+    "teks_soal": "Kebiasaan Baik Bima\n\nBima selalu membawa kantong plastik kecil di tasnya. Setiap pulang sekolah, ia memungut sampah yang berserakan di sepanjang jalan menuju rumah. Teman-temannya sering menertawakan kebiasaan itu. \"Memangnya kamu petugas kebersihan?\" ejek Doni. Bima hanya tersenyum dan terus memungut sampah.\n\nSuatu sore, hujan deras turun. Jalan di depan sekolah mulai tergenang karena selokan tersumbat sampah. Doni yang berlari tergesa-gesa terpeleset dan jatuh ke genangan air. Bima segera menolongnya berdiri. Setelah itu, mereka bersama-sama membersihkan sampah yang menyumbat selokan. Air pun surut perlahan. Doni menunduk malu. \"Maaf ya, Bima. Ternyata kebiasaanmu bermanfaat,\" katanya pelan.\n\nSumber: Kompas TKA Bahasa Indonesia Kelas 6\n\nAmanat yang paling tepat dari cerita tersebut adalah …",
+    "soal": "Kebiasaan Baik Bima\n\nBima selalu membawa kantong plastik kecil di tasnya. Setiap pulang sekolah, ia memungut sampah yang berserakan di sepanjang jalan menuju rumah. Teman-temannya sering menertawakan kebiasaan itu. \"Memangnya kamu petugas kebersihan?\" ejek Doni. Bima hanya tersenyum dan terus memungut sampah.\n\nSuatu sore, hujan deras turun. Jalan di depan sekolah mulai tergenang karena selokan tersumbat sampah. Doni yang berlari tergesa-gesa terpeleset dan jatuh ke genangan air. Bima segera menolongnya berdiri. Setelah itu, mereka bersama-sama membersihkan sampah yang menyumbat selokan. Air pun surut perlahan. Doni menunduk malu. \"Maaf ya, Bima. Ternyata kebiasaanmu bermanfaat,\" katanya pelan.\n\nSumber: Kompas TKA Bahasa Indonesia Kelas 6\n\nAmanat yang paling tepat dari cerita tersebut adalah …",
+    "gambar": null,
+    "gambarUrls": [],
+    "opsiJawaban": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Sebaiknya kita tidak berlari ketika hujan deras agar tidak terpeleset.",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Orang yang suka mengejek harus dijauhi dalam pergaulan.",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Membersihkan lingkungan adalah tugas petugas kebersihan saja.",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "Kebiasaan baik tetap layak dilakukan walaupun ditertawakan orang lain.",
+        "gambar": null
+      }
+    ],
+    "opsi": [
+      {
+        "key": "A",
+        "label": "A",
+        "teks": "Sebaiknya kita tidak berlari ketika hujan deras agar tidak terpeleset.",
+        "gambar": null
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "teks": "Orang yang suka mengejek harus dijauhi dalam pergaulan.",
+        "gambar": null
+      },
+      {
+        "key": "C",
+        "label": "C",
+        "teks": "Membersihkan lingkungan adalah tugas petugas kebersihan saja.",
+        "gambar": null
+      },
+      {
+        "key": "D",
+        "label": "D",
+        "teks": "Kebiasaan baik tetap layak dilakukan walaupun ditertawakan orang lain.",
+        "gambar": null
+      }
+    ],
+    "pernyataan": [],
+    "kunciJawaban": "D",
+    "kunci_jawaban": "D",
+    "kunci": "D",
+    "pembahasan": "Keteguhan Bima melakukan kebiasaan baik memungut sampah meski diejek akhirnya terbukti sangat bermanfaat saat mencegah selokan tersumbat banjir."
   }
 ];

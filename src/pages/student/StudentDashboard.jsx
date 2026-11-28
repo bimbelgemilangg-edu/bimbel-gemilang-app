@@ -878,10 +878,15 @@ const StudentDashboard = () => {
           if (!targetUjian) return null;
 
           const isUtbk = targetUjian.jenjang === 'SMA';
-          const judulRoadmap = isUtbk ? '🏔️ Peta Pendakian UTBK-SNBT Kelas 12' : '🏔️ Peta Pendakian TKA SMP Kelas 9';
+          const isSdTarget = targetUjian.jenjang === 'SD';
+          const judulRoadmap = isUtbk
+            ? '🏔️ Peta Pendakian UTBK-SNBT Kelas 12'
+            : (isSdTarget ? '🏔️ Peta Pendakian TKA SD Kelas 6' : '🏔️ Peta Pendakian TKA SMP Kelas 9');
           const taglineRoadmap = isUtbk
             ? 'Lihat posisi teman di puncak UTBK & daki maksimal 2x/minggu'
-            : 'Lihat posisi teman di puncak TKA SMP & daki maksimal 2x/minggu';
+            : (isSdTarget
+              ? 'Lihat posisi teman di puncak TKA SD & daki maksimal 2x/minggu'
+              : 'Lihat posisi teman di puncak TKA SMP & daki maksimal 2x/minggu');
 
           return (
             <div
@@ -945,10 +950,10 @@ const StudentDashboard = () => {
             { key: 'elearning', label: 'E-Learning', emoji: '📖', warna: '#f3e8ff', warnaTeks: '#652D90', segeraHadir: false },
             { key: 'latihan', label: 'Latihan Harian', emoji: '📝', warna: '#ecfeff', warnaTeks: '#155e75', segeraHadir: false },
             { key: 'tryout', label: 'TryOut Terjadwal', emoji: '📅', warna: '#fef3c7', warnaTeks: '#92400e', segeraHadir: false },
-            // 📚 Modul Belajar: UTBK untuk kelas 12 SMA, TKA untuk kelas 9 SMP
-            ...((infoTingkat.isKelas12 || infoTingkat.isKelas9) ? [{
+            // 📚 Modul Belajar: UTBK untuk kelas 12 SMA, TKA SMP untuk kelas 9, TKA SD untuk kelas 6
+            ...((infoTingkat.isKelas12 || infoTingkat.isKelas9 || infoTingkat.isKelas6) ? [{
               key: 'modul',
-              label: infoTingkat.isKelas12 ? 'Modul Belajar UTBK' : 'Modul Belajar TKA SMP',
+              label: infoTingkat.isKelas12 ? 'Modul Belajar UTBK' : (infoTingkat.isKelas9 ? 'Modul Belajar TKA SMP' : 'Modul Belajar TKA SD'),
               emoji: '📚',
               warna: '#ccfbf1',
               warnaTeks: '#0f766e',
@@ -1679,9 +1684,9 @@ const StudentDashboard = () => {
               <button onClick={() => navigate('/siswa/elearning')} style={{ padding: '9px 16px', background: '#652D90', color: 'white', border: 'none', borderRadius: 12, fontWeight: 700, fontSize: 11, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5 }}>
                 <BookOpen size={14} /> E-Learning Guru
               </button>
-              {(infoTingkatSiswa.isKelas12 || infoTingkatSiswa.isSmp) && (
+              {(infoTingkatSiswa.isKelas12 || infoTingkatSiswa.isKelas9 || infoTingkatSiswa.isKelas6) && (
                 <button onClick={() => navigate('/siswa/modul')} style={{ padding: '9px 16px', background: '#0d9488', color: 'white', border: 'none', borderRadius: 12, fontWeight: 700, fontSize: 11, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5 }}>
-                  <Layers size={14} /> {infoTingkatSiswa.isKelas12 ? 'Modul Belajar UTBK' : 'Modul Belajar TKA'}
+                  <Layers size={14} /> {infoTingkatSiswa.isKelas12 ? 'Modul Belajar UTBK' : (infoTingkatSiswa.isKelas6 ? 'Modul Belajar TKA SD' : 'Modul Belajar TKA')}
                 </button>
               )}
             </div>

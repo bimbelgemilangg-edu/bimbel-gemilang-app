@@ -36,6 +36,12 @@ import {
   hitungStatistikModulSmpSiswa,
   getTerakhirDibacaSmp,
 } from '../../../data/tkaSmpModulData.js';
+import {
+  DAFTAR_SUBTES_SD,
+  SEMUA_BAB_SD,
+  hitungStatistikModulSdSiswa,
+  getTerakhirDibacaSd,
+} from '../../../data/tkaSdModulData.js';
 import { useProfilSiswa } from '../../../utils/profilSiswa';
 import { deteksiTingkatSiswa } from '../../../utils/tingkatSiswa';
 import RenderMath from '../../../components/RenderMath';
@@ -49,7 +55,8 @@ export default function ModulBelajarUtbkPage() {
     return deteksiTingkatSiswa({ ...profil, kelas: kelasCek, kelasSekolah: kelasCek, jenjang: jenjangCek });
   }, [profil, kelasCek, jenjangCek]);
 
-  // HANYA Kelas 9 SMP yang mengakses modul TKA SMP, dan HANYA Kelas 12 SMA yang mengakses modul UTBK
+  // HANYA Kelas 6 SD (TKA SD), Kelas 9 SMP (TKA SMP), dan Kelas 12 SMA (UTBK)
+  const isSd = infoTingkat.isKelas6;
   const isSmp = infoTingkat.isKelas9;
   const isKelas12 = infoTingkat.isKelas12;
 
@@ -58,7 +65,7 @@ export default function ModulBelajarUtbkPage() {
   const [studentId, setStudentId] = useState('');
   const [tampilkanSubtesLain, setTampilkanSubtesLain] = useState(false);
   const [statistik, setStatistik] = useState({
-    totalBab: isSmp ? 16 : 46,
+    totalBab: isSd ? 8 : (isSmp ? 16 : 46),
     totalSelesai: 0,
     persenTotal: 0,
     perSubtes: {},
@@ -68,8 +75,8 @@ export default function ModulBelajarUtbkPage() {
   const [terakhirDibaca, setTerakhirDibaca] = useState(null);
 
   // Sumber data modul sesuai jenjang
-  const daftarSubtes = isSmp ? DAFTAR_SUBTES_SMP : DAFTAR_SUBTES_MODUL;
-  const semuaBab = isSmp ? SEMUA_BAB_SMP : SEMUA_BAB_MODUL;
+  const daftarSubtes = isSd ? DAFTAR_SUBTES_SD : (isSmp ? DAFTAR_SUBTES_SMP : DAFTAR_SUBTES_MODUL);
+  const semuaBab = isSd ? SEMUA_BAB_SD : (isSmp ? SEMUA_BAB_SMP : SEMUA_BAB_MODUL);
 
   useEffect(() => {
     const sid =
@@ -79,7 +86,12 @@ export default function ModulBelajarUtbkPage() {
       'siswa_gemilang_default';
     setStudentId(sid);
 
-    if (isSmp) {
+    if (isSd) {
+      const stat = hitungStatistikModulSdSiswa(sid);
+      setStatistik(stat);
+      const last = getTerakhirDibacaSd(sid);
+      setTerakhirDibaca(last);
+    } else if (isSmp) {
       const stat = hitungStatistikModulSmpSiswa(sid);
       setStatistik(stat);
       const last = getTerakhirDibacaSmp(sid);
@@ -90,7 +102,7 @@ export default function ModulBelajarUtbkPage() {
       const last = getTerakhirDibaca(sid);
       setTerakhirDibaca(last);
     }
-  }, [isSmp]);
+  }, [isSd, isSmp]);
 
   // Filter bab berdasarkan subtes dan pencarian
   const filteredBab = useMemo(() => {
@@ -127,8 +139,8 @@ export default function ModulBelajarUtbkPage() {
     return SEMUA_BAB_SMP.filter((b) => b.isUtama ?? (b.subtestKode === 'MTK_SMP' || b.subtestKode === 'BIN_SMP')).length;
   }, []);
 
-  // Proteksi Akses: Hanya Kelas 12 SMA & SMP yang mengakses fitur Modul Belajar ini
-  if (!isKelas12 && !isSmp) {
+  // Proteksi Akses: Hanya Kelas 6 SD, Kelas 9 SMP & Kelas 12 SMA yang mengakses fitur Modul Belajar ini
+  if (!isKelas12 && !isSmp && !isSd) {
     return (
       <div style={{ maxWidth: 640, margin: '60px auto', padding: '24px 20px', textAlign: 'center', fontFamily: 'system-ui, sans-serif' }}>
         <div style={{ width: 64, height: 64, borderRadius: 32, background: '#fef3c7', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
@@ -142,7 +154,9 @@ export default function ModulBelajarUtbkPage() {
             ? 'Mohon maaf, kurikulum 7 subtes UTBK-SNBT disusun khusus untuk siswa Kelas 12 SMA & Alumni. Untuk siswa Kelas 10 & 11, silakan fokus pada pembelajaran materi harian di menu E-Learning.'
             : (infoTingkat.isSmpBawah
               ? 'Mohon maaf, kurikulum modul TKA SMP disusun khusus untuk siswa Kelas 9 SMP. Untuk siswa Kelas 7 & 8, silakan fokus pada pembelajaran materi harian di menu E-Learning.'
-              : 'Mohon maaf, fitur Modul Belajar interaktif saat ini tersedia khusus untuk jenjang TKA SMP Kelas 9 dan UTBK-SNBT Kelas 12 SMA. Silakan akses menu belajar dan latihan harian sesuai jenjangmu di Dashboard.')}
+              : (infoTingkat.isSdBawah
+                ? 'Mohon maaf, kurikulum modul TKA SD disusun khusus untuk siswa Kelas 6 SD. Untuk siswa Kelas 1–5 SD, silakan fokus pada pembelajaran materi harian di menu E-Learning.'
+                : 'Mohon maaf, fitur Modul Belajar interaktif saat ini tersedia khusus untuk jenjang TKA SD Kelas 6, TKA SMP Kelas 9, dan UTBK-SNBT Kelas 12 SMA. Silakan akses menu belajar dan latihan harian sesuai jenjangmu di Dashboard.'))}
         </p>
         <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
           <button
@@ -215,7 +229,7 @@ export default function ModulBelajarUtbkPage() {
             }}
           >
             <Sparkles size={13} />
-            {isSmp ? 'Standar Kurikulum TKA SMP Kelas 9' : 'Standar Kurikulum AmbisPTN 1:1'}
+            {isSd ? 'Standar Kurikulum TKA SD Kelas 6' : (isSmp ? 'Standar Kurikulum TKA SMP Kelas 9' : 'Standar Kurikulum AmbisPTN 1:1')}
           </span>
           <span
             style={{
@@ -232,12 +246,14 @@ export default function ModulBelajarUtbkPage() {
         </div>
 
         <h1 style={{ margin: '0 0 6px', fontSize: 24, fontWeight: 800, letterSpacing: '-0.02em' }}>
-          {isSmp ? 'Modul Belajar TKA SMP Kelas 9' : 'Modul Belajar UTBK-SNBT 2027'}
+          {isSd ? 'Modul Belajar TKA SD Kelas 6' : (isSmp ? 'Modul Belajar TKA SMP Kelas 9' : 'Modul Belajar UTBK-SNBT 2027')}
         </h1>
         <p style={{ margin: '0 0 16px', fontSize: 13, opacity: 0.92, maxWidth: 660, lineHeight: 1.5 }}>
-          {isSmp
-            ? 'Pelajari konsep kunci, trik kilat 30 detik, jebakan umum, contoh soal bertahap, dan kuis cek pemahaman interaktif untuk persiapan TKA, Asesmen Nasional, & seleksi SMA Unggulan.'
-            : 'Pelajari konsep kunci, trik kilat 30 detik, jebakan umum, contoh soal bertahap, dan kuis cek pemahaman interaktif untuk 7 subtes resmi SNBT.'}
+          {isSd
+            ? 'Pelajari konsep dasar, trik kilat 30 detik, jebakan soal, contoh bertahap, dan kuis cek pemahaman untuk persiapan TKA SD Numerasi & Literasi menuju SMP Favorit.'
+            : (isSmp
+              ? 'Pelajari konsep kunci, trik kilat 30 detik, jebakan umum, contoh soal bertahap, dan kuis cek pemahaman interaktif untuk persiapan TKA, Asesmen Nasional, & seleksi SMA Unggulan.'
+              : 'Pelajari konsep kunci, trik kilat 30 detik, jebakan umum, contoh soal bertahap, dan kuis cek pemahaman interaktif untuk 7 subtes resmi SNBT.')}
         </p>
 
         {/* Progress Bar Siswa */}
@@ -359,9 +375,11 @@ export default function ModulBelajarUtbkPage() {
           <input
             type="text"
             placeholder={
-              isSmp
-                ? 'Cari bab, rumus, atau konsep TKA SMP (contoh: Bentuk Akar, Kuadrat, Pidato, Listrik)...'
-                : 'Cari bab, topik, atau kata kunci (contoh: Silogisme, Vieta, EYD V, P vs Q)...'
+              isSd
+                ? 'Cari bab, rumus, atau konsep TKA SD (contoh: Pecahan, FPB, Kecepatan, Ide Pokok, EYD)...'
+                : (isSmp
+                  ? 'Cari bab, rumus, atau konsep TKA SMP (contoh: Bentuk Akar, Kuadrat, Pidato, Listrik)...'
+                  : 'Cari bab, topik, atau kata kunci (contoh: Silogisme, Vieta, EYD V, P vs Q)...')
             }
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -504,6 +522,30 @@ export default function ModulBelajarUtbkPage() {
             </button>
           )}
         </div>
+
+        {/* Info Banner Khusus SD */}
+        {isSd && (
+          <div
+            style={{
+              marginTop: 10,
+              padding: '8px 14px',
+              background: '#f0fdf4',
+              border: '1px solid #bbf7d0',
+              borderRadius: 10,
+              fontSize: 12,
+              color: '#166534',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: 10,
+              flexWrap: 'wrap',
+            }}
+          >
+            <span>
+              ✨ <strong>Fokus TKA SD Kelas 6</strong>: 2 Subtes Utama Resmi adalah <strong>Matematika (Numerasi)</strong> dan <strong>Bahasa Indonesia (Literasi)</strong>.
+            </span>
+          </div>
+        )}
 
         {/* Info Banner Khusus SMP */}
         {isSmp && (

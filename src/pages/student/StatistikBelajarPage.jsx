@@ -265,7 +265,7 @@ export default function StatistikBelajarPage() {
         </button>
         <div style={S.headerInfo}>
           <div style={S.badgeJenjang}>
-            STATISTIK BELAJAR • {infoTingkat.isKelas12 ? 'UTBK-SNBT (SMA KELAS 12)' : (infoTingkat.isKelas9 ? 'TKA SMP (KELAS 9)' : (infoTingkat.isSmp ? 'EVALUASI SMP' : (infoTingkat.isSd ? 'EVALUASI SD' : 'EVALUASI SMA')))}
+            STATISTIK BELAJAR • {infoTingkat.isKelas12 ? 'UTBK-SNBT (SMA KELAS 12)' : (infoTingkat.isKelas9 ? 'TKA SMP (KELAS 9)' : (infoTingkat.isKelas6 ? 'TKA SD (KELAS 6)' : (infoTingkat.isSmp ? 'EVALUASI SMP' : (infoTingkat.isSd ? 'EVALUASI SD' : 'EVALUASI SMA'))))}
           </div>
           <h1 style={S.judulUtama}>Progres &amp; Analisis Belajar Personal</h1>
           <p style={S.subJudul}>
@@ -311,7 +311,7 @@ export default function StatistikBelajarPage() {
         </div>
         <button
           type="button"
-          onClick={() => navigate((infoTingkat.isKelas12 || infoTingkat.isKelas9) ? '/siswa/roadmap' : '/siswa/latihan-harian')}
+          onClick={() => navigate((infoTingkat.isKelas12 || infoTingkat.isKelas9 || infoTingkat.isKelas6) ? '/siswa/roadmap' : '/siswa/latihan-harian')}
           style={{
             background: '#0d9488',
             color: '#ffffff',
